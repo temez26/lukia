@@ -1,0 +1,111 @@
+############################
+# Gradle
+############################
+.gradle/
+build/
+**/build/
+.gradle-cache/
+
+############################
+# Kotlin
+############################
+*.kotlin_module
+
+############################
+# IntelliJ / Android Studio
+############################
+.idea/
+*.iml
+*.ipr
+*.iws
+
+############################
+# Android
+############################
+local.properties
+captures/
+.cxx/
+
+############################
+# Compose Multiplatform
+############################
+composeApp/build/
+desktopApp/build/
+shared/build/
+androidApp/build/
+
+############################
+# iOS / Xcode
+############################
+DerivedData/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+
+############################
+# Kotlin Multiplatform
+############################
+.konan/
+
+############################
+# macOS
+############################
+.DS_Store
+.AppleDouble
+.LSOverride
+
+############################
+# Linux
+############################
+*~
+
+############################
+# Windows
+############################
+Thumbs.db
+Desktop.ini
+
+############################
+# Logs
+############################
+*.log
+
+############################
+# Environment
+############################
+.env
+.env.*
+!.env.example
+
+############################
+# Secrets
+############################
+*.keystore
+*.jks
+*.p12
+*.pem
+*.key
+google-services.json
+GoogleService-Info.plist
+
+############################
+# Temporary files
+############################
+tmp/
+temp/
+.cache/
+
+############################
+# VS Code
+############################
+.vscode/
+
+############################
+# Generated artifacts
+############################
+*.apk
+*.aab
+*.ipa
+*.dmg
+*.app
