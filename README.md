@@ -1,6 +1,6 @@
 ## Architecture
 
-The project follows a feature-first Clean Architecture combined Domain-Driven Design.
+Lukia follows a feature-first architecture based on Clean Architecture and Domain-Driven Design (DDD).
 
 ```
 shared/
@@ -60,3 +60,12 @@ Examples of shared code include:
 - Utilities
 - Shared services
 - Cross-feature infrastructure
+
+## Technologies
+
+- Kotlin Multiplatform
+- Compose Multiplatform
+- Jetpack Compose
+- Koin for dependency injection
+- Kotlin Coroutines for asynchronous programming
+- Native Kotlin platform APIs
