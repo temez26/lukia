@@ -30,8 +30,9 @@ fun LibraryScreen(
                 items(documents) { doc ->
                     Column(modifier = Modifier.padding(8.dp)) {
                         Text("File Name: ${doc.document.fileName}")
-                        Text("Full Path: ${doc.document.absolutePath}")
-                        Text("Type: ${doc.document.extension}")
+                            Text("Extension: ${doc.document.extension}")
+                            Text("Exists: ${doc.exists}")
+                            Text("Size: ${doc.sizeBytes} bytes")
                     }
                 }
             }
