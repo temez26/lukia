@@ -20,6 +20,9 @@ class LibraryViewModel(
     private val _documents = MutableStateFlow<List<DocumentInfo>>(emptyList())
     val documents: StateFlow<List<DocumentInfo>> = _documents.asStateFlow()
 
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
     init {
         loadDocuments()
     }
@@ -30,14 +33,19 @@ class LibraryViewModel(
         }
     }
 
+
     fun importDocument() {
         viewModelScope.launch {
-
             val pickedDocument = importFilePicker.pick() ?: return@launch
 
-            importDocumentUseCase.execute(pickedDocument)
-
-            loadDocuments()
+            val result = importDocumentUseCase.execute(pickedDocument)
+            
+            result.onSuccess {
+                loadDocuments()
+                _errorMessage.value = null
+            }.onFailure {
+                _errorMessage.value = it.message ?: "An error occurred"
+            }
         }
     }
 }
