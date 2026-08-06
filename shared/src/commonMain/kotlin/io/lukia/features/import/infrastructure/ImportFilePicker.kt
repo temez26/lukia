@@ -1,4 +1,4 @@
-package io.lukia.features.import.presentation
+package io.lukia.features.import.infrastructure
 
 import io.lukia.features.import.domain.PickedDocument
 
