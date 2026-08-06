@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.lukia.features.import.domain.DocumentInfo
 import io.lukia.features.import.domain.DocumentAnalyzer
+import io.lukia.features.import.infrastructure.ImportFilePicker
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
