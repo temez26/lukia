@@ -3,7 +3,6 @@ package io.lukia.features.import.presentation
 import io.lukia.features.import.domain.PickedDocument
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.File
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
 

@@ -25,9 +25,9 @@ fun LibraryScreen(
             
             selectedDocument?.let { doc ->
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("File Name: ${doc.fileName}")
-                Text("Extension: ${doc.extension}")
-                Text("Path: ${doc.absolutePath}")
+                Text("File Name: ${doc.document.fileName}")
+                Text("Extension: ${doc.document.extension}")
+                Text("Path: ${doc.document.absolutePath}")
             }
         }
     }
