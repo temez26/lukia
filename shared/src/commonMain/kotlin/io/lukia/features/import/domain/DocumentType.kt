@@ -1,3 +1,7 @@
 package io.lukia.features.import.domain
 
-data class DocumentType()
+enum class DocumentType{
+    PDF,
+    EPUB,
+    UNKNOWN
+}

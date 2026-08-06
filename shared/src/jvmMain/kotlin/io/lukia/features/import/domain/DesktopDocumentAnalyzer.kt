@@ -3,17 +3,27 @@ package io.lukia.features.import.domain
 import java.io.File
 
 class DesktopDocumentAnalyzer : DocumentAnalyzer {
+
     override suspend fun analyze(document: PickedDocument): DocumentInfo {
         val file = File(document.absolutePath)
+
         if (!file.exists()) {
-            throw IllegalArgumentException("File does not exist: ${document.absolutePath}")
+            throw IllegalArgumentException(
+                "File does not exist: ${document.absolutePath}"
+            )
         }
-        
+
+        val type = when (document.extension.lowercase()) {
+            "pdf" -> DocumentType.PDF
+            "epub" -> DocumentType.EPUB
+            else -> DocumentType.UNKNOWN
+        }
+
         return DocumentInfo(
-            fileName = document.fileName,
-            extension = document.extension,
-            absolutePath = document.absolutePath,
-            fileSizeBytes = file.length()
+            document = document,
+            type = type,
+            exists = true,
+            sizeBytes = file.length()
         )
     }
 }
