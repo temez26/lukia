@@ -18,6 +18,8 @@ fun LibraryScreen(
 ) {
     val documents by viewModel.documents.collectAsState()
 
+    val errorMessage by viewModel.errorMessage.collectAsState()
+
     Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
         Column {
             Text("Library")
@@ -26,6 +28,10 @@ fun LibraryScreen(
                 Text("Import")
             }
             Spacer(modifier = Modifier.height(16.dp))
+            errorMessage?.let {
+                Text(it, color = MaterialTheme.colorScheme.error)
+                Spacer(modifier = Modifier.height(8.dp))
+            }
             LazyColumn {
                 items(documents) { doc ->
                     Column(modifier = Modifier.padding(8.dp)) {
