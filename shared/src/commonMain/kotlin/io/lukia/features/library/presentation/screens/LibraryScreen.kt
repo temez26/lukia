@@ -6,11 +6,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.lukia.features.import.domain.DocumentInfo
 import io.lukia.features.library.presentation.LibraryViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import io.lukia.features.import.presentation.rememberPlatformFilePicker
 
 @Composable
 fun LibraryScreen(
@@ -20,11 +20,21 @@ fun LibraryScreen(
 
     val errorMessage by viewModel.errorMessage.collectAsState()
 
+    val filePicker = rememberPlatformFilePicker()
+
     Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
         Column {
             Text("Library")
             Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = { viewModel.importDocument() }) {
+            Button(
+                onClick = {
+                    filePicker.launch { pickedDocument ->
+                        pickedDocument?.let {
+                            viewModel.importDocument(it)
+                        }
+                    }
+                }
+            ) {
                 Text("Import")
             }
             Spacer(modifier = Modifier.height(16.dp))
