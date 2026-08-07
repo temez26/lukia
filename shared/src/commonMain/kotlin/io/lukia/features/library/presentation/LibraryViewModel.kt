@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.lukia.features.import.domain.DocumentInfo
 import io.lukia.features.import.domain.ImportDocumentUseCase
-import io.lukia.features.import.infrastructure.ImportFilePicker
+import io.lukia.features.import.domain.PickedDocument
 import io.lukia.features.library.domain.GetLibraryDocumentsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,7 +13,6 @@ import kotlinx.coroutines.launch
 
 class LibraryViewModel(
     private val getLibraryDocumentsUseCase: GetLibraryDocumentsUseCase,
-    private val importFilePicker: ImportFilePicker,
     private val importDocumentUseCase: ImportDocumentUseCase
 ) : ViewModel() {
 
@@ -34,17 +33,15 @@ class LibraryViewModel(
     }
 
 
-    fun importDocument() {
+    fun importDocument(pickedDocument: PickedDocument) {
         viewModelScope.launch {
-            val pickedDocument = importFilePicker.pick() ?: return@launch
-
             val result = importDocumentUseCase.execute(pickedDocument)
-            
+
             result.onSuccess {
                 loadDocuments()
                 _errorMessage.value = null
             }.onFailure {
-                _errorMessage.value = it.message ?: "An error occurred"
+                _errorMessage.value = it.message ?: "An Error Occurred"
             }
         }
     }

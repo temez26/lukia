@@ -5,11 +5,11 @@ import java.io.File
 class DesktopDocumentAnalyzer : DocumentAnalyzer {
 
     override suspend fun analyze(document: PickedDocument): DocumentInfo {
-        val file = File(document.absolutePath)
+        val file = File(document.location)
 
         if (!file.exists()) {
             throw IllegalArgumentException(
-                "File does not exist: ${document.absolutePath}"
+                "File does not exist: ${document.location}"
             )
         }
 

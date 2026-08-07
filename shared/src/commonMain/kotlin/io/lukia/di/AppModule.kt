@@ -19,7 +19,7 @@ val commonModule = module {
     }
 
     viewModel {
-        LibraryViewModel(get(), get(), get())
+        LibraryViewModel(get(), get())
     }
 
     single {
