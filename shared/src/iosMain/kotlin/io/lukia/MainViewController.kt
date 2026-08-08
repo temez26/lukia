@@ -5,7 +5,7 @@ import io.lukia.di.commonModule
 import io.lukia.di.platformModule
 import org.koin.core.context.startKoin
 
-fun MainViewController() = ComposeUIViewController {
+fun MainViewController() = run {
     
     startKoin {
         modules(
@@ -14,6 +14,8 @@ fun MainViewController() = ComposeUIViewController {
         )
     }
 
-    App() 
+    ComposeUIViewController() {
+        App()
+    }
 
 }
