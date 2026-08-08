@@ -1,4 +1,4 @@
-package io.lukia.features.import.domain
+package io.lukia.features.import.infrastructure
 
 import java.io.File
 
