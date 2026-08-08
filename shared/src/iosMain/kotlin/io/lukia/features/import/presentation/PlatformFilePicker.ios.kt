@@ -1,44 +1,91 @@
 package io.lukia.features.import.presentation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import io.lukia.features.import.domain.PickedDocument
-import platform.Foundation.*
-import platform.UIKit.*
-import platform.darwin.*
-import platform.UniformTypeIdentifiers.*
+import kotlinx.cinterop.ExperimentalForeignApi
+import platform.darwin.NSObject
+import platform.Foundation.NSURL
+import platform.UIKit.UIApplication
+import platform.UIKit.UIDocumentPickerDelegateProtocol
+import platform.UIKit.UIDocumentPickerViewController
+import platform.UIKit.UIWindow
+import platform.UniformTypeIdentifiers.UTTypeEPUB
+import platform.UniformTypeIdentifiers.UTTypePDF
 
+@OptIn(ExperimentalForeignApi::class)
 @Composable
-actual fun rememberPlatformFilePicker(): PlatformFilePickerState =
-    object : PlatformFilePickerState {
+actual fun rememberPlatformFilePicker(): PlatformFilePickerState {
+    return remember {
+        object : PlatformFilePickerState {
 
-        override fun launch(
-            onPicked: (PickedDocument?) -> Unit
-        ) {
-            val contentTypes = listOf(UTType.pdfContentType, UTType.epubContentType)
-            val picker = UIDocumentPickerViewController(forOpeningContentTypes = contentTypes, didPickDocumentTypes = null)
+            private var delegate: UIDocumentPickerDelegateProtocol? = null
 
-            val delegate = object : NSObject(), UIDocumentPickerDelegateProtocol {
-                override fun documentPickerDidPickDocuments(controller: UIDocumentPickerViewController, documents: List<*>) {
-                    val url = (documents.firstOrNull() as? NSURL)
-                    if (url != null) {
-                        val path = url.path ?: ""
+            override fun launch(
+                onPicked: (PickedDocument?) -> Unit
+            ) {
+                val contentTypes = listOf(
+                    UTTypePDF,
+                    UTTypeEPUB
+                )
+
+                val picker = UIDocumentPickerViewController(
+                    forOpeningContentTypes = contentTypes,
+                    asCopy = true
+                )
+
+                val pickerDelegate = object :
+                    NSObject(),
+                    UIDocumentPickerDelegateProtocol {
+
+                    override fun documentPicker(
+                        controller: UIDocumentPickerViewController,
+                        didPickDocumentsAtURLs: List<*>
+                    ) {
+                        val url = didPickDocumentsAtURLs
+                            .firstOrNull() as? NSURL
+
+                        if (url == null) {
+                            onPicked(null)
+                            return
+                        }
+
                         val fileName = url.lastPathComponent ?: ""
                         val extension = url.pathExtension ?: ""
-                        onPicked(PickedDocument(fileName, extension, path))
-                    } else {
+                        val location = url.absoluteString ?: ""
+
+                        onPicked(
+                            PickedDocument(
+                                fileName = fileName,
+                                extension = extension,
+                                location = location
+                            )
+                        )
+                    }
+
+                    override fun documentPickerWasCancelled(
+                        controller: UIDocumentPickerViewController
+                    ) {
                         onPicked(null)
                     }
                 }
 
-                override fun documentPickerDidCancel(controller: UIDocumentPickerViewController) {
-                    onPicked(null)
-                }
+                delegate = pickerDelegate
+                picker.delegate = pickerDelegate
+
+                val window =
+                    UIApplication.sharedApplication.windows
+                        .firstOrNull() as? UIWindow
+
+                val rootViewController =
+                    window?.rootViewController
+
+                rootViewController?.presentViewController(
+                    picker,
+                    animated = true,
+                    completion = null
+                )
             }
-
-            picker.delegate = delegate
-
-            val window = UIApplication.sharedApplication.windows.firstOrNull as? UIWindow
-            val rootViewController = window?.rootViewController
-            rootViewController?.presentViewController(picker, animated = true, completion = null)
         }
     }
+}
