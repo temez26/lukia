@@ -1,5 +1,9 @@
 package io.lukia.features.import.infrastructure
 
+import io.lukia.features.import.domain.DocumentAnalyzer
+import io.lukia.features.import.domain.DocumentInfo
+import io.lukia.features.import.domain.DocumentType
+import io.lukia.features.import.domain.PickedDocument
 import java.io.File
 
 class DesktopDocumentAnalyzer : DocumentAnalyzer {
