@@ -1,7 +1,12 @@
 package io.lukia.features.import.domain
 
-import platform.Foundation.*
+import kotlinx.cinterop.ExperimentalForeignApi
+import platform.Foundation.NSFileManager
+import platform.Foundation.NSFileSize
+import platform.Foundation.NSNumber
+import platform.Foundation.NSURL
 
+@OptIn(ExperimentalForeignApi::class)
 class IOSDocumentAnalyzer : DocumentAnalyzer {
 
     override suspend fun analyze(
@@ -9,11 +14,17 @@ class IOSDocumentAnalyzer : DocumentAnalyzer {
     ): DocumentInfo {
 
         val url = NSURL.URLWithString(document.location)
-            ?: throw IllegalArgumentException("Invalid document URL")
+            ?: throw IllegalArgumentException(
+                "Invalid document URL: ${document.location}"
+            )
 
         val fileManager = NSFileManager.defaultManager
+        val path = url.path
+            ?: throw IllegalArgumentException(
+                "Document URL has no path: ${document.location}"
+            )
 
-        val exists = fileManager.fileExistsAtPath(url.path ?: "")
+        val exists = fileManager.fileExistsAtPath(path)
 
         if (!exists) {
             throw IllegalArgumentException(
@@ -21,15 +32,14 @@ class IOSDocumentAnalyzer : DocumentAnalyzer {
             )
         }
 
-        val attributes =
-            fileManager.attributesOfItemAtPath(
-                url.path!!,
-                null
-            )
+        val attributes = fileManager.attributesOfItemAtPath(
+            path,
+            null
+        )
 
-        val size =
-            (attributes?.get(NSFileSize) as? NSNumber)
-                ?.longLongValue ?: 0L
+        val size = (attributes?.get(NSFileSize) as? NSNumber)
+            ?.longLongValue
+            ?: 0L
 
         val type = when (document.extension.lowercase()) {
             "pdf" -> DocumentType.PDF
