@@ -69,3 +69,11 @@ Examples of shared code include:
 - Koin for dependency injection
 - Kotlin Coroutines for asynchronous programming
 - Native Kotlin platform APIs
+
+## Contributing
+
+See our [Guidelines](CONTRIBUTING.md) for details on how to submit changes, write clear PR titles, and structure your commits.
+
+## Testing
+
+(See the full details in [TESTING.md](TESTING.md).)
