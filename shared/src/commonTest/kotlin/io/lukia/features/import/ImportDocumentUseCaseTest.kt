@@ -1,5 +1,6 @@
 package io.lukia.features.import.domain
 
+import io.lukia.features.import.TestDocuments
 import io.lukia.features.library.domain.LibraryRepository
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -11,9 +12,7 @@ class ImportDocumentUseCaseTest {
 
     @Test
     fun importsPdfDocument() = runTest {
-        val document = PickedDocument(
-            fileName = "book.pdf",
-            extension = "pdf",
+        val document = TestDocuments.pdf(
             location = "/test/book.pdf"
         )
 
@@ -41,9 +40,7 @@ class ImportDocumentUseCaseTest {
 
     @Test
     fun importsEpubDocument() = runTest {
-        val document = PickedDocument(
-            fileName = "book.epub",
-            extension = "epub",
+        val document = TestDocuments.epub(
             location = "/test/book.epub"
         )
 
@@ -71,9 +68,7 @@ class ImportDocumentUseCaseTest {
 
     @Test
     fun rejectsUnknownDocumentType() = runTest {
-        val document = PickedDocument(
-            fileName = "book.txt",
-            extension = "txt",
+        val document = TestDocuments.txt(
             location = "/test/book.txt"
         )
 
@@ -104,9 +99,7 @@ class ImportDocumentUseCaseTest {
 
     @Test
     fun analyzerFailureIsPropagated() = runTest {
-        val document = PickedDocument(
-            fileName = "book.pdf",
-            extension = "pdf",
+        val document = TestDocuments.pdf(
             location = "/test/book.pdf"
         )
 
@@ -168,4 +161,3 @@ class ImportDocumentUseCaseTest {
         }
     }
 }
-

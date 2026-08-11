@@ -1,0 +1,8 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <provider
+            android:name="io.lukia.features.import.domain.TestDocumentProvider"
+            android:authorities="io.lukia.shared.test.documents"
+            android:exported="false" />
+    </application>
+</manifest>

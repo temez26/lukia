@@ -17,6 +17,12 @@ class DesktopDocumentAnalyzer : DocumentAnalyzer {
             )
         }
 
+        if (!file.isFile) {
+            throw IllegalArgumentException(
+                "Path is not a file: ${document.location}"
+            )
+        }
+
         val type = when (document.extension.lowercase()) {
             "pdf" -> DocumentType.PDF
             "epub" -> DocumentType.EPUB

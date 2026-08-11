@@ -64,6 +64,11 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
         }
+        named("androidDeviceTest") {
+            dependencies {
+                implementation(libs.androidx.test.runner)
+            }
+        }
     }
 }
 
