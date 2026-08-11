@@ -1,6 +1,7 @@
 package io.lukia.features.import.domain
 
 import androidx.test.platform.app.InstrumentationRegistry
+import io.lukia.features.import.TestDocuments
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -15,9 +16,7 @@ class AndroidDocumentAnalyzerTest {
 
     @Test
     fun analyzesContentDocumentMetadata() = runTest {
-        val document = PickedDocument(
-            fileName = "book.pdf",
-            extension = "pdf",
+        val document = TestDocuments.pdf(
             location = "content://io.lukia.shared.test.documents/with-size"
         )
 
@@ -31,9 +30,7 @@ class AndroidDocumentAnalyzerTest {
 
     @Test
     fun usesZeroWhenContentProviderDoesNotSupplySize() = runTest {
-        val document = PickedDocument(
-            fileName = "book.epub",
-            extension = "epub",
+        val document = TestDocuments.epub(
             location = "content://io.lukia.shared.test.documents/without-size"
         )
 
@@ -45,10 +42,30 @@ class AndroidDocumentAnalyzerTest {
     }
 
     @Test
+    fun extensionIsCaseInsensitive() = runTest {
+        val result = analyzer.analyze(
+            TestDocuments.uppercasePdf(
+                location = "content://io.lukia.shared.test.documents/with-size"
+            )
+        )
+
+        assertEquals(DocumentType.PDF, result.type)
+    }
+
+    @Test
+    fun unsupportedExtensionReturnsUnknown() = runTest {
+        val result = analyzer.analyze(
+            TestDocuments.txt(
+                location = "content://io.lukia.shared.test.documents/with-size"
+            )
+        )
+
+        assertEquals(DocumentType.UNKNOWN, result.type)
+    }
+
+    @Test
     fun missingContentDocumentIsRejected() = runTest {
-        val document = PickedDocument(
-            fileName = "missing.pdf",
-            extension = "pdf",
+        val document = TestDocuments.missingPdf(
             location = "content://io.lukia.shared.test.documents/missing"
         )
 
