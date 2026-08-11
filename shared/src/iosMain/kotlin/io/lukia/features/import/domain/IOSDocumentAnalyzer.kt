@@ -3,6 +3,8 @@ package io.lukia.features.import.domain
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSFileSize
+import platform.Foundation.NSFileType
+import platform.Foundation.NSFileTypeDirectory
 import platform.Foundation.NSNumber
 import platform.Foundation.NSURL
 
@@ -36,6 +38,12 @@ class IOSDocumentAnalyzer : DocumentAnalyzer {
             path,
             null
         )
+
+        if (attributes?.get(NSFileType) == NSFileTypeDirectory) {
+            throw IllegalArgumentException(
+                "Path is not a file: ${document.location}"
+            )
+        }
 
         val size = (attributes?.get(NSFileSize) as? NSNumber)
             ?.longLongValue
