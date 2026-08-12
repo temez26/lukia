@@ -1,5 +1,9 @@
-package io.lukia.features.import.domain
+package io.lukia.features.import.infrastructure
 
+import io.lukia.features.import.domain.DocumentAnalyzer
+import io.lukia.features.import.domain.DocumentInfo
+import io.lukia.features.import.domain.DocumentType
+import io.lukia.features.import.domain.PickedDocument
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSFileSize

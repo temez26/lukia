@@ -1,7 +1,5 @@
 package io.lukia.features.import.domain
 
-import io.lukia.features.import.domain.DocumentAnalyzer
-import io.lukia.features.import.domain.PickedDocument
 import io.lukia.features.library.domain.LibraryRepository
 
 class ImportDocumentUseCase(
