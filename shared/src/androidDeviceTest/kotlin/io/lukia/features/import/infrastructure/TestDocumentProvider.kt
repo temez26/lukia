@@ -1,4 +1,4 @@
-package io.lukia.features.import.domain
+package io.lukia.features.import.infrastructure
 
 import android.content.ContentProvider
 import android.content.ContentValues

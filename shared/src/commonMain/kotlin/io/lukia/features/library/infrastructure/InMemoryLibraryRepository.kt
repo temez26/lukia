@@ -10,9 +10,6 @@ class InMemoryLibraryRepository : LibraryRepository {
         documents.add(document)
     }
 
-    val allDocuments: List<DocumentInfo>
-        get() = documents.toList()
-
     override suspend fun getDocuments(): List<DocumentInfo> {
         return documents.toList()
     }
