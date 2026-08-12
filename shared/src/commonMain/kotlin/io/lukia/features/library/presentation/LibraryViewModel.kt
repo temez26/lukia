@@ -45,4 +45,8 @@ class LibraryViewModel(
             }
         }
     }
+
+    fun clearErrorMessage() {
+        _errorMessage.value = null
+    }
 }
