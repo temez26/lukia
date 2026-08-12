@@ -1,6 +1,8 @@
-package io.lukia.features.import.domain
+package io.lukia.features.import.infrastructure
 
 import io.lukia.features.import.TestDocuments
+import io.lukia.features.import.domain.DocumentType
+import io.lukia.features.import.infrastructure.IOSDocumentAnalyzer
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.test.runTest
 import platform.Foundation.NSFileManager

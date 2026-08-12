@@ -1,6 +1,6 @@
 package io.lukia.di
 
-import io.lukia.features.import.domain.AndroidDocumentAnalyzer
+import io.lukia.features.import.infrastructure.AndroidDocumentAnalyzer
 import io.lukia.features.import.domain.DocumentAnalyzer
 import org.koin.dsl.module
 
