@@ -3,10 +3,12 @@ package io.lukia.features.import.infrastructure
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
+import io.lukia.features.import.domain.CoverImage
 import io.lukia.features.import.domain.DocumentAnalyzer
 import io.lukia.features.import.domain.DocumentInfo
 import io.lukia.features.import.domain.DocumentType
 import io.lukia.features.import.domain.PickedDocument
+import io.lukia.features.import.infrastructure.cover.extractCover
 
 class AndroidDocumentAnalyzer(
     private val context: Context
@@ -56,11 +58,20 @@ class AndroidDocumentAnalyzer(
             else -> DocumentType.UNKNOWN
         }
 
+        val coverBytes = if (type == DocumentType.UNKNOWN) {
+            null
+        } else {
+            runCatching {
+                resolver.openInputStream(uri)?.use { it.readBytes() }
+            }.getOrNull()?.let { extractCover(type, it) }
+        }
+
         return DocumentInfo(
             document = document,
             type = type,
             exists = exists,
-            sizeBytes = size
+            sizeBytes = size,
+            coverImage = coverBytes?.let { CoverImage(it) }
         )
     }
 }
