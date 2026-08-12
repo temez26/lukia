@@ -7,7 +7,9 @@ shared/
 └── io.lukia
     ├── App.kt
     ├── Routes.kt
+    ├── Platform.kt
     ├── di/
+    ├── shared/
     ├── core/
     └── features/
 ```
@@ -16,11 +18,13 @@ shared/
 
 - **features** – Self-contained business features (Library, Reader, ...)
 - **core** – Shared functionality used across multiple features
+- **shared** - Shared ui components mostly
 - **di** – Dependency injection and application composition
 - **App.kt** – Application entry point
 - **Routes.kt** – Navigation definitions
+- **Platform.kt** - is the platform functionality template
 
-Each feature is self-contained.
+Each feature try to be self-contained.
 
 ```
 feature/
@@ -31,6 +35,7 @@ feature/
 ```
 
 ### Layer responsibilities
+if there is just couple of files per responsibility, layer is not needed
 
 | Layer | Responsibility |
 |--------|----------------|

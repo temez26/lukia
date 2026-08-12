@@ -1,9 +1,12 @@
-package io.lukia.features.import.domain
+package io.lukia.features.import.infrastructure
 
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
-import androidx.core.net.toUri
+import io.lukia.features.import.domain.DocumentAnalyzer
+import io.lukia.features.import.domain.DocumentInfo
+import io.lukia.features.import.domain.DocumentType
+import io.lukia.features.import.domain.PickedDocument
 
 class AndroidDocumentAnalyzer(
     private val context: Context
@@ -13,7 +16,7 @@ class AndroidDocumentAnalyzer(
         document: PickedDocument
     ): DocumentInfo {
 
-        val uri = document.location.toUri()
+        val uri = Uri.parse(document.location)
 
         val resolver = context.contentResolver
 
