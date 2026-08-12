@@ -5,28 +5,31 @@ Use the following structure for every pull request:
 ```md
 # Pull-request: `<branch-name>`
 
-- **Business logic** - user can:
+- **Business logic**
   - ...
 
-- **Core logic** – Added/updated:
+- **Core logic** 
   - ...
 
-- **UI** – Updated:
+- **UI** 
   - ...
 
-- **Platform support** – Implemented/updated:
+- **Platform support** 
   - ...
 
-- **Dependency injection** – Updated:
+- **Dependency injection** 
   - ...
 
-- **Testing** – Added/updated tests covering:
+- **Testing** 
   - ...
 
-- **Documentation** – Added/updated:
+- **Documentation** 
   - ...
 
-- **Libraries** – Added/updated:
+- **Libraries** 
+  - ...
+
+- **Other**  
   - ...
 ```
 
