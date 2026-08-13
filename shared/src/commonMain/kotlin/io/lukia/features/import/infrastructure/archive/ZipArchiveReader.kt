@@ -18,6 +18,9 @@ internal class ZipArchiveReader(private val data: ByteArray) {
     }
 
     private fun readEntryData(entry: ZipEntryInfo): ByteArray? {
+        if (entry.compressedSize < 0 || entry.compressedSize > MAX_ENTRY_SIZE) return null
+        if (entry.uncompressedSize < 0 || entry.uncompressedSize > MAX_ENTRY_SIZE) return null
+
         val localHeaderStart = entry.localHeaderOffset
         if (localHeaderStart < 0 || localHeaderStart + LOCAL_HEADER_SIZE > data.size) return null
         if (readU32(localHeaderStart) != LOCAL_FILE_HEADER_SIGNATURE) return null
@@ -113,6 +116,11 @@ internal class ZipArchiveReader(private val data: ByteArray) {
         const val CENTRAL_HEADER_SIZE = 46
         const val LOCAL_HEADER_SIZE = 30
         const val EOCD_SEARCH_WINDOW = EOCD_MIN_SIZE + 65535
+
+        // Entries we ever read here (EPUB container/OPF XML, cover images) are always small.
+        // Reject declared sizes above this before allocating or inflating, so a crafted
+        // archive can't force an oversized allocation via a lying size field.
+        const val MAX_ENTRY_SIZE = 20 * 1024 * 1024
     }
 }
 
