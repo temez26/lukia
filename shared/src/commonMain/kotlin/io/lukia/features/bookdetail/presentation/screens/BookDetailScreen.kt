@@ -7,6 +7,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -82,38 +85,51 @@ fun BookDetailContent(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        val currentDocument = document
-
-        when {
-            isLoading -> CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center)
-            )
-
-            currentDocument == null -> MissingDocumentState(
-                modifier = Modifier.align(Alignment.Center)
-            )
-
-            else -> DocumentDetails(currentDocument)
-        }
-
-        // Floats above the scrolling content: this is the piece that most wants
-        // the glass treatment, since content passes underneath it.
-        GlassSurface(
-            shape = CircleShape,
+        // This screen has no Scaffold - it is deliberately full-bleed so
+        // content passes under the floating back button - so window insets have
+        // to be applied by hand. Without this the back control and the cover
+        // sit underneath the status bar clock on phones.
+        //
+        // The background above stays outside the inset so colour still reaches
+        // the screen edges. Resolves to zero on desktop.
+        Box(
             modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(start = dimens.screenPadding, top = 16.dp)
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.safeDrawing)
         ) {
-            Box(
-                modifier = Modifier
-                    .clickable(onClick = onBack)
-                    .size(44.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                BackChevron(
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
+            val currentDocument = document
+
+            when {
+                isLoading -> CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
                 )
+
+                currentDocument == null -> MissingDocumentState(
+                    modifier = Modifier.align(Alignment.Center)
+                )
+
+                else -> DocumentDetails(currentDocument)
+            }
+
+            // Floats above the scrolling content: this is the piece that most
+            // wants the glass treatment, since content passes underneath it.
+            GlassSurface(
+                shape = CircleShape,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(start = dimens.screenPadding, top = 16.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .clickable(onClick = onBack)
+                        .size(44.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    BackChevron(
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
         }
     }
