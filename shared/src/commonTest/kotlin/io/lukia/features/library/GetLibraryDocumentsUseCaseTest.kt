@@ -46,5 +46,9 @@ class GetLibraryDocumentsUseCaseTest {
         override suspend fun getDocuments(): List<DocumentInfo> {
             return documents.toList()
         }
+
+        override suspend fun getDocument(location: String): DocumentInfo? {
+            return documents.firstOrNull { it.document.location == location }
+        }
     }
 }

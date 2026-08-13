@@ -98,7 +98,14 @@ class LibraryViewModelTest {
     ): LibraryViewModel {
         return LibraryViewModel(
             getLibraryDocumentsUseCase = GetLibraryDocumentsUseCase(repository),
-            importDocumentUseCase = ImportDocumentUseCase(analyzer, repository)
+            importDocumentUseCase = ImportDocumentUseCase(
+                documentAnalyzer = analyzer,
+                libraryRepository = repository,
+                // The use case moves work off the main dispatcher in
+                // production; pinning it here keeps the import synchronous so
+                // state can be asserted immediately after the call.
+                dispatcher = UnconfinedTestDispatcher()
+            )
         )
     }
 
@@ -128,6 +135,10 @@ class LibraryViewModelTest {
 
         override suspend fun getDocuments(): List<DocumentInfo> {
             return documents.toList()
+        }
+
+        override suspend fun getDocument(location: String): DocumentInfo? {
+            return documents.firstOrNull { it.document.location == location }
         }
     }
 }
