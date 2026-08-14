@@ -180,5 +180,16 @@ class ImportDocumentUseCaseTest {
         override suspend fun getDocument(location: String): DocumentInfo? {
             return documents.firstOrNull { it.document.location == location }
         }
+
+        override suspend fun setFavorite(location: String, isFavorite: Boolean) {
+            val index = documents.indexOfFirst { it.document.location == location }
+            if (index >= 0) {
+                documents[index] = documents[index].copy(isFavorite = isFavorite)
+            }
+        }
+
+        override suspend fun removeDocument(location: String) {
+            documents.removeAll { it.document.location == location }
+        }
     }
 }

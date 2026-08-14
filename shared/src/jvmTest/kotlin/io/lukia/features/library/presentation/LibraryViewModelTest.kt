@@ -10,6 +10,8 @@ import io.lukia.core.domain.PickedDocument
 import io.lukia.core.domain.PickedFolder
 import io.lukia.features.library.application.GetLibraryDocumentsUseCase
 import io.lukia.features.library.application.ImportFolderUseCase
+import io.lukia.features.library.application.RemoveDocumentUseCase
+import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.domain.LibraryRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -134,6 +136,39 @@ class LibraryViewModelTest {
     }
 
     @Test
+    fun toggleFavoriteMarksANonFavouriteDocument() = runTest {
+        val documentInfo = pdfDocumentInfo()
+        val repository = FakeLibraryRepository(initialDocuments = listOf(documentInfo))
+        val viewModel = createViewModel(repository)
+
+        viewModel.toggleFavorite(documentInfo)
+
+        assertEquals(listOf(documentInfo.copy(isFavorite = true)), viewModel.documents.value)
+    }
+
+    @Test
+    fun toggleFavoriteClearsAFavouriteDocument() = runTest {
+        val documentInfo = pdfDocumentInfo().copy(isFavorite = true)
+        val repository = FakeLibraryRepository(initialDocuments = listOf(documentInfo))
+        val viewModel = createViewModel(repository)
+
+        viewModel.toggleFavorite(documentInfo)
+
+        assertEquals(listOf(documentInfo.copy(isFavorite = false)), viewModel.documents.value)
+    }
+
+    @Test
+    fun deleteDocumentRemovesItFromTheLibrary() = runTest {
+        val documentInfo = pdfDocumentInfo()
+        val repository = FakeLibraryRepository(initialDocuments = listOf(documentInfo))
+        val viewModel = createViewModel(repository)
+
+        viewModel.deleteDocument(documentInfo)
+
+        assertEquals(emptyList(), viewModel.documents.value)
+    }
+
+    @Test
     fun clearErrorMessageResetsError() = runTest {
         val analyzer = FakeDocumentAnalyzer(
             DocumentInfo(
@@ -172,7 +207,9 @@ class LibraryViewModelTest {
                 folderScanner = folderScanner,
                 importDocumentUseCase = importDocumentUseCase,
                 dispatcher = UnconfinedTestDispatcher()
-            )
+            ),
+            setFavoriteUseCase = SetFavoriteUseCase(repository),
+            removeDocumentUseCase = RemoveDocumentUseCase(repository)
         )
     }
 
@@ -219,6 +256,17 @@ class LibraryViewModelTest {
 
         override suspend fun getDocument(location: String): DocumentInfo? {
             return documents.firstOrNull { it.document.location == location }
+        }
+
+        override suspend fun setFavorite(location: String, isFavorite: Boolean) {
+            val index = documents.indexOfFirst { it.document.location == location }
+            if (index >= 0) {
+                documents[index] = documents[index].copy(isFavorite = isFavorite)
+            }
+        }
+
+        override suspend fun removeDocument(location: String) {
+            documents.removeAll { it.document.location == location }
         }
     }
 }

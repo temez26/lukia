@@ -115,4 +115,84 @@ class InMemoryLibraryRepositoryTest {
 
         assertNull(repository.getDocument("/test/missing.pdf"))
     }
+
+    @Test
+    fun setFavoriteFlipsTheFlagOnTheStoredDocument() = runTest {
+        val repository = InMemoryLibraryRepository()
+        val pdf = pdfDocument()
+        repository.addDocument(pdf)
+
+        repository.setFavorite("/test/book.pdf", true)
+
+        assertEquals(true, repository.getDocument("/test/book.pdf")?.isFavorite)
+
+        repository.setFavorite("/test/book.pdf", false)
+
+        assertEquals(false, repository.getDocument("/test/book.pdf")?.isFavorite)
+    }
+
+    @Test
+    fun setFavoriteOnUnknownLocationIsANoOp() = runTest {
+        val repository = InMemoryLibraryRepository()
+
+        repository.setFavorite("/test/missing.pdf", true)
+
+        assertTrue(repository.getDocuments().isEmpty())
+    }
+
+    /**
+     * A folder rescan re-imports every file it finds, and a freshly analyzed
+     * document is never favourited - so without this the next scan quietly
+     * clears every heart in the library.
+     */
+    @Test
+    fun addingSameLocationPreservesAnExistingFavourite() = runTest {
+        val repository = InMemoryLibraryRepository()
+        val pdf = pdfDocument()
+        repository.addDocument(pdf)
+        repository.setFavorite("/test/book.pdf", true)
+
+        repository.addDocument(pdf.copy(sizeBytes = 4096L))
+
+        val stored = repository.getDocument("/test/book.pdf")
+        assertEquals(true, stored?.isFavorite)
+        assertEquals(4096L, stored?.sizeBytes)
+    }
+
+    @Test
+    fun removeDocumentDropsTheEntry() = runTest {
+        val repository = InMemoryLibraryRepository()
+        val pdf = pdfDocument()
+        val epub = DocumentInfo(
+            document = TestDocuments.epub(location = "/test/book.epub"),
+            type = DocumentType.EPUB,
+            exists = true,
+            sizeBytes = 2048L
+        )
+        repository.addDocument(pdf)
+        repository.addDocument(epub)
+
+        repository.removeDocument("/test/book.pdf")
+
+        assertEquals(listOf(epub), repository.getDocuments())
+        assertNull(repository.getDocument("/test/book.pdf"))
+    }
+
+    @Test
+    fun removeDocumentOnUnknownLocationIsANoOp() = runTest {
+        val repository = InMemoryLibraryRepository()
+        val pdf = pdfDocument()
+        repository.addDocument(pdf)
+
+        repository.removeDocument("/test/missing.pdf")
+
+        assertEquals(listOf(pdf), repository.getDocuments())
+    }
+
+    private fun pdfDocument() = DocumentInfo(
+        document = TestDocuments.pdf(location = "/test/book.pdf"),
+        type = DocumentType.PDF,
+        exists = true,
+        sizeBytes = 1024L
+    )
 }

@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -35,7 +34,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -60,19 +58,15 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.presentation.displayTitle
-import io.lukia.core.presentation.displayType
-import io.lukia.core.presentation.formattedSize
 import io.lukia.features.import.presentation.rememberPlatformFilePicker
 import io.lukia.features.import.presentation.rememberPlatformFolderPicker
 import io.lukia.features.library.presentation.LibraryViewModel
+import io.lukia.features.library.presentation.components.BookCard
 import io.lukia.shared.presentation.components.ActionMenuScrim
 import io.lukia.shared.presentation.components.BOOK_COVER_ASPECT_RATIO
-import io.lukia.shared.presentation.components.BookCover
 import io.lukia.shared.presentation.components.ExpandableActionMenu
 import io.lukia.shared.presentation.components.FolderGlyph
 import io.lukia.shared.presentation.components.PlusGlyph
@@ -113,6 +107,8 @@ fun LibraryScreen(
             }
         },
         onDocumentClick = onDocumentClick,
+        onToggleFavorite = viewModel::toggleFavorite,
+        onDelete = viewModel::deleteDocument,
         snackbarHostState = snackbarHostState
     )
 }
@@ -128,11 +124,17 @@ fun LibraryContent(
     onImport: () -> Unit,
     onImportFolder: () -> Unit,
     onDocumentClick: (DocumentInfo) -> Unit,
+    onToggleFavorite: (DocumentInfo) -> Unit,
+    onDelete: (DocumentInfo) -> Unit,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     initialActionMenuExpanded: Boolean = false
 ) {
     val dimens = LocalLukiaDimens.current
     var actionMenuExpanded by rememberSaveable { mutableStateOf(initialActionMenuExpanded) }
+    // Held here rather than inside the grid so the card menu's scrim can sit in
+    // the same content layer as the action menu's. One location at a time, so
+    // opening a menu closes any other.
+    var menuFor by remember { mutableStateOf<String?>(null) }
 
     val actions = listOf(
         QuickAction(
@@ -199,6 +201,10 @@ fun LibraryContent(
                         LibraryGrid(
                             documents = documents,
                             onDocumentClick = onDocumentClick,
+                            menuFor = menuFor,
+                            onMenuForChange = { menuFor = it },
+                            onToggleFavorite = onToggleFavorite,
+                            onDelete = onDelete,
                             modifier = Modifier.fillMaxSize()
                         )
                     }
@@ -211,6 +217,14 @@ fun LibraryContent(
                 visible = actionMenuExpanded,
                 onDismiss = { actionMenuExpanded = false }
             )
+
+            // The card menu is a Popup, so it draws above this scrim without
+            // needing to share its layer. The focusable popup already dismisses
+            // itself on an outside tap; this is the dimming that goes with it.
+            ActionMenuScrim(
+                visible = menuFor != null,
+                onDismiss = { menuFor = null }
+            )
         }
     }
 }
@@ -219,6 +233,10 @@ fun LibraryContent(
 private fun LibraryGrid(
     documents: List<DocumentInfo>,
     onDocumentClick: (DocumentInfo) -> Unit,
+    menuFor: String?,
+    onMenuForChange: (String?) -> Unit,
+    onToggleFavorite: (DocumentInfo) -> Unit,
+    onDelete: (DocumentInfo) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val dimens = LocalLukiaDimens.current
@@ -249,7 +267,12 @@ private fun LibraryGrid(
         ) { document ->
             BookCard(
                 document = document,
+                menuExpanded = menuFor == document.document.location,
                 onClick = { onDocumentClick(document) },
+                onMenuRequest = { onMenuForChange(document.document.location) },
+                onMenuDismiss = { onMenuForChange(null) },
+                onToggleFavorite = { onToggleFavorite(document) },
+                onDelete = { onDelete(document) },
                 modifier = Modifier.animateItem()
             )
         }
@@ -270,53 +293,6 @@ private fun LibraryHeader(bookCount: Int) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 2.dp)
         )
-    }
-}
-
-@Composable
-private fun BookCard(
-    document: DocumentInfo,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val title = document.displayTitle()
-
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick)
-            .padding(4.dp)
-    ) {
-        BookCover(
-            coverImage = document.coverImage,
-            title = title,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onBackground,
-            maxLines = 2,
-            // Reserving two lines keeps the metadata row aligned across the grid
-            // whether a title wraps or not.
-            minLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(top = 10.dp)
-        )
-
-        Text(
-            text = "${document.displayType()} · ${document.formattedSize()}",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(top = 2.dp)
-        )
-
-        if (!document.exists) {
-            UnavailableBadge(modifier = Modifier.padding(top = 6.dp))
-        }
     }
 }
 
@@ -419,22 +395,6 @@ private fun EmptyCoverPlaceholder(onClick: () -> Unit) {
         PlusGlyph(
             tint = glyphTint,
             modifier = Modifier.size(28.dp)
-        )
-    }
-}
-
-@Composable
-private fun UnavailableBadge(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.error.copy(alpha = 0.12f))
-            .padding(horizontal = 8.dp, vertical = 3.dp)
-    ) {
-        Text(
-            text = "Unavailable",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.error
         )
     }
 }
