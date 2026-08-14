@@ -24,7 +24,7 @@ class ImportDocumentUseCase(
      * [Dispatchers.Default] rather than IO: the dominant cost is decoding and
      * rendering, which is CPU-bound.
      */
-    suspend fun execute(pickedDocument: PickedDocument): Result<DocumentInfo> =
+    suspend operator fun invoke(pickedDocument: PickedDocument): Result<DocumentInfo> =
         withContext(dispatcher) {
             val documentInfo = documentAnalyzer.analyze(pickedDocument)
 

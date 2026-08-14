@@ -1,4 +1,4 @@
-package io.lukia.features.library.presentation
+package io.lukia.core.presentation
 
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType

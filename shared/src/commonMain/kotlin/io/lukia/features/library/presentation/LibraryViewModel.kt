@@ -35,7 +35,7 @@ class LibraryViewModel(
 
     fun importDocument(pickedDocument: PickedDocument) {
         viewModelScope.launch {
-            val result = importDocumentUseCase.execute(pickedDocument)
+            val result = importDocumentUseCase(pickedDocument)
 
             result.onSuccess {
                 loadDocuments()
