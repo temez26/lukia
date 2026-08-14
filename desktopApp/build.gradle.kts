@@ -13,6 +13,7 @@ dependencies {
     implementation(libs.kotlinx.coroutinesSwing)
 
     implementation(libs.compose.uiToolingPreview)
+    implementation(libs.compose.components.resources)
     implementation(libs.koin.core)
     implementation(libs.koin.compose)
     implementation(libs.koin.compose.viewmodel)
@@ -26,6 +27,11 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "io.lukia"
             packageVersion = "1.0.0"
+
+            val icons = project.file("src/main/resources/icons")
+            macOS { iconFile.set(icons.resolve("lukia.icns")) }
+            windows { iconFile.set(icons.resolve("lukia.ico")) }
+            linux { iconFile.set(icons.resolve("lukia.png")) }
         }
     }
 }
