@@ -1,4 +1,4 @@
-package io.lukia.features.import.domain
+package io.lukia.core.domain
 
 enum class DocumentType{
     PDF,

@@ -1,6 +1,6 @@
-package io.lukia.features.bookdetail.domain
+package io.lukia.features.bookdetail.application
 
-import io.lukia.features.import.domain.DocumentInfo
+import io.lukia.core.domain.DocumentInfo
 import io.lukia.features.library.domain.LibraryRepository
 
 class GetDocumentDetailsUseCase(

@@ -1,8 +1,5 @@
-package io.lukia.features.import
+package io.lukia.core.domain
 
-import io.lukia.features.import.domain.CoverImage
-import io.lukia.features.import.domain.DocumentInfo
-import io.lukia.features.import.domain.DocumentType
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals

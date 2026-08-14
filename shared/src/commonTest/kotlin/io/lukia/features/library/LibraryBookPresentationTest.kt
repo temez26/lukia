@@ -1,8 +1,8 @@
 package io.lukia.features.library
 
-import io.lukia.features.import.TestDocuments
-import io.lukia.features.import.domain.DocumentInfo
-import io.lukia.features.import.domain.DocumentType
+import io.lukia.core.domain.TestDocuments
+import io.lukia.core.domain.DocumentInfo
+import io.lukia.core.domain.DocumentType
 import io.lukia.features.library.presentation.displayTitle
 import io.lukia.features.library.presentation.displayType
 import io.lukia.features.library.presentation.formatFileSize
@@ -27,7 +27,7 @@ class LibraryBookPresentationTest {
     @Test
     fun displayTitleFallsBackToFileNameWhenExtensionIsBlank() {
         val documentInfo = DocumentInfo(
-            document = io.lukia.features.import.domain.PickedDocument(
+            document = io.lukia.core.domain.PickedDocument(
                 fileName = "book",
                 extension = "",
                 location = "/test/book"

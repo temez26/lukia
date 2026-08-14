@@ -1,9 +1,9 @@
 package io.lukia.di
 
-import io.lukia.features.bookdetail.domain.GetDocumentDetailsUseCase
+import io.lukia.features.bookdetail.application.GetDocumentDetailsUseCase
 import io.lukia.features.bookdetail.presentation.BookDetailViewModel
-import io.lukia.features.import.domain.ImportDocumentUseCase
-import io.lukia.features.library.domain.GetLibraryDocumentsUseCase
+import io.lukia.features.library.application.ImportDocumentUseCase
+import io.lukia.features.library.application.GetLibraryDocumentsUseCase
 import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.library.infrastructure.InMemoryLibraryRepository
 import io.lukia.features.library.presentation.LibraryViewModel

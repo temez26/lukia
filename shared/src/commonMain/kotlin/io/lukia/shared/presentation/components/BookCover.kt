@@ -23,7 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.lukia.features.import.domain.CoverImage
+import io.lukia.core.domain.CoverImage
 import org.jetbrains.compose.resources.decodeToImageBitmap
 
 /** Standard trade-paperback proportions, used for every cover in the app. */

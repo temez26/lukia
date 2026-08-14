@@ -1,7 +1,7 @@
 package io.lukia.features.import.infrastructure
 
-import io.lukia.features.import.TestDocuments
-import io.lukia.features.import.domain.DocumentType
+import io.lukia.core.domain.TestDocuments
+import io.lukia.core.domain.DocumentType
 import kotlinx.coroutines.test.runTest
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage

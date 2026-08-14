@@ -50,7 +50,7 @@ data class QuickAction(
  *
  * The dimming scrim is not drawn here - it has to sit behind this whole stack
  * but in front of page content, so the caller places it in the content layer.
- * See [io.lukia.features.home.presentation.screens.HomeContent].
+ * See [io.lukia.features.library.presentation.screens.LibraryContent].
  */
 @Composable
 fun ExpandableActionMenu(

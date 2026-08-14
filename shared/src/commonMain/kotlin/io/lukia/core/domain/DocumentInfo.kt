@@ -1,4 +1,4 @@
-package io.lukia.features.import.domain
+package io.lukia.core.domain
 
 data class DocumentInfo(
     val document: PickedDocument,

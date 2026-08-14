@@ -1,6 +1,7 @@
-package io.lukia.features.library.domain
+package io.lukia.features.library.application
 
-import io.lukia.features.import.domain.DocumentInfo
+import io.lukia.core.domain.DocumentInfo
+import io.lukia.features.library.domain.LibraryRepository
 
 class GetLibraryDocumentsUseCase(
     private val repository: LibraryRepository

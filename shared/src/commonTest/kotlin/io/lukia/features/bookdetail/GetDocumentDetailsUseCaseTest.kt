@@ -1,9 +1,9 @@
 package io.lukia.features.bookdetail
 
-import io.lukia.features.bookdetail.domain.GetDocumentDetailsUseCase
-import io.lukia.features.import.TestDocuments
-import io.lukia.features.import.domain.DocumentInfo
-import io.lukia.features.import.domain.DocumentType
+import io.lukia.features.bookdetail.application.GetDocumentDetailsUseCase
+import io.lukia.core.domain.TestDocuments
+import io.lukia.core.domain.DocumentInfo
+import io.lukia.core.domain.DocumentType
 import io.lukia.features.library.domain.LibraryRepository
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

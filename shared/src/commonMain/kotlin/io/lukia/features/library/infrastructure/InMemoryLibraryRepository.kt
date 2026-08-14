@@ -1,6 +1,6 @@
 package io.lukia.features.library.infrastructure
 
-import io.lukia.features.import.domain.DocumentInfo
+import io.lukia.core.domain.DocumentInfo
 import io.lukia.features.library.domain.LibraryRepository
 
 class InMemoryLibraryRepository : LibraryRepository {

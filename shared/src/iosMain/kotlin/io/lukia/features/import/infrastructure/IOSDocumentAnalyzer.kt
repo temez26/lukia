@@ -1,10 +1,10 @@
 package io.lukia.features.import.infrastructure
 
-import io.lukia.features.import.domain.CoverImage
+import io.lukia.core.domain.CoverImage
 import io.lukia.features.import.domain.DocumentAnalyzer
-import io.lukia.features.import.domain.DocumentInfo
-import io.lukia.features.import.domain.DocumentType
-import io.lukia.features.import.domain.PickedDocument
+import io.lukia.core.domain.DocumentInfo
+import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.PickedDocument
 import io.lukia.features.import.infrastructure.cover.extractCover
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
