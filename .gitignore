@@ -90,6 +90,11 @@ google-services.json
 GoogleService-Info.plist
 
 ############################
+# Python (icon tooling)
+############################
+__pycache__/
+
+############################
 # Temporary files
 ############################
 tmp/
