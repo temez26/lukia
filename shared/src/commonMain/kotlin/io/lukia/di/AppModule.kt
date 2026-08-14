@@ -48,6 +48,6 @@ val commonModule = module {
     }
 
     viewModel { (location: String) ->
-        BookDetailViewModel(location, get())
+        BookDetailViewModel(location, get(), get(), get())
     }
 }

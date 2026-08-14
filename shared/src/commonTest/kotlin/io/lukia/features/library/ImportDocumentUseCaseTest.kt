@@ -1,6 +1,8 @@
 package io.lukia.features.library
 
 import io.lukia.core.domain.DocumentInfo
+import io.lukia.core.domain.AppError
+import io.lukia.core.domain.toAppError
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.PickedDocument
 import io.lukia.core.domain.TestDocuments
@@ -103,8 +105,8 @@ class ImportDocumentUseCaseTest {
 
         assertFalse(result.isSuccess)
         assertEquals(
-            "Unsupported file type",
-            result.exceptionOrNull()?.message
+            AppError.UnsupportedFileType,
+            result.exceptionOrNull()?.toAppError()
         )
         assertTrue(repository.documents.isEmpty())
     }
