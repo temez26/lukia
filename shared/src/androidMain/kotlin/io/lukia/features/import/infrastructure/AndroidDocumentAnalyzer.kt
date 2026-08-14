@@ -52,11 +52,7 @@ class AndroidDocumentAnalyzer(
             )
         }
 
-        val type = when (document.extension.lowercase()) {
-            "pdf" -> DocumentType.PDF
-            "epub" -> DocumentType.EPUB
-            else -> DocumentType.UNKNOWN
-        }
+        val type = DocumentType.fromExtension(document.extension)
 
         val coverBytes = if (type == DocumentType.UNKNOWN) {
             null
