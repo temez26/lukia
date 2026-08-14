@@ -4,9 +4,12 @@ import io.lukia.core.domain.TestDocuments
 import io.lukia.features.import.domain.DocumentAnalyzer
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
+import io.lukia.features.import.domain.FolderScanner
 import io.lukia.features.library.application.ImportDocumentUseCase
 import io.lukia.core.domain.PickedDocument
+import io.lukia.core.domain.PickedFolder
 import io.lukia.features.library.application.GetLibraryDocumentsUseCase
+import io.lukia.features.library.application.ImportFolderUseCase
 import io.lukia.features.library.domain.LibraryRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -75,6 +78,62 @@ class LibraryViewModelTest {
     }
 
     @Test
+    fun importingFolderReloadsLibraryAndClearsError() = runTest {
+        val documentInfo = pdfDocumentInfo()
+        val repository = FakeLibraryRepository()
+        val viewModel = createViewModel(
+            repository = repository,
+            analyzer = FakeDocumentAnalyzer(documentInfo),
+            folderScanner = FakeFolderScanner(listOf(documentInfo.document))
+        )
+
+        viewModel.importFolder(booksFolder)
+
+        assertEquals(listOf(documentInfo), viewModel.documents.value)
+        assertNull(viewModel.errorMessage.value)
+    }
+
+    @Test
+    fun partialFolderImportReportsSkippedFiles() = runTest {
+        val documentInfo = pdfDocumentInfo()
+        val repository = FakeLibraryRepository()
+        val viewModel = createViewModel(
+            repository = repository,
+            // Every file analyzes to the same unsupported result, so the whole
+            // folder is skipped rather than imported.
+            analyzer = FakeDocumentAnalyzer(
+                DocumentInfo(
+                    document = TestDocuments.txt(location = "/test/notes.txt"),
+                    type = DocumentType.UNKNOWN,
+                    exists = true,
+                    sizeBytes = 10L
+                )
+            ),
+            folderScanner = FakeFolderScanner(listOf(documentInfo.document))
+        )
+
+        viewModel.importFolder(booksFolder)
+
+        assertEquals(emptyList(), viewModel.documents.value)
+        assertEquals("Imported 0, skipped 1", viewModel.errorMessage.value)
+    }
+
+    @Test
+    fun emptyFolderSetsErrorMessage() = runTest {
+        val viewModel = createViewModel(
+            repository = FakeLibraryRepository(),
+            folderScanner = FakeFolderScanner(emptyList())
+        )
+
+        viewModel.importFolder(booksFolder)
+
+        assertEquals(
+            "No PDF or EPUB files found in this folder",
+            viewModel.errorMessage.value
+        )
+    }
+
+    @Test
     fun clearErrorMessageResetsError() = runTest {
         val analyzer = FakeDocumentAnalyzer(
             DocumentInfo(
@@ -94,20 +153,33 @@ class LibraryViewModelTest {
 
     private fun createViewModel(
         repository: LibraryRepository,
-        analyzer: DocumentAnalyzer = FakeDocumentAnalyzer(pdfDocumentInfo())
+        analyzer: DocumentAnalyzer = FakeDocumentAnalyzer(pdfDocumentInfo()),
+        folderScanner: FolderScanner = FakeFolderScanner(emptyList())
     ): LibraryViewModel {
+        // The use cases move work off the main dispatcher in production;
+        // pinning it here keeps imports synchronous so state can be asserted
+        // immediately after the call.
+        val importDocumentUseCase = ImportDocumentUseCase(
+            documentAnalyzer = analyzer,
+            libraryRepository = repository,
+            dispatcher = UnconfinedTestDispatcher()
+        )
+
         return LibraryViewModel(
             getLibraryDocumentsUseCase = GetLibraryDocumentsUseCase(repository),
-            importDocumentUseCase = ImportDocumentUseCase(
-                documentAnalyzer = analyzer,
-                libraryRepository = repository,
-                // The use case moves work off the main dispatcher in
-                // production; pinning it here keeps the import synchronous so
-                // state can be asserted immediately after the call.
+            importDocumentUseCase = importDocumentUseCase,
+            importFolderUseCase = ImportFolderUseCase(
+                folderScanner = folderScanner,
+                importDocumentUseCase = importDocumentUseCase,
                 dispatcher = UnconfinedTestDispatcher()
             )
         )
     }
+
+    private val booksFolder = PickedFolder(
+        name = "Books",
+        location = "/test"
+    )
 
     private fun pdfDocumentInfo() = DocumentInfo(
         document = TestDocuments.pdf(location = "/test/book.pdf"),
@@ -121,6 +193,14 @@ class LibraryViewModelTest {
     ) : DocumentAnalyzer {
         override suspend fun analyze(document: PickedDocument): DocumentInfo {
             return documentInfo
+        }
+    }
+
+    private class FakeFolderScanner(
+        private val documents: List<PickedDocument>
+    ) : FolderScanner {
+        override suspend fun scan(folder: PickedFolder): List<PickedDocument> {
+            return documents
         }
     }
 
