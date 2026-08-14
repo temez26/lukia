@@ -11,7 +11,12 @@ class InMemoryLibraryRepository : LibraryRepository {
     private val documentsByLocation = mutableMapOf<String, DocumentInfo>()
 
     override suspend fun addDocument(document: DocumentInfo) {
-        documentsByLocation[document.document.location] = document
+        // A freshly analyzed document never knows it was favourited, so the
+        // existing flag has to be carried forward - otherwise rescanning a
+        // library folder silently un-favourites every book in it.
+        val existing = documentsByLocation[document.document.location]
+        documentsByLocation[document.document.location] =
+            document.copy(isFavorite = existing?.isFavorite ?: document.isFavorite)
     }
 
     override suspend fun getDocuments(): List<DocumentInfo> {
@@ -20,5 +25,14 @@ class InMemoryLibraryRepository : LibraryRepository {
 
     override suspend fun getDocument(location: String): DocumentInfo? {
         return documentsByLocation[location]
+    }
+
+    override suspend fun setFavorite(location: String, isFavorite: Boolean) {
+        val existing = documentsByLocation[location] ?: return
+        documentsByLocation[location] = existing.copy(isFavorite = isFavorite)
+    }
+
+    override suspend fun removeDocument(location: String) {
+        documentsByLocation.remove(location)
     }
 }

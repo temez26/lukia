@@ -5,5 +5,6 @@ data class DocumentInfo(
     val type: DocumentType,
     val exists: Boolean,
     val sizeBytes: Long,
-    val coverImage: CoverImage? = null
+    val coverImage: CoverImage? = null,
+    val isFavorite: Boolean = false
 )

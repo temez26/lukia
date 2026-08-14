@@ -8,6 +8,8 @@ import io.lukia.core.domain.PickedDocument
 import io.lukia.core.domain.PickedFolder
 import io.lukia.features.library.application.GetLibraryDocumentsUseCase
 import io.lukia.features.library.application.ImportFolderUseCase
+import io.lukia.features.library.application.RemoveDocumentUseCase
+import io.lukia.features.library.application.SetFavoriteUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,7 +18,9 @@ import kotlinx.coroutines.launch
 class LibraryViewModel(
     private val getLibraryDocumentsUseCase: GetLibraryDocumentsUseCase,
     private val importDocumentUseCase: ImportDocumentUseCase,
-    private val importFolderUseCase: ImportFolderUseCase
+    private val importFolderUseCase: ImportFolderUseCase,
+    private val setFavoriteUseCase: SetFavoriteUseCase,
+    private val removeDocumentUseCase: RemoveDocumentUseCase
 ) : ViewModel() {
 
     private val _documents = MutableStateFlow<List<DocumentInfo>>(emptyList())
@@ -65,6 +69,25 @@ class LibraryViewModel(
             }.onFailure {
                 _errorMessage.value = it.message ?: "An Error Occurred"
             }
+        }
+    }
+
+    /**
+     * Deriving the new value here rather than in the composable keeps the toggle
+     * decision out of the UI - the card only reports which book was acted on.
+     */
+    fun toggleFavorite(document: DocumentInfo) {
+        viewModelScope.launch {
+            setFavoriteUseCase(document.document.location, !document.isFavorite)
+            loadDocuments()
+        }
+    }
+
+    /** Removes the book from the library index only; the file is left on disk. */
+    fun deleteDocument(document: DocumentInfo) {
+        viewModelScope.launch {
+            removeDocumentUseCase(document.document.location)
+            loadDocuments()
         }
     }
 
