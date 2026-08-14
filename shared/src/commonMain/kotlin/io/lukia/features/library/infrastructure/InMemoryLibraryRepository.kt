@@ -4,21 +4,21 @@ import io.lukia.core.domain.DocumentInfo
 import io.lukia.features.library.domain.LibraryRepository
 
 class InMemoryLibraryRepository : LibraryRepository {
-    private val documents = mutableListOf<DocumentInfo>()
+    // Keyed by location rather than held in a list: re-importing a file - or
+    // rescanning a library folder - then refreshes the existing entry instead
+    // of appending a duplicate. mutableMapOf keeps insertion order, so a
+    // refreshed document also keeps its place in the library.
+    private val documentsByLocation = mutableMapOf<String, DocumentInfo>()
 
-    // NOTE: importing the same file twice appends a second entry with an
-    // identical `document.location`. Because location is the only
-    // identifier we have, that also rules out using it as a Compose list
-    // key. Worth deciding whether re-import should replace instead.
     override suspend fun addDocument(document: DocumentInfo) {
-        documents.add(document)
+        documentsByLocation[document.document.location] = document
     }
 
     override suspend fun getDocuments(): List<DocumentInfo> {
-        return documents.toList()
+        return documentsByLocation.values.toList()
     }
 
     override suspend fun getDocument(location: String): DocumentInfo? {
-        return documents.firstOrNull { it.document.location == location }
+        return documentsByLocation[location]
     }
 }
