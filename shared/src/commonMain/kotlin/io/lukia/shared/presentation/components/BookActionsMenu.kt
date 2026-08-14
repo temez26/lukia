@@ -1,4 +1,4 @@
-package io.lukia.features.library.presentation.components
+package io.lukia.shared.presentation.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -38,23 +38,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
-import io.lukia.shared.presentation.components.GlassSurface
-import io.lukia.shared.presentation.components.HeartGlyph
-import io.lukia.shared.presentation.components.TrashGlyph
 
 /** Origin of the grow-out animation, matching the corner the menu hangs from. */
 private val MenuTransformOrigin = TransformOrigin(1f, 0f)
 
 /**
- * The per-card action menu, anchored to the top-end corner of the card it was
- * opened from.
+ * Favourite and remove actions for one book, anchored to the top-end corner of
+ * whatever opened it - a card in the library grid, or the cover on the detail
+ * screen.
  *
  * A [Popup] rather than a `DropdownMenu`: the menu has to wear the same
  * translucent chrome as the floating action menu and the detail back button,
  * and Material's own elevation and shape are not that.
+ *
+ * Dismissal is the caller's to complete: the popup is non-focusable so that a
+ * press outside it reaches the page underneath, which means every screen that
+ * shows this menu also has to place an [ActionMenuScrim] behind it.
  */
 @Composable
-internal fun BookCardMenu(
+fun BookActionsMenu(
     expanded: Boolean,
     isFavorite: Boolean,
     onToggleFavorite: () -> Unit,
@@ -69,13 +71,13 @@ internal fun BookCardMenu(
     val progress by animateFloatAsState(
         targetValue = if (expanded) 1f else 0f,
         animationSpec = tween(durationMillis = if (expanded) 180 else 140),
-        label = "bookCardMenu"
+        label = "bookActionsMenu"
     )
 
     // Stays mounted through the exit animation, then tears the popup down.
     if (!expanded && progress == 0f) return
 
-    val positionProvider = remember { BookCardMenuPositionProvider() }
+    val positionProvider = remember { BookActionsMenuPositionProvider() }
 
     DismissOnBack(enabled = expanded, onDismiss = onDismissRequest)
 
@@ -208,7 +210,7 @@ private fun MenuRow(
  * Hangs the menu from the anchor's top-end corner, then clamps it into the
  * window so a card in the last grid column does not push it off screen.
  */
-private class BookCardMenuPositionProvider : PopupPositionProvider {
+private class BookActionsMenuPositionProvider : PopupPositionProvider {
     override fun calculatePosition(
         anchorBounds: IntRect,
         windowSize: IntSize,

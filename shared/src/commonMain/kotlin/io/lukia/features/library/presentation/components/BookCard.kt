@@ -1,8 +1,6 @@
 package io.lukia.features.library.presentation.components
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -40,9 +38,10 @@ import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.presentation.displayTitle
 import io.lukia.core.presentation.displayType
 import io.lukia.core.presentation.formattedSize
+import io.lukia.shared.presentation.components.BookActionsMenu
 import io.lukia.shared.presentation.components.BookCover
 import io.lukia.shared.presentation.components.EllipsisGlyph
-import io.lukia.shared.presentation.components.HeartGlyph
+import io.lukia.shared.presentation.components.FavoriteBadge
 
 /**
  * One book in the library grid.
@@ -108,7 +107,7 @@ internal fun BookCard(
 
             // Anchored here so the popup hangs off the cover's top-end corner
             // rather than the caption below it.
-            BookCardMenu(
+            BookActionsMenu(
                 expanded = menuExpanded,
                 isFavorite = document.isFavorite,
                 onToggleFavorite = onToggleFavorite,
@@ -140,44 +139,6 @@ internal fun BookCard(
 
         if (!document.exists) {
             UnavailableBadge(modifier = Modifier.padding(top = 6.dp))
-        }
-    }
-}
-
-/**
- * Decorative: the favourite state is already announced by the menu row that
- * toggles it, so the badge stays out of the accessibility tree.
- */
-@Composable
-private fun FavoriteBadge(
-    visible: Boolean,
-    modifier: Modifier = Modifier
-) {
-    AnimatedVisibility(
-        visible = visible,
-        // The pop is the feedback for a toggle made from a menu that has
-        // already closed over the card.
-        enter = fadeIn(tween(durationMillis = 160)) +
-            scaleIn(
-                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-                initialScale = 0.5f
-            ),
-        exit = fadeOut(tween(durationMillis = 120)) +
-            scaleOut(tween(durationMillis = 120), targetScale = 0.5f),
-        modifier = modifier
-    ) {
-        Box(
-            modifier = Modifier
-                .size(22.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)),
-            contentAlignment = Alignment.Center
-        ) {
-            HeartGlyph(
-                tint = MaterialTheme.colorScheme.primary,
-                filled = true,
-                modifier = Modifier.size(12.dp)
-            )
         }
     }
 }

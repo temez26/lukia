@@ -1,7 +1,9 @@
 package io.lukia.features.library.application
 
+import io.lukia.core.domain.AppError
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.asFailure
 import io.lukia.core.domain.PickedDocument
 import io.lukia.features.import.domain.DocumentAnalyzer
 import io.lukia.features.library.domain.LibraryRepository
@@ -29,7 +31,7 @@ class ImportDocumentUseCase(
             val documentInfo = documentAnalyzer.analyze(pickedDocument)
 
             if (documentInfo.type == DocumentType.UNKNOWN) {
-                return@withContext Result.failure(Exception("Unsupported file type"))
+                return@withContext AppError.UnsupportedFileType.asFailure()
             }
 
             libraryRepository.addDocument(documentInfo)

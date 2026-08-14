@@ -1,6 +1,8 @@
 package io.lukia.features.library.application
 
+import io.lukia.core.domain.AppError
 import io.lukia.core.domain.PickedFolder
+import io.lukia.core.domain.asFailure
 import io.lukia.features.import.domain.FolderScanner
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -27,9 +29,7 @@ class ImportFolderUseCase(
             val documents = folderScanner.scan(folder)
 
             if (documents.isEmpty()) {
-                return@withContext Result.failure(
-                    Exception("No PDF or EPUB files found in this folder")
-                )
+                return@withContext AppError.EmptyFolder.asFailure()
             }
 
             var imported = 0
