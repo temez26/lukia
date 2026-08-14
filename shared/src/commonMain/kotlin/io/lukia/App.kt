@@ -6,7 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.savedstate.read
 import io.lukia.features.bookdetail.presentation.screens.BookDetailScreen
-import io.lukia.features.home.presentation.screens.HomeScreen
+import io.lukia.features.library.presentation.screens.LibraryScreen
 import io.lukia.features.reader.presentation.screens.ReaderScreen
 import io.lukia.shared.presentation.theme.LukiaTheme
 
@@ -17,11 +17,11 @@ fun App() {
 
         NavHost(
             navController = navController,
-            startDestination = Routes.Home.route
+            startDestination = Routes.Library.route
         ) {
 
-            composable(Routes.Home.route) {
-                HomeScreen(
+            composable(Routes.Library.route) {
+                LibraryScreen(
                     onDocumentClick = { document ->
                         navController.navigate(Routes.Detail.createRoute(document.document.location))
                     }

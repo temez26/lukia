@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalContext
-import io.lukia.features.import.domain.PickedDocument
+import io.lukia.core.domain.PickedDocument
 
 @Composable
 actual fun rememberPlatformFilePicker(): PlatformFilePickerState {

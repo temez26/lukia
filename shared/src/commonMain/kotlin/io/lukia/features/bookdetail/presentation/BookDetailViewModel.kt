@@ -2,8 +2,8 @@ package io.lukia.features.bookdetail.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.lukia.features.bookdetail.domain.GetDocumentDetailsUseCase
-import io.lukia.features.import.domain.DocumentInfo
+import io.lukia.features.bookdetail.application.GetDocumentDetailsUseCase
+import io.lukia.core.domain.DocumentInfo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

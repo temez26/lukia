@@ -1,6 +1,11 @@
-package io.lukia.features.import.domain
+package io.lukia.features.library
 
-import io.lukia.features.import.TestDocuments
+import io.lukia.core.domain.DocumentInfo
+import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.PickedDocument
+import io.lukia.core.domain.TestDocuments
+import io.lukia.features.import.domain.DocumentAnalyzer
+import io.lukia.features.library.application.ImportDocumentUseCase
 import io.lukia.features.library.domain.LibraryRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher

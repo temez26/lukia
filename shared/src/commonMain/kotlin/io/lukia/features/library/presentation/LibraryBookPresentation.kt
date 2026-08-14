@@ -1,7 +1,7 @@
 package io.lukia.features.library.presentation
 
-import io.lukia.features.import.domain.DocumentInfo
-import io.lukia.features.import.domain.DocumentType
+import io.lukia.core.domain.DocumentInfo
+import io.lukia.core.domain.DocumentType
 
 fun DocumentInfo.displayTitle(): String {
     val fileName = document.fileName

@@ -2,10 +2,10 @@ package io.lukia.features.library.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.lukia.features.import.domain.DocumentInfo
-import io.lukia.features.import.domain.ImportDocumentUseCase
-import io.lukia.features.import.domain.PickedDocument
-import io.lukia.features.library.domain.GetLibraryDocumentsUseCase
+import io.lukia.core.domain.DocumentInfo
+import io.lukia.features.library.application.ImportDocumentUseCase
+import io.lukia.core.domain.PickedDocument
+import io.lukia.features.library.application.GetLibraryDocumentsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

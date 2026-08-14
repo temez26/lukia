@@ -1,6 +1,5 @@
-package io.lukia.features.import
+package io.lukia.core.domain
 
-import io.lukia.features.import.domain.PickedDocument
 
 object TestDocuments {
 

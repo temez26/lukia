@@ -1,7 +1,7 @@
 package io.lukia.features.import.presentation
 
 import androidx.compose.runtime.Composable
-import io.lukia.features.import.domain.PickedDocument
+import io.lukia.core.domain.PickedDocument
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
 

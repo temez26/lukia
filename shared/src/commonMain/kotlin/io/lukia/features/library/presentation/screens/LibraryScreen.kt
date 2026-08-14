@@ -1,4 +1,4 @@
-package io.lukia.features.home.presentation.screens
+package io.lukia.features.library.presentation.screens
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
@@ -63,7 +63,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
-import io.lukia.features.import.domain.DocumentInfo
+import io.lukia.core.domain.DocumentInfo
 import io.lukia.features.import.presentation.rememberPlatformFilePicker
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.displayTitle
@@ -80,7 +80,7 @@ import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun HomeScreen(
+fun LibraryScreen(
     viewModel: LibraryViewModel = koinViewModel(),
     onDocumentClick: (DocumentInfo) -> Unit = {}
 ) {
@@ -97,7 +97,7 @@ fun HomeScreen(
         }
     }
 
-    HomeContent(
+    LibraryContent(
         documents = documents,
         onImport = {
             filePicker.launch { pickedDocument ->
@@ -115,7 +115,7 @@ fun HomeScreen(
  * for previews.
  */
 @Composable
-fun HomeContent(
+fun LibraryContent(
     documents: List<DocumentInfo>,
     onImport: () -> Unit,
     onDocumentClick: (DocumentInfo) -> Unit,

@@ -1,8 +1,8 @@
 package io.lukia.features.library
 
-import io.lukia.features.import.TestDocuments
-import io.lukia.features.import.domain.DocumentInfo
-import io.lukia.features.import.domain.DocumentType
+import io.lukia.core.domain.TestDocuments
+import io.lukia.core.domain.DocumentInfo
+import io.lukia.core.domain.DocumentType
 import io.lukia.features.library.infrastructure.InMemoryLibraryRepository
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

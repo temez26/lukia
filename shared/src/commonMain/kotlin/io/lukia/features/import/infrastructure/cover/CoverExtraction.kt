@@ -1,6 +1,6 @@
 package io.lukia.features.import.infrastructure.cover
 
-import io.lukia.features.import.domain.DocumentType
+import io.lukia.core.domain.DocumentType
 
 /**
  * Best-effort cover extraction: returns null (rather than throwing) whenever

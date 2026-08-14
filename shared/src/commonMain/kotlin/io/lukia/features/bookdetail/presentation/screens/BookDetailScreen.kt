@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.lukia.features.bookdetail.presentation.BookDetailViewModel
-import io.lukia.features.import.domain.DocumentInfo
+import io.lukia.core.domain.DocumentInfo
 import io.lukia.features.library.presentation.displayTitle
 import io.lukia.features.library.presentation.displayType
 import io.lukia.features.library.presentation.formattedSize

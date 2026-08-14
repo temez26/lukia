@@ -1,4 +1,4 @@
-package io.lukia.features.import.domain
+package io.lukia.core.domain
 
 class CoverImage(val bytes: ByteArray) {
 

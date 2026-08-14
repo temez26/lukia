@@ -1,5 +1,9 @@
-package io.lukia.features.import.domain
+package io.lukia.features.library.application
 
+import io.lukia.core.domain.DocumentInfo
+import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.PickedDocument
+import io.lukia.features.import.domain.DocumentAnalyzer
 import io.lukia.features.library.domain.LibraryRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers

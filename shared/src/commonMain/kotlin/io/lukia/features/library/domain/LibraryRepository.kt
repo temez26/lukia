@@ -1,6 +1,6 @@
 package io.lukia.features.library.domain
 
-import io.lukia.features.import.domain.DocumentInfo
+import io.lukia.core.domain.DocumentInfo
 
 interface LibraryRepository {
     suspend fun addDocument(document: DocumentInfo)
