@@ -2,7 +2,7 @@ package io.lukia.features.import.presentation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import io.lukia.features.import.domain.PickedDocument
+import io.lukia.core.domain.PickedDocument
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.darwin.NSObject
 import platform.Foundation.NSURL
