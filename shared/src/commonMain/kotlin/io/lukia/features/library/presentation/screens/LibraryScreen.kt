@@ -64,11 +64,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import io.lukia.core.domain.DocumentInfo
+import io.lukia.core.presentation.displayTitle
+import io.lukia.core.presentation.displayType
+import io.lukia.core.presentation.formattedSize
 import io.lukia.features.import.presentation.rememberPlatformFilePicker
 import io.lukia.features.library.presentation.LibraryViewModel
-import io.lukia.features.library.presentation.displayTitle
-import io.lukia.features.library.presentation.displayType
-import io.lukia.features.library.presentation.formattedSize
 import io.lukia.shared.presentation.components.ActionMenuScrim
 import io.lukia.shared.presentation.components.BOOK_COVER_ASPECT_RATIO
 import io.lukia.shared.presentation.components.BookCover

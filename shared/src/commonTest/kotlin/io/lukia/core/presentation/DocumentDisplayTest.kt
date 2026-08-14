@@ -1,16 +1,13 @@
-package io.lukia.features.library
+package io.lukia.core.presentation
 
-import io.lukia.core.domain.TestDocuments
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
-import io.lukia.features.library.presentation.displayTitle
-import io.lukia.features.library.presentation.displayType
-import io.lukia.features.library.presentation.formatFileSize
-import io.lukia.features.library.presentation.formattedSize
+import io.lukia.core.domain.PickedDocument
+import io.lukia.core.domain.TestDocuments
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class LibraryBookPresentationTest {
+class DocumentDisplayTest {
 
     @Test
     fun displayTitleStripsExtension() {
@@ -27,7 +24,7 @@ class LibraryBookPresentationTest {
     @Test
     fun displayTitleFallsBackToFileNameWhenExtensionIsBlank() {
         val documentInfo = DocumentInfo(
-            document = io.lukia.core.domain.PickedDocument(
+            document = PickedDocument(
                 fileName = "book",
                 extension = "",
                 location = "/test/book"

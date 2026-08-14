@@ -41,7 +41,7 @@ class ImportDocumentUseCaseTest {
             dispatcher = UnconfinedTestDispatcher(testScheduler)
         )
 
-        val result = useCase.execute(document)
+        val result = useCase(document)
 
         assertTrue(result.isSuccess)
         assertEquals(documentInfo, result.getOrThrow())
@@ -70,7 +70,7 @@ class ImportDocumentUseCaseTest {
             dispatcher = UnconfinedTestDispatcher(testScheduler)
         )
 
-        val result = useCase.execute(document)
+        val result = useCase(document)
 
         assertTrue(result.isSuccess)
         assertEquals(documentInfo, result.getOrThrow())
@@ -99,7 +99,7 @@ class ImportDocumentUseCaseTest {
             dispatcher = UnconfinedTestDispatcher(testScheduler)
         )
 
-        val result = useCase.execute(document)
+        val result = useCase(document)
 
         assertFalse(result.isSuccess)
         assertEquals(
@@ -129,7 +129,7 @@ class ImportDocumentUseCaseTest {
         )
 
         val exception = try {
-            useCase.execute(document)
+            useCase(document)
             null
         } catch (e: Exception) {
             e

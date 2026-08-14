@@ -38,9 +38,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.lukia.features.bookdetail.presentation.BookDetailViewModel
 import io.lukia.core.domain.DocumentInfo
-import io.lukia.features.library.presentation.displayTitle
-import io.lukia.features.library.presentation.displayType
-import io.lukia.features.library.presentation.formattedSize
+import io.lukia.core.presentation.displayTitle
+import io.lukia.core.presentation.displayType
+import io.lukia.core.presentation.formattedSize
 import io.lukia.shared.presentation.components.BackChevron
 import io.lukia.shared.presentation.components.BookCover
 import io.lukia.shared.presentation.components.GlassSurface
