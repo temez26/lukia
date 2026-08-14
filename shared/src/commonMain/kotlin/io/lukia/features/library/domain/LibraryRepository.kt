@@ -11,4 +11,20 @@ interface LibraryRepository {
     suspend fun addDocument(document: DocumentInfo)
     suspend fun getDocuments(): List<DocumentInfo>
     suspend fun getDocument(location: String): DocumentInfo?
+
+    /**
+     * Sets the favourite flag on the document stored at [location].
+     *
+     * A no-op for an unknown location: the caller is a UI event on a list that
+     * may already have moved on, and there is nothing useful for it to do with
+     * a failure.
+     */
+    suspend fun setFavorite(location: String, isFavorite: Boolean)
+
+    /**
+     * Drops the document at [location] from the library. Never touches the
+     * underlying file. A no-op for an unknown location, for the same reason as
+     * [setFavorite].
+     */
+    suspend fun removeDocument(location: String)
 }

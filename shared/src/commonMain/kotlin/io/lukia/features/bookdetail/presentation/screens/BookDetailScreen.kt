@@ -2,6 +2,7 @@ package io.lukia.features.bookdetail.presentation.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,7 +21,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -28,9 +28,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -39,11 +47,18 @@ import androidx.compose.ui.unit.sp
 import io.lukia.features.bookdetail.presentation.BookDetailViewModel
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.presentation.displayTitle
+import io.lukia.core.presentation.UiState
+import io.lukia.core.presentation.dataOrNull
 import io.lukia.core.presentation.displayType
 import io.lukia.core.presentation.formattedSize
+import io.lukia.shared.presentation.components.ActionMenuScrim
 import io.lukia.shared.presentation.components.BackChevron
+import io.lukia.shared.presentation.components.BookActionsMenu
 import io.lukia.shared.presentation.components.BookCover
+import io.lukia.shared.presentation.components.EllipsisGlyph
+import io.lukia.shared.presentation.components.FavoriteBadge
 import io.lukia.shared.presentation.components.GlassSurface
+import io.lukia.shared.presentation.components.UiStateContent
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -57,13 +72,19 @@ fun BookDetailScreen(
     onBack: () -> Unit,
     viewModel: BookDetailViewModel = koinViewModel(parameters = { parametersOf(location) })
 ) {
-    val document by viewModel.document.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
     BookDetailContent(
-        document = document,
-        isLoading = isLoading,
-        onBack = onBack
+        uiState = uiState,
+        onBack = onBack,
+        onRetry = viewModel::retry,
+        onToggleFavorite = viewModel::toggleFavorite,
+        // Nothing left on this screen once the entry is gone, so leaving is part
+        // of the action rather than something the user is left to do.
+        onDelete = {
+            viewModel.deleteDocument()
+            onBack()
+        }
     )
 }
 
@@ -74,11 +95,16 @@ fun BookDetailScreen(
  */
 @Composable
 fun BookDetailContent(
-    document: DocumentInfo?,
-    isLoading: Boolean,
-    onBack: () -> Unit
+    uiState: UiState<DocumentInfo>,
+    onBack: () -> Unit,
+    onRetry: () -> Unit,
+    onToggleFavorite: () -> Unit,
+    onDelete: () -> Unit
 ) {
     val dimens = LocalLukiaDimens.current
+    var menuExpanded by remember { mutableStateOf(false) }
+    // The actions chrome is only meaningful once there is a book behind it.
+    val currentDocument = uiState.dataOrNull
 
     Box(
         modifier = Modifier
@@ -97,19 +123,28 @@ fun BookDetailContent(
                 .fillMaxSize()
                 .windowInsetsPadding(WindowInsets.safeDrawing)
         ) {
-            val currentDocument = document
-
-            when {
-                isLoading -> CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
+            UiStateContent(
+                state = uiState,
+                // A document that failed to load may simply have been removed,
+                // but a read that blew up can be worth a second attempt - so the
+                // way out of the failure is a retry rather than a way back.
+                actionLabel = "Try again",
+                onAction = onRetry,
+                modifier = Modifier.fillMaxSize()
+            ) { document ->
+                DocumentDetails(
+                    document = document,
+                    onLongPress = { menuExpanded = true }
                 )
-
-                currentDocument == null -> MissingDocumentState(
-                    modifier = Modifier.align(Alignment.Center)
-                )
-
-                else -> DocumentDetails(currentDocument)
             }
+
+            // Tap-outside-to-dismiss for the actions menu, which is a
+            // non-focusable Popup and so cannot catch the press itself. Above
+            // the content but below both floating controls.
+            ActionMenuScrim(
+                visible = menuExpanded,
+                onDismiss = { menuExpanded = false }
+            )
 
             // Floats above the scrolling content: this is the piece that most
             // wants the glass treatment, since content passes underneath it.
@@ -131,14 +166,55 @@ fun BookDetailContent(
                     )
                 }
             }
+
+            // Mirrors the back control across the top of the screen. Always
+            // visible rather than hover-revealed as on a card: there is one book
+            // here and room to show its actions outright.
+            if (currentDocument != null) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(end = dimens.screenPadding, top = 16.dp)
+                ) {
+                    GlassSurface(shape = CircleShape) {
+                        Box(
+                            modifier = Modifier
+                                .pointerHoverIcon(PointerIcon.Hand)
+                                .clickable(
+                                    onClickLabel = "Book actions",
+                                    onClick = { menuExpanded = true }
+                                )
+                                .size(44.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            EllipsisGlyph(
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+
+                    BookActionsMenu(
+                        expanded = menuExpanded,
+                        isFavorite = currentDocument.isFavorite,
+                        onToggleFavorite = onToggleFavorite,
+                        onDelete = onDelete,
+                        onDismissRequest = { menuExpanded = false }
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun DocumentDetails(document: DocumentInfo) {
+private fun DocumentDetails(
+    document: DocumentInfo,
+    onLongPress: () -> Unit
+) {
     val dimens = LocalLukiaDimens.current
     val title = document.displayTitle()
+    val haptics = LocalHapticFeedback.current
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -155,14 +231,36 @@ private fun DocumentDetails(document: DocumentInfo) {
                 .fillMaxWidth()
                 .padding(horizontal = dimens.screenPadding)
         ) {
-            BookCover(
-                coverImage = document.coverImage,
-                title = title,
-                modifier = Modifier.width(dimens.detailCoverWidth),
-                cornerRadius = 18.dp,
-                elevation = 20.dp,
-                monogramFontSize = 64.sp
-            )
+            Box {
+                BookCover(
+                    coverImage = document.coverImage,
+                    title = title,
+                    // detectTapGestures rather than combinedClickable: the cover
+                    // is not a button here, so it should carry the long press
+                    // without gaining a ripple and a no-op tap.
+                    modifier = Modifier
+                        .width(dimens.detailCoverWidth)
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onLongPress = {
+                                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    onLongPress()
+                                }
+                            )
+                        },
+                    cornerRadius = 18.dp,
+                    elevation = 20.dp,
+                    monogramFontSize = 64.sp
+                )
+
+                FavoriteBadge(
+                    visible = document.isFavorite,
+                    size = 30.dp,
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(10.dp)
+                )
+            }
 
             Text(
                 text = title,
@@ -298,23 +396,3 @@ private fun UnavailableNotice(modifier: Modifier = Modifier) {
     }
 }
 
-@Composable
-private fun MissingDocumentState(modifier: Modifier = Modifier) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.padding(horizontal = 32.dp)
-    ) {
-        Text(
-            text = "Document not found",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        Text(
-            text = "It may have been moved or removed from your library.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = 8.dp)
-        )
-    }
-}
