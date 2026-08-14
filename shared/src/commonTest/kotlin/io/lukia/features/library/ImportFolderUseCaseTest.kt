@@ -1,6 +1,8 @@
 package io.lukia.features.library
 
 import io.lukia.core.domain.DocumentInfo
+import io.lukia.core.domain.AppError
+import io.lukia.core.domain.toAppError
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.PickedDocument
 import io.lukia.core.domain.PickedFolder
@@ -61,8 +63,8 @@ class ImportFolderUseCaseTest {
 
         assertFalse(result.isSuccess)
         assertEquals(
-            "No PDF or EPUB files found in this folder",
-            result.exceptionOrNull()?.message
+            AppError.EmptyFolder,
+            result.exceptionOrNull()?.toAppError()
         )
         assertTrue(repository.documents.isEmpty())
     }
@@ -168,6 +170,17 @@ class ImportFolderUseCaseTest {
 
         override suspend fun getDocument(location: String): DocumentInfo? {
             return documents.firstOrNull { it.document.location == location }
+        }
+
+        override suspend fun setFavorite(location: String, isFavorite: Boolean) {
+            val index = documents.indexOfFirst { it.document.location == location }
+            if (index >= 0) {
+                documents[index] = documents[index].copy(isFavorite = isFavorite)
+            }
+        }
+
+        override suspend fun removeDocument(location: String) {
+            documents.removeAll { it.document.location == location }
         }
     }
 }

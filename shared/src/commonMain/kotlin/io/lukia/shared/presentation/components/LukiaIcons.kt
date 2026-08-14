@@ -81,6 +81,146 @@ fun FolderGlyph(
 }
 
 /**
+ * The favourite mark. One glyph serves both states: stroked while the book is
+ * not favourited, [filled] once it is, so the badge and the menu row can share a
+ * single drawing.
+ */
+@Composable
+fun HeartGlyph(
+    tint: Color,
+    modifier: Modifier = Modifier,
+    filled: Boolean = false
+) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+
+        val heart = Path().apply {
+            // Drawn from the bottom tip up each side, so both lobes stay
+            // symmetrical about the vertical centre line.
+            moveTo(w * 0.50f, h * 0.86f)
+            cubicTo(w * 0.04f, h * 0.53f, w * 0.07f, h * 0.16f, w * 0.29f, h * 0.16f)
+            cubicTo(w * 0.41f, h * 0.16f, w * 0.50f, h * 0.26f, w * 0.50f, h * 0.32f)
+            cubicTo(w * 0.50f, h * 0.26f, w * 0.59f, h * 0.16f, w * 0.71f, h * 0.16f)
+            cubicTo(w * 0.93f, h * 0.16f, w * 0.96f, h * 0.53f, w * 0.50f, h * 0.86f)
+            close()
+        }
+
+        if (filled) {
+            drawPath(path = heart, color = tint)
+        } else {
+            drawPath(
+                path = heart,
+                color = tint,
+                style = Stroke(
+                    width = 2.dp.toPx(),
+                    cap = StrokeCap.Round,
+                    join = StrokeJoin.Round
+                )
+            )
+        }
+    }
+}
+
+/** A lidded bin for the destructive menu row. */
+@Composable
+fun TrashGlyph(
+    tint: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        val stroke = Stroke(
+            width = 2.dp.toPx(),
+            cap = StrokeCap.Round,
+            join = StrokeJoin.Round
+        )
+
+        val lidWithHandle = Path().apply {
+            moveTo(w * 0.13f, h * 0.28f)
+            lineTo(w * 0.87f, h * 0.28f)
+            moveTo(w * 0.38f, h * 0.28f)
+            lineTo(w * 0.38f, h * 0.16f)
+            lineTo(w * 0.62f, h * 0.16f)
+            lineTo(w * 0.62f, h * 0.28f)
+        }
+
+        // Tapered rather than square: the slight inward slope is what makes a
+        // rectangle read as a bin at 18.dp.
+        val body = Path().apply {
+            moveTo(w * 0.22f, h * 0.28f)
+            lineTo(w * 0.28f, h * 0.84f)
+            lineTo(w * 0.72f, h * 0.84f)
+            lineTo(w * 0.78f, h * 0.28f)
+        }
+
+        val ticks = Path().apply {
+            moveTo(w * 0.42f, h * 0.42f)
+            lineTo(w * 0.44f, h * 0.71f)
+            moveTo(w * 0.58f, h * 0.42f)
+            lineTo(w * 0.56f, h * 0.71f)
+        }
+
+        drawPath(path = lidWithHandle, color = tint, style = stroke)
+        drawPath(path = body, color = tint, style = stroke)
+        drawPath(path = ticks, color = tint, style = stroke)
+    }
+}
+
+/** Exclamation in a ring, for the error state. */
+@Composable
+fun AlertGlyph(
+    tint: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val strokeWidth = 2.dp.toPx()
+        val centerX = size.width / 2f
+        val centerY = size.height / 2f
+        val radius = size.minDimension * 0.40f
+
+        drawCircle(
+            color = tint,
+            radius = radius,
+            style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+        )
+        drawLine(
+            color = tint,
+            start = androidx.compose.ui.geometry.Offset(centerX, centerY - radius * 0.46f),
+            end = androidx.compose.ui.geometry.Offset(centerX, centerY + radius * 0.10f),
+            strokeWidth = strokeWidth,
+            cap = StrokeCap.Round
+        )
+        drawCircle(
+            color = tint,
+            radius = strokeWidth * 0.62f,
+            center = androidx.compose.ui.geometry.Offset(centerX, centerY + radius * 0.50f)
+        )
+    }
+}
+
+/** Three dots, used as the hover-revealed menu trigger on a book card. */
+@Composable
+fun EllipsisGlyph(
+    tint: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val radius = size.minDimension * 0.10f
+        val centerY = size.height / 2f
+
+        listOf(0.22f, 0.50f, 0.78f).forEach { fraction ->
+            drawCircle(
+                color = tint,
+                radius = radius,
+                center = androidx.compose.ui.geometry.Offset(size.width * fraction, centerY)
+            )
+        }
+    }
+}
+
+/**
  * A simple stacked-books mark used for the empty state and the import action.
  * Kept as vector drawing so it inherits the current content colour.
  */
