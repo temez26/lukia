@@ -2,10 +2,10 @@ package io.lukia.features.library.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.lukia.features.import.domain.DocumentInfo
-import io.lukia.features.import.domain.ImportDocumentUseCase
-import io.lukia.features.import.domain.PickedDocument
-import io.lukia.features.library.domain.GetLibraryDocumentsUseCase
+import io.lukia.core.domain.DocumentInfo
+import io.lukia.features.library.application.ImportDocumentUseCase
+import io.lukia.core.domain.PickedDocument
+import io.lukia.features.library.application.GetLibraryDocumentsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,7 +35,7 @@ class LibraryViewModel(
 
     fun importDocument(pickedDocument: PickedDocument) {
         viewModelScope.launch {
-            val result = importDocumentUseCase.execute(pickedDocument)
+            val result = importDocumentUseCase(pickedDocument)
 
             result.onSuccess {
                 loadDocuments()
@@ -44,5 +44,9 @@ class LibraryViewModel(
                 _errorMessage.value = it.message ?: "An Error Occurred"
             }
         }
+    }
+
+    fun clearErrorMessage() {
+        _errorMessage.value = null
     }
 }

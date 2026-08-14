@@ -1,6 +1,6 @@
 package io.lukia.features.import.presentation
 
-import io.lukia.features.import.domain.PickedDocument
+import io.lukia.core.domain.PickedDocument
 
 interface PlatformFilePickerState {
     fun launch(
