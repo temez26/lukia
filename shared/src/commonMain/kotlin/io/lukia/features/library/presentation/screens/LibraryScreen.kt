@@ -140,8 +140,8 @@ fun LibraryContent(
     onDocumentClick: (DocumentInfo) -> Unit,
     onToggleFavorite: (DocumentInfo) -> Unit,
     onDelete: (DocumentInfo) -> Unit,
-    onRetry: () -> Unit = {},
-    isImporting: Boolean = false,
+    onRetry: () -> Unit,
+    isImporting: Boolean,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     initialActionMenuExpanded: Boolean = false
 ) {
