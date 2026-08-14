@@ -68,11 +68,13 @@ import io.lukia.core.presentation.displayTitle
 import io.lukia.core.presentation.displayType
 import io.lukia.core.presentation.formattedSize
 import io.lukia.features.import.presentation.rememberPlatformFilePicker
+import io.lukia.features.import.presentation.rememberPlatformFolderPicker
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.shared.presentation.components.ActionMenuScrim
 import io.lukia.shared.presentation.components.BOOK_COVER_ASPECT_RATIO
 import io.lukia.shared.presentation.components.BookCover
 import io.lukia.shared.presentation.components.ExpandableActionMenu
+import io.lukia.shared.presentation.components.FolderGlyph
 import io.lukia.shared.presentation.components.PlusGlyph
 import io.lukia.shared.presentation.components.QuickAction
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
@@ -88,6 +90,7 @@ fun LibraryScreen(
     val errorMessage by viewModel.errorMessage.collectAsState()
 
     val filePicker = rememberPlatformFilePicker()
+    val folderPicker = rememberPlatformFolderPicker()
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(errorMessage) {
@@ -104,6 +107,11 @@ fun LibraryScreen(
                 pickedDocument?.let { viewModel.importDocument(it) }
             }
         },
+        onImportFolder = {
+            folderPicker.launch { pickedFolder ->
+                pickedFolder?.let { viewModel.importFolder(it) }
+            }
+        },
         onDocumentClick = onDocumentClick,
         snackbarHostState = snackbarHostState
     )
@@ -118,6 +126,7 @@ fun LibraryScreen(
 fun LibraryContent(
     documents: List<DocumentInfo>,
     onImport: () -> Unit,
+    onImportFolder: () -> Unit,
     onDocumentClick: (DocumentInfo) -> Unit,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     initialActionMenuExpanded: Boolean = false
@@ -130,6 +139,11 @@ fun LibraryContent(
             label = "Import book",
             onClick = onImport,
             icon = { tint -> PlusGlyph(tint = tint, modifier = Modifier.size(18.dp)) }
+        ),
+        QuickAction(
+            label = "Add folder",
+            onClick = onImportFolder,
+            icon = { tint -> FolderGlyph(tint = tint, modifier = Modifier.size(18.dp)) }
         )
     )
 
@@ -226,10 +240,13 @@ private fun LibraryGrid(
             LibraryHeader(bookCount = documents.size)
         }
 
-        items(documents) { document ->
-            // Newly appended books fade into place instead of appearing
-            // instantly. No item key is supplied on purpose - see the note in
-            // InMemoryLibraryRepository about duplicate locations.
+        items(
+            items = documents,
+            // Location identifies a document in the library, so keying on it
+            // lets Compose track a card across reloads instead of rebuilding
+            // the whole grid whenever an import appends to the list.
+            key = { it.document.location }
+        ) { document ->
             BookCard(
                 document = document,
                 onClick = { onDocumentClick(document) },
