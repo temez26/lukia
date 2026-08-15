@@ -200,6 +200,42 @@ fun AlertGlyph(
     }
 }
 
+/**
+ * Lowercase "i" in a ring, for the row that leads to a book's details. Drawn as
+ * [AlertGlyph] inverted - dot above stem - which is the only thing separating
+ * "here is more about this" from "something is wrong" at this size.
+ */
+@Composable
+fun InfoGlyph(
+    tint: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val strokeWidth = 2.dp.toPx()
+        val centerX = size.width / 2f
+        val centerY = size.height / 2f
+        val radius = size.minDimension * 0.40f
+
+        drawCircle(
+            color = tint,
+            radius = radius,
+            style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+        )
+        drawCircle(
+            color = tint,
+            radius = strokeWidth * 0.62f,
+            center = androidx.compose.ui.geometry.Offset(centerX, centerY - radius * 0.50f)
+        )
+        drawLine(
+            color = tint,
+            start = androidx.compose.ui.geometry.Offset(centerX, centerY - radius * 0.10f),
+            end = androidx.compose.ui.geometry.Offset(centerX, centerY + radius * 0.46f),
+            strokeWidth = strokeWidth,
+            cap = StrokeCap.Round
+        )
+    }
+}
+
 /** Three dots, used as the hover-revealed menu trigger on a book card. */
 @Composable
 fun EllipsisGlyph(

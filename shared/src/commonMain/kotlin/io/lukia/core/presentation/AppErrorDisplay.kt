@@ -11,6 +11,7 @@ import io.lukia.core.domain.AppError
 fun AppError.displayTitle(): String = when (this) {
     AppError.DocumentNotFound -> "Document not found"
     AppError.UnsupportedFileType -> "Unsupported file"
+    AppError.FormatNotReadable -> "Not readable yet"
     AppError.EmptyFolder -> "Nothing to import"
     is AppError.Unexpected -> "Something went wrong"
 }
@@ -18,6 +19,7 @@ fun AppError.displayTitle(): String = when (this) {
 fun AppError.displayMessage(): String = when (this) {
     AppError.DocumentNotFound -> "It may have been moved or removed from your library."
     AppError.UnsupportedFileType -> "Lukia can open PDF and EPUB files."
+    AppError.FormatNotReadable -> "Reading EPUB files is not ready yet - PDFs open today."
     AppError.EmptyFolder -> "No PDF or EPUB files found in this folder."
     // The underlying message is worth showing when there is one: for an
     // unforeseen failure it is the only clue either the user or a bug report

@@ -83,7 +83,8 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun LibraryScreen(
     viewModel: LibraryViewModel = koinViewModel(),
-    onDocumentClick: (DocumentInfo) -> Unit = {}
+    onDocumentClick: (DocumentInfo) -> Unit = {},
+    onDocumentDetails: (DocumentInfo) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val message by viewModel.message.collectAsState()
@@ -119,6 +120,7 @@ fun LibraryScreen(
             }
         },
         onDocumentClick = onDocumentClick,
+        onDocumentDetails = onDocumentDetails,
         onToggleFavorite = viewModel::toggleFavorite,
         onDelete = viewModel::deleteDocument,
         onRetry = viewModel::refresh,
@@ -138,6 +140,7 @@ fun LibraryContent(
     onImport: () -> Unit,
     onImportFolder: () -> Unit,
     onDocumentClick: (DocumentInfo) -> Unit,
+    onDocumentDetails: (DocumentInfo) -> Unit,
     onToggleFavorite: (DocumentInfo) -> Unit,
     onDelete: (DocumentInfo) -> Unit,
     onRetry: () -> Unit,
@@ -240,6 +243,7 @@ fun LibraryContent(
                                 documents = documents,
                                 isImporting = isImporting,
                                 onDocumentClick = onDocumentClick,
+                                onDocumentDetails = onDocumentDetails,
                                 menuFor = menuFor,
                                 onMenuForChange = { menuFor = it },
                                 onToggleFavorite = onToggleFavorite,
@@ -281,6 +285,7 @@ private fun LibraryGrid(
     documents: List<DocumentInfo>,
     isImporting: Boolean,
     onDocumentClick: (DocumentInfo) -> Unit,
+    onDocumentDetails: (DocumentInfo) -> Unit,
     menuFor: String?,
     onMenuForChange: (String?) -> Unit,
     onToggleFavorite: (DocumentInfo) -> Unit,
@@ -321,6 +326,7 @@ private fun LibraryGrid(
                 onMenuDismiss = { onMenuForChange(null) },
                 onToggleFavorite = { onToggleFavorite(document) },
                 onDelete = { onDelete(document) },
+                onShowDetails = { onDocumentDetails(document) },
                 modifier = Modifier.animateItem()
             )
         }
