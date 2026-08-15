@@ -3,6 +3,7 @@ package io.lukia.features.bookdetail.presentation
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.FakeDocumentWorkspace
 import io.lukia.core.domain.TestDocuments
 import io.lukia.core.presentation.UiState
 import io.lukia.features.bookdetail.application.GetDocumentDetailsUseCase
@@ -145,7 +146,7 @@ class BookDetailViewModelTest {
             location = location,
             getDocumentDetailsUseCase = GetDocumentDetailsUseCase(repository),
             setFavoriteUseCase = SetFavoriteUseCase(repository),
-            removeDocumentUseCase = RemoveDocumentUseCase(repository)
+            removeDocumentUseCase = RemoveDocumentUseCase(repository, FakeDocumentWorkspace())
         )
     }
 

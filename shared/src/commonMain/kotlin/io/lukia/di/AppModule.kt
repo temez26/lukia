@@ -10,6 +10,8 @@ import io.lukia.features.library.infrastructure.InMemoryLibraryRepository
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.presentation.LibraryViewModel
+import io.lukia.features.reader.application.OpenDocumentUseCase
+import io.lukia.features.reader.presentation.ReaderViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
@@ -40,14 +42,22 @@ val commonModule = module {
     }
 
     single {
-        RemoveDocumentUseCase(get())
+        RemoveDocumentUseCase(get(), get())
     }
 
     single {
         GetDocumentDetailsUseCase(get())
     }
 
+    single {
+        OpenDocumentUseCase(get(), get())
+    }
+
     viewModel { (location: String) ->
         BookDetailViewModel(location, get(), get(), get())
+    }
+
+    viewModel { (location: String) ->
+        ReaderViewModel(location, get())
     }
 }

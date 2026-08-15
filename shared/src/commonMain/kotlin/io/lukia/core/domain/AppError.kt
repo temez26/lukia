@@ -18,6 +18,14 @@ sealed interface AppError {
 
     data object UnsupportedFileType : AppError
 
+    /**
+     * The library can hold this format, but the reader cannot open it yet.
+     * Distinct from [UnsupportedFileType], which is about what may be imported
+     * at all - telling someone their EPUB is unsupported right after the app
+     * accepted it would read as a bug.
+     */
+    data object FormatNotReadable : AppError
+
     data object EmptyFolder : AppError
 
     data class Unexpected(val cause: String? = null) : AppError

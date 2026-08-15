@@ -1,5 +1,7 @@
 package io.lukia.di
 
+import io.lukia.core.domain.DocumentWorkspace
+import io.lukia.core.infrastructure.IOSDocumentWorkspace
 import io.lukia.features.import.domain.DocumentAnalyzer
 import io.lukia.features.import.domain.FolderScanner
 import io.lukia.features.import.infrastructure.IOSDocumentAnalyzer
@@ -10,6 +12,10 @@ val platformModule = module {
 
     single<DocumentAnalyzer> {
         IOSDocumentAnalyzer()
+    }
+
+    single<DocumentWorkspace> {
+        IOSDocumentWorkspace()
     }
 
     single<FolderScanner> {

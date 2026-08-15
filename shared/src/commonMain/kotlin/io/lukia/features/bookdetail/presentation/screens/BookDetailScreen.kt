@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -70,6 +71,7 @@ private val TopChromeClearance: Dp = 84.dp
 fun BookDetailScreen(
     location: String,
     onBack: () -> Unit,
+    onRead: () -> Unit,
     viewModel: BookDetailViewModel = koinViewModel(parameters = { parametersOf(location) })
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -77,6 +79,7 @@ fun BookDetailScreen(
     BookDetailContent(
         uiState = uiState,
         onBack = onBack,
+        onRead = onRead,
         onRetry = viewModel::retry,
         onToggleFavorite = viewModel::toggleFavorite,
         // Nothing left on this screen once the entry is gone, so leaving is part
@@ -97,6 +100,7 @@ fun BookDetailScreen(
 fun BookDetailContent(
     uiState: UiState<DocumentInfo>,
     onBack: () -> Unit,
+    onRead: () -> Unit,
     onRetry: () -> Unit,
     onToggleFavorite: () -> Unit,
     onDelete: () -> Unit
@@ -134,6 +138,7 @@ fun BookDetailContent(
             ) { document ->
                 DocumentDetails(
                     document = document,
+                    onRead = onRead,
                     onLongPress = { menuExpanded = true }
                 )
             }
@@ -210,6 +215,7 @@ fun BookDetailContent(
 @Composable
 private fun DocumentDetails(
     document: DocumentInfo,
+    onRead: () -> Unit,
     onLongPress: () -> Unit
 ) {
     val dimens = LocalLukiaDimens.current
@@ -280,6 +286,24 @@ private fun DocumentDetails(
 
             if (!document.exists) {
                 UnavailableNotice(modifier = Modifier.padding(top = 16.dp))
+            }
+
+            // The point of the screen, so it leads: everything below it is
+            // reference. Disabled rather than hidden for a missing file, which
+            // keeps the layout from shifting between one book and the next.
+            Button(
+                onClick = onRead,
+                enabled = document.exists,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = dimens.sectionSpacing)
+                    .height(50.dp)
+                    .pointerHoverIcon(PointerIcon.Hand)
+            ) {
+                Text(
+                    text = "Read",
+                    style = MaterialTheme.typography.titleMedium
+                )
             }
 
             DetailInfoCard(
