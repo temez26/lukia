@@ -65,18 +65,4 @@ class JvmDocumentWorkspace(
     }
 }
 
-/**
- * Per-user app storage: `%LOCALAPPDATA%\Lukia` where Windows offers it, and a
- * dotted home directory elsewhere, which is what Linux and macOS expect.
- */
-private fun defaultWorkspaceDirectory(): File {
-    val localAppData = System.getenv("LOCALAPPDATA")
-
-    val base = if (localAppData.isNullOrBlank()) {
-        File(System.getProperty("user.home"), ".lukia")
-    } else {
-        File(localAppData, "Lukia")
-    }
-
-    return File(base, "documents")
-}
+private fun defaultWorkspaceDirectory(): File = File(lukiaAppDirectory(), "documents")

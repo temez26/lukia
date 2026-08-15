@@ -76,6 +76,11 @@ kotlin {
             // bundle - which the app gets from :desktopApp and tests otherwise
             // do not. `currentOs` resolves it for whichever host is building.
             implementation(compose.desktop.currentOs)
+            // Lets the reader's chrome be asserted on as a composed tree - the
+            // page indicator and the settings panel are behaviour, not just
+            // layout, and nothing else here can see them.
+            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+            implementation(compose.uiTest)
         }
         named("androidDeviceTest") {
             dependencies {
