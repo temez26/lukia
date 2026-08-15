@@ -3,6 +3,7 @@ package io.lukia.features.reader.presentation
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.FakeSettingsStore
 import io.lukia.core.domain.PickedDocument
 import io.lukia.core.infrastructure.JvmDocumentWorkspace
 import io.lukia.core.presentation.UiState
@@ -10,6 +11,8 @@ import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.domain.ReaderDocument
+import io.lukia.features.reader.domain.ReaderTheme
+import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -46,13 +49,23 @@ class ReaderViewModelTest {
      */
     private val openDispatcher = Dispatchers.Unconfined
 
+    /** Every ViewModel a test opens, so they can all be closed afterwards. */
+    private val openedViewModels = mutableListOf<ReaderViewModel>()
+
     @BeforeTest
     fun setUp() {
         Dispatchers.setMain(Dispatchers.Unconfined)
     }
 
+    /**
+     * The open document holds a file handle on the working copy, so it is given
+     * back before the directory underneath it goes. Without this, a test that
+     * ends while a page is still open leaves PDFBox reading a file that is being
+     * deleted, and the throw surfaces against whichever test runs next.
+     */
     @AfterTest
     fun tearDown() {
+        openedViewModels.forEach { it.uiState.value.dataOrNull?.close() }
         Dispatchers.resetMain()
         root.deleteRecursively()
     }
@@ -89,8 +102,9 @@ class ReaderViewModelTest {
                 libraryRepository = FakeLibraryRepository(),
                 documentWorkspace = workspace,
                 dispatcher = openDispatcher
-            )
-        )
+            ),
+            settingsRepository = ReaderSettingsRepository(FakeSettingsStore())
+        ).also { openedViewModels.add(it) }
 
         assertEquals(UiState.Failure(AppError.DocumentNotFound), viewModel.settled())
     }
@@ -147,8 +161,9 @@ class ReaderViewModelTest {
                 libraryRepository = repository,
                 documentWorkspace = workspace,
                 dispatcher = openDispatcher
-            )
-        )
+            ),
+            settingsRepository = ReaderSettingsRepository(FakeSettingsStore())
+        ).also { openedViewModels.add(it) }
 
         assertEquals(UiState.Failure(AppError.DocumentNotFound), viewModel.settled())
 
@@ -181,6 +196,33 @@ class ReaderViewModelTest {
         assertTrue(first === second)
     }
 
+    /**
+     * Theme is applied when a page is drawn, not when it is rendered. Changing
+     * it must therefore cost nothing: the pages already rendered stay in the
+     * cache, which is what keeps the change instant in a long book.
+     */
+    @Test
+    fun changingTheThemeDoesNotDiscardRenderedPages() = runTest {
+        val viewModel = createViewModel(pdfInLibrary(pageCount = 1))
+        viewModel.settled()
+
+        val before = viewModel.page(index = 0, widthPx = 400)
+        viewModel.updateSettings(viewModel.settings.value.copy(theme = ReaderTheme.Dark))
+        val after = viewModel.page(index = 0, widthPx = 400)
+
+        assertTrue(before === after)
+    }
+
+    @Test
+    fun settingsChangesAreVisibleThroughTheViewModel() = runTest {
+        val viewModel = createViewModel(pdfInLibrary(pageCount = 1))
+        viewModel.settled()
+
+        viewModel.updateSettings(viewModel.settings.value.withLargerText())
+
+        assertEquals(110, viewModel.settings.value.textScalePercent)
+    }
+
     /** A resized window invalidates every page drawn for the old one. */
     @Test
     fun aPageIsRedrawnWhenTheWidthChanges() = runTest {
@@ -202,8 +244,9 @@ class ReaderViewModelTest {
                 libraryRepository = FakeLibraryRepository(),
                 documentWorkspace = workspace,
                 dispatcher = openDispatcher
-            )
-        )
+            ),
+            settingsRepository = ReaderSettingsRepository(FakeSettingsStore())
+        ).also { openedViewModels.add(it) }
 
         assertNull(viewModel.page(index = 0, widthPx = 400))
     }
@@ -218,8 +261,9 @@ class ReaderViewModelTest {
             libraryRepository = FakeLibraryRepository(listOf(document)),
             documentWorkspace = workspace,
             dispatcher = openDispatcher
-        )
-    )
+        ),
+        settingsRepository = ReaderSettingsRepository(FakeSettingsStore())
+    ).also { openedViewModels.add(it) }
 
     private fun pdfInLibrary(pageCount: Int): DocumentInfo {
         val file = File(library, "book-${kotlin.random.Random.nextInt()}.pdf")

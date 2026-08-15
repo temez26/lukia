@@ -9,6 +9,8 @@ import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.domain.ReaderDocument
+import io.lukia.features.reader.domain.ReaderSettings
+import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,11 +35,23 @@ private const val MAX_CACHED_PAGES = 4
 
 class ReaderViewModel(
     private val location: String,
-    private val openDocumentUseCase: OpenDocumentUseCase
+    private val openDocumentUseCase: OpenDocumentUseCase,
+    private val settingsRepository: ReaderSettingsRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState<ReaderDocument>>(UiState.Loading)
     val uiState: StateFlow<UiState<ReaderDocument>> = _uiState.asStateFlow()
+
+    /**
+     * Exposed straight from the repository rather than copied into this
+     * ViewModel: the settings outlive the open book, and mirroring them here
+     * would be one more thing that could disagree with what was stored.
+     */
+    val settings: StateFlow<ReaderSettings> = settingsRepository.settings
+
+    fun updateSettings(settings: ReaderSettings) {
+        settingsRepository.update(settings)
+    }
 
     /**
      * Least-recently-used, keyed by page index. Every entry is drawn at

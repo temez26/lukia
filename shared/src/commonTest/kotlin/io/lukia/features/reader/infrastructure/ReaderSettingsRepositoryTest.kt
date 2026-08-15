@@ -1,0 +1,114 @@
+package io.lukia.features.reader.infrastructure
+
+import io.lukia.core.domain.FakeSettingsStore
+import io.lukia.features.reader.domain.LineSpacing
+import io.lukia.features.reader.domain.ReaderSettings
+import io.lukia.features.reader.domain.ReaderTheme
+import io.lukia.features.reader.domain.ReaderTypeface
+import io.lukia.features.reader.domain.ReadingWidth
+import kotlin.test.Test
+import kotlin.test.assertEquals
+
+class ReaderSettingsRepositoryTest {
+
+    @Test
+    fun aFirstRunGetsTheDefaults() {
+        val repository = ReaderSettingsRepository(FakeSettingsStore())
+
+        assertEquals(ReaderSettings(), repository.settings.value)
+    }
+
+    @Test
+    fun aChangeIsVisibleImmediately() {
+        val repository = ReaderSettingsRepository(FakeSettingsStore())
+
+        repository.update(ReaderSettings(theme = ReaderTheme.Sepia))
+
+        assertEquals(ReaderTheme.Sepia, repository.settings.value.theme)
+    }
+
+    /** The point of the whole thing: settings outlive the session. */
+    @Test
+    fun settingsSurviveBeingReopened() {
+        val store = FakeSettingsStore()
+        val settings = ReaderSettings(
+            theme = ReaderTheme.Dark,
+            textScale = 1.4f,
+            lineSpacing = LineSpacing.Relaxed,
+            readingWidth = ReadingWidth.Narrow,
+            typeface = ReaderTypeface.Serif
+        )
+
+        ReaderSettingsRepository(store).update(settings)
+
+        assertEquals(settings, ReaderSettingsRepository(store).settings.value)
+    }
+
+    @Test
+    fun everySettingIsStoredSeparately() {
+        val store = FakeSettingsStore()
+
+        ReaderSettingsRepository(store).update(
+            ReaderSettings(theme = ReaderTheme.Sepia, readingWidth = ReadingWidth.Medium)
+        )
+
+        assertEquals(ReaderTheme.Sepia.name, store.values["reader.theme"])
+        assertEquals(ReadingWidth.Medium.name, store.values["reader.readingWidth"])
+    }
+
+    /**
+     * A value written by an older build, or edited by hand, must cost only the
+     * setting it belongs to - not everything else the reader remembered.
+     */
+    @Test
+    fun anUnreadableValueFallsBackWithoutLosingTheRest() {
+        val store = FakeSettingsStore(
+            mapOf(
+                "reader.theme" to "Neon",
+                "reader.readingWidth" to ReadingWidth.Narrow.name
+            )
+        )
+
+        val settings = ReaderSettingsRepository(store).settings.value
+
+        assertEquals(ReaderSettings().theme, settings.theme)
+        assertEquals(ReadingWidth.Narrow, settings.readingWidth)
+    }
+
+    @Test
+    fun aTextSizeThatIsNotANumberFallsBackToTheDefault() {
+        val store = FakeSettingsStore(mapOf("reader.textScale" to "huge"))
+
+        assertEquals(
+            ReaderSettings().textScale,
+            ReaderSettingsRepository(store).settings.value.textScale
+        )
+    }
+
+    /** A stored size outside the range still has to come back inside it. */
+    @Test
+    fun aStoredTextSizeIsClampedOnTheWayBackIn() {
+        val store = FakeSettingsStore(mapOf("reader.textScale" to "12.0"))
+
+        assertEquals(
+            ReaderSettings.MAX_TEXT_SCALE,
+            ReaderSettingsRepository(store).settings.value.textScale
+        )
+    }
+
+    /**
+     * The panel hands back a whole settings value on every interaction, so
+     * re-selecting what is already chosen must not write to storage.
+     */
+    @Test
+    fun settingTheSameValueDoesNotWrite() {
+        val store = FakeSettingsStore()
+        val repository = ReaderSettingsRepository(store)
+
+        repository.update(ReaderSettings(theme = ReaderTheme.Dark))
+        val writesAfterFirstChange = store.writeCount
+        repository.update(ReaderSettings(theme = ReaderTheme.Dark))
+
+        assertEquals(writesAfterFirstChange, store.writeCount)
+    }
+}
