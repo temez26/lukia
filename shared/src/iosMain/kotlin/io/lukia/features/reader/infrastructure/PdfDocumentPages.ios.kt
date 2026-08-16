@@ -16,9 +16,9 @@ import org.jetbrains.compose.resources.decodeToImageBitmap
 import platform.CoreGraphics.CGSizeMake
 import platform.Foundation.NSData
 import platform.Foundation.NSURL
-import platform.PDFKit.PDFDisplayBox
 import platform.PDFKit.PDFDocument
 import platform.PDFKit.PDFOutline
+import platform.PDFKit.kPDFDisplayBoxCropBox
 import platform.UIKit.UIImagePNGRepresentation
 import platform.UIKit.UIScreen
 import platform.posix.memcpy
@@ -48,7 +48,7 @@ private class IOSDocumentPages(path: String) : DocumentPages {
         if (page == null) {
             PageSize(width = 0f, height = 0f)
         } else {
-            val bounds = page.boundsForBox(PDFDisplayBox.PDFDisplayBoxCropBox)
+            val bounds = page.boundsForBox(kPDFDisplayBoxCropBox)
             val width = bounds.useContents { size.width }.toFloat()
             val height = bounds.useContents { size.height }.toFloat()
 
@@ -104,7 +104,7 @@ private class IOSDocumentPages(path: String) : DocumentPages {
 
                     val thumbnail = page.thumbnailOfSize(
                         CGSizeMake(widthPoints, heightPoints),
-                        forBox = PDFDisplayBox.PDFDisplayBoxCropBox
+                        forBox = kPDFDisplayBoxCropBox
                     )
 
                     UIImagePNGRepresentation(thumbnail)
