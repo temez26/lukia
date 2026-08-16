@@ -5,6 +5,15 @@ plugins {
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.sqldelight)
+}
+
+sqldelight {
+    databases {
+        create("LukiaDatabase") {
+            packageName.set("io.lukia.core.infrastructure.db")
+        }
+    }
 }
 
 kotlin {
@@ -46,9 +55,14 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.compose.uiTooling)
             implementation(libs.androidx.documentfile)
+            implementation(libs.sqldelight.androidDriver)
         }
         jvmMain.dependencies {
             implementation(libs.pdfbox)
+            implementation(libs.sqldelight.jvmDriver)
+        }
+        iosMain.dependencies {
+            implementation(libs.sqldelight.nativeDriver)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -65,12 +79,17 @@ kotlin {
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
+            implementation(libs.sqldelight.runtime)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
         }
         jvmTest.dependencies {
+            // The same driver the desktop app uses, pointed at an in-memory
+            // database - so what is stored is tested through real SQL rather
+            // than through a stand-in for it.
+            implementation(libs.sqldelight.jvmDriver)
             // Turning a rendered page into an ImageBitmap goes through Skiko,
             // whose native library only reaches the classpath via the desktop
             // bundle - which the app gets from :desktopApp and tests otherwise

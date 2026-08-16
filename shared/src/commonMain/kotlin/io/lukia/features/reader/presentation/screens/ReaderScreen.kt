@@ -85,7 +85,9 @@ import io.lukia.shared.presentation.theme.LocalWindowWidthClass
 import io.lukia.shared.presentation.theme.WindowWidthClass
 import io.lukia.shared.presentation.theme.topChromeIn
 import io.lukia.shared.presentation.theme.topChromeOut
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -110,14 +112,17 @@ fun ReaderScreen(
     val uiState by viewModel.uiState.collectAsState()
     val settings by viewModel.settings.collectAsState()
     val outline by viewModel.outline.collectAsState()
+    val initialPage by viewModel.initialPage.collectAsState()
 
     ReaderContent(
         uiState = uiState,
         settings = settings,
         outline = outline,
+        initialPage = initialPage,
         onBack = onBack,
         onRetry = viewModel::retry,
         onSettingsChange = viewModel::updateSettings,
+        onPageSettled = viewModel::onPageSettled,
         renderPage = viewModel::page
     )
 }
@@ -131,9 +136,12 @@ fun ReaderContent(
     uiState: UiState<ReaderDocument>,
     settings: ReaderSettings,
     outline: ReaderOutline,
+    /** Where to open, once it is known; null while the stored position is being read. */
+    initialPage: Int? = null,
     onBack: () -> Unit,
     onRetry: () -> Unit,
     onSettingsChange: (ReaderSettings) -> Unit,
+    onPageSettled: (pageIndex: Int) -> Unit = {},
     renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?
 ) {
     val dimens = LocalLukiaDimens.current
@@ -171,6 +179,28 @@ fun ReaderContent(
             snapshotFlow { listState.isScrollInProgress }
                 .filter { it }
                 .collect { chromeVisible = false }
+        }
+
+        // Opening where the book was left off. Done as a scroll rather than as
+        // the list's starting index because the stored page arrives after the
+        // list does - the file has to be opened before its length is known, and
+        // a page past the end is not a place to start. Nothing has been drawn
+        // yet at this point, so there is no jump to see.
+        LaunchedEffect(listState, initialPage) {
+            if (initialPage != null && initialPage > 0) listState.scrollToItem(initialPage)
+        }
+
+        // Where the reader came to rest, once per stop rather than per page
+        // passed. A fling crosses pages nobody read; the one they stopped on is
+        // the one worth remembering.
+        LaunchedEffect(listState, document) {
+            if (document == null) return@LaunchedEffect
+
+            snapshotFlow { listState.isScrollInProgress to listState.firstVisibleItemIndex }
+                .filter { (scrolling, _) -> !scrolling }
+                .map { (_, page) -> page }
+                .distinctUntilChanged()
+                .collect(onPageSettled)
         }
 
         val commands = readerCommands(
