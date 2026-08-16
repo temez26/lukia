@@ -33,9 +33,25 @@ internal class PdfObjectIndex(private val source: PdfByteSource) {
      * True when the file says its contents are encrypted. Strings would come
      * back as ciphertext, so a chapter list read from one would be gibberish -
      * better to report no outline than a page of mojibake.
+     *
+     * Read from the newest trailer, and only from that one, because that is
+     * what decides it. Two things this must not do, both of which take
+     * perfectly readable books away from the reader:
+     *
+     * Looking for the bytes `/Encrypt` anywhere in the file - the sequence
+     * turns up inside the compressed streams of a long document often enough
+     * to matter, and a file that says nothing about encryption in its trailer
+     * is not encrypted however many times those nine bytes appear in it.
+     *
+     * Asking whether *any* trailer names an /Encrypt. A file that has had its
+     * encryption removed keeps the trailer that declared it, as an earlier
+     * revision, and appends one that does not; the last word is the current
+     * one. This is how the shops that sell DRM-free copies of encrypted books
+     * produce them, so it is common rather than exotic.
      */
-    var isEncrypted: Boolean = false
-        private set
+    val isEncrypted: Boolean by lazy {
+        currentTrailer()?.get("Encrypt") != null
+    }
 
     init {
         scan()
@@ -43,26 +59,35 @@ internal class PdfObjectIndex(private val source: PdfByteSource) {
 
     /** The document catalog, which everything else hangs from. */
     fun catalog(): PdfValue.Dictionary? {
-        // The trailer names the catalog directly. Later trailers win: an
-        // incrementally updated file appends a new one each time it is saved.
-        trailerOffsets.asReversed().forEach { offset ->
-            readTrailerDictionary(offset)?.let { trailer ->
-                resolve(trailer["Root"]).asDictionary?.let { return it }
-            }
-        }
-
-        // A file with no classic trailer keeps /Root on its cross-reference
-        // stream instead, whose dictionary is never itself compressed.
-        crossReferenceStreamOffsets.asReversed().forEach { offset ->
-            objectAt(offset).asDictionary?.let { dictionary ->
-                resolve(dictionary["Root"]).asDictionary?.let { return it }
-            }
+        trailerDictionaries().forEach { trailer ->
+            resolve(trailer["Root"]).asDictionary?.let { return it }
         }
 
         // Last resort for a file whose trailer is damaged: the catalog is
         // whatever object says it is one.
         return findObjectOfType("Catalog")
     }
+
+    /**
+     * The trailer of the file's newest revision, which is the one whose word
+     * counts. Recognised by naming a catalog, the same test [catalog] makes -
+     * the markers these are found by also match the odd dictionary that is not
+     * a trailer at all.
+     */
+    private fun currentTrailer(): PdfValue.Dictionary? =
+        trailerDictionaries().firstOrNull { it["Root"] != null }
+
+    /**
+     * Every trailer the file carries, newest first - an incrementally updated
+     * file appends one each time it is saved, and the last word is the current
+     * one. A file with no classic trailer keeps the same keys on its
+     * cross-reference stream instead, whose dictionary is never itself
+     * compressed.
+     */
+    private fun trailerDictionaries(): Sequence<PdfValue.Dictionary> =
+        trailerOffsets.asReversed().asSequence().mapNotNull { readTrailerDictionary(it) } +
+            crossReferenceStreamOffsets.asReversed().asSequence()
+                .mapNotNull { objectAt(it).asDictionary }
 
     /** Follows indirect references until something concrete comes back. */
     fun resolve(value: PdfValue?): PdfValue? {
@@ -241,7 +266,6 @@ internal class PdfObjectIndex(private val source: PdfByteSource) {
         val trailerMarker = "trailer".encodeToByteArray()
         val objectStreamMarker = "/ObjStm".encodeToByteArray()
         val crossReferenceMarker = "/XRef".encodeToByteArray()
-        val encryptMarker = "/Encrypt".encodeToByteArray()
 
         val objectStreamHits = mutableListOf<Long>()
         var windowStart = 0L
@@ -270,10 +294,6 @@ internal class PdfObjectIndex(private val source: PdfByteSource) {
 
             bytes.forEachSequence(crossReferenceMarker) { index ->
                 crossReferenceStreamOffsets += windowStart + index
-            }
-
-            if (!isEncrypted && bytes.indexOfSequence(encryptMarker, 0) != null) {
-                isEncrypted = true
             }
 
             if (bytes.size < SCAN_WINDOW) break
