@@ -1,7 +1,6 @@
 package io.lukia.features.bookdetail.presentation.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,7 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
@@ -58,7 +56,7 @@ import io.lukia.shared.presentation.components.BookActionsMenu
 import io.lukia.shared.presentation.components.BookCover
 import io.lukia.shared.presentation.components.EllipsisGlyph
 import io.lukia.shared.presentation.components.FavoriteBadge
-import io.lukia.shared.presentation.components.GlassSurface
+import io.lukia.shared.presentation.components.GlassChromeButton
 import io.lukia.shared.presentation.components.UiStateContent
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import org.koin.compose.viewmodel.koinViewModel
@@ -92,9 +90,9 @@ fun BookDetailScreen(
 }
 
 /**
- * Stateless half of the screen. Split out so the layout can be rendered without
- * a ViewModel or dependency graph - used by the screenshot harness and useful
- * for previews.
+ * Stateless half of the screen, so the layout can be composed in a test or a
+ * preview without a ViewModel or a dependency graph behind it. Every screen in
+ * the app splits this way.
  */
 @Composable
 fun BookDetailContent(
@@ -153,23 +151,17 @@ fun BookDetailContent(
 
             // Floats above the scrolling content: this is the piece that most
             // wants the glass treatment, since content passes underneath it.
-            GlassSurface(
-                shape = CircleShape,
+            GlassChromeButton(
+                label = "Go back",
+                onClick = onBack,
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(start = dimens.screenPadding, top = 16.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .clickable(onClick = onBack)
-                        .size(44.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    BackChevron(
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+                BackChevron(
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
             }
 
             // Mirrors the back control across the top of the screen. Always
@@ -181,22 +173,14 @@ fun BookDetailContent(
                         .align(Alignment.TopEnd)
                         .padding(end = dimens.screenPadding, top = 16.dp)
                 ) {
-                    GlassSurface(shape = CircleShape) {
-                        Box(
-                            modifier = Modifier
-                                .pointerHoverIcon(PointerIcon.Hand)
-                                .clickable(
-                                    onClickLabel = "Book actions",
-                                    onClick = { menuExpanded = true }
-                                )
-                                .size(44.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            EllipsisGlyph(
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
+                    GlassChromeButton(
+                        label = "Book actions",
+                        onClick = { menuExpanded = true }
+                    ) {
+                        EllipsisGlyph(
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
                     }
 
                     BookActionsMenu(

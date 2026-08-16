@@ -5,6 +5,7 @@ import io.lukia.core.domain.SettingsStore
 import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import io.lukia.features.library.application.RemoveDocumentUseCase
+import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import org.koin.dsl.koinApplication
 import kotlin.test.Test
 import kotlin.test.assertNotNull
@@ -47,5 +48,25 @@ class AppGraphTest {
     @Test
     fun removingADocumentResolvesWithTheWorkspace() {
         assertNotNull(koin.get<RemoveDocumentUseCase>())
+    }
+
+    /**
+     * The app's theme is resolved at the root of the composition, before any
+     * screen exists - so a missing registration here would not fail on some
+     * screen nobody opened, it would fail on launch.
+     */
+    @Test
+    fun appSettingsResolve() {
+        assertNotNull(koin.get<AppSettingsRepository>())
+    }
+
+    /**
+     * Shared state, for the same reason as the reader's: the settings screen and
+     * the root of the app both read this, and two instances would mean changing
+     * the theme repainted nothing.
+     */
+    @Test
+    fun appSettingsAreOneSharedInstance() {
+        assertSame(koin.get<AppSettingsRepository>(), koin.get<AppSettingsRepository>())
     }
 }
