@@ -73,7 +73,7 @@ class ImportFolderUseCaseTest {
     fun countsRejectedDocumentsAsFailedWithoutAbortingTheFolder() = runTest {
         val documents = listOf(
             TestDocuments.pdf(location = "/test/books/book.pdf"),
-            TestDocuments.txt(location = "/test/books/notes.txt"),
+            TestDocuments.unsupported(location = "/test/books/notes.mobi"),
             TestDocuments.epub(location = "/test/books/book.epub")
         )
 
