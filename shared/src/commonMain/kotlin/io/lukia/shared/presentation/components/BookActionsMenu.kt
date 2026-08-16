@@ -43,9 +43,11 @@ import androidx.compose.ui.window.PopupProperties
 private val MenuTransformOrigin = TransformOrigin(1f, 0f)
 
 /**
- * Favourite and remove actions for one book, anchored to the top-end corner of
- * whatever opened it - a card in the library grid, or the cover on the detail
- * screen.
+ * Actions for one book, anchored to the top-end corner of whatever opened it - a
+ * card in the library grid, or the cover on the detail screen.
+ *
+ * [onShowDetails] is left out where the book's details are already on screen,
+ * which is why it is the one optional row.
  *
  * A [Popup] rather than a `DropdownMenu`: the menu has to wear the same
  * translucent chrome as the floating action menu and the detail back button,
@@ -61,7 +63,8 @@ fun BookActionsMenu(
     isFavorite: Boolean,
     onToggleFavorite: () -> Unit,
     onDelete: () -> Unit,
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
+    onShowDetails: (() -> Unit)? = null
 ) {
     // Animating through a graphicsLayer rather than wrapping the content in
     // AnimatedVisibility: the latter measures its child at zero size until the
@@ -113,6 +116,26 @@ fun BookActionsMenu(
                     .widthIn(min = 208.dp)
                     .width(IntrinsicSize.Max)
             ) {
+                if (onShowDetails != null) {
+                    MenuRow(
+                        label = "Book Details",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        icon = { tint ->
+                            InfoGlyph(tint = tint, modifier = Modifier.size(18.dp))
+                        },
+                        onClick = {
+                            onDismissRequest()
+                            onShowDetails()
+                        }
+                    )
+
+                    HorizontalDivider(
+                        thickness = Dp.Hairline,
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                        modifier = Modifier.padding(start = 16.dp)
+                    )
+                }
+
                 val favoriteLabel = if (isFavorite) {
                     "Remove from Favourites"
                 } else {

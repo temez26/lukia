@@ -1,5 +1,7 @@
 package io.lukia.features.import.infrastructure.archive
 
+import io.lukia.core.infrastructure.archive.inflateRaw
+
 /**
  * Minimal read-only ZIP reader operating on an in-memory archive.
  * Supports only the subset of the ZIP format (no Zip64) needed to pull a
@@ -123,8 +125,3 @@ internal class ZipArchiveReader(private val data: ByteArray) {
         const val MAX_ENTRY_SIZE = 20 * 1024 * 1024
     }
 }
-
-/**
- * Inflates a raw (headerless) DEFLATE stream, as used inside ZIP entries.
- */
-internal expect fun inflateRaw(compressedData: ByteArray, uncompressedSize: Int): ByteArray

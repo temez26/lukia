@@ -59,6 +59,7 @@ internal fun BookCard(
     onMenuDismiss: () -> Unit,
     onToggleFavorite: () -> Unit,
     onDelete: () -> Unit,
+    onShowDetails: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val title = document.displayTitle()
@@ -112,7 +113,8 @@ internal fun BookCard(
                 isFavorite = document.isFavorite,
                 onToggleFavorite = onToggleFavorite,
                 onDelete = onDelete,
-                onDismissRequest = onMenuDismiss
+                onDismissRequest = onMenuDismiss,
+                onShowDetails = onShowDetails
             )
         }
 

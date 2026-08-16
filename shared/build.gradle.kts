@@ -70,6 +70,18 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
         }
+        jvmTest.dependencies {
+            // Turning a rendered page into an ImageBitmap goes through Skiko,
+            // whose native library only reaches the classpath via the desktop
+            // bundle - which the app gets from :desktopApp and tests otherwise
+            // do not. `currentOs` resolves it for whichever host is building.
+            implementation(compose.desktop.currentOs)
+            // Lets the reader's chrome be asserted on as a composed tree - the
+            // page indicator and the settings panel are behaviour, not just
+            // layout, and nothing else here can see them.
+            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+            implementation(compose.uiTest)
+        }
         named("androidDeviceTest") {
             dependencies {
                 implementation(libs.androidx.test.runner)
