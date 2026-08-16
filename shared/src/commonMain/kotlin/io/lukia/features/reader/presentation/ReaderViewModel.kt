@@ -11,6 +11,8 @@ import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
+import io.lukia.features.reader.domain.ReadingProgress
+import io.lukia.features.reader.domain.ReadingProgressRepository
 import io.lukia.features.reader.domain.asTableOfContents
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import kotlinx.coroutines.Dispatchers
@@ -39,11 +41,24 @@ private const val MIN_CACHED_PAGES = 3
 class ReaderViewModel(
     private val location: String,
     private val openDocumentUseCase: OpenDocumentUseCase,
-    private val settingsRepository: ReaderSettingsRepository
+    private val settingsRepository: ReaderSettingsRepository,
+    private val progressRepository: ReadingProgressRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState<ReaderDocument>>(UiState.Loading)
     val uiState: StateFlow<UiState<ReaderDocument>> = _uiState.asStateFlow()
+
+    /**
+     * The page to open at, once it is known - null while the book is still
+     * being opened and the stored position still being read.
+     *
+     * Settled once per opening and never changed afterwards, so the screen can
+     * treat it as an instruction to carry out rather than a position to keep
+     * following. A value that tracked the reader would send them back to where
+     * they started every time it arrived.
+     */
+    private val _initialPage = MutableStateFlow<Int?>(null)
+    val initialPage: StateFlow<Int?> = _initialPage.asStateFlow()
 
     /**
      * Exposed straight from the repository rather than copied into this
@@ -84,7 +99,50 @@ class ReaderViewModel(
 
             _uiState.value = state
 
-            if (state is UiState.Success) loadOutline(state.data)
+            if (state is UiState.Success) {
+                restorePosition(state.data)
+                loadOutline(state.data)
+            }
+        }
+    }
+
+    /**
+     * Where this book was left off, or its first page if it has never been
+     * opened - which is the same instruction, so an unread book is not a case
+     * of its own.
+     *
+     * Clamped to the book: a document can be replaced by a shorter one under
+     * the same name, and a stored page past the end would otherwise open at
+     * nothing.
+     */
+    private suspend fun restorePosition(document: ReaderDocument) {
+        val lastPage = document.pages.pageCount - 1
+        val stored = runCatchingApp { progressRepository.progressFor(location) }.getOrNull()
+
+        _initialPage.value = (stored?.pageIndex ?: 0).coerceIn(0, lastPage.coerceAtLeast(0))
+    }
+
+    /**
+     * Records where the reader has come to rest.
+     *
+     * Called when a scroll settles rather than as it moves: a fling through a
+     * long book passes hundreds of pages the reader never saw, and storing each
+     * of them would be hundreds of writes to arrive at the one page that
+     * mattered.
+     */
+    fun onPageSettled(pageIndex: Int) {
+        val document = _uiState.value.dataOrNull ?: return
+
+        viewModelScope.launch {
+            runCatchingApp {
+                progressRepository.save(
+                    location = location,
+                    progress = ReadingProgress(
+                        pageIndex = pageIndex,
+                        pageCount = document.pages.pageCount
+                    )
+                )
+            }
         }
     }
 
@@ -113,6 +171,7 @@ class ReaderViewModel(
         closeDocument()
         _uiState.value = UiState.Loading
         _outline.value = ReaderOutline.Loading
+        _initialPage.value = null
         open()
     }
 

@@ -6,12 +6,15 @@ import io.lukia.features.library.application.ImportDocumentUseCase
 import io.lukia.features.library.application.ImportFolderUseCase
 import io.lukia.features.library.application.GetLibraryDocumentsUseCase
 import io.lukia.features.library.domain.LibraryRepository
-import io.lukia.features.library.infrastructure.InMemoryLibraryRepository
+import io.lukia.core.infrastructure.db.LukiaDatabase
+import io.lukia.features.library.infrastructure.SqlLibraryRepository
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.reader.application.OpenDocumentUseCase
+import io.lukia.features.reader.domain.ReadingProgressRepository
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
+import io.lukia.features.reader.infrastructure.SqlReadingProgressRepository
 import io.lukia.features.reader.presentation.ReaderViewModel
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.features.settings.presentation.SettingsViewModel
@@ -20,8 +23,18 @@ import org.koin.dsl.module
 
 val commonModule = module {
 
+    // One database for the whole app, opened once. Each platform's module says
+    // where the file lives; everything above this line is the same code.
+    single {
+        LukiaDatabase(get())
+    }
+
     single<LibraryRepository> {
-        InMemoryLibraryRepository()
+        SqlLibraryRepository(get())
+    }
+
+    single<ReadingProgressRepository> {
+        SqlReadingProgressRepository(get())
     }
 
     single {
@@ -45,7 +58,7 @@ val commonModule = module {
     }
 
     single {
-        RemoveDocumentUseCase(get(), get())
+        RemoveDocumentUseCase(get(), get(), get())
     }
 
     single {
@@ -77,6 +90,6 @@ val commonModule = module {
     }
 
     viewModel { (location: String) ->
-        ReaderViewModel(location, get(), get())
+        ReaderViewModel(location, get(), get(), get())
     }
 }

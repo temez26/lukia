@@ -2,8 +2,10 @@ package io.lukia.di
 
 import io.lukia.core.domain.DocumentWorkspace
 import io.lukia.core.domain.SettingsStore
+import app.cash.sqldelight.db.SqlDriver
 import io.lukia.core.infrastructure.JvmDocumentWorkspace
 import io.lukia.core.infrastructure.JvmSettingsStore
+import io.lukia.core.infrastructure.lukiaSqlDriver
 import io.lukia.features.import.domain.DocumentAnalyzer
 import io.lukia.features.import.domain.FolderScanner
 import io.lukia.features.import.infrastructure.DesktopDocumentAnalyzer
@@ -22,6 +24,10 @@ val platformModule = module {
 
     single<SettingsStore> {
         JvmSettingsStore()
+    }
+
+    single<SqlDriver> {
+        lukiaSqlDriver()
     }
 
     single<FolderScanner> {
