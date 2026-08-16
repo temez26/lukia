@@ -11,6 +11,7 @@ import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
+import io.lukia.features.reader.domain.asTableOfContents
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -99,7 +100,7 @@ class ReaderViewModel(
     private fun loadOutline(document: ReaderDocument) {
         viewModelScope.launch {
             val entries = withContext(Dispatchers.Default) {
-                runCatchingApp { document.pages.outline }.getOrNull()
+                runCatchingApp { document.pages.outline?.asTableOfContents() }.getOrNull()
             }
 
             _outline.value = entries
