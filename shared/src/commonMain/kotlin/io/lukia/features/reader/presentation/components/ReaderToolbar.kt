@@ -2,6 +2,7 @@ package io.lukia.features.reader.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -31,9 +32,11 @@ import androidx.compose.ui.unit.dp
 import io.lukia.shared.presentation.components.BackChevron
 import io.lukia.shared.presentation.components.DisclosureChevron
 import io.lukia.shared.presentation.components.GlassSurface
+import io.lukia.shared.presentation.components.scaleOnPress
+import io.lukia.shared.presentation.theme.MinTouchTarget
 
-/** Apple's minimum comfortable target, and the height of the bar itself. */
-private val ControlSize: Dp = 44.dp
+/** The bar is exactly as tall as the controls in it. */
+private val ControlSize: Dp = MinTouchTarget
 
 /**
  * The reader's chrome: leaving the book, where you are in it, and how it reads.
@@ -153,10 +156,20 @@ internal fun ToolbarButton(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+
     Box(
         modifier = modifier
+            // Scale rather than a ripple: these are bare glyphs on translucent
+            // chrome, and a ripple spreading across the glass reads as a smudge.
+            .scaleOnPress(interactionSource)
             .pointerHoverIcon(PointerIcon.Hand)
-            .clickable(onClickLabel = label, onClick = onClick)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClickLabel = label,
+                onClick = onClick
+            )
             .size(ControlSize)
             .semantics { contentDescription = label },
         contentAlignment = Alignment.Center

@@ -1,31 +1,15 @@
 package io.lukia.features.library.presentation.screens
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsHoveredAsState
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -33,10 +17,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -48,43 +32,66 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.lerp
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.presentation.UiState
+import io.lukia.core.presentation.dataOrNull
+import io.lukia.features.bookdetail.presentation.BookDetailOverlay
 import io.lukia.features.import.presentation.rememberPlatformFilePicker
 import io.lukia.features.import.presentation.rememberPlatformFolderPicker
+import io.lukia.features.library.presentation.LibraryFilter
 import io.lukia.features.library.presentation.LibraryViewModel
+import io.lukia.features.library.presentation.availableFilters
 import io.lukia.features.library.presentation.components.BookCard
+import io.lukia.features.library.presentation.components.ImportBookCard
+import io.lukia.features.library.presentation.components.LibraryHeader
+import io.lukia.features.library.presentation.components.LibraryNavBar
+import io.lukia.features.library.presentation.components.libraryNavBarHeight
+import io.lukia.features.library.presentation.matching
+import io.lukia.features.settings.presentation.SettingsOverlay
 import io.lukia.shared.presentation.components.ActionMenuScrim
-import io.lukia.shared.presentation.components.BOOK_COVER_ASPECT_RATIO
-import io.lukia.shared.presentation.components.ExpandableActionMenu
-import io.lukia.shared.presentation.components.FolderGlyph
+import io.lukia.shared.presentation.components.LaunchReveal
 import io.lukia.shared.presentation.components.LoadingState
-import io.lukia.shared.presentation.components.PlusGlyph
-import io.lukia.shared.presentation.components.QuickAction
 import io.lukia.shared.presentation.components.UiStateContent
+import io.lukia.shared.presentation.components.launchReveal
+import io.lukia.shared.presentation.components.rememberLaunchReveal
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import io.lukia.shared.presentation.theme.LocalWindowWidthClass
+import io.lukia.shared.presentation.theme.WindowWidthClass
+import io.lukia.shared.presentation.theme.stateSwapIn
+import io.lukia.shared.presentation.theme.softFadeOut
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
+
+/**
+ * How far the grid scrolls before the compact bar has fully separated itself from
+ * the content passing under it. Roughly the height of the filter control, so the
+ * bar has arrived by the time the header is behind it.
+ */
+private val HeaderCollapseDistance: Dp = 56.dp
+
+/** Clears the last row of the bottom edge. */
+private val GridBottomPadding: Dp = 32.dp
+
+/** The lone import card on an empty screen, at about a phone grid cell's width. */
+private val EmptyStateCoverWidth: Dp = 104.dp
+
+/** The first two reveal slots belong to the filter control and the count under it. */
+private const val GridRevealOffset = 2
 
 @Composable
 fun LibraryScreen(
     viewModel: LibraryViewModel = koinViewModel(),
     onDocumentClick: (DocumentInfo) -> Unit = {},
-    onDocumentDetails: (DocumentInfo) -> Unit = {}
+    onDocumentDetails: (DocumentInfo) -> Unit = {},
+    onSettings: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val message by viewModel.message.collectAsState()
@@ -93,6 +100,13 @@ fun LibraryScreen(
     val filePicker = rememberPlatformFilePicker()
     val folderPicker = rememberPlatformFolderPicker()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // Settings open in place for the same reason a book's details do: a window
+    // with room for both should not throw the library away to change a theme.
+    // Held here rather than in the stateless half below, which has no business
+    // knowing about a dependency graph.
+    val settingsOpenInPlace = LocalWindowWidthClass.current != WindowWidthClass.Compact
+    var settingsOpen by rememberSaveable { mutableStateOf(false) }
 
     // Fires again each time the grid is re-entered from the detail screen, which
     // may have favourited or removed a book behind its back.
@@ -107,32 +121,44 @@ fun LibraryScreen(
         }
     }
 
-    LibraryContent(
-        uiState = uiState,
-        onImport = {
-            filePicker.launch { pickedDocument ->
-                pickedDocument?.let { viewModel.importDocument(it) }
-            }
-        },
-        onImportFolder = {
-            folderPicker.launch { pickedFolder ->
-                pickedFolder?.let { viewModel.importFolder(it) }
-            }
-        },
-        onDocumentClick = onDocumentClick,
-        onDocumentDetails = onDocumentDetails,
-        onToggleFavorite = viewModel::toggleFavorite,
-        onDelete = viewModel::deleteDocument,
-        onRetry = viewModel::refresh,
-        isImporting = isImporting,
-        snackbarHostState = snackbarHostState
-    )
+    Box(modifier = Modifier.fillMaxSize()) {
+        LibraryContent(
+            uiState = uiState,
+            onImport = {
+                filePicker.launch { pickedDocument ->
+                    pickedDocument?.let { viewModel.importDocument(it) }
+                }
+            },
+            onImportFolder = {
+                folderPicker.launch { pickedFolder ->
+                    pickedFolder?.let { viewModel.importFolder(it) }
+                }
+            },
+            onDocumentClick = onDocumentClick,
+            onDocumentDetails = onDocumentDetails,
+            onSettings = {
+                if (settingsOpenInPlace) settingsOpen = true else onSettings()
+            },
+            onToggleFavorite = viewModel::toggleFavorite,
+            onDelete = viewModel::deleteDocument,
+            onRetry = viewModel::refresh,
+            isImporting = isImporting,
+            snackbarHostState = snackbarHostState
+        )
+
+        // Over the library and its own overlays both, since it is opened from the
+        // bar that floats above them.
+        SettingsOverlay(
+            visible = settingsOpen,
+            onDismiss = { settingsOpen = false }
+        )
+    }
 }
 
 /**
- * Stateless half of the screen. Split out so the layout can be rendered without
- * a ViewModel or dependency graph - used by the screenshot harness and useful
- * for previews.
+ * Stateless half of the screen, so the layout can be composed in a test or a
+ * preview without a ViewModel or a dependency graph behind it. Every screen in
+ * the app splits this way.
  */
 @Composable
 fun LibraryContent(
@@ -145,53 +171,84 @@ fun LibraryContent(
     onDelete: (DocumentInfo) -> Unit,
     onRetry: () -> Unit,
     isImporting: Boolean,
-    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
-    initialActionMenuExpanded: Boolean = false
+    onSettings: () -> Unit = {},
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
     val dimens = LocalLukiaDimens.current
-    var actionMenuExpanded by rememberSaveable { mutableStateOf(initialActionMenuExpanded) }
-    // Held here rather than inside the grid so the card menu's scrim can sit in
-    // the same content layer as the action menu's. One location at a time, so
-    // opening a menu closes any other.
-    var menuFor by remember { mutableStateOf<String?>(null) }
+    val reveal = rememberLaunchReveal()
+    val gridState = rememberLazyGridState()
 
-    val actions = listOf(
-        QuickAction(
-            label = "Import book",
-            onClick = onImport,
-            icon = { tint -> PlusGlyph(tint = tint, modifier = Modifier.size(18.dp)) }
-        ),
-        QuickAction(
-            label = "Add folder",
-            onClick = onImportFolder,
-            icon = { tint -> FolderGlyph(tint = tint, modifier = Modifier.size(18.dp)) }
-        )
-    )
+    var query by rememberSaveable { mutableStateOf("") }
+    var selectedFilter by rememberSaveable { mutableStateOf(LibraryFilter.All) }
+
+    // A phone leaves the library to show a book's details, because it has room
+    // for one thing at a time. Anything wider keeps the library on screen and
+    // lays the details over it, so browsing is not unwound to read a file size.
+    val detailsOpenInPlace = LocalWindowWidthClass.current != WindowWidthClass.Compact
+
+    // The book being looked at, held by location rather than by value: favouriting
+    // it from inside the panel replaces the instance in the library, and a panel
+    // holding the old one would go on showing an empty heart. Looking it up again
+    // each pass also closes the panel when the book it was showing is deleted.
+    var detailLocation by rememberSaveable { mutableStateOf<String?>(null) }
+
+    // One value rather than a flag per menu: the screen has three of them and at
+    // most one may be open, and a single slot makes that structural instead of
+    // something every opener has to remember to enforce. Held here rather than in
+    // the grid so the dimming scrim behind any of them sits in one layer.
+    var openMenu by remember { mutableStateOf<OpenMenu?>(null) }
+
+    // Narrowed here rather than inside the grid, because the bar needs the count
+    // too - its search field says how many books it is searching - and working it
+    // out twice from two places is how the two come to disagree.
+    val documents = uiState.dataOrNull.orEmpty()
+    val filters = remember(documents) { documents.availableFilters() }
+
+    // Favouriting the last favourite, or removing the last EPUB, can take the
+    // segment the reader is standing on out from under them. Falling back here
+    // rather than leaving them on a filter that no longer exists is what stops
+    // the grid emptying for a reason nothing on screen explains.
+    val activeFilter = if (selectedFilter in filters) selectedFilter else LibraryFilter.All
+
+    val matches = remember(documents, activeFilter, query) {
+        documents.matching(activeFilter, query)
+    }
+
+    val detailDocument = detailLocation?.let { location ->
+        documents.firstOrNull { it.document.location == location }
+    }
+
+    val collapseDistancePx = with(LocalDensity.current) { HeaderCollapseDistance.toPx() }
+    // A lambda, not a value: read this way the scroll position reaches only the
+    // draw and layer blocks that use it, so scrolling redraws the bar without
+    // recomposing it or anything around it.
+    val collapsedProgress: () -> Float = {
+        if (gridState.firstVisibleItemIndex > 0) {
+            1f
+        } else {
+            (gridState.firstVisibleItemScrollOffset / collapseDistancePx).coerceIn(0f, 1f)
+        }
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        floatingActionButton = {
-            ExpandableActionMenu(
-                actions = actions,
-                expanded = actionMenuExpanded,
-                onExpandedChange = { actionMenuExpanded = it }
-            )
-        },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
+                modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.TopCenter
             ) {
                 // Reading the library is the outer state; everything inside is
                 // what a successfully read library can look like.
                 //
-                // The width cap lives on the container, not the children: put
-                // it on the children and AnimatedContent's own sizing wins,
-                // which left-aligns the grid instead of centring it.
+                // The width cap lives on the container, not the children: put it
+                // on the children and AnimatedContent's own sizing wins, which
+                // left-aligns the grid instead of centring it.
                 UiStateContent(
                     state = uiState,
                     actionLabel = "Try again",
@@ -201,28 +258,25 @@ fun LibraryContent(
                         // a readable measure instead of stretching edge to edge.
                         .widthIn(max = dimens.maxGridWidth)
                         .fillMaxSize()
-                ) { documents ->
+                    // The library it hands back is the same list already narrowed
+                    // above, so this only decides which of its shapes to draw.
+                ) { loaded ->
                     // An import that lands books keeps the grid up and reports
                     // itself in the header instead; the importing state below is
                     // only for when there is nothing else to show yet.
                     val contentState = when {
-                        documents.isNotEmpty() -> LibraryContentState.Content
+                        loaded.isNotEmpty() -> LibraryContentState.Content
                         isImporting -> LibraryContentState.Importing
                         else -> LibraryContentState.Empty
                     }
 
-                    // Cross-dissolve rather than a hard swap when the first book
-                    // lands. The slight scale keeps it from feeling like a cut.
                     AnimatedContent(
                         targetState = contentState,
                         transitionSpec = {
-                            val enter = fadeIn(tween(durationMillis = 280)) +
-                                scaleIn(tween(durationMillis = 280), initialScale = 0.96f)
-                            val exit = fadeOut(tween(durationMillis = 180))
                             // `using null` disables the default SizeTransform,
                             // which would otherwise animate the container bounds
                             // and slide the content sideways mid-transition.
-                            (enter togetherWith exit) using null
+                            (stateSwapIn() togetherWith softFadeOut()) using null
                         },
                         contentAlignment = Alignment.TopCenter,
                         modifier = Modifier.fillMaxSize(),
@@ -231,23 +285,44 @@ fun LibraryContent(
                         when (state) {
                             LibraryContentState.Importing -> LoadingState(
                                 message = "Importing books…",
-                                modifier = Modifier.fillMaxSize()
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(top = libraryNavBarHeight())
                             )
 
                             LibraryContentState.Empty -> LibraryEmptyState(
+                                importMenuExpanded = openMenu == OpenMenu.Import,
+                                onImportMenuRequest = { openMenu = OpenMenu.Import },
+                                onMenuDismiss = { openMenu = null },
                                 onImport = onImport,
+                                onImportFolder = onImportFolder,
+                                reveal = reveal,
                                 modifier = Modifier.fillMaxSize()
                             )
 
                             LibraryContentState.Content -> LibraryGrid(
-                                documents = documents,
+                                matches = matches,
+                                gridState = gridState,
+                                query = query,
+                                filters = filters,
+                                activeFilter = activeFilter,
+                                onFilterChange = { selectedFilter = it },
                                 isImporting = isImporting,
+                                reveal = reveal,
                                 onDocumentClick = onDocumentClick,
-                                onDocumentDetails = onDocumentDetails,
-                                menuFor = menuFor,
-                                onMenuForChange = { menuFor = it },
+                                onDocumentDetails = { document ->
+                                    if (detailsOpenInPlace) {
+                                        detailLocation = document.document.location
+                                    } else {
+                                        onDocumentDetails(document)
+                                    }
+                                },
+                                openMenu = openMenu,
+                                onOpenMenuChange = { openMenu = it },
                                 onToggleFavorite = onToggleFavorite,
                                 onDelete = onDelete,
+                                onImport = onImport,
+                                onImportFolder = onImportFolder,
                                 modifier = Modifier.fillMaxSize()
                             )
                         }
@@ -255,22 +330,60 @@ fun LibraryContent(
                 }
             }
 
-            // Sits above page content but below the action menu, which Scaffold
-            // draws in its own layer on top.
-            ActionMenuScrim(
-                visible = actionMenuExpanded,
-                onDismiss = { actionMenuExpanded = false }
+            // Above the grid it floats over, below the menus and their scrims.
+            LibraryNavBar(
+                collapsedProgress = collapsedProgress,
+                query = query,
+                onQueryChange = { query = it },
+                searchableCount = matches.size,
+                menuExpanded = openMenu == OpenMenu.Bar,
+                onMenuExpandedChange = { openMenu = if (it) OpenMenu.Bar else null },
+                onImport = onImport,
+                onImportFolder = onImportFolder,
+                onSettings = onSettings,
+                modifier = Modifier.align(Alignment.TopCenter)
             )
 
-            // The card menu is a Popup, so it draws above this scrim without
-            // needing to share its layer. The focusable popup already dismisses
-            // itself on an outside tap; this is the dimming that goes with it.
+            // Every menu on this screen is a non-focusable popup drawn above this
+            // layer, so the press that dismisses one has to be caught here.
             ActionMenuScrim(
-                visible = menuFor != null,
-                onDismiss = { menuFor = null }
+                visible = openMenu != null,
+                onDismiss = { openMenu = null }
+            )
+
+            // Last, so it covers the library and its chrome both. Draws nothing
+            // at all until a book is being looked at.
+            BookDetailOverlay(
+                document = detailDocument,
+                onDismiss = { detailLocation = null },
+                onRead = { document ->
+                    detailLocation = null
+                    onDocumentClick(document)
+                },
+                onToggleFavorite = onToggleFavorite,
+                onDelete = onDelete
             )
         }
     }
+}
+
+/**
+ * Which of the screen's menus is open, if any.
+ *
+ * A closed set rather than a flag each: these are mutually exclusive, and one
+ * slot that can only hold one of them cannot get into the state where two are
+ * open at once.
+ */
+private sealed interface OpenMenu {
+
+    /** The actions menu in the bar. */
+    data object Bar : OpenMenu
+
+    /** The import card's "where from" menu. */
+    data object Import : OpenMenu
+
+    /** One book's actions, by the location that identifies it. */
+    data class Book(val location: String) : OpenMenu
 }
 
 /** What a successfully read library is showing. */
@@ -282,201 +395,149 @@ private enum class LibraryContentState {
 
 @Composable
 private fun LibraryGrid(
-    documents: List<DocumentInfo>,
+    matches: List<DocumentInfo>,
+    gridState: LazyGridState,
+    query: String,
+    filters: List<LibraryFilter>,
+    activeFilter: LibraryFilter,
+    onFilterChange: (LibraryFilter) -> Unit,
     isImporting: Boolean,
+    reveal: LaunchReveal,
     onDocumentClick: (DocumentInfo) -> Unit,
     onDocumentDetails: (DocumentInfo) -> Unit,
-    menuFor: String?,
-    onMenuForChange: (String?) -> Unit,
+    openMenu: OpenMenu?,
+    onOpenMenuChange: (OpenMenu?) -> Unit,
     onToggleFavorite: (DocumentInfo) -> Unit,
     onDelete: (DocumentInfo) -> Unit,
+    onImport: () -> Unit,
+    onImportFolder: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val dimens = LocalLukiaDimens.current
 
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = dimens.bookCellMinWidth),
+        state = gridState,
         modifier = modifier,
         contentPadding = PaddingValues(
             start = dimens.screenPadding,
             end = dimens.screenPadding,
-            top = 8.dp,
-            // Clears the floating import button so the last row is never hidden.
-            bottom = 104.dp
+            // Content scrolls under the compact bar, so the header has to start
+            // clear of where it sits at rest.
+            top = libraryNavBarHeight() + 8.dp,
+            bottom = GridBottomPadding
         ),
         horizontalArrangement = Arrangement.spacedBy(dimens.gridSpacing),
         verticalArrangement = Arrangement.spacedBy(dimens.sectionSpacing)
     ) {
-        item(span = { GridItemSpan(maxLineSpan) }) {
-            LibraryHeader(bookCount = documents.size, isImporting = isImporting)
+        item(span = { GridItemSpan(maxLineSpan) }, key = "header") {
+            LibraryHeader(
+                filters = filters,
+                selectedFilter = activeFilter,
+                onFilterChange = onFilterChange,
+                isImporting = isImporting,
+                reveal = reveal
+            )
         }
 
-        items(
-            items = documents,
-            // Location identifies a document in the library, so keying on it
-            // lets Compose track a card across reloads instead of rebuilding
-            // the whole grid whenever an import appends to the list.
-            key = { it.document.location }
-        ) { document ->
+        if (matches.isEmpty()) {
+            item(span = { GridItemSpan(maxLineSpan) }, key = "noMatches") {
+                NoMatchesNotice(query = query, filter = activeFilter)
+            }
+        }
+
+        itemsIndexed(
+            items = matches,
+            // Location identifies a document in the library, so keying on it lets
+            // Compose track a card across reloads instead of rebuilding the whole
+            // grid whenever an import appends to the list.
+            key = { _, document -> document.document.location }
+        ) { index, document ->
+            val location = document.document.location
+
             BookCard(
                 document = document,
-                menuExpanded = menuFor == document.document.location,
+                menuExpanded = openMenu == OpenMenu.Book(location),
                 onClick = { onDocumentClick(document) },
-                onMenuRequest = { onMenuForChange(document.document.location) },
-                onMenuDismiss = { onMenuForChange(null) },
+                onMenuRequest = { onOpenMenuChange(OpenMenu.Book(location)) },
+                onMenuDismiss = { onOpenMenuChange(null) },
                 onToggleFavorite = { onToggleFavorite(document) },
                 onDelete = { onDelete(document) },
                 onShowDetails = { onDocumentDetails(document) },
+                reveal = reveal,
+                revealIndex = index + GridRevealOffset,
                 modifier = Modifier.animateItem()
             )
         }
-    }
-}
 
-@Composable
-private fun LibraryHeader(bookCount: Int, isImporting: Boolean) {
-    Column(modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)) {
-        Text(
-            text = "Library",
-            style = MaterialTheme.typography.displaySmall,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
-        // An import into a library that already has books reports itself here
-        // rather than replacing the grid - the books already on screen stay
-        // readable while the rest arrive.
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(top = 2.dp)
-        ) {
-            if (isImporting) {
-                CircularProgressIndicator(
-                    strokeWidth = 2.dp,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(12.dp)
+        // Last, so it reads as the end of the library rather than as the first
+        // thing in it.
+        //
+        // Only under All. A slot offering to add a book to a filtered view
+        // promises something it cannot keep: import a PDF while the grid is
+        // showing favourites, and the book lands in the library but not on the
+        // screen that just took it, which reads as having swallowed it. Left out
+        // of a search that found nothing for the same reason - the notice above
+        // is the whole answer, and a lone slot beneath it would look like a result.
+        if (activeFilter == LibraryFilter.All && matches.isNotEmpty()) {
+            item(key = "import") {
+                ImportBookCard(
+                    menuExpanded = openMenu == OpenMenu.Import,
+                    onMenuRequest = { onOpenMenuChange(OpenMenu.Import) },
+                    onMenuDismiss = { onOpenMenuChange(null) },
+                    onImport = onImport,
+                    onImportFolder = onImportFolder,
+                    reveal = reveal,
+                    revealIndex = matches.size + GridRevealOffset,
+                    modifier = Modifier.animateItem()
                 )
-                Spacer(modifier = Modifier.width(8.dp))
             }
-
-            Text(
-                text = when {
-                    isImporting -> "Importing…"
-                    bookCount == 1 -> "1 book"
-                    else -> "$bookCount books"
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }
 
 /**
- * The empty-state cover. Tapping it starts an import, so the most prominent
- * thing on an empty screen is also actionable rather than purely decorative.
- *
- * The tap animation hinges the cover on its left edge and swings it open like a
- * real book before settling back with a soft spring.
+ * The dead end at the bottom of a filter and a search that between them match
+ * nothing, worded for whichever of the two is responsible.
  */
 @Composable
-private fun EmptyCoverPlaceholder(onClick: () -> Unit) {
-    val shape = RoundedCornerShape(14.dp)
-    val scope = rememberCoroutineScope()
-    val openAngle = remember { Animatable(0f) }
+private fun NoMatchesNotice(query: String, filter: LibraryFilter) {
+    val trimmed = query.trim()
 
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val isHovered by interactionSource.collectIsHoveredAsState()
-
-    val pressScale by animateFloatAsState(
-        targetValue = if (isPressed) 0.95f else 1f,
-        animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
-    )
-    // Desktop-only in practice: touch platforms never report hover, so this
-    // stays at rest on phones and tablets without needing a platform check.
-    val hover by animateFloatAsState(
-        targetValue = if (isHovered) 1f else 0f,
-        animationSpec = spring(
-            dampingRatio = 0.8f,
-            stiffness = Spring.StiffnessMediumLow
-        )
-    )
-    // The plus warms to the accent colour on hover, confirming the card is a
-    // control rather than an empty slot.
-    val glyphTint by animateColorAsState(
-        targetValue = if (isHovered) {
-            MaterialTheme.colorScheme.primary
-        } else {
-            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
-        },
-        animationSpec = tween(durationMillis = 200)
-    )
-
-    Box(
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .width(104.dp)
-            .aspectRatio(BOOK_COVER_ASPECT_RATIO)
-            .graphicsLayer {
-                rotationY = openAngle.value
-                val scale = pressScale * (1f + 0.04f * hover)
-                scaleX = scale
-                scaleY = scale
-                translationY = -8.dp.toPx() * hover
-                // Hinge on the left edge, where a book's spine would be.
-                transformOrigin = TransformOrigin(0f, 0.5f)
-                // Without a wider camera distance the rotation reads as a
-                // horizontal squash instead of a swing.
-                cameraDistance = 16f * density
-            }
-            // Shadow grows in only on hover, so the resting state stays as flat
-            // as the placeholder it is.
-            .shadow(
-                elevation = lerp(0.dp, 16.dp, hover),
-                shape = shape,
-                clip = false
-            )
-            .pointerHoverIcon(PointerIcon.Hand)
-            .clip(shape)
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outlineVariant,
-                shape = shape
-            )
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClickLabel = "Import a book"
-            ) {
-                scope.launch {
-                    openAngle.animateTo(
-                        targetValue = -34f,
-                        animationSpec = tween(durationMillis = 200, easing = FastOutSlowInEasing)
-                    )
-                    // Fired mid-animation so the swing is visible before a
-                    // platform file dialog takes over the window.
-                    onClick()
-                    openAngle.animateTo(
-                        targetValue = 0f,
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessLow
-                        )
-                    )
-                }
-            },
-        contentAlignment = Alignment.Center
+            .fillMaxWidth()
+            .padding(top = 48.dp)
     ) {
-        PlusGlyph(
-            tint = glyphTint,
-            modifier = Modifier.size(28.dp)
+        Text(
+            text = "No Results",
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+
+        Text(
+            text = when {
+                trimmed.isEmpty() -> "Nothing in your library is ${filter.label.lowercase()}."
+                filter == LibraryFilter.All -> "No books match “$trimmed”."
+                else -> "No ${filter.label.lowercase()} books match “$trimmed”."
+            },
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 6.dp)
         )
     }
 }
 
 @Composable
 private fun LibraryEmptyState(
+    importMenuExpanded: Boolean,
+    onImportMenuRequest: () -> Unit,
+    onMenuDismiss: () -> Unit,
     onImport: () -> Unit,
+    onImportFolder: () -> Unit,
+    reveal: LaunchReveal,
     modifier: Modifier = Modifier
 ) {
     val dimens = LocalLukiaDimens.current
@@ -486,26 +547,28 @@ private fun LibraryEmptyState(
             .fillMaxSize()
             .padding(horizontal = dimens.screenPadding)
     ) {
-        // Without this the empty screen has no title at all, and the layout
-        // jumps once the first book lands.
-        Text(
-            text = "Library",
-            style = MaterialTheme.typography.displaySmall,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(top = 20.dp)
-        )
-
+        // No heading of its own: there is nothing here to head, and "Your library
+        // is empty" below is a better one than the word "Library" would be.
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .align(Alignment.Center)
                 .widthIn(max = 320.dp)
+                .launchReveal(reveal, index = 1)
         ) {
-            // A blank cover stands in for "a book could go here" - and doubles
-            // as the import affordance.
-            EmptyCoverPlaceholder(onClick = onImport)
+            // The same slot that ends a full library, standing alone here. One
+            // card to learn, and it asks the same question in both places.
+            ImportBookCard(
+                menuExpanded = importMenuExpanded,
+                onMenuRequest = onImportMenuRequest,
+                onMenuDismiss = onMenuDismiss,
+                onImport = onImport,
+                onImportFolder = onImportFolder,
+                reveal = reveal,
+                revealIndex = 1,
+                label = null,
+                modifier = Modifier.width(EmptyStateCoverWidth)
+            )
 
             Text(
                 text = "Your library is empty",
@@ -516,10 +579,10 @@ private fun LibraryEmptyState(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // With no explicit button here, the copy has to carry the
-            // affordance for the tappable cover above.
+            // With no explicit button here, the copy has to carry the affordance
+            // for the tappable cover above.
             Text(
-                text = "Tap the cover to import a PDF or EPUB.",
+                text = "Tap the cover to add a PDF or EPUB.",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center

@@ -1,11 +1,6 @@
 package io.lukia.features.reader.presentation.screens
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -45,7 +40,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -75,6 +69,8 @@ import io.lukia.features.reader.presentation.theme.ReaderTheming
 import io.lukia.features.reader.presentation.theme.readerPageStyle
 import io.lukia.shared.presentation.components.UiStateContent
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import io.lukia.shared.presentation.theme.topChromeIn
+import io.lukia.shared.presentation.theme.topChromeOut
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
@@ -210,8 +206,8 @@ fun ReaderContent(
                 // re-laying out a single page.
                 AnimatedVisibility(
                     visible = chromeShown,
-                    enter = slideInVertically { -it } + fadeIn(tween(durationMillis = 180)),
-                    exit = slideOutVertically { -it } + fadeOut(tween(durationMillis = 140)),
+                    enter = topChromeIn(),
+                    exit = topChromeOut(),
                     modifier = Modifier.align(Alignment.TopCenter)
                 ) {
                     ReaderToolbar(
@@ -433,17 +429,24 @@ private fun DocumentPage(
  *
  * Only claims the gesture once a second finger is down: one finger stays a
  * scroll, two become a zoom. A plain transform gesture would swallow both.
+ *
+ * A composable extension rather than a `composed` modifier: `composed` makes a
+ * chain opaque to Compose's modifier comparison, so the whole chain it appears in
+ * is rebuilt on every recomposition instead of being reused. The `rememberUpdated`
+ * values below are what let the gesture keep a single `pointerInput` across a
+ * changing scale, which is the thing that actually matters here.
  */
+@Composable
 private fun Modifier.pinchToZoom(
     scale: Float,
     onPinch: (Float) -> Unit,
     onPinchEnd: () -> Unit
-): Modifier = composed {
+): Modifier {
     val currentScale by rememberUpdatedState(scale)
     val currentOnPinch by rememberUpdatedState(onPinch)
     val currentOnPinchEnd by rememberUpdatedState(onPinchEnd)
 
-    pointerInput(Unit) {
+    return pointerInput(Unit) {
         awaitEachGesture {
             awaitFirstDown(requireUnconsumed = false)
             var pinched = false

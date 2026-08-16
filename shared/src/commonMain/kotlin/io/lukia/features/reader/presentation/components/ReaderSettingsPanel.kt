@@ -1,7 +1,5 @@
 package io.lukia.features.reader.presentation.components
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -14,7 +12,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,18 +19,13 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
@@ -48,7 +40,12 @@ import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.domain.ReaderTypeface
 import io.lukia.features.reader.domain.ReadingWidth
+import io.lukia.shared.presentation.components.DismissOnBack
 import io.lukia.shared.presentation.components.GlassSurface
+import io.lukia.shared.presentation.components.SegmentedControl
+import io.lukia.shared.presentation.components.popoverTransition
+import io.lukia.shared.presentation.components.rememberPopoverProgress
+import io.lukia.shared.presentation.theme.MinTouchTarget
 import kotlin.math.roundToInt
 
 /** Grows out of the control it hangs from, matching the book actions menu. */
@@ -58,11 +55,8 @@ private val PanelTransformOrigin = TransformOrigin(1f, 0f)
 private val PanelWidth: Dp = 284.dp
 private val PanelPadding: Dp = 16.dp
 
-/**
- * The segmented track. Its segments are the touch target, full width each, at
- * the smallest size a finger can be asked to hit accurately.
- */
-private val SegmentHeight: Dp = 44.dp
+/** The text stepper shares the segmented control's track height. */
+private val SegmentHeight: Dp = MinTouchTarget
 
 /**
  * The reader's presentation settings.
@@ -86,14 +80,7 @@ internal fun ReaderSettingsPanel(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Animated through a graphicsLayer rather than AnimatedVisibility, which
-    // measures its child at zero size first and would make the panel flicker
-    // through a collapsed layout on the way in.
-    val progress by animateFloatAsState(
-        targetValue = if (expanded) 1f else 0f,
-        animationSpec = tween(durationMillis = if (expanded) 180 else 140),
-        label = "readerSettingsPanel"
-    )
+    val progress = rememberPopoverProgress(expanded, label = "readerSettingsPanel")
 
     if (!expanded && progress == 0f) return
 
@@ -101,13 +88,7 @@ internal fun ReaderSettingsPanel(
 
     GlassSurface(
         shape = RoundedCornerShape(18.dp),
-        modifier = modifier.graphicsLayer {
-            alpha = progress
-            val scale = 0.92f + 0.08f * progress
-            scaleX = scale
-            scaleY = scale
-            transformOrigin = PanelTransformOrigin
-        }
+        modifier = modifier.popoverTransition(progress, PanelTransformOrigin)
     ) {
         Column(
             modifier = Modifier
@@ -120,7 +101,7 @@ internal fun ReaderSettingsPanel(
                 .padding(vertical = 10.dp)
         ) {
             SettingGroup(label = "Theme") {
-                SegmentedOptions(
+                SegmentedControl(
                     options = ReaderTheme.entries,
                     selected = settings.theme,
                     label = { it.name },
@@ -132,7 +113,7 @@ internal fun ReaderSettingsPanel(
             // run past the width of the window, "125%" says what "Larger"
             // cannot.
             SettingGroup(label = "Page width") {
-                SegmentedOptions(
+                SegmentedControl(
                     options = ReadingWidth.entries,
                     // Nothing is selected when a pinch has left the page
                     // between two presets, which is the honest answer.
@@ -170,7 +151,7 @@ internal fun ReaderSettingsPanel(
             }
 
             SettingGroup(label = "Line spacing", enabled = typographyEnabled) {
-                SegmentedOptions(
+                SegmentedControl(
                     options = LineSpacing.entries,
                     selected = settings.lineSpacing,
                     label = { it.name },
@@ -180,7 +161,7 @@ internal fun ReaderSettingsPanel(
             }
 
             SettingGroup(label = "Typeface", enabled = typographyEnabled) {
-                SegmentedOptions(
+                SegmentedControl(
                     options = ReaderTypeface.entries,
                     selected = settings.typeface,
                     label = { if (it == ReaderTypeface.Serif) "Serif" else "Sans" },
@@ -218,66 +199,6 @@ private fun SettingGroup(
         )
 
         control()
-    }
-}
-
-/**
- * One choice from a short list, in the style of an iOS segmented control.
- *
- * Segments share the width evenly so the track stays the same size whatever the
- * labels are, and each carries radio-button semantics so assistive technology
- * reads them as a single choice rather than as unrelated buttons.
- */
-@Composable
-private fun <T> SegmentedOptions(
-    options: List<T>,
-    selected: T?,
-    label: (T) -> String,
-    onSelect: (T) -> Unit,
-    enabled: Boolean = true
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(CircleShape)
-            .background(
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (enabled) 1f else 0.5f)
-            )
-            .height(SegmentHeight)
-            .padding(3.dp)
-    ) {
-        options.forEach { option ->
-            val isSelected = option == selected
-
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .clip(CircleShape)
-                    .background(
-                        if (isSelected) MaterialTheme.colorScheme.surface else Color.Transparent
-                    )
-                    .selectable(
-                        selected = isSelected,
-                        enabled = enabled,
-                        role = Role.RadioButton,
-                        onClick = { onSelect(option) }
-                    )
-                    .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default)
-            ) {
-                Text(
-                    text = label(option),
-                    style = MaterialTheme.typography.labelSmall,
-                    textAlign = TextAlign.Center,
-                    maxLines = 1,
-                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                    color = MaterialTheme.colorScheme.onSurface.copy(
-                        alpha = if (enabled) 1f else DisabledAlpha
-                    )
-                )
-            }
-        }
     }
 }
 
@@ -390,19 +311,6 @@ private fun PanelDivider() {
         color = MaterialTheme.colorScheme.outlineVariant,
         modifier = Modifier.padding(horizontal = 16.dp)
     )
-}
-
-/**
- * Back on Android, Escape on desktop. Matches how the book actions menu closes.
- */
-@Suppress("DEPRECATION")
-@OptIn(ExperimentalComposeUiApi::class)
-@Composable
-private fun DismissOnBack(
-    enabled: Boolean,
-    onDismiss: () -> Unit
-) {
-    BackHandler(enabled = enabled, onBack = onDismiss)
 }
 
 private const val DisabledAlpha = 0.38f

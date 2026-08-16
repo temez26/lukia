@@ -6,6 +6,8 @@ sealed class Routes(val route: String) {
 
     data object Library : Routes("library")
 
+    data object Settings : Routes("settings")
+
     /**
      * A destination that shows one book, addressed by its library location.
      *

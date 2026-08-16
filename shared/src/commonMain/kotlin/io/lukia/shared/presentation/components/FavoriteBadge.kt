@@ -1,9 +1,6 @@
 package io.lukia.shared.presentation.components
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -19,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.lukia.shared.presentation.theme.LukiaMotion
 
 /**
  * The filled heart shown over a favourited book's cover.
@@ -36,13 +34,10 @@ fun FavoriteBadge(
         visible = visible,
         // The pop is the feedback for a toggle made from a menu that has already
         // closed over the cover.
-        enter = fadeIn(tween(durationMillis = 160)) +
-            scaleIn(
-                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-                initialScale = 0.5f
-            ),
-        exit = fadeOut(tween(durationMillis = 120)) +
-            scaleOut(tween(durationMillis = 120), targetScale = 0.5f),
+        enter = fadeIn(LukiaMotion.quick()) +
+            scaleIn(animationSpec = LukiaMotion.bouncy(), initialScale = 0.5f),
+        exit = fadeOut(LukiaMotion.exit()) +
+            scaleOut(LukiaMotion.exit(), targetScale = 0.5f),
         modifier = modifier
     ) {
         Box(
