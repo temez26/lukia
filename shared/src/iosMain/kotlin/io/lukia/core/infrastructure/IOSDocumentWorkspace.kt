@@ -5,6 +5,7 @@ import io.lukia.core.domain.DocumentWorkspace
 import io.lukia.core.domain.WorkingCopy
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import platform.Foundation.NSApplicationSupportDirectory
 import platform.Foundation.NSFileManager
