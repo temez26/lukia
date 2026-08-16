@@ -1,0 +1,63 @@
+import kotlin.Boolean;
+
+-- A book in the library.
+--
+-- Keyed by location, which is the library's identity for a document everywhere
+-- else too: importing the same file twice refreshes the entry rather than
+-- adding a second one.
+--
+-- `sortKey` is what keeps the library in the order books were added to it. A
+-- plain rowid would not: replacing a row is a delete and an insert, so a
+-- refreshed book would jump to the end of a shelf it has been on for months.
+--
+-- `fileExists` is the last thing known about the file, from the analysis that
+-- put it here. A file can go missing between runs, so this is history rather
+-- than fact, and the next import or rescan is what corrects it.
+CREATE TABLE document (
+    location TEXT NOT NULL PRIMARY KEY,
+    fileName TEXT NOT NULL,
+    extension TEXT NOT NULL,
+    type TEXT NOT NULL,
+    fileExists INTEGER AS Boolean NOT NULL,
+    sizeBytes INTEGER NOT NULL,
+    isFavorite INTEGER AS Boolean NOT NULL DEFAULT 0,
+    coverImage BLOB,
+    sortKey INTEGER NOT NULL
+);
+
+selectAll:
+SELECT * FROM document ORDER BY sortKey;
+
+selectByLocation:
+SELECT * FROM document WHERE location = ?;
+
+-- Adding and refreshing are two statements rather than one upsert on purpose.
+-- `ON CONFLICT DO UPDATE` needs SQLite 3.24, and this app's minimum Android
+-- ships 3.9 - a book stored on a phone from 2016 would fail at the point of
+-- being stored, which is the last place to find out about a dialect.
+--
+-- Ignored when the book is already there, so the shelf position it was given
+-- when it was first imported is the one it keeps.
+insertIfAbsent:
+INSERT OR IGNORE INTO document(location, fileName, extension, type, fileExists, sizeBytes, coverImage, sortKey)
+VALUES (?, ?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(sortKey), 0) + 1 FROM document));
+
+-- Everything the analyser knows, and nothing only the reader knows. A rescan
+-- that re-analysed every book would otherwise un-favourite the lot of them, and
+-- re-importing a file whose cover could not be read this time would take away
+-- the one already stored.
+refresh:
+UPDATE document
+SET fileName = :fileName,
+    extension = :extension,
+    type = :type,
+    fileExists = :fileExists,
+    sizeBytes = :sizeBytes,
+    coverImage = COALESCE(:coverImage, coverImage)
+WHERE location = :location;
+
+setFavorite:
+UPDATE document SET isFavorite = ? WHERE location = ?;
+
+deleteByLocation:
+DELETE FROM document WHERE location = ?;

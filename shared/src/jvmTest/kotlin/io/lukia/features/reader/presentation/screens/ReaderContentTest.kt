@@ -427,6 +427,33 @@ class ReaderContentTest {
         onNodeWithText("book").assertExists()
     }
 
+    /** Coming back to a book means coming back to the page, not to the cover. */
+    @Test
+    fun theBookOpensWhereItWasLeftOff() = runComposeUiTest {
+        setReader(pageCount = 348, initialPage = 119)
+
+        onNodeWithText("120 / 348").assertExists()
+    }
+
+    @Test
+    fun aBookWithNoStoredPositionOpensAtTheStart() = runComposeUiTest {
+        setReader(pageCount = 348, initialPage = 0)
+
+        onNodeWithText("1 / 348").assertExists()
+    }
+
+    /** What is reported is where the reader came to rest, not what they flew past. */
+    @Test
+    fun theSettledPageIsReported() = runComposeUiTest {
+        val settled = mutableListOf<Int>()
+        setReader(pageCount = 348, onPageSettled = { settled += it })
+
+        onNode(hasScrollToIndexAction()).performScrollToIndex(11)
+        waitForIdle()
+
+        assertEquals(11, settled.lastOrNull())
+    }
+
     /** A shortcut nobody can find is a shortcut nobody has. */
     @Test
     fun theSettingsPanelSaysWhatTheKeysDo() = runComposeUiTest {
@@ -577,8 +604,10 @@ class ReaderContentTest {
         pageCount: Int,
         outline: ReaderOutline = ReaderOutline.Chapters(emptyList()),
         settings: ReaderSettings = ReaderSettings(),
+        initialPage: Int? = null,
         onBack: () -> Unit = {},
-        onSettingsChange: (ReaderSettings) -> Unit = {}
+        onSettingsChange: (ReaderSettings) -> Unit = {},
+        onPageSettled: (Int) -> Unit = {}
     ) {
         setContent {
             LukiaTheme {
@@ -586,9 +615,11 @@ class ReaderContentTest {
                     uiState = UiState.Success(readerDocument(pageCount)),
                     settings = settings,
                     outline = outline,
+                    initialPage = initialPage,
                     onBack = onBack,
                     onRetry = {},
                     onSettingsChange = onSettingsChange,
+                    onPageSettled = onPageSettled,
                     // Pages never arrive: this is about the chrome around them,
                     // and a page's own sheet is laid out before it renders.
                     renderPage = { _, _ -> null }
