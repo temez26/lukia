@@ -40,6 +40,34 @@ fun BackChevron(
 }
 
 /**
+ * A downward chevron, marking a control that opens something beneath it. Drawn
+ * at the same weight as [BackChevron] so the two read as one family.
+ */
+@Composable
+fun DisclosureChevron(
+    tint: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val chevron = Path().apply {
+            moveTo(size.width * 0.15f, size.height * 0.35f)
+            lineTo(size.width * 0.50f, size.height * 0.68f)
+            lineTo(size.width * 0.85f, size.height * 0.35f)
+        }
+
+        drawPath(
+            path = chevron,
+            color = tint,
+            style = Stroke(
+                width = 1.6.dp.toPx(),
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round
+            )
+        )
+    }
+}
+
+/**
  * A folder outline for the library-path action. Drawn as a single stroked path
  * so it sits at the same visual weight as [PlusGlyph] beside it.
  */

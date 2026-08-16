@@ -35,7 +35,7 @@ class ReaderSettingsRepositoryTest {
             theme = ReaderTheme.Dark,
             textScale = 1.4f,
             lineSpacing = LineSpacing.Relaxed,
-            readingWidth = ReadingWidth.Narrow,
+            pageScale = ReadingWidth.Narrow.fraction,
             typeface = ReaderTypeface.Serif
         )
 
@@ -49,11 +49,11 @@ class ReaderSettingsRepositoryTest {
         val store = FakeSettingsStore()
 
         ReaderSettingsRepository(store).update(
-            ReaderSettings(theme = ReaderTheme.Sepia, readingWidth = ReadingWidth.Medium)
+            ReaderSettings(theme = ReaderTheme.Sepia, pageScale = ReadingWidth.Medium.fraction)
         )
 
         assertEquals(ReaderTheme.Sepia.name, store.values["reader.theme"])
-        assertEquals(ReadingWidth.Medium.name, store.values["reader.readingWidth"])
+        assertEquals(ReadingWidth.Medium.fraction.toString(), store.values["reader.pageScale"])
     }
 
     /**
@@ -72,7 +72,7 @@ class ReaderSettingsRepositoryTest {
         val settings = ReaderSettingsRepository(store).settings.value
 
         assertEquals(ReaderSettings().theme, settings.theme)
-        assertEquals(ReadingWidth.Narrow, settings.readingWidth)
+        assertEquals(ReadingWidth.Narrow, settings.matchingWidth)
     }
 
     @Test

@@ -4,6 +4,9 @@ import kotlinx.coroutines.test.runTest
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.common.PDRectangle
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageFitWidthDestination
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem
 import java.io.File
 import kotlin.test.AfterTest
 import kotlin.test.Test
@@ -85,11 +88,79 @@ class PdfDocumentPagesTest {
     }
 
     @Test
+    fun readsTheDocumentsOwnChapters() {
+        val file = pdfFile(pageCount = 6) { document ->
+            document.outline(
+                "Introduction" to 0,
+                "The Middle" to 2,
+                "The End" to 5
+            )
+        }
+
+        openPdfPages(file.absolutePath).use { pages ->
+            assertEquals(
+                listOf("Introduction", "The Middle", "The End"),
+                pages.outline?.map { it.title }
+            )
+            assertEquals(listOf(0, 2, 5), pages.outline?.map { it.pageIndex })
+        }
+    }
+
+    /** Nesting becomes a level, so the panel can indent without a tree. */
+    @Test
+    fun nestedSectionsCarryTheirDepth() {
+        val file = pdfFile(pageCount = 4) { document ->
+            val outline = PDDocumentOutline()
+            document.documentCatalog.documentOutline = outline
+
+            val chapter = document.outlineItem("Chapter One", pageIndex = 0)
+            outline.addLast(chapter)
+            chapter.addLast(document.outlineItem("A Section", pageIndex = 1))
+            chapter.addLast(document.outlineItem("Another Section", pageIndex = 2))
+        }
+
+        openPdfPages(file.absolutePath).use { pages ->
+            assertEquals(
+                listOf(0, 1, 1),
+                pages.outline?.map { it.level }
+            )
+            assertEquals(
+                listOf("Chapter One", "A Section", "Another Section"),
+                pages.outline?.map { it.title }
+            )
+        }
+    }
+
+    /** Empty, not null: the document genuinely has no table of contents. */
+    @Test
+    fun aDocumentWithoutAnOutlineHasNoChapters() {
+        openPdfPages(pdfFile(pageCount = 2).absolutePath).use { pages ->
+            assertEquals(emptyList(), pages.outline)
+        }
+    }
+
+    @Test
     fun aFileThatIsNotAPdfDoesNotOpen() {
         val file = File(directory, "not-a.pdf").apply { writeText("not a pdf") }
 
         assertFails { openPdfPages(file.absolutePath) }
     }
+
+    /** Adds a flat outline, one entry per title, pointing at the given pages. */
+    private fun PDDocument.outline(vararg entries: Pair<String, Int>) {
+        val outline = PDDocumentOutline()
+        documentCatalog.documentOutline = outline
+
+        entries.forEach { (title, pageIndex) ->
+            outline.addLast(outlineItem(title, pageIndex))
+        }
+    }
+
+    private fun PDDocument.outlineItem(title: String, pageIndex: Int): PDOutlineItem =
+        PDOutlineItem().apply {
+            this.title = title
+            destination = PDPageFitWidthDestination().apply { page = getPage(pageIndex) }
+        }
 
     private fun pdfFile(
         pageCount: Int,

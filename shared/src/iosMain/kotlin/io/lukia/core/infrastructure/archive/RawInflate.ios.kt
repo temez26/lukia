@@ -1,4 +1,4 @@
-package io.lukia.features.import.infrastructure.archive
+package io.lukia.core.infrastructure.archive
 
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf

@@ -6,7 +6,9 @@ import android.os.ParcelFileDescriptor
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import io.lukia.features.reader.domain.DocumentPages
+import io.lukia.features.reader.domain.OutlineEntry
 import io.lukia.features.reader.domain.PageSize
+import io.lukia.features.reader.infrastructure.pdf.PdfOutlineReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -17,8 +19,10 @@ internal actual fun openPdfPages(path: String): DocumentPages = AndroidDocumentP
 
 private class AndroidDocumentPages(path: String) : DocumentPages {
 
+    private val file = File(path)
+
     private val descriptor: ParcelFileDescriptor =
-        ParcelFileDescriptor.open(File(path), ParcelFileDescriptor.MODE_READ_ONLY)
+        ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
 
     private val renderer = PdfRenderer(descriptor)
 
@@ -33,6 +37,18 @@ private class AndroidDocumentPages(path: String) : DocumentPages {
         renderer.openPage(index).use { page ->
             PageSize(width = page.width.toFloat(), height = page.height.toFloat())
         }
+    }
+
+    /**
+     * Read out of the file itself, because [PdfRenderer] exposes page count and
+     * page bitmaps and nothing else - it has no outline, bookmark or destination
+     * API at this app's minimum SDK.
+     *
+     * Lazy so that opening a book never pays for a chapter list until something
+     * asks for one, and so the file is not scanned on the way to the first page.
+     */
+    override val outline: List<OutlineEntry>? by lazy {
+        FilePdfByteSource(file).use { PdfOutlineReader(it).read() }
     }
 
     override suspend fun renderPage(index: Int, targetWidthPx: Int): ImageBitmap? =

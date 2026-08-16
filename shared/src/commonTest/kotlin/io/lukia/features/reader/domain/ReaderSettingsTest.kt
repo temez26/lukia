@@ -3,6 +3,7 @@ package io.lukia.features.reader.domain
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ReaderSettingsTest {
@@ -12,7 +13,7 @@ class ReaderSettingsTest {
         val settings = ReaderSettings()
 
         assertEquals(ReaderTheme.Light, settings.theme)
-        assertEquals(ReadingWidth.Wide, settings.readingWidth)
+        assertEquals(ReadingWidth.Wide, settings.matchingWidth)
         assertEquals(100, settings.textScalePercent)
     }
 
@@ -71,12 +72,59 @@ class ReaderSettingsTest {
         assertTrue(settings.canReduceText)
     }
 
-    /** Narrower settings have to actually be narrower, in order. */
+    /** A pinch can ask for anything; the page has to stay a readable size. */
     @Test
-    fun readingWidthsAreOrderedFromNarrowToWide() {
-        assertTrue(ReadingWidth.Narrow.fraction < ReadingWidth.Medium.fraction)
-        assertTrue(ReadingWidth.Medium.fraction < ReadingWidth.Wide.fraction)
+    fun aPageScaleFromOutsideTheRangeIsClamped() {
+        assertEquals(
+            ReaderSettings.MAX_PAGE_SCALE,
+            ReaderSettings().withPageScale(40f).pageScale
+        )
+        assertEquals(
+            ReaderSettings.MIN_PAGE_SCALE,
+            ReaderSettings().withPageScale(0.01f).pageScale
+        )
+    }
+
+    /**
+     * A pinch usually settles between two presets, and the panel says so by
+     * marking none of them rather than the nearest one.
+     */
+    @Test
+    fun aScaleBetweenPresetsMatchesNoneOfThem() {
+        assertNull(ReaderSettings().withPageScale(1.13f).matchingWidth)
+        assertEquals(
+            ReadingWidth.Larger,
+            ReaderSettings().withPageScale(ReadingWidth.Larger.fraction).matchingWidth
+        )
+    }
+
+    /** The steps have to actually get wider, in the order they are offered. */
+    @Test
+    fun pageWidthsAreOrderedFromNarrowestToWidest() {
+        val fractions = ReadingWidth.entries.map { it.fraction }
+
+        assertEquals(fractions.sorted(), fractions)
+        assertEquals(fractions.distinct(), fractions)
+    }
+
+    /** [ReadingWidth.Wide] is the page fitting the column exactly. */
+    @Test
+    fun oneStepFitsTheColumnExactly() {
         assertEquals(1f, ReadingWidth.Wide.fraction)
+        assertFalse(ReadingWidth.Wide.overflowsColumn)
+    }
+
+    /**
+     * Only the steps past fitting overflow, and there has to be at least one -
+     * they are what makes zooming into fixed-size type possible at all.
+     */
+    @Test
+    fun theStepsPastFittingOverflowTheColumn() {
+        val overflowing = ReadingWidth.entries.filter { it.overflowsColumn }
+
+        assertTrue(overflowing.isNotEmpty())
+        assertTrue(overflowing.all { it.fraction > ReadingWidth.Wide.fraction })
+        assertTrue(ReadingWidth.entries.none { it.fraction < 1f && it.overflowsColumn })
     }
 
     @Test
