@@ -1,7 +1,5 @@
 package io.lukia.features.reader.presentation.components
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,12 +25,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.semantics.contentDescription
@@ -43,7 +38,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.reader.domain.OutlineEntry
 import io.lukia.features.reader.domain.ReaderOutline
+import io.lukia.shared.presentation.components.DismissOnBack
 import io.lukia.shared.presentation.components.GlassSurface
+import io.lukia.shared.presentation.components.popoverTransition
+import io.lukia.shared.presentation.components.rememberPopoverProgress
+import io.lukia.shared.presentation.theme.MinTouchTarget
 import kotlin.math.roundToInt
 
 /** Grows out of the control it hangs from, matching the other reader panels. */
@@ -55,8 +54,7 @@ private val PanelPadding: Dp = 16.dp
 /** Enough for roughly seven chapters before the list takes over the scrolling. */
 private val ChapterListMaxHeight: Dp = 280.dp
 
-/** The smallest a row can be and still be hit accurately with a thumb. */
-private val ChapterRowHeight: Dp = 44.dp
+private val ChapterRowHeight: Dp = MinTouchTarget
 
 /** Indent per level of nesting, kept small so deep sections stay readable. */
 private val LevelIndent: Dp = 14.dp
@@ -78,14 +76,9 @@ internal fun ReaderContentsPanel(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val progress by animateFloatAsState(
-        targetValue = if (expanded) 1f else 0f,
-        animationSpec = tween(durationMillis = if (expanded) 180 else 140),
-        label = "readerContentsPanel"
-    )
+    val progress = rememberPopoverProgress(expanded, label = "readerContentsPanel")
 
     if (!expanded && progress == 0f) return
-
 
     // Read here rather than passed in: the page changes on every scroll, and
     // taking it any higher would recompose the reader around the panel each
@@ -98,13 +91,7 @@ internal fun ReaderContentsPanel(
 
     GlassSurface(
         shape = RoundedCornerShape(18.dp),
-        modifier = modifier.graphicsLayer {
-            alpha = progress
-            val scale = 0.92f + 0.08f * progress
-            scaleX = scale
-            scaleY = scale
-            transformOrigin = PanelTransformOrigin
-        }
+        modifier = modifier.popoverTransition(progress, PanelTransformOrigin)
     ) {
         Column(
             modifier = Modifier
@@ -287,17 +274,4 @@ private fun ChaptersNotice(message: String) {
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(horizontal = PanelPadding, vertical = 8.dp)
     )
-}
-
-/**
- * Back on Android, Escape on desktop.
- */
-@Suppress("DEPRECATION")
-@OptIn(ExperimentalComposeUiApi::class)
-@Composable
-private fun DismissOnBack(
-    enabled: Boolean,
-    onDismiss: () -> Unit
-) {
-    BackHandler(enabled = enabled, onBack = onDismiss)
 }

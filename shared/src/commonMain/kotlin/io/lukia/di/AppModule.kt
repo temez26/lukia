@@ -13,6 +13,8 @@ import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import io.lukia.features.reader.presentation.ReaderViewModel
+import io.lukia.features.settings.infrastructure.AppSettingsRepository
+import io.lukia.features.settings.presentation.SettingsViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
@@ -58,6 +60,16 @@ val commonModule = module {
     // made while reading is already in place the next time a book is opened.
     single {
         ReaderSettingsRepository(get())
+    }
+
+    // Likewise a single: the app's theme is read at the root, so every screen
+    // repaints from the same value the moment it changes.
+    single {
+        AppSettingsRepository(get())
+    }
+
+    viewModel {
+        SettingsViewModel(get())
     }
 
     viewModel { (location: String) ->

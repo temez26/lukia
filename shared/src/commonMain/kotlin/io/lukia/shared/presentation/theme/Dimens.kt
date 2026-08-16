@@ -24,6 +24,16 @@ enum class WindowWidthClass {
 }
 
 /**
+ * Apple's minimum comfortable target, and the size every control in the app
+ * settles on - toolbar buttons, menu rows, segmented tracks, chapter rows.
+ *
+ * Deliberately not part of [LukiaDimens]: those metrics scale with the window,
+ * and this one must not. A finger is the same size on a phone as on a tablet, so
+ * a target that grew with the window would be answering the wrong question.
+ */
+val MinTouchTarget: Dp = 44.dp
+
+/**
  * Layout metrics that scale with the window. Keeping these in one place is what
  * stops the desktop build from simply stretching the phone layout edge to edge.
  */

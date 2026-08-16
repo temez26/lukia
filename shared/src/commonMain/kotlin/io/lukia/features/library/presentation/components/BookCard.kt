@@ -1,18 +1,15 @@
 package io.lukia.features.library.presentation.components
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,7 +20,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +30,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.presentation.displayTitle
 import io.lukia.core.presentation.displayType
@@ -42,12 +39,22 @@ import io.lukia.shared.presentation.components.BookActionsMenu
 import io.lukia.shared.presentation.components.BookCover
 import io.lukia.shared.presentation.components.EllipsisGlyph
 import io.lukia.shared.presentation.components.FavoriteBadge
+import io.lukia.shared.presentation.components.LaunchReveal
+import io.lukia.shared.presentation.components.hoverLift
+import io.lukia.shared.presentation.components.launchReveal
+import io.lukia.shared.presentation.components.rememberHoverFraction
+import io.lukia.shared.presentation.components.scaleOnPress
+import io.lukia.shared.presentation.theme.LukiaMotion
 
 /**
  * One book in the library grid.
  *
- * Menu open state is owned by the grid rather than the card, so opening one
- * menu closes any other; the card only reports that a menu was asked for.
+ * Menu open state is owned by the grid rather than the card, so opening one menu
+ * closes any other; the card only reports that a menu was asked for.
+ *
+ * The card carries its feedback as motion rather than as a ripple: it shrinks
+ * under a press and, on desktop, lifts and casts a deeper shadow under the
+ * pointer. A ripple washing across a book cover reads as a defect in the artwork.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -60,21 +67,25 @@ internal fun BookCard(
     onToggleFavorite: () -> Unit,
     onDelete: () -> Unit,
     onShowDetails: () -> Unit,
+    reveal: LaunchReveal,
+    revealIndex: Int,
     modifier: Modifier = Modifier
 ) {
     val title = document.displayTitle()
     val haptics = LocalHapticFeedback.current
     val interactionSource = remember { MutableInteractionSource() }
-    // Desktop-only in practice: touch platforms never report hover, so the
-    // "..." trigger costs nothing on phones, where the long press is the gesture.
-    val isHovered by interactionSource.collectIsHoveredAsState()
+    val hover = rememberHoverFraction(interactionSource)
 
     Column(
         modifier = modifier
+            .launchReveal(reveal, index = revealIndex)
+            .hoverLift(fraction = hover, lift = 5.dp, hoveredScale = 1.035f)
+            .scaleOnPress(interactionSource, pressedScale = 0.96f)
             .clip(RoundedCornerShape(16.dp))
+            .pointerHoverIcon(PointerIcon.Hand)
             .combinedClickable(
                 interactionSource = interactionSource,
-                indication = LocalIndication.current,
+                indication = null,
                 onClick = onClick,
                 onLongClickLabel = "Book actions",
                 onLongClick = {
@@ -88,6 +99,9 @@ internal fun BookCard(
             BookCover(
                 coverImage = document.coverImage,
                 title = title,
+                // Deepens as the card lifts, so the two read as one movement
+                // rather than as a card that floats without leaving the page.
+                elevation = lerp(6.dp, 18.dp, hover),
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -99,7 +113,10 @@ internal fun BookCard(
             )
 
             MenuTrigger(
-                visible = isHovered,
+                // Any hover at all, so the trigger is on its way in from the
+                // moment the pointer arrives rather than halfway through the
+                // card's own lift.
+                visible = hover > 0f,
                 onClick = onMenuRequest,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -132,11 +149,11 @@ internal fun BookCard(
 
         Text(
             text = "${document.displayType()} · ${document.formattedSize()}",
-            style = MaterialTheme.typography.bodySmall,
+            style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(top = 2.dp)
+            modifier = Modifier.padding(top = 3.dp)
         )
 
         if (!document.exists) {
@@ -154,10 +171,10 @@ private fun MenuTrigger(
 ) {
     AnimatedVisibility(
         visible = visible,
-        enter = fadeIn(tween(durationMillis = 140)) +
-            scaleIn(tween(durationMillis = 140), initialScale = 0.8f),
-        exit = fadeOut(tween(durationMillis = 120)) +
-            scaleOut(tween(durationMillis = 120), targetScale = 0.8f),
+        enter = fadeIn(LukiaMotion.quick()) +
+            scaleIn(LukiaMotion.quick(), initialScale = 0.8f),
+        exit = fadeOut(LukiaMotion.exit()) +
+            scaleOut(LukiaMotion.exit(), targetScale = 0.8f),
         modifier = modifier
     ) {
         Box(
