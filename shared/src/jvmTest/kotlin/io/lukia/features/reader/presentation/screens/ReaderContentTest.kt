@@ -1,7 +1,11 @@
 package io.lukia.features.reader.presentation.screens
 
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ComposeUiTest
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasContentDescription
@@ -272,6 +276,99 @@ class ReaderContentTest {
         onNodeWithContentDescription("A Section, page 130").assertExists()
     }
 
+    /**
+     * A section reads as belonging to the chapter above it only if that chapter
+     * can be seen to hold it - so the chapter with sections under it carries the
+     * control that folds them, and the one without carries none.
+     */
+    @Test
+    fun onlyAChapterWithSectionsOffersToFoldThem() = runComposeUiTest {
+        setReader(pageCount = 348, outline = chapters)
+
+        openContents(pageCount = 348)
+
+        onNodeWithContentDescription("Hide sections of The Middle").assertExists()
+        assertEquals(
+            0,
+            onAllNodes(hasContentDescription("Hide sections of Introduction"))
+                .fetchSemanticsNodes().size
+        )
+    }
+
+    @Test
+    fun foldingAChapterHidesItsSectionsAndUnfoldingBringsThemBack() = runComposeUiTest {
+        setReader(pageCount = 348, outline = chapters)
+
+        openContents(pageCount = 348)
+        onNodeWithContentDescription("Hide sections of The Middle").performClick()
+
+        assertEquals(
+            0,
+            onAllNodes(hasContentDescription("A Section, page 130")).fetchSemanticsNodes().size
+        )
+
+        onNodeWithContentDescription("Show sections of The Middle").performClick()
+
+        onNodeWithContentDescription("A Section, page 130").assertExists()
+    }
+
+    /** The chapter itself stays reachable while its sections are folded away. */
+    @Test
+    fun aFoldedChapterCanStillBeGoneTo() = runComposeUiTest {
+        setReader(pageCount = 348, outline = chapters)
+
+        openContents(pageCount = 348)
+        onNodeWithContentDescription("Hide sections of The Middle").performClick()
+        onNodeWithContentDescription("The Middle, page 120").performClick()
+
+        onNodeWithText("120 / 348").assertExists()
+    }
+
+    @Test
+    fun everySectionCanBeFoldedAtOnce() = runComposeUiTest {
+        setReader(pageCount = 348, outline = chapters)
+
+        openContents(pageCount = 348)
+        onNodeWithContentDescription("Collapse all").performClick()
+
+        assertEquals(
+            0,
+            onAllNodes(hasContentDescription("A Section, page 130")).fetchSemanticsNodes().size
+        )
+
+        onNodeWithContentDescription("Expand all").performClick()
+
+        onNodeWithContentDescription("A Section, page 130").assertExists()
+    }
+
+    /** With nothing nested there is nothing to fold, so nothing is offered. */
+    @Test
+    fun aFlatOutlineOffersNoFolding() = runComposeUiTest {
+        setReader(
+            pageCount = 348,
+            outline = ReaderOutline.Chapters(
+                listOf(OutlineEntry(title = "Introduction", pageIndex = 0, level = 0))
+            )
+        )
+
+        openContents(pageCount = 348)
+
+        assertEquals(
+            0,
+            onAllNodes(hasContentDescription("Collapse all")).fetchSemanticsNodes().size
+        )
+    }
+
+    /** How far in, which a page number on its own does not say. */
+    @Test
+    fun theContentsPanelShowsHowFarThroughTheBookTheReaderIs() = runComposeUiTest {
+        setReader(pageCount = 100, outline = chapters)
+
+        openContents(pageCount = 100)
+
+        onNodeWithText("1%").assertExists()
+    }
+
     @Test
     fun aDocumentWithNoChaptersSaysSo() = runComposeUiTest {
         setReader(pageCount = 10, outline = ReaderOutline.Chapters(emptyList()))
@@ -317,6 +414,140 @@ class ReaderContentTest {
 
         onNodeWithText("Theme").assertExists()
         assertEquals(0, onAllNodes(hasText("Chapters")).fetchSemanticsNodes().size)
+    }
+
+    /**
+     * A wide window has room to say which book is open, and no other title bar
+     * of its own to say it in.
+     */
+    @Test
+    fun theBarNamesTheBookWhereThereIsRoomForIt() = runComposeUiTest {
+        setReader(pageCount = 10)
+
+        onNodeWithText("book").assertExists()
+    }
+
+    /** A shortcut nobody can find is a shortcut nobody has. */
+    @Test
+    fun theSettingsPanelSaysWhatTheKeysDo() = runComposeUiTest {
+        setReader(pageCount = 10)
+
+        onNodeWithContentDescription("Reading settings").performClick()
+
+        onNodeWithText("Keyboard").assertExists()
+        onNodeWithText("Turn page").assertExists()
+        onNodeWithText("Space  PgDn  PgUp").assertExists()
+    }
+
+    @Test
+    fun theKeyboardTurnsPages() = runComposeUiTest {
+        setReader(pageCount = 348)
+
+        onRoot().performKeyInput { pressKey(Key.PageDown) }
+        waitForIdle()
+        onNodeWithText("2 / 348").assertExists()
+
+        onRoot().performKeyInput { pressKey(Key.PageDown) }
+        waitForIdle()
+        onNodeWithText("3 / 348").assertExists()
+
+        onRoot().performKeyInput { pressKey(Key.PageUp) }
+        waitForIdle()
+        onNodeWithText("2 / 348").assertExists()
+    }
+
+    /**
+     * The last page, not the last page pinned to the top of the window - a book
+     * that scrolls has nothing left to scroll once its end is on screen, so what
+     * End promises is that the end is reached, not what the counter then reads.
+     */
+    @Test
+    fun theKeyboardReachesBothEndsOfTheBook() = runComposeUiTest {
+        setReader(pageCount = 348)
+
+        onRoot().performKeyInput { pressKey(Key.MoveEnd) }
+        waitForIdle()
+        onNodeWithContentDescription("Page 348 of 348").assertExists()
+
+        onRoot().performKeyInput { pressKey(Key.MoveHome) }
+        waitForIdle()
+        onNodeWithText("1 / 348").assertExists()
+    }
+
+    /** The only way to get closer to a PDF's fixed-size type, so it has a key. */
+    @Test
+    fun theKeyboardChangesThePageWidth() = runComposeUiTest {
+        var changed: ReaderSettings? = null
+        setReader(pageCount = 10, onSettingsChange = { changed = it })
+
+        onRoot().performKeyInput { pressKey(Key.Equals) }
+        assertEquals(1.1f, changed?.pageScale)
+
+        onRoot().performKeyInput { pressKey(Key.Minus) }
+        assertEquals(0.9f, changed?.pageScale)
+
+        onRoot().performKeyInput { pressKey(Key.Zero) }
+        assertEquals(ReaderSettings.DEFAULT_PAGE_SCALE, changed?.pageScale)
+    }
+
+    @Test
+    fun theKeyboardOpensBothPanels() = runComposeUiTest {
+        setReader(pageCount = 348, outline = chapters)
+
+        onRoot().performKeyInput { pressKey(Key.T) }
+        waitForIdle()
+        onNodeWithText("Theme").assertExists()
+
+        onRoot().performKeyInput { pressKey(Key.C) }
+        waitForIdle()
+        onNodeWithText("Chapters").assertExists()
+        assertEquals(0, onAllNodes(hasText("Theme")).fetchSemanticsNodes().size)
+    }
+
+    /** Escape belongs to whatever is open on top of the book before the book. */
+    @Test
+    fun escapeClosesAnOpenPanelRatherThanTheBook() = runComposeUiTest {
+        var closed = false
+        setReader(pageCount = 348, outline = chapters, onBack = { closed = true })
+
+        onRoot().performKeyInput { pressKey(Key.T) }
+        waitForIdle()
+        onRoot().performKeyInput { pressKey(Key.Escape) }
+        waitForIdle()
+
+        assertEquals(false, closed)
+        assertEquals(0, onAllNodes(hasText("Theme")).fetchSemanticsNodes().size)
+    }
+
+    @Test
+    fun escapeLeavesTheBookWhenNothingElseIsOpen() = runComposeUiTest {
+        var closed = false
+        setReader(pageCount = 348, onBack = { closed = true })
+
+        onRoot().performKeyInput { pressKey(Key.Escape) }
+
+        assertEquals(true, closed)
+    }
+
+    /**
+     * A shortcut has to show its work: a page width changed with the chrome put
+     * away would look like nothing happening.
+     */
+    @Test
+    fun aShortcutBringsTheChromeBack() = runComposeUiTest {
+        setReader(pageCount = 348)
+
+        onNodeWithContentDescription("Page 2 of 348").performClick()
+        waitForIdle()
+        assertEquals(
+            0,
+            onAllNodes(hasContentDescription("Close book")).fetchSemanticsNodes().size
+        )
+
+        onRoot().performKeyInput { pressKey(Key.Equals) }
+        waitForIdle()
+
+        onNodeWithContentDescription("Close book").assertExists()
     }
 
     @Test

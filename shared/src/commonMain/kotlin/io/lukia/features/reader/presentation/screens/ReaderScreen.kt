@@ -4,10 +4,12 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -41,9 +44,12 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
@@ -54,11 +60,16 @@ import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
+import io.lukia.core.presentation.displayTitle
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
+import io.lukia.features.reader.presentation.PAGE_SCALE_STEP
+import io.lukia.features.reader.presentation.ReaderCommand
 import io.lukia.features.reader.presentation.ReaderViewModel
+import io.lukia.features.reader.presentation.SCROLL_NUDGE_FRACTION
 import io.lukia.features.reader.presentation.components.PageIndicatorButton
+import io.lukia.features.reader.presentation.readerCommandFor
 import io.lukia.features.reader.presentation.components.ReaderContentsPanel
 import io.lukia.features.reader.presentation.components.ReaderSettingsPanel
 import io.lukia.features.reader.presentation.components.ReaderToolbar
@@ -67,8 +78,11 @@ import io.lukia.features.reader.presentation.components.ToolbarButton
 import io.lukia.features.reader.presentation.renderWidthFor
 import io.lukia.features.reader.presentation.theme.ReaderTheming
 import io.lukia.features.reader.presentation.theme.readerPageStyle
+import io.lukia.shared.presentation.components.ShortcutTooltip
 import io.lukia.shared.presentation.components.UiStateContent
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import io.lukia.shared.presentation.theme.LocalWindowWidthClass
+import io.lukia.shared.presentation.theme.WindowWidthClass
 import io.lukia.shared.presentation.theme.topChromeIn
 import io.lukia.shared.presentation.theme.topChromeOut
 import kotlinx.coroutines.flow.filter
@@ -128,6 +142,7 @@ fun ReaderContent(
     var contentsExpanded by remember { mutableStateOf(false) }
     var chromeVisible by remember { mutableStateOf(true) }
 
+    val compact = LocalWindowWidthClass.current == WindowWidthClass.Compact
     val panelOpen = settingsExpanded || contentsExpanded
 
     // A panel hangs off the toolbar, so the toolbar cannot leave while one is
@@ -144,19 +159,73 @@ fun ReaderContent(
         // being replaced, and so the toolbar can read the page number from it.
         val listState = rememberLazyListState()
 
-        // Reading puts the chrome away; a tap brings it back. Driven by a single
-        // boolean rather than by the scroll position, so this costs nothing per
-        // scrolled pixel.
-        LaunchedEffect(listState) {
+        // Reading puts the chrome away on a phone, where the bar is a tenth of
+        // the screen and every scroll is a deliberate swipe. A wide window keeps
+        // it: there the bar costs almost nothing, and a mouse wheel is not a
+        // statement of intent - chrome that vanished on every notch of it would
+        // be gone whenever the reader looked for it. It still goes away on a
+        // click, which is a decision rather than a side effect.
+        LaunchedEffect(listState, compact) {
+            if (!compact) return@LaunchedEffect
+
             snapshotFlow { listState.isScrollInProgress }
                 .filter { it }
                 .collect { chromeVisible = false }
         }
 
+        val commands = readerCommands(
+            listState = listState,
+            pageCount = document?.pages?.pageCount ?: 0,
+            settings = settings,
+            onSettingsChange = onSettingsChange,
+            onBack = onBack,
+            onToggleContents = {
+                settingsExpanded = false
+                contentsExpanded = !contentsExpanded
+            },
+            onToggleSettings = {
+                contentsExpanded = false
+                settingsExpanded = !settingsExpanded
+            }
+        )
+
+        val focusRequester = remember { FocusRequester() }
+
+        // The reader takes the keyboard as it opens, so the shortcuts work
+        // without a click first. Focus moves off it the moment anything in the
+        // chrome is tabbed to, and the handler below runs after that control has
+        // had its say - so Space on a focused segment chooses it rather than
+        // turning a page.
+        LaunchedEffect(Unit) { focusRequester.requestFocus() }
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
+                .focusRequester(focusRequester)
+                .focusable()
+                .onKeyEvent { event ->
+                    val command = readerCommandFor(event) ?: return@onKeyEvent false
+
+                    // Escape closes whatever is open on top of the book before
+                    // it closes the book. Handled here rather than left to the
+                    // panels' own back handler: that one answers to the
+                    // platform's back gesture, which not every platform routes a
+                    // key into, and "Escape leaves the book" firing under an
+                    // open panel is not a mistake worth risking.
+                    if (command == ReaderCommand.Close && panelOpen) {
+                        settingsExpanded = false
+                        contentsExpanded = false
+                        return@onKeyEvent true
+                    }
+
+                    // A shortcut is a reason to show the chrome: it is how the
+                    // reader sees that the page width changed, or which page
+                    // they landed on.
+                    chromeVisible = true
+                    commands(command)
+                    true
+                }
         ) {
             Box(
                 modifier = Modifier
@@ -212,12 +281,21 @@ fun ReaderContent(
                 ) {
                     ReaderToolbar(
                         onBack = onBack,
-                        modifier = Modifier.padding(
-                            start = dimens.screenPadding,
-                            end = dimens.screenPadding,
-                            top = ChromeVerticalPadding,
-                            bottom = ChromeVerticalPadding
-                        ),
+                        // Named only where the bar has room to say it, which is
+                        // also where a window has no other title of its own.
+                        title = document?.info?.displayTitle(),
+                        modifier = Modifier
+                            // Held to the width of the page it acts on rather
+                            // than to the window's. A capsule stretched across a
+                            // monitor puts its three controls an inch from three
+                            // different edges, and relates to nothing on screen.
+                            .widthIn(max = dimens.maxReaderWidth)
+                            .padding(
+                                start = dimens.screenPadding,
+                                end = dimens.screenPadding,
+                                top = ChromeVerticalPadding,
+                                bottom = ChromeVerticalPadding
+                            ),
                         centerControl = {
                             // Only once there is a book to be somewhere in.
                             if (document != null) {
@@ -232,14 +310,16 @@ fun ReaderContent(
                             }
                         },
                         endControl = {
-                            ToolbarButton(
-                                onClick = {
-                                    contentsExpanded = false
-                                    settingsExpanded = !settingsExpanded
-                                },
-                                label = "Reading settings"
-                            ) {
-                                TextSettingsGlyph(tint = MaterialTheme.colorScheme.primary)
+                            ShortcutTooltip(description = "Reading settings", shortcut = "T") {
+                                ToolbarButton(
+                                    onClick = {
+                                        contentsExpanded = false
+                                        settingsExpanded = !settingsExpanded
+                                    },
+                                    label = "Reading settings"
+                                ) {
+                                    TextSettingsGlyph(tint = MaterialTheme.colorScheme.primary)
+                                }
                             }
                         }
                     )
@@ -279,6 +359,67 @@ fun ReaderContent(
                         .padding(top = ChromeHeight, end = dimens.screenPadding)
                 )
             }
+        }
+    }
+}
+
+/**
+ * Carries out what the keyboard asked for.
+ *
+ * Deliberately built per composition rather than remembered: every one of these
+ * closes over something that changes as the book is read - the settings, the
+ * page count, which panel is open - and a lambda held across those changes would
+ * act on the reader of a moment ago. It costs an allocation the page list would
+ * not notice.
+ */
+@Composable
+private fun readerCommands(
+    listState: LazyListState,
+    pageCount: Int,
+    settings: ReaderSettings,
+    onSettingsChange: (ReaderSettings) -> Unit,
+    onBack: () -> Unit,
+    onToggleContents: () -> Unit,
+    onToggleSettings: () -> Unit
+): (ReaderCommand) -> Unit {
+    val scope = rememberCoroutineScope()
+
+    return { command ->
+        val lastPage = pageCount - 1
+        val page = listState.firstVisibleItemIndex
+
+        fun goTo(index: Int) {
+            if (pageCount > 0) {
+                scope.launch { listState.animateScrollToItem(index.coerceIn(0, lastPage)) }
+            }
+        }
+
+        fun nudge(fraction: Float) {
+            val viewport = listState.layoutInfo.viewportSize.height
+            if (viewport > 0) scope.launch { listState.animateScrollBy(viewport * fraction) }
+        }
+
+        when (command) {
+            ReaderCommand.NextPage -> goTo(page + 1)
+            ReaderCommand.PreviousPage -> goTo(page - 1)
+            ReaderCommand.FirstPage -> goTo(0)
+            ReaderCommand.LastPage -> goTo(lastPage)
+
+            ReaderCommand.ScrollDown -> nudge(SCROLL_NUDGE_FRACTION)
+            ReaderCommand.ScrollUp -> nudge(-SCROLL_NUDGE_FRACTION)
+
+            ReaderCommand.Wider ->
+                onSettingsChange(settings.withPageScale(settings.pageScale + PAGE_SCALE_STEP))
+
+            ReaderCommand.Narrower ->
+                onSettingsChange(settings.withPageScale(settings.pageScale - PAGE_SCALE_STEP))
+
+            ReaderCommand.ActualSize ->
+                onSettingsChange(settings.withPageScale(ReaderSettings.DEFAULT_PAGE_SCALE))
+
+            ReaderCommand.ToggleContents -> onToggleContents()
+            ReaderCommand.ToggleSettings -> onToggleSettings()
+            ReaderCommand.Close -> onBack()
         }
     }
 }

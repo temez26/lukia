@@ -40,8 +40,23 @@ import androidx.compose.ui.unit.dp
  * blur that would normally carry it.
  */
 data class GlassStyle(
-    /** Opacity of the chrome fill. Lower reads as more glass-like. */
-    val surfaceAlpha: Float,
+    /**
+     * Opacity of a bar or a button - chrome that carries a glyph or a word or two
+     * and nothing that has to be read for long.
+     */
+    val chromeAlpha: Float,
+    /**
+     * Opacity of a panel or a menu.
+     *
+     * Higher than [chromeAlpha], and close to opaque, because these carry rows of
+     * text over a page that is still there behind them. Real glass stays legible
+     * because the system blurs what is behind it into a wash; without that blur
+     * the page's own type shows through the panel's, and every extra percent of
+     * translucency is bought with legibility rather than depth. The gain is
+     * biggest on Apple platforms, where the chrome was the most translucent to
+     * begin with.
+     */
+    val panelAlpha: Float,
     /** Brightness of the specular highlight along the top edge. */
     val highlightAlpha: Float,
     /** Opacity of the hairline border. */
@@ -51,7 +66,8 @@ data class GlassStyle(
 
 /** More translucent, with a pronounced specular edge. */
 internal val AppleGlassStyle = GlassStyle(
-    surfaceAlpha = 0.72f,
+    chromeAlpha = 0.90f,
+    panelAlpha = 0.98f,
     highlightAlpha = 0.45f,
     borderAlpha = 0.30f,
     shadowElevation = 12.dp
@@ -59,7 +75,8 @@ internal val AppleGlassStyle = GlassStyle(
 
 /** Flatter and more opaque, closer to Material's elevated surfaces. */
 internal val StandardGlassStyle = GlassStyle(
-    surfaceAlpha = 0.92f,
+    chromeAlpha = 0.96f,
+    panelAlpha = 1f,
     highlightAlpha = 0.18f,
     borderAlpha = 0.14f,
     shadowElevation = 6.dp
