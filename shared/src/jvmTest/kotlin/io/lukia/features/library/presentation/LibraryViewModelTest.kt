@@ -80,7 +80,7 @@ class LibraryViewModelTest {
     fun unsupportedFileReportsATypedErrorAndKeepsLibraryUnchanged() = runTest {
         val analyzer = FakeDocumentAnalyzer(
             DocumentInfo(
-                document = TestDocuments.txt(location = "/test/book.txt"),
+                document = TestDocuments.unsupported(location = "/test/book.mobi"),
                 type = DocumentType.UNKNOWN,
                 exists = true,
                 sizeBytes = 10L
@@ -88,7 +88,7 @@ class LibraryViewModelTest {
         )
         val viewModel = createViewModel(FakeLibraryRepository(), analyzer)
 
-        viewModel.importDocument(TestDocuments.txt(location = "/test/book.txt"))
+        viewModel.importDocument(TestDocuments.unsupported(location = "/test/book.mobi"))
 
         assertEquals(emptyList(), viewModel.documents())
         assertEquals(
@@ -168,7 +168,7 @@ class LibraryViewModelTest {
             // folder is skipped rather than imported.
             analyzer = FakeDocumentAnalyzer(
                 DocumentInfo(
-                    document = TestDocuments.txt(location = "/test/notes.txt"),
+                    document = TestDocuments.unsupported(location = "/test/notes.mobi"),
                     type = DocumentType.UNKNOWN,
                     exists = true,
                     sizeBytes = 10L
@@ -199,14 +199,14 @@ class LibraryViewModelTest {
     fun clearMessageResetsTheNotice() = runTest {
         val analyzer = FakeDocumentAnalyzer(
             DocumentInfo(
-                document = TestDocuments.txt(location = "/test/book.txt"),
+                document = TestDocuments.unsupported(location = "/test/book.mobi"),
                 type = DocumentType.UNKNOWN,
                 exists = true,
                 sizeBytes = 10L
             )
         )
         val viewModel = createViewModel(FakeLibraryRepository(), analyzer)
-        viewModel.importDocument(TestDocuments.txt(location = "/test/book.txt"))
+        viewModel.importDocument(TestDocuments.unsupported(location = "/test/book.mobi"))
 
         viewModel.clearMessage()
 

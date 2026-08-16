@@ -81,8 +81,8 @@ class ImportDocumentUseCaseTest {
 
     @Test
     fun rejectsUnknownDocumentType() = runTest {
-        val document = TestDocuments.txt(
-            location = "/test/book.txt"
+        val document = TestDocuments.unsupported(
+            location = "/test/book.mobi"
         )
 
         val documentInfo = DocumentInfo(

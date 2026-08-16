@@ -78,6 +78,30 @@ class LibraryFilterTest {
         )
     }
 
+    /**
+     * Seven segments would be seven labels too narrow to read, so the formats
+     * someone writes share one segment while the two published-book formats keep
+     * their own.
+     */
+    @Test
+    fun theWordProcessedFormatsShareOneSegment() {
+        val library = listOf(
+            document("Dune", type = DocumentType.PDF),
+            document("Notes", type = DocumentType.DOCX),
+            document("Scratch", type = DocumentType.TEXT),
+            document("Readme", type = DocumentType.MARKDOWN)
+        )
+
+        assertEquals(
+            listOf(LibraryFilter.All, LibraryFilter.Pdf, LibraryFilter.Documents),
+            library.availableFilters()
+        )
+        assertEquals(
+            listOf("Notes", "Readme", "Scratch"),
+            titles(library.matching(LibraryFilter.Documents, "")).sorted()
+        )
+    }
+
     @Test
     fun filterAndQueryBothApply() {
         val library = listOf(

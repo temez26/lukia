@@ -57,7 +57,7 @@ class AndroidDocumentAnalyzerTest {
     @Test
     fun unsupportedExtensionReturnsUnknown() = runTest {
         val result = analyzer.analyze(
-            TestDocuments.txt(
+            TestDocuments.unsupported(
                 location = "content://io.lukia.shared.test.documents/with-size"
             )
         )

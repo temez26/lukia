@@ -8,6 +8,7 @@ import io.lukia.core.domain.toAppError
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.reader.application.OpenDocumentUseCase
+import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
@@ -116,7 +117,7 @@ class ReaderViewModel(
      * nothing.
      */
     private suspend fun restorePosition(document: ReaderDocument) {
-        val lastPage = document.pages.pageCount - 1
+        val lastPage = document.content.unitCount - 1
         val stored = runCatchingApp { progressRepository.progressFor(location) }.getOrNull()
 
         _initialPage.value = (stored?.pageIndex ?: 0).coerceIn(0, lastPage.coerceAtLeast(0))
@@ -139,7 +140,7 @@ class ReaderViewModel(
                     location = location,
                     progress = ReadingProgress(
                         pageIndex = pageIndex,
-                        pageCount = document.pages.pageCount
+                        pageCount = document.content.unitCount
                     )
                 )
             }
@@ -158,7 +159,7 @@ class ReaderViewModel(
     private fun loadOutline(document: ReaderDocument) {
         viewModelScope.launch {
             val entries = withContext(Dispatchers.Default) {
-                runCatchingApp { document.pages.outline?.asTableOfContents() }.getOrNull()
+                runCatchingApp { document.content.outline?.asTableOfContents() }.getOrNull()
             }
 
             _outline.value = entries
@@ -184,7 +185,9 @@ class ReaderViewModel(
      * which every page would be redrawn each time it scrolled back into view.
      */
     suspend fun page(index: Int, widthPx: Int): ImageBitmap? {
-        val pages = _uiState.value.dataOrNull?.pages ?: return null
+        // Only a fixed-layout document has pages to draw. A reflowable one is
+        // set by the reader itself and never comes through here.
+        val pages = (_uiState.value.dataOrNull?.content as? PagedContent)?.pages ?: return null
         if (index !in 0 until pages.pageCount) return null
 
         val targetWidthPx = renderWidthFor(widthPx)

@@ -29,7 +29,7 @@ class EpubCoverExtractorTest {
             coverBytes = coverBytes
         )
 
-        assertEquals(coverBytes.toList(), EpubCoverExtractor.extract(epubBytes)?.toList())
+        assertEquals(coverBytes.toList(), extractEpubCover(epubBytes)?.toList())
     }
 
     @Test
@@ -50,7 +50,7 @@ class EpubCoverExtractorTest {
             coverBytes = coverBytes
         )
 
-        assertEquals(coverBytes.toList(), EpubCoverExtractor.extract(epubBytes)?.toList())
+        assertEquals(coverBytes.toList(), extractEpubCover(epubBytes)?.toList())
     }
 
     @Test
@@ -69,12 +69,12 @@ class EpubCoverExtractorTest {
             coverBytes = null
         )
 
-        assertNull(EpubCoverExtractor.extract(epubBytes))
+        assertNull(extractEpubCover(epubBytes))
     }
 
     @Test
     fun returnsNullForMalformedArchive() {
-        assertNull(EpubCoverExtractor.extract("not an epub".encodeToByteArray()))
+        assertNull(extractEpubCover("not an epub".encodeToByteArray()))
     }
 
     private fun buildEpub(

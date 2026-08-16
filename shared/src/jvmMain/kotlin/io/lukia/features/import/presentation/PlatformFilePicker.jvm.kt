@@ -18,9 +18,14 @@ actual fun rememberPlatformFilePicker(): PlatformFilePickerState {
 
             chooser.fileFilter =
                 FileNameExtensionFilter(
-                    "PDF or EPUB",
+                    "Documents",
                     "pdf",
-                    "epub"
+                    "epub",
+                    "docx",
+                    "txt",
+                    "text",
+                    "md",
+                    "markdown"
                 )
 
             val result = chooser.showOpenDialog(null)

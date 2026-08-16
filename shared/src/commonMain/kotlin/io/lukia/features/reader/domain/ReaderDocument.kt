@@ -6,16 +6,16 @@ import io.lukia.core.domain.WorkingCopy
 /**
  * One book, open for reading.
  *
- * [pages] is drawn from [workingCopy], never from the file the user imported -
+ * [content] is read from [workingCopy], never from the file the user imported -
  * see [WorkingCopy]. The original is not even open while reading.
  */
 class ReaderDocument(
     val info: DocumentInfo,
     val workingCopy: WorkingCopy,
-    val pages: DocumentPages
+    val content: ReaderContent
 ) : AutoCloseable {
 
     override fun close() {
-        pages.close()
+        content.close()
     }
 }
