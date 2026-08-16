@@ -9,6 +9,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalContext
 import io.lukia.core.domain.PickedDocument
 
+/**
+ * What the system picker will let through.
+ *
+ * Markdown is claimed both ways on purpose: providers disagree about what a
+ * `.md` file is, and one that reports it as plain text would otherwise be greyed
+ * out in the picker for a format this app reads perfectly well.
+ */
+private val SUPPORTED_MIME_TYPES = arrayOf(
+    "application/pdf",
+    "application/epub+zip",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "text/plain",
+    "text/markdown"
+)
+
 @Composable
 actual fun rememberPlatformFilePicker(): PlatformFilePickerState {
 
@@ -71,12 +86,7 @@ actual fun rememberPlatformFilePicker(): PlatformFilePickerState {
 
             callback.value = onPicked
 
-            launcher.launch(
-                arrayOf(
-                    "application/pdf",
-                    "application/epub+zip"
-                )
-            )
+            launcher.launch(SUPPORTED_MIME_TYPES)
         }
     }
 }

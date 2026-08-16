@@ -27,11 +27,25 @@ object TestDocuments {
         location = location
     )
 
-    fun txt(
+    fun text(
         location: String
     ) = PickedDocument(
         fileName = "book.txt",
         extension = "txt",
+        location = location
+    )
+
+    /**
+     * A format the library does not take. Kindle's own, chosen because it is a
+     * real book format rather than an invented extension - the point of these
+     * tests is that an unsupported document is turned away, and a file nobody
+     * would ever try to import does not test that.
+     */
+    fun unsupported(
+        location: String
+    ) = PickedDocument(
+        fileName = "book.mobi",
+        extension = "mobi",
         location = location
     )
 

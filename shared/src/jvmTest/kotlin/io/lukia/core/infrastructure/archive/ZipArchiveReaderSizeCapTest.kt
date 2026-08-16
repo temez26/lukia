@@ -1,4 +1,4 @@
-package io.lukia.features.import.infrastructure.archive
+package io.lukia.core.infrastructure.archive
 
 import java.io.ByteArrayOutputStream
 import java.util.zip.Deflater

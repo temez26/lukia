@@ -4,6 +4,22 @@ import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 
 /**
+ * The formats that share the [LibraryFilter.Documents] segment.
+ *
+ * Grouped rather than given a segment each, because a segmented control divides
+ * its width evenly between its segments: seven of them on a phone is seven
+ * labels too narrow to read, which is a worse answer than one segment that is
+ * slightly less specific. What they have in common is real - these are the files
+ * someone wrote, as opposed to the books someone published - so the grouping is
+ * a category rather than a leftovers bin.
+ */
+private val WordProcessedFormats = setOf(
+    DocumentType.DOCX,
+    DocumentType.TEXT,
+    DocumentType.MARKDOWN
+)
+
+/**
  * The ways the library can be narrowed from the header.
  *
  * Deliberately a closed set rather than an arbitrary predicate: these are the
@@ -14,13 +30,15 @@ enum class LibraryFilter(val label: String) {
     All("All"),
     Favourites("Favourites"),
     Pdf("PDF"),
-    Epub("EPUB");
+    Epub("EPUB"),
+    Documents("Documents");
 
     fun matches(document: DocumentInfo): Boolean = when (this) {
         All -> true
         Favourites -> document.isFavorite
         Pdf -> document.type == DocumentType.PDF
         Epub -> document.type == DocumentType.EPUB
+        Documents -> document.type in WordProcessedFormats
     }
 }
 
@@ -38,7 +56,7 @@ enum class LibraryFilter(val label: String) {
 fun List<DocumentInfo>.availableFilters(): List<LibraryFilter> {
     val documents = this
 
-    val formats = listOf(LibraryFilter.Pdf, LibraryFilter.Epub)
+    val formats = listOf(LibraryFilter.Pdf, LibraryFilter.Epub, LibraryFilter.Documents)
         .filter { format -> documents.any(format::matches) }
 
     val favourites = if (documents.any { it.isFavorite }) {

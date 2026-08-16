@@ -17,6 +17,9 @@ fun DocumentInfo.displayTitle(): String {
 fun DocumentInfo.displayType(): String = when (type) {
     DocumentType.PDF -> "PDF"
     DocumentType.EPUB -> "EPUB"
+    DocumentType.DOCX -> "Word"
+    DocumentType.TEXT -> "Text"
+    DocumentType.MARKDOWN -> "Markdown"
     DocumentType.UNKNOWN -> "Unknown"
 }
 

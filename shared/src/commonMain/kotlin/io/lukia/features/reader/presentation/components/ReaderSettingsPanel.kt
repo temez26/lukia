@@ -200,7 +200,7 @@ internal fun ReaderSettingsPanel(
             if (wide) {
                 PanelDivider()
                 SectionHeading(label = "Keyboard", wide = true)
-                ShortcutList()
+                ShortcutList(typographyEnabled)
             }
         }
     }
@@ -216,14 +216,15 @@ internal fun ReaderSettingsPanel(
  * keyboards.
  */
 @Composable
-private fun ShortcutList() {
+private fun ShortcutList(reflowable: Boolean) {
     val shortcuts = listOf(
         "Turn page" to "Space  PgDn  PgUp",
         "Scroll" to "↑  ↓",
         "Start, end" to "Home  End",
         // Named for what the keys do rather than for the setting they move, so
-        // the panel does not carry the words "Page width" twice.
-        "Wider, narrower" to "+  −  0",
+        // the panel does not carry the words "Page width" twice - and what they
+        // do depends on the book, since there is no widening a re-set page.
+        (if (reflowable) "Larger, smaller" else "Wider, narrower") to "+  −  0",
         "Contents, settings" to "C  T",
         "Close book" to "Esc"
     )

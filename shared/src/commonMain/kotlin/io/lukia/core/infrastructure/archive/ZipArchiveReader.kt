@@ -1,11 +1,9 @@
-package io.lukia.features.import.infrastructure.archive
-
-import io.lukia.core.infrastructure.archive.inflateRaw
+package io.lukia.core.infrastructure.archive
 
 /**
  * Minimal read-only ZIP reader operating on an in-memory archive.
- * Supports only the subset of the ZIP format (no Zip64) needed to pull a
- * single named entry out of an EPUB, which is always small enough to load
+ * Supports only the subset of the ZIP format (no Zip64) needed to pull named
+ * entries out of an EPUB or a DOCX, both of which are small enough to load
  * fully into memory.
  */
 internal class ZipArchiveReader(private val data: ByteArray) {
@@ -119,9 +117,11 @@ internal class ZipArchiveReader(private val data: ByteArray) {
         const val LOCAL_HEADER_SIZE = 30
         const val EOCD_SEARCH_WINDOW = EOCD_MIN_SIZE + 65535
 
-        // Entries we ever read here (EPUB container/OPF XML, cover images) are always small.
         // Reject declared sizes above this before allocating or inflating, so a crafted
-        // archive can't force an oversized allocation via a lying size field.
-        const val MAX_ENTRY_SIZE = 20 * 1024 * 1024
+        // archive can't force an oversized allocation via a lying size field. Generous
+        // rather than tight because the largest thing read through here is a DOCX's
+        // `word/document.xml`, which for a book-length document is the whole book as
+        // XML in one entry - a limit sized for EPUB chapters would reject real files.
+        const val MAX_ENTRY_SIZE = 64 * 1024 * 1024
     }
 }

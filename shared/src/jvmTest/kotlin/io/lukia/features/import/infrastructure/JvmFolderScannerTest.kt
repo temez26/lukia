@@ -17,8 +17,11 @@ class JvmFolderScannerTest {
         val folder = createFolder(
             "book.pdf",
             "novel.epub",
+            "report.docx",
             "notes.txt",
-            "cover.jpg"
+            "readme.md",
+            "cover.jpg",
+            "sequel.mobi"
         )
         File(folder, "nested").mkdir()
 
@@ -26,7 +29,7 @@ class JvmFolderScannerTest {
 
         // Compared as a set: File.listFiles gives no ordering guarantee.
         assertEquals(
-            setOf("book.pdf", "novel.epub"),
+            setOf("book.pdf", "novel.epub", "report.docx", "notes.txt", "readme.md"),
             documents.map { it.fileName }.toSet()
         )
         assertTrue(documents.all { File(it.location).isFile })

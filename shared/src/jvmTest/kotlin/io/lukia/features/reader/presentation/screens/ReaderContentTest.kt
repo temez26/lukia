@@ -23,6 +23,7 @@ import io.lukia.core.domain.PickedDocument
 import io.lukia.core.domain.WorkingCopy
 import io.lukia.core.presentation.UiState
 import io.lukia.features.reader.domain.DocumentPages
+import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.OutlineEntry
 import io.lukia.features.reader.domain.PageSize
 import io.lukia.features.reader.domain.ReaderDocument
@@ -643,7 +644,7 @@ class ReaderContentTest {
             sourceLocation = "/library/book.pdf",
             path = "/workspace/book.pdf"
         ),
-        pages = FakePages(pageCount)
+        content = PagedContent(FakePages(pageCount))
     )
 
     private class FakePages(pageCount: Int) : DocumentPages {
