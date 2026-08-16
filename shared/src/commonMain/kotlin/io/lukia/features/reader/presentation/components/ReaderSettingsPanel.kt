@@ -196,6 +196,60 @@ internal fun ReaderSettingsPanel(
                     onSelect = { onSettingsChange(settings.copy(typeface = it)) }
                 )
             }
+
+            if (wide) {
+                PanelDivider()
+                SectionHeading(label = "Keyboard", wide = true)
+                ShortcutList()
+            }
+        }
+    }
+}
+
+/**
+ * What the keys do.
+ *
+ * Shortcuts nobody can find are shortcuts nobody has. The bar's own controls
+ * carry theirs in a tooltip, but turning pages has no button to hang one off -
+ * and this is the panel a reader opens when they want to know how the reader
+ * works. Only in the wide layout, since only the windows with room for it have
+ * keyboards.
+ */
+@Composable
+private fun ShortcutList() {
+    val shortcuts = listOf(
+        "Turn page" to "Space  PgDn  PgUp",
+        "Scroll" to "↑  ↓",
+        "Start, end" to "Home  End",
+        // Named for what the keys do rather than for the setting they move, so
+        // the panel does not carry the words "Page width" twice.
+        "Wider, narrower" to "+  −  0",
+        "Contents, settings" to "C  T",
+        "Close book" to "Esc"
+    )
+
+    shortcuts.forEach { (action, keys) ->
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = PanelPadding, vertical = 3.dp)
+        ) {
+            Text(
+                text = action,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                modifier = Modifier.weight(1f)
+            )
+
+            Text(
+                text = keys,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1
+            )
         }
     }
 }

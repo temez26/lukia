@@ -1,8 +1,10 @@
 package io.lukia.features.reader.presentation.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -22,21 +24,29 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.shared.presentation.components.BackChevron
 import io.lukia.shared.presentation.components.DisclosureChevron
 import io.lukia.shared.presentation.components.GlassSurface
+import io.lukia.shared.presentation.components.ShortcutTooltip
 import io.lukia.shared.presentation.components.scaleOnPress
+import io.lukia.shared.presentation.theme.LocalWindowWidthClass
 import io.lukia.shared.presentation.theme.MinTouchTarget
+import io.lukia.shared.presentation.theme.WindowWidthClass
 
 /** The bar is exactly as tall as the controls in it. */
 private val ControlSize: Dp = MinTouchTarget
+
+/** How thick the ring around a keyboard-focused control is. */
+private val FocusRing: Dp = 2.dp
 
 /**
  * The reader's chrome: leaving the book, where you are in it, and how it reads.
@@ -51,38 +61,82 @@ private val ControlSize: Dp = MinTouchTarget
  * bar is native-looking on iOS without the other platforms being handed an iOS
  * look. See `GlassStyle` for why that is a drawn approximation rather than a
  * system material.
+ *
+ * [title] is drawn only where there is room for it. A phone puts three controls
+ * at arm's length from each other and that is the whole bar; a desktop window is
+ * wide enough that the same three, pushed to the extremes, read as a bar with a
+ * hole in it - and wide enough to say which book is open, which is what a window
+ * on a desktop is expected to do.
  */
 @Composable
 internal fun ReaderToolbar(
     onBack: () -> Unit,
+    title: String?,
     modifier: Modifier = Modifier,
     centerControl: @Composable () -> Unit,
     endControl: @Composable () -> Unit
 ) {
+    val wide = LocalWindowWidthClass.current != WindowWidthClass.Compact
+
     GlassSurface(
         shape = RoundedCornerShape(percent = 50),
         modifier = modifier.fillMaxWidth()
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = if (wide) Arrangement.Start else Arrangement.SpaceBetween,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(ControlSize)
         ) {
-            ToolbarButton(
-                onClick = onBack,
-                label = "Close book"
-            ) {
-                BackChevron(
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
-                )
+            val back: @Composable () -> Unit = {
+                ShortcutTooltip(description = "Close the book", shortcut = "Esc") {
+                    ToolbarButton(onClick = onBack, label = "Close book") {
+                        BackChevron(
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
             }
 
-            centerControl()
+            if (wide) {
+                // Three tracks rather than three controls in a row: the outer
+                // two share what is left over evenly, which is what keeps the
+                // page indicator in the middle of the bar however long the
+                // title beside it runs.
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    back()
 
-            endControl()
+                    if (title != null) {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(start = 4.dp, end = 12.dp)
+                        )
+                    }
+                }
+
+                centerControl()
+
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    endControl()
+                }
+            } else {
+                back()
+                centerControl()
+                endControl()
+            }
         }
     }
 }
@@ -109,35 +163,46 @@ internal fun PageIndicatorButton(
         derivedStateOf { listState.firstVisibleItemIndex + 1 }
     }
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
-            .pointerHoverIcon(PointerIcon.Hand)
-            .clickable(onClickLabel = "Open contents", onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 5.dp)
-            // "12 / 348" is a clear enough label to look at and a poor one to
-            // hear, so assistive technology is given the sentence instead.
-            //
-            // Deliberately not a live region: this changes on every page, and
-            // announcing each one would talk over a reader scrolling through a
-            // long book. The pages themselves carry the position instead.
-            .semantics { contentDescription = "Page $currentPage of $pageCount" }
-    ) {
-        Text(
-            text = "$currentPage / $pageCount",
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+    val interactionSource = remember { MutableInteractionSource() }
+    val focused by interactionSource.collectIsFocusedAsState()
 
-        DisclosureChevron(
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+    ShortcutTooltip(description = "Contents", shortcut = "C") {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .padding(start = 5.dp)
-                .size(9.dp)
-        )
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
+                .focusRing(focused, CircleShape)
+                .pointerHoverIcon(PointerIcon.Hand)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onClickLabel = "Open contents",
+                    onClick = onClick
+                )
+                .padding(horizontal = 12.dp, vertical = 5.dp)
+                // "12 / 348" is a clear enough label to look at and a poor one to
+                // hear, so assistive technology is given the sentence instead.
+                //
+                // Deliberately not a live region: this changes on every page, and
+                // announcing each one would talk over a reader scrolling through a
+                // long book. The pages themselves carry the position instead.
+                .semantics { contentDescription = "Page $currentPage of $pageCount" }
+        ) {
+            Text(
+                text = "$currentPage / $pageCount",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            DisclosureChevron(
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .padding(start = 5.dp)
+                    .size(9.dp)
+            )
+        }
     }
 }
 
@@ -157,6 +222,7 @@ internal fun ToolbarButton(
     content: @Composable () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val focused by interactionSource.collectIsFocusedAsState()
 
     Box(
         modifier = modifier
@@ -171,9 +237,21 @@ internal fun ToolbarButton(
                 onClick = onClick
             )
             .size(ControlSize)
+            .focusRing(focused, CircleShape)
             .semantics { contentDescription = label },
         contentAlignment = Alignment.Center
     ) {
         content()
     }
 }
+
+/**
+ * Marks the control the keyboard is on.
+ *
+ * These controls draw no ripple and no pressed state of their own, which leaves
+ * someone tabbing through the bar with nothing at all to tell them where they
+ * are. Focus is the one interaction that has to be visible without a pointer.
+ */
+@Composable
+private fun Modifier.focusRing(focused: Boolean, shape: Shape): Modifier =
+    if (focused) border(FocusRing, MaterialTheme.colorScheme.primary, shape) else this
