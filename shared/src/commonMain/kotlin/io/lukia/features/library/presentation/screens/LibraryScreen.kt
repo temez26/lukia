@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
+import io.lukia.features.bookdetail.presentation.BookDetailOverlay
 import io.lukia.features.import.presentation.rememberPlatformFilePicker
 import io.lukia.features.import.presentation.rememberPlatformFolderPicker
 import io.lukia.features.library.presentation.LibraryFilter
@@ -54,6 +55,7 @@ import io.lukia.features.library.presentation.components.LibraryHeader
 import io.lukia.features.library.presentation.components.LibraryNavBar
 import io.lukia.features.library.presentation.components.libraryNavBarHeight
 import io.lukia.features.library.presentation.matching
+import io.lukia.features.settings.presentation.SettingsOverlay
 import io.lukia.shared.presentation.components.ActionMenuScrim
 import io.lukia.shared.presentation.components.LaunchReveal
 import io.lukia.shared.presentation.components.LoadingState
@@ -61,6 +63,8 @@ import io.lukia.shared.presentation.components.UiStateContent
 import io.lukia.shared.presentation.components.launchReveal
 import io.lukia.shared.presentation.components.rememberLaunchReveal
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import io.lukia.shared.presentation.theme.LocalWindowWidthClass
+import io.lukia.shared.presentation.theme.WindowWidthClass
 import io.lukia.shared.presentation.theme.stateSwapIn
 import io.lukia.shared.presentation.theme.softFadeOut
 import kotlinx.coroutines.launch
@@ -97,6 +101,13 @@ fun LibraryScreen(
     val folderPicker = rememberPlatformFolderPicker()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    // Settings open in place for the same reason a book's details do: a window
+    // with room for both should not throw the library away to change a theme.
+    // Held here rather than in the stateless half below, which has no business
+    // knowing about a dependency graph.
+    val settingsOpenInPlace = LocalWindowWidthClass.current != WindowWidthClass.Compact
+    var settingsOpen by rememberSaveable { mutableStateOf(false) }
+
     // Fires again each time the grid is re-entered from the detail screen, which
     // may have favourited or removed a book behind its back.
     LaunchedEffect(Unit) {
@@ -110,27 +121,38 @@ fun LibraryScreen(
         }
     }
 
-    LibraryContent(
-        uiState = uiState,
-        onImport = {
-            filePicker.launch { pickedDocument ->
-                pickedDocument?.let { viewModel.importDocument(it) }
-            }
-        },
-        onImportFolder = {
-            folderPicker.launch { pickedFolder ->
-                pickedFolder?.let { viewModel.importFolder(it) }
-            }
-        },
-        onDocumentClick = onDocumentClick,
-        onDocumentDetails = onDocumentDetails,
-        onSettings = onSettings,
-        onToggleFavorite = viewModel::toggleFavorite,
-        onDelete = viewModel::deleteDocument,
-        onRetry = viewModel::refresh,
-        isImporting = isImporting,
-        snackbarHostState = snackbarHostState
-    )
+    Box(modifier = Modifier.fillMaxSize()) {
+        LibraryContent(
+            uiState = uiState,
+            onImport = {
+                filePicker.launch { pickedDocument ->
+                    pickedDocument?.let { viewModel.importDocument(it) }
+                }
+            },
+            onImportFolder = {
+                folderPicker.launch { pickedFolder ->
+                    pickedFolder?.let { viewModel.importFolder(it) }
+                }
+            },
+            onDocumentClick = onDocumentClick,
+            onDocumentDetails = onDocumentDetails,
+            onSettings = {
+                if (settingsOpenInPlace) settingsOpen = true else onSettings()
+            },
+            onToggleFavorite = viewModel::toggleFavorite,
+            onDelete = viewModel::deleteDocument,
+            onRetry = viewModel::refresh,
+            isImporting = isImporting,
+            snackbarHostState = snackbarHostState
+        )
+
+        // Over the library and its own overlays both, since it is opened from the
+        // bar that floats above them.
+        SettingsOverlay(
+            visible = settingsOpen,
+            onDismiss = { settingsOpen = false }
+        )
+    }
 }
 
 /**
@@ -159,6 +181,17 @@ fun LibraryContent(
     var query by rememberSaveable { mutableStateOf("") }
     var selectedFilter by rememberSaveable { mutableStateOf(LibraryFilter.All) }
 
+    // A phone leaves the library to show a book's details, because it has room
+    // for one thing at a time. Anything wider keeps the library on screen and
+    // lays the details over it, so browsing is not unwound to read a file size.
+    val detailsOpenInPlace = LocalWindowWidthClass.current != WindowWidthClass.Compact
+
+    // The book being looked at, held by location rather than by value: favouriting
+    // it from inside the panel replaces the instance in the library, and a panel
+    // holding the old one would go on showing an empty heart. Looking it up again
+    // each pass also closes the panel when the book it was showing is deleted.
+    var detailLocation by rememberSaveable { mutableStateOf<String?>(null) }
+
     // One value rather than a flag per menu: the screen has three of them and at
     // most one may be open, and a single slot makes that structural instead of
     // something every opener has to remember to enforce. Held here rather than in
@@ -179,6 +212,10 @@ fun LibraryContent(
 
     val matches = remember(documents, activeFilter, query) {
         documents.matching(activeFilter, query)
+    }
+
+    val detailDocument = detailLocation?.let { location ->
+        documents.firstOrNull { it.document.location == location }
     }
 
     val collapseDistancePx = with(LocalDensity.current) { HeaderCollapseDistance.toPx() }
@@ -273,7 +310,13 @@ fun LibraryContent(
                                 isImporting = isImporting,
                                 reveal = reveal,
                                 onDocumentClick = onDocumentClick,
-                                onDocumentDetails = onDocumentDetails,
+                                onDocumentDetails = { document ->
+                                    if (detailsOpenInPlace) {
+                                        detailLocation = document.document.location
+                                    } else {
+                                        onDocumentDetails(document)
+                                    }
+                                },
                                 openMenu = openMenu,
                                 onOpenMenuChange = { openMenu = it },
                                 onToggleFavorite = onToggleFavorite,
@@ -306,6 +349,19 @@ fun LibraryContent(
             ActionMenuScrim(
                 visible = openMenu != null,
                 onDismiss = { openMenu = null }
+            )
+
+            // Last, so it covers the library and its chrome both. Draws nothing
+            // at all until a book is being looked at.
+            BookDetailOverlay(
+                document = detailDocument,
+                onDismiss = { detailLocation = null },
+                onRead = { document ->
+                    detailLocation = null
+                    onDocumentClick(document)
+                },
+                onToggleFavorite = onToggleFavorite,
+                onDelete = onDelete
             )
         }
     }

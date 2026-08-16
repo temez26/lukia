@@ -1,19 +1,29 @@
 package io.lukia.features.library.presentation.screens
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.longClick
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runComposeUiTest
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.PickedDocument
 import io.lukia.core.presentation.UiState
 import io.lukia.shared.presentation.theme.LukiaTheme
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 @OptIn(ExperimentalTestApi::class)
 class LibraryContentTest {
@@ -48,22 +58,36 @@ class LibraryContentTest {
         book("The Hobbit", DocumentType.EPUB)
     )
 
-    private fun ComposeUiTest.setLibrary(documents: List<DocumentInfo> = library) {
+    private fun ComposeUiTest.setLibrary(
+        documents: List<DocumentInfo> = library,
+        width: Dp = 1000.dp,
+        onDocumentDetails: (DocumentInfo) -> Unit = {}
+    ) {
         setContent {
-            LukiaTheme(darkTheme = false) {
-                LibraryContent(
-                    uiState = UiState.Success(documents),
-                    onImport = {},
-                    onImportFolder = {},
-                    onDocumentClick = {},
-                    onDocumentDetails = {},
-                    onToggleFavorite = {},
-                    onDelete = {},
-                    onRetry = {},
-                    isImporting = false
-                )
+            // Sized explicitly: the layout branches on the window's width class,
+            // and a test that let the harness pick the window would be asserting
+            // on whichever branch that happened to land in.
+            Box(modifier = Modifier.size(width, 900.dp)) {
+                LukiaTheme(darkTheme = false) {
+                    LibraryContent(
+                        uiState = UiState.Success(documents),
+                        onImport = {},
+                        onImportFolder = {},
+                        onDocumentClick = {},
+                        onDocumentDetails = onDocumentDetails,
+                        onToggleFavorite = {},
+                        onDelete = {},
+                        onRetry = {},
+                        isImporting = false
+                    )
+                }
             }
         }
+    }
+
+    /** Opens one book's actions the way a long press on its card does. */
+    private fun ComposeUiTest.openBookMenu(title: String) {
+        onNodeWithText(title).performTouchInput { longClick() }
     }
 
     private fun ComposeUiTest.selectFilter(label: String) {
@@ -111,5 +135,53 @@ class LibraryContentTest {
         selectFilter("Favourites")
 
         onNodeWithText("Search 1 book").assertIsDisplayed()
+    }
+
+    /**
+     * A window with room for both keeps the library on screen and lays the
+     * details over it, rather than navigating away from what was being browsed.
+     */
+    @Test
+    fun aWideWindowOpensDetailsOverTheLibrary() = runComposeUiTest {
+        var navigatedTo: DocumentInfo? = null
+        setLibrary(width = 1000.dp, onDocumentDetails = { navigatedTo = it })
+
+        openBookMenu("Moby Dick")
+        onNodeWithText("Book Details").performClick()
+
+        // The panel is up...
+        onNodeWithText("Read").assertIsDisplayed()
+        // ...the library is still behind it...
+        onNodeWithText("The Hobbit").assertIsDisplayed()
+        // ...and nothing was navigated to.
+        assertNull(navigatedTo)
+    }
+
+    /** A phone has room for one thing at a time, so it still goes to a screen. */
+    @Test
+    fun aNarrowWindowNavigatesToTheDetailScreen() = runComposeUiTest {
+        var navigatedTo: DocumentInfo? = null
+        setLibrary(width = 390.dp, onDocumentDetails = { navigatedTo = it })
+
+        openBookMenu("Moby Dick")
+        onNodeWithText("Book Details").performClick()
+
+        assertEquals("Moby Dick.pdf", navigatedTo?.document?.fileName)
+        onNodeWithText("Read").assertDoesNotExist()
+    }
+
+    /** Closing puts the reader back where they were, with nothing else changed. */
+    @Test
+    fun theDetailPanelCloses() = runComposeUiTest {
+        setLibrary(width = 1000.dp)
+
+        openBookMenu("Moby Dick")
+        onNodeWithText("Book Details").performClick()
+        onNodeWithText("Read").assertIsDisplayed()
+
+        onNodeWithContentDescription("Close").performClick()
+
+        onNodeWithText("Read").assertDoesNotExist()
+        onNodeWithText("Add Books").assertIsDisplayed()
     }
 }
