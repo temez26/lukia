@@ -16,6 +16,18 @@ import androidx.compose.ui.unit.dp
 import io.lukia.shared.presentation.theme.LocalGlassStyle
 
 /**
+ * What a glass surface is being asked to hold, which is what decides how far its
+ * translucency can be taken. See [io.lukia.shared.presentation.theme.GlassStyle].
+ */
+enum class GlassTone {
+    /** A bar or a button: a glyph, a word, nothing to dwell on. */
+    Chrome,
+
+    /** A panel or a menu: rows of text, over content that is still there behind. */
+    Panel
+}
+
+/**
  * Translucent floating chrome. See [io.lukia.shared.presentation.theme.GlassStyle]
  * for why this is a hand-drawn approximation rather than a real backdrop blur.
  *
@@ -27,11 +39,17 @@ import io.lukia.shared.presentation.theme.LocalGlassStyle
 fun GlassSurface(
     shape: Shape,
     modifier: Modifier = Modifier,
+    tone: GlassTone = GlassTone.Chrome,
     content: @Composable BoxScope.() -> Unit
 ) {
     val glass = LocalGlassStyle.current
     val surface = MaterialTheme.colorScheme.surface
     val outline = MaterialTheme.colorScheme.outline
+
+    val fillAlpha = when (tone) {
+        GlassTone.Chrome -> glass.chromeAlpha
+        GlassTone.Panel -> glass.panelAlpha
+    }
 
     Box(
         modifier = modifier
@@ -40,8 +58,8 @@ fun GlassSurface(
             .background(
                 Brush.verticalGradient(
                     listOf(
-                        surface.copy(alpha = glass.surfaceAlpha),
-                        surface.copy(alpha = (glass.surfaceAlpha + 0.08f).coerceAtMost(1f))
+                        surface.copy(alpha = fillAlpha),
+                        surface.copy(alpha = (fillAlpha + 0.08f).coerceAtMost(1f))
                     )
                 )
             )

@@ -84,6 +84,7 @@ fun AnchoredMenu(
     ) {
         GlassSurface(
             shape = RoundedCornerShape(14.dp),
+            tone = GlassTone.Panel,
             modifier = modifier.popoverTransition(
                 progress = progress,
                 transformOrigin = TransformOrigin(1f, 0f)
