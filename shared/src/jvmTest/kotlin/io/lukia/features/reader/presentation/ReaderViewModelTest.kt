@@ -14,12 +14,16 @@ import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderTheme
+import io.lukia.core.infrastructure.testDatabase
+import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
+import io.lukia.features.reader.infrastructure.SqlReadingProgressRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeoutOrNull
@@ -55,6 +59,16 @@ class ReaderViewModelTest {
      * [settled] rather than pretending the work is synchronous.
      */
     private val openDispatcher = Dispatchers.Unconfined
+
+    /**
+     * The real store against an in-memory database rather than a fake: where a
+     * book opens is the point of this, and a fake would only ever return what
+     * the fake was told to.
+     */
+    private val progress = SqlReadingProgressRepository(
+        database = testDatabase(),
+        dispatcher = UnconfinedTestDispatcher()
+    )
 
     /**
      * Every ViewModel a test opens, held in a store so they can all be cleared
@@ -136,7 +150,8 @@ class ReaderViewModelTest {
                 documentWorkspace = workspace,
                 dispatcher = openDispatcher
             ),
-            settingsRepository = ReaderSettingsRepository(FakeSettingsStore())
+            settingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
+        progressRepository = progress
         ).also { track(it) }
 
         assertEquals(UiState.Failure(AppError.DocumentNotFound), viewModel.settled())
@@ -195,7 +210,8 @@ class ReaderViewModelTest {
                 documentWorkspace = workspace,
                 dispatcher = openDispatcher
             ),
-            settingsRepository = ReaderSettingsRepository(FakeSettingsStore())
+            settingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
+        progressRepository = progress
         ).also { track(it) }
 
         assertEquals(UiState.Failure(AppError.DocumentNotFound), viewModel.settled())
@@ -290,6 +306,81 @@ class ReaderViewModelTest {
         assertEquals(ReaderOutline.Chapters(emptyList()), outline)
     }
 
+    /** A book nobody has opened starts at the beginning, like a new book. */
+    @Test
+    fun anUnreadBookOpensAtItsFirstPage() = runTest {
+        val viewModel = createViewModel(pdfInLibrary(pageCount = 20))
+        viewModel.settled()
+
+        assertEquals(0, viewModel.initialPage.first { it != null })
+    }
+
+    @Test
+    fun aBookOpensWhereItWasLeftOff() = runTest {
+        val document = pdfInLibrary(pageCount = 20)
+        progress.save(
+            location = document.document.location,
+            progress = ReadingProgress(pageIndex = 11, pageCount = 20)
+        )
+
+        val viewModel = createViewModel(document)
+        viewModel.settled()
+
+        assertEquals(11, viewModel.initialPage.first { it != null })
+    }
+
+    @Test
+    fun whereTheReaderStopsIsWhatIsStored() = runTest {
+        val document = pdfInLibrary(pageCount = 20)
+        val viewModel = createViewModel(document)
+        viewModel.settled()
+
+        viewModel.onPageSettled(pageIndex = 7)
+
+        assertEquals(
+            ReadingProgress(pageIndex = 7, pageCount = 20),
+            progress.progressFor(document.document.location)
+        )
+    }
+
+    /**
+     * A file can be replaced by a shorter one under the same name, and a page
+     * that no longer exists is not a place to open at.
+     */
+    @Test
+    fun aStoredPagePastTheEndOfTheBookOpensAtTheLastPage() = runTest {
+        val document = pdfInLibrary(pageCount = 5)
+        progress.save(
+            location = document.document.location,
+            progress = ReadingProgress(pageIndex = 400, pageCount = 500)
+        )
+
+        val viewModel = createViewModel(document)
+        viewModel.settled()
+
+        assertEquals(4, viewModel.initialPage.first { it != null })
+    }
+
+    /** Nothing is stored for a book that never opened - there is no page to store. */
+    @Test
+    fun aBookThatFailedToOpenRecordsNoPosition() = runTest {
+        val viewModel = ReaderViewModel(
+            location = "/library/missing.pdf",
+            openDocumentUseCase = OpenDocumentUseCase(
+                libraryRepository = FakeLibraryRepository(),
+                documentWorkspace = workspace,
+                dispatcher = openDispatcher
+            ),
+            settingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
+            progressRepository = progress
+        ).also { track(it) }
+        viewModel.settled()
+
+        viewModel.onPageSettled(pageIndex = 3)
+
+        assertNull(progress.progressFor("/library/missing.pdf"))
+    }
+
     @Test
     fun settingsChangesAreVisibleThroughTheViewModel() = runTest {
         val viewModel = createViewModel(pdfInLibrary(pageCount = 1))
@@ -322,7 +413,8 @@ class ReaderViewModelTest {
                 documentWorkspace = workspace,
                 dispatcher = openDispatcher
             ),
-            settingsRepository = ReaderSettingsRepository(FakeSettingsStore())
+            settingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
+        progressRepository = progress
         ).also { track(it) }
 
         assertNull(viewModel.page(index = 0, widthPx = 384))
@@ -346,7 +438,8 @@ class ReaderViewModelTest {
             documentWorkspace = workspace,
             dispatcher = openDispatcher
         ),
-        settingsRepository = ReaderSettingsRepository(FakeSettingsStore())
+        settingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
+        progressRepository = progress
     ).also { track(it) }
 
     private fun pdfInLibrary(pageCount: Int, chapters: Int = 0): DocumentInfo {

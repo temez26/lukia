@@ -4,6 +4,7 @@ import io.lukia.core.domain.AppError
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.FakeDocumentWorkspace
+import io.lukia.features.reader.domain.FakeReadingProgressRepository
 import io.lukia.core.domain.PickedDocument
 import io.lukia.core.domain.PickedFolder
 import io.lukia.core.domain.TestDocuments
@@ -275,7 +276,11 @@ class LibraryViewModelTest {
                 dispatcher = UnconfinedTestDispatcher()
             ),
             setFavoriteUseCase = SetFavoriteUseCase(repository),
-            removeDocumentUseCase = RemoveDocumentUseCase(repository, FakeDocumentWorkspace())
+            removeDocumentUseCase = RemoveDocumentUseCase(
+                repository,
+                FakeDocumentWorkspace(),
+                FakeReadingProgressRepository()
+            )
         )
     }
 

@@ -1,0 +1,31 @@
+-- Where a book was left off.
+--
+-- A table of its own rather than columns on `document`, because it has its own
+-- lifetime: most books in a library have never been opened, and the ones that
+-- have are written to as they are read while the rest are not touched at all.
+--
+-- `pageCount` is stored beside the page so that how far through a book someone
+-- is can be answered without opening it.
+--
+-- Not a foreign key on `document`, which would tie this to a table it has no
+-- reason to be locked to - a position can be stored for a book the library was
+-- never told about. Removing a book clears its position all the same; that is
+-- `RemoveDocumentUseCase`'s doing rather than the schema's.
+CREATE TABLE reading_position (
+    location TEXT NOT NULL PRIMARY KEY,
+    pageIndex INTEGER NOT NULL,
+    pageCount INTEGER NOT NULL
+);
+
+selectByLocation:
+SELECT * FROM reading_position WHERE location = ?;
+
+-- Replace rather than update: the row holds nothing that is not being written,
+-- so there is nothing to preserve. `INSERT OR REPLACE` is as old as SQLite,
+-- unlike the upsert this would otherwise be - see `Document.sq`.
+put:
+INSERT OR REPLACE INTO reading_position(location, pageIndex, pageCount)
+VALUES (?, ?, ?);
+
+deleteByLocation:
+DELETE FROM reading_position WHERE location = ?;

@@ -6,7 +6,13 @@ import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
+import app.cash.sqldelight.db.SqlDriver
+import io.lukia.core.infrastructure.lukiaSqlDriver
+import io.lukia.features.reader.domain.ReadingProgressRepository
 import org.koin.dsl.koinApplication
+import org.koin.dsl.module
+import java.io.File
+import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertSame
@@ -19,9 +25,39 @@ import kotlin.test.assertSame
  */
 class AppGraphTest {
 
+    /**
+     * The desktop build's own driver, pointed somewhere temporary. Resolving
+     * the graph opens the database, and a test has no business opening - or
+     * creating - the one the installed app reads.
+     */
+    private val databaseFile = File(
+        System.getProperty("java.io.tmpdir"),
+        "lukia-graph-test-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}.db"
+    )
+
     private val koin = koinApplication {
-        modules(commonModule, platformModule)
+        modules(
+            commonModule,
+            platformModule,
+            module { single<SqlDriver> { lukiaSqlDriver(databaseFile) } }
+        )
     }.koin
+
+    @AfterTest
+    fun tearDown() {
+        koin.get<SqlDriver>().close()
+        databaseFile.delete()
+    }
+
+    /**
+     * Everything that has to be stored between runs hangs off one database, and
+     * a missing driver would only show up as an empty library on launch.
+     */
+    @Test
+    fun whatIsStoredBetweenRunsResolves() {
+        assertNotNull(koin.get<SqlDriver>())
+        assertNotNull(koin.get<ReadingProgressRepository>())
+    }
 
     @Test
     fun theDesktopPlatformProvidesItsHalfOfTheGraph() {
