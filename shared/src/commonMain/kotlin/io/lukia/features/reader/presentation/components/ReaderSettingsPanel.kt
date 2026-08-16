@@ -23,7 +23,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -41,22 +40,16 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntRect
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupPositionProvider
-import androidx.compose.ui.window.PopupProperties
 import io.lukia.features.reader.domain.LineSpacing
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.domain.ReaderTypeface
 import io.lukia.features.reader.domain.ReadingWidth
 import io.lukia.shared.presentation.components.GlassSurface
+import kotlin.math.roundToInt
 
 /** Grows out of the control it hangs from, matching the book actions menu. */
 private val PanelTransformOrigin = TransformOrigin(1f, 0f)
@@ -65,13 +58,16 @@ private val PanelTransformOrigin = TransformOrigin(1f, 0f)
 private val PanelWidth: Dp = 284.dp
 private val PanelPadding: Dp = 16.dp
 
-/** The segmented track. Its segments are the touch target, full width each. */
-private val SegmentHeight: Dp = 38.dp
+/**
+ * The segmented track. Its segments are the touch target, full width each, at
+ * the smallest size a finger can be asked to hit accurately.
+ */
+private val SegmentHeight: Dp = 44.dp
 
 /**
  * The reader's presentation settings.
  *
- * A [Popup] hanging from the toolbar rather than a sheet: adjusting the theme or
+ * A panel hanging from the toolbar rather than a sheet: adjusting the theme or
  * the measure while the page is hidden behind a full-width sheet would mean
  * dismissing it after every change to see what it did. Nothing behind it is
  * dimmed for the same reason.
@@ -87,11 +83,12 @@ internal fun ReaderSettingsPanel(
     settings: ReaderSettings,
     typographyEnabled: Boolean,
     onSettingsChange: (ReaderSettings) -> Unit,
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    // Animated through a graphicsLayer rather than AnimatedVisibility for the
-    // same reason as the book actions menu: the latter measures its child at
-    // zero size first, which on Android creates the popup window 0x0.
+    // Animated through a graphicsLayer rather than AnimatedVisibility, which
+    // measures its child at zero size first and would make the panel flicker
+    // through a collapsed layout on the way in.
     val progress by animateFloatAsState(
         targetValue = if (expanded) 1f else 0f,
         animationSpec = tween(durationMillis = if (expanded) 180 else 140),
@@ -100,92 +97,96 @@ internal fun ReaderSettingsPanel(
 
     if (!expanded && progress == 0f) return
 
-    val positionProvider = remember { ReaderSettingsPositionProvider() }
-
     DismissOnBack(enabled = expanded, onDismiss = onDismissRequest)
 
-    Popup(
-        popupPositionProvider = positionProvider,
-        onDismissRequest = onDismissRequest,
-        properties = PopupProperties(focusable = false)
+    GlassSurface(
+        shape = RoundedCornerShape(18.dp),
+        modifier = modifier.graphicsLayer {
+            alpha = progress
+            val scale = 0.92f + 0.08f * progress
+            scaleX = scale
+            scaleY = scale
+            transformOrigin = PanelTransformOrigin
+        }
     ) {
-        GlassSurface(
-            shape = RoundedCornerShape(18.dp),
-            modifier = Modifier.graphicsLayer {
-                alpha = progress
-                val scale = 0.92f + 0.08f * progress
-                scaleX = scale
-                scaleY = scale
-                transformOrigin = PanelTransformOrigin
-            }
+        Column(
+            modifier = Modifier
+                .width(PanelWidth)
+                // A short window - a phone in landscape - would otherwise
+                // leave the last setting past the bottom edge with no way to
+                // reach it.
+                .heightIn(max = 420.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(vertical = 10.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .width(PanelWidth)
-                    // A short window - a phone in landscape - would otherwise
-                    // leave the last setting past the bottom edge with no way to
-                    // reach it.
-                    .heightIn(max = 420.dp)
-                    .verticalScroll(rememberScrollState())
-                    .padding(vertical = 10.dp)
-            ) {
-                SettingGroup(label = "Theme") {
-                    SegmentedOptions(
-                        options = ReaderTheme.entries,
-                        selected = settings.theme,
-                        label = { it.name },
-                        onSelect = { onSettingsChange(settings.copy(theme = it)) }
-                    )
-                }
+            SettingGroup(label = "Theme") {
+                SegmentedOptions(
+                    options = ReaderTheme.entries,
+                    selected = settings.theme,
+                    label = { it.name },
+                    onSelect = { onSettingsChange(settings.copy(theme = it)) }
+                )
+            }
 
-                SettingGroup(label = "Reading width") {
-                    SegmentedOptions(
-                        options = ReadingWidth.entries,
-                        selected = settings.readingWidth,
-                        label = { it.name },
-                        onSelect = { onSettingsChange(settings.copy(readingWidth = it)) }
-                    )
-                }
+            // Shown as percentages rather than names: with five steps that
+            // run past the width of the window, "125%" says what "Larger"
+            // cannot.
+            SettingGroup(label = "Page width") {
+                SegmentedOptions(
+                    options = ReadingWidth.entries,
+                    // Nothing is selected when a pinch has left the page
+                    // between two presets, which is the honest answer.
+                    selected = settings.matchingWidth,
+                    label = { "${(it.fraction * 100).roundToInt()}%" },
+                    onSelect = { onSettingsChange(settings.withPageScale(it.fraction)) }
+                )
+            }
 
-                PanelDivider()
+            PanelDivider()
 
-                SettingGroup(label = "Text size", enabled = typographyEnabled) {
-                    TextSizeStepper(
-                        settings = settings,
-                        enabled = typographyEnabled,
-                        onSettingsChange = onSettingsChange
+            // Placed before the controls it explains, so it is read first
+            // whether by eye or by screen reader.
+            if (!typographyEnabled) {
+                Text(
+                    text = "Text settings apply to reflowable books - this one " +
+                        "carries its own fixed layout.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(
+                        start = PanelPadding,
+                        end = PanelPadding,
+                        top = 4.dp,
+                        bottom = 8.dp
                     )
-                }
+                )
+            }
 
-                SettingGroup(label = "Line spacing", enabled = typographyEnabled) {
-                    SegmentedOptions(
-                        options = LineSpacing.entries,
-                        selected = settings.lineSpacing,
-                        label = { it.name },
-                        enabled = typographyEnabled,
-                        onSelect = { onSettingsChange(settings.copy(lineSpacing = it)) }
-                    )
-                }
+            SettingGroup(label = "Text size", enabled = typographyEnabled) {
+                TextSizeStepper(
+                    settings = settings,
+                    enabled = typographyEnabled,
+                    onSettingsChange = onSettingsChange
+                )
+            }
 
-                SettingGroup(label = "Typeface", enabled = typographyEnabled) {
-                    SegmentedOptions(
-                        options = ReaderTypeface.entries,
-                        selected = settings.typeface,
-                        label = { if (it == ReaderTypeface.Serif) "Serif" else "Sans" },
-                        enabled = typographyEnabled,
-                        onSelect = { onSettingsChange(settings.copy(typeface = it)) }
-                    )
-                }
+            SettingGroup(label = "Line spacing", enabled = typographyEnabled) {
+                SegmentedOptions(
+                    options = LineSpacing.entries,
+                    selected = settings.lineSpacing,
+                    label = { it.name },
+                    enabled = typographyEnabled,
+                    onSelect = { onSettingsChange(settings.copy(lineSpacing = it)) }
+                )
+            }
 
-                if (!typographyEnabled) {
-                    Text(
-                        text = "Text settings apply to reflowable books - this one " +
-                            "carries its own fixed layout.",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = PanelPadding, vertical = 4.dp)
-                    )
-                }
+            SettingGroup(label = "Typeface", enabled = typographyEnabled) {
+                SegmentedOptions(
+                    options = ReaderTypeface.entries,
+                    selected = settings.typeface,
+                    label = { if (it == ReaderTypeface.Serif) "Serif" else "Sans" },
+                    enabled = typographyEnabled,
+                    onSelect = { onSettingsChange(settings.copy(typeface = it)) }
+                )
             }
         }
     }
@@ -230,7 +231,7 @@ private fun SettingGroup(
 @Composable
 private fun <T> SegmentedOptions(
     options: List<T>,
-    selected: T,
+    selected: T?,
     label: (T) -> String,
     onSelect: (T) -> Unit,
     enabled: Boolean = true
@@ -392,8 +393,7 @@ private fun PanelDivider() {
 }
 
 /**
- * Back on Android, Escape on desktop - the popup is not focusable and cannot
- * route either itself. Matches how the book actions menu closes.
+ * Back on Android, Escape on desktop. Matches how the book actions menu closes.
  */
 @Suppress("DEPRECATION")
 @OptIn(ExperimentalComposeUiApi::class)
@@ -403,28 +403,6 @@ private fun DismissOnBack(
     onDismiss: () -> Unit
 ) {
     BackHandler(enabled = enabled, onBack = onDismiss)
-}
-
-/** Hangs the panel below the control it belongs to, clamped into the window. */
-private class ReaderSettingsPositionProvider : PopupPositionProvider {
-    override fun calculatePosition(
-        anchorBounds: IntRect,
-        windowSize: IntSize,
-        layoutDirection: LayoutDirection,
-        popupContentSize: IntSize
-    ): IntOffset {
-        val x = if (layoutDirection == LayoutDirection.Ltr) {
-            anchorBounds.right - popupContentSize.width
-        } else {
-            anchorBounds.left
-        }
-
-        return IntOffset(
-            x = x.coerceIn(0, (windowSize.width - popupContentSize.width).coerceAtLeast(0)),
-            y = anchorBounds.bottom
-                .coerceIn(0, (windowSize.height - popupContentSize.height).coerceAtLeast(0))
-        )
-    }
 }
 
 private const val DisabledAlpha = 0.38f

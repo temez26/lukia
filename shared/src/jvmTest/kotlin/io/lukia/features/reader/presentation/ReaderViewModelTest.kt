@@ -1,5 +1,6 @@
 package io.lukia.features.reader.presentation
 
+import androidx.lifecycle.ViewModelStore
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
@@ -11,17 +12,23 @@ import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.domain.ReaderDocument
+import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.withTimeoutOrNull
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.common.PDRectangle
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageFitWidthDestination
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem
 import java.io.File
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -49,7 +56,12 @@ class ReaderViewModelTest {
      */
     private val openDispatcher = Dispatchers.Unconfined
 
-    /** Every ViewModel a test opens, so they can all be closed afterwards. */
+    /**
+     * Every ViewModel a test opens, held in a store so they can all be cleared
+     * afterwards - [ViewModelStore.clear] is the way to cancel a ViewModel's
+     * scope from outside, since the ViewModel's own `clear` is internal.
+     */
+    private val viewModelStore = ViewModelStore()
     private val openedViewModels = mutableListOf<ReaderViewModel>()
 
     @BeforeTest
@@ -58,14 +70,35 @@ class ReaderViewModelTest {
     }
 
     /**
-     * The open document holds a file handle on the working copy, so it is given
-     * back before the directory underneath it goes. Without this, a test that
-     * ends while a page is still open leaves PDFBox reading a file that is being
-     * deleted, and the throw surfaces against whichever test runs next.
+     * Lets each ViewModel finish before taking its world away.
+     *
+     * Opening a book starts two pieces of real work - the copy and then the
+     * outline - and cancelling a coroutine that is inside a blocking read does
+     * not stop it: it still has to resume, on a main dispatcher that
+     * [resetMain] would by then have removed. Waiting for the work to land
+     * first is what makes that impossible rather than unlikely.
+     *
+     * The open document is closed for the same kind of reason: its file handle
+     * has to be given back before the directory underneath it goes.
      */
     @AfterTest
     fun tearDown() {
+        runBlocking {
+            withTimeoutOrNull(SETTLE_TIMEOUT_MILLIS) {
+                openedViewModels.forEach { viewModel ->
+                    val state = viewModel.uiState.first { it !is UiState.Loading }
+
+                    // Only a book that opened goes on to read an outline.
+                    if (state is UiState.Success) {
+                        viewModel.outline.first { it !is ReaderOutline.Loading }
+                    }
+                }
+            }
+        }
+
+        viewModelStore.clear()
         openedViewModels.forEach { it.uiState.value.dataOrNull?.close() }
+
         Dispatchers.resetMain()
         root.deleteRecursively()
     }
@@ -104,7 +137,7 @@ class ReaderViewModelTest {
                 dispatcher = openDispatcher
             ),
             settingsRepository = ReaderSettingsRepository(FakeSettingsStore())
-        ).also { openedViewModels.add(it) }
+        ).also { track(it) }
 
         assertEquals(UiState.Failure(AppError.DocumentNotFound), viewModel.settled())
     }
@@ -163,7 +196,7 @@ class ReaderViewModelTest {
                 dispatcher = openDispatcher
             ),
             settingsRepository = ReaderSettingsRepository(FakeSettingsStore())
-        ).also { openedViewModels.add(it) }
+        ).also { track(it) }
 
         assertEquals(UiState.Failure(AppError.DocumentNotFound), viewModel.settled())
 
@@ -178,10 +211,26 @@ class ReaderViewModelTest {
         val viewModel = createViewModel(pdfInLibrary(pageCount = 1))
         viewModel.settled()
 
-        val page = viewModel.page(index = 0, widthPx = 400)
+        val page = viewModel.page(index = 0, widthPx = 384)
 
         assertNotNull(page)
-        assertEquals(400, page.width)
+        assertEquals(384, page.width)
+    }
+
+    /**
+     * Pinching changes the page width continuously. Rounding to a render step is
+     * what keeps that from asking for a new render on every frame - two widths a
+     * few pixels apart have to come back as the same drawn page.
+     */
+    @Test
+    fun nearbyWidthsShareOneRender() = runTest {
+        val viewModel = createViewModel(pdfInLibrary(pageCount = 1))
+        viewModel.settled()
+
+        val first = viewModel.page(index = 0, widthPx = 380)
+        val second = viewModel.page(index = 0, widthPx = 396)
+
+        assertTrue(first === second)
     }
 
     /** Scrolling back to a page must not redraw it. */
@@ -190,8 +239,8 @@ class ReaderViewModelTest {
         val viewModel = createViewModel(pdfInLibrary(pageCount = 1))
         viewModel.settled()
 
-        val first = viewModel.page(index = 0, widthPx = 400)
-        val second = viewModel.page(index = 0, widthPx = 400)
+        val first = viewModel.page(index = 0, widthPx = 384)
+        val second = viewModel.page(index = 0, widthPx = 384)
 
         assertTrue(first === second)
     }
@@ -206,11 +255,39 @@ class ReaderViewModelTest {
         val viewModel = createViewModel(pdfInLibrary(pageCount = 1))
         viewModel.settled()
 
-        val before = viewModel.page(index = 0, widthPx = 400)
+        val before = viewModel.page(index = 0, widthPx = 384)
         viewModel.updateSettings(viewModel.settings.value.copy(theme = ReaderTheme.Dark))
-        val after = viewModel.page(index = 0, widthPx = 400)
+        val after = viewModel.page(index = 0, widthPx = 384)
 
         assertTrue(before === after)
+    }
+
+    /**
+     * Reading an outline can mean scanning the whole file, so it is started in
+     * the background as the book opens rather than when the panel asks - and
+     * never on the thread drawing the pages.
+     */
+    @Test
+    fun theOutlineLoadsWithoutBeingAskedFor() = runTest {
+        val viewModel = createViewModel(pdfInLibrary(pageCount = 3, chapters = 2))
+        viewModel.settled()
+
+        val outline = viewModel.outline.first { it !is ReaderOutline.Loading }
+
+        assertEquals(
+            listOf("Chapter 1", "Chapter 2"),
+            (outline as? ReaderOutline.Chapters)?.entries?.map { it.title }
+        )
+    }
+
+    @Test
+    fun aBookWithNoChaptersReportsAnEmptyOutline() = runTest {
+        val viewModel = createViewModel(pdfInLibrary(pageCount = 3))
+        viewModel.settled()
+
+        val outline = viewModel.outline.first { it !is ReaderOutline.Loading }
+
+        assertEquals(ReaderOutline.Chapters(emptyList()), outline)
     }
 
     @Test
@@ -229,11 +306,11 @@ class ReaderViewModelTest {
         val viewModel = createViewModel(pdfInLibrary(pageCount = 1))
         viewModel.settled()
 
-        val narrow = viewModel.page(index = 0, widthPx = 400)
-        val wide = viewModel.page(index = 0, widthPx = 700)
+        val narrow = viewModel.page(index = 0, widthPx = 384)
+        val wide = viewModel.page(index = 0, widthPx = 640)
 
-        assertEquals(400, narrow?.width)
-        assertEquals(700, wide?.width)
+        assertEquals(384, narrow?.width)
+        assertEquals(640, wide?.width)
     }
 
     @Test
@@ -246,9 +323,16 @@ class ReaderViewModelTest {
                 dispatcher = openDispatcher
             ),
             settingsRepository = ReaderSettingsRepository(FakeSettingsStore())
-        ).also { openedViewModels.add(it) }
+        ).also { track(it) }
 
-        assertNull(viewModel.page(index = 0, widthPx = 400))
+        assertNull(viewModel.page(index = 0, widthPx = 384))
+    }
+
+    /** Registers a ViewModel so tear-down can cancel its scope. */
+    private fun track(viewModel: ReaderViewModel): ReaderViewModel {
+        viewModelStore.put("reader-${openedViewModels.size}", viewModel)
+        openedViewModels += viewModel
+        return viewModel
     }
 
     /** The state once the document has finished opening, one way or the other. */
@@ -263,13 +347,30 @@ class ReaderViewModelTest {
             dispatcher = openDispatcher
         ),
         settingsRepository = ReaderSettingsRepository(FakeSettingsStore())
-    ).also { openedViewModels.add(it) }
+    ).also { track(it) }
 
-    private fun pdfInLibrary(pageCount: Int): DocumentInfo {
+    private fun pdfInLibrary(pageCount: Int, chapters: Int = 0): DocumentInfo {
         val file = File(library, "book-${kotlin.random.Random.nextInt()}.pdf")
 
         PDDocument().use { document ->
             repeat(pageCount) { document.addPage(PDPage(PDRectangle.A4)) }
+
+            if (chapters > 0) {
+                val outline = PDDocumentOutline()
+                document.documentCatalog.documentOutline = outline
+
+                repeat(chapters) { index ->
+                    outline.addLast(
+                        PDOutlineItem().apply {
+                            title = "Chapter ${index + 1}"
+                            destination = PDPageFitWidthDestination().apply {
+                                page = document.getPage(index % pageCount)
+                            }
+                        }
+                    )
+                }
+            }
+
             document.save(file)
         }
 
@@ -283,6 +384,11 @@ class ReaderViewModelTest {
             exists = true,
             sizeBytes = file.length()
         )
+    }
+
+    private companion object {
+        /** Generous: the work is a few small files, not a real book. */
+        const val SETTLE_TIMEOUT_MILLIS = 10_000L
     }
 
     private class FakeLibraryRepository(

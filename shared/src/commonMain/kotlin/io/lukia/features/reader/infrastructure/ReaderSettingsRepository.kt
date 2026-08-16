@@ -46,16 +46,32 @@ class ReaderSettingsRepository(
                 ?.let { defaults.withTextScale(it).textScale }
                 ?: defaults.textScale,
             lineSpacing = store.readEnum(KEY_LINE_SPACING, LineSpacing.entries, defaults.lineSpacing),
-            readingWidth = store.readEnum(KEY_READING_WIDTH, ReadingWidth.entries, defaults.readingWidth),
+            pageScale = readPageScale(defaults),
             typeface = store.readEnum(KEY_TYPEFACE, ReaderTypeface.entries, defaults.typeface)
         )
+    }
+
+    /**
+     * Page scale became a continuous value when pinching arrived. A reader who
+     * had already chosen one of the old named widths keeps it: the preset it
+     * names is read once and carried across to the scale it stood for.
+     */
+    private fun readPageScale(defaults: ReaderSettings): Float {
+        store.getString(KEY_PAGE_SCALE)?.toFloatOrNull()?.let {
+            return defaults.withPageScale(it).pageScale
+        }
+
+        val storedPreset = store.getString(KEY_READING_WIDTH)
+        val preset = ReadingWidth.entries.firstOrNull { it.name == storedPreset }
+
+        return preset?.let { defaults.withPageScale(it.fraction).pageScale } ?: defaults.pageScale
     }
 
     private fun save(settings: ReaderSettings) {
         store.putString(KEY_THEME, settings.theme.name)
         store.putString(KEY_TEXT_SCALE, settings.textScale.toString())
         store.putString(KEY_LINE_SPACING, settings.lineSpacing.name)
-        store.putString(KEY_READING_WIDTH, settings.readingWidth.name)
+        store.putString(KEY_PAGE_SCALE, settings.pageScale.toString())
         store.putString(KEY_TYPEFACE, settings.typeface.name)
     }
 
@@ -73,6 +89,9 @@ class ReaderSettingsRepository(
         const val KEY_THEME = "reader.theme"
         const val KEY_TEXT_SCALE = "reader.textScale"
         const val KEY_LINE_SPACING = "reader.lineSpacing"
+        const val KEY_PAGE_SCALE = "reader.pageScale"
+
+        /** Superseded by [KEY_PAGE_SCALE]; still read so a saved choice survives. */
         const val KEY_READING_WIDTH = "reader.readingWidth"
         const val KEY_TYPEFACE = "reader.typeface"
     }

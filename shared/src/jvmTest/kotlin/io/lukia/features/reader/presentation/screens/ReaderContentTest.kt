@@ -6,7 +6,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasClickAction
-import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasScrollToIndexAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -19,8 +19,10 @@ import io.lukia.core.domain.PickedDocument
 import io.lukia.core.domain.WorkingCopy
 import io.lukia.core.presentation.UiState
 import io.lukia.features.reader.domain.DocumentPages
+import io.lukia.features.reader.domain.OutlineEntry
 import io.lukia.features.reader.domain.PageSize
 import io.lukia.features.reader.domain.ReaderDocument
+import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.domain.ReadingWidth
@@ -50,7 +52,8 @@ class ReaderContentTest {
         assertEquals(1, onAllNodes(hasText("1 / 348")).fetchSemanticsNodes().size)
         assertEquals(
             1,
-            onAllNodes(hasContentDescription("Page 1 of 348")).fetchSemanticsNodes().size
+            onAllNodes(hasContentDescription("Page 1 of 348") and hasClickAction())
+                .fetchSemanticsNodes().size
         )
     }
 
@@ -59,7 +62,7 @@ class ReaderContentTest {
     fun thePageIndicatorReadsAsASentenceToAssistiveTechnology() = runComposeUiTest {
         setReader(pageCount = 348)
 
-        onNodeWithContentDescription("Page 1 of 348").assertExists()
+        onNode(hasContentDescription("Page 1 of 348") and hasClickAction()).assertExists()
     }
 
     /** The count is only useful if it follows the reader through the book. */
@@ -67,10 +70,10 @@ class ReaderContentTest {
     fun thePageIndicatorFollowsTheScroll() = runComposeUiTest {
         setReader(pageCount = 348)
 
-        onNode(hasScrollAction()).performScrollToIndex(11)
+        onNode(hasScrollToIndexAction()).performScrollToIndex(11)
 
         onNodeWithText("12 / 348").assertExists()
-        onNodeWithContentDescription("Page 12 of 348").assertExists()
+        onNode(hasContentDescription("Page 12 of 348") and hasClickAction()).assertExists()
     }
 
     /** Every theme has to be able to draw - each brings its own page filter. */
@@ -90,6 +93,7 @@ class ReaderContentTest {
                 ReaderContent(
                     uiState = UiState.Loading,
                     settings = ReaderSettings(),
+                    outline = ReaderOutline.Loading,
                     onBack = {},
                     onRetry = {},
                     onSettingsChange = {},
@@ -102,6 +106,50 @@ class ReaderContentTest {
         assertEquals(0, onAllNodes(hasText("/", substring = true)).fetchSemanticsNodes().size)
     }
 
+    /**
+     * A page is a picture with no text behind it, so its own description is the
+     * only thing a screen reader has to go on. Page two is only ever a page -
+     * the indicator is still showing page one - so finding it proves the
+     * document itself is reachable, not just the chrome.
+     */
+    @Test
+    fun theDocumentItselfIsReachableByAssistiveTechnology() = runComposeUiTest {
+        setReader(pageCount = 348)
+
+        onNodeWithContentDescription("Page 2 of 348").assertExists()
+    }
+
+    /** Reading wants the whole screen; a tap is how the chrome comes back. */
+    @Test
+    fun tappingThePageHidesTheChromeAndTappingAgainRestoresIt() = runComposeUiTest {
+        setReader(pageCount = 348)
+
+        onNodeWithContentDescription("Close book").assertExists()
+
+        onNodeWithContentDescription("Page 2 of 348").performClick()
+        waitForIdle()
+        assertEquals(
+            0,
+            onAllNodes(hasContentDescription("Close book")).fetchSemanticsNodes().size
+        )
+
+        onNodeWithContentDescription("Page 2 of 348").performClick()
+        waitForIdle()
+        onNodeWithContentDescription("Close book").assertExists()
+    }
+
+    /** A panel hangs off the toolbar, so the toolbar cannot leave underneath it. */
+    @Test
+    fun theChromeStaysWhileAPanelIsOpen() = runComposeUiTest {
+        setReader(pageCount = 348, outline = chapters)
+
+        openContents(pageCount = 348)
+        onNodeWithContentDescription("Page 2 of 348").performClick()
+        waitForIdle()
+
+        onNodeWithContentDescription("Close book").assertExists()
+    }
+
     @Test
     fun theSettingsPanelOpensFromTheToolbar() = runComposeUiTest {
         setReader(pageCount = 10)
@@ -109,7 +157,7 @@ class ReaderContentTest {
         onNodeWithContentDescription("Reading settings").performClick()
 
         onNodeWithText("Theme").assertExists()
-        onNodeWithText("Reading width").assertExists()
+        onNodeWithText("Page width").assertExists()
     }
 
     @Test
@@ -129,9 +177,39 @@ class ReaderContentTest {
         setReader(pageCount = 10, onSettingsChange = { changed = it })
 
         onNodeWithContentDescription("Reading settings").performClick()
-        onNodeWithText("Narrow").performClick()
+        onNodeWithText("75%").performClick()
 
-        assertEquals(ReadingWidth.Narrow, changed?.readingWidth)
+        assertEquals(ReadingWidth.Narrow.fraction, changed?.pageScale)
+    }
+
+    /**
+     * The larger widths are the only way to get closer to a PDF's fixed-size
+     * type, so they have to be reachable from the panel.
+     */
+    @Test
+    fun theLargerPageWidthsAreOffered() = runComposeUiTest {
+        var changed: ReaderSettings? = null
+        setReader(pageCount = 10, onSettingsChange = { changed = it })
+
+        onNodeWithContentDescription("Reading settings").performClick()
+        onNodeWithText("150%").performClick()
+
+        assertEquals(ReadingWidth.Largest.fraction, changed?.pageScale)
+    }
+
+    /** A page wider than the window still lays out, and still turns pages. */
+    @Test
+    fun theBookStillReadsAtTheLargestPageWidth() = runComposeUiTest {
+        setReader(
+            pageCount = 348,
+            settings = ReaderSettings(pageScale = ReadingWidth.Largest.fraction)
+        )
+
+        onNodeWithText("1 / 348").assertExists()
+
+        onNode(hasScrollToIndexAction()).performScrollToIndex(11)
+
+        onNodeWithText("12 / 348").assertExists()
     }
 
     /**
@@ -153,6 +231,95 @@ class ReaderContentTest {
     }
 
     @Test
+    fun theContentsPanelOpensFromThePageIndicator() = runComposeUiTest {
+        setReader(pageCount = 348, outline = chapters)
+
+        openContents(pageCount = 348)
+
+        onNodeWithText("Chapters").assertExists()
+        onNodeWithText("Introduction").assertExists()
+        onNodeWithText("The Middle").assertExists()
+    }
+
+    /** Tapping a chapter is the whole point: it has to move the book. */
+    @Test
+    fun choosingAChapterGoesToItsPage() = runComposeUiTest {
+        setReader(pageCount = 348, outline = chapters)
+
+        openContents(pageCount = 348)
+        onNodeWithContentDescription("The Middle, page 120").performClick()
+
+        onNodeWithText("120 / 348").assertExists()
+    }
+
+    /** And the panel gets out of the way once it has done its job. */
+    @Test
+    fun choosingAChapterClosesThePanel() = runComposeUiTest {
+        setReader(pageCount = 348, outline = chapters)
+
+        openContents(pageCount = 348)
+        onNodeWithContentDescription("The Middle, page 120").performClick()
+
+        assertEquals(0, onAllNodes(hasText("Chapters")).fetchSemanticsNodes().size)
+    }
+
+    @Test
+    fun nestedSectionsAreListedUnderTheirChapter() = runComposeUiTest {
+        setReader(pageCount = 348, outline = chapters)
+
+        openContents(pageCount = 348)
+
+        onNodeWithContentDescription("A Section, page 130").assertExists()
+    }
+
+    @Test
+    fun aDocumentWithNoChaptersSaysSo() = runComposeUiTest {
+        setReader(pageCount = 10, outline = ReaderOutline.Chapters(emptyList()))
+
+        openContents(pageCount = 10)
+
+        onNodeWithText("This document has no chapters.").assertExists()
+    }
+
+    /**
+     * Android's PDF renderer exposes no outline at all, so the reader cannot
+     * tell whether a book has chapters - and must not claim it has none.
+     */
+    @Test
+    fun aPlatformThatCannotReadChaptersSaysThatInstead() = runComposeUiTest {
+        setReader(pageCount = 10, outline = ReaderOutline.Unavailable)
+
+        openContents(pageCount = 10)
+
+        onNodeWithText("Chapters could not be read from this document.").assertExists()
+        assertEquals(
+            0,
+            onAllNodes(hasText("This document has no chapters.")).fetchSemanticsNodes().size
+        )
+    }
+
+    @Test
+    fun theScrubberReportsWhereItWouldGo() = runComposeUiTest {
+        setReader(pageCount = 348, outline = chapters)
+
+        openContents(pageCount = 348)
+
+        onNode(hasContentDescription("Go to page. Page 1 of 348")).assertExists()
+    }
+
+    /** Opening one panel puts the other away rather than stacking them. */
+    @Test
+    fun onlyOnePanelIsOpenAtATime() = runComposeUiTest {
+        setReader(pageCount = 348, outline = chapters)
+
+        openContents(pageCount = 348)
+        onNodeWithContentDescription("Reading settings").performClick()
+
+        onNodeWithText("Theme").assertExists()
+        assertEquals(0, onAllNodes(hasText("Chapters")).fetchSemanticsNodes().size)
+    }
+
+    @Test
     fun leavingTheBookIsAlwaysReachable() = runComposeUiTest {
         var closed = false
         setReader(pageCount = 10, onBack = { closed = true })
@@ -162,8 +329,22 @@ class ReaderContentTest {
         assertEquals(true, closed)
     }
 
+    /** The indicator is the pressable one; the page behind says the same thing. */
+    private fun ComposeUiTest.openContents(pageCount: Int) {
+        onNode(hasContentDescription("Page 1 of $pageCount") and hasClickAction()).performClick()
+    }
+
+    private val chapters = ReaderOutline.Chapters(
+        listOf(
+            OutlineEntry(title = "Introduction", pageIndex = 0, level = 0),
+            OutlineEntry(title = "The Middle", pageIndex = 119, level = 0),
+            OutlineEntry(title = "A Section", pageIndex = 129, level = 1)
+        )
+    )
+
     private fun ComposeUiTest.setReader(
         pageCount: Int,
+        outline: ReaderOutline = ReaderOutline.Chapters(emptyList()),
         settings: ReaderSettings = ReaderSettings(),
         onBack: () -> Unit = {},
         onSettingsChange: (ReaderSettings) -> Unit = {}
@@ -173,6 +354,7 @@ class ReaderContentTest {
                 ReaderContent(
                     uiState = UiState.Success(readerDocument(pageCount)),
                     settings = settings,
+                    outline = outline,
                     onBack = onBack,
                     onRetry = {},
                     onSettingsChange = onSettingsChange,
@@ -203,8 +385,14 @@ class ReaderContentTest {
     )
 
     private class FakePages(pageCount: Int) : DocumentPages {
+
+        override val outline: List<OutlineEntry> = emptyList()
+
+        // Wide and short, so that more than one page fits the test window and
+        // the pages either side of the first are composed. Real pages are
+        // taller; nothing here depends on their proportions.
         override val pageSizes: List<PageSize> =
-            List(pageCount) { PageSize(width = 595f, height = 842f) }
+            List(pageCount) { PageSize(width = 800f, height = 300f) }
 
         override suspend fun renderPage(index: Int, targetWidthPx: Int): ImageBitmap? = null
 

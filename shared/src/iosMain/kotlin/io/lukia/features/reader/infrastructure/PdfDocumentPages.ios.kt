@@ -2,6 +2,7 @@ package io.lukia.features.reader.infrastructure
 
 import androidx.compose.ui.graphics.ImageBitmap
 import io.lukia.features.reader.domain.DocumentPages
+import io.lukia.features.reader.domain.OutlineEntry
 import io.lukia.features.reader.domain.PageSize
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
@@ -17,11 +18,16 @@ import platform.Foundation.NSData
 import platform.Foundation.NSURL
 import platform.PDFKit.PDFDisplayBox
 import platform.PDFKit.PDFDocument
+import platform.PDFKit.PDFOutline
 import platform.UIKit.UIImagePNGRepresentation
 import platform.UIKit.UIScreen
 import platform.posix.memcpy
 
 internal actual fun openPdfPages(path: String): DocumentPages = IOSDocumentPages(path)
+
+/** Guards against an outline that is malformed into a cycle or absurdly deep. */
+private const val MAX_OUTLINE_DEPTH = 8
+private const val MAX_OUTLINE_ENTRIES = 5000
 
 /**
  * PDFKit rather than raw CoreGraphics: it renders a page to a requested size in
@@ -52,6 +58,33 @@ private class IOSDocumentPages(path: String) : DocumentPages {
             } else {
                 PageSize(width = height, height = width)
             }
+        }
+    }
+
+    override val outline: List<OutlineEntry> by lazy {
+        val root = document.outlineRoot ?: return@lazy emptyList()
+
+        buildList { appendOutline(root, level = 0) }
+    }
+
+    private fun MutableList<OutlineEntry>.appendOutline(node: PDFOutline, level: Int) {
+        if (level > MAX_OUTLINE_DEPTH || size >= MAX_OUTLINE_ENTRIES) return
+
+        for (childIndex in 0uL until node.numberOfChildren) {
+            if (size >= MAX_OUTLINE_ENTRIES) return
+
+            val child = node.childAtIndex(childIndex) ?: continue
+            val title = child.label?.trim()
+            val page = child.destination?.page
+            val pageIndex = page?.let { document.indexForPage(it).toInt() }
+
+            if (!title.isNullOrEmpty() && pageIndex != null && pageIndex >= 0) {
+                add(OutlineEntry(title = title, pageIndex = pageIndex, level = level))
+            }
+
+            // Descended into even when the entry itself led nowhere: a heading
+            // with no destination of its own still has real sections under it.
+            appendOutline(child, level + 1)
         }
     }
 

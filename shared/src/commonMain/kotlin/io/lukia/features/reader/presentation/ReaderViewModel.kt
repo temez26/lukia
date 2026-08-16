@@ -9,29 +9,31 @@ import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.domain.ReaderDocument
+import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /**
- * Ceiling on how wide a page is ever drawn, whatever the window does. Beyond
- * this the extra pixels are past what a page's own detail supports, while the
- * memory each one costs is not: a page is four bytes per pixel and the reader
- * holds several.
+ * How much drawn page is kept in memory, counted in pixels rather than pages.
+ *
+ * A page is four bytes per pixel, and a page's size varies enormously - a phone
+ * page is a few megabytes where a zoomed desktop page is twenty. Counting pages
+ * would mean choosing a number safe for the largest, which then holds far too
+ * little on the smallest. This budget adapts: roughly a dozen pages on a phone,
+ * three on a zoomed-in desktop, and about 64 MB either way.
  */
-private const val MAX_RENDER_WIDTH_PX = 1600
+private const val MAX_CACHED_PIXELS = 16_000_000
 
-/**
- * How many rendered pages are kept beyond the ones on screen. Enough to scroll
- * back a page or two without waiting; small enough that a long book does not
- * accumulate every page it has been shown.
- */
-private const val MAX_CACHED_PAGES = 4
+/** Kept regardless of the budget, so the page being read is never evicted. */
+private const val MIN_CACHED_PAGES = 3
 
 class ReaderViewModel(
     private val location: String,
@@ -48,6 +50,9 @@ class ReaderViewModel(
      * would be one more thing that could disagree with what was stored.
      */
     val settings: StateFlow<ReaderSettings> = settingsRepository.settings
+
+    private val _outline = MutableStateFlow<ReaderOutline>(ReaderOutline.Loading)
+    val outline: StateFlow<ReaderOutline> = _outline.asStateFlow()
 
     fun updateSettings(settings: ReaderSettings) {
         settingsRepository.update(settings)
@@ -70,17 +75,43 @@ class ReaderViewModel(
         viewModelScope.launch {
             // getOrThrow re-raises the use case's own failure so that it and an
             // unanticipated throw are both narrowed in the same place.
-            _uiState.value = runCatchingApp { openDocumentUseCase(location).getOrThrow() }
+            val state = runCatchingApp { openDocumentUseCase(location).getOrThrow() }
                 .fold(
                     onSuccess = { UiState.Success(it) },
                     onFailure = { UiState.Failure(it.toAppError()) }
                 )
+
+            _uiState.value = state
+
+            if (state is UiState.Success) loadOutline(state.data)
+        }
+    }
+
+    /**
+     * Read in the background as soon as the book is open, rather than when the
+     * contents panel asks for it.
+     *
+     * On platforms whose PDF renderer has no outline of its own, this means
+     * scanning the file - far too much to do while the reader waits with a panel
+     * open, and far too much to do on the thread drawing the pages. Starting it
+     * here means it is almost always ready before anyone looks.
+     */
+    private fun loadOutline(document: ReaderDocument) {
+        viewModelScope.launch {
+            val entries = withContext(Dispatchers.Default) {
+                runCatchingApp { document.pages.outline }.getOrNull()
+            }
+
+            _outline.value = entries
+                ?.let { ReaderOutline.Chapters(it) }
+                ?: ReaderOutline.Unavailable
         }
     }
 
     fun retry() {
         closeDocument()
         _uiState.value = UiState.Loading
+        _outline.value = ReaderOutline.Loading
         open()
     }
 
@@ -94,7 +125,9 @@ class ReaderViewModel(
      */
     suspend fun page(index: Int, widthPx: Int): ImageBitmap? {
         val pages = _uiState.value.dataOrNull?.pages ?: return null
-        val targetWidthPx = widthPx.coerceIn(1, MAX_RENDER_WIDTH_PX)
+        if (index !in 0 until pages.pageCount) return null
+
+        val targetWidthPx = renderWidthFor(widthPx)
 
         cached(index, targetWidthPx)?.let { return it }
 
@@ -123,10 +156,15 @@ class ReaderViewModel(
 
         renderedPages[index] = page
 
-        while (renderedPages.size > MAX_CACHED_PAGES) {
+        // Least-recently-used out first, until the budget is met - but never
+        // below the handful around the page being read.
+        while (renderedPages.size > MIN_CACHED_PAGES && cachedPixels() > MAX_CACHED_PIXELS) {
             renderedPages.remove(renderedPages.keys.first())
         }
     }
+
+    private fun cachedPixels(): Long =
+        renderedPages.values.sumOf { it.width.toLong() * it.height.toLong() }
 
     /**
      * The open document holds a file handle on the working copy, so leaving the
