@@ -42,17 +42,37 @@ import io.lukia.features.reader.domain.ReaderTypeface
 import io.lukia.features.reader.domain.ReadingWidth
 import io.lukia.shared.presentation.components.DismissOnBack
 import io.lukia.shared.presentation.components.GlassSurface
+import io.lukia.shared.presentation.components.GlassTone
 import io.lukia.shared.presentation.components.SegmentedControl
 import io.lukia.shared.presentation.components.popoverTransition
 import io.lukia.shared.presentation.components.rememberPopoverProgress
+import io.lukia.shared.presentation.theme.LocalWindowWidthClass
 import io.lukia.shared.presentation.theme.MinTouchTarget
+import io.lukia.shared.presentation.theme.WindowWidthClass
 import kotlin.math.roundToInt
 
 /** Grows out of the control it hangs from, matching the book actions menu. */
 private val PanelTransformOrigin = TransformOrigin(1f, 0f)
 
 /** Wide enough for three segments of readable type, narrow enough for a phone. */
-private val PanelWidth: Dp = 284.dp
+private val CompactPanelWidth: Dp = 284.dp
+
+/**
+ * On a window with room, the panel is wider and its labels sit beside their
+ * controls rather than above them. A phone stacks them because it has no choice;
+ * carrying that stack onto a desktop is what makes a panel read as a phone
+ * layout that happened to be opened on a monitor.
+ */
+private val WidePanelWidth: Dp = 412.dp
+
+/**
+ * What a control gets in the wide layout. Fixed rather than a weight, so every
+ * control in the panel starts at the same place down the column - five width
+ * presets and two typeface options line up instead of each dividing whatever its
+ * own label left over.
+ */
+private val WideControlWidth: Dp = 244.dp
+
 private val PanelPadding: Dp = 16.dp
 
 /** The text stepper shares the segmented control's track height. */
@@ -86,21 +106,26 @@ internal fun ReaderSettingsPanel(
 
     DismissOnBack(enabled = expanded, onDismiss = onDismissRequest)
 
+    val wide = LocalWindowWidthClass.current != WindowWidthClass.Compact
+
     GlassSurface(
         shape = RoundedCornerShape(18.dp),
+        tone = GlassTone.Panel,
         modifier = modifier.popoverTransition(progress, PanelTransformOrigin)
     ) {
         Column(
             modifier = Modifier
-                .width(PanelWidth)
+                .width(if (wide) WidePanelWidth else CompactPanelWidth)
                 // A short window - a phone in landscape - would otherwise
                 // leave the last setting past the bottom edge with no way to
                 // reach it.
-                .heightIn(max = 420.dp)
+                .heightIn(max = 440.dp)
                 .verticalScroll(rememberScrollState())
                 .padding(vertical = 10.dp)
         ) {
-            SettingGroup(label = "Theme") {
+            SectionHeading(label = "Page", wide = wide)
+
+            SettingGroup(label = "Theme", wide = wide) {
                 SegmentedControl(
                     options = ReaderTheme.entries,
                     selected = settings.theme,
@@ -112,7 +137,7 @@ internal fun ReaderSettingsPanel(
             // Shown as percentages rather than names: with five steps that
             // run past the width of the window, "125%" says what "Larger"
             // cannot.
-            SettingGroup(label = "Page width") {
+            SettingGroup(label = "Page width", wide = wide) {
                 SegmentedControl(
                     options = ReadingWidth.entries,
                     // Nothing is selected when a pinch has left the page
@@ -125,6 +150,8 @@ internal fun ReaderSettingsPanel(
 
             PanelDivider()
 
+            SectionHeading(label = "Text", wide = wide, enabled = typographyEnabled)
+
             // Placed before the controls it explains, so it is read first
             // whether by eye or by screen reader.
             if (!typographyEnabled) {
@@ -136,13 +163,13 @@ internal fun ReaderSettingsPanel(
                     modifier = Modifier.padding(
                         start = PanelPadding,
                         end = PanelPadding,
-                        top = 4.dp,
+                        top = 2.dp,
                         bottom = 8.dp
                     )
                 )
             }
 
-            SettingGroup(label = "Text size", enabled = typographyEnabled) {
+            SettingGroup(label = "Text size", wide = wide, enabled = typographyEnabled) {
                 TextSizeStepper(
                     settings = settings,
                     enabled = typographyEnabled,
@@ -150,7 +177,7 @@ internal fun ReaderSettingsPanel(
                 )
             }
 
-            SettingGroup(label = "Line spacing", enabled = typographyEnabled) {
+            SettingGroup(label = "Line spacing", wide = wide, enabled = typographyEnabled) {
                 SegmentedControl(
                     options = LineSpacing.entries,
                     selected = settings.lineSpacing,
@@ -160,7 +187,7 @@ internal fun ReaderSettingsPanel(
                 )
             }
 
-            SettingGroup(label = "Typeface", enabled = typographyEnabled) {
+            SettingGroup(label = "Typeface", wide = wide, enabled = typographyEnabled) {
                 SegmentedControl(
                     options = ReaderTypeface.entries,
                     selected = settings.typeface,
@@ -174,32 +201,92 @@ internal fun ReaderSettingsPanel(
 }
 
 /**
- * A label above its control. Stacked rather than side by side so the options
- * always have the panel's full width to divide between them - three of them
- * beside a label is what makes segment text wrap on narrow displays.
+ * A label and its control.
+ *
+ * On a phone the label sits above, because three segments beside a label is what
+ * makes segment text wrap on a narrow display. Given a wider window the two sit
+ * on one row, which is both what a desktop panel looks like and what stops this
+ * one from being a tall phone column with air either side of it.
  */
 @Composable
 private fun SettingGroup(
     label: String,
+    wide: Boolean,
     enabled: Boolean = true,
     control: @Composable () -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = PanelPadding, vertical = 6.dp)
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                alpha = if (enabled) 1f else DisabledAlpha
-            ),
-            modifier = Modifier.padding(bottom = 5.dp)
-        )
+    if (wide) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = PanelPadding, vertical = 4.dp)
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(
+                    alpha = if (enabled) 1f else DisabledAlpha
+                ),
+                maxLines = 1,
+                modifier = Modifier.weight(1f)
+            )
 
-        control()
+            Box(modifier = Modifier.width(WideControlWidth)) {
+                control()
+            }
+        }
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = PanelPadding, vertical = 6.dp)
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                    alpha = if (enabled) 1f else DisabledAlpha
+                ),
+                modifier = Modifier.padding(bottom = 5.dp)
+            )
+
+            control()
+        }
     }
+}
+
+/**
+ * What the settings under it act on.
+ *
+ * Only in the wide layout: there the labels are full-sized and on the same row
+ * as their controls, so without a heading above them the panel is one
+ * undifferentiated list. The stacked layout already reads as groups, its small
+ * grey labels doing the separating, and a second tier of headings there would be
+ * more chrome than settings.
+ */
+@Composable
+private fun SectionHeading(
+    label: String,
+    wide: Boolean,
+    enabled: Boolean = true
+) {
+    if (!wide) return
+
+    Text(
+        text = label,
+        style = MaterialTheme.typography.labelSmall,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+            alpha = if (enabled) 1f else DisabledAlpha
+        ),
+        modifier = Modifier.padding(
+            start = PanelPadding,
+            end = PanelPadding,
+            top = 6.dp,
+            bottom = 2.dp
+        )
+    )
 }
 
 /**
