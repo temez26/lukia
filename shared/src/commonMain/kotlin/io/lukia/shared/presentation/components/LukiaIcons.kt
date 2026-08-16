@@ -9,6 +9,9 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 
 /**
  * Drawn rather than imported: this project does not depend on the Material icons
@@ -263,6 +266,144 @@ fun InfoGlyph(
         )
     }
 }
+
+/**
+ * The magnifier in the library's search field. Ring plus handle, drawn at the
+ * same stroke weight as the chevrons so the field's furniture reads as one set.
+ */
+@Composable
+fun SearchGlyph(
+    tint: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val strokeWidth = 1.8.dp.toPx()
+        val radius = size.minDimension * 0.30f
+        val center = androidx.compose.ui.geometry.Offset(
+            x = size.width * 0.42f,
+            y = size.height * 0.42f
+        )
+
+        drawCircle(
+            color = tint,
+            radius = radius,
+            center = center,
+            style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+        )
+        // Starts on the ring rather than at its centre, so the two strokes meet
+        // cleanly instead of the handle appearing to pass through the glass.
+        drawLine(
+            color = tint,
+            start = androidx.compose.ui.geometry.Offset(
+                x = center.x + radius * 0.72f,
+                y = center.y + radius * 0.72f
+            ),
+            end = androidx.compose.ui.geometry.Offset(
+                x = size.width * 0.84f,
+                y = size.height * 0.84f
+            ),
+            strokeWidth = strokeWidth,
+            cap = StrokeCap.Round
+        )
+    }
+}
+
+/**
+ * A cross knocked out of a filled circle: the clear button inside the search
+ * field, and the standard iOS mark for emptying a text field.
+ *
+ * [knockout] is the colour the cross is cut in, and has to be the colour behind
+ * the circle rather than a fixed white - the field this sits in is dark in the
+ * dark theme, where a white cross on a grey circle would barely read at all.
+ */
+@Composable
+fun ClearGlyph(
+    tint: Color,
+    knockout: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val radius = size.minDimension / 2f
+        val center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f)
+        val arm = radius * 0.42f
+
+        drawCircle(color = tint, radius = radius, center = center)
+
+        listOf(
+            arm to arm,
+            arm to -arm
+        ).forEach { (dx, dy) ->
+            drawLine(
+                color = knockout,
+                start = androidx.compose.ui.geometry.Offset(center.x - dx, center.y - dy),
+                end = androidx.compose.ui.geometry.Offset(center.x + dx, center.y + dy),
+                strokeWidth = 1.6.dp.toPx(),
+                cap = StrokeCap.Round
+            )
+        }
+    }
+}
+
+/**
+ * A gear, for the row that leads to the app's settings.
+ *
+ * The teeth start where the rim ends rather than crossing it - run them through
+ * the rim and the mark reads as a spoked wheel instead of a gear. Six of them,
+ * not eight: at 18.dp, eight teeth and the gaps between them fall below a pixel
+ * apart and silt up into a disc.
+ */
+@Composable
+fun GearGlyph(
+    tint: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val strokeWidth = 1.6.dp.toPx()
+        val center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f)
+        val rimRadius = size.minDimension * 0.27f
+
+        drawCircle(
+            color = tint,
+            radius = rimRadius,
+            center = center,
+            style = Stroke(width = strokeWidth)
+        )
+
+        // Wide enough that the stroke leaves a hole rather than closing over it,
+        // which is the difference between a gear and a spoked sun.
+        drawCircle(
+            color = tint,
+            radius = size.minDimension * 0.105f,
+            center = center,
+            style = Stroke(width = strokeWidth)
+        )
+
+        val toothInner = rimRadius + strokeWidth * 0.25f
+        val toothOuter = size.minDimension * 0.43f
+
+        repeat(TOOTH_COUNT) { index ->
+            val angle = index * (2f * PI / TOOTH_COUNT)
+            val dx = cos(angle).toFloat()
+            val dy = sin(angle).toFloat()
+
+            drawLine(
+                color = tint,
+                start = androidx.compose.ui.geometry.Offset(
+                    x = center.x + dx * toothInner,
+                    y = center.y + dy * toothInner
+                ),
+                end = androidx.compose.ui.geometry.Offset(
+                    x = center.x + dx * toothOuter,
+                    y = center.y + dy * toothOuter
+                ),
+                strokeWidth = strokeWidth * 1.4f,
+                cap = StrokeCap.Round
+            )
+        }
+    }
+}
+
+private const val TOOTH_COUNT = 6
 
 /** Three dots, used as the hover-revealed menu trigger on a book card. */
 @Composable

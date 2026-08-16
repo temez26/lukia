@@ -1,14 +1,19 @@
 package io.lukia.shared.presentation.components
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,23 +22,76 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.lukia.core.domain.CoverImage
+import io.lukia.shared.presentation.theme.LukiaMotion
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.decodeToImageBitmap
 
 /** Standard trade-paperback proportions, used for every cover in the app. */
 const val BOOK_COVER_ASPECT_RATIO = 0.68f
 
+/** What a book has to show for itself. */
+@Immutable
+internal sealed interface CoverArt {
+
+    /** Artwork exists but is still being decoded; the tile stands in meanwhile. */
+    data object Pending : CoverArt
+
+    /**
+     * Nothing usable to draw: the file carried no cover, or what it carried would
+     * not decode. Both end in the monogram, because from the reader's side they
+     * are the same thing.
+     */
+    data object Absent : CoverArt
+
+    data class Artwork(val bitmap: ImageBitmap) : CoverArt
+}
+
+/**
+ * Decodes a cover, off the main thread.
+ *
+ * Covers are stored as they were extracted - a PDF's first page rendered at 96
+ * DPI is around 800x1100 - and decoding one costs several megabytes and a
+ * measurable pause. Doing that inside composition, as this once did, meant every
+ * card scrolled into view stalled the frame it appeared on, so a fast scroll
+ * through a large library stuttered on all three platforms.
+ *
+ * The bitmap is not cached beyond the composition that asked for it: a screen's
+ * worth of decoded covers is already tens of megabytes, and holding a whole
+ * library's worth would trade a stutter for an eventual crash. Re-decoding on
+ * scroll-back costs nothing visible now that it happens off the main thread.
+ */
 @Composable
-internal fun rememberCoverBitmap(coverImage: CoverImage?): ImageBitmap? {
-    return remember(coverImage) {
-        coverImage?.let { runCatching { it.bytes.decodeToImageBitmap() }.getOrNull() }
+internal fun rememberCoverArt(coverImage: CoverImage?): CoverArt {
+    val art by produceState<CoverArt>(initialValue = CoverArt.Pending, coverImage) {
+        // Reset explicitly: produceState keeps the previous value across a key
+        // change, which would otherwise show one book's cover on another's card
+        // for as long as the new one takes to decode.
+        value = CoverArt.Pending
+
+        value = if (coverImage == null) {
+            CoverArt.Absent
+        } else {
+            withContext(Dispatchers.Default) {
+                runCatching { coverImage.bytes.decodeToImageBitmap() }
+                    .fold(
+                        onSuccess = { CoverArt.Artwork(it) },
+                        onFailure = { CoverArt.Absent }
+                    )
+            }
+        }
     }
+
+    return art
 }
 
 /**
@@ -57,9 +115,13 @@ internal fun bookCoverColor(seed: String): Color {
 }
 
 /**
- * A book cover: the embedded artwork when the file had one, otherwise a
- * generated monogram tile. A monogram reads as intentional design in a way a
- * repeated generic icon does not.
+ * A book cover: the embedded artwork when the file had one, otherwise a generated
+ * monogram tile. A monogram reads as intentional design in a way a repeated
+ * generic icon does not.
+ *
+ * The tile is drawn first and the artwork fades in over it once decoded, so a
+ * cover arriving is a settle rather than a pop - and a card that is scrolled past
+ * before its artwork lands never flashes a monogram it was not going to keep.
  */
 @Composable
 fun BookCover(
@@ -68,11 +130,17 @@ fun BookCover(
     modifier: Modifier = Modifier,
     cornerRadius: Dp = 14.dp,
     elevation: Dp = 8.dp,
-    monogramFontSize: androidx.compose.ui.unit.TextUnit = 34.sp
+    monogramFontSize: TextUnit = 34.sp
 ) {
-    val coverBitmap = rememberCoverBitmap(coverImage)
-    val shape = androidx.compose.foundation.shape.RoundedCornerShape(cornerRadius)
-    val baseColor = bookCoverColor(title)
+    val art = rememberCoverArt(coverImage)
+    val shape = remember(cornerRadius) { RoundedCornerShape(cornerRadius) }
+    val baseColor = remember(title) { bookCoverColor(title) }
+
+    val artworkAlpha by animateFloatAsState(
+        targetValue = if (art is CoverArt.Artwork) 1f else 0f,
+        animationSpec = LukiaMotion.standard(),
+        label = "coverArtwork"
+    )
 
     Box(
         modifier = modifier
@@ -95,15 +163,17 @@ fun BookCover(
             ),
         contentAlignment = Alignment.Center
     ) {
-        if (coverBitmap != null) {
-            Image(
-                bitmap = coverBitmap,
+        when (art) {
+            is CoverArt.Artwork -> Image(
+                bitmap = art.bitmap,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer { alpha = artworkAlpha }
             )
-        } else {
-            Text(
+
+            CoverArt.Absent -> Text(
                 text = title.trim().firstOrNull()?.uppercase() ?: "?",
                 color = Color.White.copy(alpha = 0.92f),
                 fontSize = monogramFontSize,
@@ -113,6 +183,9 @@ fun BookCover(
                     fontWeight = FontWeight.SemiBold
                 )
             )
+
+            // Nothing but the tile, which is already drawn behind this.
+            CoverArt.Pending -> Unit
         }
     }
 }

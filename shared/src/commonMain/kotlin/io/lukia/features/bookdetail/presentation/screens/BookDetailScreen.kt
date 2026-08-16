@@ -1,7 +1,6 @@
 package io.lukia.features.bookdetail.presentation.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,7 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
@@ -35,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerInput
@@ -58,7 +57,7 @@ import io.lukia.shared.presentation.components.BookActionsMenu
 import io.lukia.shared.presentation.components.BookCover
 import io.lukia.shared.presentation.components.EllipsisGlyph
 import io.lukia.shared.presentation.components.FavoriteBadge
-import io.lukia.shared.presentation.components.GlassSurface
+import io.lukia.shared.presentation.components.GlassChromeButton
 import io.lukia.shared.presentation.components.UiStateContent
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import org.koin.compose.viewmodel.koinViewModel
@@ -66,6 +65,9 @@ import org.koin.core.parameter.parametersOf
 
 /** Vertical room reserved so content starts clear of the floating back control. */
 private val TopChromeClearance: Dp = 84.dp
+
+/** Room past the last row, so the details do not end hard against the edge. */
+private val DetailBottomClearance: Dp = 48.dp
 
 @Composable
 fun BookDetailScreen(
@@ -92,9 +94,9 @@ fun BookDetailScreen(
 }
 
 /**
- * Stateless half of the screen. Split out so the layout can be rendered without
- * a ViewModel or dependency graph - used by the screenshot harness and useful
- * for previews.
+ * Stateless half of the screen, so the layout can be composed in a test or a
+ * preview without a ViewModel or a dependency graph behind it. Every screen in
+ * the app splits this way.
  */
 @Composable
 fun BookDetailContent(
@@ -136,10 +138,11 @@ fun BookDetailContent(
                 onAction = onRetry,
                 modifier = Modifier.fillMaxSize()
             ) { document ->
-                DocumentDetails(
+                BookDetailBody(
                     document = document,
                     onRead = onRead,
-                    onLongPress = { menuExpanded = true }
+                    onLongPress = { menuExpanded = true },
+                    modifier = Modifier.fillMaxSize()
                 )
             }
 
@@ -153,23 +156,17 @@ fun BookDetailContent(
 
             // Floats above the scrolling content: this is the piece that most
             // wants the glass treatment, since content passes underneath it.
-            GlassSurface(
-                shape = CircleShape,
+            GlassChromeButton(
+                label = "Go back",
+                onClick = onBack,
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(start = dimens.screenPadding, top = 16.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .clickable(onClick = onBack)
-                        .size(44.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    BackChevron(
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+                BackChevron(
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
             }
 
             // Mirrors the back control across the top of the screen. Always
@@ -181,22 +178,14 @@ fun BookDetailContent(
                         .align(Alignment.TopEnd)
                         .padding(end = dimens.screenPadding, top = 16.dp)
                 ) {
-                    GlassSurface(shape = CircleShape) {
-                        Box(
-                            modifier = Modifier
-                                .pointerHoverIcon(PointerIcon.Hand)
-                                .clickable(
-                                    onClickLabel = "Book actions",
-                                    onClick = { menuExpanded = true }
-                                )
-                                .size(44.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            EllipsisGlyph(
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
+                    GlassChromeButton(
+                        label = "Book actions",
+                        onClick = { menuExpanded = true }
+                    ) {
+                        EllipsisGlyph(
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
                     }
 
                     BookActionsMenu(
@@ -212,23 +201,48 @@ fun BookDetailContent(
     }
 }
 
+/**
+ * Everything there is to say about one book: its cover, what it is, the way into
+ * it, and its details underneath.
+ *
+ * Shared, because this is shown two ways - as a screen of its own on a phone, and
+ * as a panel over the library on anything wider - and the two must not drift into
+ * saying different things about the same book. Only the chrome around it and the
+ * room it leaves for that chrome differ, which is what [topClearance] and
+ * [bottomClearance] are for.
+ */
 @Composable
-private fun DocumentDetails(
+internal fun BookDetailBody(
     document: DocumentInfo,
     onRead: () -> Unit,
-    onLongPress: () -> Unit
+    onLongPress: () -> Unit,
+    modifier: Modifier = Modifier,
+    topClearance: Dp = TopChromeClearance,
+    bottomClearance: Dp = DetailBottomClearance,
+    coverWidth: Dp = Dp.Unspecified,
+    /**
+     * What the grouped details sit in. It has to contrast with whatever is behind
+     * this body, and that differs: the screen lays it on the window background,
+     * the panel on a raised surface, and one colour cannot be a step away from
+     * both - in the dark theme especially, where the background is true black.
+     */
+    infoCardColor: Color = MaterialTheme.colorScheme.surface
 ) {
     val dimens = LocalLukiaDimens.current
     val title = document.displayTitle()
     val haptics = LocalHapticFeedback.current
 
+    // A screen can give the cover its full size, because the screen is the book.
+    // A panel cannot: the cover would push the Read button - the thing the panel
+    // is opened to press - below the fold in any window that is not tall.
+    val resolvedCoverWidth =
+        if (coverWidth == Dp.Unspecified) dimens.detailCoverWidth else coverWidth
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+        modifier = modifier.verticalScroll(rememberScrollState())
     ) {
-        Spacer(modifier = Modifier.height(TopChromeClearance))
+        Spacer(modifier = Modifier.height(topClearance))
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -245,7 +259,7 @@ private fun DocumentDetails(
                     // is not a button here, so it should carry the long press
                     // without gaining a ripple and a no-op tap.
                     modifier = Modifier
-                        .width(dimens.detailCoverWidth)
+                        .width(resolvedCoverWidth)
                         .pointerInput(Unit) {
                             detectTapGestures(
                                 onLongPress = {
@@ -308,11 +322,12 @@ private fun DocumentDetails(
 
             DetailInfoCard(
                 document = document,
+                color = infoCardColor,
                 modifier = Modifier.padding(top = dimens.sectionSpacing)
             )
         }
 
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(bottomClearance))
     }
 }
 
@@ -323,12 +338,13 @@ private fun DocumentDetails(
 @Composable
 private fun DetailInfoCard(
     document: DocumentInfo,
+    color: Color,
     modifier: Modifier = Modifier
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surface
+        color = color
     ) {
         Column {
             InfoRow(label = "Format", value = document.displayType())

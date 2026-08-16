@@ -1,10 +1,6 @@
 package io.lukia.shared.presentation.components
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -12,6 +8,8 @@ import androidx.compose.ui.Modifier
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.displayMessage
 import io.lukia.core.presentation.displayTitle
+import io.lukia.shared.presentation.theme.softFadeOut
+import io.lukia.shared.presentation.theme.stateSwapIn
 
 /**
  * Renders a [UiState] the one way the app renders them: [LoadingState] while
@@ -43,11 +41,7 @@ fun <T> UiStateContent(
         // already moves between its own states. `using null` keeps
         // AnimatedContent from animating the container's bounds and sliding the
         // content sideways mid-transition.
-        transitionSpec = {
-            val enter = fadeIn(tween(durationMillis = 220)) +
-                scaleIn(tween(durationMillis = 220), initialScale = 0.97f)
-            (enter togetherWith fadeOut(tween(durationMillis = 150))) using null
-        },
+        transitionSpec = { (stateSwapIn() togetherWith softFadeOut()) using null },
         // Only the case matters for the transition: a Success whose data
         // changed is the same screen, and re-running the fade on every library
         // reload would make the grid blink.

@@ -1,6 +1,7 @@
 package io.lukia.features.reader.infrastructure
 
 import io.lukia.core.domain.SettingsStore
+import io.lukia.core.infrastructure.readEnum
 import io.lukia.features.reader.domain.LineSpacing
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReaderTheme
@@ -73,16 +74,6 @@ class ReaderSettingsRepository(
         store.putString(KEY_LINE_SPACING, settings.lineSpacing.name)
         store.putString(KEY_PAGE_SCALE, settings.pageScale.toString())
         store.putString(KEY_TYPEFACE, settings.typeface.name)
-    }
-
-    /** Stored by name, so the order of an enum's entries is free to change. */
-    private fun <T : Enum<T>> SettingsStore.readEnum(
-        key: String,
-        entries: List<T>,
-        default: T
-    ): T {
-        val stored = getString(key) ?: return default
-        return entries.firstOrNull { it.name == stored } ?: default
     }
 
     private companion object {
