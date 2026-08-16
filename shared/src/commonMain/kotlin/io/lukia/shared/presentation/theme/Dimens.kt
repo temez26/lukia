@@ -41,6 +41,13 @@ data class LukiaDimens(
     val maxGridWidth: Dp,
     /** Cap on the reading-detail column, kept near a comfortable measure. */
     val maxDetailWidth: Dp,
+    /**
+     * Cap on how wide a page is drawn in the reader. [Dp.Unspecified] lets the
+     * page fill the window, which is what a phone wants - every millimetre of a
+     * small screen counts. Wider windows cap instead, since a page stretched
+     * across a monitor is both unreadable and expensive to render.
+     */
+    val maxReaderWidth: Dp,
     /** Width of the cover art on the detail screen. */
     val detailCoverWidth: Dp,
     val sectionSpacing: Dp
@@ -54,6 +61,7 @@ private val CompactDimens = LukiaDimens(
     gridSpacing = 16.dp,
     maxGridWidth = Dp.Unspecified,
     maxDetailWidth = 480.dp,
+    maxReaderWidth = Dp.Unspecified,
     detailCoverWidth = 200.dp,
     sectionSpacing = 24.dp
 )
@@ -64,6 +72,7 @@ private val MediumDimens = LukiaDimens(
     gridSpacing = 20.dp,
     maxGridWidth = 900.dp,
     maxDetailWidth = 520.dp,
+    maxReaderWidth = 720.dp,
     detailCoverWidth = 220.dp,
     sectionSpacing = 28.dp
 )
@@ -74,6 +83,7 @@ private val ExpandedDimens = LukiaDimens(
     gridSpacing = 24.dp,
     maxGridWidth = 1160.dp,
     maxDetailWidth = 560.dp,
+    maxReaderWidth = 860.dp,
     detailCoverWidth = 240.dp,
     sectionSpacing = 32.dp
 )
