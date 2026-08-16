@@ -150,14 +150,62 @@ class PdfOutlineReaderTest {
         val file = pdf(pageCount = 2) { document ->
             document.flatOutline("Chapter One" to 0)
         }
-        val encrypted = File(directory, "encrypted.pdf")
-        encrypted.writeBytes(
-            file.readBytes().let { bytes ->
-                bytes + "\ntrailer << /Encrypt 9 0 R >>\n".encodeToByteArray()
-            }
-        )
 
-        assertNull(encrypted.outline())
+        assertNull(file.withAppendedTrailer(encrypted = true).outline())
+    }
+
+    /**
+     * A file whose encryption has been removed keeps the revision that declared
+     * it and appends one that does not - which is how a shop selling a DRM-free
+     * copy of an encrypted book produces the file. Reading it as encrypted
+     * anyway took the chapter list off two of every three real books tried.
+     */
+    @Test
+    fun aFileThatHadItsEncryptionRemovedIsReadAsWhatItNowIs() {
+        val file = pdf(pageCount = 2) { document ->
+            document.flatOutline("Chapter One" to 0)
+        }
+
+        val decrypted = file.withAppendedTrailer(encrypted = true)
+            .withAppendedTrailer(encrypted = false)
+
+        assertEquals(listOf("Chapter One"), decrypted.outline()?.map { it.title })
+    }
+
+    /**
+     * The word turns up in the text of a book often enough, and inside a
+     * compressed stream by chance; neither says anything about the file.
+     */
+    @Test
+    fun theWordEncryptInsideTheFileIsNotADeclarationOfEncryption() {
+        val file = pdf(pageCount = 2) { document ->
+            document.flatOutline("On /Encrypt and other trailers" to 0)
+        }
+
+        assertEquals(
+            listOf("On /Encrypt and other trailers"),
+            file.outline()?.map { it.title }
+        )
+    }
+
+    /**
+     * Appends a revision of the file carrying nothing but a trailer, pointing at
+     * the same catalog the file already has - which is what an incremental
+     * update is.
+     */
+    private fun File.withAppendedTrailer(encrypted: Boolean): File {
+        val bytes = readBytes()
+        val root = Regex("/Root (\\d+) (\\d+) R").find(bytes.decodeToString())
+            ?: error("no /Root in the file PDFBox wrote")
+
+        val trailer = buildString {
+            append("\ntrailer << /Root ${root.groupValues[1]} ${root.groupValues[2]} R")
+            if (encrypted) append(" /Encrypt 9 0 R")
+            append(" >>\n")
+        }
+
+        return File(directory, "revised-${kotlin.random.Random.nextInt()}.pdf")
+            .apply { writeBytes(bytes + trailer.encodeToByteArray()) }
     }
 
     /**
