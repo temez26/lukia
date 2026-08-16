@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerInput
@@ -64,6 +65,9 @@ import org.koin.core.parameter.parametersOf
 
 /** Vertical room reserved so content starts clear of the floating back control. */
 private val TopChromeClearance: Dp = 84.dp
+
+/** Room past the last row, so the details do not end hard against the edge. */
+private val DetailBottomClearance: Dp = 48.dp
 
 @Composable
 fun BookDetailScreen(
@@ -134,10 +138,11 @@ fun BookDetailContent(
                 onAction = onRetry,
                 modifier = Modifier.fillMaxSize()
             ) { document ->
-                DocumentDetails(
+                BookDetailBody(
                     document = document,
                     onRead = onRead,
-                    onLongPress = { menuExpanded = true }
+                    onLongPress = { menuExpanded = true },
+                    modifier = Modifier.fillMaxSize()
                 )
             }
 
@@ -196,23 +201,48 @@ fun BookDetailContent(
     }
 }
 
+/**
+ * Everything there is to say about one book: its cover, what it is, the way into
+ * it, and its details underneath.
+ *
+ * Shared, because this is shown two ways - as a screen of its own on a phone, and
+ * as a panel over the library on anything wider - and the two must not drift into
+ * saying different things about the same book. Only the chrome around it and the
+ * room it leaves for that chrome differ, which is what [topClearance] and
+ * [bottomClearance] are for.
+ */
 @Composable
-private fun DocumentDetails(
+internal fun BookDetailBody(
     document: DocumentInfo,
     onRead: () -> Unit,
-    onLongPress: () -> Unit
+    onLongPress: () -> Unit,
+    modifier: Modifier = Modifier,
+    topClearance: Dp = TopChromeClearance,
+    bottomClearance: Dp = DetailBottomClearance,
+    coverWidth: Dp = Dp.Unspecified,
+    /**
+     * What the grouped details sit in. It has to contrast with whatever is behind
+     * this body, and that differs: the screen lays it on the window background,
+     * the panel on a raised surface, and one colour cannot be a step away from
+     * both - in the dark theme especially, where the background is true black.
+     */
+    infoCardColor: Color = MaterialTheme.colorScheme.surface
 ) {
     val dimens = LocalLukiaDimens.current
     val title = document.displayTitle()
     val haptics = LocalHapticFeedback.current
 
+    // A screen can give the cover its full size, because the screen is the book.
+    // A panel cannot: the cover would push the Read button - the thing the panel
+    // is opened to press - below the fold in any window that is not tall.
+    val resolvedCoverWidth =
+        if (coverWidth == Dp.Unspecified) dimens.detailCoverWidth else coverWidth
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+        modifier = modifier.verticalScroll(rememberScrollState())
     ) {
-        Spacer(modifier = Modifier.height(TopChromeClearance))
+        Spacer(modifier = Modifier.height(topClearance))
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -229,7 +259,7 @@ private fun DocumentDetails(
                     // is not a button here, so it should carry the long press
                     // without gaining a ripple and a no-op tap.
                     modifier = Modifier
-                        .width(dimens.detailCoverWidth)
+                        .width(resolvedCoverWidth)
                         .pointerInput(Unit) {
                             detectTapGestures(
                                 onLongPress = {
@@ -292,11 +322,12 @@ private fun DocumentDetails(
 
             DetailInfoCard(
                 document = document,
+                color = infoCardColor,
                 modifier = Modifier.padding(top = dimens.sectionSpacing)
             )
         }
 
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(bottomClearance))
     }
 }
 
@@ -307,12 +338,13 @@ private fun DocumentDetails(
 @Composable
 private fun DetailInfoCard(
     document: DocumentInfo,
+    color: Color,
     modifier: Modifier = Modifier
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surface
+        color = color
     ) {
         Column {
             InfoRow(label = "Format", value = document.displayType())

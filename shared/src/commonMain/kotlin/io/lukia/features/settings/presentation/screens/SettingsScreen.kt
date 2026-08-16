@@ -23,6 +23,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.settings.domain.AppSettings
@@ -36,6 +37,9 @@ import org.koin.compose.viewmodel.koinViewModel
 
 /** Vertical room reserved so content starts clear of the floating back control. */
 private val TopChromeClearance: Dp = 84.dp
+
+/** Room past the last group, so the settings do not end hard against the edge. */
+private val SettingsBottomClearance: Dp = 48.dp
 
 @Composable
 fun SettingsScreen(
@@ -81,45 +85,11 @@ fun SettingsContent(
                 .fillMaxSize()
                 .windowInsetsPadding(WindowInsets.safeDrawing)
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-            ) {
-                Spacer(modifier = Modifier.height(TopChromeClearance))
-
-                Column(
-                    modifier = Modifier
-                        .widthIn(max = dimens.maxDetailWidth)
-                        .fillMaxWidth()
-                        .padding(horizontal = dimens.screenPadding)
-                ) {
-                    Text(
-                        text = "Settings",
-                        style = MaterialTheme.typography.displaySmall,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-
-                    SettingsSection(
-                        title = "Appearance",
-                        // Named for what it does rather than what it is called,
-                        // since "System" is the only option whose meaning is not
-                        // obvious from the word alone.
-                        footnote = "System follows your device’s light and dark setting.",
-                        modifier = Modifier.padding(top = dimens.sectionSpacing)
-                    ) {
-                        SegmentedControl(
-                            options = AppTheme.entries,
-                            selected = settings.theme,
-                            label = { it.name },
-                            onSelect = onThemeChange
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(48.dp))
-            }
+            SettingsBody(
+                settings = settings,
+                onThemeChange = onThemeChange,
+                modifier = Modifier.fillMaxSize()
+            )
 
             GlassChromeButton(
                 label = "Go back",
@@ -138,12 +108,79 @@ fun SettingsContent(
 }
 
 /**
+ * The settings themselves, without the chrome around them.
+ *
+ * Shared, because these are shown two ways - as a screen of its own on a phone,
+ * and as a panel over the library on anything wider - and a setting must not
+ * appear or read differently depending on which one you reached.
+ *
+ * It keeps its title where the library dropped one. The library is the app's home
+ * and needs no introduction; arriving here from a menu does.
+ */
+@Composable
+internal fun SettingsBody(
+    settings: AppSettings,
+    onThemeChange: (AppTheme) -> Unit,
+    modifier: Modifier = Modifier,
+    topClearance: Dp = TopChromeClearance,
+    bottomClearance: Dp = SettingsBottomClearance,
+    /**
+     * What a group sits in. It has to contrast with whatever is behind this body,
+     * and that differs: the screen lays it on the window background, the panel on
+     * a raised surface, and in the dark theme the background is true black.
+     */
+    groupColor: Color = MaterialTheme.colorScheme.surface
+) {
+    val dimens = LocalLukiaDimens.current
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.verticalScroll(rememberScrollState())
+    ) {
+        Spacer(modifier = Modifier.height(topClearance))
+
+        Column(
+            modifier = Modifier
+                .widthIn(max = dimens.maxDetailWidth)
+                .fillMaxWidth()
+                .padding(horizontal = dimens.screenPadding)
+        ) {
+            Text(
+                text = "Settings",
+                style = MaterialTheme.typography.displaySmall,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+
+            SettingsSection(
+                title = "Appearance",
+                // Named for what it does rather than what it is called, since
+                // "System" is the only option whose meaning is not obvious from
+                // the word alone.
+                footnote = "System follows your device’s light and dark setting.",
+                groupColor = groupColor,
+                modifier = Modifier.padding(top = dimens.sectionSpacing)
+            ) {
+                SegmentedControl(
+                    options = AppTheme.entries,
+                    selected = settings.theme,
+                    label = { it.name },
+                    onSelect = onThemeChange
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(bottomClearance))
+    }
+}
+
+/**
  * One group of settings, in the style of an iOS grouped list: a header above a
  * rounded surface, with any explanation set below it rather than inside.
  */
 @Composable
 private fun SettingsSection(
     title: String,
+    groupColor: Color,
     modifier: Modifier = Modifier,
     footnote: String? = null,
     content: @Composable () -> Unit
@@ -159,7 +196,7 @@ private fun SettingsSection(
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.large,
-            color = MaterialTheme.colorScheme.surface
+            color = groupColor
         ) {
             Box(modifier = Modifier.padding(12.dp)) {
                 content()
