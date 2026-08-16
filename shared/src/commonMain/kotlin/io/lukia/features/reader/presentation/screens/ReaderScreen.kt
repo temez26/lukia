@@ -57,13 +57,15 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.lukia.core.domain.DocumentType
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
 import io.lukia.core.presentation.displayTitle
+import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
+import io.lukia.features.reader.domain.ReflowableContent
+import io.lukia.features.reader.domain.TextSection
 import io.lukia.features.reader.presentation.PAGE_SCALE_STEP
 import io.lukia.features.reader.presentation.ReaderCommand
 import io.lukia.features.reader.presentation.ReaderViewModel
@@ -73,11 +75,13 @@ import io.lukia.features.reader.presentation.readerCommandFor
 import io.lukia.features.reader.presentation.components.ReaderContentsPanel
 import io.lukia.features.reader.presentation.components.ReaderSettingsPanel
 import io.lukia.features.reader.presentation.components.ReaderToolbar
+import io.lukia.features.reader.presentation.components.TextSectionView
 import io.lukia.features.reader.presentation.components.TextSettingsGlyph
 import io.lukia.features.reader.presentation.components.ToolbarButton
 import io.lukia.features.reader.presentation.renderWidthFor
 import io.lukia.features.reader.presentation.theme.ReaderTheming
 import io.lukia.features.reader.presentation.theme.readerPageStyle
+import io.lukia.features.reader.presentation.theme.readerTextStyle
 import io.lukia.shared.presentation.components.ShortcutTooltip
 import io.lukia.shared.presentation.components.UiStateContent
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
@@ -102,6 +106,9 @@ private val ChromeVerticalPadding: Dp = 8.dp
 
 /** What the floating toolbar occupies, and so what the first page must clear. */
 private val ChromeHeight: Dp = 60.dp
+
+/** The margin a section's text is set inside its sheet. */
+private val SheetPadding: Dp = 22.dp
 
 @Composable
 fun ReaderScreen(
@@ -205,7 +212,11 @@ fun ReaderContent(
 
         val commands = readerCommands(
             listState = listState,
-            pageCount = document?.pages?.pageCount ?: 0,
+            unitCount = document?.content?.unitCount ?: 0,
+            // The keys that widen a PDF's page are the keys that enlarge an
+            // EPUB's type: both are "make this easier to read", and which
+            // setting that means depends on which kind of book is open.
+            reflowable = document?.content is ReflowableContent,
             settings = settings,
             onSettingsChange = onSettingsChange,
             onBack = onBack,
@@ -272,16 +283,27 @@ fun ReaderContent(
                     onAction = onRetry,
                     modifier = Modifier.fillMaxSize()
                 ) { openDocument ->
-                    PageList(
-                        document = openDocument,
-                        listState = listState,
-                        pageScale = settings.pageScale,
-                        pageColor = pageStyle.pageColor,
-                        pageFilter = pageStyle.pageFilter,
-                        onToggleChrome = { chromeVisible = !chromeVisible },
-                        onPageScaleChange = { onSettingsChange(settings.withPageScale(it)) },
-                        renderPage = renderPage
-                    )
+                    when (val content = openDocument.content) {
+                        is PagedContent -> PageList(
+                            pages = content,
+                            listState = listState,
+                            pageScale = settings.pageScale,
+                            pageColor = pageStyle.pageColor,
+                            pageFilter = pageStyle.pageFilter,
+                            onToggleChrome = { chromeVisible = !chromeVisible },
+                            onPageScaleChange = { onSettingsChange(settings.withPageScale(it)) },
+                            renderPage = renderPage
+                        )
+
+                        is ReflowableContent -> SectionList(
+                            sections = content.sections,
+                            listState = listState,
+                            settings = settings,
+                            pageColor = pageStyle.pageColor,
+                            onToggleChrome = { chromeVisible = !chromeVisible },
+                            onSettingsChange = onSettingsChange
+                        )
+                    }
                 }
 
                 // Catches the press that closes an open panel, which is a
@@ -331,7 +353,8 @@ fun ReaderContent(
                             if (document != null) {
                                 PageIndicatorButton(
                                     listState = listState,
-                                    pageCount = document.pages.pageCount,
+                                    unitCount = document.content.unitCount,
+                                    unit = document.content.unit,
                                     onClick = {
                                         settingsExpanded = false
                                         contentsExpanded = !contentsExpanded
@@ -364,7 +387,8 @@ fun ReaderContent(
                     ReaderContentsPanel(
                         expanded = contentsExpanded,
                         listState = listState,
-                        pageCount = document.pages.pageCount,
+                        unitCount = document.content.unitCount,
+                        unit = document.content.unit,
                         outline = outline,
                         onGoToPage = { pageIndex ->
                             scope.launch { listState.scrollToItem(pageIndex) }
@@ -380,8 +404,7 @@ fun ReaderContent(
                     expanded = settingsExpanded,
                     settings = settings,
                     // A PDF's type was set when the file was made.
-                    typographyEnabled = document != null &&
-                        document.info.type != DocumentType.PDF,
+                    typographyEnabled = document?.content is ReflowableContent,
                     onSettingsChange = onSettingsChange,
                     onDismissRequest = { settingsExpanded = false },
                     modifier = Modifier
@@ -405,7 +428,8 @@ fun ReaderContent(
 @Composable
 private fun readerCommands(
     listState: LazyListState,
-    pageCount: Int,
+    unitCount: Int,
+    reflowable: Boolean,
     settings: ReaderSettings,
     onSettingsChange: (ReaderSettings) -> Unit,
     onBack: () -> Unit,
@@ -415,11 +439,11 @@ private fun readerCommands(
     val scope = rememberCoroutineScope()
 
     return { command ->
-        val lastPage = pageCount - 1
+        val lastPage = unitCount - 1
         val page = listState.firstVisibleItemIndex
 
         fun goTo(index: Int) {
-            if (pageCount > 0) {
+            if (unitCount > 0) {
                 scope.launch { listState.animateScrollToItem(index.coerceIn(0, lastPage)) }
             }
         }
@@ -438,14 +462,29 @@ private fun readerCommands(
             ReaderCommand.ScrollDown -> nudge(SCROLL_NUDGE_FRACTION)
             ReaderCommand.ScrollUp -> nudge(-SCROLL_NUDGE_FRACTION)
 
-            ReaderCommand.Wider ->
-                onSettingsChange(settings.withPageScale(settings.pageScale + PAGE_SCALE_STEP))
+            ReaderCommand.Wider -> onSettingsChange(
+                if (reflowable) {
+                    settings.withLargerText()
+                } else {
+                    settings.withPageScale(settings.pageScale + PAGE_SCALE_STEP)
+                }
+            )
 
-            ReaderCommand.Narrower ->
-                onSettingsChange(settings.withPageScale(settings.pageScale - PAGE_SCALE_STEP))
+            ReaderCommand.Narrower -> onSettingsChange(
+                if (reflowable) {
+                    settings.withSmallerText()
+                } else {
+                    settings.withPageScale(settings.pageScale - PAGE_SCALE_STEP)
+                }
+            )
 
-            ReaderCommand.ActualSize ->
-                onSettingsChange(settings.withPageScale(ReaderSettings.DEFAULT_PAGE_SCALE))
+            ReaderCommand.ActualSize -> onSettingsChange(
+                if (reflowable) {
+                    settings.withTextScale(ReaderSettings.DEFAULT_TEXT_SCALE)
+                } else {
+                    settings.withPageScale(ReaderSettings.DEFAULT_PAGE_SCALE)
+                }
+            )
 
             ReaderCommand.ToggleContents -> onToggleContents()
             ReaderCommand.ToggleSettings -> onToggleSettings()
@@ -456,7 +495,7 @@ private fun readerCommands(
 
 @Composable
 private fun PageList(
-    document: ReaderDocument,
+    pages: PagedContent,
     listState: LazyListState,
     pageScale: Float,
     pageColor: Color,
@@ -466,7 +505,7 @@ private fun PageList(
     renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?
 ) {
     val dimens = LocalLukiaDimens.current
-    val pageSizes = document.pages.pageSizes
+    val pageSizes = pages.pages.pageSizes
 
     // Held here while a pinch is in progress and committed when it ends. Writing
     // every intermediate scale into the settings would persist it to storage
@@ -497,6 +536,7 @@ private fun PageList(
                 .fillMaxSize()
                 .pinchToZoom(
                     scale = effectiveScale,
+                    range = ReaderSettings.MIN_PAGE_SCALE..ReaderSettings.MAX_PAGE_SCALE,
                     onPinch = { pinchScale = it },
                     onPinchEnd = {
                         pinchScale?.let(onPageScaleChange)
@@ -533,6 +573,101 @@ private fun PageList(
                         pageFilter = pageFilter,
                         renderPage = renderPage
                     )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * A reflowable book, section by section.
+ *
+ * The same scrolling list of sheets a PDF gets, so moving between a PDF and an
+ * EPUB is not moving between two different readers - but what a sheet holds is
+ * text this app has set, so the sheet is as tall as its text needs and the
+ * settings act on the words rather than on a picture of them.
+ *
+ * The measure never exceeds the window. Above 100% a PDF page is deliberately
+ * drawn wider than the space available and panned, because that is the only way
+ * to get closer to type whose size was fixed when the file was made; text has no
+ * such problem, and a line of prose running off both edges of the window is not
+ * a way to read anything. So the width presets set the measure up to the width
+ * available and stop there, and getting closer is what the text size is for -
+ * which is also what a pinch does here.
+ */
+@Composable
+private fun SectionList(
+    sections: List<TextSection>,
+    listState: LazyListState,
+    settings: ReaderSettings,
+    pageColor: Color,
+    onToggleChrome: () -> Unit,
+    onSettingsChange: (ReaderSettings) -> Unit
+) {
+    val dimens = LocalLukiaDimens.current
+
+    // Held here while a pinch is in progress and committed when it ends, so the
+    // type follows the fingers without every intermediate size being written to
+    // storage.
+    var pinchScale by remember { mutableStateOf<Float?>(null) }
+    val effectiveScale = pinchScale ?: settings.textScale
+
+    // Built from the size the fingers are at rather than the size that has been
+    // stored, which is what makes the whole page re-set as the pinch happens.
+    val style = readerTextStyle(settings.withTextScale(effectiveScale))
+
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val columnWidth = if (dimens.maxReaderWidth == Dp.Unspecified) {
+            maxWidth
+        } else {
+            minOf(maxWidth, dimens.maxReaderWidth)
+        }
+
+        val sheetWidth = minOf(columnWidth * settings.pageScale, maxWidth)
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .pinchToZoom(
+                    scale = effectiveScale,
+                    range = ReaderSettings.MIN_TEXT_SCALE..ReaderSettings.MAX_TEXT_SCALE,
+                    onPinch = { pinchScale = it },
+                    onPinchEnd = {
+                        pinchScale?.let { onSettingsChange(settings.withTextScale(it)) }
+                        pinchScale = null
+                    }
+                )
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = { onToggleChrome() })
+                }
+        ) {
+            LazyColumn(
+                state = listState,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(PageGap),
+                contentPadding = PaddingValues(
+                    top = ChromeHeight,
+                    bottom = PageListPadding
+                ),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(count = sections.size) { index ->
+                    Box(
+                        modifier = Modifier
+                            .width(sheetWidth)
+                            .shadow(elevation = 2.dp)
+                            .background(pageColor)
+                            .padding(SheetPadding)
+                            // Unlike a rendered page there is real text behind
+                            // this, so the description says where in the book it
+                            // is and leaves the reading to the text itself.
+                            .semantics {
+                                contentDescription =
+                                    "Section ${index + 1} of ${sections.size}"
+                            }
+                    ) {
+                        TextSectionView(section = sections[index], style = style)
+                    }
                 }
             }
         }
@@ -610,6 +745,7 @@ private fun DocumentPage(
 @Composable
 private fun Modifier.pinchToZoom(
     scale: Float,
+    range: ClosedFloatingPointRange<Float>,
     onPinch: (Float) -> Unit,
     onPinchEnd: () -> Unit
 ): Modifier {
@@ -630,12 +766,7 @@ private fun Modifier.pinchToZoom(
 
                     if (zoom != 1f) {
                         pinched = true
-                        currentOnPinch(
-                            (currentScale * zoom).coerceIn(
-                                ReaderSettings.MIN_PAGE_SCALE,
-                                ReaderSettings.MAX_PAGE_SCALE
-                            )
-                        )
+                        currentOnPinch((currentScale * zoom).coerceIn(range))
                         event.changes.forEach { it.consume() }
                     }
                 }

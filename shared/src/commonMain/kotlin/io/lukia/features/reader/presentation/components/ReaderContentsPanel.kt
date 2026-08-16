@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.reader.domain.OutlineEntry
 import io.lukia.features.reader.domain.ReaderOutline
+import io.lukia.features.reader.domain.ReadingUnit
 import io.lukia.features.reader.presentation.ChapterRow
 import io.lukia.features.reader.presentation.chapterRows
 import io.lukia.features.reader.presentation.collapsibleIndices
@@ -106,7 +107,8 @@ private val CurrentMarkerWidth: Dp = 3.dp
 internal fun ReaderContentsPanel(
     expanded: Boolean,
     listState: LazyListState,
-    pageCount: Int,
+    unitCount: Int,
+    unit: ReadingUnit,
     outline: ReaderOutline,
     onGoToPage: (pageIndex: Int) -> Unit,
     onDismissRequest: () -> Unit,
@@ -137,10 +139,11 @@ internal fun ReaderContentsPanel(
                 .width(if (wide) WidePanelWidth else CompactPanelWidth)
                 .padding(vertical = 10.dp)
         ) {
-            PageScrubber(
-                currentPage = currentPage,
-                pageCount = pageCount,
-                onGoToPage = onGoToPage
+            PositionScrubber(
+                current = currentPage,
+                unitCount = unitCount,
+                unit = unit,
+                onGoTo = onGoToPage
             )
 
             HorizontalDivider(
@@ -152,6 +155,7 @@ internal fun ReaderContentsPanel(
             Chapters(
                 outline = outline,
                 currentPage = currentPage,
+                unit = unit,
                 listMaxHeight = if (wide) WideListMaxHeight else CompactListMaxHeight,
                 onGoToPage = {
                     onGoToPage(it)
@@ -171,18 +175,19 @@ internal fun ReaderContentsPanel(
  * the book waits until it is let go.
  */
 @Composable
-private fun PageScrubber(
-    currentPage: Int,
-    pageCount: Int,
-    onGoToPage: (pageIndex: Int) -> Unit
+private fun PositionScrubber(
+    current: Int,
+    unitCount: Int,
+    unit: ReadingUnit,
+    onGoTo: (index: Int) -> Unit
 ) {
-    var draggedPage by remember { mutableStateOf<Int?>(null) }
+    var dragged by remember { mutableStateOf<Int?>(null) }
 
     // Lets go of the drag position once the book has caught up, so the scrubber
     // follows the reader again when they scroll by hand.
-    LaunchedEffect(currentPage) { draggedPage = null }
+    LaunchedEffect(current) { dragged = null }
 
-    val shownPage = draggedPage ?: currentPage
+    val shown = dragged ?: current
 
     Column(modifier = Modifier.padding(horizontal = PanelPadding)) {
         Row(
@@ -191,7 +196,7 @@ private fun PageScrubber(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = "Page $shownPage of $pageCount",
+                text = "${unit.singular} $shown of $unitCount",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -199,28 +204,30 @@ private fun PageScrubber(
             // How far in, which the page number alone does not say: page 120 is
             // a different place in a pamphlet than in a doorstop.
             Text(
-                text = "${percentThrough(shownPage, pageCount)}%",
+                text = "${percentThrough(shown, unitCount)}%",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
-        if (pageCount > 1) {
+        if (unitCount > 1) {
             Slider(
-                value = shownPage.toFloat(),
-                valueRange = 1f..pageCount.toFloat(),
-                onValueChange = { draggedPage = it.roundToInt() },
-                onValueChangeFinished = { draggedPage?.let { onGoToPage(it - 1) } },
+                value = shown.toFloat(),
+                valueRange = 1f..unitCount.toFloat(),
+                onValueChange = { dragged = it.roundToInt() },
+                onValueChangeFinished = { dragged?.let { position -> onGoTo(position - 1) } },
                 modifier = Modifier.semantics {
-                    contentDescription = "Go to page. Page $shownPage of $pageCount"
+                    contentDescription =
+                        "Go to ${unit.singular.lowercase()}. " +
+                            "${unit.singular} $shown of $unitCount"
                 }
             )
         }
     }
 }
 
-private fun percentThrough(page: Int, pageCount: Int): Int =
-    if (pageCount <= 1) 100 else (page * 100f / pageCount).roundToInt()
+private fun percentThrough(position: Int, unitCount: Int): Int =
+    if (unitCount <= 1) 100 else (position * 100f / unitCount).roundToInt()
 
 /**
  * The document's own table of contents.
@@ -233,6 +240,7 @@ private fun percentThrough(page: Int, pageCount: Int): Int =
 private fun Chapters(
     outline: ReaderOutline,
     currentPage: Int,
+    unit: ReadingUnit,
     listMaxHeight: Dp,
     onGoToPage: (pageIndex: Int) -> Unit
 ) {
@@ -263,6 +271,7 @@ private fun Chapters(
             entries = entries,
             collapsed = collapsed,
             currentPage = currentPage,
+            unit = unit,
             listMaxHeight = listMaxHeight,
             onToggle = { index ->
                 collapsed = if (index in collapsed) collapsed - index else collapsed + index
@@ -277,6 +286,7 @@ private fun ChapterList(
     entries: List<OutlineEntry>,
     collapsed: Set<Int>,
     currentPage: Int,
+    unit: ReadingUnit,
     listMaxHeight: Dp,
     onToggle: (index: Int) -> Unit,
     onGoToPage: (pageIndex: Int) -> Unit
@@ -313,6 +323,7 @@ private fun ChapterList(
         items(items = rows, key = { it.index }) { row ->
             ChapterRowItem(
                 row = row,
+                unit = unit,
                 isCurrent = row.index == currentRow?.index,
                 onToggle = { onToggle(row.index) },
                 onClick = { onGoToPage(row.entry.pageIndex) }
@@ -375,6 +386,7 @@ private fun ChaptersHeader(
 @Composable
 private fun ChapterRowItem(
     row: ChapterRow,
+    unit: ReadingUnit,
     isCurrent: Boolean,
     onToggle: () -> Unit,
     onClick: () -> Unit
@@ -424,7 +436,8 @@ private fun ChapterRowItem(
             .heightIn(min = ChapterRowHeight)
             .padding(start = PanelPadding + LevelIndent * entry.level, end = PanelPadding)
             .semantics {
-                contentDescription = "${entry.title}, page ${entry.pageIndex + 1}"
+                contentDescription =
+                    "${entry.title}, ${unit.singular.lowercase()} ${entry.pageIndex + 1}"
             }
     ) {
         if (row.hasChildren) {

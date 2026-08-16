@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.lukia.features.reader.domain.ReadingUnit
 import io.lukia.shared.presentation.components.BackChevron
 import io.lukia.shared.presentation.components.DisclosureChevron
 import io.lukia.shared.presentation.components.GlassSurface
@@ -156,10 +157,11 @@ internal fun ReaderToolbar(
 @Composable
 internal fun PageIndicatorButton(
     listState: LazyListState,
-    pageCount: Int,
+    unitCount: Int,
+    unit: ReadingUnit,
     onClick: () -> Unit
 ) {
-    val currentPage by remember(listState) {
+    val current by remember(listState) {
         derivedStateOf { listState.firstVisibleItemIndex + 1 }
     }
 
@@ -187,10 +189,10 @@ internal fun PageIndicatorButton(
                 // Deliberately not a live region: this changes on every page, and
                 // announcing each one would talk over a reader scrolling through a
                 // long book. The pages themselves carry the position instead.
-                .semantics { contentDescription = "Page $currentPage of $pageCount" }
+                .semantics { contentDescription = "${unit.singular} $current of $unitCount" }
         ) {
             Text(
-                text = "$currentPage / $pageCount",
+                text = "$current / $unitCount",
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface

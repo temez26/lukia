@@ -97,11 +97,11 @@ class DesktopDocumentAnalyzerTest {
     fun unsupportedExtensionReturnsUnknown() = runTest {
         val file = createTempFile(
             prefix = "lukia-test-",
-            suffix = ".txt"
+            suffix = ".mobi"
         )
 
         try {
-            val document = TestDocuments.txt(
+            val document = TestDocuments.unsupported(
                 location = file.toString()
             )
 

@@ -67,7 +67,7 @@ class IOSDocumentAnalyzerTest {
     fun unsupportedExtensionReturnsUnknown() = runTest {
         withTemporaryFile("txt") { path ->
             val result = analyzer.analyze(
-                TestDocuments.txt(
+                TestDocuments.unsupported(
                     location = location(path)
                 )
             )
