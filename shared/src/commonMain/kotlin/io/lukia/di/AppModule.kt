@@ -46,7 +46,7 @@ val commonModule = module {
     }
 
     viewModel {
-        LibraryViewModel(get(), get(), get(), get(), get())
+        LibraryViewModel(get(), get(), get(), get(), get(), get())
     }
 
     single {
@@ -62,7 +62,7 @@ val commonModule = module {
     }
 
     single {
-        GetDocumentDetailsUseCase(get())
+        GetDocumentDetailsUseCase(get(), get())
     }
 
     single {

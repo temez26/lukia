@@ -5,6 +5,8 @@ import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.FakeDocumentWorkspace
 import io.lukia.features.reader.domain.FakeReadingProgressRepository
+import io.lukia.features.reader.domain.ReadingProgress
+import io.lukia.features.reader.domain.ReadingProgressRepository
 import io.lukia.core.domain.PickedDocument
 import io.lukia.core.domain.PickedFolder
 import io.lukia.core.domain.TestDocuments
@@ -246,6 +248,49 @@ class LibraryViewModelTest {
         assertEquals(emptyList(), viewModel.documents())
     }
 
+    /** The grid draws a bar on each cover, so it needs every position at once. */
+    @Test
+    fun loadsWhereEachBookWasLeftOff() = runTest {
+        val repository = FakeLibraryRepository(listOf(pdfDocumentInfo()))
+        val positions = FakeReadingProgressRepository(
+            mutableMapOf("/test/book.pdf" to ReadingProgress(pageIndex = 41, pageCount = 100))
+        )
+
+        val viewModel = createViewModel(repository, readingProgress = positions)
+
+        assertEquals(
+            ReadingProgress(pageIndex = 41, pageCount = 100),
+            viewModel.readingProgress.value["/test/book.pdf"]
+        )
+    }
+
+    /**
+     * The books are what the screen is for and the bars are a decoration on
+     * top, so a position store that cannot be read must not take the library
+     * off the screen with it.
+     */
+    @Test
+    fun aPositionStoreThatFailsStillLeavesTheLibraryOnScreen() = runTest {
+        val repository = FakeLibraryRepository(listOf(pdfDocumentInfo()))
+
+        val viewModel = createViewModel(repository, readingProgress = ThrowingProgressRepository())
+
+        assertEquals(1, viewModel.documents().size)
+        assertEquals(emptyMap(), viewModel.readingProgress.value)
+    }
+
+    private class ThrowingProgressRepository : ReadingProgressRepository {
+        override suspend fun progressFor(location: String): ReadingProgress? = null
+
+        override suspend fun allProgress(): Map<String, ReadingProgress> {
+            throw IllegalStateException("position store blew up")
+        }
+
+        override suspend fun save(location: String, progress: ReadingProgress) = Unit
+
+        override suspend fun forget(location: String) = Unit
+    }
+
     /** Fails the assertion rather than returning null when the state is not Success. */
     private fun LibraryViewModel.documents(): List<DocumentInfo> {
         val state = uiState.value
@@ -256,7 +301,8 @@ class LibraryViewModelTest {
     private fun createViewModel(
         repository: LibraryRepository,
         analyzer: DocumentAnalyzer = FakeDocumentAnalyzer(pdfDocumentInfo()),
-        folderScanner: FolderScanner = FakeFolderScanner(emptyList())
+        folderScanner: FolderScanner = FakeFolderScanner(emptyList()),
+        readingProgress: ReadingProgressRepository = FakeReadingProgressRepository()
     ): LibraryViewModel {
         // The use cases move work off the main dispatcher in production;
         // pinning it here keeps imports synchronous so state can be asserted
@@ -280,7 +326,8 @@ class LibraryViewModelTest {
                 repository,
                 FakeDocumentWorkspace(),
                 FakeReadingProgressRepository()
-            )
+            ),
+            readingProgressRepository = readingProgress
         )
     }
 

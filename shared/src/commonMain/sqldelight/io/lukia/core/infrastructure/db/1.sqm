@@ -1,0 +1,17 @@
+-- Adds what a document says about itself: title, authors, publisher and the rest,
+-- read out of the file at import time. See the column notes in `Document.sq`.
+--
+-- Added rather than backfilled. Filling these in for a library that already
+-- exists would mean re-reading every file it holds - hundreds of them after a
+-- folder import - at the moment the app opens, which is both the worst time to
+-- do it and work that may fail for a file that has since moved. They fill in as
+-- books are re-imported instead, and a book with no metadata shows what it
+-- always showed.
+ALTER TABLE document ADD COLUMN metaTitle TEXT;
+ALTER TABLE document ADD COLUMN metaAuthors TEXT;
+ALTER TABLE document ADD COLUMN metaPublisher TEXT;
+ALTER TABLE document ADD COLUMN metaPublished TEXT;
+ALTER TABLE document ADD COLUMN metaLanguage TEXT;
+ALTER TABLE document ADD COLUMN metaDescription TEXT;
+ALTER TABLE document ADD COLUMN metaSubjects TEXT;
+ALTER TABLE document ADD COLUMN metaIdentifier TEXT;

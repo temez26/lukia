@@ -5,9 +5,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -37,7 +35,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.DocumentInfo
@@ -55,16 +52,18 @@ import io.lukia.features.library.presentation.components.LibraryHeader
 import io.lukia.features.library.presentation.components.LibraryNavBar
 import io.lukia.features.library.presentation.components.libraryNavBarHeight
 import io.lukia.features.library.presentation.matching
+import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.features.settings.presentation.SettingsOverlay
 import io.lukia.shared.presentation.components.ActionMenuScrim
+import io.lukia.shared.presentation.components.EmptyState
 import io.lukia.shared.presentation.components.LaunchReveal
 import io.lukia.shared.presentation.components.LoadingState
 import io.lukia.shared.presentation.components.UiStateContent
 import io.lukia.shared.presentation.components.launchReveal
 import io.lukia.shared.presentation.components.rememberLaunchReveal
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
-import io.lukia.shared.presentation.theme.LocalWindowWidthClass
-import io.lukia.shared.presentation.theme.WindowWidthClass
+import io.lukia.shared.presentation.theme.Space
+import io.lukia.shared.presentation.theme.isWideWindow
 import io.lukia.shared.presentation.theme.stateSwapIn
 import io.lukia.shared.presentation.theme.softFadeOut
 import kotlinx.coroutines.launch
@@ -78,10 +77,10 @@ import org.koin.compose.viewmodel.koinViewModel
 private val HeaderCollapseDistance: Dp = 56.dp
 
 /** Clears the last row of the bottom edge. */
-private val GridBottomPadding: Dp = 32.dp
+private val GridBottomPadding: Dp = 24.dp
 
-/** The lone import card on an empty screen, at about a phone grid cell's width. */
-private val EmptyStateCoverWidth: Dp = 104.dp
+/** The lone import card on an empty screen, at about a grid cell's width. */
+private val EmptyStateCoverWidth: Dp = 116.dp
 
 /** The first two reveal slots belong to the filter control and the count under it. */
 private const val GridRevealOffset = 2
@@ -96,6 +95,7 @@ fun LibraryScreen(
     val uiState by viewModel.uiState.collectAsState()
     val message by viewModel.message.collectAsState()
     val isImporting by viewModel.isImporting.collectAsState()
+    val readingProgress by viewModel.readingProgress.collectAsState()
 
     val filePicker = rememberPlatformFilePicker()
     val folderPicker = rememberPlatformFolderPicker()
@@ -105,7 +105,7 @@ fun LibraryScreen(
     // with room for both should not throw the library away to change a theme.
     // Held here rather than in the stateless half below, which has no business
     // knowing about a dependency graph.
-    val settingsOpenInPlace = LocalWindowWidthClass.current != WindowWidthClass.Compact
+    val settingsOpenInPlace = isWideWindow
     var settingsOpen by rememberSaveable { mutableStateOf(false) }
 
     // Fires again each time the grid is re-entered from the detail screen, which
@@ -143,7 +143,8 @@ fun LibraryScreen(
             onDelete = viewModel::deleteDocument,
             onRetry = viewModel::refresh,
             isImporting = isImporting,
-            snackbarHostState = snackbarHostState
+            snackbarHostState = snackbarHostState,
+            readingProgress = readingProgress
         )
 
         // Over the library and its own overlays both, since it is opened from the
@@ -172,7 +173,16 @@ fun LibraryContent(
     onRetry: () -> Unit,
     isImporting: Boolean,
     onSettings: () -> Unit = {},
-    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    /**
+     * How far through each book its reader is, keyed by location, holding only
+     * the books that have been opened.
+     *
+     * Defaulted to knowing nothing so that composing this screen without a
+     * dependency graph - which is how it is tested and previewed - still works
+     * and simply draws no bars.
+     */
+    readingProgress: Map<String, ReadingProgress> = emptyMap()
 ) {
     val dimens = LocalLukiaDimens.current
     val reveal = rememberLaunchReveal()
@@ -184,7 +194,7 @@ fun LibraryContent(
     // A phone leaves the library to show a book's details, because it has room
     // for one thing at a time. Anything wider keeps the library on screen and
     // lays the details over it, so browsing is not unwound to read a file size.
-    val detailsOpenInPlace = LocalWindowWidthClass.current != WindowWidthClass.Compact
+    val detailsOpenInPlace = isWideWindow
 
     // The book being looked at, held by location rather than by value: favouriting
     // it from inside the panel replaces the instance in the library, and a panel
@@ -217,6 +227,7 @@ fun LibraryContent(
     val detailDocument = detailLocation?.let { location ->
         documents.firstOrNull { it.document.location == location }
     }
+
 
     val collapseDistancePx = with(LocalDensity.current) { HeaderCollapseDistance.toPx() }
     // A lambda, not a value: read this way the scroll position reaches only the
@@ -323,6 +334,7 @@ fun LibraryContent(
                                 onDelete = onDelete,
                                 onImport = onImport,
                                 onImportFolder = onImportFolder,
+                                readingProgress = readingProgress,
                                 modifier = Modifier.fillMaxSize()
                             )
                         }
@@ -355,6 +367,7 @@ fun LibraryContent(
             // at all until a book is being looked at.
             BookDetailOverlay(
                 document = detailDocument,
+                progress = detailLocation?.let(readingProgress::get),
                 onDismiss = { detailLocation = null },
                 onRead = { document ->
                     detailLocation = null
@@ -411,6 +424,7 @@ private fun LibraryGrid(
     onDelete: (DocumentInfo) -> Unit,
     onImport: () -> Unit,
     onImportFolder: () -> Unit,
+    readingProgress: Map<String, ReadingProgress>,
     modifier: Modifier = Modifier
 ) {
     val dimens = LocalLukiaDimens.current
@@ -424,11 +438,11 @@ private fun LibraryGrid(
             end = dimens.screenPadding,
             // Content scrolls under the compact bar, so the header has to start
             // clear of where it sits at rest.
-            top = libraryNavBarHeight() + 8.dp,
+            top = libraryNavBarHeight() + Space.md,
             bottom = GridBottomPadding
         ),
         horizontalArrangement = Arrangement.spacedBy(dimens.gridSpacing),
-        verticalArrangement = Arrangement.spacedBy(dimens.sectionSpacing)
+        verticalArrangement = Arrangement.spacedBy(dimens.gridRowSpacing)
     ) {
         item(span = { GridItemSpan(maxLineSpan) }, key = "header") {
             LibraryHeader(
@@ -457,6 +471,7 @@ private fun LibraryGrid(
 
             BookCard(
                 document = document,
+                progress = readingProgress[location]?.fraction,
                 menuExpanded = openMenu == OpenMenu.Book(location),
                 onClick = { onDocumentClick(document) },
                 onMenuRequest = { onOpenMenuChange(OpenMenu.Book(location)) },
@@ -504,28 +519,19 @@ private fun LibraryGrid(
 private fun NoMatchesNotice(query: String, filter: LibraryFilter) {
     val trimmed = query.trim()
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
+    Box(
+        contentAlignment = Alignment.TopCenter,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 48.dp)
+            .padding(top = 40.dp)
     ) {
-        Text(
-            text = "No Results",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
-        Text(
-            text = when {
+        EmptyState(
+            title = "No Results",
+            message = when {
                 trimmed.isEmpty() -> "Nothing in your library is ${filter.label.lowercase()}."
                 filter == LibraryFilter.All -> "No books match “$trimmed”."
                 else -> "No ${filter.label.lowercase()} books match “$trimmed”."
-            },
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = 6.dp)
+            }
         )
     }
 }
@@ -549,11 +555,13 @@ private fun LibraryEmptyState(
     ) {
         // No heading of its own: there is nothing here to head, and "Your library
         // is empty" below is a better one than the word "Library" would be.
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
+        EmptyState(
+            title = "Your library is empty",
+            // With no explicit button here, the copy has to carry the affordance
+            // for the tappable cover above.
+            message = "Choose the cover to add a PDF, EPUB, Word or text file.",
             modifier = Modifier
                 .align(Alignment.Center)
-                .widthIn(max = 320.dp)
                 .launchReveal(reveal, index = 1)
         ) {
             // The same slot that ends a full library, standing alone here. One
@@ -568,24 +576,6 @@ private fun LibraryEmptyState(
                 revealIndex = 1,
                 label = null,
                 modifier = Modifier.width(EmptyStateCoverWidth)
-            )
-
-            Text(
-                text = "Your library is empty",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(top = 28.dp)
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // With no explicit button here, the copy has to carry the affordance
-            // for the tappable cover above.
-            Text(
-                text = "Tap the cover to add a PDF or EPUB.",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
             )
         }
     }

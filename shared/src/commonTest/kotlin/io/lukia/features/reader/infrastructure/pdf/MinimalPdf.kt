@@ -34,6 +34,30 @@ internal object MinimalPdf {
             emptyContentStream()
         )
 
+        return assemble(objects, extraTrailerEntries = "")
+    }
+
+    /**
+     * The same document with a document information dictionary, which is where a
+     * PDF keeps what it knows about itself.
+     *
+     * [entries] is written into the dictionary verbatim, so a test can hand it
+     * whatever a producer would - including the file names and application
+     * banners that real files put in `/Title`.
+     */
+    fun withInfo(entries: String): ByteArray {
+        val objects = listOf(
+            "<< /Type /Catalog /Pages 2 0 R >>",
+            "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+            page(contentsObject = 4),
+            emptyContentStream(),
+            "<< $entries >>"
+        )
+
+        return assemble(objects, extraTrailerEntries = " /Info 5 0 R")
+    }
+
+    private fun assemble(objects: List<String>, extraTrailerEntries: String): ByteArray {
         val document = StringBuilder("%PDF-1.4\n")
         val offsets = mutableListOf<Int>()
 
@@ -53,7 +77,8 @@ internal object MinimalPdf {
         }
 
         document.append("trailer\n<< /Size ").append(objects.size + 1)
-            .append(" /Root 1 0 R >>\nstartxref\n")
+            .append(" /Root 1 0 R").append(extraTrailerEntries)
+            .append(" >>\nstartxref\n")
             .append(crossReferenceOffset)
             .append("\n%%EOF\n")
 

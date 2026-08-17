@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -18,12 +17,14 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import io.lukia.shared.presentation.theme.LukiaElevation
+import io.lukia.shared.presentation.theme.Space
 
 /** Room at the top of a panel for the controls that float over its content. */
-internal val OverlayPanelTopClearance: Dp = 60.dp
+internal val OverlayPanelTopClearance: Dp = 52.dp
 
 /** A panel never fills the window: what it opened from has to stay visible around it. */
-private const val MaxHeightFraction = 0.86f
+private const val MaxHeightFraction = 0.88f
 
 /**
  * Something shown over the screen it was opened from, rather than instead of it.
@@ -76,7 +77,7 @@ fun OverlayPanel(
             // background is true black, and a panel painted in it over a dimmed
             // black screen has no edge at all.
             color = MaterialTheme.colorScheme.surface,
-            shadowElevation = 24.dp,
+            shadowElevation = LukiaElevation.panel,
             modifier = Modifier
                 .align(Alignment.Center)
                 // Grows from its own middle rather than a corner: nothing on
@@ -92,18 +93,17 @@ fun OverlayPanel(
                 // A plus turned on its side, which is the close mark the library
                 // bar's button already turns into - one shape for "close this"
                 // throughout the app.
-                GlassChromeButton(
+                LukiaIconButton(
                     label = "Close",
                     onClick = onDismiss,
                     modifier = Modifier
                         .align(Alignment.TopStart)
-                        .padding(start = dimens.screenPadding, top = 12.dp)
-                ) {
+                        .padding(start = dimens.screenPadding, top = Space.lg),
+                    variant = IconButtonVariant.Glass
+                ) { tint, glyph ->
                     PlusGlyph(
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .size(17.dp)
-                            .graphicsLayer { rotationZ = 45f }
+                        tint = tint,
+                        modifier = glyph.graphicsLayer { rotationZ = 45f }
                     )
                 }
 
@@ -111,7 +111,7 @@ fun OverlayPanel(
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .padding(end = dimens.screenPadding, top = 12.dp)
+                            .padding(end = dimens.screenPadding, top = Space.lg)
                     ) {
                         trailing()
                     }

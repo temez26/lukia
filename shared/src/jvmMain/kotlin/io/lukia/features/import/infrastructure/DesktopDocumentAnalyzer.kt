@@ -1,11 +1,9 @@
 package io.lukia.features.import.infrastructure
 
-import io.lukia.core.domain.CoverImage
 import io.lukia.features.import.domain.DocumentAnalyzer
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.PickedDocument
-import io.lukia.features.import.infrastructure.cover.extractCover
 import java.io.File
 
 class DesktopDocumentAnalyzer : DocumentAnalyzer {
@@ -27,10 +25,13 @@ class DesktopDocumentAnalyzer : DocumentAnalyzer {
 
         val type = DocumentType.fromExtension(document.extension)
 
-        val coverBytes = if (type == DocumentType.UNKNOWN) {
-            null
+        val contents = if (type == DocumentType.UNKNOWN) {
+            DocumentContents.Empty
         } else {
-            runCatching { file.readBytes() }.getOrNull()?.let { extractCover(type, it) }
+            runCatching { file.readBytes() }
+                .getOrNull()
+                ?.let { extractContents(type, it) }
+                ?: DocumentContents.Empty
         }
 
         return DocumentInfo(
@@ -38,7 +39,8 @@ class DesktopDocumentAnalyzer : DocumentAnalyzer {
             type = type,
             exists = true,
             sizeBytes = file.length(),
-            coverImage = coverBytes?.let { CoverImage(it) }
+            coverImage = contents.coverImage,
+            metadata = contents.metadata
         )
     }
 }

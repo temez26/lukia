@@ -69,6 +69,28 @@ internal class PdfObjectIndex(private val source: PdfByteSource) {
     }
 
     /**
+     * The document information dictionary, where a PDF keeps its title, author
+     * and the application that produced it.
+     *
+     * Taken from the newest trailer that names one rather than from the first
+     * `/Info` found anywhere: an incrementally updated file keeps its earlier
+     * trailers, and the properties dialog of whatever last saved the file is
+     * what the reader would recognise.
+     *
+     * Null for an encrypted file, whose strings would come back as ciphertext -
+     * the same reason the outline is not read from one.
+     */
+    fun info(): PdfValue.Dictionary? {
+        if (isEncrypted) return null
+
+        trailerDictionaries().forEach { trailer ->
+            resolve(trailer["Info"]).asDictionary?.let { return it }
+        }
+
+        return null
+    }
+
+    /**
      * The trailer of the file's newest revision, which is the one whose word
      * counts. Recognised by naming a catalog, the same test [catalog] makes -
      * the markers these are found by also match the odd dictionary that is not

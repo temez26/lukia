@@ -13,6 +13,15 @@ import kotlin.Boolean;
 -- `fileExists` is the last thing known about the file, from the analysis that
 -- put it here. A file can go missing between runs, so this is history rather
 -- than fact, and the next import or rescan is what corrects it.
+-- The `meta*` columns are what the document says about itself, read out of the
+-- file when it was imported. All nullable: most of them are absent from most
+-- files, and a format like plain text carries none of them at all.
+--
+-- `metaAuthors` and `metaSubjects` hold a list newline-separated rather than in
+-- tables of their own. Nothing queries them - they are read back whole, for one
+-- book, to be shown on one screen - and a join table for a value that is only
+-- ever displayed would be schema nobody benefits from. A newline is safe as the
+-- separator because neither an author's name nor a genre may contain one.
 CREATE TABLE document (
     location TEXT NOT NULL PRIMARY KEY,
     fileName TEXT NOT NULL,
@@ -22,7 +31,15 @@ CREATE TABLE document (
     sizeBytes INTEGER NOT NULL,
     isFavorite INTEGER AS Boolean NOT NULL DEFAULT 0,
     coverImage BLOB,
-    sortKey INTEGER NOT NULL
+    sortKey INTEGER NOT NULL,
+    metaTitle TEXT,
+    metaAuthors TEXT,
+    metaPublisher TEXT,
+    metaPublished TEXT,
+    metaLanguage TEXT,
+    metaDescription TEXT,
+    metaSubjects TEXT,
+    metaIdentifier TEXT
 );
 
 selectAll:
@@ -39,13 +56,19 @@ SELECT * FROM document WHERE location = ?;
 -- Ignored when the book is already there, so the shelf position it was given
 -- when it was first imported is the one it keeps.
 insertIfAbsent:
-INSERT OR IGNORE INTO document(location, fileName, extension, type, fileExists, sizeBytes, coverImage, sortKey)
-VALUES (?, ?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(sortKey), 0) + 1 FROM document));
+INSERT OR IGNORE INTO document(location, fileName, extension, type, fileExists, sizeBytes, coverImage, sortKey, metaTitle, metaAuthors, metaPublisher, metaPublished, metaLanguage, metaDescription, metaSubjects, metaIdentifier)
+VALUES (?, ?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(sortKey), 0) + 1 FROM document), ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- Everything the analyser knows, and nothing only the reader knows. A rescan
 -- that re-analysed every book would otherwise un-favourite the lot of them, and
 -- re-importing a file whose cover could not be read this time would take away
 -- the one already stored.
+--
+-- The metadata is coalesced for the same reason as the cover, and as one block
+-- rather than field by field: what a document says about itself is one reading
+-- of one file, so a re-analysis that came back with nothing should leave the
+-- whole of the previous reading in place rather than blanking six fields and
+-- keeping two.
 refresh:
 UPDATE document
 SET fileName = :fileName,
@@ -53,7 +76,15 @@ SET fileName = :fileName,
     type = :type,
     fileExists = :fileExists,
     sizeBytes = :sizeBytes,
-    coverImage = COALESCE(:coverImage, coverImage)
+    coverImage = COALESCE(:coverImage, coverImage),
+    metaTitle = CASE WHEN :hasMetadata THEN :metaTitle ELSE metaTitle END,
+    metaAuthors = CASE WHEN :hasMetadata THEN :metaAuthors ELSE metaAuthors END,
+    metaPublisher = CASE WHEN :hasMetadata THEN :metaPublisher ELSE metaPublisher END,
+    metaPublished = CASE WHEN :hasMetadata THEN :metaPublished ELSE metaPublished END,
+    metaLanguage = CASE WHEN :hasMetadata THEN :metaLanguage ELSE metaLanguage END,
+    metaDescription = CASE WHEN :hasMetadata THEN :metaDescription ELSE metaDescription END,
+    metaSubjects = CASE WHEN :hasMetadata THEN :metaSubjects ELSE metaSubjects END,
+    metaIdentifier = CASE WHEN :hasMetadata THEN :metaIdentifier ELSE metaIdentifier END
 WHERE location = :location;
 
 setFavorite:
