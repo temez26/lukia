@@ -63,6 +63,7 @@ import io.lukia.core.presentation.displayTitle
 import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
+import io.lukia.features.reader.domain.PageSize
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReflowableContent
 import io.lukia.features.reader.domain.TextSection
@@ -75,7 +76,13 @@ import io.lukia.features.reader.presentation.readerCommandFor
 import io.lukia.features.reader.presentation.components.ReaderContentsPanel
 import io.lukia.features.reader.presentation.components.ReaderSettingsPanel
 import io.lukia.features.reader.presentation.components.ReaderToolbar
+import io.lukia.features.reader.presentation.components.PageTranslationOverlay
 import io.lukia.features.reader.presentation.components.TextSectionView
+import io.lukia.features.translate.domain.PageSentence
+import io.lukia.features.translate.domain.TextAnchor
+import io.lukia.features.translate.domain.sentenceAt
+import io.lukia.features.translate.presentation.PassageSelection
+import io.lukia.features.translate.presentation.PassageTranslation
 import io.lukia.features.reader.presentation.components.TextSettingsGlyph
 import io.lukia.features.reader.presentation.components.readerToolbarHeight
 import io.lukia.features.reader.presentation.renderWidthFor
@@ -128,16 +135,20 @@ fun ReaderScreen(
     val settings by viewModel.settings.collectAsState()
     val outline by viewModel.outline.collectAsState()
     val initialPage by viewModel.initialPage.collectAsState()
+    val translations by viewModel.translations.collectAsState()
 
     ReaderContent(
         uiState = uiState,
         settings = settings,
         outline = outline,
         initialPage = initialPage,
+        translations = translations,
         onBack = onBack,
         onRetry = viewModel::retry,
         onSettingsChange = viewModel::updateSettings,
         onPageSettled = viewModel::onPageSettled,
+        onPassageSelected = viewModel::onPassageSelected,
+        sentencesOnPage = viewModel::sentencesOn,
         renderPage = viewModel::page
     )
 }
@@ -153,10 +164,15 @@ fun ReaderContent(
     outline: ReaderOutline,
     /** Where to open, once it is known; null while the stored position is being read. */
     initialPage: Int? = null,
+    /** What has become of each sentence somebody has asked about, by where it is. */
+    translations: Map<TextAnchor, PassageTranslation> = emptyMap(),
     onBack: () -> Unit,
     onRetry: () -> Unit,
     onSettingsChange: (ReaderSettings) -> Unit,
     onPageSettled: (pageIndex: Int) -> Unit = {},
+    onPassageSelected: (PassageSelection) -> Unit = {},
+    /** What is written on a page of a fixed-layout document, read when one is looked at. */
+    sentencesOnPage: suspend (index: Int) -> List<PageSentence> = { emptyList() },
     renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?
 ) {
     val dimens = LocalLukiaDimens.current
@@ -299,8 +315,11 @@ fun ReaderContent(
                             pageScale = settings.pageScale,
                             pageColor = pageStyle.pageColor,
                             pageFilter = pageStyle.pageFilter,
+                            translations = translations,
                             onToggleChrome = { chromeVisible = !chromeVisible },
                             onPageScaleChange = { onSettingsChange(settings.withPageScale(it)) },
+                            onPassageSelected = onPassageSelected,
+                            sentencesOnPage = sentencesOnPage,
                             renderPage = renderPage
                         )
 
@@ -309,8 +328,10 @@ fun ReaderContent(
                             listState = listState,
                             settings = settings,
                             pageColor = pageStyle.pageColor,
+                            translations = translations,
                             onToggleChrome = { chromeVisible = !chromeVisible },
-                            onSettingsChange = onSettingsChange
+                            onSettingsChange = onSettingsChange,
+                            onPassageSelected = onPassageSelected
                         )
                     }
                 }
@@ -509,8 +530,11 @@ private fun PageList(
     pageScale: Float,
     pageColor: Color,
     pageFilter: ColorFilter?,
+    translations: Map<TextAnchor, PassageTranslation>,
     onToggleChrome: () -> Unit,
     onPageScaleChange: (Float) -> Unit,
+    onPassageSelected: (PassageSelection) -> Unit,
+    sentencesOnPage: suspend (index: Int) -> List<PageSentence>,
     renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?
 ) {
     val dimens = LocalLukiaDimens.current
@@ -575,11 +599,17 @@ private fun PageList(
                     DocumentPage(
                         index = index,
                         pageCount = pageSizes.size,
-                        aspectRatio = pageSizes[index].aspectRatio,
+                        pageSize = pageSizes[index],
                         width = pageWidth,
                         renderWidthPx = renderWidthPx,
                         pageColor = pageColor,
                         pageFilter = pageFilter,
+                        translationOf = { sentence ->
+                            translations[TextAnchor.Page(index, sentence)]
+                        },
+                        onToggleChrome = onToggleChrome,
+                        onPassageSelected = onPassageSelected,
+                        sentencesOnPage = sentencesOnPage,
                         renderPage = renderPage
                     )
                 }
@@ -610,8 +640,10 @@ private fun SectionList(
     listState: LazyListState,
     settings: ReaderSettings,
     pageColor: Color,
+    translations: Map<TextAnchor, PassageTranslation>,
     onToggleChrome: () -> Unit,
-    onSettingsChange: (ReaderSettings) -> Unit
+    onSettingsChange: (ReaderSettings) -> Unit,
+    onPassageSelected: (PassageSelection) -> Unit
 ) {
     val dimens = LocalLukiaDimens.current
 
@@ -675,7 +707,28 @@ private fun SectionList(
                                     "Section ${index + 1} of ${sections.size}"
                             }
                     ) {
-                        TextSectionView(section = sections[index], style = style)
+                        TextSectionView(
+                            section = sections[index],
+                            style = style,
+                            translationOf = { block, sentence ->
+                                translations[TextAnchor.Section(index, block, sentence)]
+                            },
+                            onTapElsewhere = onToggleChrome,
+                            onSentenceTapped = { block, sentence, paragraph ->
+                                onPassageSelected(
+                                    PassageSelection(
+                                        anchor = TextAnchor.Section(
+                                            sectionIndex = index,
+                                            blockIndex = block,
+                                            sentenceIndex = sentence.index
+                                        ),
+                                        passage = sentence.text,
+                                        chapterTitle = sections[index].title,
+                                        surroundingText = paragraph
+                                    )
+                                )
+                            }
+                        )
                     }
                 }
             }
@@ -695,11 +748,15 @@ private fun SectionList(
 private fun DocumentPage(
     index: Int,
     pageCount: Int,
-    aspectRatio: Float,
+    pageSize: PageSize,
     width: Dp,
     renderWidthPx: Int,
     pageColor: Color,
     pageFilter: ColorFilter?,
+    translationOf: (sentenceIndex: Int) -> PassageTranslation?,
+    onToggleChrome: () -> Unit,
+    onPassageSelected: (PassageSelection) -> Unit,
+    sentencesOnPage: suspend (index: Int) -> List<PageSentence>,
     renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?
 ) {
     // Keyed on the width as well as the page: a resized window, or a different
@@ -714,16 +771,65 @@ private fun DocumentPage(
         renderPage(index + 1, renderWidthPx)
     }
 
+    // Read once per page and kept: parsing the text out of a page is far too
+    // much to do again on every tap, and a reader working through a page taps
+    // it several times.
+    val sentences by produceState(initialValue = emptyList<PageSentence>(), index) {
+        value = sentencesOnPage(index)
+    }
+
+    // The one number relating the file to what is on screen. Everything the
+    // overlay draws is measured in the page's own units and scaled by this, so
+    // a pinch or a resize moves it without recalculating anything.
+    val scale = with(LocalDensity.current) { width.toPx() } / pageSize.width
+
+    val currentSentences by rememberUpdatedState(sentences)
+    val currentOnSelected by rememberUpdatedState(onPassageSelected)
+    val currentOnToggleChrome by rememberUpdatedState(onToggleChrome)
+    val currentScale by rememberUpdatedState(scale)
+
     Box(
         modifier = Modifier
             .width(width)
-            .aspectRatio(aspectRatio)
+            .aspectRatio(pageSize.aspectRatio)
             .shadow(elevation = LukiaElevation.page)
             .background(pageColor)
             // A page is a picture with no text behind it, so this is the only
             // thing a screen reader can be told about it. Without it the whole
             // document is silence.
             .semantics { contentDescription = "Page ${index + 1} of $pageCount" }
+            .pointerInput(index) {
+                detectTapGestures { position ->
+                    // Back out of the drawn page into the file's own space,
+                    // which is where the sentences know they are.
+                    val sentence = currentSentences.sentenceAt(
+                        x = position.x / currentScale,
+                        y = position.y / currentScale
+                    )
+
+                    // A tap that landed on no words is a tap on the page: a
+                    // margin, a figure, or a page with no text layer at all.
+                    // That is how the chrome is put away and brought back, and
+                    // offering to translate has not taken it over.
+                    if (sentence == null) {
+                        currentOnToggleChrome()
+                        return@detectTapGestures
+                    }
+
+                    currentOnSelected(
+                        PassageSelection(
+                            anchor = TextAnchor.Page(
+                                pageIndex = index,
+                                sentenceIndex = sentence.index
+                            ),
+                            passage = sentence.text,
+                            // A page has no chapter of its own to name, and the
+                            // rest of the page is the context around a sentence.
+                            surroundingText = currentSentences.joinToString(" ") { it.text }
+                        )
+                    )
+                }
+            }
     ) {
         page?.let {
             Image(
@@ -736,6 +842,13 @@ private fun DocumentPage(
                 modifier = Modifier.fillMaxSize()
             )
         }
+
+        PageTranslationOverlay(
+            sentences = sentences,
+            translationOf = translationOf,
+            scale = scale,
+            pageColor = pageColor
+        )
     }
 }
 

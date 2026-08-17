@@ -55,3 +55,21 @@ private fun List<OutlineEntry>.withClosedUpLevels(): List<OutlineEntry> {
         if (level == entry.level) entry else entry.copy(level = level)
     }
 }
+
+/**
+ * What this page sits under, according to the book's own table of contents.
+ *
+ * The nearest heading at or before the page, rather than the top-level chapter
+ * containing it: a section title is the more specific answer and the more
+ * useful one to whatever is being asked about a sentence - "Closures" settles
+ * more about a paragraph than "Functions" does.
+ *
+ * Null when the book declares no contents, or when the page comes before the
+ * first entry - a title page belongs to no chapter, and saying it belongs to
+ * the first one would be inventing something the book did not say.
+ */
+fun List<OutlineEntry>.chapterCovering(pageIndex: Int): String? =
+    filter { it.pageIndex <= pageIndex }
+        .maxByOrNull { it.pageIndex }
+        ?.title
+        ?.takeIf { it.isNotBlank() }

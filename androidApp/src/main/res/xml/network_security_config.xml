@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Cleartext HTTP is permitted so the reader can point translation at a model
+    running on their own machine. Such a server has no certificate, and telling
+    somebody to obtain one before they can translate a sentence is not a real
+    answer.
+
+    This is broader than the app actually allows. Android's configuration cannot
+    express "private address ranges only" - it matches on domains, and a home
+    network's addresses are not knowable in advance - so the real restriction
+    lives in code, in `isAllowedTranslationEndpoint`: plain HTTP is refused to
+    anything that is not loopback or a private range, before a request is made.
+
+    HTTPS is unaffected and is what every hosted service uses.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

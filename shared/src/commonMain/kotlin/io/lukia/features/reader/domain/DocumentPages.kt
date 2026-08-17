@@ -51,4 +51,21 @@ interface DocumentPages : AutoCloseable {
      * the whole book.
      */
     suspend fun renderPage(index: Int, targetWidthPx: Int): ImageBitmap?
+
+    /**
+     * The characters on page [index] and where they sit on it, or null when
+     * there is no text to be had.
+     *
+     * Null covers two different things that the reader treats the same way: a
+     * page with no text layer at all - a scan, a page that is one photograph -
+     * and a platform that cannot read one. Neither is a failure worth reporting;
+     * both mean the same thing to somebody looking at the page, which is that
+     * tapping the words on it does nothing.
+     *
+     * Defaulted so that a document format which is drawn rather than read does
+     * not have to say so. Reading a page's text is separate from drawing it
+     * because the two are wanted at different moments: every page that scrolls
+     * past is drawn, and only a page somebody points at is read.
+     */
+    suspend fun pageText(index: Int): List<PageGlyph>? = null
 }

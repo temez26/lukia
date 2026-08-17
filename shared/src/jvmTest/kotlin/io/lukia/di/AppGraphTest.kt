@@ -1,12 +1,18 @@
 package io.lukia.di
 
 import io.lukia.core.domain.DocumentWorkspace
+import io.lukia.core.domain.SecretStore
 import io.lukia.core.domain.SettingsStore
 import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
+import io.lukia.features.translate.application.TranslatePassageUseCase
+import io.lukia.features.translate.domain.ModelCatalogue
+import io.lukia.features.translate.domain.Translator
+import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import app.cash.sqldelight.db.SqlDriver
+import io.ktor.client.HttpClient
 import io.lukia.core.infrastructure.lukiaSqlDriver
 import io.lukia.features.reader.domain.ReadingProgressRepository
 import org.koin.dsl.koinApplication
@@ -65,6 +71,16 @@ class AppGraphTest {
         assertNotNull(koin.get<DocumentWorkspace>())
     }
 
+    /**
+     * A secret is stored differently from a preference on every platform, so a
+     * missing registration here would mean the reader's key silently going
+     * nowhere - or, worse, into the settings file.
+     */
+    @Test
+    fun somewhereToKeepASecretResolves() {
+        assertNotNull(koin.get<SecretStore>())
+    }
+
     @Test
     fun theReaderResolves() {
         assertNotNull(koin.get<OpenDocumentUseCase>())
@@ -104,5 +120,40 @@ class AppGraphTest {
     @Test
     fun appSettingsAreOneSharedInstance() {
         assertSame(koin.get<AppSettingsRepository>(), koin.get<AppSettingsRepository>())
+    }
+
+    /**
+     * The reader asks for these the first time somebody taps a sentence. A
+     * missing registration would otherwise only show up as a book that quietly
+     * did nothing when tapped.
+     */
+    @Test
+    fun translatingResolves() {
+        assertNotNull(koin.get<Translator>())
+        assertNotNull(koin.get<TranslatePassageUseCase>())
+        assertNotNull(koin.get<TranslationSettingsRepository>())
+        assertNotNull(koin.get<ModelCatalogue>())
+    }
+
+    /**
+     * One client for the app rather than one per provider: connections are kept
+     * and reused between taps, and two would mean neither ever warm.
+     */
+    @Test
+    fun everyProviderSharesOneHttpClient() {
+        assertSame(koin.get<HttpClient>(), koin.get<HttpClient>())
+    }
+
+    /**
+     * Shared state again: the language is chosen on the settings screen and read
+     * by the open reader, and two instances would mean choosing one changed
+     * nothing about the book in front of you.
+     */
+    @Test
+    fun translationSettingsAreOneSharedInstance() {
+        assertSame(
+            koin.get<TranslationSettingsRepository>(),
+            koin.get<TranslationSettingsRepository>()
+        )
     }
 }

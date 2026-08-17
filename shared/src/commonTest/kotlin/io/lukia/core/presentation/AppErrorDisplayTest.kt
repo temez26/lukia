@@ -17,6 +17,8 @@ class AppErrorDisplayTest {
             AppError.DocumentNotFound,
             AppError.UnsupportedFileType,
             AppError.EmptyFolder,
+            AppError.TranslationUnavailable,
+            AppError.TranslationFailed,
             AppError.Unexpected("boom"),
             AppError.Unexpected(null)
         )

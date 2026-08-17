@@ -15,7 +15,19 @@ import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.features.reader.domain.ReadingProgressRepository
 import io.lukia.features.reader.domain.asTableOfContents
+import io.lukia.features.reader.domain.chapterCovering
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
+import io.lukia.core.presentation.displayTitle
+import io.lukia.features.translate.application.TranslatePassageUseCase
+import io.lukia.features.translate.domain.PageSentence
+import io.lukia.features.translate.domain.TextAnchor
+import io.lukia.features.translate.domain.pageSentences
+import io.lukia.features.translate.domain.TranslationRequest
+import io.lukia.features.translate.domain.asTranslationContext
+import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
+import io.lukia.features.translate.presentation.PassageSelection
+import io.lukia.features.translate.presentation.PassageTranslation
+import io.lukia.features.translate.presentation.TranslationSession
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -43,8 +55,19 @@ class ReaderViewModel(
     private val location: String,
     private val openDocumentUseCase: OpenDocumentUseCase,
     private val settingsRepository: ReaderSettingsRepository,
-    private val progressRepository: ReadingProgressRepository
+    private val progressRepository: ReadingProgressRepository,
+    translatePassage: TranslatePassageUseCase,
+    private val translationSettings: TranslationSettingsRepository
 ) : ViewModel() {
+
+    /**
+     * Every sentence translated while this book is open. Tied to the ViewModel
+     * rather than to the screen so that flipping between a translation and the
+     * original survives the reader turning the device round.
+     */
+    private val translationSession = TranslationSession(translatePassage, viewModelScope)
+
+    val translations: StateFlow<Map<TextAnchor, PassageTranslation>> = translationSession.passages
 
     private val _uiState = MutableStateFlow<UiState<ReaderDocument>>(UiState.Loading)
     val uiState: StateFlow<UiState<ReaderDocument>> = _uiState.asStateFlow()
@@ -148,6 +171,77 @@ class ReaderViewModel(
     }
 
     /**
+     * The sentences of each page that has been looked at, kept for as long as
+     * the book is open.
+     *
+     * Reading a page's text means parsing it out of the file, which is far too
+     * much to do again every time somebody taps the same page twice - and a
+     * reader working through a page taps it several times. Unlike the drawn
+     * pages this is small: a page of sentences is a few kilobytes, and a whole
+     * book of them is less than one rendered page.
+     */
+    private val pageSentences = mutableMapOf<Int, List<PageSentence>>()
+    private val sentenceLock = Mutex()
+
+    /**
+     * What is written on page [index], or an empty list when nothing is - a
+     * scan, a page that is one photograph, or a platform that cannot read one.
+     *
+     * All of those reach the reader the same way, which is that tapping the page
+     * does nothing. None of them is worth telling somebody about.
+     */
+    suspend fun sentencesOn(index: Int): List<PageSentence> {
+        val pages = (_uiState.value.dataOrNull?.content as? PagedContent)?.pages ?: return emptyList()
+
+        sentenceLock.withLock { pageSentences[index] }?.let { return it }
+
+        val glyphs = runCatchingApp { pages.pageText(index) }.getOrNull()
+        val sentences = glyphs?.let { pageSentences(it) }.orEmpty()
+
+        return sentenceLock.withLock { pageSentences.getOrPut(index) { sentences } }
+    }
+
+    /**
+     * A sentence the reader pointed at.
+     *
+     * The book is read here rather than at the tap because this is where it is
+     * known: the screen has the words and where they sit, and only the open
+     * document can say which book they came out of and what it is about. That
+     * is the whole of how a title and a genre reach a translator.
+     */
+    fun onPassageSelected(selection: PassageSelection) {
+        val document = _uiState.value.dataOrNull ?: return
+
+        translationSession.onPassageTapped(selection.anchor) {
+            TranslationRequest(
+                text = selection.passage,
+                targetLanguage = translationSettings.settings.value.targetLanguage,
+                context = document.info.metadata.asTranslationContext(
+                    bookTitle = document.info.displayTitle(),
+                    chapterTitle = selection.chapterTitle ?: chapterOf(selection.anchor),
+                    surroundingText = selection.surroundingText
+                )
+            )
+        }
+    }
+
+    /**
+     * What a page sits under, for a document whose sentences carry no chapter of
+     * their own.
+     *
+     * A reflowable book's section names itself, so the screen already knows. A
+     * page of a PDF does not - but the book's own table of contents does, and it
+     * has been read and is sitting here already.
+     */
+    private fun chapterOf(anchor: TextAnchor): String? {
+        if (anchor !is TextAnchor.Page) return null
+
+        val chapters = (_outline.value as? ReaderOutline.Chapters)?.entries ?: return null
+
+        return chapters.chapterCovering(anchor.pageIndex)
+    }
+
+    /**
      * Read in the background as soon as the book is open, rather than when the
      * contents panel asks for it.
      *
@@ -170,6 +264,10 @@ class ReaderViewModel(
 
     fun retry() {
         closeDocument()
+        // The anchors point into the document being thrown away, and the one
+        // opened in its place may not have a sentence where each of them says.
+        translationSession.clear()
+        pageSentences.clear()
         _uiState.value = UiState.Loading
         _outline.value = ReaderOutline.Loading
         _initialPage.value = null
