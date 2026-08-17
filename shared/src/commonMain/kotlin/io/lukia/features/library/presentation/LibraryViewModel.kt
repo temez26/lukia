@@ -19,6 +19,7 @@ import io.lukia.features.reader.domain.ReadingProgressRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class LibraryViewModel(
@@ -139,17 +140,54 @@ class LibraryViewModel(
      * the composable.
      */
     fun toggleFavorite(document: DocumentInfo) {
+        val location = document.document.location
+        val isFavorite = !document.isFavorite
+
         viewModelScope.launch {
-            setFavoriteUseCase(document.document.location, !document.isFavorite)
-            loadDocuments()
+            setFavoriteUseCase(location, isFavorite)
+
+            // Patched in place rather than re-read. A reload would pull the
+            // whole library back out of the database, and every row carries its
+            // cover - megabytes of BLOB decoded and re-allocated to change one
+            // flag on one book. What the write did is already known here, so
+            // the row is edited to match it.
+            updateLoadedDocuments { documents ->
+                documents.map {
+                    if (it.document.location == location) it.copy(isFavorite = isFavorite) else it
+                }
+            }
         }
     }
 
     /** Removes the book from the library index only; the file is left on disk. */
     fun deleteDocument(document: DocumentInfo) {
+        val location = document.document.location
+
         viewModelScope.launch {
-            removeDocumentUseCase(document.document.location)
-            loadDocuments()
+            removeDocumentUseCase(location)
+
+            // Dropped from the list for the same reason favouriting patches it:
+            // one row leaving is not a reason to re-read the rest.
+            updateLoadedDocuments { documents ->
+                documents.filterNot { it.document.location == location }
+            }
+
+            // The use case forgets the stored position too, so the bar has to go
+            // with the book rather than linger until the next full read.
+            _readingProgress.update { it - location }
+        }
+    }
+
+    /**
+     * Edits the library already on screen, when there is one.
+     *
+     * A library that failed to load or is still loading has nothing to edit, and
+     * inventing a Success state from a local change would put books on screen
+     * that were never read.
+     */
+    private fun updateLoadedDocuments(transform: (List<DocumentInfo>) -> List<DocumentInfo>) {
+        _uiState.update { state ->
+            if (state is UiState.Success) UiState.Success(transform(state.data)) else state
         }
     }
 

@@ -53,8 +53,6 @@ kotlin {
     
     sourceSets {
         androidMain.dependencies {
-            implementation(libs.compose.uiToolingPreview)
-            implementation(libs.compose.uiTooling)
             implementation(libs.androidx.documentfile)
             implementation(libs.sqldelight.androidDriver)
             implementation(libs.ktor.client.okhttp)
@@ -81,7 +79,6 @@ kotlin {
             // Common-code back/escape handling; ships separately from compose.ui.
             implementation(libs.compose.ui.backhandler)
             implementation(libs.compose.components.resources)
-            implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.androidx.navigation.compose)
@@ -123,8 +120,4 @@ kotlin {
             }
         }
     }
-}
-
-dependencies {
-    androidRuntimeClasspath(libs.compose.uiTooling)
 }

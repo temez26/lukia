@@ -10,6 +10,8 @@ build/
 # Kotlin
 ############################
 *.kotlin_module
+# Build-time metadata/klib cache written by the Kotlin Gradle plugin
+.kotlin/
 
 ############################
 # IntelliJ / Android Studio
@@ -38,8 +40,7 @@ androidApp/build/
 # iOS / Xcode
 ############################
 DerivedData/
-*.xcworkspace/xcuserdata/
-*.xcodeproj/xcuserdata/
+xcuserdata/
 *.xcuserstate
 *.xcscmblueprint
 
