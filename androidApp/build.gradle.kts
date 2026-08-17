@@ -13,6 +13,11 @@ kotlin {
 dependencies {
     implementation(project(":shared"))
 
+    // Ktor is built against Java 8 APIs that Android only gained in API 26.
+    // Desugaring back-fills them, which is what lets the app keep its minimum
+    // of API 24 while translating over the network.
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
+
     implementation(libs.androidx.activity.compose)
 
     implementation(libs.compose.uiToolingPreview)
@@ -47,6 +52,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
     }
     buildFeatures {
         compose = true

@@ -2,6 +2,7 @@ package io.lukia.features.reader.domain
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class ReadableOutlineTest {
 
@@ -92,3 +93,61 @@ class ReadableOutlineTest {
     private fun entry(title: String, level: Int = 0) =
         OutlineEntry(title = title, pageIndex = 0, level = level)
 }
+
+/**
+ * Which chapter a page falls under - asked when a sentence is tapped on a PDF,
+ * whose pages carry no chapter of their own the way a reflowable section does.
+ */
+class ChapterCoveringTest {
+
+    private val contents = listOf(
+        OutlineEntry(title = "Introduction", pageIndex = 4, level = 0),
+        OutlineEntry(title = "Functions", pageIndex = 180, level = 0),
+        OutlineEntry(title = "Closures", pageIndex = 194, level = 1),
+        OutlineEntry(title = "Classes", pageIndex = 230, level = 0)
+    )
+
+    @Test
+    fun aPageBelongsToTheHeadingItComesAfter() {
+        assertEquals("Functions", contents.chapterCovering(185))
+        assertEquals("Classes", contents.chapterCovering(400))
+    }
+
+    /** The page a chapter starts on is inside that chapter. */
+    @Test
+    fun aChaptersFirstPageIsItsOwn() {
+        assertEquals("Functions", contents.chapterCovering(180))
+    }
+
+    /**
+     * The nearer, more specific heading wins. "Closures" settles more about a
+     * paragraph than "Functions" does.
+     */
+    @Test
+    fun aSectionInsideAChapterIsTheBetterAnswer() {
+        assertEquals("Closures", contents.chapterCovering(200))
+    }
+
+    /**
+     * A title page belongs to no chapter, and claiming it belongs to the first
+     * one would be inventing something the book never said.
+     */
+    @Test
+    fun aPageBeforeTheFirstHeadingBelongsToNothing() {
+        assertNull(contents.chapterCovering(0))
+        assertNull(contents.chapterCovering(3))
+    }
+
+    @Test
+    fun aBookWithNoContentsAnswersNothing() {
+        assertNull(emptyList<OutlineEntry>().chapterCovering(10))
+    }
+
+    @Test
+    fun aHeadingWithNoTitleIsNotATitle() {
+        val nameless = listOf(OutlineEntry(title = "   ", pageIndex = 0, level = 0))
+
+        assertNull(nameless.chapterCovering(5))
+    }
+}
+

@@ -1,0 +1,61 @@
+package io.lukia.features.translate.application
+
+import io.lukia.core.domain.AppError
+import io.lukia.core.domain.asFailure
+import io.lukia.core.domain.runCatchingApp
+import io.lukia.features.translate.domain.Translation
+import io.lukia.features.translate.domain.TranslationRequest
+import io.lukia.features.translate.domain.Translator
+
+/**
+ * The longest passage worth sending.
+ *
+ * A sentence is a line or two; this is well past that. What it actually catches
+ * is a document with no sentence punctuation in it at all - a badly converted
+ * text file where a whole chapter is one "sentence" - which would otherwise be
+ * sent whole on a single tap and come back as something nobody wanted to read.
+ */
+private const val MAX_PASSAGE_CHARS = 2000
+
+/**
+ * Translates one passage, and is the only thing above the domain that knows a
+ * translator exists at all.
+ *
+ * Everything here is about the passage rather than about any provider: the
+ * guards hold whether the words go to a model, to an API or to a dictionary,
+ * and so does the shape of the failure when they do not come back.
+ */
+class TranslatePassageUseCase(
+    private val translator: Translator
+) {
+
+    suspend operator fun invoke(request: TranslationRequest): Result<Translation> {
+        val passage = request.text.trim()
+
+        if (passage.isEmpty()) {
+            return AppError.Unexpected("There is nothing to translate here.").asFailure()
+        }
+
+        if (passage.length > MAX_PASSAGE_CHARS) {
+            return AppError.Unexpected("That passage is too long to translate.").asFailure()
+        }
+
+        val translation = runCatchingApp { translator.translate(request.copy(text = passage)) }
+            .getOrElse { return Result.failure(it) }
+
+        // A provider that answered with nothing has failed without saying so.
+        // Left as a success it would show as a sentence replaced by a blank
+        // space, which reads as the reader having lost the text rather than as
+        // the translation having failed.
+        if (translation.text.isBlank()) {
+            return AppError.TranslationFailed.asFailure()
+        }
+
+        return Result.success(
+            Translation(
+                text = translation.text.trim(),
+                note = translation.note?.trim()?.takeIf { it.isNotEmpty() }
+            )
+        )
+    }
+}

@@ -13,6 +13,8 @@ fun AppError.displayTitle(): String = when (this) {
     AppError.UnsupportedFileType -> "Unsupported file"
     AppError.FormatNotReadable -> "Not readable yet"
     AppError.EmptyFolder -> "Nothing to import"
+    AppError.TranslationUnavailable -> "Translation is not set up"
+    AppError.TranslationFailed -> "Could not translate that"
     is AppError.Unexpected -> "Something went wrong"
 }
 
@@ -21,6 +23,9 @@ fun AppError.displayMessage(): String = when (this) {
     AppError.UnsupportedFileType -> "Lukia can open PDF and EPUB files."
     AppError.FormatNotReadable -> "Reading EPUB files is not ready yet - PDFs open today."
     AppError.EmptyFolder -> "No PDF or EPUB files found in this folder."
+    AppError.TranslationUnavailable ->
+        "Choose a language to translate into in Settings, and add a translation service."
+    AppError.TranslationFailed -> "The translation service did not answer. Try again."
     // The underlying message is worth showing when there is one: for an
     // unforeseen failure it is the only clue either the user or a bug report
     // will have.
