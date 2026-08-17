@@ -7,7 +7,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +21,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.ContentScale
@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.lukia.core.domain.CoverImage
+import io.lukia.shared.presentation.theme.LukiaElevation
 import io.lukia.shared.presentation.theme.LukiaMotion
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -128,12 +129,11 @@ fun BookCover(
     coverImage: CoverImage?,
     title: String,
     modifier: Modifier = Modifier,
-    cornerRadius: Dp = 14.dp,
-    elevation: Dp = 8.dp,
-    monogramFontSize: TextUnit = 34.sp
+    shape: Shape = MaterialTheme.shapes.medium,
+    elevation: Dp = LukiaElevation.card,
+    monogramFontSize: TextUnit = 30.sp
 ) {
     val art = rememberCoverArt(coverImage)
-    val shape = remember(cornerRadius) { RoundedCornerShape(cornerRadius) }
     val baseColor = remember(title) { bookCoverColor(title) }
 
     val artworkAlpha by animateFloatAsState(

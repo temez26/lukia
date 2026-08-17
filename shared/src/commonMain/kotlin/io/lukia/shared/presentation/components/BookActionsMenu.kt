@@ -1,10 +1,7 @@
 package io.lukia.shared.presentation.components
 
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 
 /**
  * Actions for one book, hanging under whatever opened it - a card in the library
@@ -37,7 +34,7 @@ fun BookActionsMenu(
         if (onShowDetails != null) {
             MenuRow(
                 label = "Book Details",
-                icon = { tint -> InfoGlyph(tint = tint, modifier = Modifier.size(18.dp)) },
+                icon = { tint, glyph -> InfoGlyph(tint = tint, modifier = glyph) },
                 onClick = {
                     onDismissRequest()
                     onShowDetails()
@@ -49,8 +46,8 @@ fun BookActionsMenu(
 
         MenuRow(
             label = if (isFavorite) "Remove from Favourites" else "Add to Favourites",
-            icon = { tint ->
-                HeartGlyph(tint = tint, filled = isFavorite, modifier = Modifier.size(18.dp))
+            icon = { tint, glyph ->
+                HeartGlyph(tint = tint, filled = isFavorite, modifier = glyph)
             },
             onClick = {
                 onDismissRequest()
@@ -63,7 +60,7 @@ fun BookActionsMenu(
         MenuRow(
             label = "Delete from Library",
             tint = MaterialTheme.colorScheme.error,
-            icon = { tint -> TrashGlyph(tint = tint, modifier = Modifier.size(18.dp)) },
+            icon = { tint, glyph -> TrashGlyph(tint = tint, modifier = glyph) },
             onClick = {
                 onDismissRequest()
                 onDelete()

@@ -1,6 +1,7 @@
 package io.lukia.shared.presentation.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -9,10 +10,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -35,10 +36,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
-import io.lukia.shared.presentation.theme.MinTouchTarget
+import io.lukia.shared.presentation.theme.LocalLukiaMetrics
+import io.lukia.shared.presentation.theme.Space
 
 /** Gap between the menu and the control it hangs from. */
-private val AnchorGap = 6.dp
+private val AnchorGap = Space.sm
+
+/** Inset from a menu's edge to its rows, and what its separators are inset by. */
+private val MenuInset = Space.lg
 
 /**
  * A menu hanging under whatever composable it is placed inside, end-aligned with
@@ -64,7 +69,7 @@ fun AnchoredMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
-    minWidth: Dp = 208.dp,
+    minWidth: Dp = 196.dp,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val progress = rememberPopoverProgress(expanded, label = "anchoredMenu")
@@ -83,7 +88,7 @@ fun AnchoredMenu(
         properties = PopupProperties(focusable = false)
     ) {
         GlassSurface(
-            shape = RoundedCornerShape(14.dp),
+            shape = MaterialTheme.shapes.medium,
             tone = GlassTone.Panel,
             modifier = modifier.popoverTransition(
                 progress = progress,
@@ -109,6 +114,9 @@ fun AnchoredMenu(
  * [tint] carries the row's meaning as well as its colour - a destructive row
  * should read as destructive before it is read at all - so the glyph and the
  * label are drawn in it together.
+ *
+ * [icon] is handed both the tint and an already-sized modifier, so the glyphs
+ * down a menu are the same size without every caller having to say so.
  */
 @Composable
 fun MenuRow(
@@ -116,27 +124,40 @@ fun MenuRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     tint: Color = MaterialTheme.colorScheme.onSurface,
-    icon: (@Composable (Color) -> Unit)? = null
+    icon: (@Composable (Color, Modifier) -> Unit)? = null
 ) {
+    val metrics = LocalLukiaMetrics.current
+    val interactionSource = remember { MutableInteractionSource() }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
+            // Square, because the row runs the full width of the menu and a
+            // rounded highlight inside a square menu leaves gaps at the corners.
+            .hoverHighlight(interactionSource, RectangleShape)
+            .focusRing(interactionSource, RectangleShape)
             .pointerHoverIcon(PointerIcon.Hand)
-            .clickable(onClick = onClick)
-            .heightIn(min = MinTouchTarget)
-            .padding(horizontal = 16.dp)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClickLabel = label,
+                onClick = onClick
+            )
+            .heightIn(min = metrics.rowHeight)
+            .padding(horizontal = MenuInset, vertical = Space.sm)
             .semantics { contentDescription = label }
     ) {
         if (icon != null) {
-            icon(tint)
-            Spacer(modifier = Modifier.width(12.dp))
+            icon(tint, Modifier.size(metrics.iconSmall))
+            Spacer(modifier = Modifier.width(Space.lg))
         }
 
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = tint
+            color = tint,
+            maxLines = 1
         )
     }
 }
@@ -144,11 +165,7 @@ fun MenuRow(
 /** Hairline between menu rows, inset from the left in the way iOS insets its own. */
 @Composable
 fun MenuSeparator() {
-    HorizontalDivider(
-        thickness = Dp.Hairline,
-        color = MaterialTheme.colorScheme.outlineVariant,
-        modifier = Modifier.padding(start = 16.dp)
-    )
+    LukiaDivider(inset = MenuInset)
 }
 
 /**

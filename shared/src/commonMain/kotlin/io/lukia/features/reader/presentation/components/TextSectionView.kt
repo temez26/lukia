@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.lukia.shared.presentation.components.LukiaDivider
 import io.lukia.features.reader.domain.Emphasis
 import io.lukia.features.reader.domain.TextBlock
 import io.lukia.features.reader.domain.TextRun
@@ -185,7 +185,7 @@ private fun CodeBlock(block: TextBlock.Code, style: TextStyle) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
+            .clip(MaterialTheme.shapes.small)
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .horizontalScroll(rememberScrollState())
             .padding(horizontal = 12.dp, vertical = 10.dp)
@@ -240,11 +240,7 @@ private fun SeparatorBlock() {
             .fillMaxWidth()
             .padding(vertical = 12.dp)
     ) {
-        HorizontalDivider(
-            thickness = Dp.Hairline,
-            color = MaterialTheme.colorScheme.outlineVariant,
-            modifier = Modifier.fillMaxWidth(0.3f)
-        )
+        LukiaDivider(modifier = Modifier.fillMaxWidth(0.3f))
     }
 }
 

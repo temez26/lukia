@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.LukiaMotion
 
 /**
@@ -38,7 +39,7 @@ fun ActionMenuScrim(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.28f))
+                .background(Color.Black.copy(alpha = LukiaAlpha.Scrim))
                 .clickable(
                     interactionSource = interactionSource,
                     indication = null,

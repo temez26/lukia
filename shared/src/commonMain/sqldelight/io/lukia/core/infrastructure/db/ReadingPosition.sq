@@ -20,6 +20,15 @@ CREATE TABLE reading_position (
 selectByLocation:
 SELECT * FROM reading_position WHERE location = ?;
 
+-- Every stored position at once, for the library grid.
+--
+-- One statement rather than one per book: the grid shows how far through each
+-- book its reader is, and asking that book by book would be a query per cell on
+-- a shelf that may hold hundreds. The whole table is three columns of numbers,
+-- so reading all of it costs less than reading one cover.
+selectAll:
+SELECT * FROM reading_position;
+
 -- Replace rather than update: the row holds nothing that is not being written,
 -- so there is nothing to preserve. `INSERT OR REPLACE` is as old as SQLite,
 -- unlike the upsert this would otherwise be - see `Document.sq`.

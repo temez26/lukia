@@ -10,13 +10,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -30,16 +28,20 @@ import io.lukia.features.settings.domain.AppSettings
 import io.lukia.features.settings.domain.AppTheme
 import io.lukia.features.settings.presentation.SettingsViewModel
 import io.lukia.shared.presentation.components.BackChevron
-import io.lukia.shared.presentation.components.GlassChromeButton
+import io.lukia.shared.presentation.components.GroupCard
+import io.lukia.shared.presentation.components.IconButtonVariant
+import io.lukia.shared.presentation.components.LukiaIconButton
+import io.lukia.shared.presentation.components.SectionLabel
 import io.lukia.shared.presentation.components.SegmentedControl
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import io.lukia.shared.presentation.theme.Space
 import org.koin.compose.viewmodel.koinViewModel
 
 /** Vertical room reserved so content starts clear of the floating back control. */
-private val TopChromeClearance: Dp = 84.dp
+private val TopChromeClearance: Dp = 68.dp
 
 /** Room past the last group, so the settings do not end hard against the edge. */
-private val SettingsBottomClearance: Dp = 48.dp
+private val SettingsBottomClearance: Dp = 32.dp
 
 @Composable
 fun SettingsScreen(
@@ -91,17 +93,15 @@ fun SettingsContent(
                 modifier = Modifier.fillMaxSize()
             )
 
-            GlassChromeButton(
+            LukiaIconButton(
                 label = "Go back",
                 onClick = onBack,
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .padding(start = dimens.screenPadding, top = 16.dp)
-            ) {
-                BackChevron(
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
-                )
+                    .padding(start = dimens.screenPadding, top = Space.lg),
+                variant = IconButtonVariant.Glass
+            ) { tint, glyph ->
+                BackChevron(tint = tint, modifier = glyph)
             }
         }
     }
@@ -147,7 +147,7 @@ internal fun SettingsBody(
         ) {
             Text(
                 text = "Settings",
-                style = MaterialTheme.typography.displaySmall,
+                style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
 
@@ -186,19 +186,13 @@ private fun SettingsSection(
     content: @Composable () -> Unit
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
+        SectionLabel(
             text = title,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
+            modifier = Modifier.padding(start = Space.xs, bottom = Space.sm)
         )
 
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.large,
-            color = groupColor
-        ) {
-            Box(modifier = Modifier.padding(12.dp)) {
+        GroupCard(color = groupColor) {
+            Box(modifier = Modifier.padding(Space.lg)) {
                 content()
             }
         }
@@ -208,7 +202,7 @@ private fun SettingsSection(
                 text = footnote,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = 4.dp, top = 8.dp)
+                modifier = Modifier.padding(start = Space.xs, top = Space.sm)
             )
         }
     }

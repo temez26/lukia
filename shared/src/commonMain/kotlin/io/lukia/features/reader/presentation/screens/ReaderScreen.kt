@@ -77,16 +77,18 @@ import io.lukia.features.reader.presentation.components.ReaderSettingsPanel
 import io.lukia.features.reader.presentation.components.ReaderToolbar
 import io.lukia.features.reader.presentation.components.TextSectionView
 import io.lukia.features.reader.presentation.components.TextSettingsGlyph
-import io.lukia.features.reader.presentation.components.ToolbarButton
+import io.lukia.features.reader.presentation.components.readerToolbarHeight
 import io.lukia.features.reader.presentation.renderWidthFor
 import io.lukia.features.reader.presentation.theme.ReaderTheming
 import io.lukia.features.reader.presentation.theme.readerPageStyle
 import io.lukia.features.reader.presentation.theme.readerTextStyle
+import io.lukia.shared.presentation.components.LukiaIconButton
 import io.lukia.shared.presentation.components.ShortcutTooltip
 import io.lukia.shared.presentation.components.UiStateContent
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
-import io.lukia.shared.presentation.theme.LocalWindowWidthClass
-import io.lukia.shared.presentation.theme.WindowWidthClass
+import io.lukia.shared.presentation.theme.LukiaElevation
+import io.lukia.shared.presentation.theme.Space
+import io.lukia.shared.presentation.theme.isWideWindow
 import io.lukia.shared.presentation.theme.topChromeIn
 import io.lukia.shared.presentation.theme.topChromeOut
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -97,18 +99,24 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 /** Gap between pages, which is what makes them read as separate sheets. */
-private val PageGap: Dp = 12.dp
+private val PageGap: Dp = Space.lg
 
 /** Breathing room at the end of the book. */
-private val PageListPadding: Dp = 8.dp
+private val PageListPadding: Dp = Space.md
 
-private val ChromeVerticalPadding: Dp = 8.dp
+private val ChromeVerticalPadding: Dp = Space.md
 
-/** What the floating toolbar occupies, and so what the first page must clear. */
-private val ChromeHeight: Dp = 60.dp
+/**
+ * What the floating toolbar occupies, and so what the first page must clear.
+ *
+ * Derived from the bar rather than fixed, because the bar's own height follows
+ * whether the window is being pointed at or touched.
+ */
+@Composable
+private fun chromeHeight(): Dp = readerToolbarHeight() + ChromeVerticalPadding * 2
 
 /** The margin a section's text is set inside its sheet. */
-private val SheetPadding: Dp = 22.dp
+private val SheetPadding: Dp = 20.dp
 
 @Composable
 fun ReaderScreen(
@@ -157,8 +165,9 @@ fun ReaderContent(
     var contentsExpanded by remember { mutableStateOf(false) }
     var chromeVisible by remember { mutableStateOf(true) }
 
-    val compact = LocalWindowWidthClass.current == WindowWidthClass.Compact
+    val compact = !isWideWindow
     val panelOpen = settingsExpanded || contentsExpanded
+    val chromeHeight = chromeHeight()
 
     // A panel hangs off the toolbar, so the toolbar cannot leave while one is
     // open without stranding it.
@@ -364,14 +373,14 @@ fun ReaderContent(
                         },
                         endControl = {
                             ShortcutTooltip(description = "Reading settings", shortcut = "T") {
-                                ToolbarButton(
+                                LukiaIconButton(
+                                    label = "Reading settings",
                                     onClick = {
                                         contentsExpanded = false
                                         settingsExpanded = !settingsExpanded
-                                    },
-                                    label = "Reading settings"
-                                ) {
-                                    TextSettingsGlyph(tint = MaterialTheme.colorScheme.primary)
+                                    }
+                                ) { tint, glyph ->
+                                    TextSettingsGlyph(tint = tint, modifier = glyph)
                                 }
                             }
                         }
@@ -396,7 +405,7 @@ fun ReaderContent(
                         onDismissRequest = { contentsExpanded = false },
                         modifier = Modifier
                             .align(Alignment.TopCenter)
-                            .padding(top = ChromeHeight)
+                            .padding(top = chromeHeight)
                     )
                 }
 
@@ -409,7 +418,7 @@ fun ReaderContent(
                     onDismissRequest = { settingsExpanded = false },
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(top = ChromeHeight, end = dimens.screenPadding)
+                        .padding(top = chromeHeight, end = dimens.screenPadding)
                 )
             }
         }
@@ -555,7 +564,7 @@ private fun PageList(
                 contentPadding = PaddingValues(
                     // Clears the floating chrome, so the first page is not behind
                     // it when the book opens.
-                    top = ChromeHeight,
+                    top = chromeHeight(),
                     bottom = PageListPadding
                 ),
                 modifier = Modifier
@@ -646,7 +655,7 @@ private fun SectionList(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(PageGap),
                 contentPadding = PaddingValues(
-                    top = ChromeHeight,
+                    top = chromeHeight(),
                     bottom = PageListPadding
                 ),
                 modifier = Modifier.fillMaxSize()
@@ -655,7 +664,7 @@ private fun SectionList(
                     Box(
                         modifier = Modifier
                             .width(sheetWidth)
-                            .shadow(elevation = 2.dp)
+                            .shadow(elevation = LukiaElevation.page)
                             .background(pageColor)
                             .padding(SheetPadding)
                             // Unlike a rendered page there is real text behind
@@ -709,7 +718,7 @@ private fun DocumentPage(
         modifier = Modifier
             .width(width)
             .aspectRatio(aspectRatio)
-            .shadow(elevation = 2.dp)
+            .shadow(elevation = LukiaElevation.page)
             .background(pageColor)
             // A page is a picture with no text behind it, so this is the only
             // thing a screen reader can be told about it. Without it the whole

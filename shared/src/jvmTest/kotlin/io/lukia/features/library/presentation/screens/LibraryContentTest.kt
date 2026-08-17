@@ -150,7 +150,7 @@ class LibraryContentTest {
         onNodeWithText("Book Details").performClick()
 
         // The panel is up...
-        onNodeWithText("Read").assertIsDisplayed()
+        onNodeWithText("Information").assertIsDisplayed()
         // ...the library is still behind it...
         onNodeWithText("The Hobbit").assertIsDisplayed()
         // ...and nothing was navigated to.
@@ -167,7 +167,7 @@ class LibraryContentTest {
         onNodeWithText("Book Details").performClick()
 
         assertEquals("Moby Dick.pdf", navigatedTo?.document?.fileName)
-        onNodeWithText("Read").assertDoesNotExist()
+        onNodeWithText("Information").assertDoesNotExist()
     }
 
     /** Closing puts the reader back where they were, with nothing else changed. */
@@ -177,11 +177,11 @@ class LibraryContentTest {
 
         openBookMenu("Moby Dick")
         onNodeWithText("Book Details").performClick()
-        onNodeWithText("Read").assertIsDisplayed()
+        onNodeWithText("Information").assertIsDisplayed()
 
         onNodeWithContentDescription("Close").performClick()
 
-        onNodeWithText("Read").assertDoesNotExist()
+        onNodeWithText("Information").assertDoesNotExist()
         onNodeWithText("Add Books").assertIsDisplayed()
     }
 }

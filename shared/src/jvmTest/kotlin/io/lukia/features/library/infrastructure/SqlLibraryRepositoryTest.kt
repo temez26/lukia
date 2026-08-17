@@ -160,6 +160,15 @@ class SqlLibraryRepositoryTest {
             fileExists = true,
             sizeBytes = 1024L,
             coverImage = null,
+            hasMetadata = false,
+            metaTitle = null,
+            metaAuthors = null,
+            metaPublisher = null,
+            metaPublished = null,
+            metaLanguage = null,
+            metaDescription = null,
+            metaSubjects = null,
+            metaIdentifier = null,
             location = "/books/one.pdf"
         )
 

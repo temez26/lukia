@@ -3,11 +3,11 @@ package io.lukia.features.bookdetail.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.lukia.core.domain.AppError
-import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.core.domain.toAppError
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
+import io.lukia.features.bookdetail.application.BookDetails
 import io.lukia.features.bookdetail.application.GetDocumentDetailsUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
@@ -23,8 +23,8 @@ class BookDetailViewModel(
     private val removeDocumentUseCase: RemoveDocumentUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<UiState<DocumentInfo>>(UiState.Loading)
-    val uiState: StateFlow<UiState<DocumentInfo>> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow<UiState<BookDetails>>(UiState.Loading)
+    val uiState: StateFlow<UiState<BookDetails>> = _uiState.asStateFlow()
 
     init {
         load()
@@ -38,8 +38,8 @@ class BookDetailViewModel(
         viewModelScope.launch {
             _uiState.value = runCatchingApp { getDocumentDetailsUseCase(location) }
                 .fold(
-                    onSuccess = { document ->
-                        document
+                    onSuccess = { details ->
+                        details
                             ?.let { UiState.Success(it) }
                             ?: UiState.Failure(AppError.DocumentNotFound)
                     },
@@ -61,7 +61,7 @@ class BookDetailViewModel(
         val current = _uiState.value.dataOrNull ?: return
 
         viewModelScope.launch {
-            setFavoriteUseCase(location, !current.isFavorite)
+            setFavoriteUseCase(location, !current.document.isFavorite)
             load()
         }
     }
