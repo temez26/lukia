@@ -3,7 +3,6 @@ package io.lukia.features.bookdetail.presentation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -14,21 +13,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.DocumentInfo
+import io.lukia.features.bookdetail.application.BookDetails
 import io.lukia.features.bookdetail.presentation.screens.BookDetailBody
+import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.shared.presentation.components.ActionMenuScrim
 import io.lukia.shared.presentation.components.BookActionsMenu
 import io.lukia.shared.presentation.components.EllipsisGlyph
-import io.lukia.shared.presentation.components.GlassChromeButton
+import io.lukia.shared.presentation.components.IconButtonVariant
+import io.lukia.shared.presentation.components.LukiaIconButton
 import io.lukia.shared.presentation.components.OverlayPanel
 import io.lukia.shared.presentation.components.OverlayPanelTopClearance
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 
 /**
  * Smaller than the cover on the detail screen. A panel is a glance, and a cover
- * at screen size fills it on its own - the Read button, which is the reason the
- * panel was opened, ends up below the fold in anything but a very tall window.
+ * at screen size fills it on its own - everything worth reading about the book
+ * ends up below the fold in anything but a very tall window.
  */
-private val PanelCoverWidth: Dp = 148.dp
+private val PanelCoverWidth: Dp = 136.dp
 
 /**
  * A book's details, over the library rather than instead of it.
@@ -37,10 +39,16 @@ private val PanelCoverWidth: Dp = 148.dp
  * whatever book is currently being looked at. That also means a book deleted from
  * inside the panel takes the panel with it: the library no longer holds it, so
  * the caller's lookup comes back null on the next frame.
+ *
+ * The book itself comes from the library rather than being loaded again here,
+ * which is what keeps favouriting it inside the panel visible on the card behind
+ * it. [progress] arrives separately because where the reader got to is kept in a
+ * store the library never reads.
  */
 @Composable
 fun BookDetailOverlay(
     document: DocumentInfo?,
+    progress: ReadingProgress?,
     onDismiss: () -> Unit,
     onRead: (DocumentInfo) -> Unit,
     onToggleFavorite: (DocumentInfo) -> Unit,
@@ -65,14 +73,12 @@ fun BookDetailOverlay(
             // panel out from under an open menu would take two decisions at once.
             onDismiss = { if (menuExpanded) menuExpanded = false else onDismiss() },
             trailing = {
-                GlassChromeButton(
+                LukiaIconButton(
                     label = "Book actions",
-                    onClick = { menuExpanded = true }
-                ) {
-                    EllipsisGlyph(
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(18.dp)
-                    )
+                    onClick = { menuExpanded = true },
+                    variant = IconButtonVariant.Glass
+                ) { tint, glyph ->
+                    EllipsisGlyph(tint = tint, modifier = glyph)
                 }
 
                 BookActionsMenu(
@@ -85,7 +91,7 @@ fun BookDetailOverlay(
             }
         ) {
             BookDetailBody(
-                document = shown,
+                details = BookDetails(document = shown, progress = progress),
                 onRead = { onRead(shown) },
                 onLongPress = { menuExpanded = true },
                 modifier = Modifier.fillMaxWidth(),

@@ -12,13 +12,26 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-/** Generous, evenly stepped corner radii in the spirit of Apple's rounded rects. */
+/**
+ * The app's corner radii, and the only place any of them is decided.
+ *
+ * Evenly stepped in the spirit of Apple's rounded rects, but tighter than they
+ * were: every radius used to be written at its call site, which produced 8, 11,
+ * 14, 16 and 18dp corners on elements that belong to the same family, and left
+ * the whole app rounder than a desktop window wants to be.
+ *
+ * - [Shapes.extraSmall] a badge or a chip
+ * - [Shapes.small] a field, a button, a stepper
+ * - [Shapes.medium] a menu, a card, a cover
+ * - [Shapes.large] a floating panel, a grouped list
+ * - [Shapes.extraLarge] an overlay panel, which is the largest thing that floats
+ */
 internal val LukiaShapes = Shapes(
-    extraSmall = RoundedCornerShape(6.dp),
-    small = RoundedCornerShape(10.dp),
-    medium = RoundedCornerShape(14.dp),
-    large = RoundedCornerShape(20.dp),
-    extraLarge = RoundedCornerShape(28.dp)
+    extraSmall = RoundedCornerShape(4.dp),
+    small = RoundedCornerShape(8.dp),
+    medium = RoundedCornerShape(10.dp),
+    large = RoundedCornerShape(14.dp),
+    extraLarge = RoundedCornerShape(20.dp)
 )
 
 @Composable
@@ -36,6 +49,7 @@ fun LukiaTheme(
 
         CompositionLocalProvider(
             LocalLukiaDimens provides dimensFor(widthClass),
+            LocalLukiaMetrics provides metricsFor(widthClass),
             LocalWindowWidthClass provides widthClass,
             LocalGlassStyle provides glassStyle
         ) {

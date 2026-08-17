@@ -1,5 +1,6 @@
 package io.lukia.features.library.infrastructure
 
+import io.lukia.core.domain.BookMetadata
 import io.lukia.core.domain.CoverImage
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
@@ -35,6 +36,7 @@ class SqlLibraryRepository(
      */
     override suspend fun addDocument(document: DocumentInfo) = withContext(dispatcher) {
         val picked = document.document
+        val metadata = document.metadata
 
         documents.transaction {
             documents.insertIfAbsent(
@@ -44,7 +46,15 @@ class SqlLibraryRepository(
                 type = document.type.name,
                 fileExists = document.exists,
                 sizeBytes = document.sizeBytes,
-                coverImage = document.coverImage?.bytes
+                coverImage = document.coverImage?.bytes,
+                metaTitle = metadata?.title,
+                metaAuthors = metadata?.authors.toStoredList(),
+                metaPublisher = metadata?.publisher,
+                metaPublished = metadata?.published,
+                metaLanguage = metadata?.language,
+                metaDescription = metadata?.description,
+                metaSubjects = metadata?.subjects.toStoredList(),
+                metaIdentifier = metadata?.identifier
             )
 
             documents.refresh(
@@ -54,6 +64,15 @@ class SqlLibraryRepository(
                 fileExists = document.exists,
                 sizeBytes = document.sizeBytes,
                 coverImage = document.coverImage?.bytes,
+                hasMetadata = metadata != null,
+                metaTitle = metadata?.title,
+                metaAuthors = metadata?.authors.toStoredList(),
+                metaPublisher = metadata?.publisher,
+                metaPublished = metadata?.published,
+                metaLanguage = metadata?.language,
+                metaDescription = metadata?.description,
+                metaSubjects = metadata?.subjects.toStoredList(),
+                metaIdentifier = metadata?.identifier,
                 location = picked.location
             )
         }
@@ -99,5 +118,38 @@ private fun Document.toDocumentInfo(): DocumentInfo = DocumentInfo(
     exists = fileExists,
     sizeBytes = sizeBytes,
     coverImage = coverImage?.let { CoverImage(it) },
-    isFavorite = isFavorite
+    isFavorite = isFavorite,
+    metadata = storedMetadata()
 )
+
+/**
+ * The metadata columns as one value, or null when the row carries none - which
+ * is every row imported before this was stored, and every plain text file.
+ */
+private fun Document.storedMetadata(): BookMetadata? {
+    val metadata = BookMetadata(
+        title = metaTitle,
+        authors = metaAuthors.fromStoredList(),
+        publisher = metaPublisher,
+        published = metaPublished,
+        language = metaLanguage,
+        description = metaDescription,
+        subjects = metaSubjects.fromStoredList(),
+        identifier = metaIdentifier
+    )
+
+    return metadata.takeIf { !it.isEmpty }
+}
+
+/**
+ * A list of short strings in one column, newline-separated. See the note on the
+ * table in `Document.sq` for why they are not in tables of their own.
+ *
+ * An empty list stores as null rather than as an empty string, so "no authors"
+ * reads back the same whether the column was never written or written empty.
+ */
+private fun List<String>?.toStoredList(): String? =
+    this?.takeIf { it.isNotEmpty() }?.joinToString(separator = "\n")
+
+private fun String?.fromStoredList(): List<String> =
+    this?.split('\n')?.filter { it.isNotBlank() }.orEmpty()

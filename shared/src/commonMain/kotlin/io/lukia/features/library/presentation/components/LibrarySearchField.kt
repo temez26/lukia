@@ -5,12 +5,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -26,7 +21,6 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,25 +37,27 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.shared.presentation.components.ClearGlyph
+import io.lukia.shared.presentation.components.LukiaIconButton
 import io.lukia.shared.presentation.components.SearchGlyph
-import io.lukia.shared.presentation.theme.LocalWindowWidthClass
+import io.lukia.shared.presentation.components.focusRing
+import io.lukia.shared.presentation.theme.LocalLukiaMetrics
+import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.LukiaMotion
-import io.lukia.shared.presentation.theme.WindowWidthClass
-
-/** iOS's search field height, sized to be comfortably tappable with a thumb. */
-private val TouchFieldHeight: Dp = 38.dp
+import io.lukia.shared.presentation.theme.Space
+import io.lukia.shared.presentation.theme.isWideWindow
 
 /**
  * How tall the field is in this window. Read by the bar around it, which is
  * sized to hold it.
+ *
+ * A thumb target on a phone; on anything wider it sits in a toolbar row beside
+ * the actions button and takes the same height every other control there does.
  */
 @Composable
-internal fun searchFieldHeight(): Dp =
-    if (LocalWindowWidthClass.current == WindowWidthClass.Compact) {
-        TouchFieldHeight
-    } else {
-        HeaderControlHeight
-    }
+internal fun searchFieldHeight(): Dp {
+    val metrics = LocalLukiaMetrics.current
+    return if (isWideWindow) metrics.controlHeight else metrics.controlHeightSmall
+}
 
 /**
  * The library's search field.
@@ -85,7 +81,8 @@ internal fun LibrarySearchField(
     placeholder: String,
     modifier: Modifier = Modifier
 ) {
-    val compact = LocalWindowWidthClass.current == WindowWidthClass.Compact
+    val metrics = LocalLukiaMetrics.current
+    val compact = !isWideWindow
     val fieldHeight = searchFieldHeight()
     val textStyle = if (compact) {
         MaterialTheme.typography.bodyLarge
@@ -95,18 +92,7 @@ internal fun LibrarySearchField(
 
     val focusManager = LocalFocusManager.current
     val interactionSource = remember { MutableInteractionSource() }
-    val isFocused by interactionSource.collectIsFocusedAsState()
-    val shape = RoundedCornerShape(if (compact) 11.dp else 8.dp)
-
-    val borderColor by animateColorAsState(
-        targetValue = if (isFocused) {
-            MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
-        } else {
-            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0f)
-        },
-        animationSpec = LukiaMotion.quick(),
-        label = "searchFieldBorder"
-    )
+    val shape = MaterialTheme.shapes.small
 
     BasicTextField(
         value = query,
@@ -125,21 +111,25 @@ internal fun LibrarySearchField(
         modifier = modifier
             .height(fieldHeight)
             .clip(shape)
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f))
-            .border(width = 1.dp, color = borderColor, shape = shape)
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = LukiaAlpha.Fill))
+            // The same ring every other control in the app wears when the
+            // keyboard is on it - this field used to draw a half-strength one of
+            // its own, so tabbing from the filter into the search looked like
+            // losing focus rather than moving it.
+            .focusRing(interactionSource, shape)
             .pointerHoverIcon(PointerIcon.Text)
             .semantics { contentDescription = "Search your library" },
         decorationBox = { textField ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 9.dp)
+                modifier = Modifier.padding(horizontal = Space.md)
             ) {
                 SearchGlyph(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(metrics.iconSmall)
                 )
 
-                Spacer(modifier = Modifier.width(6.dp))
+                Spacer(modifier = Modifier.width(Space.sm))
 
                 Box(modifier = Modifier.weight(1f)) {
                     if (query.isEmpty()) {
@@ -161,6 +151,7 @@ internal fun LibrarySearchField(
                 ClearButton(
                     visible = query.isNotEmpty(),
                     size = fieldHeight,
+                    glyphSize = metrics.iconSmall,
                     // The cross is cut out of the circle in the colour of the
                     // field behind it, so it reads in both themes.
                     knockout = MaterialTheme.colorScheme.surfaceVariant,
@@ -178,6 +169,7 @@ internal fun LibrarySearchField(
 private fun ClearButton(
     visible: Boolean,
     size: Dp,
+    glyphSize: Dp,
     knockout: Color,
     onClick: () -> Unit
 ) {
@@ -188,19 +180,14 @@ private fun ClearButton(
         exit = fadeOut(LukiaMotion.quick()) +
             scaleOut(LukiaMotion.quick(), targetScale = 0.7f)
     ) {
-        Box(
-            modifier = Modifier
-                .size(size)
-                .pointerHoverIcon(PointerIcon.Hand)
-                .clickable(onClickLabel = "Clear search", onClick = onClick)
-                .semantics { contentDescription = "Clear search" },
-            contentAlignment = Alignment.Center
-        ) {
-            ClearGlyph(
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                knockout = knockout,
-                modifier = Modifier.size(16.dp)
-            )
+        LukiaIconButton(
+            label = "Clear search",
+            onClick = onClick,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            size = size,
+            glyphSize = glyphSize
+        ) { tint, glyph ->
+            ClearGlyph(tint = tint, knockout = knockout, modifier = glyph)
         }
     }
 }

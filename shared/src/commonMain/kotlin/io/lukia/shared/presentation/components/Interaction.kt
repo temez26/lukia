@@ -1,15 +1,22 @@
 package io.lukia.shared.presentation.components
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.lukia.shared.presentation.theme.FocusRingWidth
+import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.LukiaMotion
 
 /**
@@ -62,14 +69,88 @@ fun rememberHoverFraction(interactionSource: MutableInteractionSource): Float {
     return hover
 }
 
-/** Lifts and slightly enlarges an element by [fraction], for use with [rememberHoverFraction]. */
+/**
+ * Lifts and slightly enlarges an element by [fraction], for use with
+ * [rememberHoverFraction].
+ *
+ * Anything that also wants to shrink under a press should ask for [pressedScale]
+ * here rather than chaining [scaleOnPress] as well: two `graphicsLayer`s stacked
+ * on one element is two compositing layers where one will do, and the outer of
+ * the two ends up scaling the inner one's shadow.
+ */
+@Composable
 fun Modifier.hoverLift(
+    interactionSource: MutableInteractionSource,
     fraction: Float,
     lift: Dp = 4.dp,
-    hoveredScale: Float = 1.03f
-): Modifier = graphicsLayer {
-    val scale = 1f + (hoveredScale - 1f) * fraction
-    scaleX = scale
-    scaleY = scale
-    translationY = -lift.toPx() * fraction
+    hoveredScale: Float = 1.03f,
+    pressedScale: Float = 1f
+): Modifier {
+    val press by animateFloatAsState(
+        targetValue = if (interactionSource.collectIsPressedAsState().value) pressedScale else 1f,
+        animationSpec = LukiaMotion.gentle(),
+        label = "cardPress"
+    )
+
+    return graphicsLayer {
+        val scale = (1f + (hoveredScale - 1f) * fraction) * press
+        scaleX = scale
+        scaleY = scale
+        translationY = -lift.toPx() * fraction
+    }
+}
+
+/**
+ * Marks the control the keyboard is on.
+ *
+ * The app's controls draw no ripple and no pressed state of their own, which left
+ * anyone tabbing through a screen with nothing at all to tell them where they
+ * were. Focus is the one interaction that has to be visible without a pointer, so
+ * every control the keyboard can reach wears this same ring.
+ */
+@Composable
+fun Modifier.focusRing(
+    interactionSource: MutableInteractionSource,
+    shape: Shape
+): Modifier {
+    val focused by interactionSource.collectIsFocusedAsState()
+
+    return if (focused) {
+        border(FocusRingWidth, MaterialTheme.colorScheme.primary, shape)
+    } else {
+        this
+    }
+}
+
+/**
+ * The wash a row or a control takes under the pointer.
+ *
+ * A hover state on every clickable thing is what separates a desktop application
+ * from a touch layout being shown on a monitor: without it a menu is a list of
+ * words with no way to tell which one the pointer is on. Drawn in the content
+ * colour so it works on any surface the app has, light or dark.
+ */
+@Composable
+fun Modifier.hoverHighlight(
+    interactionSource: MutableInteractionSource,
+    shape: Shape
+): Modifier {
+    val hovered by interactionSource.collectIsHoveredAsState()
+    val pressed by interactionSource.collectIsPressedAsState()
+
+    val alpha by animateFloatAsState(
+        targetValue = when {
+            pressed -> LukiaAlpha.Pressed
+            hovered -> LukiaAlpha.Hover
+            else -> 0f
+        },
+        animationSpec = LukiaMotion.quick(),
+        label = "hoverHighlight"
+    )
+
+    return if (alpha == 0f) {
+        this
+    } else {
+        background(MaterialTheme.colorScheme.onSurface.copy(alpha = alpha), shape)
+    }
 }

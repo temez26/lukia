@@ -1,28 +1,25 @@
 package io.lukia.features.bookdetail.presentation.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -32,42 +29,62 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import io.lukia.features.bookdetail.presentation.BookDetailViewModel
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.presentation.displayTitle
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
 import io.lukia.core.presentation.displayType
 import io.lukia.core.presentation.formattedSize
+import io.lukia.features.bookdetail.application.BookDetails
+import io.lukia.features.bookdetail.presentation.BookDetailViewModel
+import io.lukia.features.bookdetail.presentation.authorLine
+import io.lukia.features.bookdetail.presentation.bookTitle
+import io.lukia.features.bookdetail.presentation.components.ReadableCover
+import io.lukia.features.bookdetail.presentation.languageName
+import io.lukia.features.bookdetail.presentation.lengthLabel
+import io.lukia.features.bookdetail.presentation.progressLabel
+import io.lukia.features.bookdetail.presentation.publishedYear
+import io.lukia.features.bookdetail.presentation.readActionLabel
 import io.lukia.shared.presentation.components.ActionMenuScrim
 import io.lukia.shared.presentation.components.BackChevron
+import io.lukia.shared.presentation.components.BadgeTone
 import io.lukia.shared.presentation.components.BookActionsMenu
-import io.lukia.shared.presentation.components.BookCover
+import io.lukia.shared.presentation.components.ButtonSize
+import io.lukia.shared.presentation.components.ButtonVariant
+import io.lukia.shared.presentation.components.buttonInset
 import io.lukia.shared.presentation.components.EllipsisGlyph
 import io.lukia.shared.presentation.components.FavoriteBadge
-import io.lukia.shared.presentation.components.GlassChromeButton
+import io.lukia.shared.presentation.components.GroupCard
+import io.lukia.shared.presentation.components.IconButtonVariant
+import io.lukia.shared.presentation.components.LukiaButton
+import io.lukia.shared.presentation.components.LukiaDivider
+import io.lukia.shared.presentation.components.LukiaIconButton
+import io.lukia.shared.presentation.components.SectionLabel
+import io.lukia.shared.presentation.components.StatusBadge
 import io.lukia.shared.presentation.components.UiStateContent
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import io.lukia.shared.presentation.theme.Space
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 /** Vertical room reserved so content starts clear of the floating back control. */
-private val TopChromeClearance: Dp = 84.dp
+private val TopChromeClearance: Dp = 68.dp
 
 /** Room past the last row, so the details do not end hard against the edge. */
-private val DetailBottomClearance: Dp = 48.dp
+private val DetailBottomClearance: Dp = 32.dp
+
+/** How much of a blurb is shown before it is folded away behind "More". */
+private const val CollapsedDescriptionLines = 5
+
+/**
+ * Inset from the card's edge to a row's text, and what the separators between
+ * rows are inset by so they align to the text rather than to the container.
+ */
+private val InfoRowInset: Dp = Space.lg
 
 @Composable
 fun BookDetailScreen(
@@ -100,7 +117,7 @@ fun BookDetailScreen(
  */
 @Composable
 fun BookDetailContent(
-    uiState: UiState<DocumentInfo>,
+    uiState: UiState<BookDetails>,
     onBack: () -> Unit,
     onRead: () -> Unit,
     onRetry: () -> Unit,
@@ -110,7 +127,7 @@ fun BookDetailContent(
     val dimens = LocalLukiaDimens.current
     var menuExpanded by remember { mutableStateOf(false) }
     // The actions chrome is only meaningful once there is a book behind it.
-    val currentDocument = uiState.dataOrNull
+    val currentDocument = uiState.dataOrNull?.document
 
     Box(
         modifier = Modifier
@@ -137,9 +154,9 @@ fun BookDetailContent(
                 actionLabel = "Try again",
                 onAction = onRetry,
                 modifier = Modifier.fillMaxSize()
-            ) { document ->
+            ) { details ->
                 BookDetailBody(
-                    document = document,
+                    details = details,
                     onRead = onRead,
                     onLongPress = { menuExpanded = true },
                     modifier = Modifier.fillMaxSize()
@@ -156,17 +173,15 @@ fun BookDetailContent(
 
             // Floats above the scrolling content: this is the piece that most
             // wants the glass treatment, since content passes underneath it.
-            GlassChromeButton(
+            LukiaIconButton(
                 label = "Go back",
                 onClick = onBack,
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .padding(start = dimens.screenPadding, top = 16.dp)
-            ) {
-                BackChevron(
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
-                )
+                    .padding(start = dimens.screenPadding, top = Space.lg),
+                variant = IconButtonVariant.Glass
+            ) { tint, glyph ->
+                BackChevron(tint = tint, modifier = glyph)
             }
 
             // Mirrors the back control across the top of the screen. Always
@@ -176,16 +191,14 @@ fun BookDetailContent(
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(end = dimens.screenPadding, top = 16.dp)
+                        .padding(end = dimens.screenPadding, top = Space.lg)
                 ) {
-                    GlassChromeButton(
+                    LukiaIconButton(
                         label = "Book actions",
-                        onClick = { menuExpanded = true }
-                    ) {
-                        EllipsisGlyph(
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        onClick = { menuExpanded = true },
+                        variant = IconButtonVariant.Glass
+                    ) { tint, glyph ->
+                        EllipsisGlyph(tint = tint, modifier = glyph)
                     }
 
                     BookActionsMenu(
@@ -202,18 +215,23 @@ fun BookDetailContent(
 }
 
 /**
- * Everything there is to say about one book: its cover, what it is, the way into
- * it, and its details underneath.
+ * Everything there is to say about one book: its cover - which is also the way
+ * into it - what it is called and who wrote it, what the publisher said about
+ * it, and its particulars underneath.
  *
  * Shared, because this is shown two ways - as a screen of its own on a phone, and
  * as a panel over the library on anything wider - and the two must not drift into
  * saying different things about the same book. Only the chrome around it and the
  * room it leaves for that chrome differ, which is what [topClearance] and
  * [bottomClearance] are for.
+ *
+ * Sections earn their place: a book whose file carries no blurb has no About, and
+ * one that named no publisher has no publisher row. A heading over an empty space
+ * tells the reader only that the app expected something it did not get.
  */
 @Composable
 internal fun BookDetailBody(
-    document: DocumentInfo,
+    details: BookDetails,
     onRead: () -> Unit,
     onLongPress: () -> Unit,
     modifier: Modifier = Modifier,
@@ -229,12 +247,13 @@ internal fun BookDetailBody(
     infoCardColor: Color = MaterialTheme.colorScheme.surface
 ) {
     val dimens = LocalLukiaDimens.current
-    val title = document.displayTitle()
-    val haptics = LocalHapticFeedback.current
+    val document = details.document
+    val metadata = document.metadata
+    val title = document.bookTitle()
 
     // A screen can give the cover its full size, because the screen is the book.
-    // A panel cannot: the cover would push the Read button - the thing the panel
-    // is opened to press - below the fold in any window that is not tall.
+    // A panel cannot: the cover would push everything worth reading below the
+    // fold in any window that is not tall.
     val resolvedCoverWidth =
         if (coverWidth == Dp.Unspecified) dimens.detailCoverWidth else coverWidth
 
@@ -252,79 +271,87 @@ internal fun BookDetailBody(
                 .padding(horizontal = dimens.screenPadding)
         ) {
             Box {
-                BookCover(
+                ReadableCover(
                     coverImage = document.coverImage,
                     title = title,
-                    // detectTapGestures rather than combinedClickable: the cover
-                    // is not a button here, so it should carry the long press
-                    // without gaining a ripple and a no-op tap.
-                    modifier = Modifier
-                        .width(resolvedCoverWidth)
-                        .pointerInput(Unit) {
-                            detectTapGestures(
-                                onLongPress = {
-                                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    onLongPress()
-                                }
-                            )
-                        },
-                    cornerRadius = 18.dp,
-                    elevation = 20.dp,
-                    monogramFontSize = 64.sp
+                    progress = details.percentRead?.let { it / 100f },
+                    enabled = document.exists,
+                    onRead = onRead,
+                    onLongPress = onLongPress,
+                    width = resolvedCoverWidth
                 )
 
                 FavoriteBadge(
                     visible = document.isFavorite,
-                    size = 30.dp,
+                    size = 28.dp,
                     modifier = Modifier
                         .align(Alignment.TopStart)
-                        .padding(10.dp)
+                        .padding(Space.md)
                 )
             }
 
             Text(
                 text = title,
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(top = dimens.sectionSpacing)
             )
 
-            Text(
-                text = "${document.displayType()} · ${document.formattedSize()}",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 6.dp)
-            )
-
-            if (!document.exists) {
-                UnavailableNotice(modifier = Modifier.padding(top = 16.dp))
-            }
-
-            // The point of the screen, so it leads: everything below it is
-            // reference. Disabled rather than hidden for a missing file, which
-            // keeps the layout from shifting between one book and the next.
-            Button(
-                onClick = onRead,
-                enabled = document.exists,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = dimens.sectionSpacing)
-                    .height(50.dp)
-                    .pointerHoverIcon(PointerIcon.Hand)
-            ) {
+            // The accent colour, as a book's byline is set everywhere it is set:
+            // it is the second thing anyone reads and the one that decides
+            // whether this is the book they meant.
+            metadata?.authorLine()?.let { authors ->
                 Text(
-                    text = "Read",
-                    style = MaterialTheme.typography.titleMedium
+                    text = authors,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = Space.xs)
                 )
             }
 
-            DetailInfoCard(
-                document = document,
+            // What pressing the cover would do, and how far in the reader
+            // already is - the caption the cover cannot carry itself.
+            Text(
+                text = if (document.exists) {
+                    "${details.readActionLabel()} · ${details.progressLabel()}"
+                } else {
+                    details.progressLabel()
+                },
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(top = Space.sm)
+            )
+
+            if (!document.exists) {
+                StatusBadge(
+                    text = "This file is no longer available",
+                    modifier = Modifier.padding(top = Space.lg)
+                )
+            }
+
+            metadata?.description?.let { description ->
+                DescriptionSection(
+                    description = description,
+                    modifier = Modifier.padding(top = dimens.sectionSpacing)
+                )
+            }
+
+            InformationCard(
+                details = details,
                 color = infoCardColor,
                 modifier = Modifier.padding(top = dimens.sectionSpacing)
             )
+
+            metadata?.subjects?.takeIf { it.isNotEmpty() }?.let { subjects ->
+                SubjectSection(
+                    subjects = subjects,
+                    modifier = Modifier.padding(top = dimens.sectionSpacing)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(bottomClearance))
@@ -332,31 +359,106 @@ internal fun BookDetailBody(
 }
 
 /**
- * Grouped info list in the style of an iOS settings card: a single rounded
- * surface with inset hairline separators between rows.
+ * The publisher's blurb, folded to a few lines with a way to see the rest.
+ *
+ * The fold is offered only when there is something folded away. Whether the text
+ * overflows is something only the layout knows, so it is asked rather than
+ * guessed at from a character count - which would put a "More" under a blurb
+ * that was already showing in full whenever the window was wide.
  */
 @Composable
-private fun DetailInfoCard(
-    document: DocumentInfo,
+private fun DescriptionSection(
+    description: String,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember(description) { mutableStateOf(false) }
+    var overflows by remember(description) { mutableStateOf(false) }
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        SectionLabel(text = "About")
+
+        Text(
+            text = description,
+            style = MaterialTheme.typography.bodyMedium,
+            // The blurb is the one paragraph on this screen anyone reads at
+            // length, so it gets full-strength body colour rather than the muted
+            // one the particulars beneath it wear.
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = if (expanded) Int.MAX_VALUE else CollapsedDescriptionLines,
+            overflow = TextOverflow.Ellipsis,
+            // Only meaningful while folded: expanded text never overflows, and
+            // recording that would take the control away mid-read.
+            onTextLayout = { layout ->
+                if (!expanded) overflows = layout.hasVisualOverflow
+            },
+            modifier = Modifier.padding(top = Space.sm)
+        )
+
+        if (overflows || expanded) {
+            LukiaButton(
+                label = if (expanded) "Less" else "More",
+                onClick = { expanded = !expanded },
+                variant = ButtonVariant.Ghost,
+                size = ButtonSize.Compact,
+                // Pulled back by its own inset so the label starts on the same
+                // line as the paragraph it belongs to; a ghost button has no
+                // container to make that padding look deliberate.
+                modifier = Modifier.offset(x = -buttonInset(ButtonSize.Compact))
+            )
+        }
+    }
+}
+
+/**
+ * The book's particulars, in the style of an iOS grouped list.
+ *
+ * Built from whatever there is rather than from a fixed set of rows, so a book
+ * that named a publisher gets a publisher row and one that did not is not given
+ * an empty one. Where the file lives is kept out of the group and set below it:
+ * it is the only value long enough to need two lines, and the only one that is
+ * about the file rather than about the book.
+ */
+@Composable
+private fun InformationCard(
+    details: BookDetails,
     color: Color,
     modifier: Modifier = Modifier
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        color = color
-    ) {
-        Column {
-            InfoRow(label = "Format", value = document.displayType())
+    val document = details.document
+    val metadata = document.metadata
 
-            RowSeparator()
+    val rows = buildList {
+        metadata?.publisher?.let { add("Publisher" to it) }
+        metadata?.publishedYear()?.let { add("Published" to it) }
+        metadata?.languageName()?.let { add("Language" to it) }
+        details.lengthLabel()?.let { add("Length" to it) }
+        add("Format" to document.displayType())
+        add("Size" to document.formattedSize())
+        metadata?.identifier?.let { add("ISBN" to it) }
+    }
 
-            InfoRow(label = "Size", value = document.formattedSize())
+    Column(modifier = modifier.fillMaxWidth()) {
+        SectionLabel(text = "Information")
 
-            RowSeparator()
+        GroupCard(
+            color = color,
+            modifier = Modifier.padding(top = Space.sm)
+        ) {
+            Column {
+                rows.forEachIndexed { index, (label, value) ->
+                    if (index > 0) LukiaDivider(inset = InfoRowInset)
 
-            StackedInfoRow(label = "Location", value = document.document.location)
+                    InfoRow(label = label, value = value)
+                }
+            }
         }
+
+        Text(
+            text = document.document.location,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = Space.xs, top = Space.sm)
+        )
     }
 }
 
@@ -365,74 +467,51 @@ private fun InfoRow(label: String, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 13.dp),
+            .padding(horizontal = InfoRowInset, vertical = Space.md),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
         Text(
             text = value,
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
+            maxLines = 2,
+            textAlign = TextAlign.End,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(start = 16.dp)
+            modifier = Modifier.padding(start = InfoRowInset)
         )
     }
 }
 
 /**
- * Used for values too long to sit beside their label - a full file path or
- * content URI would otherwise be ellipsised down to nothing.
+ * What the book filed itself under, as tags.
+ *
+ * Wrapped rather than scrolled sideways: a book can carry a dozen BISAC headings
+ * and a row that ran off the edge would hide most of them behind a gesture
+ * nothing on screen suggests.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun StackedInfoRow(label: String, value: String) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 13.dp)
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 4.dp)
-        )
+private fun SubjectSection(
+    subjects: List<String>,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        SectionLabel(text = "Subjects")
+
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(Space.sm),
+            verticalArrangement = Arrangement.spacedBy(Space.sm),
+            modifier = Modifier.padding(top = Space.sm)
+        ) {
+            subjects.forEach { subject ->
+                StatusBadge(text = subject, tone = BadgeTone.Neutral)
+            }
+        }
     }
 }
-
-@Composable
-private fun RowSeparator() {
-    HorizontalDivider(
-        thickness = Dp.Hairline,
-        color = MaterialTheme.colorScheme.outlineVariant,
-        // Inset from the left, matching how iOS aligns separators to the text.
-        modifier = Modifier.padding(start = 16.dp)
-    )
-}
-
-@Composable
-private fun UnavailableNotice(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .clip(MaterialTheme.shapes.small)
-            .background(MaterialTheme.colorScheme.error.copy(alpha = 0.12f))
-            .padding(horizontal = 12.dp, vertical = 8.dp)
-    ) {
-        Text(
-            text = "This file is no longer available",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.error
-        )
-    }
-}
-

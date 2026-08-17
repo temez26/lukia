@@ -2,6 +2,7 @@ package io.lukia.features.reader.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,14 +12,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,12 +43,18 @@ import io.lukia.features.reader.domain.ReadingWidth
 import io.lukia.shared.presentation.components.DismissOnBack
 import io.lukia.shared.presentation.components.GlassSurface
 import io.lukia.shared.presentation.components.GlassTone
+import io.lukia.shared.presentation.components.LukiaDivider
+import io.lukia.shared.presentation.components.SectionLabel
 import io.lukia.shared.presentation.components.SegmentedControl
+import io.lukia.shared.presentation.components.focusRing
+import io.lukia.shared.presentation.components.hoverHighlight
 import io.lukia.shared.presentation.components.popoverTransition
 import io.lukia.shared.presentation.components.rememberPopoverProgress
-import io.lukia.shared.presentation.theme.LocalWindowWidthClass
-import io.lukia.shared.presentation.theme.MinTouchTarget
-import io.lukia.shared.presentation.theme.WindowWidthClass
+import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import io.lukia.shared.presentation.theme.LocalLukiaMetrics
+import io.lukia.shared.presentation.theme.LukiaAlpha
+import io.lukia.shared.presentation.theme.Space
+import io.lukia.shared.presentation.theme.isWideWindow
 import kotlin.math.roundToInt
 
 /** Grows out of the control it hangs from, matching the book actions menu. */
@@ -63,7 +69,7 @@ private val CompactPanelWidth: Dp = 284.dp
  * carrying that stack onto a desktop is what makes a panel read as a phone
  * layout that happened to be opened on a monitor.
  */
-private val WidePanelWidth: Dp = 412.dp
+private val WidePanelWidth: Dp = 380.dp
 
 /**
  * What a control gets in the wide layout. Fixed rather than a weight, so every
@@ -71,12 +77,11 @@ private val WidePanelWidth: Dp = 412.dp
  * presets and two typeface options line up instead of each dividing whatever its
  * own label left over.
  */
-private val WideControlWidth: Dp = 244.dp
+private val WideControlWidth: Dp = 224.dp
 
-private val PanelPadding: Dp = 16.dp
-
-/** The text stepper shares the segmented control's track height. */
-private val SegmentHeight: Dp = MinTouchTarget
+/** How far the panel may grow before it scrolls inside itself. */
+private val CompactPanelMaxHeight: Dp = 440.dp
+private val WidePanelMaxHeight: Dp = 520.dp
 
 /**
  * The reader's presentation settings.
@@ -106,10 +111,11 @@ internal fun ReaderSettingsPanel(
 
     DismissOnBack(enabled = expanded, onDismiss = onDismissRequest)
 
-    val wide = LocalWindowWidthClass.current != WindowWidthClass.Compact
+    val wide = isWideWindow
+    val inset = LocalLukiaDimens.current.panelPadding
 
     GlassSurface(
-        shape = RoundedCornerShape(18.dp),
+        shape = MaterialTheme.shapes.large,
         tone = GlassTone.Panel,
         modifier = modifier.popoverTransition(progress, PanelTransformOrigin)
     ) {
@@ -119,13 +125,13 @@ internal fun ReaderSettingsPanel(
                 // A short window - a phone in landscape - would otherwise
                 // leave the last setting past the bottom edge with no way to
                 // reach it.
-                .heightIn(max = 440.dp)
+                .heightIn(max = if (wide) WidePanelMaxHeight else CompactPanelMaxHeight)
                 .verticalScroll(rememberScrollState())
-                .padding(vertical = 10.dp)
+                .padding(vertical = Space.md)
         ) {
-            SectionHeading(label = "Page", wide = wide)
+            SectionHeading(label = "Page", wide = wide, inset = inset)
 
-            SettingGroup(label = "Theme", wide = wide) {
+            SettingGroup(label = "Theme", wide = wide, inset = inset) {
                 SegmentedControl(
                     options = ReaderTheme.entries,
                     selected = settings.theme,
@@ -137,7 +143,7 @@ internal fun ReaderSettingsPanel(
             // Shown as percentages rather than names: with five steps that
             // run past the width of the window, "125%" says what "Larger"
             // cannot.
-            SettingGroup(label = "Page width", wide = wide) {
+            SettingGroup(label = "Page width", wide = wide, inset = inset) {
                 SegmentedControl(
                     options = ReadingWidth.entries,
                     // Nothing is selected when a pinch has left the page
@@ -148,9 +154,18 @@ internal fun ReaderSettingsPanel(
                 )
             }
 
-            PanelDivider()
+            LukiaDivider(
+                inset = inset,
+                endInset = inset,
+                modifier = Modifier.padding(vertical = Space.md)
+            )
 
-            SectionHeading(label = "Text", wide = wide, enabled = typographyEnabled)
+            SectionHeading(
+                label = "Text",
+                wide = wide,
+                inset = inset,
+                enabled = typographyEnabled
+            )
 
             // Placed before the controls it explains, so it is read first
             // whether by eye or by screen reader.
@@ -161,15 +176,20 @@ internal fun ReaderSettingsPanel(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(
-                        start = PanelPadding,
-                        end = PanelPadding,
-                        top = 2.dp,
-                        bottom = 8.dp
+                        start = inset,
+                        end = inset,
+                        top = Space.xxs,
+                        bottom = Space.md
                     )
                 )
             }
 
-            SettingGroup(label = "Text size", wide = wide, enabled = typographyEnabled) {
+            SettingGroup(
+                label = "Text size",
+                wide = wide,
+                inset = inset,
+                enabled = typographyEnabled
+            ) {
                 TextSizeStepper(
                     settings = settings,
                     enabled = typographyEnabled,
@@ -177,7 +197,12 @@ internal fun ReaderSettingsPanel(
                 )
             }
 
-            SettingGroup(label = "Line spacing", wide = wide, enabled = typographyEnabled) {
+            SettingGroup(
+                label = "Line spacing",
+                wide = wide,
+                inset = inset,
+                enabled = typographyEnabled
+            ) {
                 SegmentedControl(
                     options = LineSpacing.entries,
                     selected = settings.lineSpacing,
@@ -187,7 +212,12 @@ internal fun ReaderSettingsPanel(
                 )
             }
 
-            SettingGroup(label = "Typeface", wide = wide, enabled = typographyEnabled) {
+            SettingGroup(
+                label = "Typeface",
+                wide = wide,
+                inset = inset,
+                enabled = typographyEnabled
+            ) {
                 SegmentedControl(
                     options = ReaderTypeface.entries,
                     selected = settings.typeface,
@@ -198,9 +228,13 @@ internal fun ReaderSettingsPanel(
             }
 
             if (wide) {
-                PanelDivider()
-                SectionHeading(label = "Keyboard", wide = true)
-                ShortcutList(typographyEnabled)
+                LukiaDivider(
+                    inset = inset,
+                    endInset = inset,
+                    modifier = Modifier.padding(vertical = Space.md)
+                )
+                SectionHeading(label = "Keyboard", wide = true, inset = inset)
+                ShortcutList(reflowable = typographyEnabled, inset = inset)
             }
         }
     }
@@ -216,7 +250,7 @@ internal fun ReaderSettingsPanel(
  * keyboards.
  */
 @Composable
-private fun ShortcutList(reflowable: Boolean) {
+private fun ShortcutList(reflowable: Boolean, inset: Dp) {
     val shortcuts = listOf(
         "Turn page" to "Space  PgDn  PgUp",
         "Scroll" to "↑  ↓",
@@ -234,7 +268,7 @@ private fun ShortcutList(reflowable: Boolean) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = PanelPadding, vertical = 3.dp)
+                .padding(horizontal = inset, vertical = Space.xxs)
         ) {
             Text(
                 text = action,
@@ -267,6 +301,7 @@ private fun ShortcutList(reflowable: Boolean) {
 private fun SettingGroup(
     label: String,
     wide: Boolean,
+    inset: Dp,
     enabled: Boolean = true,
     control: @Composable () -> Unit
 ) {
@@ -275,13 +310,13 @@ private fun SettingGroup(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = PanelPadding, vertical = 4.dp)
+                .padding(horizontal = inset, vertical = Space.xs)
         ) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface.copy(
-                    alpha = if (enabled) 1f else DisabledAlpha
+                    alpha = if (enabled) 1f else LukiaAlpha.Disabled
                 ),
                 maxLines = 1,
                 modifier = Modifier.weight(1f)
@@ -295,15 +330,12 @@ private fun SettingGroup(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = PanelPadding, vertical = 6.dp)
+                .padding(horizontal = inset, vertical = Space.sm)
         ) {
-            Text(
+            SectionLabel(
                 text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                    alpha = if (enabled) 1f else DisabledAlpha
-                ),
-                modifier = Modifier.padding(bottom = 5.dp)
+                enabled = enabled,
+                modifier = Modifier.padding(bottom = Space.sm)
             )
 
             control()
@@ -324,22 +356,19 @@ private fun SettingGroup(
 private fun SectionHeading(
     label: String,
     wide: Boolean,
+    inset: Dp,
     enabled: Boolean = true
 ) {
     if (!wide) return
 
-    Text(
+    SectionLabel(
         text = label,
-        style = MaterialTheme.typography.labelSmall,
-        fontWeight = FontWeight.SemiBold,
-        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
-            alpha = if (enabled) 1f else DisabledAlpha
-        ),
+        enabled = enabled,
         modifier = Modifier.padding(
-            start = PanelPadding,
-            end = PanelPadding,
-            top = 6.dp,
-            bottom = 2.dp
+            start = inset,
+            end = inset,
+            top = Space.sm,
+            bottom = Space.xxs
         )
     )
 }
@@ -358,19 +387,21 @@ private fun TextSizeStepper(
     enabled: Boolean,
     onSettingsChange: (ReaderSettings) -> Unit
 ) {
+    val metrics = LocalLukiaMetrics.current
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .clip(CircleShape)
+            .clip(MaterialTheme.shapes.small)
             .background(
                 MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (enabled) 1f else 0.5f)
             )
-            .height(SegmentHeight)
-            .padding(3.dp)
+            .height(metrics.controlHeight)
+            .padding(2.dp)
     ) {
         StepperButton(
-            symbolSize = 13.sp,
+            symbolSize = 12.sp,
             label = "Decrease text size",
             enabled = enabled && settings.canReduceText,
             onClick = { onSettingsChange(settings.withSmallerText()) }
@@ -382,7 +413,7 @@ private fun TextSizeStepper(
             textAlign = TextAlign.Center,
             maxLines = 1,
             color = MaterialTheme.colorScheme.onSurface.copy(
-                alpha = if (enabled) 1f else DisabledAlpha
+                alpha = if (enabled) 1f else LukiaAlpha.Disabled
             ),
             modifier = Modifier
                 .weight(1f)
@@ -390,7 +421,7 @@ private fun TextSizeStepper(
         )
 
         StepperButton(
-            symbolSize = 19.sp,
+            symbolSize = 17.sp,
             label = "Increase text size",
             enabled = enabled && settings.canEnlargeText,
             onClick = { onSettingsChange(settings.withLargerText()) }
@@ -401,6 +432,11 @@ private fun TextSizeStepper(
 /**
  * The two ends of the size range, drawn as a small "A" and a large one. The
  * letter is decoration, so [label] is what a screen reader announces.
+ *
+ * Not a [io.lukia.shared.presentation.components.LukiaIconButton]: it carries a
+ * letter rather than a glyph, and it fills its end of the stepper track rather
+ * than being a square target of its own. It wears the same hover and focus
+ * treatment as one.
  */
 @Composable
 private fun StepperButton(
@@ -409,15 +445,26 @@ private fun StepperButton(
     enabled: Boolean,
     onClick: () -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val shape = MaterialTheme.shapes.extraSmall
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxHeight()
-            .width(56.dp)
-            .clip(CircleShape)
+            .width(52.dp)
+            .clip(shape)
             .background(MaterialTheme.colorScheme.surface)
+            .hoverHighlight(interactionSource, shape)
+            .focusRing(interactionSource, shape)
             .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default)
-            .clickable(enabled = enabled, onClickLabel = label, onClick = onClick)
+            .clickable(
+                enabled = enabled,
+                interactionSource = interactionSource,
+                indication = null,
+                onClickLabel = label,
+                onClick = onClick
+            )
             .semantics { contentDescription = label }
     ) {
         Text(
@@ -425,34 +472,33 @@ private fun StepperButton(
             fontSize = symbolSize,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface.copy(
-                alpha = if (enabled) 1f else DisabledAlpha
+                alpha = if (enabled) 1f else LukiaAlpha.Disabled
             )
         )
     }
 }
 
-/** The "Aa" that opens the panel, sized to read as type rather than as an icon. */
+/**
+ * The "Aa" that opens the panel, sized to read as type rather than as an icon.
+ *
+ * Two letters are wider than the square its button hands every other glyph, so it
+ * is measured unbounded and centred in that square rather than laid out inside
+ * it - constrained to the square, the second letter is simply clipped away.
+ */
 @Composable
 internal fun TextSettingsGlyph(
     tint: Color,
     modifier: Modifier = Modifier
 ) {
-    Text(
-        text = "Aa",
-        style = MaterialTheme.typography.titleMedium,
-        fontFamily = FontFamily.Serif,
-        color = tint,
-        modifier = modifier
-    )
+    Box(contentAlignment = Alignment.Center, modifier = modifier) {
+        Text(
+            text = "Aa",
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            fontFamily = FontFamily.Serif,
+            color = tint,
+            maxLines = 1,
+            modifier = Modifier.wrapContentSize(unbounded = true)
+        )
+    }
 }
-
-@Composable
-private fun PanelDivider() {
-    HorizontalDivider(
-        thickness = Dp.Hairline,
-        color = MaterialTheme.colorScheme.outlineVariant,
-        modifier = Modifier.padding(horizontal = 16.dp)
-    )
-}
-
-private const val DisabledAlpha = 0.38f

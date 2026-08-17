@@ -2,6 +2,7 @@ package io.lukia.shared.presentation.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
@@ -12,11 +13,11 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,15 +26,15 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.lukia.shared.presentation.theme.LocalLukiaMetrics
+import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.LukiaMotion
-import io.lukia.shared.presentation.theme.MinTouchTarget
 
 /** Inset of the selection pill from the track around it. */
-private val TrackPadding: Dp = 3.dp
-
-private const val DisabledAlpha = 0.38f
+private val TrackPadding: Dp = 2.dp
 
 /**
  * One choice from a short list, in the style of an iOS segmented control.
@@ -59,11 +60,19 @@ fun <T> SegmentedControl(
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    height: Dp = MinTouchTarget
+    height: Dp = Dp.Unspecified
 ) {
     if (options.isEmpty()) return
 
+    val metrics = LocalLukiaMetrics.current
+    val trackHeight = if (height == Dp.Unspecified) metrics.controlHeight else height
     val selectedIndex = options.indexOf(selected)
+
+    // A rounded rect rather than a capsule: that is the shape iOS actually gives
+    // this control, and a full capsule on a desktop window reads as a pill of
+    // chrome floating in the layout rather than as a control in it.
+    val trackShape = MaterialTheme.shapes.small
+    val pillShape = MaterialTheme.shapes.extraSmall
 
     // Held at the last real selection while the pill fades out, so losing the
     // selection does not also send the pill sliding back to the first segment.
@@ -76,11 +85,11 @@ fun <T> SegmentedControl(
     BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
-            .clip(CircleShape)
+            .clip(trackShape)
             .background(
                 MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (enabled) 1f else 0.5f)
             )
-            .height(height)
+            .height(trackHeight)
             .padding(TrackPadding)
     ) {
         val segmentWidth = maxWidth / options.size
@@ -91,7 +100,7 @@ fun <T> SegmentedControl(
                     .offset(x = segmentWidth * animatedIndex)
                     .width(segmentWidth)
                     .fillMaxHeight()
-                    .clip(CircleShape)
+                    .clip(pillShape)
                     .background(MaterialTheme.colorScheme.surface)
             )
         }
@@ -99,16 +108,21 @@ fun <T> SegmentedControl(
         Row(modifier = Modifier.fillMaxWidth()) {
             options.forEach { option ->
                 val isSelected = option == selected
+                val interactionSource = remember { MutableInteractionSource() }
 
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .width(segmentWidth)
                         .fillMaxHeight()
-                        .clip(CircleShape)
+                        .clip(pillShape)
+                        .hoverHighlight(interactionSource, pillShape)
+                        .focusRing(interactionSource, pillShape)
                         .selectable(
                             selected = isSelected,
                             enabled = enabled,
+                            interactionSource = interactionSource,
+                            indication = null,
                             role = Role.RadioButton,
                             onClick = { onSelect(option) }
                         )
@@ -119,9 +133,10 @@ fun <T> SegmentedControl(
                         style = MaterialTheme.typography.labelSmall,
                         textAlign = TextAlign.Center,
                         maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                         color = MaterialTheme.colorScheme.onSurface.copy(
-                            alpha = if (enabled) 1f else DisabledAlpha
+                            alpha = if (enabled) 1f else LukiaAlpha.Disabled
                         )
                     )
                 }

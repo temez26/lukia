@@ -11,6 +11,8 @@ class FakeReadingProgressRepository(
 
     override suspend fun progressFor(location: String): ReadingProgress? = positions[location]
 
+    override suspend fun allProgress(): Map<String, ReadingProgress> = positions.toMap()
+
     override suspend fun save(location: String, progress: ReadingProgress) {
         positions[location] = progress
     }

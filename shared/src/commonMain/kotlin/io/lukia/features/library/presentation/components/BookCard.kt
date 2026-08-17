@@ -6,17 +6,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,8 +24,10 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
+import androidx.compose.ui.zIndex
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.presentation.displayTitle
 import io.lukia.core.presentation.displayType
@@ -39,12 +36,26 @@ import io.lukia.shared.presentation.components.BookActionsMenu
 import io.lukia.shared.presentation.components.BookCover
 import io.lukia.shared.presentation.components.EllipsisGlyph
 import io.lukia.shared.presentation.components.FavoriteBadge
+import io.lukia.shared.presentation.components.IconButtonVariant
 import io.lukia.shared.presentation.components.LaunchReveal
+import io.lukia.shared.presentation.components.LukiaIconButton
+import io.lukia.shared.presentation.components.ReadingProgressBar
+import io.lukia.shared.presentation.components.StatusBadge
+import io.lukia.shared.presentation.components.focusRing
 import io.lukia.shared.presentation.components.hoverLift
 import io.lukia.shared.presentation.components.launchReveal
 import io.lukia.shared.presentation.components.rememberHoverFraction
-import io.lukia.shared.presentation.components.scaleOnPress
+import io.lukia.shared.presentation.theme.LocalLukiaMetrics
+import io.lukia.shared.presentation.theme.LukiaElevation
 import io.lukia.shared.presentation.theme.LukiaMotion
+import io.lukia.shared.presentation.theme.Space
+
+/**
+ * Thinner than the bar on the detail screen. A cover in the grid is a third of
+ * the size, and a bar scaled for the larger one reads as a stripe painted across
+ * the artwork rather than as a measure of it.
+ */
+private val CardProgressBarHeight: Dp = 3.dp
 
 /**
  * One book in the library grid.
@@ -55,11 +66,18 @@ import io.lukia.shared.presentation.theme.LukiaMotion
  * The card carries its feedback as motion rather than as a ripple: it shrinks
  * under a press and, on desktop, lifts and casts a deeper shadow under the
  * pointer. A ripple washing across a book cover reads as a defect in the artwork.
+ *
+ * Nothing here clips. The cover casts its shadow deliberately outside its own
+ * bounds, and a clip anywhere up the chain crops that shadow to a hard edge -
+ * which is what used to make a hovered card look as though its shadow had been
+ * cut off square, more visibly the further it lifted.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun BookCard(
     document: DocumentInfo,
+    /** How far through, 0 to 1. Null for a book that has never been opened. */
+    progress: Float?,
     menuExpanded: Boolean,
     onClick: () -> Unit,
     onMenuRequest: () -> Unit,
@@ -75,13 +93,24 @@ internal fun BookCard(
     val haptics = LocalHapticFeedback.current
     val interactionSource = remember { MutableInteractionSource() }
     val hover = rememberHoverFraction(interactionSource)
+    val coverShape = MaterialTheme.shapes.medium
 
     Column(
         modifier = modifier
+            // Raised above its neighbours while it is lifted, so the deepened
+            // shadow is not painted over by the next cell in the row.
+            .zIndex(if (hover > 0f) 1f else 0f)
             .launchReveal(reveal, index = revealIndex)
-            .hoverLift(fraction = hover, lift = 5.dp, hoveredScale = 1.035f)
-            .scaleOnPress(interactionSource, pressedScale = 0.96f)
-            .clip(RoundedCornerShape(16.dp))
+            // One layer for both gestures. Two stacked `graphicsLayer`s meant the
+            // press scaled a layer that was already scaling for hover, and each
+            // added a compositing pass the grid paid for on every frame.
+            .hoverLift(
+                interactionSource = interactionSource,
+                fraction = hover,
+                lift = 4.dp,
+                hoveredScale = 1.03f,
+                pressedScale = 0.97f
+            )
             .pointerHoverIcon(PointerIcon.Hand)
             .combinedClickable(
                 interactionSource = interactionSource,
@@ -93,23 +122,48 @@ internal fun BookCard(
                     onMenuRequest()
                 }
             )
-            .padding(4.dp)
+            // Leaves the cover's shadow somewhere to fall inside the cell rather
+            // than straight onto the neighbouring one.
+            .padding(Space.xs)
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             BookCover(
                 coverImage = document.coverImage,
                 title = title,
+                shape = coverShape,
                 // Deepens as the card lifts, so the two read as one movement
                 // rather than as a card that floats without leaving the page.
-                elevation = lerp(6.dp, 18.dp, hover),
-                modifier = Modifier.fillMaxWidth()
+                elevation = lerp(LukiaElevation.card, LukiaElevation.cardHovered, hover),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    // The card is what the keyboard focuses, and the cover is the
+                    // part of it worth ringing.
+                    .focusRing(interactionSource, coverShape)
             )
+
+            // Clipped to the cover's own shape so the bar stops where the
+            // rounded corners do, and drawn only for a book somebody has
+            // started - an empty bar on every unread cover would turn a shelf
+            // into a progress report.
+            if (progress != null) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clip(coverShape)
+                ) {
+                    ReadingProgressBar(
+                        fraction = progress,
+                        height = CardProgressBarHeight,
+                        modifier = Modifier.align(Alignment.BottomStart)
+                    )
+                }
+            }
 
             FavoriteBadge(
                 visible = document.isFavorite,
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .padding(6.dp)
+                    .padding(Space.sm)
             )
 
             MenuTrigger(
@@ -120,7 +174,7 @@ internal fun BookCard(
                 onClick = onMenuRequest,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(6.dp)
+                    .padding(Space.xs)
             )
 
             // Anchored here so the popup hangs off the cover's top-end corner
@@ -137,14 +191,14 @@ internal fun BookCard(
 
         Text(
             text = title,
-            style = MaterialTheme.typography.titleSmall,
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground,
             maxLines = 2,
             // Reserving two lines keeps the metadata row aligned across the grid
             // whether a title wraps or not.
             minLines = 2,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(top = 10.dp)
+            modifier = Modifier.padding(top = Space.md)
         )
 
         Text(
@@ -153,11 +207,14 @@ internal fun BookCard(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(top = 3.dp)
+            modifier = Modifier.padding(top = Space.xxs)
         )
 
         if (!document.exists) {
-            UnavailableBadge(modifier = Modifier.padding(top = 6.dp))
+            StatusBadge(
+                text = "Unavailable",
+                modifier = Modifier.padding(top = Space.sm)
+            )
         }
     }
 }
@@ -169,6 +226,8 @@ private fun MenuTrigger(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val metrics = LocalLukiaMetrics.current
+
     AnimatedVisibility(
         visible = visible,
         enter = fadeIn(LukiaMotion.quick()) +
@@ -177,35 +236,15 @@ private fun MenuTrigger(
             scaleOut(LukiaMotion.exit(), targetScale = 0.8f),
         modifier = modifier
     ) {
-        Box(
-            modifier = Modifier
-                .size(26.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f))
-                .pointerHoverIcon(PointerIcon.Hand)
-                .clickable(onClickLabel = "Book actions", onClick = onClick),
-            contentAlignment = Alignment.Center
-        ) {
-            EllipsisGlyph(
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(14.dp)
-            )
+        LukiaIconButton(
+            label = "Book actions",
+            onClick = onClick,
+            variant = IconButtonVariant.Filled,
+            tint = MaterialTheme.colorScheme.onSurface,
+            size = metrics.iconButtonSmall,
+            glyphSize = metrics.iconSmall
+        ) { tint, glyph ->
+            EllipsisGlyph(tint = tint, modifier = glyph)
         }
-    }
-}
-
-@Composable
-private fun UnavailableBadge(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.error.copy(alpha = 0.12f))
-            .padding(horizontal = 8.dp, vertical = 3.dp)
-    ) {
-        Text(
-            text = "Unavailable",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.error
-        )
     }
 }

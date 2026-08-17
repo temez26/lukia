@@ -7,6 +7,7 @@ import io.lukia.core.domain.FakeDocumentWorkspace
 import io.lukia.features.reader.domain.FakeReadingProgressRepository
 import io.lukia.core.domain.TestDocuments
 import io.lukia.core.presentation.UiState
+import io.lukia.features.bookdetail.application.BookDetails
 import io.lukia.features.bookdetail.application.GetDocumentDetailsUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
@@ -41,7 +42,7 @@ class BookDetailViewModelTest {
         val repository = FakeLibraryRepository(initialDocuments = listOf(documentInfo))
         val viewModel = createViewModel(location = "/test/book.pdf", repository = repository)
 
-        assertEquals(UiState.Success(documentInfo), viewModel.uiState.value)
+        assertEquals(UiState.Success(BookDetails(documentInfo)), viewModel.uiState.value)
     }
 
     /**
@@ -82,7 +83,7 @@ class BookDetailViewModelTest {
         repository.addDocument(documentInfo)
         viewModel.retry()
 
-        assertEquals(UiState.Success(documentInfo), viewModel.uiState.value)
+        assertEquals(UiState.Success(BookDetails(documentInfo)), viewModel.uiState.value)
     }
 
     @Test
@@ -93,7 +94,7 @@ class BookDetailViewModelTest {
         viewModel.toggleFavorite()
 
         assertEquals(
-            UiState.Success(pdfDocumentInfo().copy(isFavorite = true)),
+            UiState.Success(BookDetails(pdfDocumentInfo().copy(isFavorite = true))),
             viewModel.uiState.value
         )
     }
@@ -107,7 +108,7 @@ class BookDetailViewModelTest {
         viewModel.toggleFavorite()
 
         assertEquals(
-            UiState.Success(documentInfo.copy(isFavorite = false)),
+            UiState.Success(BookDetails(documentInfo.copy(isFavorite = false))),
             viewModel.uiState.value
         )
     }
@@ -145,7 +146,10 @@ class BookDetailViewModelTest {
     ): BookDetailViewModel {
         return BookDetailViewModel(
             location = location,
-            getDocumentDetailsUseCase = GetDocumentDetailsUseCase(repository),
+            getDocumentDetailsUseCase = GetDocumentDetailsUseCase(
+                repository,
+                FakeReadingProgressRepository()
+            ),
             setFavoriteUseCase = SetFavoriteUseCase(repository),
             removeDocumentUseCase = RemoveDocumentUseCase(
                 repository,
