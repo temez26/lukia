@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 sqldelight {
@@ -56,13 +57,21 @@ kotlin {
             implementation(libs.compose.uiTooling)
             implementation(libs.androidx.documentfile)
             implementation(libs.sqldelight.androidDriver)
+            implementation(libs.ktor.client.okhttp)
+            // Android's own PdfRenderer draws pages and offers no way to read
+            // the text on them below API 35, which is most devices this app
+            // supports. This is the same library the desktop reads PDFs with,
+            // repackaged for Android.
+            implementation(libs.pdfbox.android)
         }
         jvmMain.dependencies {
             implementation(libs.pdfbox)
             implementation(libs.sqldelight.jvmDriver)
+            implementation(libs.ktor.client.okhttp)
         }
         iosMain.dependencies {
             implementation(libs.sqldelight.nativeDriver)
+            implementation(libs.ktor.client.darwin)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -80,10 +89,17 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.sqldelight.runtime)
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.contentNegotiation)
+            implementation(libs.ktor.serialization.json)
+            implementation(libs.kotlinx.serialization.json)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
+            // Lets the provider be tested against the wire format it actually
+            // sends and receives, without a network or an account.
+            implementation(libs.ktor.client.mock)
         }
         jvmTest.dependencies {
             // The same driver the desktop app uses, pointed at an in-memory

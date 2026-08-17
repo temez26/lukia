@@ -3,7 +3,9 @@ package io.lukia.features.reader.infrastructure
 import androidx.compose.ui.graphics.ImageBitmap
 import io.lukia.features.reader.domain.DocumentPages
 import io.lukia.features.reader.domain.OutlineEntry
+import io.lukia.features.reader.domain.PageGlyph
 import io.lukia.features.reader.domain.PageSize
+import io.lukia.features.reader.domain.TextQuad
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.useContents
@@ -18,6 +20,7 @@ import platform.Foundation.NSData
 import platform.Foundation.NSURL
 import platform.PDFKit.PDFDocument
 import platform.PDFKit.PDFOutline
+import platform.PDFKit.PDFPage
 import platform.PDFKit.kPDFDisplayBoxCropBox
 import platform.UIKit.UIImagePNGRepresentation
 import platform.UIKit.UIScreen
@@ -113,6 +116,62 @@ private class IOSDocumentPages(path: String) : DocumentPages {
                 }.getOrNull()
             }
         }
+
+    override suspend fun pageText(index: Int): List<PageGlyph>? =
+        withContext(Dispatchers.Default) {
+            renderLock.withLock {
+                runCatching { document.pageAtIndex(index.toULong())?.glyphs() }.getOrNull()
+            }
+        }
+
+    /**
+     * Every positioned character of this page, the right way up.
+     *
+     * PDFKit measures upwards from the bottom left of the page's box, and every
+     * screen the app draws on measures downwards from the top left - so each
+     * box is flipped here, once, rather than at each place that draws one. The
+     * box's own origin is taken off as well: a page cropped to a margin does not
+     * start at zero, and text placed against an uncropped origin would sit that
+     * margin away from the words it belongs to.
+     *
+     * A quarter-turned page returns nothing. PDFKit reports its characters in
+     * the page's unrotated space while rendering it rotated, so the two do not
+     * line up - and an overlay drawn ninety degrees away from its sentence is
+     * worse than no overlay at all.
+     */
+    private fun PDFPage.glyphs(): List<PageGlyph>? {
+        if (rotation % 180 != 0L) return null
+
+        val text = string ?: return null
+        val box = boundsForBox(kPDFDisplayBoxCropBox)
+        val originX = box.useContents { origin.x }
+        val topEdge = box.useContents { origin.y + size.height }
+
+        val count = minOf(text.length, numberOfCharacters.toInt())
+
+        val glyphs = (0 until count).mapNotNull { position ->
+            characterBoundsAtIndex(position.toLong()).useContents {
+                // A line break is a character with no box. The reader infers
+                // where the lines are from where the glyphs sit anyway.
+                if (size.width <= 0.0 || size.height <= 0.0) return@useContents null
+
+                val left = origin.x - originX
+                val bottom = topEdge - origin.y
+
+                PageGlyph(
+                    text = text[position].toString(),
+                    bounds = TextQuad(
+                        left = left.toFloat(),
+                        top = (bottom - size.height).toFloat(),
+                        right = (left + size.width).toFloat(),
+                        bottom = bottom.toFloat()
+                    )
+                )
+            }
+        }
+
+        return glyphs.takeIf { it.isNotEmpty() }
+    }
 
     /**
      * Nothing to release: PDFKit owns the file handle and lets it go with the

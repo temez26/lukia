@@ -4,5 +4,23 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<!--
+	    Asked for only when the reader points translation at a model running on
+	    their own machine. Reading a book needs nothing from the network at all.
+	-->
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Lukia needs this to reach a translation model running on your own computer.</string>
+	<!--
+	    Permits plain HTTP to this device, to .local names and to link-local
+	    addresses, without weakening transport security anywhere else. A server
+	    on the same network is reached by its Bonjour name - my-mac.local - which
+	    macOS publishes by default; a bare 192.168.x address over http is still
+	    refused by the system, and https works everywhere.
+	-->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 </dict>
 </plist>

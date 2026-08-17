@@ -39,11 +39,24 @@ fun SettingsOverlay(
 @Composable
 private fun SettingsPanelBody(viewModel: SettingsViewModel = koinViewModel()) {
     val settings by viewModel.settings.collectAsState()
+    val translation by viewModel.translationSettings.collectAsState()
+    val connectionTest by viewModel.connectionTest.collectAsState()
+    val availableModels by viewModel.availableModels.collectAsState()
     val dimens = LocalLukiaDimens.current
 
     SettingsBody(
         settings = settings,
+        translation = translation,
+        connectionTest = connectionTest,
+        availableModels = availableModels,
         onThemeChange = viewModel::setTheme,
+        onTargetLanguageChange = viewModel::setTargetLanguage,
+        onProviderChange = viewModel::setProvider,
+        onModelChange = viewModel::setModel,
+        onApiKeyChange = viewModel::setApiKey,
+        onBaseUrlChange = viewModel::onBaseUrlEdited,
+        onTestConnection = viewModel::testConnection,
+        onLoadModels = viewModel::loadAvailableModels,
         modifier = Modifier.fillMaxWidth(),
         topClearance = OverlayPanelTopClearance,
         bottomClearance = dimens.sectionSpacing,

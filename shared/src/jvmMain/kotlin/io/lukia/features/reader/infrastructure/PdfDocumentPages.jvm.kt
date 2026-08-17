@@ -4,7 +4,9 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import io.lukia.features.reader.domain.DocumentPages
 import io.lukia.features.reader.domain.OutlineEntry
+import io.lukia.features.reader.domain.PageGlyph
 import io.lukia.features.reader.domain.PageSize
+import io.lukia.features.reader.domain.TextQuad
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -15,6 +17,8 @@ import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineNode
 import org.apache.pdfbox.rendering.ImageType
 import org.apache.pdfbox.rendering.PDFRenderer
+import org.apache.pdfbox.text.PDFTextStripper
+import org.apache.pdfbox.text.TextPosition
 import java.io.File
 
 /** Guards against an outline that is malformed into a cycle or absurdly deep. */
@@ -95,7 +99,64 @@ private class PdfBoxDocumentPages(path: String) : DocumentPages {
             }
         }
 
+    override suspend fun pageText(index: Int): List<PageGlyph>? =
+        withContext(Dispatchers.Default) {
+            renderLock.withLock {
+                runCatching {
+                    val stripper = GlyphStripper().apply {
+                        // PDFBox counts pages from one, and reads the range
+                        // rather than the document when asked for text.
+                        startPage = index + 1
+                        endPage = index + 1
+                    }
+
+                    stripper.getText(document)
+
+                    // Empty is not the same as unavailable, but it reaches the
+                    // reader the same way: a page with nothing on it has no
+                    // sentences to point at.
+                    stripper.glyphs.takeIf { it.isNotEmpty() }
+                }.getOrNull()
+            }
+        }
+
     override fun close() {
         document.close()
+    }
+}
+
+/**
+ * Collects every positioned character on a page instead of writing the page out
+ * as a string.
+ *
+ * [PDFTextStripper] exists to produce text, and its own idea of where the words
+ * and lines are is thrown away by the time it hands one over. What is wanted
+ * here is the layer underneath that: the glyphs, and the boxes the file put them
+ * in, which is what the reader needs to draw a translation exactly over the
+ * words it stands for.
+ *
+ * The `Dir` accessors are the ones already turned the right way up - origin at
+ * the top left, rotated pages accounted for - which is the space
+ * [io.lukia.features.reader.domain.TextQuad] is defined in.
+ */
+private class GlyphStripper : PDFTextStripper() {
+
+    val glyphs = mutableListOf<PageGlyph>()
+
+    override fun writeString(text: String, textPositions: List<TextPosition>) {
+        textPositions.forEach { position ->
+            val character = position.unicode ?: return@forEach
+            if (character.isEmpty()) return@forEach
+
+            glyphs += PageGlyph(
+                text = character,
+                bounds = TextQuad(
+                    left = position.xDirAdj,
+                    top = position.yDirAdj - position.heightDir,
+                    right = position.xDirAdj + position.widthDirAdj,
+                    bottom = position.yDirAdj
+                )
+            )
+        }
     }
 }

@@ -43,6 +43,35 @@ fun BackChevron(
 }
 
 /**
+ * The tick beside a chosen row in a list of choices. Two strokes at the same
+ * weight as [BackChevron], so a settings list reads as the same family as the
+ * chrome around it.
+ */
+@Composable
+fun CheckGlyph(
+    tint: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val tick = Path().apply {
+            moveTo(size.width * 0.22f, size.height * 0.53f)
+            lineTo(size.width * 0.42f, size.height * 0.73f)
+            lineTo(size.width * 0.80f, size.height * 0.29f)
+        }
+
+        drawPath(
+            path = tick,
+            color = tint,
+            style = Stroke(
+                width = 2.dp.toPx(),
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round
+            )
+        )
+    }
+}
+
+/**
  * A downward chevron, marking a control that opens something beneath it. Drawn
  * at the same weight as [BackChevron] so the two read as one family.
  */

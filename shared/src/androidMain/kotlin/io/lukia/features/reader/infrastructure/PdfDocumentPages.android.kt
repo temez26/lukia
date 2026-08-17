@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import io.lukia.features.reader.domain.DocumentPages
 import io.lukia.features.reader.domain.OutlineEntry
+import io.lukia.features.reader.domain.PageGlyph
 import io.lukia.features.reader.domain.PageSize
 import io.lukia.features.reader.infrastructure.pdf.PdfOutlineReader
 import kotlinx.coroutines.Dispatchers
@@ -51,6 +52,22 @@ private class AndroidDocumentPages(path: String) : DocumentPages {
         FilePdfByteSource(file).use { PdfOutlineReader(it).read() }
     }
 
+    /**
+     * Opened only if somebody asks what a page says, because it means opening
+     * the file a second time with a library that can read text - which
+     * [PdfRenderer] cannot.
+     */
+    private val text = lazy { AndroidPageText(file) }
+
+    override suspend fun pageText(index: Int): List<PageGlyph>? =
+        withContext(Dispatchers.Default) {
+            // Serialised with drawing for the same reason drawing is serialised
+            // with itself: this opens its own handle on the same file, and a
+            // page being read while another is being drawn is contention over
+            // one document either way.
+            renderLock.withLock { text.value.glyphs(index) }
+        }
+
     override suspend fun renderPage(index: Int, targetWidthPx: Int): ImageBitmap? =
         withContext(Dispatchers.Default) {
             renderLock.withLock {
@@ -85,6 +102,9 @@ private class AndroidDocumentPages(path: String) : DocumentPages {
     override fun close() {
         runCatching { renderer.close() }
         runCatching { descriptor.close() }
+        // Only if it was ever opened: reading a book cover to cover without
+        // translating anything never touches this.
+        if (text.isInitialized()) runCatching { text.value.close() }
     }
 
     private companion object {

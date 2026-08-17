@@ -28,6 +28,16 @@ sealed interface AppError {
 
     data object EmptyFolder : AppError
 
+    /**
+     * Nothing is set up to translate with yet. A configuration problem rather
+     * than a failure, and the only one here the reader can fix themselves -
+     * which is why it is not an [Unexpected] carrying an apology.
+     */
+    data object TranslationUnavailable : AppError
+
+    /** Something is set up to translate, and it did not come back with words. */
+    data object TranslationFailed : AppError
+
     data class Unexpected(val cause: String? = null) : AppError
 }
 
