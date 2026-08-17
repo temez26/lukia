@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,10 +32,14 @@ import io.lukia.shared.presentation.components.AnchoredMenu
 import io.lukia.shared.presentation.components.BOOK_COVER_ASPECT_RATIO
 import io.lukia.shared.presentation.components.LaunchReveal
 import io.lukia.shared.presentation.components.PlusGlyph
+import io.lukia.shared.presentation.components.focusRing
 import io.lukia.shared.presentation.components.launchReveal
 import io.lukia.shared.presentation.components.rememberHoverFraction
 import io.lukia.shared.presentation.components.scaleOnPress
+import io.lukia.shared.presentation.theme.HairlineWidth
+import io.lukia.shared.presentation.theme.LukiaElevation
 import io.lukia.shared.presentation.theme.LukiaMotion
+import io.lukia.shared.presentation.theme.Space
 import kotlinx.coroutines.launch
 
 /** How far the cover swings open, in degrees about its spine. */
@@ -71,7 +74,7 @@ internal fun ImportBookCard(
 
     val interactionSource = remember { MutableInteractionSource() }
     val hover = rememberHoverFraction(interactionSource)
-    val shape = RoundedCornerShape(14.dp)
+    val shape = MaterialTheme.shapes.medium
 
     // Warms to the accent colour under a pointer, confirming the card is a
     // control rather than an empty slot. Interpolated on the hover fraction so
@@ -87,7 +90,7 @@ internal fun ImportBookCard(
             .launchReveal(reveal, index = revealIndex)
             // The same inset a book card carries, so this slot's tile and caption
             // line up with its neighbours' rather than sitting a few pixels low.
-            .padding(4.dp)
+            .padding(Space.xs)
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             Box(
@@ -110,15 +113,20 @@ internal fun ImportBookCard(
                     }
                     // Shadow grows in only on hover, so the resting state stays as
                     // flat as the placeholder it is.
-                    .shadow(elevation = lerp(0.dp, 16.dp, hover), shape = shape, clip = false)
+                    .shadow(
+                        elevation = lerp(0.dp, LukiaElevation.cardHovered, hover),
+                        shape = shape,
+                        clip = false
+                    )
                     .pointerHoverIcon(PointerIcon.Hand)
                     .clip(shape)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
                     .border(
-                        width = 1.dp,
+                        width = HairlineWidth,
                         color = MaterialTheme.colorScheme.outlineVariant,
                         shape = shape
                     )
+                    .focusRing(interactionSource, shape)
                     .clickable(
                         interactionSource = interactionSource,
                         indication = null,
@@ -133,15 +141,14 @@ internal fun ImportBookCard(
                         }
                     }
             ) {
-                PlusGlyph(tint = glyphTint, modifier = Modifier.size(28.dp))
+                PlusGlyph(tint = glyphTint, modifier = Modifier.size(26.dp))
             }
 
             // Anchored to the cover, so it hangs under this card the way a book's
             // menu hangs under that one.
             AnchoredMenu(
                 expanded = menuExpanded,
-                onDismissRequest = onMenuDismiss,
-                minWidth = 196.dp
+                onDismissRequest = onMenuDismiss
             ) {
                 ImportMenuRows(
                     onDismissRequest = onMenuDismiss,
@@ -154,14 +161,14 @@ internal fun ImportBookCard(
         if (label != null) {
             Text(
                 text = label,
-                style = MaterialTheme.typography.titleSmall,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 2,
                 // Matches the two lines a book's title reserves, so this card's
                 // caption sits on the same line as its neighbours'.
                 minLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(top = 10.dp)
+                modifier = Modifier.padding(top = Space.md)
             )
         }
     }

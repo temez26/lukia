@@ -3,11 +3,13 @@ package io.lukia.features.reader.presentation.components
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -17,10 +19,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,11 +32,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
@@ -54,16 +57,26 @@ import io.lukia.features.reader.presentation.ChapterRow
 import io.lukia.features.reader.presentation.chapterRows
 import io.lukia.features.reader.presentation.collapsibleIndices
 import io.lukia.features.reader.presentation.currentEntryIndex
+import io.lukia.shared.presentation.components.ButtonSize
+import io.lukia.shared.presentation.components.ButtonVariant
 import io.lukia.shared.presentation.components.DisclosureChevron
 import io.lukia.shared.presentation.components.DismissOnBack
 import io.lukia.shared.presentation.components.GlassSurface
 import io.lukia.shared.presentation.components.GlassTone
+import io.lukia.shared.presentation.components.LukiaButton
+import io.lukia.shared.presentation.components.LukiaDivider
+import io.lukia.shared.presentation.components.SectionLabel
+import io.lukia.shared.presentation.components.focusRing
+import io.lukia.shared.presentation.components.hoverHighlight
 import io.lukia.shared.presentation.components.popoverTransition
 import io.lukia.shared.presentation.components.rememberPopoverProgress
-import io.lukia.shared.presentation.theme.LocalWindowWidthClass
+import io.lukia.shared.presentation.theme.HairlineWidth
+import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import io.lukia.shared.presentation.theme.LocalLukiaMetrics
+import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.LukiaMotion
-import io.lukia.shared.presentation.theme.MinTouchTarget
-import io.lukia.shared.presentation.theme.WindowWidthClass
+import io.lukia.shared.presentation.theme.Space
+import io.lukia.shared.presentation.theme.isWideWindow
 import kotlin.math.roundToInt
 
 /** Grows out of the control it hangs from, matching the other reader panels. */
@@ -74,27 +87,29 @@ private val CompactPanelWidth: Dp = 300.dp
 /** A window with room gets a wider panel, so long chapter titles stay on one line. */
 private val WidePanelWidth: Dp = 380.dp
 
-private val PanelPadding: Dp = 16.dp
-
 /** Enough for roughly seven chapters before the list takes over the scrolling. */
 private val CompactListMaxHeight: Dp = 280.dp
 
-/** A desktop window is tall enough to show a chapter and its sections at once. */
-private val WideListMaxHeight: Dp = 400.dp
-
-private val ChapterRowHeight: Dp = MinTouchTarget
+/**
+ * A desktop window is tall enough to show a chapter and its sections at once,
+ * and its rows are shorter, so this is more chapters than the number suggests.
+ */
+private val WideListMaxHeight: Dp = 440.dp
 
 /** Indent per level of nesting. One step is the width of the disclosure control. */
-private val LevelIndent: Dp = 18.dp
+private val LevelIndent: Dp = 16.dp
 
 /** The disclosure control, and the space kept for it by rows that have none. */
-private val DisclosureSlot: Dp = 26.dp
+private val DisclosureSlot: Dp = 22.dp
 
 /** Room for a four-digit page number, so the column of them is straight. */
-private val PageNumberWidth: Dp = 34.dp
+private val PageNumberWidth: Dp = 32.dp
 
 /** The marker down the start edge of the chapter the reader is in. */
 private val CurrentMarkerWidth: Dp = 3.dp
+
+/** Tall enough to drag, short enough not to be the loudest thing in the panel. */
+private val ScrubberHeight: Dp = 28.dp
 
 /**
  * Getting somewhere else in the book: a scrubber for the whole document and the
@@ -127,35 +142,38 @@ internal fun ReaderContentsPanel(
 
     DismissOnBack(enabled = expanded, onDismiss = onDismissRequest)
 
-    val wide = LocalWindowWidthClass.current != WindowWidthClass.Compact
+    val wide = isWideWindow
+    val inset = LocalLukiaDimens.current.panelPadding
 
     GlassSurface(
-        shape = RoundedCornerShape(18.dp),
+        shape = MaterialTheme.shapes.large,
         tone = GlassTone.Panel,
         modifier = modifier.popoverTransition(progress, PanelTransformOrigin)
     ) {
         Column(
             modifier = Modifier
                 .width(if (wide) WidePanelWidth else CompactPanelWidth)
-                .padding(vertical = 10.dp)
+                .padding(vertical = Space.md)
         ) {
             PositionScrubber(
                 current = currentPage,
                 unitCount = unitCount,
                 unit = unit,
+                inset = inset,
                 onGoTo = onGoToPage
             )
 
-            HorizontalDivider(
-                thickness = Dp.Hairline,
-                color = MaterialTheme.colorScheme.outlineVariant,
-                modifier = Modifier.padding(horizontal = PanelPadding, vertical = 8.dp)
+            LukiaDivider(
+                inset = inset,
+                endInset = inset,
+                modifier = Modifier.padding(vertical = Space.md)
             )
 
             Chapters(
                 outline = outline,
                 currentPage = currentPage,
                 unit = unit,
+                inset = inset,
                 listMaxHeight = if (wide) WideListMaxHeight else CompactListMaxHeight,
                 onGoToPage = {
                     onGoToPage(it)
@@ -179,6 +197,7 @@ private fun PositionScrubber(
     current: Int,
     unitCount: Int,
     unit: ReadingUnit,
+    inset: Dp,
     onGoTo: (index: Int) -> Unit
 ) {
     var dragged by remember { mutableStateOf<Int?>(null) }
@@ -189,7 +208,7 @@ private fun PositionScrubber(
 
     val shown = dragged ?: current
 
-    Column(modifier = Modifier.padding(horizontal = PanelPadding)) {
+    Column(modifier = Modifier.padding(horizontal = inset)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -216,11 +235,22 @@ private fun PositionScrubber(
                 valueRange = 1f..unitCount.toFloat(),
                 onValueChange = { dragged = it.roundToInt() },
                 onValueChangeFinished = { dragged?.let { position -> onGoTo(position - 1) } },
-                modifier = Modifier.semantics {
-                    contentDescription =
-                        "Go to ${unit.singular.lowercase()}. " +
-                            "${unit.singular} $shown of $unitCount"
-                }
+                // Material's own track is a thick expressive bar in its default
+                // colours, which is the one control in the app that looked like it
+                // came from a different application. Dressed in the panel's own
+                // palette and given the height of a scrubber rather than a slider.
+                colors = SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colorScheme.primary,
+                    activeTrackColor = MaterialTheme.colorScheme.primary,
+                    inactiveTrackColor = MaterialTheme.colorScheme.outlineVariant
+                ),
+                modifier = Modifier
+                    .height(ScrubberHeight)
+                    .semantics {
+                        contentDescription =
+                            "Go to ${unit.singular.lowercase()}. " +
+                                "${unit.singular} $shown of $unitCount"
+                    }
             )
         }
     }
@@ -241,6 +271,7 @@ private fun Chapters(
     outline: ReaderOutline,
     currentPage: Int,
     unit: ReadingUnit,
+    inset: Dp,
     listMaxHeight: Dp,
     onGoToPage: (pageIndex: Int) -> Unit
 ) {
@@ -254,24 +285,26 @@ private fun Chapters(
 
     ChaptersHeader(
         collapseAll = if (collapsible.isEmpty()) null else collapsed != collapsible,
+        inset = inset,
         onToggleAll = {
             collapsed = if (collapsed == collapsible) emptySet() else collapsible
         }
     )
 
     when {
-        outline is ReaderOutline.Loading -> ChaptersNotice("Reading chapters…")
+        outline is ReaderOutline.Loading -> ChaptersNotice("Reading chapters…", inset)
 
         outline is ReaderOutline.Unavailable ->
-            ChaptersNotice("Chapters could not be read from this document.")
+            ChaptersNotice("Chapters could not be read from this document.", inset)
 
-        entries.isEmpty() -> ChaptersNotice("This document has no chapters.")
+        entries.isEmpty() -> ChaptersNotice("This document has no chapters.", inset)
 
         else -> ChapterList(
             entries = entries,
             collapsed = collapsed,
             currentPage = currentPage,
             unit = unit,
+            inset = inset,
             listMaxHeight = listMaxHeight,
             onToggle = { index ->
                 collapsed = if (index in collapsed) collapsed - index else collapsed + index
@@ -287,6 +320,7 @@ private fun ChapterList(
     collapsed: Set<Int>,
     currentPage: Int,
     unit: ReadingUnit,
+    inset: Dp,
     listMaxHeight: Dp,
     onToggle: (index: Int) -> Unit,
     onGoToPage: (pageIndex: Int) -> Unit
@@ -324,6 +358,7 @@ private fun ChapterList(
             ChapterRowItem(
                 row = row,
                 unit = unit,
+                inset = inset,
                 isCurrent = row.index == currentRow?.index,
                 onToggle = { onToggle(row.index) },
                 onClick = { onGoToPage(row.entry.pageIndex) }
@@ -339,6 +374,7 @@ private fun ChapterList(
 @Composable
 private fun ChaptersHeader(
     collapseAll: Boolean?,
+    inset: Dp,
     onToggleAll: () -> Unit
 ) {
     Row(
@@ -346,27 +382,18 @@ private fun ChaptersHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = PanelPadding, end = PanelPadding - 8.dp, bottom = 2.dp)
+            // The trailing inset is smaller because the ghost button beside it
+            // carries padding of its own; matching them would double it.
+            .padding(start = inset, end = inset - Space.md, bottom = Space.xxs)
     ) {
-        Text(
-            text = "Chapters",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        SectionLabel(text = "Chapters")
 
         if (collapseAll != null) {
-            val label = if (collapseAll) "Collapse all" else "Expand all"
-
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .pointerHoverIcon(PointerIcon.Hand)
-                    .clickable(onClickLabel = label, onClick = onToggleAll)
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                    .semantics { contentDescription = label }
+            LukiaButton(
+                label = if (collapseAll) "Collapse all" else "Expand all",
+                onClick = onToggleAll,
+                variant = ButtonVariant.Ghost,
+                size = ButtonSize.Compact
             )
         }
     }
@@ -387,6 +414,7 @@ private fun ChaptersHeader(
 private fun ChapterRowItem(
     row: ChapterRow,
     unit: ReadingUnit,
+    inset: Dp,
     isCurrent: Boolean,
     onToggle: () -> Unit,
     onClick: () -> Unit
@@ -395,6 +423,8 @@ private fun ChapterRowItem(
     val isChapter = entry.level == 0
     val guideColor = MaterialTheme.colorScheme.outlineVariant
     val markerColor = MaterialTheme.colorScheme.primary
+    val metrics = LocalLukiaMetrics.current
+    val interactionSource = remember { MutableInteractionSource() }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -402,7 +432,7 @@ private fun ChapterRowItem(
             .fillMaxWidth()
             .background(
                 if (isCurrent) {
-                    MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+                    MaterialTheme.colorScheme.primary.copy(alpha = LukiaAlpha.Selected)
                 } else {
                     Color.Transparent
                 }
@@ -421,20 +451,27 @@ private fun ChapterRowItem(
                 // sub-section reads as hanging off its section as well as off
                 // the chapter above them both.
                 repeat(entry.level) { level ->
-                    val x = (PanelPadding + LevelIndent * level + DisclosureSlot / 2).toPx()
+                    val x = (inset + LevelIndent * level + DisclosureSlot / 2).toPx()
 
                     drawLine(
                         color = guideColor,
                         start = Offset(x, 0f),
                         end = Offset(x, size.height),
-                        strokeWidth = 1.dp.toPx()
+                        strokeWidth = HairlineWidth.toPx()
                     )
                 }
             }
+            .hoverHighlight(interactionSource, RectangleShape)
+            .focusRing(interactionSource, RectangleShape)
             .pointerHoverIcon(PointerIcon.Hand)
-            .clickable(onClickLabel = "Go to ${entry.title}", onClick = onClick)
-            .heightIn(min = ChapterRowHeight)
-            .padding(start = PanelPadding + LevelIndent * entry.level, end = PanelPadding)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClickLabel = "Go to ${entry.title}",
+                onClick = onClick
+            )
+            .heightIn(min = metrics.rowHeight)
+            .padding(start = inset + LevelIndent * entry.level, end = inset)
             .semantics {
                 contentDescription =
                     "${entry.title}, ${unit.singular.lowercase()} ${entry.pageIndex + 1}"
@@ -444,6 +481,7 @@ private fun ChapterRowItem(
             DisclosureToggle(
                 collapsed = row.isCollapsed,
                 title = entry.title,
+                rowHeight = metrics.rowHeight,
                 onClick = onToggle
             )
         } else {
@@ -469,7 +507,7 @@ private fun ChapterRowItem(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
                 .weight(1f)
-                .padding(vertical = 8.dp)
+                .padding(vertical = Space.sm)
         )
 
         Text(
@@ -483,7 +521,7 @@ private fun ChapterRowItem(
             textAlign = TextAlign.End,
             maxLines = 1,
             modifier = Modifier
-                .padding(start = 8.dp)
+                .padding(start = Space.md)
                 .widthIn(min = PageNumberWidth)
         )
     }
@@ -500,6 +538,7 @@ private fun ChapterRowItem(
 private fun DisclosureToggle(
     collapsed: Boolean,
     title: String,
+    rowHeight: Dp,
     onClick: () -> Unit
 ) {
     val rotation by animateFloatAsState(
@@ -509,30 +548,40 @@ private fun DisclosureToggle(
     )
 
     val label = if (collapsed) "Show sections of $title" else "Hide sections of $title"
+    val interactionSource = remember { MutableInteractionSource() }
+    val shape = MaterialTheme.shapes.extraSmall
 
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
+            .size(width = DisclosureSlot, height = rowHeight)
+            .clip(shape)
+            .hoverHighlight(interactionSource, shape)
+            .focusRing(interactionSource, shape)
             .pointerHoverIcon(PointerIcon.Hand)
-            .clickable(onClickLabel = label, onClick = onClick)
-            .size(width = DisclosureSlot, height = ChapterRowHeight)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClickLabel = label,
+                onClick = onClick
+            )
             .semantics { contentDescription = label }
     ) {
         DisclosureChevron(
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
-                .size(11.dp)
+                .size(10.dp)
                 .graphicsLayer { rotationZ = rotation }
         )
     }
 }
 
 @Composable
-private fun ChaptersNotice(message: String) {
+private fun ChaptersNotice(message: String, inset: Dp) {
     Text(
         text = message,
         style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(horizontal = PanelPadding, vertical = 8.dp)
+        modifier = Modifier.padding(horizontal = inset, vertical = Space.md)
     )
 }

@@ -25,6 +25,16 @@ class SqlReadingProgressRepository(
             }
         }
 
+    override suspend fun allProgress(): Map<String, ReadingProgress> =
+        withContext(dispatcher) {
+            positions.selectAll().executeAsList().associate { row ->
+                row.location to ReadingProgress(
+                    pageIndex = row.pageIndex.toInt(),
+                    pageCount = row.pageCount.toInt()
+                )
+            }
+        }
+
     override suspend fun save(location: String, progress: ReadingProgress) =
         withContext(dispatcher) {
             positions.put(

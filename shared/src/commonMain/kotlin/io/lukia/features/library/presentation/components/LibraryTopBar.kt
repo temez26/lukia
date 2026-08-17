@@ -6,9 +6,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -21,21 +18,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.library.presentation.LibraryFilter
@@ -43,35 +35,24 @@ import io.lukia.shared.presentation.components.AnchoredMenu
 import io.lukia.shared.presentation.components.EllipsisGlyph
 import io.lukia.shared.presentation.components.FolderGlyph
 import io.lukia.shared.presentation.components.GearGlyph
+import io.lukia.shared.presentation.components.IconButtonVariant
 import io.lukia.shared.presentation.components.LaunchReveal
+import io.lukia.shared.presentation.components.LukiaIconButton
 import io.lukia.shared.presentation.components.MenuRow
 import io.lukia.shared.presentation.components.MenuSeparator
 import io.lukia.shared.presentation.components.PlusGlyph
 import io.lukia.shared.presentation.components.SegmentedControl
 import io.lukia.shared.presentation.components.launchReveal
-import io.lukia.shared.presentation.components.scaleOnPress
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
-import io.lukia.shared.presentation.theme.LocalWindowWidthClass
 import io.lukia.shared.presentation.theme.LukiaMotion
-import io.lukia.shared.presentation.theme.MinTouchTarget
-import io.lukia.shared.presentation.theme.WindowWidthClass
-
-/** Diameter of the actions button in the bar. */
-private val MenuButtonSize: Dp = 34.dp
-
-/**
- * Height of the header's own controls. Shorter than [MinTouchTarget], which is
- * for controls a thumb has to find - these sit under a pointer on the windows
- * wide enough to show them this way, and beside a full-width filter on the ones
- * that do not.
- */
-internal val HeaderControlHeight: Dp = 34.dp
+import io.lukia.shared.presentation.theme.Space
+import io.lukia.shared.presentation.theme.isWideWindow
 
 /** Breathing room above and below the bar's contents. */
-private val NavBarVerticalPadding: Dp = 7.dp
+private val NavBarVerticalPadding: Dp = Space.sm
 
 /** Width the filter takes when it is not filling the screen, with every segment. */
-private val ToolbarFilterWidth: Dp = 360.dp
+private val ToolbarFilterWidth: Dp = 320.dp
 
 /** Segments [ToolbarFilterWidth] is sized for; fewer take proportionally less. */
 private const val MaxFilterSegments = 4
@@ -80,7 +61,7 @@ private const val MaxFilterSegments = 4
  * Enough for a title and no more. A search field is for a word or two, and one
  * run across a desktop window invites a sentence.
  */
-private val ToolbarSearchWidth: Dp = 280.dp
+private val ToolbarSearchWidth: Dp = 260.dp
 
 /**
  * How tall the bar is, which is whatever it takes to hold the search field.
@@ -139,7 +120,7 @@ internal fun LibraryNavBar(
     modifier: Modifier = Modifier
 ) {
     val dimens = LocalLukiaDimens.current
-    val compact = LocalWindowWidthClass.current == WindowWidthClass.Compact
+    val compact = !isWideWindow
     val barColor = MaterialTheme.colorScheme.background
     val hairlineColor = MaterialTheme.colorScheme.outlineVariant
 
@@ -193,7 +174,7 @@ internal fun LibraryNavBar(
                 }
             )
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(Space.md))
 
             Box {
                 MenuButton(
@@ -228,47 +209,38 @@ private fun MenuButton(
     expanded: Boolean,
     onClick: () -> Unit
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
     val openness by animateFloatAsState(
         targetValue = if (expanded) 1f else 0f,
         animationSpec = LukiaMotion.standard(),
         label = "menuButtonOpenness"
     )
 
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .scaleOnPress(interactionSource)
-            .size(MenuButtonSize)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f))
-            .pointerHoverIcon(PointerIcon.Hand)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClickLabel = if (expanded) "Close menu" else "Library actions",
-                onClick = onClick
-            )
-    ) {
+    LukiaIconButton(
+        label = if (expanded) "Close menu" else "Library actions",
+        onClick = onClick,
+        variant = IconButtonVariant.Filled
+    ) { tint, glyph ->
         // The two glyphs cross-fade in place, and the close mark turns in as it
         // arrives, so the swap reads as one control changing rather than as two
         // controls trading places.
-        EllipsisGlyph(
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier
-                .size(17.dp)
-                .graphicsLayer { alpha = 1f - openness }
-        )
+        Box(contentAlignment = Alignment.Center, modifier = glyph) {
+            EllipsisGlyph(
+                tint = tint,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer { alpha = 1f - openness }
+            )
 
-        PlusGlyph(
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier
-                .size(17.dp)
-                .graphicsLayer {
-                    alpha = openness
-                    rotationZ = 45f * openness
-                }
-        )
+            PlusGlyph(
+                tint = tint,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        alpha = openness
+                        rotationZ = 45f * openness
+                    }
+            )
+        }
     }
 }
 
@@ -290,7 +262,7 @@ internal fun ColumnScope.ImportMenuRows(
 ) {
     MenuRow(
         label = "Import Book",
-        icon = { tint -> PlusGlyph(tint = tint, modifier = Modifier.size(18.dp)) },
+        icon = { tint, glyph -> PlusGlyph(tint = tint, modifier = glyph) },
         onClick = {
             onDismissRequest()
             onImport()
@@ -301,7 +273,7 @@ internal fun ColumnScope.ImportMenuRows(
 
     MenuRow(
         label = "Add Folder",
-        icon = { tint -> FolderGlyph(tint = tint, modifier = Modifier.size(18.dp)) },
+        icon = { tint, glyph -> FolderGlyph(tint = tint, modifier = glyph) },
         onClick = {
             onDismissRequest()
             onImportFolder()
@@ -319,8 +291,7 @@ private fun LibraryMenu(
 ) {
     AnchoredMenu(
         expanded = expanded,
-        onDismissRequest = onDismissRequest,
-        minWidth = 196.dp
+        onDismissRequest = onDismissRequest
     ) {
         ImportMenuRows(
             onDismissRequest = onDismissRequest,
@@ -332,7 +303,7 @@ private fun LibraryMenu(
 
         MenuRow(
             label = "Settings",
-            icon = { tint -> GearGlyph(tint = tint, modifier = Modifier.size(18.dp)) },
+            icon = { tint, glyph -> GearGlyph(tint = tint, modifier = glyph) },
             onClick = {
                 onDismissRequest()
                 onSettings()
@@ -363,16 +334,15 @@ internal fun LibraryHeader(
     reveal: LaunchReveal,
     modifier: Modifier = Modifier
 ) {
-    val compact = LocalWindowWidthClass.current == WindowWidthClass.Compact
+    val compact = !isWideWindow
 
-    Column(modifier = modifier.padding(bottom = 8.dp)) {
+    Column(modifier = modifier.padding(bottom = Space.md)) {
         if (filters.size > 1) {
             SegmentedControl(
                 options = filters,
                 selected = selectedFilter,
                 label = { it.label },
                 onSelect = onFilterChange,
-                height = HeaderControlHeight,
                 modifier = Modifier
                     .then(
                         // Filling is what a phone wants and what a desktop window
@@ -416,7 +386,7 @@ private fun ImportingNotice(
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(top = 10.dp)
+            modifier = Modifier.padding(top = Space.md)
         ) {
             CircularProgressIndicator(
                 strokeWidth = 2.dp,
@@ -424,7 +394,7 @@ private fun ImportingNotice(
                 modifier = Modifier.size(12.dp)
             )
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(Space.md))
 
             Text(
                 text = "Importing…",

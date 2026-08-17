@@ -1,20 +1,15 @@
 package io.lukia.features.reader.presentation.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,7 +19,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.semantics.contentDescription
@@ -32,22 +26,29 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import io.lukia.features.reader.domain.ReadingUnit
 import io.lukia.shared.presentation.components.BackChevron
 import io.lukia.shared.presentation.components.DisclosureChevron
 import io.lukia.shared.presentation.components.GlassSurface
+import io.lukia.shared.presentation.components.LukiaIconButton
 import io.lukia.shared.presentation.components.ShortcutTooltip
-import io.lukia.shared.presentation.components.scaleOnPress
-import io.lukia.shared.presentation.theme.LocalWindowWidthClass
-import io.lukia.shared.presentation.theme.MinTouchTarget
-import io.lukia.shared.presentation.theme.WindowWidthClass
+import io.lukia.shared.presentation.components.focusRing
+import io.lukia.shared.presentation.components.hoverHighlight
+import io.lukia.shared.presentation.theme.LocalLukiaMetrics
+import io.lukia.shared.presentation.theme.LukiaAlpha
+import io.lukia.shared.presentation.theme.Space
+import io.lukia.shared.presentation.theme.isWideWindow
 
-/** The bar is exactly as tall as the controls in it. */
-private val ControlSize: Dp = MinTouchTarget
-
-/** How thick the ring around a keyboard-focused control is. */
-private val FocusRing: Dp = 2.dp
+/**
+ * How tall the toolbar is, and so how much room the page below it has to leave.
+ *
+ * A function rather than a constant because the controls in it are sized for
+ * whatever is doing the pointing: a bar built for a thumb is half as tall again
+ * as one built for a mouse, and the reader would otherwise reserve the wrong
+ * amount of room for it on one of the two.
+ */
+@Composable
+internal fun readerToolbarHeight(): Dp = LocalLukiaMetrics.current.iconButton
 
 /**
  * The reader's chrome: leaving the book, where you are in it, and how it reads.
@@ -77,10 +78,12 @@ internal fun ReaderToolbar(
     centerControl: @Composable () -> Unit,
     endControl: @Composable () -> Unit
 ) {
-    val wide = LocalWindowWidthClass.current != WindowWidthClass.Compact
+    val wide = isWideWindow
 
     GlassSurface(
-        shape = RoundedCornerShape(percent = 50),
+        // A capsule, because this is the one piece of chrome in the app that
+        // genuinely floats free of everything around it.
+        shape = MaterialTheme.shapes.large,
         modifier = modifier.fillMaxWidth()
     ) {
         Row(
@@ -88,15 +91,12 @@ internal fun ReaderToolbar(
             horizontalArrangement = if (wide) Arrangement.Start else Arrangement.SpaceBetween,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(ControlSize)
+                .height(readerToolbarHeight())
         ) {
             val back: @Composable () -> Unit = {
                 ShortcutTooltip(description = "Close the book", shortcut = "Esc") {
-                    ToolbarButton(onClick = onBack, label = "Close book") {
-                        BackChevron(
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
+                    LukiaIconButton(label = "Close book", onClick = onBack) { tint, glyph ->
+                        BackChevron(tint = tint, modifier = glyph)
                     }
                 }
             }
@@ -115,11 +115,12 @@ internal fun ReaderToolbar(
                     if (title != null) {
                         Text(
                             text = title,
-                            style = MaterialTheme.typography.labelLarge,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurface,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.padding(start = 4.dp, end = 12.dp)
+                            modifier = Modifier.padding(start = Space.xs, end = Space.lg)
                         )
                     }
                 }
@@ -166,15 +167,19 @@ internal fun PageIndicatorButton(
     }
 
     val interactionSource = remember { MutableInteractionSource() }
-    val focused by interactionSource.collectIsFocusedAsState()
+    val metrics = LocalLukiaMetrics.current
+    val shape = MaterialTheme.shapes.small
 
     ShortcutTooltip(description = "Contents", shortcut = "C") {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
-                .focusRing(focused, CircleShape)
+                .clip(shape)
+                .background(
+                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = LukiaAlpha.Fill)
+                )
+                .hoverHighlight(interactionSource, shape)
+                .focusRing(interactionSource, shape)
                 .pointerHoverIcon(PointerIcon.Hand)
                 .clickable(
                     interactionSource = interactionSource,
@@ -182,7 +187,7 @@ internal fun PageIndicatorButton(
                     onClickLabel = "Open contents",
                     onClick = onClick
                 )
-                .padding(horizontal = 12.dp, vertical = 5.dp)
+                .padding(horizontal = Space.md, vertical = Space.xs)
                 // "12 / 348" is a clear enough label to look at and a poor one to
                 // hear, so assistive technology is given the sentence instead.
                 //
@@ -201,59 +206,9 @@ internal fun PageIndicatorButton(
             DisclosureChevron(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier
-                    .padding(start = 5.dp)
-                    .size(9.dp)
+                    .padding(start = Space.xs)
+                    .size(metrics.iconSmall * 0.6f)
             )
         }
     }
 }
-
-/**
- * A square, comfortably tappable target for one piece of toolbar chrome.
- *
- * [label] is set as a content description as well as the click label. These
- * buttons draw a glyph and no text, so without the description a screen reader
- * has nothing to announce them by - the click label names the action, not the
- * control it belongs to.
- */
-@Composable
-internal fun ToolbarButton(
-    onClick: () -> Unit,
-    label: String,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val focused by interactionSource.collectIsFocusedAsState()
-
-    Box(
-        modifier = modifier
-            // Scale rather than a ripple: these are bare glyphs on translucent
-            // chrome, and a ripple spreading across the glass reads as a smudge.
-            .scaleOnPress(interactionSource)
-            .pointerHoverIcon(PointerIcon.Hand)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClickLabel = label,
-                onClick = onClick
-            )
-            .size(ControlSize)
-            .focusRing(focused, CircleShape)
-            .semantics { contentDescription = label },
-        contentAlignment = Alignment.Center
-    ) {
-        content()
-    }
-}
-
-/**
- * Marks the control the keyboard is on.
- *
- * These controls draw no ripple and no pressed state of their own, which leaves
- * someone tabbing through the bar with nothing at all to tell them where they
- * are. Focus is the one interaction that has to be visible without a pointer.
- */
-@Composable
-private fun Modifier.focusRing(focused: Boolean, shape: Shape): Modifier =
-    if (focused) border(FocusRing, MaterialTheme.colorScheme.primary, shape) else this

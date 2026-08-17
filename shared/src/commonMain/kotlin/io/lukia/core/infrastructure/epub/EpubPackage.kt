@@ -1,5 +1,6 @@
 package io.lukia.core.infrastructure.epub
 
+import io.lukia.core.domain.BookMetadata
 import io.lukia.core.infrastructure.archive.ZipArchiveReader
 import io.lukia.core.infrastructure.archive.decodePercentEncoding
 import io.lukia.core.infrastructure.archive.resolveArchivePath
@@ -45,6 +46,9 @@ internal class EpubPackage private constructor(
         get() = spine.mapNotNull(manifestById::get)
 
     fun read(path: String): ByteArray? = zip.readEntry(path)
+
+    /** What the book says about itself: title, authors, publisher, the rest. */
+    fun metadata(): BookMetadata = readEpubMetadata(packageXml)
 
     /**
      * The cover image, looked for the three ways books declare one: EPUB 3's

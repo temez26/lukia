@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.LukiaMotion
 
 /**
@@ -44,7 +45,9 @@ fun FavoriteBadge(
             modifier = Modifier
                 .size(size)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)),
+                .background(
+                    MaterialTheme.colorScheme.surface.copy(alpha = LukiaAlpha.OverArtwork)
+                ),
             contentAlignment = Alignment.Center
         ) {
             HeartGlyph(

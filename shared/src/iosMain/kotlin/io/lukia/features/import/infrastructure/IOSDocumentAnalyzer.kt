@@ -1,11 +1,9 @@
 package io.lukia.features.import.infrastructure
 
-import io.lukia.core.domain.CoverImage
 import io.lukia.features.import.domain.DocumentAnalyzer
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.PickedDocument
-import io.lukia.features.import.infrastructure.cover.extractCover
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
@@ -61,12 +59,14 @@ class IOSDocumentAnalyzer : DocumentAnalyzer {
 
         val type = DocumentType.fromExtension(document.extension)
 
-        val coverBytes = if (type == DocumentType.UNKNOWN) {
-            null
+        val contents = if (type == DocumentType.UNKNOWN) {
+            DocumentContents.Empty
         } else {
             runCatching {
                 fileManager.contentsAtPath(path)?.toByteArray()
-            }.getOrNull()?.let { extractCover(type, it) }
+            }.getOrNull()
+                ?.let { extractContents(type, it) }
+                ?: DocumentContents.Empty
         }
 
         return DocumentInfo(
@@ -74,7 +74,8 @@ class IOSDocumentAnalyzer : DocumentAnalyzer {
             type = type,
             exists = true,
             sizeBytes = size,
-            coverImage = coverBytes?.let { CoverImage(it) }
+            coverImage = contents.coverImage,
+            metadata = contents.metadata
         )
     }
 
