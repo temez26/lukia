@@ -1,5 +1,6 @@
 package io.lukia.features.reader.presentation.components
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -12,20 +13,6 @@ import io.lukia.features.reader.domain.TextRun
 import io.lukia.features.translate.domain.Sentence
 
 /**
- * What to draw in place of one sentence, and how to mark it.
- *
- * [text] is the translation, or null when the original words are what should be
- * on screen - which covers a sentence still being translated, one that failed,
- * and one the reader has deliberately flipped back. All three still carry a
- * [style], because all three are sentences the reader is working on and worth
- * showing as theirs.
- */
-internal data class SentenceMark(
-    val text: String?,
-    val style: SpanStyle
-)
-
-/**
  * A paragraph as it is actually drawn, and where each of its sentences ended up
  * in it.
  *
@@ -34,16 +21,24 @@ internal data class SentenceMark(
  * these ranges that offset would be read against the paragraph the book wrote
  * rather than the one the reader is looking at - so the first translation in a
  * paragraph would quietly break tapping on everything below it.
+ *
+ * [sentences] is also what the marks are drawn from. Nothing here carries a
+ * colour: which sentences are tinted, and in what, changes on every tap, and
+ * baking that into the text would mean rebuilding and re-laying out the whole
+ * paragraph each time somebody pointed at a word in it.
  */
+@Immutable
 internal class ParagraphText(
     val text: AnnotatedString,
-    private val sentences: List<DrawnSentence>
+    val sentences: List<DrawnSentence>
 ) {
 
     /** Which sentence is at [offset] in the drawn text, if any. */
     fun sentenceAt(offset: Int): Int? =
         sentences.firstOrNull { offset >= it.start && offset < it.end }?.index
 
+    /** One sentence, and the stretch of the drawn paragraph it occupies. */
+    @Immutable
     internal data class DrawnSentence(val index: Int, val start: Int, val end: Int)
 }
 
@@ -61,11 +56,14 @@ internal class ParagraphText(
  * that carried it, and carrying "the third word was italic" across into a
  * language whose third word is somewhere else entirely would be inventing a
  * claim the author never made.
+ *
+ * [translationOf] returns the words to draw in a sentence's place, or null to
+ * leave the book's own there.
  */
 internal fun buildParagraphText(
     runs: List<TextRun>,
     sentences: List<Sentence>,
-    markOf: (Sentence) -> SentenceMark?
+    translationOf: (Sentence) -> String?
 ): ParagraphText {
     val slices = runs.runSlices()
     val length = slices.lastOrNull()?.end ?: 0
@@ -79,23 +77,19 @@ internal fun buildParagraphText(
 
             // Whatever sits between the last sentence and this one - the spaces
             // after a full stop - belongs to neither and is drawn untouched.
-            appendSlices(slices, offset, sentence.start, extra = null)
+            appendSlices(slices, offset, sentence.start)
 
             val start = this.length
             val end = sentence.end.coerceAtMost(length)
-            val mark = markOf(sentence)
+            val translation = translationOf(sentence)
 
-            when {
-                mark == null -> appendSlices(slices, sentence.start, end, extra = null)
-                mark.text != null -> withStyle(mark.style) { append(mark.text) }
-                else -> appendSlices(slices, sentence.start, end, extra = mark.style)
-            }
+            if (translation == null) appendSlices(slices, sentence.start, end) else append(translation)
 
             drawn += ParagraphText.DrawnSentence(sentence.index, start, this.length)
             offset = end
         }
 
-        appendSlices(slices, offset, length, extra = null)
+        appendSlices(slices, offset, length)
     }
 
     return ParagraphText(text = text, sentences = drawn)
@@ -143,12 +137,7 @@ private fun List<TextRun>.runSlices(): List<RunSlice> {
  * Appends the original text between two offsets, cut at every run boundary it
  * crosses so each piece keeps the marks it was written with.
  */
-private fun AnnotatedString.Builder.appendSlices(
-    slices: List<RunSlice>,
-    from: Int,
-    to: Int,
-    extra: SpanStyle?
-) {
+private fun AnnotatedString.Builder.appendSlices(slices: List<RunSlice>, from: Int, to: Int) {
     if (from >= to) return
 
     slices.forEach { slice ->
@@ -157,13 +146,9 @@ private fun AnnotatedString.Builder.appendSlices(
         if (start >= end) return@forEach
 
         val text = slice.text.substring(start - slice.start, end - slice.start)
-        val style = when {
-            extra == null && slice.emphasis.isEmpty() -> null
-            extra == null -> slice.emphasis.spanStyle()
-            slice.emphasis.isEmpty() -> extra
-            else -> slice.emphasis.spanStyle().merge(extra)
-        }
 
-        if (style == null) append(text) else withStyle(style) { append(text) }
+        if (slice.emphasis.isEmpty()) append(text) else withStyle(slice.emphasis.spanStyle()) {
+            append(text)
+        }
     }
 }

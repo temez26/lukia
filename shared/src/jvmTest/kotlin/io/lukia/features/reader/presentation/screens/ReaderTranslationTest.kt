@@ -1,5 +1,8 @@
 package io.lukia.features.reader.presentation.screens
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -110,9 +113,11 @@ class ReaderTranslationTest {
     @Test
     fun aTranslatedSentenceIsShownInPlaceOfTheOriginal() = runComposeUiTest {
         setReader(
-            translations = mapOf(
-                TextAnchor.Section(0, 0, 0) to PassageTranslation.Ready(Translation(translated))
-            )
+            translations = {
+                mapOf(
+                    TextAnchor.Section(0, 0, 0) to PassageTranslation.Ready(Translation(translated))
+                )
+            }
         )
 
         onNodeWithText(translated, substring = true).assertExists()
@@ -124,12 +129,14 @@ class ReaderTranslationTest {
     @Test
     fun flippingBackShowsTheBooksOwnWords() = runComposeUiTest {
         setReader(
-            translations = mapOf(
-                TextAnchor.Section(0, 0, 0) to PassageTranslation.Ready(
-                    translation = Translation(translated),
-                    showingOriginal = true
+            translations = {
+                mapOf(
+                    TextAnchor.Section(0, 0, 0) to PassageTranslation.Ready(
+                        translation = Translation(translated),
+                        showingOriginal = true
+                    )
                 )
-            )
+            }
         )
 
         onNodeWithText(opening, substring = true).assertExists()
@@ -146,11 +153,13 @@ class ReaderTranslationTest {
     @Test
     fun aTranslatorsNoteIsShownUnderTheParagraph() = runComposeUiTest {
         setReader(
-            translations = mapOf(
-                TextAnchor.Section(0, 0, 0) to PassageTranslation.Ready(
-                    Translation(translated, note = "\"Ishmael\" is kept as the book writes it.")
+            translations = {
+                mapOf(
+                    TextAnchor.Section(0, 0, 0) to PassageTranslation.Ready(
+                        Translation(translated, note = "\"Ishmael\" is kept as the book writes it.")
+                    )
                 )
-            )
+            }
         )
 
         onNodeWithText("is kept as the book writes it", substring = true).assertExists()
@@ -160,12 +169,14 @@ class ReaderTranslationTest {
     @Test
     fun theNoteGoesAwayWithTheTranslation() = runComposeUiTest {
         setReader(
-            translations = mapOf(
-                TextAnchor.Section(0, 0, 0) to PassageTranslation.Ready(
-                    translation = Translation(translated, note = "A remark about a word."),
-                    showingOriginal = true
+            translations = {
+                mapOf(
+                    TextAnchor.Section(0, 0, 0) to PassageTranslation.Ready(
+                        translation = Translation(translated, note = "A remark about a word."),
+                        showingOriginal = true
+                    )
                 )
-            )
+            }
         )
 
         assertEquals(
@@ -178,11 +189,13 @@ class ReaderTranslationTest {
     @Test
     fun aFailedTranslationSaysWhyUnderTheParagraph() = runComposeUiTest {
         setReader(
-            translations = mapOf(
-                TextAnchor.Section(0, 0, 0) to PassageTranslation.Failed(
-                    AppError.Unexpected("That passage is too long to translate.")
+            translations = {
+                mapOf(
+                    TextAnchor.Section(0, 0, 0) to PassageTranslation.Failed(
+                        AppError.Unexpected("That passage is too long to translate.")
+                    )
                 )
-            )
+            }
         )
 
         onNodeWithText("too long to translate", substring = true).assertExists()
@@ -194,10 +207,42 @@ class ReaderTranslationTest {
     @Test
     fun aSentenceStillBeingTranslatedKeepsItsWords() = runComposeUiTest {
         setReader(
-            translations = mapOf(TextAnchor.Section(0, 0, 0) to PassageTranslation.Loading)
+            translations = { mapOf(TextAnchor.Section(0, 0, 0) to PassageTranslation.Loading) }
         )
 
         onNodeWithText(opening, substring = true).assertExists()
+    }
+
+    /**
+     * The whole of what a reader sees after tapping, in order: their own words,
+     * the same words while the answer is on its way, and then the translation in
+     * place of them - with the rest of the paragraph untouched throughout.
+     *
+     * A paragraph is only rebuilt when the words in it actually change, so this
+     * is also the test that a sentence going from untouched to waiting still
+     * leaves something readable on screen.
+     */
+    @Test
+    fun aSentenceGoesFromTheBooksWordsToTheTranslationInPlace() = runComposeUiTest {
+        var translations by mutableStateOf<Map<TextAnchor, PassageTranslation>>(emptyMap())
+
+        setReader(translations = { translations })
+
+        onNodeWithText(opening, substring = true).assertExists()
+
+        translations = mapOf(TextAnchor.Section(0, 0, 0) to PassageTranslation.Loading)
+        waitForIdle()
+
+        // Waiting is not a reason to take the reader's book away from them.
+        onNodeWithText(opening, substring = true).assertExists()
+
+        translations = mapOf(
+            TextAnchor.Section(0, 0, 0) to PassageTranslation.Ready(Translation(translated))
+        )
+        waitForIdle()
+
+        onNodeWithText(translated, substring = true).assertExists()
+        onNodeWithText(second, substring = true).assertExists()
     }
 
     /**
@@ -208,8 +253,13 @@ class ReaderTranslationTest {
     private fun SemanticsNodeInteraction.clickFirstWords() =
         performTouchInput { click(Offset(4f, 4f)) }
 
+    /**
+     * The translations are read inside the composition rather than captured, so
+     * a test can change them and watch the paragraph follow - which is what
+     * actually happens when an answer comes back.
+     */
     private fun ComposeUiTest.setReader(
-        translations: Map<TextAnchor, PassageTranslation> = emptyMap(),
+        translations: () -> Map<TextAnchor, PassageTranslation> = { emptyMap() },
         onPassageSelected: (PassageSelection) -> Unit = {}
     ) {
         setContent {
@@ -218,7 +268,7 @@ class ReaderTranslationTest {
                     uiState = UiState.Success(book()),
                     settings = ReaderSettings(),
                     outline = ReaderOutline.Chapters(emptyList()),
-                    translations = translations,
+                    translations = translations(),
                     onBack = {},
                     onRetry = {},
                     onSettingsChange = {},

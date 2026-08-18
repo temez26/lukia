@@ -18,7 +18,11 @@ import io.lukia.features.reader.infrastructure.SqlReadingProgressRepository
 import io.lukia.features.reader.presentation.ReaderViewModel
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.features.translate.application.TranslatePassageUseCase
+import io.lukia.features.translate.domain.TranslationCache
 import io.lukia.features.translate.domain.Translator
+import io.lukia.features.translate.infrastructure.CachingTranslator
+import io.lukia.features.translate.infrastructure.CoalescingTranslator
+import io.lukia.features.translate.infrastructure.SqlTranslationCache
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import io.lukia.features.translate.infrastructure.ConfiguredTranslator
 import io.lukia.features.translate.infrastructure.anthropic.AnthropicTranslator
@@ -100,17 +104,38 @@ val commonModule = module {
         translationHttpClient()
     }
 
+    // Passages already paid for, kept between runs of the app.
+    single<TranslationCache> {
+        SqlTranslationCache(get())
+    }
+
     // Which of these speaks is a setting, read per request. Everything above
     // this line is written against the port, so adding another - a model on the
     // device, a plain dictionary lookup - is one more entry here and nothing
     // else in the app.
+    //
+    // The two wrappers around it are where translating stops costing anything it
+    // does not have to: the same passage is asked for once, and only once ever.
+    // Both are translators themselves, so nothing above this line knows they are
+    // there - which is also why the order is decided here and only here.
     single<Translator> {
         val settings: TranslationSettingsRepository = get()
 
-        ConfiguredTranslator(
+        val configured = ConfiguredTranslator(
             provider = { settings.settings.value.provider },
             anthropic = AnthropicTranslator(get(), settings),
             openAiCompatible = OpenAiTranslator(get(), settings)
+        )
+
+        CoalescingTranslator(
+            CachingTranslator(
+                translator = configured,
+                cache = get(),
+                translatorIdentity = {
+                    val current = settings.settings.value
+                    "${current.provider.name}/${current.model}"
+                }
+            )
         )
     }
 

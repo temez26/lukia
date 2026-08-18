@@ -1,6 +1,7 @@
 package io.lukia.features.reader.presentation.components
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -29,6 +30,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
@@ -36,7 +39,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -52,6 +54,9 @@ import io.lukia.features.reader.domain.TextSection
 import io.lukia.features.translate.domain.Sentence
 import io.lukia.features.translate.domain.splitIntoSentences
 import io.lukia.features.translate.presentation.PassageTranslation
+import io.lukia.features.translate.presentation.SectionTranslations
+import io.lukia.features.translate.presentation.SentenceTranslations
+import io.lukia.features.translate.presentation.shownText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -73,17 +78,21 @@ private val MarkerWidth: Dp = 28.dp
  * whole page instead of only on its paragraphs - a book at 200% with the same
  * gaps it had at 100% reads as text that has outgrown its own layout.
  *
- * [translationOf] is asked about every sentence the section draws, and
+ * [translations] is what has become of the section's own sentences, and
  * [onSentenceTapped] is how a sentence somebody pointed at gets back to whoever
- * can translate it. Both default to doing nothing, so this composable can still
- * be drawn - in a test, or in a preview - with no translator behind it.
+ * can translate it. Both default to nothing, so this composable can still be
+ * drawn - in a test, or in a preview - with no translator behind it.
+ *
+ * Each block is handed only its own slice. That is what keeps translating one
+ * sentence from being work for the rest of the chapter: a block whose slice
+ * compares equal to the one it was given last time is not composed again at all.
  */
 @Composable
 internal fun TextSectionView(
     section: TextSection,
     style: TextStyle,
     modifier: Modifier = Modifier,
-    translationOf: (blockIndex: Int, sentenceIndex: Int) -> PassageTranslation? = { _, _ -> null },
+    translations: SectionTranslations = SectionTranslations.None,
     onSentenceTapped: (blockIndex: Int, sentence: Sentence, paragraph: String) -> Unit =
         { _, _, _ -> },
     /** A tap that landed on no sentence, which is a tap on the page rather than on words. */
@@ -101,7 +110,7 @@ internal fun TextSectionView(
             TextBlockView(
                 block = block,
                 style = style,
-                translationOf = { sentence -> translationOf(index, sentence) },
+                translations = translations.block(index),
                 onSentenceTapped = { sentence, paragraph ->
                     onSentenceTapped(index, sentence, paragraph)
                 },
@@ -115,27 +124,27 @@ internal fun TextSectionView(
 private fun TextBlockView(
     block: TextBlock,
     style: TextStyle,
-    translationOf: (sentenceIndex: Int) -> PassageTranslation?,
+    translations: SentenceTranslations,
     onSentenceTapped: (Sentence, paragraph: String) -> Unit,
     onTapElsewhere: () -> Unit
 ) {
     when (block) {
         is TextBlock.Heading ->
-            HeadingBlock(block, style, translationOf, onSentenceTapped, onTapElsewhere)
+            HeadingBlock(block, style, translations, onSentenceTapped, onTapElsewhere)
 
         is TextBlock.Paragraph -> ProseText(
             runs = block.text,
             style = style,
-            translationOf = translationOf,
+            translations = translations,
             onSentenceTapped = onSentenceTapped,
             onTapElsewhere = onTapElsewhere
         )
 
         is TextBlock.ListItem ->
-            ListItemBlock(block, style, translationOf, onSentenceTapped, onTapElsewhere)
+            ListItemBlock(block, style, translations, onSentenceTapped, onTapElsewhere)
 
         is TextBlock.Quote ->
-            QuoteBlock(block, style, translationOf, onSentenceTapped, onTapElsewhere)
+            QuoteBlock(block, style, translations, onSentenceTapped, onTapElsewhere)
         // Preformatted text is not prose. Splitting code at its full stops would
         // offer to translate `object.method()` as a sentence.
         is TextBlock.Code -> CodeBlock(block, style)
@@ -151,6 +160,12 @@ private fun TextBlockView(
  * built from, because a section is hundreds of these and neither the splitting
  * nor the styling should happen again every time anything on the page changes.
  *
+ * Which sentences are marked, and in what colour, is drawn over the finished
+ * text rather than written into it. That is what makes a tap feel like a tap:
+ * pointing at a sentence changes nothing about the paragraph, so nothing is
+ * re-split, re-built or re-laid out, and the highlight is a repaint. Only the
+ * arrival of the translated words is a change to the text at all.
+ *
  * The crossfade is on the whole paragraph rather than on the sentence inside it:
  * a translated sentence is rarely the same length as the original, so the lines
  * under it move whatever is done, and fading the block through the change reads
@@ -160,7 +175,7 @@ private fun TextBlockView(
 private fun ProseText(
     runs: List<TextRun>,
     style: TextStyle,
-    translationOf: (sentenceIndex: Int) -> PassageTranslation?,
+    translations: SentenceTranslations,
     onSentenceTapped: (Sentence, paragraph: String) -> Unit,
     onTapElsewhere: () -> Unit,
     modifier: Modifier = Modifier
@@ -168,13 +183,22 @@ private fun ProseText(
     val paragraph = remember(runs) { runs.plain() }
     val sentences = remember(paragraph) { splitIntoSentences(paragraph) }
 
-    val marked = rememberSentenceMarks(sentences.map { translationOf(it.index) })
-
-    val drawn = remember(runs, sentences, marked) {
-        buildParagraphText(runs = runs, sentences = sentences) { sentence ->
-            marked[sentence.index]
+    // Kept apart from the states themselves so that a sentence going from
+    // untouched to waiting - which changes no words at all - does not count as
+    // the paragraph having changed.
+    val shown = remember(sentences, translations) {
+        buildMap {
+            sentences.forEach { sentence ->
+                translations[sentence.index].shownText?.let { put(sentence.index, it) }
+            }
         }
     }
+
+    val drawn = remember(runs, sentences, shown) {
+        buildParagraphText(runs = runs, sentences = sentences) { shown[it.index] }
+    }
+
+    val marks = sentenceMarks(sentences, translations)
 
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
 
@@ -200,7 +224,16 @@ private fun ProseText(
     }
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        Crossfade(targetState = drawn, modifier = tappable) { paragraphText ->
+        Crossfade(
+            targetState = drawn,
+            animationSpec = tween(TRANSLATION_FADE_MILLIS),
+            modifier = tappable
+        ) { paragraphText ->
+            // Each copy measures itself. The outgoing one is still on screen
+            // while the fade runs and its marks have to sit on its own lines,
+            // not on the lines of the paragraph replacing it.
+            var measured by remember { mutableStateOf<TextLayoutResult?>(null) }
+
             Text(
                 text = paragraphText.text,
                 style = style,
@@ -208,11 +241,23 @@ private fun ProseText(
                 // being faded in is what a tap should be measured against;
                 // letting the outgoing copy report its layout would map taps
                 // onto the paragraph that is on its way out.
-                onTextLayout = { if (paragraphText === currentDrawn) layout = it }
+                onTextLayout = {
+                    measured = it
+                    if (paragraphText === currentDrawn) layout = it
+                },
+                modifier = Modifier.drawBehind {
+                    val lines = measured ?: return@drawBehind
+
+                    paragraphText.sentences.forEach { sentence ->
+                        val tint = marks[sentence.index] ?: return@forEach
+
+                        drawPath(lines.getPathForRange(sentence.start, sentence.end), tint)
+                    }
+                }
             )
         }
 
-        TranslatorsRemarks(sentences.map { translationOf(it.index) }, style)
+        TranslatorsRemarks(sentences, translations, style)
     }
 }
 
@@ -230,9 +275,13 @@ private fun ProseText(
  * somebody watching a highlight and wondering whether anything is happening.
  */
 @Composable
-private fun TranslatorsRemarks(states: List<PassageTranslation?>, style: TextStyle) {
-    val remarks = states.mapNotNull { state ->
-        when (state) {
+private fun TranslatorsRemarks(
+    sentences: List<Sentence>,
+    translations: SentenceTranslations,
+    style: TextStyle
+) {
+    val remarks = sentences.mapNotNull { sentence ->
+        when (val state = translations[sentence.index]) {
             null, PassageTranslation.Loading -> null
 
             is PassageTranslation.Failed -> Remark(state.error.displayShortMessage(), failed = true)
@@ -272,35 +321,38 @@ private fun TranslatorsRemarks(states: List<PassageTranslation?>, style: TextSty
 private data class Remark(val text: String, val failed: Boolean)
 
 /**
- * How each translated sentence is marked, in the reading colours.
+ * What colour each sentence somebody is working on is washed in.
  *
- * Every state the reader can see gets its own treatment, because they mean
- * different things: waiting is the original text tinted so somebody knows their
- * tap landed, a translation is the tint plus the new words, and a failure is
- * marked in the error colour so it reads as something to tap again rather than
- * as a translation that came out strangely.
+ * Every state the reader can see gets its own, because they mean different
+ * things: waiting is the original text tinted so somebody knows their tap
+ * landed, a translation is the tint under the new words, and a failure is marked
+ * in the error colour so it reads as something to tap again rather than as a
+ * translation that came out strangely.
+ *
+ * A sentence nobody has touched is left out entirely, which is what makes an
+ * untranslated paragraph cost nothing to draw.
  */
 @Composable
-private fun rememberSentenceMarks(states: List<PassageTranslation?>): Map<Int, SentenceMark> {
+private fun sentenceMarks(
+    sentences: List<Sentence>,
+    translations: SentenceTranslations
+): Map<Int, Color> {
     val colors = MaterialTheme.colorScheme
     val pending = colors.onSurface.copy(alpha = PENDING_TINT)
     val translated = colors.primary.copy(alpha = TRANSLATED_TINT)
     val failed = colors.error.copy(alpha = FAILED_TINT)
 
-    return remember(states, pending, translated, failed) {
+    return remember(sentences, translations, pending, translated, failed) {
         buildMap {
-            states.forEachIndexed { index, state ->
-                val mark = when (state) {
+            sentences.forEach { sentence ->
+                val tint = when (translations[sentence.index]) {
                     null -> null
-                    PassageTranslation.Loading -> SentenceMark(null, SpanStyle(background = pending))
-                    is PassageTranslation.Failed -> SentenceMark(null, SpanStyle(background = failed))
-                    is PassageTranslation.Ready -> SentenceMark(
-                        text = if (state.showingOriginal) null else state.translation.text,
-                        style = SpanStyle(background = translated)
-                    )
+                    PassageTranslation.Loading -> pending
+                    is PassageTranslation.Failed -> failed
+                    is PassageTranslation.Ready -> translated
                 }
 
-                if (mark != null) put(index, mark)
+                if (tint != null) put(sentence.index, tint)
             }
         }
     }
@@ -310,7 +362,7 @@ private fun rememberSentenceMarks(states: List<PassageTranslation?>): Map<Int, S
 private fun HeadingBlock(
     block: TextBlock.Heading,
     style: TextStyle,
-    translationOf: (sentenceIndex: Int) -> PassageTranslation?,
+    translations: SentenceTranslations,
     onSentenceTapped: (Sentence, paragraph: String) -> Unit,
     onTapElsewhere: () -> Unit
 ) {
@@ -330,7 +382,7 @@ private fun HeadingBlock(
             lineHeight = style.fontSize * scale * 1.25f,
             fontWeight = FontWeight.SemiBold
         ),
-        translationOf = translationOf,
+        translations = translations,
         onSentenceTapped = onSentenceTapped,
         onTapElsewhere = onTapElsewhere,
         modifier = Modifier
@@ -346,7 +398,7 @@ private fun HeadingBlock(
 private fun ListItemBlock(
     block: TextBlock.ListItem,
     style: TextStyle,
-    translationOf: (sentenceIndex: Int) -> PassageTranslation?,
+    translations: SentenceTranslations,
     onSentenceTapped: (Sentence, paragraph: String) -> Unit,
     onTapElsewhere: () -> Unit
 ) {
@@ -362,7 +414,7 @@ private fun ListItemBlock(
         ProseText(
             runs = block.text,
             style = style,
-            translationOf = translationOf,
+            translations = translations,
             onSentenceTapped = onSentenceTapped,
             onTapElsewhere = onTapElsewhere,
             modifier = Modifier.weight(1f)
@@ -379,7 +431,7 @@ private fun ListItemBlock(
 private fun QuoteBlock(
     block: TextBlock.Quote,
     style: TextStyle,
-    translationOf: (sentenceIndex: Int) -> PassageTranslation?,
+    translations: SentenceTranslations,
     onSentenceTapped: (Sentence, paragraph: String) -> Unit,
     onTapElsewhere: () -> Unit
 ) {
@@ -398,7 +450,7 @@ private fun QuoteBlock(
         ProseText(
             runs = block.text,
             style = style.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
-            translationOf = translationOf,
+            translations = translations,
             onSentenceTapped = onSentenceTapped,
             onTapElsewhere = onTapElsewhere,
             modifier = Modifier.weight(1f)
@@ -482,6 +534,17 @@ private fun SeparatorBlock() {
 private const val PENDING_TINT = 0.10f
 private const val TRANSLATED_TINT = 0.14f
 private const val FAILED_TINT = 0.16f
+
+/**
+ * How long the paragraph takes to settle into its translated form.
+ *
+ * Short. The fade is there to stop the lines below a replaced sentence from
+ * jumping, and once it is long enough to do that, every further millisecond is
+ * the reader waiting to read words that already arrived. Compose's own default
+ * is more than twice this, which on a sentence somebody is standing over reads
+ * as the app thinking rather than as the page re-setting.
+ */
+private const val TRANSLATION_FADE_MILLIS = 160
 
 /** A note is an aside about the text, and is set smaller than the text. */
 private const val NOTE_SCALE = 0.82f

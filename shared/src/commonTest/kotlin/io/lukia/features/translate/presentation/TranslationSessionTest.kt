@@ -173,6 +173,52 @@ class TranslationSessionTest {
         assertNull(session.passages.value[TextAnchor.Section(0, 0, 2)])
     }
 
+    /**
+     * A long evening with a long book cannot end with every tap copying every
+     * translation made since it was opened.
+     */
+    @Test
+    fun onlySoManyPassagesAreKeptAtOnce() = runTest {
+        val session = session { Translation("Translated ${it.text}") }
+
+        repeat(500) { index -> session.tap(anchor(index)) }
+        runCurrent()
+
+        assertEquals(400, session.passages.value.size)
+    }
+
+    /** What falls out is the part of the book furthest behind the reader. */
+    @Test
+    fun theOldestPassageIsTheOneForgotten() = runTest {
+        val session = session { Translation("Translated ${it.text}") }
+
+        repeat(401) { index -> session.tap(anchor(index)) }
+        runCurrent()
+
+        assertNull(session.passages.value[anchor(0)])
+        assertIs<PassageTranslation.Ready>(session.passages.value[anchor(400)])
+    }
+
+    /** Flipping a passage is touching it, so it is not the next one dropped. */
+    @Test
+    fun aPassageTheReaderKeepsComingBackToIsKept() = runTest {
+        val session = session { Translation("Translated ${it.text}") }
+
+        session.tap(anchor(0))
+        runCurrent()
+
+        repeat(399) { index -> session.tap(anchor(index + 1)) }
+        runCurrent()
+
+        // Flipping it to the original is a touch, and moves it to the front.
+        session.tap(anchor(0))
+        session.tap(anchor(500))
+        runCurrent()
+
+        assertIs<PassageTranslation.Ready>(session.passages.value[anchor(0)])
+        assertNull(session.passages.value[anchor(1)])
+    }
+
     @Test
     fun clearingForgetsEverythingTranslatedSoFar() = runTest {
         val session = session { Translation("Kutsukaa minua Ismaeliksi.") }
@@ -206,6 +252,9 @@ class TranslationSessionTest {
     private fun TestScope.session(
         translate: suspend (TranslationRequest) -> Translation
     ) = TranslationSession(TranslatePassageUseCase(Translator { translate(it) }), this)
+
+    private fun anchor(sentenceIndex: Int) =
+        TextAnchor.Section(sectionIndex = 0, blockIndex = 0, sentenceIndex = sentenceIndex)
 
     private fun TranslationSession.tap(
         anchor: TextAnchor,
