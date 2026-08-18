@@ -539,3 +539,58 @@ fun PlusGlyph(
         )
     }
 }
+
+/**
+ * A circling arrow, for reading a book's details out of its file again.
+ *
+ * The ring is deliberately broken rather than closed: the gap is what the
+ * arrowhead grows out of, and without it the mark reads as a plain circle with
+ * something stuck to it. The head is filled where the rest of the icon set is
+ * stroked, because at 18.dp two strokes meeting at a point silt up into a blob.
+ */
+@Composable
+fun RefreshGlyph(
+    tint: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val radius = size.minDimension * 0.30f
+        val center = androidx.compose.ui.geometry.Offset(
+            x = size.width / 2f,
+            y = size.height / 2f
+        )
+
+        drawArc(
+            color = tint,
+            startAngle = 40f,
+            sweepAngle = 280f,
+            useCenter = false,
+            topLeft = androidx.compose.ui.geometry.Offset(
+                x = center.x - radius,
+                y = center.y - radius
+            ),
+            size = androidx.compose.ui.geometry.Size(radius * 2f, radius * 2f),
+            style = Stroke(width = 1.8.dp.toPx(), cap = StrokeCap.Round)
+        )
+
+        // Where the sweep ends, pointing the way it was travelling: clockwise,
+        // which on a y-down canvas is the direction the angle increases in.
+        val endAngle = (40f + 280f) * PI.toFloat() / 180f
+        val outward = androidx.compose.ui.geometry.Offset(cos(endAngle), sin(endAngle))
+        val along = androidx.compose.ui.geometry.Offset(-sin(endAngle), cos(endAngle))
+        val tip = androidx.compose.ui.geometry.Offset(
+            x = center.x + radius * outward.x,
+            y = center.y + radius * outward.y
+        )
+        val head = radius * 0.62f
+
+        val arrow = Path().apply {
+            moveTo(tip.x + along.x * head, tip.y + along.y * head)
+            lineTo(tip.x + outward.x * head * 0.62f, tip.y + outward.y * head * 0.62f)
+            lineTo(tip.x - outward.x * head * 0.62f, tip.y - outward.y * head * 0.62f)
+            close()
+        }
+
+        drawPath(path = arrow, color = tint)
+    }
+}

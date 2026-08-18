@@ -3,9 +3,11 @@ package io.lukia.features.import.infrastructure
 import io.lukia.core.domain.PickedDocument
 import io.lukia.core.domain.PickedFolder
 import io.lukia.features.import.domain.FolderScanner
+import io.lukia.features.import.domain.MaxFolderScanDepth
 import io.lukia.features.import.domain.isSupportedDocument
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSDirectoryEnumerationSkipsHiddenFiles
+import platform.Foundation.NSDirectoryEnumerationSkipsPackageDescendants
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSURL
 
@@ -19,31 +21,48 @@ class IOSFolderScanner : FolderScanner {
 
         // The picker holds the security scope for this folder, so the
         // enumeration below succeeds without re-acquiring it here.
-        val contents = NSFileManager.defaultManager.contentsOfDirectoryAtURL(
+        //
+        // Package descendants are skipped because a `.pages` or `.rtfd` bundle
+        // is a directory pretending to be a file, and walking into one yields
+        // its internals rather than a book.
+        val enumerator = NSFileManager.defaultManager.enumeratorAtURL(
             url,
             null,
-            NSDirectoryEnumerationSkipsHiddenFiles,
+            NSDirectoryEnumerationSkipsHiddenFiles or
+                NSDirectoryEnumerationSkipsPackageDescendants,
             null
-        ).orEmpty()
+        ) ?: return emptyList()
 
-        return contents
-            .filterIsInstance<NSURL>()
-            .mapNotNull { fileUrl ->
+        val documents = mutableListOf<PickedDocument>()
 
-                val fileName = fileUrl.lastPathComponent
-                    ?: return@mapNotNull null
+        while (true) {
+            val fileUrl = enumerator.nextObject() as? NSURL ?: break
 
-                val extension = fileUrl.pathExtension ?: ""
-
-                if (!isSupportedDocument(extension)) {
-                    return@mapNotNull null
-                }
-
-                PickedDocument(
-                    fileName = fileName,
-                    extension = extension,
-                    location = fileUrl.absoluteString ?: return@mapNotNull null
-                )
+            // `level` is 1 for the folder's own contents, so this prunes the
+            // first directory that would take the walk past the cap - and
+            // pruning rather than filtering is what stops a deep tree being
+            // walked in full only to have most of it thrown away.
+            if (enumerator.level.toInt() > MaxFolderScanDepth) {
+                enumerator.skipDescendants()
+                continue
             }
+
+            val fileName = fileUrl.lastPathComponent ?: continue
+            val extension = fileUrl.pathExtension ?: ""
+
+            if (!isSupportedDocument(extension)) {
+                continue
+            }
+
+            val location = fileUrl.absoluteString ?: continue
+
+            documents += PickedDocument(
+                fileName = fileName,
+                extension = extension,
+                location = location
+            )
+        }
+
+        return documents
     }
 }

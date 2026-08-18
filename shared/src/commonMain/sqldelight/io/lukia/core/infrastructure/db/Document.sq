@@ -48,6 +48,12 @@ SELECT * FROM document ORDER BY sortKey;
 selectByLocation:
 SELECT * FROM document WHERE location = ?;
 
+-- Just the keys, for deciding what an import may leave alone. `selectAll` would
+-- answer the same question, but it carries the cover art of every book in the
+-- library with it - megabytes of BLOB decoded to compare a few hundred strings.
+selectLocations:
+SELECT location FROM document;
+
 -- Adding and refreshing are two statements rather than one upsert on purpose.
 -- `ON CONFLICT DO UPDATE` needs SQLite 3.24, and this app's minimum Android
 -- ships 3.9 - a book stored on a phone from 2016 would fail at the point of

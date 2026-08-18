@@ -83,6 +83,7 @@ internal fun BookCard(
     onMenuRequest: () -> Unit,
     onMenuDismiss: () -> Unit,
     onToggleFavorite: () -> Unit,
+    onRefresh: () -> Unit,
     onDelete: () -> Unit,
     onShowDetails: () -> Unit,
     reveal: LaunchReveal,
@@ -183,6 +184,7 @@ internal fun BookCard(
                 expanded = menuExpanded,
                 isFavorite = document.isFavorite,
                 onToggleFavorite = onToggleFavorite,
+                onRefresh = onRefresh,
                 onDelete = onDelete,
                 onDismissRequest = onMenuDismiss,
                 onShowDetails = onShowDetails

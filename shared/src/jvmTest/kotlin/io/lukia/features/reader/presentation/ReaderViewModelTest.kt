@@ -512,6 +512,10 @@ class ReaderViewModelTest {
         override suspend fun getDocument(location: String): DocumentInfo? =
             documents.firstOrNull { it.document.location == location }
 
+        /** Answered the expensive way; nothing in a test cares what it costs. */
+        override suspend fun knownLocations(): Set<String> =
+            getDocuments().mapTo(mutableSetOf()) { it.document.location }
+
         override suspend fun setFavorite(location: String, isFavorite: Boolean) = Unit
 
         override suspend fun removeDocument(location: String) {

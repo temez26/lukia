@@ -5,6 +5,17 @@
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<!--
+	    Together these put a Lukia folder in the Files app and let the reader
+	    fill it: books can be dropped in from another app, from a download or
+	    over AirDrop, and then picked from inside Lukia like any other folder.
+	    Without them the app's own storage is invisible and every book has to
+	    arrive through the picker.
+	-->
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<!--
 	    Asked for only when the reader points translation at a model running on
 	    their own machine. Reading a book needs nothing from the network at all.
 	-->

@@ -76,6 +76,7 @@ class LibraryContentTest {
                         onDocumentClick = {},
                         onDocumentDetails = onDocumentDetails,
                         onToggleFavorite = {},
+                        onRefresh = {},
                         onDelete = {},
                         onRetry = {},
                         isImporting = false

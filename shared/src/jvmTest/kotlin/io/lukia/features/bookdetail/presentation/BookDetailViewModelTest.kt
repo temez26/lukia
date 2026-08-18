@@ -9,6 +9,10 @@ import io.lukia.core.domain.TestDocuments
 import io.lukia.core.presentation.UiState
 import io.lukia.features.bookdetail.application.BookDetails
 import io.lukia.features.bookdetail.application.GetDocumentDetailsUseCase
+import io.lukia.features.import.domain.DocumentAnalyzer
+import io.lukia.features.library.TypeFromExtensionAnalyzer
+import io.lukia.features.library.application.ImportDocumentUseCase
+import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.domain.LibraryRepository
@@ -133,6 +137,44 @@ class BookDetailViewModelTest {
         assertEquals(emptyList(), repository.getDocuments())
     }
 
+    /** This screen shows one book, so a refresh reloads it rather than patching it. */
+    @Test
+    fun refreshingReloadsTheBookAndSaysSo() = runTest {
+        val documentInfo = pdfDocumentInfo()
+        val repository = FakeLibraryRepository(listOf(documentInfo.copy(sizeBytes = 1L)))
+        val viewModel = createViewModel("/test/book.pdf", repository)
+
+        viewModel.refreshDocument()
+
+        assertEquals(
+            1024L,
+            (viewModel.uiState.value as UiState.Success).data.document.sizeBytes
+        )
+        assertEquals("Details refreshed", viewModel.message.value)
+    }
+
+    /** A file that can no longer be read must not take the book off the screen. */
+    @Test
+    fun aRefreshThatFailsLeavesTheBookOnScreen() = runTest {
+        val documentInfo = pdfDocumentInfo()
+        val repository = FakeLibraryRepository(listOf(documentInfo))
+        val viewModel = createViewModel(
+            location = "/test/book.pdf",
+            repository = repository,
+            analyzer = TypeFromExtensionAnalyzer(
+                failingLocations = setOf("/test/book.pdf")
+            )
+        )
+
+        viewModel.refreshDocument()
+
+        assertEquals(
+            documentInfo,
+            (viewModel.uiState.value as UiState.Success).data.document
+        )
+        assertEquals("File does not exist: /test/book.pdf", viewModel.message.value)
+    }
+
     private fun pdfDocumentInfo() = DocumentInfo(
         document = TestDocuments.pdf(location = "/test/book.pdf"),
         type = DocumentType.PDF,
@@ -142,7 +184,8 @@ class BookDetailViewModelTest {
 
     private fun createViewModel(
         location: String,
-        repository: LibraryRepository
+        repository: LibraryRepository,
+        analyzer: DocumentAnalyzer = TypeFromExtensionAnalyzer()
     ): BookDetailViewModel {
         return BookDetailViewModel(
             location = location,
@@ -151,6 +194,15 @@ class BookDetailViewModelTest {
                 FakeReadingProgressRepository()
             ),
             setFavoriteUseCase = SetFavoriteUseCase(repository),
+            refreshDocumentUseCase = RefreshDocumentUseCase(
+                libraryRepository = repository,
+                importDocumentUseCase = ImportDocumentUseCase(
+                    documentAnalyzer = analyzer,
+                    libraryRepository = repository,
+                    dispatcher = UnconfinedTestDispatcher()
+                ),
+                dispatcher = UnconfinedTestDispatcher()
+            ),
             removeDocumentUseCase = RemoveDocumentUseCase(
                 repository,
                 FakeDocumentWorkspace(),
@@ -164,8 +216,20 @@ class BookDetailViewModelTest {
     ) : LibraryRepository {
         private val documents = initialDocuments.toMutableList()
 
+        /**
+         * Replaces by location, and keeps the favourite through it, as the real
+         * store does - the flag belongs to the reader, not to the file.
+         */
         override suspend fun addDocument(document: DocumentInfo) {
-            documents.add(document)
+            val index = documents.indexOfFirst {
+                it.document.location == document.document.location
+            }
+
+            if (index >= 0) {
+                documents[index] = document.copy(isFavorite = documents[index].isFavorite)
+            } else {
+                documents.add(document)
+            }
         }
 
         override suspend fun getDocuments(): List<DocumentInfo> {
@@ -175,6 +239,10 @@ class BookDetailViewModelTest {
         override suspend fun getDocument(location: String): DocumentInfo? {
             return documents.firstOrNull { it.document.location == location }
         }
+
+        /** Answered the expensive way; nothing in a test cares what it costs. */
+        override suspend fun knownLocations(): Set<String> =
+            getDocuments().mapTo(mutableSetOf()) { it.document.location }
 
         override suspend fun setFavorite(location: String, isFavorite: Boolean) {
             val index = documents.indexOfFirst { it.document.location == location }
@@ -196,6 +264,10 @@ class BookDetailViewModelTest {
         override suspend fun getDocument(location: String): DocumentInfo? {
             throw IllegalStateException("detail read blew up")
         }
+
+        /** Answered the expensive way; nothing in a test cares what it costs. */
+        override suspend fun knownLocations(): Set<String> =
+            getDocuments().mapTo(mutableSetOf()) { it.document.location }
 
         override suspend fun setFavorite(location: String, isFavorite: Boolean) = Unit
 

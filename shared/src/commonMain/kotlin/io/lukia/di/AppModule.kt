@@ -3,11 +3,13 @@ package io.lukia.di
 import io.lukia.features.bookdetail.application.GetDocumentDetailsUseCase
 import io.lukia.features.bookdetail.presentation.BookDetailViewModel
 import io.lukia.features.library.application.ImportDocumentUseCase
+import io.lukia.features.library.application.ImportDocumentsUseCase
 import io.lukia.features.library.application.ImportFolderUseCase
 import io.lukia.features.library.application.GetLibraryDocumentsUseCase
 import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.core.infrastructure.db.LukiaDatabase
 import io.lukia.features.library.infrastructure.SqlLibraryRepository
+import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.presentation.LibraryViewModel
@@ -55,11 +57,15 @@ val commonModule = module {
     }
 
     single {
+        ImportDocumentsUseCase(get(), get())
+    }
+
+    single {
         ImportFolderUseCase(get(), get())
     }
 
     viewModel {
-        LibraryViewModel(get(), get(), get(), get(), get(), get())
+        LibraryViewModel(get(), get(), get(), get(), get(), get(), get())
     }
 
     single {
@@ -68,6 +74,10 @@ val commonModule = module {
 
     single {
         SetFavoriteUseCase(get())
+    }
+
+    single {
+        RefreshDocumentUseCase(get(), get())
     }
 
     single {
@@ -157,7 +167,7 @@ val commonModule = module {
     }
 
     viewModel { (location: String) ->
-        BookDetailViewModel(location, get(), get(), get())
+        BookDetailViewModel(location, get(), get(), get(), get())
     }
 
     viewModel { (location: String) ->

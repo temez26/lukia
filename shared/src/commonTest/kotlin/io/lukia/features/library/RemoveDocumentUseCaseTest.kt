@@ -74,6 +74,10 @@ class RemoveDocumentUseCaseTest {
 
         override suspend fun getDocument(location: String): DocumentInfo? = documents[location]
 
+        /** Answered the expensive way; nothing in a test cares what it costs. */
+        override suspend fun knownLocations(): Set<String> =
+            getDocuments().mapTo(mutableSetOf()) { it.document.location }
+
         override suspend fun setFavorite(location: String, isFavorite: Boolean) {
             documents[location]?.let { documents[location] = it.copy(isFavorite = isFavorite) }
         }
