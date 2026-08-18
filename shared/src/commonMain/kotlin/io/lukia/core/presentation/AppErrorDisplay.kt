@@ -22,7 +22,7 @@ fun AppError.displayMessage(): String = when (this) {
     AppError.DocumentNotFound -> "It may have been moved or removed from your library."
     AppError.UnsupportedFileType -> "Lukia can open PDF and EPUB files."
     AppError.FormatNotReadable -> "Reading EPUB files is not ready yet - PDFs open today."
-    AppError.EmptyFolder -> "No PDF or EPUB files found in this folder."
+    AppError.EmptyFolder -> "No books found in this folder or the folders inside it."
     AppError.TranslationUnavailable ->
         "Choose a language to translate into in Settings, and add a translation service."
     AppError.TranslationFailed -> "The translation service did not answer. Try again."

@@ -176,6 +176,10 @@ class BookDetailViewModelTest {
             return documents.firstOrNull { it.document.location == location }
         }
 
+        /** Answered the expensive way; nothing in a test cares what it costs. */
+        override suspend fun knownLocations(): Set<String> =
+            getDocuments().mapTo(mutableSetOf()) { it.document.location }
+
         override suspend fun setFavorite(location: String, isFavorite: Boolean) {
             val index = documents.indexOfFirst { it.document.location == location }
             if (index >= 0) {
@@ -196,6 +200,10 @@ class BookDetailViewModelTest {
         override suspend fun getDocument(location: String): DocumentInfo? {
             throw IllegalStateException("detail read blew up")
         }
+
+        /** Answered the expensive way; nothing in a test cares what it costs. */
+        override suspend fun knownLocations(): Set<String> =
+            getDocuments().mapTo(mutableSetOf()) { it.document.location }
 
         override suspend fun setFavorite(location: String, isFavorite: Boolean) = Unit
 

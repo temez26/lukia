@@ -16,9 +16,11 @@ import io.lukia.features.import.domain.DocumentAnalyzer
 import io.lukia.features.import.domain.FolderScanner
 import io.lukia.features.library.application.GetLibraryDocumentsUseCase
 import io.lukia.features.library.application.ImportDocumentUseCase
+import io.lukia.features.library.application.ImportDocumentsUseCase
 import io.lukia.features.library.application.ImportFolderUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
+import io.lukia.features.library.TypeFromExtensionAnalyzer
 import io.lukia.features.library.domain.LibraryRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -72,7 +74,7 @@ class LibraryViewModelTest {
         val analyzer = FakeDocumentAnalyzer(documentInfo)
         val viewModel = createViewModel(repository, analyzer)
 
-        viewModel.importDocument(documentInfo.document)
+        viewModel.importDocuments(listOf(documentInfo.document))
 
         assertEquals(listOf(documentInfo), viewModel.documents())
         assertNull(viewModel.message.value)
@@ -90,7 +92,7 @@ class LibraryViewModelTest {
         )
         val viewModel = createViewModel(FakeLibraryRepository(), analyzer)
 
-        viewModel.importDocument(TestDocuments.unsupported(location = "/test/book.mobi"))
+        viewModel.importDocuments(listOf(TestDocuments.unsupported(location = "/test/book.mobi")))
 
         assertEquals(emptyList(), viewModel.documents())
         assertEquals(
@@ -111,7 +113,7 @@ class LibraryViewModelTest {
             analyzer = ThrowingDocumentAnalyzer()
         )
 
-        viewModel.importDocument(TestDocuments.pdf(location = "/test/book.pdf"))
+        viewModel.importDocuments(listOf(TestDocuments.pdf(location = "/test/book.pdf")))
 
         assertEquals("analysis blew up", viewModel.message.value)
         assertFalse(viewModel.isImporting.value)
@@ -126,7 +128,7 @@ class LibraryViewModelTest {
             analyzer = ThrowingDocumentAnalyzer()
         )
 
-        viewModel.importDocument(TestDocuments.pdf(location = "/test/other.pdf"))
+        viewModel.importDocuments(listOf(TestDocuments.pdf(location = "/test/other.pdf")))
 
         assertEquals(UiState.Success(listOf(documentInfo)), viewModel.uiState.value)
     }
@@ -141,7 +143,7 @@ class LibraryViewModelTest {
 
         assertFalse(viewModel.isImporting.value)
 
-        viewModel.importDocument(documentInfo.document)
+        viewModel.importDocuments(listOf(documentInfo.document))
 
         assertFalse(viewModel.isImporting.value)
     }
@@ -161,28 +163,79 @@ class LibraryViewModelTest {
         assertNull(viewModel.message.value)
     }
 
+    /**
+     * A folder that came in partly is not a failure - the books that did arrive
+     * are usable - so it reports itself as a notice rather than an error.
+     */
     @Test
     fun partialFolderImportReportsSkippedFiles() = runTest {
-        val documentInfo = pdfDocumentInfo()
         val viewModel = createViewModel(
             repository = FakeLibraryRepository(),
-            // Every file analyzes to the same unsupported result, so the whole
-            // folder is skipped rather than imported.
-            analyzer = FakeDocumentAnalyzer(
-                DocumentInfo(
-                    document = TestDocuments.unsupported(location = "/test/notes.mobi"),
-                    type = DocumentType.UNKNOWN,
-                    exists = true,
-                    sizeBytes = 10L
+            analyzer = TypeFromExtensionAnalyzer(),
+            folderScanner = FakeFolderScanner(
+                listOf(
+                    TestDocuments.pdf(location = "/test/book.pdf"),
+                    TestDocuments.unsupported(location = "/test/notes.mobi")
                 )
-            ),
+            )
+        )
+
+        viewModel.importFolder(booksFolder)
+
+        assertEquals(1, viewModel.documents().size)
+        assertEquals("Imported 1, 1 skipped", viewModel.message.value)
+    }
+
+    /**
+     * A rescan is the common case - the reader added two books to a shelf the
+     * library already knows - and it must not re-open every file on it.
+     */
+    @Test
+    fun rescanningAFolderReportsWhatWasAlreadyThere() = runTest {
+        val documentInfo = pdfDocumentInfo()
+        val viewModel = createViewModel(
+            repository = FakeLibraryRepository(initialDocuments = listOf(documentInfo)),
+            analyzer = ThrowingDocumentAnalyzer(),
             folderScanner = FakeFolderScanner(listOf(documentInfo.document))
         )
 
         viewModel.importFolder(booksFolder)
 
-        assertEquals(emptyList(), viewModel.documents())
-        assertEquals("Imported 0, skipped 1", viewModel.message.value)
+        assertEquals("Already in your library", viewModel.message.value)
+    }
+
+    /** Nothing counts a batch of one, so nothing should show a count for it. */
+    @Test
+    fun aSingleFileImportShowsNoProgressCount() = runTest {
+        val documentInfo = pdfDocumentInfo()
+        val viewModel = createViewModel(
+            repository = FakeLibraryRepository(),
+            analyzer = FakeDocumentAnalyzer(documentInfo)
+        )
+
+        viewModel.importDocuments(listOf(documentInfo.document))
+
+        assertNull(viewModel.importProgress.value)
+    }
+
+    /** The count belongs to the import that is running, and to no moment after it. */
+    @Test
+    fun progressIsClearedOnceAnImportFinishes() = runTest {
+        val documentInfo = pdfDocumentInfo()
+        val viewModel = createViewModel(
+            repository = FakeLibraryRepository(),
+            analyzer = FakeDocumentAnalyzer(documentInfo),
+            folderScanner = FakeFolderScanner(
+                listOf(
+                    TestDocuments.pdf(location = "/test/one.pdf"),
+                    TestDocuments.pdf(location = "/test/two.pdf")
+                )
+            )
+        )
+
+        viewModel.importFolder(booksFolder)
+
+        assertNull(viewModel.importProgress.value)
     }
 
     @Test
@@ -208,7 +261,7 @@ class LibraryViewModelTest {
             )
         )
         val viewModel = createViewModel(FakeLibraryRepository(), analyzer)
-        viewModel.importDocument(TestDocuments.unsupported(location = "/test/book.mobi"))
+        viewModel.importDocuments(listOf(TestDocuments.unsupported(location = "/test/book.mobi")))
 
         viewModel.clearMessage()
 
@@ -307,18 +360,22 @@ class LibraryViewModelTest {
         // The use cases move work off the main dispatcher in production;
         // pinning it here keeps imports synchronous so state can be asserted
         // immediately after the call.
-        val importDocumentUseCase = ImportDocumentUseCase(
-            documentAnalyzer = analyzer,
+        val importDocumentsUseCase = ImportDocumentsUseCase(
+            importDocumentUseCase = ImportDocumentUseCase(
+                documentAnalyzer = analyzer,
+                libraryRepository = repository,
+                dispatcher = UnconfinedTestDispatcher()
+            ),
             libraryRepository = repository,
             dispatcher = UnconfinedTestDispatcher()
         )
 
         return LibraryViewModel(
             getLibraryDocumentsUseCase = GetLibraryDocumentsUseCase(repository),
-            importDocumentUseCase = importDocumentUseCase,
+            importDocumentsUseCase = importDocumentsUseCase,
             importFolderUseCase = ImportFolderUseCase(
                 folderScanner = folderScanner,
-                importDocumentUseCase = importDocumentUseCase,
+                importDocumentsUseCase = importDocumentsUseCase,
                 dispatcher = UnconfinedTestDispatcher()
             ),
             setFavoriteUseCase = SetFavoriteUseCase(repository),
@@ -382,6 +439,10 @@ class LibraryViewModelTest {
             return documents.firstOrNull { it.document.location == location }
         }
 
+        /** Answered the expensive way; nothing in a test cares what it costs. */
+        override suspend fun knownLocations(): Set<String> =
+            getDocuments().mapTo(mutableSetOf()) { it.document.location }
+
         override suspend fun setFavorite(location: String, isFavorite: Boolean) {
             val index = documents.indexOfFirst { it.document.location == location }
             if (index >= 0) {
@@ -402,6 +463,10 @@ class LibraryViewModelTest {
         }
 
         override suspend fun getDocument(location: String): DocumentInfo? = null
+
+        /** Answered the expensive way; nothing in a test cares what it costs. */
+        override suspend fun knownLocations(): Set<String> =
+            getDocuments().mapTo(mutableSetOf()) { it.document.location }
 
         override suspend fun setFavorite(location: String, isFavorite: Boolean) = Unit
 

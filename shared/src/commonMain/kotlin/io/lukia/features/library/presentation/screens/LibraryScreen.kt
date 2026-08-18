@@ -43,6 +43,7 @@ import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.bookdetail.presentation.BookDetailOverlay
 import io.lukia.features.import.presentation.rememberPlatformFilePicker
 import io.lukia.features.import.presentation.rememberPlatformFolderPicker
+import io.lukia.features.library.presentation.ImportProgress
 import io.lukia.features.library.presentation.LibraryFilter
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.availableFilters
@@ -95,6 +96,7 @@ fun LibraryScreen(
     val uiState by viewModel.uiState.collectAsState()
     val message by viewModel.message.collectAsState()
     val isImporting by viewModel.isImporting.collectAsState()
+    val importProgress by viewModel.importProgress.collectAsState()
     val readingProgress by viewModel.readingProgress.collectAsState()
 
     val filePicker = rememberPlatformFilePicker()
@@ -125,9 +127,7 @@ fun LibraryScreen(
         LibraryContent(
             uiState = uiState,
             onImport = {
-                filePicker.launch { pickedDocument ->
-                    pickedDocument?.let { viewModel.importDocument(it) }
-                }
+                filePicker.launch(viewModel::importDocuments)
             },
             onImportFolder = {
                 folderPicker.launch { pickedFolder ->
@@ -143,6 +143,7 @@ fun LibraryScreen(
             onDelete = viewModel::deleteDocument,
             onRetry = viewModel::refresh,
             isImporting = isImporting,
+            importProgress = importProgress,
             snackbarHostState = snackbarHostState,
             readingProgress = readingProgress
         )
@@ -172,6 +173,12 @@ fun LibraryContent(
     onDelete: (DocumentInfo) -> Unit,
     onRetry: () -> Unit,
     isImporting: Boolean,
+    /**
+     * How far through a multi-file import the library is, when there is more
+     * than one file to count. Defaulted to nothing so this screen still composes
+     * without a ViewModel behind it, which is how it is tested and previewed.
+     */
+    importProgress: ImportProgress? = null,
     onSettings: () -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     /**
@@ -295,7 +302,7 @@ fun LibraryContent(
                     ) { state ->
                         when (state) {
                             LibraryContentState.Importing -> LoadingState(
-                                message = "Importing books…",
+                                message = importingMessage(importProgress),
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .padding(top = libraryNavBarHeight())
@@ -319,6 +326,7 @@ fun LibraryContent(
                                 activeFilter = activeFilter,
                                 onFilterChange = { selectedFilter = it },
                                 isImporting = isImporting,
+                                importProgress = importProgress,
                                 reveal = reveal,
                                 onDocumentClick = onDocumentClick,
                                 onDocumentDetails = { document ->
@@ -381,6 +389,20 @@ fun LibraryContent(
 }
 
 /**
+ * What the screen says while it is filling an empty library.
+ *
+ * The count is only ever the one the ViewModel offers, so a single file reads as
+ * plain "Importing books…" rather than as a progress bar that is finished before
+ * it is seen.
+ */
+private fun importingMessage(progress: ImportProgress?): String =
+    if (progress == null) {
+        "Importing books…"
+    } else {
+        "Importing ${progress.completed} of ${progress.total}…"
+    }
+
+/**
  * Which of the screen's menus is open, if any.
  *
  * A closed set rather than a flag each: these are mutually exclusive, and one
@@ -415,6 +437,7 @@ private fun LibraryGrid(
     activeFilter: LibraryFilter,
     onFilterChange: (LibraryFilter) -> Unit,
     isImporting: Boolean,
+    importProgress: ImportProgress?,
     reveal: LaunchReveal,
     onDocumentClick: (DocumentInfo) -> Unit,
     onDocumentDetails: (DocumentInfo) -> Unit,
@@ -450,6 +473,7 @@ private fun LibraryGrid(
                 selectedFilter = activeFilter,
                 onFilterChange = onFilterChange,
                 isImporting = isImporting,
+                importProgress = importProgress,
                 reveal = reveal
             )
         }

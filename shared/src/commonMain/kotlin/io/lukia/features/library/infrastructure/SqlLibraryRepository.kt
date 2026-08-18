@@ -86,6 +86,10 @@ class SqlLibraryRepository(
         documents.selectByLocation(location).executeAsOneOrNull()?.toDocumentInfo()
     }
 
+    override suspend fun knownLocations(): Set<String> = withContext(dispatcher) {
+        documents.selectLocations().executeAsList().toSet()
+    }
+
     override suspend fun setFavorite(location: String, isFavorite: Boolean) =
         withContext(dispatcher) {
             // A statement that matches no row is already the no-op the contract

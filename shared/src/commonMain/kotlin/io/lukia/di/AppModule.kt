@@ -3,6 +3,7 @@ package io.lukia.di
 import io.lukia.features.bookdetail.application.GetDocumentDetailsUseCase
 import io.lukia.features.bookdetail.presentation.BookDetailViewModel
 import io.lukia.features.library.application.ImportDocumentUseCase
+import io.lukia.features.library.application.ImportDocumentsUseCase
 import io.lukia.features.library.application.ImportFolderUseCase
 import io.lukia.features.library.application.GetLibraryDocumentsUseCase
 import io.lukia.features.library.domain.LibraryRepository
@@ -52,6 +53,10 @@ val commonModule = module {
 
     single {
         ImportDocumentUseCase(get(), get())
+    }
+
+    single {
+        ImportDocumentsUseCase(get(), get())
     }
 
     single {

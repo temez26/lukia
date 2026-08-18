@@ -43,7 +43,7 @@ actual fun rememberPlatformFilePicker(): PlatformFilePickerState {
             private var delegate: UIDocumentPickerDelegateProtocol? = null
 
             override fun launch(
-                onPicked: (PickedDocument?) -> Unit
+                onPicked: (List<PickedDocument>) -> Unit
             ) {
                 val contentTypes = supportedContentTypes()
 
@@ -51,6 +51,10 @@ actual fun rememberPlatformFilePicker(): PlatformFilePickerState {
                     forOpeningContentTypes = contentTypes,
                     asCopy = true
                 )
+
+                // A reader adding books has usually just saved several, and one
+                // trip through Files should be enough for all of them.
+                picker.allowsMultipleSelection = true
 
                 val pickerDelegate = object :
                     NSObject(),
@@ -60,31 +64,23 @@ actual fun rememberPlatformFilePicker(): PlatformFilePickerState {
                         controller: UIDocumentPickerViewController,
                         didPickDocumentsAtURLs: List<*>
                     ) {
-                        val url = didPickDocumentsAtURLs
-                            .firstOrNull() as? NSURL
-
-                        if (url == null) {
-                            onPicked(null)
-                            return
-                        }
-
-                        val fileName = url.lastPathComponent ?: ""
-                        val extension = url.pathExtension ?: ""
-                        val location = url.absoluteString ?: ""
-
                         onPicked(
-                            PickedDocument(
-                                fileName = fileName,
-                                extension = extension,
-                                location = location
-                            )
+                            didPickDocumentsAtURLs
+                                .filterIsInstance<NSURL>()
+                                .mapNotNull { url ->
+                                    PickedDocument(
+                                        fileName = url.lastPathComponent ?: return@mapNotNull null,
+                                        extension = url.pathExtension ?: "",
+                                        location = url.absoluteString ?: return@mapNotNull null
+                                    )
+                                }
                         )
                     }
 
                     override fun documentPickerWasCancelled(
                         controller: UIDocumentPickerViewController
                     ) {
-                        onPicked(null)
+                        onPicked(emptyList())
                     }
                 }
 

@@ -30,6 +30,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.lukia.features.library.presentation.ImportProgress
 import io.lukia.features.library.presentation.LibraryFilter
 import io.lukia.shared.presentation.components.AnchoredMenu
 import io.lukia.shared.presentation.components.EllipsisGlyph
@@ -261,7 +262,7 @@ internal fun ColumnScope.ImportMenuRows(
     onImportFolder: () -> Unit
 ) {
     MenuRow(
-        label = "Import Book",
+        label = "Import Books",
         icon = { tint, glyph -> PlusGlyph(tint = tint, modifier = glyph) },
         onClick = {
             onDismissRequest()
@@ -331,6 +332,7 @@ internal fun LibraryHeader(
     selectedFilter: LibraryFilter,
     onFilterChange: (LibraryFilter) -> Unit,
     isImporting: Boolean,
+    importProgress: ImportProgress?,
     reveal: LaunchReveal,
     modifier: Modifier = Modifier
 ) {
@@ -360,6 +362,7 @@ internal fun LibraryHeader(
 
         ImportingNotice(
             visible = isImporting,
+            progress = importProgress,
             modifier = Modifier.launchReveal(reveal, index = 1)
         )
     }
@@ -376,6 +379,7 @@ internal fun LibraryHeader(
 @Composable
 private fun ImportingNotice(
     visible: Boolean,
+    progress: ImportProgress?,
     modifier: Modifier = Modifier
 ) {
     AnimatedVisibility(
@@ -397,7 +401,12 @@ private fun ImportingNotice(
             Spacer(modifier = Modifier.width(Space.md))
 
             Text(
-                text = "Importing…",
+                // A folder can hold hundreds of books, each one opened and its
+                // cover rendered. Without the count, a long import is a spinner
+                // that gives no way to tell working from stuck.
+                text = progress
+                    ?.let { "Importing ${it.completed} of ${it.total}…" }
+                    ?: "Importing…",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

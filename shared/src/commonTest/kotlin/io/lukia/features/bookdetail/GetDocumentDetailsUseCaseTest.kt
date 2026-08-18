@@ -99,6 +99,10 @@ class GetDocumentDetailsUseCaseTest {
             return documents.firstOrNull { it.document.location == location }
         }
 
+        /** Answered the expensive way; nothing in a test cares what it costs. */
+        override suspend fun knownLocations(): Set<String> =
+            getDocuments().mapTo(mutableSetOf()) { it.document.location }
+
         override suspend fun setFavorite(location: String, isFavorite: Boolean) {
             val index = documents.indexOfFirst { it.document.location == location }
             if (index >= 0) {

@@ -13,6 +13,13 @@ interface LibraryRepository {
     suspend fun getDocument(location: String): DocumentInfo?
 
     /**
+     * The locations of every document in the library, and nothing else about
+     * them. What an import needs to know which files it may leave alone, without
+     * reading back the cover art of the whole library to find out.
+     */
+    suspend fun knownLocations(): Set<String>
+
+    /**
      * Sets the favourite flag on the document stored at [location].
      *
      * A no-op for an unknown location: the caller is a UI event on a list that

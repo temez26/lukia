@@ -10,8 +10,9 @@ import io.lukia.core.domain.toAppError
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.library.application.GetLibraryDocumentsUseCase
-import io.lukia.features.library.application.ImportDocumentUseCase
+import io.lukia.features.library.application.ImportDocumentsUseCase
 import io.lukia.features.library.application.ImportFolderUseCase
+import io.lukia.features.library.application.ImportSummary
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.reader.domain.ReadingProgress
@@ -24,7 +25,7 @@ import kotlinx.coroutines.launch
 
 class LibraryViewModel(
     private val getLibraryDocumentsUseCase: GetLibraryDocumentsUseCase,
-    private val importDocumentUseCase: ImportDocumentUseCase,
+    private val importDocumentsUseCase: ImportDocumentsUseCase,
     private val importFolderUseCase: ImportFolderUseCase,
     private val setFavoriteUseCase: SetFavoriteUseCase,
     private val removeDocumentUseCase: RemoveDocumentUseCase,
@@ -64,6 +65,18 @@ class LibraryViewModel(
     private val _isImporting = MutableStateFlow(false)
     val isImporting: StateFlow<Boolean> = _isImporting.asStateFlow()
 
+    /**
+     * How far through the current import the library is, or null when there is
+     * no count to give - a single file, or an import that has not started.
+     *
+     * Separate from [isImporting] because a folder can hold hundreds of books
+     * and each one is opened and has its cover rendered: without a count, a scan
+     * of a large shelf is several minutes of a spinner that says nothing about
+     * whether it is working or stuck.
+     */
+    private val _importProgress = MutableStateFlow<ImportProgress?>(null)
+    val importProgress: StateFlow<ImportProgress?> = _importProgress.asStateFlow()
+
     init {
         loadDocuments()
     }
@@ -95,21 +108,25 @@ class LibraryViewModel(
         }
     }
 
-    fun importDocument(pickedDocument: PickedDocument) {
-        runImport { importDocumentUseCase(pickedDocument).map { } }
+    fun importDocuments(pickedDocuments: List<PickedDocument>) {
+        if (pickedDocuments.isEmpty()) {
+            return
+        }
+
+        runImport { importDocumentsUseCase(pickedDocuments, ::reportProgress) }
     }
 
     fun importFolder(pickedFolder: PickedFolder) {
-        runImport {
-            importFolderUseCase(pickedFolder).map { summary ->
-                // A partly imported folder is not a failure - the books that did
-                // come in are usable - so it reports itself as a notice rather
-                // than taking the screen over.
-                if (summary.failed > 0) {
-                    _message.value = "Imported ${summary.imported}, skipped ${summary.failed}"
-                }
-            }
-        }
+        runImport { importFolderUseCase(pickedFolder, ::reportProgress) }
+    }
+
+    /**
+     * Only counted for a batch worth counting. One file is done before a
+     * "1 of 1" could be read, and a number that appears and vanishes reads as a
+     * flicker rather than as progress.
+     */
+    private fun reportProgress(completed: Int, total: Int) {
+        _importProgress.value = if (total > 1) ImportProgress(completed, total) else null
     }
 
     /**
@@ -117,7 +134,7 @@ class LibraryViewModel(
      * duration, reloads on success, and reports any failure - named or
      * unforeseen - through the snackbar.
      */
-    private fun runImport(block: suspend () -> Result<Unit>) {
+    private fun runImport(block: suspend () -> Result<ImportSummary>) {
         viewModelScope.launch {
             _isImporting.value = true
             _message.value = null
@@ -127,10 +144,17 @@ class LibraryViewModel(
                 // an unanticipated throw are both narrowed in the same place.
                 runCatchingApp { block().getOrThrow() }
                     .onFailure { _message.value = it.toAppError().displayShortMessage() }
-                    .onSuccess { loadDocuments() }
+                    .onSuccess { summary ->
+                        // A partly imported batch is not a failure - the books
+                        // that did come in are usable - so it reports itself as
+                        // a notice rather than taking the screen over.
+                        _message.value = summary.notice()
+                        loadDocuments()
+                    }
             } finally {
                 // In a finally so nothing can leave the library spinning.
                 _isImporting.value = false
+                _importProgress.value = null
             }
         }
     }

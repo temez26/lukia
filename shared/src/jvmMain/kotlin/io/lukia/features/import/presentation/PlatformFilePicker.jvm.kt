@@ -11,10 +11,12 @@ actual fun rememberPlatformFilePicker(): PlatformFilePickerState {
     return object : PlatformFilePickerState {
 
         override fun launch(
-            onPicked: (PickedDocument?) -> Unit
+            onPicked: (List<PickedDocument>) -> Unit
         ) {
 
             val chooser = JFileChooser()
+
+            chooser.isMultiSelectionEnabled = true
 
             chooser.fileFilter =
                 FileNameExtensionFilter(
@@ -30,24 +32,20 @@ actual fun rememberPlatformFilePicker(): PlatformFilePickerState {
 
             val result = chooser.showOpenDialog(null)
 
-            if (result == JFileChooser.APPROVE_OPTION) {
+            if (result != JFileChooser.APPROVE_OPTION) {
+                onPicked(emptyList())
+                return
+            }
 
-                val file = chooser.selectedFile
-
-                onPicked(
+            onPicked(
+                chooser.selectedFiles.map { file ->
                     PickedDocument(
                         fileName = file.name,
                         extension = file.extension,
                         location = file.absolutePath
                     )
-                )
-
-            } else {
-
-                onPicked(null)
-
-            }
-
+                }
+            )
         }
     }
 }
