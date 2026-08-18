@@ -323,6 +323,121 @@ class ReaderTranslationTest {
         assertEquals(passages.size, passages.distinct().size, "a sentence was asked about twice")
     }
 
+
+    /**
+     * The marks invite a second tap at exactly the word that was just
+     * translated. That tap has to be about the word - asking for the sentence
+     * around it instead takes away the answer the reader was pointing at.
+     */
+    @Test
+    fun tappingATranslatedWordIsAboutThatWordRatherThanItsSentence() = runComposeUiTest {
+        var selected: PassageSelection? = null
+
+        setReader(
+            translations = {
+                mapOf(
+                    TextAnchor.Section(0, 0, 0, wordIndex = 0) to
+                        PassageTranslation.Ready(Translation("Kutsukaa"))
+                )
+            },
+            onPassageSelected = { selected = it }
+        )
+
+        onNodeWithText("Kutsukaa me Ishmael.", substring = true).clickFirstWords()
+
+        val selection = assertNotNull(selected, "nothing was selected")
+        assertEquals(
+            TextAnchor.Section(0, 0, 0, wordIndex = 0),
+            selection.anchor,
+            "tapping a translated word asked about its sentence"
+        )
+    }
+
+    /** A word nobody has touched is part of its sentence, and a tap still means that. */
+    @Test
+    fun tappingAnUntouchedWordStillAsksForTheSentence() = runComposeUiTest {
+        var selected: PassageSelection? = null
+
+        setReader(
+            translations = {
+                mapOf(
+                    TextAnchor.Section(0, 0, 0, wordIndex = 2) to
+                        PassageTranslation.Ready(Translation("Ismaeliksi"))
+                )
+            },
+            onPassageSelected = { selected = it }
+        )
+
+        // "Call" is untouched; the translated word is the third one.
+        onNodeWithText("Call me Ismaeliksi.", substring = true).clickFirstWords()
+
+        assertEquals(TextAnchor.Section(0, 0, 0), assertNotNull(selected).anchor)
+    }
+
+    /**
+     * A word asked about on its own is usually the ambiguous one, so its remark
+     * is the one most worth reading - and it names the word it is about, since
+     * the translation is standing where that word was.
+     */
+    @Test
+    fun aRemarkAboutASingleWordIsShownUnderTheParagraph() = runComposeUiTest {
+        setReader(
+            translations = {
+                mapOf(
+                    TextAnchor.Section(0, 0, 0, wordIndex = 2) to PassageTranslation.Ready(
+                        Translation("Ismaeliksi", note = "kept as the book writes it")
+                    )
+                )
+            }
+        )
+
+        onNodeWithText("Ishmael: kept as the book writes it", substring = true).assertExists()
+    }
+
+    /** A word that could not be translated says why, exactly as a sentence does. */
+    @Test
+    fun aWordThatFailedSaysWhyUnderTheParagraph() = runComposeUiTest {
+        setReader(
+            translations = {
+                mapOf(
+                    TextAnchor.Section(0, 0, 0, wordIndex = 0) to PassageTranslation.Failed(
+                        AppError.Unexpected("That API key was not accepted.")
+                    )
+                )
+            }
+        )
+
+        onNodeWithText("was not accepted", substring = true).assertExists()
+        // And the word is still there to read, and to tap again.
+        onNodeWithText(opening, substring = true).assertExists()
+    }
+
+    /**
+     * A word is only on the page while its sentence's own words are. Once the
+     * sentence is translated whole, a remark about a word underneath it is a
+     * remark about nothing the reader can see.
+     */
+    @Test
+    fun aWordsRemarkGoesAwayWhenItsSentenceIsTranslatedWhole() = runComposeUiTest {
+        setReader(
+            translations = {
+                mapOf(
+                    TextAnchor.Section(0, 0, 0) to PassageTranslation.Ready(Translation(translated)),
+                    TextAnchor.Section(0, 0, 0, wordIndex = 2) to PassageTranslation.Ready(
+                        Translation("Ismaeliksi", note = "kept as the book writes it")
+                    )
+                )
+            }
+        )
+
+        assertEquals(
+            0,
+            onAllNodes(hasText("kept as the book writes it", substring = true))
+                .fetchSemanticsNodes()
+                .size
+        )
+    }
+
     /**
      * A tap lands where it is aimed. The node is the whole paragraph, so its
      * centre is whichever sentence happens to fall in the middle of it - the

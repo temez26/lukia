@@ -323,34 +323,53 @@ private fun ProseText(
         currentActions.onBlock(sentences, paragraph)
     }
 
+    val currentTranslations by rememberUpdatedState(translations)
+
     val tappable = modifier.pointerInput(sentences, words) {
         detectTapGestures(
             onTap = { position ->
-                val sentence = layout
-                    ?.getOffsetForPosition(position)
+                val offset = layout?.getOffsetForPosition(position)
+
+                // A tap on a passage the reader has already asked about acts on
+                // that passage. Without this, tapping a word they had just
+                // translated - which is exactly where the marks invite a second
+                // tap - would translate the whole sentence around it instead of
+                // giving them the word back.
+                //
+                // Only a word that is marked. An untouched word is part of the
+                // sentence it is in, and tapping it means what it has always
+                // meant.
+                val marked = offset
+                    ?.let { currentDrawn.wordAt(it) }
+                    ?.takeIf { currentTranslations.words(it.sentenceIndex)[it.span.index] != null }
+                    ?.let { words.at(it) }
+
+                val sentence = offset
                     ?.let { currentDrawn.sentenceAt(it) }
                     ?.let { sentences.getOrNull(it) }
 
-                // A tap between two sentences, or past the end of the last line,
-                // is a tap on the page rather than on any words - and putting
-                // the chrome away is what that has always meant.
-                if (sentence == null) {
-                    currentActions.onElsewhere()
-                } else {
-                    currentActions.onSentence(sentence, paragraph)
+                when {
+                    marked != null && sentence != null ->
+                        currentActions.onWord(sentence, marked, paragraph)
+
+                    sentence != null -> currentActions.onSentence(sentence, paragraph)
+
+                    // A tap between two sentences, or past the end of the last
+                    // line, is a tap on the page rather than on any words - and
+                    // putting the chrome away is what that has always meant.
+                    else -> currentActions.onElsewhere()
                 }
             },
-            // Holding a word asks about that word alone. A tap still means the
-            // whole sentence, so the two never compete: the finger that stops is
+            // Holding a word asks about that word alone, whether or not it has
+            // been asked about before. A tap on an untouched word still means
+            // the sentence, so the two never compete: the finger that stops is
             // asking the narrower question.
             onLongPress = { position ->
                 val offset = layout?.getOffsetForPosition(position) ?: return@detectTapGestures
-                val drawnWord = currentDrawn.wordAt(offset) ?: return@detectTapGestures
-                val sentence = sentences.getOrNull(drawnWord.sentenceIndex)
+                val word = currentDrawn.wordAt(offset)?.let { words.at(it) }
                     ?: return@detectTapGestures
-                val word = words.firstOrNull {
-                    it.sentenceIndex == drawnWord.sentenceIndex && it.index == drawnWord.span.index
-                } ?: return@detectTapGestures
+                val sentence = sentences.getOrNull(word.sentenceIndex)
+                    ?: return@detectTapGestures
 
                 currentActions.onWord(sentence, word, paragraph)
             }
@@ -412,9 +431,13 @@ private fun ProseText(
             )
         }
 
-        TranslatorsRemarks(sentences, translations, style)
+        TranslatorsRemarks(sentences, words, translations, style)
     }
 }
+
+/** The word the book wrote at a place in the paragraph as it is currently drawn. */
+private fun List<Word>.at(drawn: ParagraphText.DrawnWord): Word? =
+    firstOrNull { it.sentenceIndex == drawn.sentenceIndex && it.index == drawn.span.index }
 
 /** Whether any part of this is inside the window it is being drawn in. */
 private fun LayoutCoordinates.isOnScreen(): Boolean {
@@ -430,7 +453,7 @@ private fun LayoutCoordinates.isOnScreen(): Boolean {
  * What the translator had to say about this paragraph, under it.
  *
  * Two different things share this line, because they belong in the same place:
- * a remark about an ambiguous word, and the reason a sentence could not be
+ * a remark about an ambiguous word, and the reason a passage could not be
  * translated at all. Under rather than beside, because a note set into the prose
  * is a footnote in the middle of a sentence and the reader is here to read the
  * book.
@@ -438,24 +461,36 @@ private fun LayoutCoordinates.isOnScreen(): Boolean {
  * A failure has to appear somewhere. Marked only by a pair of dots it says
  * nothing about what went wrong, which leaves somebody looking at a mark and
  * wondering whether anything is happening.
+ *
+ * Single words have both as much as sentences do - a word asked about on its own
+ * is usually the ambiguous one, so its note is the one most worth reading - and
+ * they are gathered in reading order with the sentences they sit in rather than
+ * in a list of their own.
  */
 @Composable
 private fun TranslatorsRemarks(
     sentences: List<Sentence>,
+    words: List<Word>,
     translations: SentenceTranslations,
     style: TextStyle
 ) {
-    val remarks = sentences.mapNotNull { sentence ->
-        when (val state = translations[sentence.index]) {
-            null, is PassageTranslation.Loading -> null
+    val remarks = remember(sentences, words, translations) {
+        buildList {
+            sentences.forEach { sentence ->
+                translations[sentence.index].remark()?.let { add(it) }
 
-            is PassageTranslation.Failed -> Remark(state.error.displayShortMessage(), failed = true)
+                // A word is only on the page while its sentence's own words are,
+                // and a remark about something nobody can see is noise.
+                if (translations[sentence.index].shownText != null) return@forEach
 
-            is PassageTranslation.Ready -> state
-                .takeIf { !it.showingOriginal }
-                ?.translation
-                ?.note
-                ?.let { Remark(it, failed = false) }
+                words.forEach { word ->
+                    if (word.sentenceIndex != sentence.index) return@forEach
+
+                    translations.words(sentence.index)[word.index]
+                        .remark(replaced = word.text)
+                        ?.let { add(it) }
+                }
+            }
         }
     }
 
@@ -481,6 +516,28 @@ private fun TranslatorsRemarks(
             )
         }
     }
+}
+
+/**
+ * What is worth saying under the paragraph about one passage, if anything.
+ *
+ * [replaced] is the book's own word, named for a note about a single word
+ * because that word is no longer on the page - the translation is standing where
+ * it was, and a remark about "piece" under a paragraph now reading "ase" is a
+ * remark about nothing the reader can see. A failure needs no such introduction:
+ * nothing was replaced, so the word is still there to look at.
+ */
+private fun PassageTranslation?.remark(replaced: String? = null): Remark? = when (this) {
+    null, is PassageTranslation.Loading -> null
+
+    is PassageTranslation.Failed -> Remark(error.displayShortMessage(), failed = true)
+
+    is PassageTranslation.Ready -> takeIf { !showingOriginal }
+        ?.translation
+        ?.note
+        ?.let { note ->
+            Remark(if (replaced == null) note else "$replaced: $note", failed = false)
+        }
 }
 
 private data class Remark(val text: String, val failed: Boolean)
