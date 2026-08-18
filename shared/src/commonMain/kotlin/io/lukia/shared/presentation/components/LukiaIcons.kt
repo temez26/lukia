@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import kotlin.math.PI
@@ -596,13 +597,12 @@ fun RefreshGlyph(
 }
 
 /**
- * The mark the reader already knows: two lines of a passage, bracketed by the
- * same pair of dots that sits at either end of a translated sentence on the
- * page.
+ * The mark the reader already knows: two lines of a passage sitting on the same
+ * soft highlight that a translated passage sits on in the book.
  *
- * Deliberately not a letter from one alphabet beside a letter from another,
- * which is the usual translate icon and says "language" rather than "this
- * passage". This says what the button does to what is on screen.
+ * Deliberately not a letter from one alphabet beside a letter from another, which
+ * is the usual translate icon and says "language" rather than "this passage".
+ * This says what the button does to what is on screen.
  */
 @Composable
 fun TranslateGlyph(
@@ -610,36 +610,14 @@ fun TranslateGlyph(
     modifier: Modifier = Modifier
 ) {
     Canvas(modifier = modifier) {
-        val rule = 1.8.dp.toPx()
-        val dot = size.minDimension * 0.075f
-
-        drawLine(
-            color = tint,
-            start = androidx.compose.ui.geometry.Offset(size.width * 0.30f, size.height * 0.36f),
-            end = androidx.compose.ui.geometry.Offset(size.width * 0.82f, size.height * 0.36f),
-            strokeWidth = rule,
-            cap = StrokeCap.Round
-        )
-        drawLine(
-            color = tint,
-            start = androidx.compose.ui.geometry.Offset(size.width * 0.18f, size.height * 0.64f),
-            end = androidx.compose.ui.geometry.Offset(size.width * 0.70f, size.height * 0.64f),
-            strokeWidth = rule,
-            cap = StrokeCap.Round
+        drawHighlight(
+            tint = tint,
+            top = size.height * 0.22f,
+            bottom = size.height * 0.78f
         )
 
-        // Where the passage opens and where it closes: the first dot before the
-        // first line, the second after the last.
-        drawCircle(
-            color = tint,
-            radius = dot,
-            center = androidx.compose.ui.geometry.Offset(size.width * 0.16f, size.height * 0.36f)
-        )
-        drawCircle(
-            color = tint,
-            radius = dot,
-            center = androidx.compose.ui.geometry.Offset(size.width * 0.84f, size.height * 0.64f)
-        )
+        drawTextRule(tint, y = 0.38f, from = 0.26f, to = 0.78f)
+        drawTextRule(tint, y = 0.60f, from = 0.26f, to = 0.64f)
     }
 }
 
@@ -647,7 +625,7 @@ fun TranslateGlyph(
  * The same passage with an arrow under it: translating does not stop at what is
  * on screen but carries on down the page as the reader goes.
  *
- * The two lines are pulled up and shortened to make room, which also makes the
+ * The highlight is pulled up and shortened to make room, which also makes the
  * pair distinguishable at a glance in a toolbar where they sit side by side.
  */
 @Composable
@@ -656,45 +634,51 @@ fun TranslateOnwardsGlyph(
     modifier: Modifier = Modifier
 ) {
     Canvas(modifier = modifier) {
-        val rule = 1.8.dp.toPx()
-        val dot = size.minDimension * 0.07f
-
-        drawLine(
-            color = tint,
-            start = androidx.compose.ui.geometry.Offset(size.width * 0.30f, size.height * 0.24f),
-            end = androidx.compose.ui.geometry.Offset(size.width * 0.80f, size.height * 0.24f),
-            strokeWidth = rule,
-            cap = StrokeCap.Round
-        )
-        drawLine(
-            color = tint,
-            start = androidx.compose.ui.geometry.Offset(size.width * 0.20f, size.height * 0.46f),
-            end = androidx.compose.ui.geometry.Offset(size.width * 0.66f, size.height * 0.46f),
-            strokeWidth = rule,
-            cap = StrokeCap.Round
+        drawHighlight(
+            tint = tint,
+            top = size.height * 0.10f,
+            bottom = size.height * 0.58f
         )
 
-        drawCircle(
-            color = tint,
-            radius = dot,
-            center = androidx.compose.ui.geometry.Offset(size.width * 0.16f, size.height * 0.24f)
-        )
-        drawCircle(
-            color = tint,
-            radius = dot,
-            center = androidx.compose.ui.geometry.Offset(size.width * 0.80f, size.height * 0.46f)
-        )
+        drawTextRule(tint, y = 0.24f, from = 0.26f, to = 0.76f)
+        drawTextRule(tint, y = 0.44f, from = 0.26f, to = 0.62f)
 
         val onwards = Path().apply {
-            moveTo(size.width * 0.34f, size.height * 0.70f)
-            lineTo(size.width * 0.50f, size.height * 0.86f)
-            lineTo(size.width * 0.66f, size.height * 0.70f)
+            moveTo(size.width * 0.34f, size.height * 0.72f)
+            lineTo(size.width * 0.50f, size.height * 0.88f)
+            lineTo(size.width * 0.66f, size.height * 0.72f)
         }
 
         drawPath(
             path = onwards,
             color = tint,
-            style = Stroke(width = rule, cap = StrokeCap.Round, join = StrokeJoin.Round)
+            style = Stroke(width = 1.8.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
         )
     }
+}
+
+/** How much of the glyph's colour the highlight behind its lines keeps. */
+private const val GLYPH_HIGHLIGHT_ALPHA = 0.22f
+
+private fun DrawScope.drawHighlight(tint: Color, top: Float, bottom: Float) {
+    val height = bottom - top
+
+    drawRoundRect(
+        color = tint,
+        alpha = GLYPH_HIGHLIGHT_ALPHA,
+        topLeft = androidx.compose.ui.geometry.Offset(size.width * 0.14f, top),
+        size = androidx.compose.ui.geometry.Size(size.width * 0.72f, height),
+        cornerRadius = androidx.compose.ui.geometry.CornerRadius(height * 0.32f)
+    )
+}
+
+/** One line of the passage, at the weight the rest of the icon set is stroked at. */
+private fun DrawScope.drawTextRule(tint: Color, y: Float, from: Float, to: Float) {
+    drawLine(
+        color = tint,
+        start = androidx.compose.ui.geometry.Offset(size.width * from, size.height * y),
+        end = androidx.compose.ui.geometry.Offset(size.width * to, size.height * y),
+        strokeWidth = 1.8.dp.toPx(),
+        cap = StrokeCap.Round
+    )
 }

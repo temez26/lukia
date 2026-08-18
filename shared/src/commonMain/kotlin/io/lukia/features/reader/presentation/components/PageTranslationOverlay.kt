@@ -90,16 +90,15 @@ internal fun PageTranslationOverlay(
             // Every mark in one pass rather than a full-page layer per
             // sentence: they all draw into the same page.
             //
-            // A pair of dots rather than a wash over the words, and the same
-            // pair the set text is marked with. A page of a PDF is a picture of
-            // somebody's typesetting, and laying colour over it is the one thing
-            // most likely to make it unreadable - a mark at each end says which
-            // sentence and what has become of it without touching any of it.
+            // The same soft highlight the set text is marked with, so moving
+            // between a PDF and an EPUB is not moving between two different
+            // readers. Faint enough to leave somebody else's typesetting
+            // perfectly readable underneath it.
             .drawBehind {
                 marked.forEach { (sentence, state) ->
                     val style = state.markStyle() ?: return@forEach
 
-                    drawSentenceMarks(sentence, scale, style, markColors, pulse.value)
+                    drawSentenceHighlight(sentence, scale, style, markColors, pulse.value)
                 }
             }
     ) {
@@ -262,40 +261,50 @@ private const val MAX_TEXT_SP = 22f
 private const val PANEL_FADE_MILLIS = 160
 
 /**
- * A dot at the start of a sentence's first line and at the end of its last.
+ * The highlight behind one sentence of a page, line by line.
  *
  * The sentence's own quads rather than its bounding box: a sentence beginning
- * halfway along one line and ending halfway along another starts and ends where
- * those lines say, not at the corners of the block between them.
+ * halfway along one line and ending halfway along another covers two ribbons of
+ * the page, not the block between their far corners.
+ *
+ * Each quad is grown before it is drawn, because what a PDF reports is the
+ * letters and not the line they were set on - a box around cap height with
+ * nothing above the capitals and nothing below the descenders. Drawn as it comes,
+ * the highlight would sit inside the type instead of behind it.
  */
-private fun DrawScope.drawSentenceMarks(
+private fun DrawScope.drawSentenceHighlight(
     sentence: PageSentence,
     scale: Float,
     style: PassageMarkStyle,
     colors: PassageMarkColors,
     pulse: Float
 ) {
-    val opening = sentence.quads.first()
-    val closing = sentence.quads.last()
-
-    drawPassageDots(
-        opening = Rect(
-            left = opening.left * scale,
-            top = opening.top * scale,
-            right = opening.right * scale,
-            bottom = opening.bottom * scale
-        ),
-        closing = Rect(
-            left = closing.left * scale,
-            top = closing.top * scale,
-            right = closing.right * scale,
-            bottom = closing.bottom * scale
-        ),
-        // A PDF reports the letters themselves rather than the line they sit
-        // on, so the room over them is on the other side of the box.
-        box = MarkedBox.Glyphs,
+    drawPassageHighlight(
+        lines = sentence.quads.map { it.asLine(scale) },
         style = style,
         colors = colors,
         pulse = pulse
+    )
+}
+
+/**
+ * How much taller than its letters a line is, as a fraction of their height.
+ *
+ * A glyph box a PDF reports is roughly the cap height, which measurement against
+ * real files puts near 0.58 of the size the type was set at - so the line around
+ * it is close to twice as tall. Split unevenly: there is more room under a
+ * baseline than over a capital.
+ */
+private const val LINE_ABOVE_GLYPHS = 0.26f
+private const val LINE_BELOW_GLYPHS = 0.34f
+
+private fun TextQuad.asLine(scale: Float): Rect {
+    val height = this.height * scale
+
+    return Rect(
+        left = left * scale,
+        top = top * scale - height * LINE_ABOVE_GLYPHS,
+        right = right * scale,
+        bottom = bottom * scale + height * LINE_BELOW_GLYPHS
     )
 }

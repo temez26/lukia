@@ -1,6 +1,6 @@
 package io.lukia.features.reader.presentation.components
 
-import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -10,11 +10,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -24,79 +25,70 @@ import androidx.compose.ui.unit.dp
 import io.lukia.features.translate.presentation.PassageTranslation
 
 /**
- * How big the marks are, and how far off the words they sit.
+ * How far the highlight is drawn outside the words it sits behind.
  *
- * Small enough to read as punctuation the book might have had rather than as
- * something the app has drawn on top of it. Fixed rather than scaled with the
- * type: a mark is a mark at every text size, and one that grew with a book set
- * at 200% would stop being a quiet aside.
+ * Sideways, enough that the first and last letters are not touching its edge - a
+ * highlight cut flush to the text reads as a box drawn round the words rather
+ * than as the words sitting on something.
  *
- * The gap is what keeps the mark off the full stop it follows. It is
- * deliberately not wide enough to clear the *next* word - the space between two
- * sentences is around four points and a mark plus two gaps will not fit in it,
- * so horizontal room is not where this problem is solved. See [DotInset].
+ * Vertically it is drawn *inside* the line instead, because a line box is the
+ * type plus its leading, and filling all of it would leave a passage running
+ * down three lines as one unbroken slab. Taking a little off each line leaves a
+ * hair of the page showing between them, which is what makes several lines read
+ * as one marked passage rather than as a block of colour.
  */
-private val DotRadius: Dp = 2.dp
-private val DotGap: Dp = 2.5.dp
-private val RingStroke: Dp = 1.dp
+private val HighlightBleed: Dp = 2.5.dp
+private const val LINE_INSET = 0.07f
 
 /**
- * The hair of space between a mark and the letters it sits above.
+ * How round the corners are.
  *
- * A mark set level with the letters is at the height of whatever is beside it,
- * and beside a sentence there is usually only the single space before the next
- * one - narrower than the mark. Level with the *capitals* is no better, which is
- * where this sat before: a following word beginning with a capital or an
- * ascender reaches exactly that high, which is precisely the collision this is
- * fixing.
- *
- * The band that is reliably empty is higher again - between the top of the line
- * and the top of the tallest letter in it, which is half the leading. Nothing on
- * the line reaches into it, and neither does the line above, whose descenders
- * stop at the bottom of its own line box. A mark placed there clears every
- * neighbour it could ever have, at any text size, without needing any horizontal
- * room at all - and reads as the superscript mark it is.
+ * Generous enough to read as a soft shape rather than a rectangle with its
+ * corners taken off, and capped at half the height so a short passage becomes a
+ * capsule instead of something with straight sides pretending to be round.
  */
-private val DotInset: Dp = 0.5.dp
+private val HighlightRadius: Dp = 5.dp
+
+/** The hairline drawn instead of a fill once the reader asks for the original back. */
+private val OutlineStroke: Dp = 1.dp
 
 /**
- * What the rectangles handed to [drawPassageDots] measure, which is not the same
- * thing for the two kinds of book.
+ * How much of the page each state lets through.
  *
- * The difference matters only for finding the empty band: it is inside a line
- * box and above a set of letters. Getting it the wrong way round puts the mark
- * on the words rather than over them.
+ * All of them are faint on purpose. What is behind a highlight is the book, and
+ * a wash strong enough to be noticed on its own is a wash the reader has to read
+ * the text through. These are the weights at which a marked passage is findable
+ * at a glance and invisible while the eye is on the words.
  */
-internal enum class MarkedBox {
-
-    /** A line of set text, leading and all: the empty band is inside the top of it. */
-    Line,
-
-    /** The letters themselves, as a PDF reports them: the empty band is above it. */
-    Glyphs
-}
+private const val WAITING_FILL = 0.10f
+private const val TRANSLATED_FILL = 0.12f
+private const val FAILED_FILL = 0.14f
+private const val OUTLINE_ALPHA = 0.45f
 
 /**
- * How faint the marks on a passage still being translated go, and how long one
+ * How far a waiting passage fades at the bottom of its breath, and how long one
  * breath takes.
  *
  * A pulse rather than a spinner: the reader is looking at their own book, and
  * something turning in the middle of a paragraph is a piece of software asking
  * to be watched. This says the same thing at the edge of attention.
+ *
+ * Eased rather than linear, and not all the way to nothing - a fill that
+ * vanished at the bottom of every breath would flicker rather than breathe.
  */
-private const val PULSE_MIN_ALPHA = 0.25f
-private const val PULSE_MILLIS = 900
+private const val PULSE_MIN = 0.45f
+private const val PULSE_MILLIS = 1100
 
 /**
- * What a mark says about the passage it brackets.
+ * What a mark says about the passage it is behind.
  *
- * The four are deliberately distinguishable without colour vision: a pair of
- * filled dots, a pair of rings, and a pulse are three different shapes of thing
- * before they are three different colours.
+ * The four are deliberately distinguishable without colour vision: a fill, a
+ * fill that breathes, and an outline are three different things before they are
+ * three different colours.
  */
 internal enum class PassageMarkStyle {
 
-    /** Being translated. The dots breathe. */
+    /** Being translated. The fill breathes. */
     Waiting,
 
     /** Translated, and the translation is what is on the page. */
@@ -105,10 +97,11 @@ internal enum class PassageMarkStyle {
     /**
      * Translated, but the reader has asked for the book's own words back.
      *
-     * Marked at all - and marked in the same places, at the same size - because
-     * a sentence flipped back to the original is not an untouched sentence:
-     * there is an answer waiting behind it, already paid for, one tap away. A
-     * ring rather than a dot is what says so without saying it loudly.
+     * Marked at all - and marked in the same place, at the same size - because a
+     * sentence flipped back to the original is not an untouched sentence: there
+     * is an answer waiting behind it, already paid for, one tap away. An outline
+     * where the others have a fill is what says so: the shape is still there, and
+     * the words inside it are sitting on the page rather than on anything.
      */
     Original,
 
@@ -125,7 +118,7 @@ internal fun PassageTranslation?.markStyle(): PassageMarkStyle? = when (this) {
         if (showingOriginal) PassageMarkStyle.Original else PassageMarkStyle.Translated
 }
 
-/** One stretch of drawn text, and what its marks say. */
+/** One stretch of drawn text, and what its mark says. */
 @Immutable
 internal data class PassageMark(val start: Int, val end: Int, val style: PassageMarkStyle)
 
@@ -174,9 +167,9 @@ internal fun passagePulse(active: Boolean): State<Float> {
 
     return transition.animateFloat(
         initialValue = 1f,
-        targetValue = PULSE_MIN_ALPHA,
+        targetValue = PULSE_MIN,
         animationSpec = infiniteRepeatable(
-            animation = tween(PULSE_MILLIS, easing = LinearEasing),
+            animation = tween(PULSE_MILLIS, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "passage-pulse-alpha"
@@ -184,18 +177,18 @@ internal fun passagePulse(active: Boolean): State<Float> {
 }
 
 /**
- * Draws a small dot at each end of every marked passage.
+ * Draws a soft rounded highlight behind every marked passage.
  *
- * A pair of dots rather than a wash behind the words, because the words are the
- * book: a highlighter laid over a sentence changes how it reads, and a reader
- * working through a page ends up reading a page of highlighter. Two marks at
- * the ends say exactly as much - where the passage starts, where it stops, and
- * what has become of it - and leave the type alone.
+ * Behind the words rather than beside them, because there is nowhere beside them
+ * to stand: the room between one sentence and the next is a single space, about
+ * four points, and no mark and its gaps will fit in that without landing on the
+ * neighbouring word. Anything drawn behind the text has exactly as much room as
+ * the text does.
  *
- * Placed against the first and last characters rather than the passage's box,
- * so a sentence that wraps is marked at its first word and its last word rather
- * than at the corners of the block it happens to cover - and lifted clear of
- * the letters beside them, see [DotInset].
+ * One rounded rectangle per line rather than one round the whole passage. A
+ * sentence beginning halfway along one line and ending halfway along another
+ * covers two ribbons of the page, and a single box round both of them would
+ * cover two half-lines it has nothing to do with.
  */
 internal fun DrawScope.drawPassageMarks(
     layout: TextLayoutResult,
@@ -203,14 +196,11 @@ internal fun DrawScope.drawPassageMarks(
     colors: PassageMarkColors,
     pulse: Float
 ) {
-    val lastOffset = layout.layoutInput.text.length - 1
-    if (lastOffset < 0) return
+    if (layout.layoutInput.text.isEmpty()) return
 
     marks.forEach { mark ->
-        drawPassageDots(
-            opening = layout.getBoundingBox(mark.start.coerceIn(0, lastOffset)),
-            closing = layout.getBoundingBox((mark.end - 1).coerceIn(0, lastOffset)),
-            box = MarkedBox.Line,
+        drawPassageHighlight(
+            lines = layout.linesOf(mark, bleed = HighlightBleed.toPx()),
             style = mark.style,
             colors = colors,
             pulse = pulse
@@ -219,90 +209,89 @@ internal fun DrawScope.drawPassageMarks(
 }
 
 /**
- * The pair itself: one dot off the start of [opening], one off the end of
- * [closing].
+ * The highlight itself, over rectangles somebody else worked out.
  *
  * Takes rectangles rather than anything that knows about text, because the two
  * kinds of book arrive at them completely differently - one asks the layout
- * where a character went, the other reads a box out of a PDF - and what a mark
- * looks like should not be written twice for that.
+ * where a range of characters went, the other reads boxes out of a PDF - and
+ * what a mark looks like should not be written twice for that.
  */
-internal fun DrawScope.drawPassageDots(
-    opening: Rect,
-    closing: Rect,
-    box: MarkedBox,
+internal fun DrawScope.drawPassageHighlight(
+    lines: List<Rect>,
     style: PassageMarkStyle,
     colors: PassageMarkColors,
     pulse: Float
 ) {
-    val radius = DotRadius.toPx()
-    val gap = DotGap.toPx()
-    val stroke = RingStroke.toPx()
-    val inset = DotInset.toPx()
-
     val color = colors.of(style)
-    val alpha = if (style == PassageMarkStyle.Waiting) pulse else 1f
-    val hollow = style == PassageMarkStyle.Original
+    val stroke = OutlineStroke.toPx()
 
-    drawDot(
-        // Pulled back inside the drawing area, since a passage that starts a
-        // line would otherwise have its opening dot in the margin, where it
-        // would be clipped away.
-        center = Offset(
-            x = (opening.left - gap - radius).coerceAtLeast(radius),
-            y = opening.markHeight(box, radius, inset)
-        ),
-        radius = radius,
-        color = color,
-        alpha = alpha,
-        hollow = hollow,
-        stroke = stroke
-    )
+    lines.forEach { line ->
+        if (line.width <= 0f || line.height <= 0f) return@forEach
 
-    drawDot(
-        center = Offset(
-            x = (closing.right + gap + radius).coerceAtMost(size.width - radius),
-            y = closing.markHeight(box, radius, inset)
-        ),
-        radius = radius,
-        color = color,
-        alpha = alpha,
-        hollow = hollow,
-        stroke = stroke
-    )
+        val radius = CornerRadius(minOf(HighlightRadius.toPx(), line.height / 2))
+
+        if (style == PassageMarkStyle.Original) {
+            // Drawn inside the shape a fill would occupy, so flipping between
+            // the two never moves the mark or changes how much room it takes.
+            drawRoundRect(
+                color = color,
+                alpha = OUTLINE_ALPHA,
+                topLeft = Offset(line.left + stroke / 2, line.top + stroke / 2),
+                size = Size(line.width - stroke, line.height - stroke),
+                cornerRadius = radius,
+                style = Stroke(width = stroke)
+            )
+        } else {
+            drawRoundRect(
+                color = color,
+                alpha = style.fill() * if (style == PassageMarkStyle.Waiting) pulse else 1f,
+                topLeft = line.topLeft,
+                size = line.size,
+                cornerRadius = radius
+            )
+        }
+    }
+}
+
+private fun PassageMarkStyle.fill(): Float = when (this) {
+    PassageMarkStyle.Waiting -> WAITING_FILL
+    PassageMarkStyle.Translated -> TRANSLATED_FILL
+    PassageMarkStyle.Original -> 0f
+    PassageMarkStyle.Failed -> FAILED_FILL
 }
 
 /**
- * Where a mark sits against one line: in the band above the tallest letter,
- * whichever side of the rectangle that band happens to be on. See [DotInset].
+ * The stretch of each line this passage covers, as the shape to draw behind it.
  *
- * Never above the drawing area, since a passage on the first line of a page
- * would otherwise have its marks clipped away entirely.
+ * Built from the layout's own lines rather than from `getPathForRange`, which
+ * hands back one path with square corners and no way to round them. Trailing
+ * whitespace is left out, so a highlight ends at the last letter of a line
+ * rather than running on to where the next word would have started.
  */
-private fun Rect.markHeight(box: MarkedBox, radius: Float, inset: Float): Float = when (box) {
-    MarkedBox.Line -> top + radius + inset
-    MarkedBox.Glyphs -> top - radius - inset
-}.coerceAtLeast(radius)
+private fun TextLayoutResult.linesOf(mark: PassageMark, bleed: Float): List<Rect> {
+    val length = layoutInput.text.length
+    val start = mark.start.coerceIn(0, length)
+    val end = mark.end.coerceIn(start, length)
+    if (start == end) return emptyList()
 
-private fun DrawScope.drawDot(
-    center: Offset,
-    radius: Float,
-    color: Color,
-    alpha: Float,
-    hollow: Boolean,
-    stroke: Float
-) {
-    if (hollow) {
-        // Drawn inside the same radius a filled dot uses, so flipping between
-        // the two never moves the mark or changes how much room it takes.
-        drawCircle(
-            color = color,
-            radius = radius - stroke / 2,
-            center = center,
-            alpha = alpha,
-            style = Stroke(width = stroke)
+    val firstLine = getLineForOffset(start)
+    val lastLine = getLineForOffset(end - 1)
+
+    return (firstLine..lastLine).mapNotNull { line ->
+        val from = maxOf(start, getLineStart(line))
+        val to = minOf(end, getLineEnd(line, visibleEnd = true))
+        if (from >= to) return@mapNotNull null
+
+        val near = getHorizontalPosition(from, usePrimaryDirection = true)
+        val far = getHorizontalPosition(to, usePrimaryDirection = true)
+        val inset = (getLineBottom(line) - getLineTop(line)) * LINE_INSET
+
+        Rect(
+            // A right-to-left line hands these back the other way round.
+            left = minOf(near, far) - bleed,
+            top = getLineTop(line) + inset,
+            right = maxOf(near, far) + bleed,
+            bottom = getLineBottom(line) - inset
         )
-    } else {
-        drawCircle(color = color, radius = radius, center = center, alpha = alpha)
     }
 }
