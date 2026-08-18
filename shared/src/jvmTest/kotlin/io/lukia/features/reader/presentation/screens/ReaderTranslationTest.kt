@@ -438,6 +438,7 @@ class ReaderTranslationTest {
         )
     }
 
+
     /**
      * A tap lands where it is aimed. The node is the whole paragraph, so its
      * centre is whichever sentence happens to fall in the middle of it - the

@@ -39,6 +39,9 @@ internal enum class ReaderCommand {
     /** Keep translating what comes into view, until asked to stop. */
     ToggleContinuousTranslation,
 
+    /** Put every translation away, or bring them all back. */
+    ToggleTranslationsShown,
+
     Close
 }
 
@@ -82,6 +85,7 @@ internal fun readerCommandFor(event: KeyEvent): ReaderCommand? {
         // thing asked once and asked continuously.
         Key.R -> ReaderCommand.TranslatePage
         Key.E -> ReaderCommand.ToggleContinuousTranslation
+        Key.H -> ReaderCommand.ToggleTranslationsShown
 
         Key.Escape -> ReaderCommand.Close
 

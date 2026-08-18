@@ -149,6 +149,37 @@ class TranslationSession(
     }
 
     /**
+     * Shows every translation at once, or puts every one of them back to the
+     * book's own words.
+     *
+     * A real change to each passage rather than a filter laid over them, because
+     * a filter would be a second opinion about what is on screen: a tap while it
+     * was on would flip a sentence underneath it and the reader would not find
+     * out until they turned the filter off. What this does instead is what the
+     * reader would have done by tapping every marked passage in turn.
+     *
+     * Only the ones that have an answer. A passage still arriving is left to
+     * arrive, and one that failed is left failed - neither has anything to show
+     * or to hide.
+     */
+    fun showTranslations(showing: Boolean) {
+        var changed = false
+
+        kept.entries.forEach { entry ->
+            val state = entry.value
+
+            if (state is PassageTranslation.Ready && state.showingOriginal == showing) {
+                entry.setValue(state.copy(showingOriginal = !showing))
+                changed = true
+            }
+        }
+
+        // Rewritten in place, so nothing has moved and the order these were last
+        // touched in - which is what decides who is forgotten first - still holds.
+        if (changed) _passages.value = kept.toMap()
+    }
+
+    /**
      * Forgets everything translated so far - for when the book underneath is
      * replaced, and the anchors that pointed into it no longer point anywhere.
      */

@@ -78,6 +78,7 @@ import io.lukia.features.reader.presentation.components.ReaderContentsPanel
 import io.lukia.features.reader.presentation.components.ReaderSettingsPanel
 import io.lukia.features.reader.presentation.components.ReaderToolbar
 import io.lukia.features.reader.presentation.components.PageTranslationOverlay
+import io.lukia.features.reader.presentation.ShownTranslations
 import io.lukia.features.reader.presentation.TranslateOnScreen
 import io.lukia.features.reader.presentation.components.PassageActions
 import io.lukia.features.reader.presentation.components.TextSectionView
@@ -99,6 +100,7 @@ import io.lukia.shared.presentation.components.LukiaIconButton
 import io.lukia.shared.presentation.components.ShortcutTooltip
 import io.lukia.shared.presentation.components.TranslateGlyph
 import io.lukia.shared.presentation.components.TranslateOnwardsGlyph
+import io.lukia.shared.presentation.components.TranslationsShownGlyph
 import io.lukia.shared.presentation.components.UiStateContent
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.LukiaElevation
@@ -146,6 +148,7 @@ fun ReaderScreen(
     val translations by viewModel.translations.collectAsState()
     val translateOnScreen by viewModel.translateOnScreen.collectAsState()
     val translationConfigured by viewModel.translationConfigured.collectAsState()
+    val shownTranslations by viewModel.shownTranslations.collectAsState()
 
     ReaderContent(
         uiState = uiState,
@@ -155,6 +158,7 @@ fun ReaderScreen(
         translations = translations,
         translateOnScreen = translateOnScreen,
         translationConfigured = translationConfigured,
+        shownTranslations = shownTranslations,
         onBack = onBack,
         onRetry = viewModel::retry,
         onSettingsChange = viewModel::updateSettings,
@@ -163,6 +167,7 @@ fun ReaderScreen(
         onPassagesRequested = viewModel::onPassagesRequested,
         onTranslateOnScreen = viewModel::onTranslateOnScreen,
         onContinuousTranslationChange = viewModel::setContinuousTranslation,
+        onTranslationsVisibleChange = viewModel::setTranslationsVisible,
         sentencesOnPage = viewModel::sentencesOn,
         renderPage = viewModel::page
     )
@@ -185,6 +190,8 @@ fun ReaderContent(
     translateOnScreen: TranslateOnScreen = TranslateOnScreen.Idle,
     /** Whether there is anything set up to translate with, which is what the controls need. */
     translationConfigured: Boolean = false,
+    /** What the reader's own translations are doing, for the control that puts them away. */
+    shownTranslations: ShownTranslations = ShownTranslations.None,
     onBack: () -> Unit,
     onRetry: () -> Unit,
     onSettingsChange: (ReaderSettings) -> Unit,
@@ -193,6 +200,7 @@ fun ReaderContent(
     onPassagesRequested: (List<PassageSelection>) -> Unit = {},
     onTranslateOnScreen: () -> Unit = {},
     onContinuousTranslationChange: (Boolean) -> Unit = {},
+    onTranslationsVisibleChange: (Boolean) -> Unit = {},
     /** What is written on a page of a fixed-layout document, read when one is looked at. */
     sentencesOnPage: suspend (index: Int) -> List<PageSentence> = { emptyList() },
     renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?
@@ -283,6 +291,9 @@ fun ReaderContent(
             onTranslateOnScreen = onTranslateOnScreen,
             onToggleContinuousTranslation = {
                 onContinuousTranslationChange(!translateOnScreen.continuous)
+            },
+            onToggleTranslationsShown = {
+                if (shownTranslations.any) onTranslationsVisibleChange(!shownTranslations.visible)
             }
         )
 
@@ -436,8 +447,10 @@ fun ReaderContent(
                                 if (translationConfigured) {
                                     TranslationControls(
                                         continuous = translateOnScreen.continuous,
+                                        shown = shownTranslations,
                                         onTranslateOnScreen = onTranslateOnScreen,
-                                        onContinuousChange = onContinuousTranslationChange
+                                        onContinuousChange = onContinuousTranslationChange,
+                                        onVisibleChange = onTranslationsVisibleChange
                                     )
                                 }
 
@@ -514,8 +527,10 @@ fun ReaderContent(
 @Composable
 private fun TranslationControls(
     continuous: Boolean,
+    shown: ShownTranslations,
     onTranslateOnScreen: () -> Unit,
-    onContinuousChange: (Boolean) -> Unit
+    onContinuousChange: (Boolean) -> Unit,
+    onVisibleChange: (Boolean) -> Unit
 ) {
     ShortcutTooltip(description = "Translate what is on screen", shortcut = "R") {
         LukiaIconButton(
@@ -550,6 +565,27 @@ private fun TranslationControls(
             TranslateOnwardsGlyph(tint = tint, modifier = glyph)
         }
     }
+
+    // Nothing to put away until something has been translated, so the control is
+    // there from the start - where the reader will look for it - but does nothing
+    // until there is something for it to do.
+    ShortcutTooltip(
+        description = if (shown.visible) "Hide the translations" else "Show the translations",
+        shortcut = "H"
+    ) {
+        LukiaIconButton(
+            label = if (shown.visible) "Hide the translations" else "Show the translations",
+            onClick = { onVisibleChange(!shown.visible) },
+            enabled = shown.any,
+            tint = if (shown.visible) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            }
+        ) { tint, glyph ->
+            TranslationsShownGlyph(tint = tint, shown = shown.visible, modifier = glyph)
+        }
+    }
 }
 
 /**
@@ -572,7 +608,8 @@ private fun readerCommands(
     onToggleContents: () -> Unit,
     onToggleSettings: () -> Unit,
     onTranslateOnScreen: () -> Unit,
-    onToggleContinuousTranslation: () -> Unit
+    onToggleContinuousTranslation: () -> Unit,
+    onToggleTranslationsShown: () -> Unit
 ): (ReaderCommand) -> Unit {
     val scope = rememberCoroutineScope()
 
@@ -629,6 +666,7 @@ private fun readerCommands(
 
             ReaderCommand.TranslatePage -> onTranslateOnScreen()
             ReaderCommand.ToggleContinuousTranslation -> onToggleContinuousTranslation()
+            ReaderCommand.ToggleTranslationsShown -> onToggleTranslationsShown()
 
             ReaderCommand.Close -> onBack()
         }

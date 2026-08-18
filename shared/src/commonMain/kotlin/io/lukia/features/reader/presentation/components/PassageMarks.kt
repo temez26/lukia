@@ -13,12 +13,9 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -31,26 +28,23 @@ import io.lukia.features.translate.presentation.PassageTranslation
  * highlight cut flush to the text reads as a box drawn round the words rather
  * than as the words sitting on something.
  *
- * Vertically it is drawn *inside* the line instead, because a line box is the
- * type plus its leading, and filling all of it would leave a passage running
- * down three lines as one unbroken slab. Taking a little off each line leaves a
- * hair of the page showing between them, which is what makes several lines read
- * as one marked passage rather than as a block of colour.
+ * Vertically it is drawn well *inside* the line, because a line box is the type
+ * plus its leading and filling all of it makes a tall slab with the words
+ * floating in the middle of it. Taken in to about where the letters themselves
+ * start and stop, the shape follows the writing rather than the layout - and a
+ * passage running down three lines reads as three marked lines rather than as
+ * one block of colour, because there is a clear band of page between them.
  */
 private val HighlightBleed: Dp = 2.5.dp
-private const val LINE_INSET = 0.07f
+private const val LINE_INSET = 0.14f
 
 /**
  * How round the corners are.
  *
- * Generous enough to read as a soft shape rather than a rectangle with its
- * corners taken off, and capped at half the height so a short passage becomes a
- * capsule instead of something with straight sides pretending to be round.
+ * Generous, and capped at half the height, so a highlight this shallow comes out
+ * as a capsule rather than as a rectangle with its corners taken off.
  */
-private val HighlightRadius: Dp = 5.dp
-
-/** The hairline drawn instead of a fill once the reader asks for the original back. */
-private val OutlineStroke: Dp = 1.dp
+private val HighlightRadius: Dp = 7.dp
 
 /**
  * How much of the page each state lets through.
@@ -60,10 +54,9 @@ private val OutlineStroke: Dp = 1.dp
  * the text through. These are the weights at which a marked passage is findable
  * at a glance and invisible while the eye is on the words.
  */
-private const val WAITING_FILL = 0.10f
-private const val TRANSLATED_FILL = 0.12f
-private const val FAILED_FILL = 0.14f
-private const val OUTLINE_ALPHA = 0.45f
+private const val WAITING_FILL = 0.11f
+private const val TRANSLATED_FILL = 0.14f
+private const val FAILED_FILL = 0.16f
 
 /**
  * How far a waiting passage fades at the bottom of its breath, and how long one
@@ -82,9 +75,9 @@ private const val PULSE_MILLIS = 1100
 /**
  * What a mark says about the passage it is behind.
  *
- * The four are deliberately distinguishable without colour vision: a fill, a
- * fill that breathes, and an outline are three different things before they are
- * three different colours.
+ * The three are deliberately distinguishable without colour vision: a steady
+ * fill and a fill that breathes are two different things before they are two
+ * different colours.
  */
 internal enum class PassageMarkStyle {
 
@@ -94,40 +87,31 @@ internal enum class PassageMarkStyle {
     /** Translated, and the translation is what is on the page. */
     Translated,
 
-    /**
-     * Translated, but the reader has asked for the book's own words back.
-     *
-     * Marked at all - and marked in the same place, at the same size - because a
-     * sentence flipped back to the original is not an untouched sentence: there
-     * is an answer waiting behind it, already paid for, one tap away. An outline
-     * where the others have a fill is what says so: the shape is still there, and
-     * the words inside it are sitting on the page rather than on anything.
-     */
-    Original,
-
     /** Asked for and not come back. */
     Failed
 }
 
-/** How this passage should be marked, or null when nobody has touched it. */
+/**
+ * How this passage should be marked, or null when it should not be.
+ *
+ * Nothing is drawn behind the book's own words. A passage the reader has asked to
+ * see the original of is a passage they are reading, and marking it would leave
+ * the page carrying a highlight for every sentence anybody had ever tapped -
+ * which is a record of what the reader has done rather than anything they can
+ * use. What is unmarked is the book, exactly as it was written.
+ */
 internal fun PassageTranslation?.markStyle(): PassageMarkStyle? = when (this) {
     null -> null
     is PassageTranslation.Loading -> PassageMarkStyle.Waiting
     is PassageTranslation.Failed -> PassageMarkStyle.Failed
-    is PassageTranslation.Ready ->
-        if (showingOriginal) PassageMarkStyle.Original else PassageMarkStyle.Translated
+    is PassageTranslation.Ready -> PassageMarkStyle.Translated.takeIf { !showingOriginal }
 }
 
 /** One stretch of drawn text, and what its mark says. */
 @Immutable
 internal data class PassageMark(val start: Int, val end: Int, val style: PassageMarkStyle)
 
-/**
- * The three colours a mark can take, resolved once rather than per passage.
- *
- * Translated and Original share one: they are the same passage in two states,
- * and giving them separate colours would say they were different things.
- */
+/** The three colours a mark can take, resolved once rather than per passage. */
 @Immutable
 internal data class PassageMarkColors(
     val waiting: Color,
@@ -136,7 +120,7 @@ internal data class PassageMarkColors(
 ) {
     fun of(style: PassageMarkStyle): Color = when (style) {
         PassageMarkStyle.Waiting -> waiting
-        PassageMarkStyle.Translated, PassageMarkStyle.Original -> translated
+        PassageMarkStyle.Translated -> translated
         PassageMarkStyle.Failed -> failed
     }
 }
@@ -223,40 +207,24 @@ internal fun DrawScope.drawPassageHighlight(
     pulse: Float
 ) {
     val color = colors.of(style)
-    val stroke = OutlineStroke.toPx()
+    val alpha = style.fill() * if (style == PassageMarkStyle.Waiting) pulse else 1f
 
     lines.forEach { line ->
         if (line.width <= 0f || line.height <= 0f) return@forEach
 
-        val radius = CornerRadius(minOf(HighlightRadius.toPx(), line.height / 2))
-
-        if (style == PassageMarkStyle.Original) {
-            // Drawn inside the shape a fill would occupy, so flipping between
-            // the two never moves the mark or changes how much room it takes.
-            drawRoundRect(
-                color = color,
-                alpha = OUTLINE_ALPHA,
-                topLeft = Offset(line.left + stroke / 2, line.top + stroke / 2),
-                size = Size(line.width - stroke, line.height - stroke),
-                cornerRadius = radius,
-                style = Stroke(width = stroke)
-            )
-        } else {
-            drawRoundRect(
-                color = color,
-                alpha = style.fill() * if (style == PassageMarkStyle.Waiting) pulse else 1f,
-                topLeft = line.topLeft,
-                size = line.size,
-                cornerRadius = radius
-            )
-        }
+        drawRoundRect(
+            color = color,
+            alpha = alpha,
+            topLeft = line.topLeft,
+            size = line.size,
+            cornerRadius = CornerRadius(minOf(HighlightRadius.toPx(), line.height / 2))
+        )
     }
 }
 
 private fun PassageMarkStyle.fill(): Float = when (this) {
     PassageMarkStyle.Waiting -> WAITING_FILL
     PassageMarkStyle.Translated -> TRANSLATED_FILL
-    PassageMarkStyle.Original -> 0f
     PassageMarkStyle.Failed -> FAILED_FILL
 }
 

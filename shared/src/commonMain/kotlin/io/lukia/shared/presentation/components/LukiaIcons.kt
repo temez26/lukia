@@ -657,6 +657,34 @@ fun TranslateOnwardsGlyph(
     }
 }
 
+/**
+ * Whether the translations are on the page, drawn as whether there is anything
+ * written on the highlight.
+ *
+ * The same capsule either way, so pressing it does not change the size or the
+ * position of anything in the bar - only whether it has words in it. Which is
+ * exactly what pressing it does to the page.
+ */
+@Composable
+fun TranslationsShownGlyph(
+    tint: Color,
+    shown: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        drawHighlight(
+            tint = tint,
+            top = size.height * 0.26f,
+            bottom = size.height * 0.74f
+        )
+
+        if (!shown) return@Canvas
+
+        drawTextRule(tint, y = 0.42f, from = 0.26f, to = 0.74f)
+        drawTextRule(tint, y = 0.58f, from = 0.26f, to = 0.60f)
+    }
+}
+
 /** How much of the glyph's colour the highlight behind its lines keeps. */
 private const val GLYPH_HIGHLIGHT_ALPHA = 0.22f
 

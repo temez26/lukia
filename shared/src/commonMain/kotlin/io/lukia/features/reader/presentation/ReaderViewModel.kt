@@ -112,6 +112,29 @@ class ReaderViewModel(
     val translateOnScreen: StateFlow<TranslateOnScreen> = _translateOnScreen.asStateFlow()
 
     /**
+     * Whether the translations in this book are the words on the page.
+     *
+     * Read off the passages themselves rather than kept as a flag beside them, so
+     * there is only ever one answer to the question: a reader who taps a single
+     * sentence back to the original has hidden one of them, and the control that
+     * hides all of them says so without being told.
+     */
+    val shownTranslations: StateFlow<ShownTranslations> = translationSession.passages
+        .map { passages ->
+            val answered = passages.values.filterIsInstance<PassageTranslation.Ready>()
+
+            ShownTranslations(
+                any = answered.isNotEmpty(),
+                visible = answered.any { !it.showingOriginal }
+            )
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = ShownTranslations.None
+        )
+
+    /**
      * Whether there is anything set up to translate with.
      *
      * The reader needs this to decide whether to offer the controls at all: a
@@ -287,6 +310,17 @@ class ReaderViewModel(
      */
     fun onTranslateOnScreen() {
         _translateOnScreen.value = _translateOnScreen.value.requested()
+    }
+
+    /**
+     * Shows or hides every translation in the book at once.
+     *
+     * Hiding is how somebody reads a stretch they have already worked through in
+     * the book's own words, without giving up the answers - they are still there,
+     * still paid for, one press away.
+     */
+    fun setTranslationsVisible(visible: Boolean) {
+        translationSession.showTranslations(visible)
     }
 
     /**
