@@ -9,6 +9,7 @@ import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.ModelCatalogue
+import io.lukia.features.translate.domain.TranslationCache
 import io.lukia.features.translate.domain.Translator
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import app.cash.sqldelight.db.SqlDriver
@@ -142,6 +143,25 @@ class AppGraphTest {
     @Test
     fun everyProviderSharesOneHttpClient() {
         assertSame(koin.get<HttpClient>(), koin.get<HttpClient>())
+    }
+
+    /**
+     * Where passages already paid for are kept. A missing registration would not
+     * fail loudly - translating would carry on working, and quietly charge for
+     * every sentence a second time.
+     */
+    @Test
+    fun theStoreOfAlreadyTranslatedPassagesResolves() {
+        assertNotNull(koin.get<TranslationCache>())
+    }
+
+    /**
+     * One cache for the app, over the one database. A second instance would be a
+     * second store nothing else could see into.
+     */
+    @Test
+    fun theTranslationCacheIsOneSharedInstance() {
+        assertSame(koin.get<TranslationCache>(), koin.get<TranslationCache>())
     }
 
     /**

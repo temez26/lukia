@@ -1,6 +1,7 @@
 package io.lukia.features.reader.presentation.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -14,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
@@ -30,6 +32,7 @@ import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.reader.domain.TextQuad
 import io.lukia.features.translate.domain.PageSentence
 import io.lukia.features.translate.presentation.PassageTranslation
+import io.lukia.features.translate.presentation.SentenceTranslations
 
 /**
  * How far the covering panel is drawn outside the words it covers, so no
@@ -57,16 +60,22 @@ private val PanelPadding: Dp = 4.dp
 @Composable
 internal fun PageTranslationOverlay(
     sentences: List<PageSentence>,
-    translationOf: (sentenceIndex: Int) -> PassageTranslation?,
+    translations: SentenceTranslations,
     scale: Float,
     pageColor: Color,
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
 
-    // A sentence nobody has touched is left exactly as the page has it.
-    val marked = sentences.mapNotNull { sentence ->
-        translationOf(sentence.index)?.let { sentence to it }
+    // A sentence nobody has touched is left exactly as the page has it - and a
+    // page nobody has touched at all, which is most of them, walks off here
+    // without looking at its sentences.
+    if (translations.isEmpty) return
+
+    val marked = remember(sentences, translations) {
+        sentences.mapNotNull { sentence ->
+            translations[sentence.index]?.let { sentence to it }
+        }
     }
 
     Box(
@@ -92,7 +101,11 @@ internal fun PageTranslationOverlay(
 
             // Nothing is drawn over a sentence still being translated: the
             // reader can still read the original underneath while they wait.
-            AnimatedVisibility(visible = panel != null, enter = fadeIn(), exit = fadeOut()) {
+            AnimatedVisibility(
+                visible = panel != null,
+                enter = fadeIn(tween(PANEL_FADE_MILLIS)),
+                exit = fadeOut(tween(PANEL_FADE_MILLIS))
+            ) {
                 // Held after it goes, so the panel fades out with words in it
                 // rather than emptying first and then fading.
                 val shown = panel ?: return@AnimatedVisibility
@@ -236,6 +249,13 @@ private const val MAX_TEXT_SP = 22f
 private const val PENDING_TINT = 0.10f
 private const val TRANSLATED_TINT = 0.14f
 private const val FAILED_TINT = 0.16f
+
+/**
+ * How long a panel takes to arrive over the words it covers. Short enough that
+ * it reads as the answer landing rather than as an animation being played at
+ * somebody who is waiting for it.
+ */
+private const val PANEL_FADE_MILLIS = 160
 
 private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawQuad(
     quad: TextQuad,

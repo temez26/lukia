@@ -83,6 +83,8 @@ import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.sentenceAt
 import io.lukia.features.translate.presentation.PassageSelection
 import io.lukia.features.translate.presentation.PassageTranslation
+import io.lukia.features.translate.presentation.ReaderTranslations
+import io.lukia.features.translate.presentation.SentenceTranslations
 import io.lukia.features.reader.presentation.components.TextSettingsGlyph
 import io.lukia.features.reader.presentation.components.readerToolbarHeight
 import io.lukia.features.reader.presentation.renderWidthFor
@@ -188,6 +190,11 @@ fun ReaderContent(
     // A panel hangs off the toolbar, so the toolbar cannot leave while one is
     // open without stranding it.
     val chromeShown = chromeVisible || panelOpen
+
+    // Filed by where each translation belongs, once per change, so that a
+    // sentence changing state reaches the block or the page it is on and no
+    // further. See ReaderTranslations.
+    val translated = remember(translations) { ReaderTranslations.of(translations) }
 
     // The reader wears its own theme; the rest of the app keeps following the
     // system. Everything inside - the glass chrome, the type, the panel - picks
@@ -315,7 +322,7 @@ fun ReaderContent(
                             pageScale = settings.pageScale,
                             pageColor = pageStyle.pageColor,
                             pageFilter = pageStyle.pageFilter,
-                            translations = translations,
+                            translations = translated,
                             onToggleChrome = { chromeVisible = !chromeVisible },
                             onPageScaleChange = { onSettingsChange(settings.withPageScale(it)) },
                             onPassageSelected = onPassageSelected,
@@ -328,7 +335,7 @@ fun ReaderContent(
                             listState = listState,
                             settings = settings,
                             pageColor = pageStyle.pageColor,
-                            translations = translations,
+                            translations = translated,
                             onToggleChrome = { chromeVisible = !chromeVisible },
                             onSettingsChange = onSettingsChange,
                             onPassageSelected = onPassageSelected
@@ -530,7 +537,7 @@ private fun PageList(
     pageScale: Float,
     pageColor: Color,
     pageFilter: ColorFilter?,
-    translations: Map<TextAnchor, PassageTranslation>,
+    translations: ReaderTranslations,
     onToggleChrome: () -> Unit,
     onPageScaleChange: (Float) -> Unit,
     onPassageSelected: (PassageSelection) -> Unit,
@@ -604,9 +611,7 @@ private fun PageList(
                         renderWidthPx = renderWidthPx,
                         pageColor = pageColor,
                         pageFilter = pageFilter,
-                        translationOf = { sentence ->
-                            translations[TextAnchor.Page(index, sentence)]
-                        },
+                        translations = translations.page(index),
                         onToggleChrome = onToggleChrome,
                         onPassageSelected = onPassageSelected,
                         sentencesOnPage = sentencesOnPage,
@@ -640,7 +645,7 @@ private fun SectionList(
     listState: LazyListState,
     settings: ReaderSettings,
     pageColor: Color,
-    translations: Map<TextAnchor, PassageTranslation>,
+    translations: ReaderTranslations,
     onToggleChrome: () -> Unit,
     onSettingsChange: (ReaderSettings) -> Unit,
     onPassageSelected: (PassageSelection) -> Unit
@@ -710,9 +715,7 @@ private fun SectionList(
                         TextSectionView(
                             section = sections[index],
                             style = style,
-                            translationOf = { block, sentence ->
-                                translations[TextAnchor.Section(index, block, sentence)]
-                            },
+                            translations = translations.section(index),
                             onTapElsewhere = onToggleChrome,
                             onSentenceTapped = { block, sentence, paragraph ->
                                 onPassageSelected(
@@ -753,7 +756,7 @@ private fun DocumentPage(
     renderWidthPx: Int,
     pageColor: Color,
     pageFilter: ColorFilter?,
-    translationOf: (sentenceIndex: Int) -> PassageTranslation?,
+    translations: SentenceTranslations,
     onToggleChrome: () -> Unit,
     onPassageSelected: (PassageSelection) -> Unit,
     sentencesOnPage: suspend (index: Int) -> List<PageSentence>,
@@ -783,7 +786,13 @@ private fun DocumentPage(
     // a pinch or a resize moves it without recalculating anything.
     val scale = with(LocalDensity.current) { width.toPx() } / pageSize.width
 
+    // The rest of the page, which is the context a sentence on it travels with.
+    // Built once per page rather than once per tap: it is every word on the
+    // page joined up, and a reader works through a page a tap at a time.
+    val pageText = remember(sentences) { sentences.joinToString(" ") { it.text } }
+
     val currentSentences by rememberUpdatedState(sentences)
+    val currentPageText by rememberUpdatedState(pageText)
     val currentOnSelected by rememberUpdatedState(onPassageSelected)
     val currentOnToggleChrome by rememberUpdatedState(onToggleChrome)
     val currentScale by rememberUpdatedState(scale)
@@ -825,7 +834,7 @@ private fun DocumentPage(
                             passage = sentence.text,
                             // A page has no chapter of its own to name, and the
                             // rest of the page is the context around a sentence.
-                            surroundingText = currentSentences.joinToString(" ") { it.text }
+                            surroundingText = currentPageText
                         )
                     )
                 }
@@ -845,7 +854,7 @@ private fun DocumentPage(
 
         PageTranslationOverlay(
             sentences = sentences,
-            translationOf = translationOf,
+            translations = translations,
             scale = scale,
             pageColor = pageColor
         )

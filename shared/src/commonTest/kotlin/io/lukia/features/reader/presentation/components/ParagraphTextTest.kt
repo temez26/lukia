@@ -1,8 +1,6 @@
 package io.lukia.features.reader.presentation.components
 
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
 import io.lukia.features.reader.domain.Emphasis
 import io.lukia.features.reader.domain.TextRun
 import io.lukia.features.translate.domain.Sentence
@@ -10,11 +8,8 @@ import io.lukia.features.translate.domain.splitIntoSentences
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 class ParagraphTextTest {
-
-    private val mark = SpanStyle(fontWeight = FontWeight.Bold)
 
     @Test
     fun aParagraphWithNothingTranslatedReadsExactlyAsTheBookWroteIt() {
@@ -30,23 +25,10 @@ class ParagraphTextTest {
         val runs = listOf(run("Call me Ishmael. Some years ago."))
 
         val drawn = paragraph(runs) { sentence ->
-            if (sentence.index == 0) SentenceMark("Kutsukaa minua Ismaeliksi.", mark) else null
+            if (sentence.index == 0) "Kutsukaa minua Ismaeliksi." else null
         }
 
         assertEquals("Kutsukaa minua Ismaeliksi. Some years ago.", drawn.text.text)
-    }
-
-    /** The reader asked for the original back, but it is still their sentence. */
-    @Test
-    fun aMarkWithoutATranslationLeavesTheWordsAndKeepsTheMark() {
-        val runs = listOf(run("Call me Ishmael. Some years ago."))
-
-        val drawn = paragraph(runs) { sentence ->
-            if (sentence.index == 0) SentenceMark(null, mark) else null
-        }
-
-        assertEquals("Call me Ishmael. Some years ago.", drawn.text.text)
-        assertTrue(drawn.text.spanStyles.any { it.item == mark }, "the mark was dropped")
     }
 
     /** Emphasis around a translated sentence is the author's, and has to survive. */
@@ -59,7 +41,7 @@ class ParagraphTextTest {
         )
 
         val drawn = paragraph(runs) { sentence ->
-            if (sentence.index == 0) SentenceMark("Kutsukaa minua.", mark) else null
+            if (sentence.index == 0) "Kutsukaa minua." else null
         }
 
         assertEquals("Kutsukaa minua. Some years ago.", drawn.text.text)
@@ -68,13 +50,31 @@ class ParagraphTextTest {
         assertEquals("Some", drawn.text.text.substring(italic.start, italic.end))
     }
 
+    /**
+     * A translated sentence is set in the paragraph's own face. Emphasis inside
+     * a sentence belongs to the words that carried it, and those words are gone.
+     */
+    @Test
+    fun aTranslationDoesNotInheritTheEmphasisOfTheWordsItReplaced() {
+        val runs = listOf(run("Call me Ishmael.", Emphasis.Italic), run(" Some years ago."))
+
+        val drawn = paragraph(runs) { sentence ->
+            if (sentence.index == 0) "Kutsukaa minua." else null
+        }
+
+        assertEquals(
+            0,
+            drawn.text.spanStyles.count { it.start < "Kutsukaa minua.".length }
+        )
+    }
+
     /** A sentence can be split across runs, and is still one sentence. */
     @Test
     fun aSentenceSpanningSeveralRunsIsReplacedWhole() {
         val runs = listOf(run("Call me "), run("Ishmael", Emphasis.Bold), run(". Some years ago."))
 
         val drawn = paragraph(runs) { sentence ->
-            if (sentence.index == 0) SentenceMark("Kutsukaa minua Ismaeliksi.", mark) else null
+            if (sentence.index == 0) "Kutsukaa minua Ismaeliksi." else null
         }
 
         assertEquals("Kutsukaa minua Ismaeliksi. Some years ago.", drawn.text.text)
@@ -93,6 +93,26 @@ class ParagraphTextTest {
     }
 
     /**
+     * Where each sentence ended up is also what the marks are drawn from, so a
+     * sentence nobody replaced still has to report the stretch it occupies.
+     */
+    @Test
+    fun eachSentenceReportsTheStretchOfTheDrawnParagraphItOccupies() {
+        val runs = listOf(run("Hi. Some years ago."))
+
+        val drawn = paragraph(runs) { sentence ->
+            if (sentence.index == 0) "A very much longer opening indeed." else null
+        }
+
+        val text = drawn.text.text
+        val replaced = drawn.sentences.single { it.index == 0 }
+        val untouched = drawn.sentences.single { it.index == 1 }
+
+        assertEquals("A very much longer opening indeed.", text.substring(replaced.start, replaced.end))
+        assertEquals("Some years ago.", text.substring(untouched.start, untouched.end))
+    }
+
+    /**
      * The bug this class exists to prevent: replacing one sentence moves every
      * sentence after it, so a tap lower down would otherwise be read against
      * offsets the reader is no longer looking at.
@@ -102,11 +122,7 @@ class ParagraphTextTest {
         val runs = listOf(run("Hi. Some years ago. It was cold."))
 
         val drawn = paragraph(runs) { sentence ->
-            if (sentence.index == 0) {
-                SentenceMark("A very much longer opening sentence indeed.", mark)
-            } else {
-                null
-            }
+            if (sentence.index == 0) "A very much longer opening sentence indeed." else null
         }
 
         val text = drawn.text.text
@@ -143,11 +159,11 @@ class ParagraphTextTest {
 
     private fun paragraph(
         runs: List<TextRun>,
-        markOf: (Sentence) -> SentenceMark?
+        translationOf: (Sentence) -> String?
     ): ParagraphText {
         val sentences = splitIntoSentences(runs.plain())
 
-        return buildParagraphText(runs = runs, sentences = sentences, markOf = markOf)
+        return buildParagraphText(runs = runs, sentences = sentences, translationOf = translationOf)
     }
 
     private fun run(text: String, vararg emphasis: Emphasis) =

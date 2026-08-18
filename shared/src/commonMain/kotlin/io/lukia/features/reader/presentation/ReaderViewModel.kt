@@ -51,6 +51,17 @@ private const val MAX_CACHED_PIXELS = 16_000_000
 /** Kept regardless of the budget, so the page being read is never evicted. */
 private const val MIN_CACHED_PAGES = 3
 
+/**
+ * How many pages' worth of parsed sentences are kept.
+ *
+ * Counted in pages rather than in bytes, unlike the drawn ones: what this holds
+ * is text and rectangles, whose size follows how much is written on a page
+ * rather than how large the page is drawn. Comfortably more than fits on any
+ * screen, so a reader moving back and forth over a spread never waits for the
+ * same page to be parsed twice.
+ */
+private const val MAX_CACHED_PAGE_SENTENCES = 24
+
 class ReaderViewModel(
     private val location: String,
     private val openDocumentUseCase: OpenDocumentUseCase,
@@ -171,16 +182,20 @@ class ReaderViewModel(
     }
 
     /**
-     * The sentences of each page that has been looked at, kept for as long as
-     * the book is open.
+     * The sentences of the pages most recently looked at.
      *
      * Reading a page's text means parsing it out of the file, which is far too
      * much to do again every time somebody taps the same page twice - and a
-     * reader working through a page taps it several times. Unlike the drawn
-     * pages this is small: a page of sentences is a few kilobytes, and a whole
-     * book of them is less than one rendered page.
+     * reader working through a page taps it several times.
+     *
+     * Least-recently-used, like the drawn pages, and for the same reason rather
+     * than the same weight: one page of sentences is small, but it is a rectangle
+     * per line of every sentence on it, and a long document read end to end is
+     * hundreds of pages of them held for a reader who is no longer anywhere near
+     * any of it. [MAX_CACHED_PAGE_SENTENCES] is far more than is on screen at
+     * once, so nothing being read is ever parsed twice.
      */
-    private val pageSentences = mutableMapOf<Int, List<PageSentence>>()
+    private val pageSentences = LinkedHashMap<Int, List<PageSentence>>()
     private val sentenceLock = Mutex()
 
     /**
@@ -193,13 +208,28 @@ class ReaderViewModel(
     suspend fun sentencesOn(index: Int): List<PageSentence> {
         val pages = (_uiState.value.dataOrNull?.content as? PagedContent)?.pages ?: return emptyList()
 
-        sentenceLock.withLock { pageSentences[index] }?.let { return it }
+        rememberedSentences(index)?.let { return it }
 
         val glyphs = runCatchingApp { pages.pageText(index) }.getOrNull()
         val sentences = glyphs?.let { pageSentences(it) }.orEmpty()
 
-        return sentenceLock.withLock { pageSentences.getOrPut(index) { sentences } }
+        return sentenceLock.withLock {
+            pageSentences.getOrPut(index) { sentences }.also {
+                while (pageSentences.size > MAX_CACHED_PAGE_SENTENCES) {
+                    pageSentences.remove(pageSentences.keys.first())
+                }
+            }
+        }
     }
+
+    /**
+     * Removed and re-inserted so that reading a page moves it to the end, which
+     * is what makes eviction least-recently-used rather than oldest-first.
+     */
+    private suspend fun rememberedSentences(index: Int): List<PageSentence>? =
+        sentenceLock.withLock {
+            pageSentences.remove(index)?.also { pageSentences[index] = it }
+        }
 
     /**
      * A sentence the reader pointed at.

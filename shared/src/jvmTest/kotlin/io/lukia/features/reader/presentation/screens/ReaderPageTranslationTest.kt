@@ -1,5 +1,8 @@
 package io.lukia.features.reader.presentation.screens
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -139,9 +142,9 @@ class ReaderPageTranslationTest {
     fun aTranslatedSentenceIsDrawnOverThePage() = runComposeUiTest {
         setReader(
             sentences = listOf(wholePage),
-            translations = mapOf(
-                TextAnchor.Page(0, 0) to PassageTranslation.Ready(Translation(translated))
-            )
+            translations = {
+                mapOf(TextAnchor.Page(0, 0) to PassageTranslation.Ready(Translation(translated)))
+            }
         )
 
         onNodeWithText(translated, substring = true).assertExists()
@@ -151,11 +154,13 @@ class ReaderPageTranslationTest {
     fun aTranslatorsNoteIsDrawnWithIt() = runComposeUiTest {
         setReader(
             sentences = listOf(wholePage),
-            translations = mapOf(
-                TextAnchor.Page(0, 0) to PassageTranslation.Ready(
-                    Translation(translated, note = "A remark about a word.")
+            translations = {
+                mapOf(
+                    TextAnchor.Page(0, 0) to PassageTranslation.Ready(
+                        Translation(translated, note = "A remark about a word.")
+                    )
                 )
-            )
+            }
         )
 
         onNodeWithText("A remark about a word.", substring = true).assertExists()
@@ -166,12 +171,14 @@ class ReaderPageTranslationTest {
     fun flippingBackUncoversThePage() = runComposeUiTest {
         setReader(
             sentences = listOf(wholePage),
-            translations = mapOf(
-                TextAnchor.Page(0, 0) to PassageTranslation.Ready(
-                    translation = Translation(translated),
-                    showingOriginal = true
+            translations = {
+                mapOf(
+                    TextAnchor.Page(0, 0) to PassageTranslation.Ready(
+                        translation = Translation(translated),
+                        showingOriginal = true
+                    )
                 )
-            )
+            }
         )
 
         assertEquals(
@@ -189,11 +196,13 @@ class ReaderPageTranslationTest {
     fun aFailedTranslationSaysWhyOnThePage() = runComposeUiTest {
         setReader(
             sentences = listOf(wholePage),
-            translations = mapOf(
-                TextAnchor.Page(0, 0) to PassageTranslation.Failed(
-                    AppError.Unexpected("Your OpenAI account is out of API credit.")
+            translations = {
+                mapOf(
+                    TextAnchor.Page(0, 0) to PassageTranslation.Failed(
+                        AppError.Unexpected("Your OpenAI account is out of API credit.")
+                    )
                 )
-            )
+            }
         )
 
         onNodeWithText("out of API credit", substring = true).assertExists()
@@ -204,7 +213,7 @@ class ReaderPageTranslationTest {
     fun aSentenceStillBeingTranslatedIsNotCoveredOver() = runComposeUiTest {
         setReader(
             sentences = listOf(wholePage),
-            translations = mapOf(TextAnchor.Page(0, 0) to PassageTranslation.Loading)
+            translations = { mapOf(TextAnchor.Page(0, 0) to PassageTranslation.Loading) }
         )
 
         assertEquals(
@@ -212,6 +221,38 @@ class ReaderPageTranslationTest {
             onAllNodes(hasText("", substring = true)).fetchSemanticsNodes()
                 .count { it.config.toString().contains(opening) }
         )
+    }
+
+    /**
+     * The whole of what a reader sees after tapping, in order: a page with
+     * nothing on it, the same page while the answer is on its way, and then the
+     * translation over the words.
+     *
+     * Worth composing rather than asserting on the states themselves because
+     * the overlay walks away from a page nobody has touched without looking at
+     * it - and a page that stayed walked away from once it *had* been touched
+     * would be a translation that arrived and was never drawn.
+     */
+    @Test
+    fun aPageIsMarkedOnlyOnceItsTranslationArrives() = runComposeUiTest {
+        var translations by mutableStateOf<Map<TextAnchor, PassageTranslation>>(emptyMap())
+
+        setReader(sentences = listOf(wholePage), translations = { translations })
+
+        assertEquals(0, onAllNodes(hasText(translated, substring = true)).fetchSemanticsNodes().size)
+
+        translations = mapOf(TextAnchor.Page(0, 0) to PassageTranslation.Loading)
+        waitForIdle()
+
+        // Still nothing over the words: the page is readable while they wait.
+        assertEquals(0, onAllNodes(hasText(translated, substring = true)).fetchSemanticsNodes().size)
+
+        translations = mapOf(
+            TextAnchor.Page(0, 0) to PassageTranslation.Ready(Translation(translated))
+        )
+        waitForIdle()
+
+        onNodeWithText(translated, substring = true).assertExists()
     }
 
     /** Nothing is drawn over a page nobody has asked about. */
@@ -228,9 +269,14 @@ class ReaderPageTranslationTest {
     private fun ComposeUiTest.tapPageTwo() =
         onNodeWithContentDescription("Page 2 of 2").performTouchInput { click() }
 
+    /**
+     * The translations are read inside the composition rather than captured, so
+     * a test can change them and watch the page follow - which is what actually
+     * happens when an answer comes back.
+     */
     private fun ComposeUiTest.setReader(
         sentences: List<PageSentence>,
-        translations: Map<TextAnchor, PassageTranslation> = emptyMap(),
+        translations: () -> Map<TextAnchor, PassageTranslation> = { emptyMap() },
         onPassageSelected: (PassageSelection) -> Unit = {}
     ) {
         setContent {
@@ -239,7 +285,7 @@ class ReaderPageTranslationTest {
                     uiState = UiState.Success(book()),
                     settings = ReaderSettings(),
                     outline = ReaderOutline.Chapters(emptyList()),
-                    translations = translations,
+                    translations = translations(),
                     onBack = {},
                     onRetry = {},
                     onSettingsChange = {},

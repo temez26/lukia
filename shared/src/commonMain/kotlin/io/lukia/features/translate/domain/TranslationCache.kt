@@ -1,0 +1,126 @@
+package io.lukia.features.translate.domain
+
+import kotlin.jvm.JvmInline
+
+/**
+ * Passages already translated, kept so that the same words are never sent twice.
+ *
+ * A port rather than a class because what is behind it is a storage decision:
+ * today a table, tomorrow possibly nothing at all on a platform that would
+ * rather not keep the reader's book on disk. Nothing above this line changes
+ * either way.
+ *
+ * Reading is a write as far as this is concerned - [get] marks the entry as
+ * used, which is what decides who survives the next trim.
+ */
+interface TranslationCache {
+
+    suspend fun get(key: TranslationCacheKey): Translation?
+
+    suspend fun put(key: TranslationCacheKey, translation: Translation)
+}
+
+/**
+ * What a cached translation is filed under.
+ *
+ * A value rather than a bare [String] so it cannot be confused with anything
+ * else here that is also a string - the passage, the model's name - which is
+ * most of what goes wrong with a cache.
+ */
+@JvmInline
+value class TranslationCacheKey(val value: String)
+
+/**
+ * The key for one request, which is a hash of everything that decides the
+ * answer.
+ *
+ * Everything: the passage, the language wanted, the book it came out of, the
+ * text around it, and [translator] - which is the provider and model that would
+ * be asked. Leave any of them out and the cache starts answering a question
+ * nobody asked. Switching between two models to compare them is a real thing
+ * readers do, and a cache that ignored the model would hand them the same
+ * sentence twice and prove nothing.
+ *
+ * Hashed rather than stored whole because the surrounding text is up to a page
+ * of the book: keyed by the text itself, the cache would be a slow second copy
+ * of the library. The two hashes below give 128 bits together, at which a
+ * collision in a table of a few thousand entries is not a thing that happens.
+ */
+fun translationCacheKey(
+    request: TranslationRequest,
+    /** Who would be asked, as "provider/model" - see [TranslationProvider]. */
+    translator: String
+): TranslationCacheKey {
+    val identity = buildString {
+        append(translator).append(SEPARATOR)
+        append(request.targetLanguage.name).append(SEPARATOR)
+        append(request.text.trim()).append(SEPARATOR)
+        request.context.appendTo(this)
+    }.encodeToByteArray()
+
+    return TranslationCacheKey(
+        identity.fnv1a(FIRST_OFFSET, FIRST_PRIME, reversed = false).hex() +
+            identity.fnv1a(SECOND_OFFSET, SECOND_PRIME, reversed = true).hex()
+    )
+}
+
+/**
+ * Everything the book said about the passage, in a fixed order.
+ *
+ * The separators matter: without them an author called "A" writing about "BC"
+ * and one called "AB" writing about "C" run together into the same key.
+ */
+private fun TranslationContext.appendTo(builder: StringBuilder) {
+    with(builder) {
+        append(bookTitle.orEmpty()).append(SEPARATOR)
+        append(authors.joinToString(SEPARATOR)).append(SEPARATOR)
+        append(genres.joinToString(SEPARATOR)).append(SEPARATOR)
+        append(sourceLanguage.orEmpty()).append(SEPARATOR)
+        append(chapterTitle.orEmpty()).append(SEPARATOR)
+        append(surroundingText.orEmpty())
+    }
+}
+
+/**
+ * FNV-1a, which is written out here rather than taken from the platform because
+ * this key is written to disk: a value whose meaning came from `String.hashCode`
+ * would be a cache that quietly emptied itself the day a runtime changed its
+ * mind about hashing.
+ *
+ * The two halves of the key differ by more than their starting value - a
+ * different prime, and the bytes read the other way - because two runs of the
+ * same function over the same bytes are not two independent chances of telling
+ * two passages apart.
+ */
+private fun ByteArray.fnv1a(offset: Long, prime: Long, reversed: Boolean): Long {
+    var hash = offset
+
+    val order = if (reversed) indices.reversed() else indices
+
+    order.forEach { index ->
+        hash = hash xor (this[index].toLong() and 0xFF)
+        hash *= prime
+    }
+
+    return hash
+}
+
+private fun Long.hex(): String = buildString(16) {
+    for (shift in 60 downTo 0 step 4) {
+        append(HEX_DIGITS[((this@hex ushr shift) and 0xF).toInt()])
+    }
+}
+
+private const val HEX_DIGITS = "0123456789abcdef"
+
+/**
+ * A character no part of a book, a title or a model name contains, so that the
+ * boundaries between the fields cannot be forged by their contents.
+ */
+private const val SEPARATOR = "\u0000"
+
+private const val FIRST_OFFSET = -3750763034362895579L
+private const val FIRST_PRIME = 1099511628211L
+
+private const val SECOND_OFFSET = -1234567890123456789L
+private const val SECOND_PRIME = 880355519L

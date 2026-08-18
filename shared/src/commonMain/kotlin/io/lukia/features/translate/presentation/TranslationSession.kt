@@ -8,8 +8,21 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+/**
+ * How many translated passages one open book keeps.
+ *
+ * Far more than a reader gets through in a sitting, and small enough that the
+ * map is cheap to copy - which it is on every single state change, because the
+ * whole screen reads it. Without a ceiling, a long evening with a long book
+ * turns every tap into a copy of every translation made since it was opened.
+ *
+ * What falls out is the least recently touched, which is the part of the book
+ * furthest behind the reader. Tapping it again asks for it again - and by then
+ * the answer is in the stored cache, so asking costs nothing.
+ */
+private const val MAX_KEPT_PASSAGES = 400
 
 /**
  * Every passage translated while one book is open, and what a tap on each of
@@ -22,14 +35,27 @@ import kotlinx.coroutines.launch
  * screen is what makes it something that can be tested without composing
  * anything.
  *
- * Translations are kept for as long as the book is open. A reader comparing two
- * renderings of the same line flips between them for free, and a chapter read
- * twice is not paid for twice.
+ * Translations are kept for as long as the book is open, up to
+ * [MAX_KEPT_PASSAGES] of them. A reader comparing two renderings of the same
+ * line flips between them for free, and a chapter read twice is not paid for
+ * twice - the part that survives closing the book is
+ * [io.lukia.features.translate.infrastructure.CachingTranslator]'s doing rather
+ * than this one's.
  */
 class TranslationSession(
     private val translate: TranslatePassageUseCase,
     private val scope: CoroutineScope
 ) {
+
+    /**
+     * What is on screen, and the order it was last touched in - which is what
+     * decides who is forgotten first once [MAX_KEPT_PASSAGES] is reached.
+     *
+     * Only ever read and written from whatever thread the taps arrive on, which
+     * is the one the reader's [scope] runs on. The flow beside it is what
+     * everything else sees.
+     */
+    private val kept = LinkedHashMap<TextAnchor, PassageTranslation>()
 
     private val _passages = MutableStateFlow<Map<TextAnchor, PassageTranslation>>(emptyMap())
     val passages: StateFlow<Map<TextAnchor, PassageTranslation>> = _passages.asStateFlow()
@@ -40,7 +66,7 @@ class TranslationSession(
      * merely flips an already-translated passage never builds one.
      */
     fun onPassageTapped(anchor: TextAnchor, request: () -> TranslationRequest) {
-        when (val current = _passages.value[anchor]) {
+        when (val current = kept[anchor]) {
             // Tapping again while it is still coming back is not a second
             // request. It is somebody wondering whether the first one landed.
             PassageTranslation.Loading -> Unit
@@ -74,10 +100,19 @@ class TranslationSession(
      * replaced, and the anchors that pointed into it no longer point anywhere.
      */
     fun clear() {
+        kept.clear()
         _passages.value = emptyMap()
     }
 
     private fun put(anchor: TextAnchor, state: PassageTranslation) {
-        _passages.update { it + (anchor to state) }
+        // Removed before it is added so that touching a passage moves it to the
+        // end, which is what makes forgetting least-recently-used rather than
+        // oldest-first.
+        kept.remove(anchor)
+        kept[anchor] = state
+
+        while (kept.size > MAX_KEPT_PASSAGES) kept.remove(kept.keys.first())
+
+        _passages.value = kept.toMap()
     }
 }

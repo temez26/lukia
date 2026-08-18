@@ -1,0 +1,58 @@
+-- Passages that have already been translated, so the same words are never paid
+-- for twice.
+--
+-- On disk rather than in memory because that is where the saving is: an
+-- in-memory cache dies with the open book, and re-opening a chapter to read it
+-- again is exactly when somebody would otherwise be charged a second time for
+-- every sentence they had already looked at.
+--
+-- `cacheKey` is a hash of everything that decides the answer - the passage, the
+-- language wanted, the book around it, and which model was asked. See
+-- `translationCacheKey`. A hash rather than the text itself because the text
+-- includes the paragraph the passage sits in, which would make this table an
+-- expensive second copy of the books it is about.
+--
+-- `usedAt` counts uses rather than telling the time: it is one past the highest
+-- in the table, stamped whenever an entry is written or read back. That makes
+-- trimming drop what nobody has come back to rather than what happens to be
+-- oldest - a chapter re-read every evening stays, one skimmed once does not -
+-- and it does so without trusting a device clock that can go backwards.
+CREATE TABLE translation_cache (
+    cacheKey TEXT NOT NULL PRIMARY KEY,
+    translation TEXT NOT NULL,
+    note TEXT,
+    usedAt INTEGER NOT NULL
+);
+
+-- What trimming orders by. Without it, every trim is a scan of the whole table.
+CREATE INDEX translation_cache_usedAt ON translation_cache(usedAt);
+
+selectByKey:
+SELECT translation, note FROM translation_cache WHERE cacheKey = ?;
+
+-- Replace rather than update: the row holds nothing that is not being written.
+-- `INSERT OR REPLACE` is as old as SQLite, unlike the upsert this would
+-- otherwise be - see `Document.sq`.
+put:
+INSERT OR REPLACE INTO translation_cache(cacheKey, translation, note, usedAt)
+VALUES (?, ?, ?, (SELECT COALESCE(MAX(usedAt), 0) + 1 FROM translation_cache));
+
+touch:
+UPDATE translation_cache
+SET usedAt = (SELECT COALESCE(MAX(usedAt), 0) + 1 FROM translation_cache)
+WHERE cacheKey = ?;
+
+count:
+SELECT count(*) FROM translation_cache;
+
+-- The least recently used entries, dropped once the table has outgrown its
+-- budget. Written as a subselect rather than `DELETE ... ORDER BY LIMIT`, which
+-- SQLite only supports when it was compiled to.
+trimLeastRecentlyUsed:
+DELETE FROM translation_cache
+WHERE cacheKey IN (
+    SELECT cacheKey FROM translation_cache ORDER BY usedAt LIMIT :count
+);
+
+clear:
+DELETE FROM translation_cache;
