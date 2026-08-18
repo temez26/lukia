@@ -2,9 +2,12 @@ package io.lukia.features.translate.infrastructure
 
 import io.lukia.core.domain.FakeSecretStore
 import io.lukia.core.domain.FakeSettingsStore
+import io.lukia.features.translate.domain.PassageUnit
 import io.lukia.features.translate.domain.TargetLanguage
 import io.lukia.features.translate.domain.TranslationProvider
+import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.domain.TranslationSettings
+import io.lukia.features.translate.domain.WordLookup
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -50,6 +53,71 @@ class TranslationSettingsRepositoryTest {
         assertEquals("gpt-4o-mini", reopened.model)
         assertEquals("sk-test", reopened.apiKey)
         assertTrue(reopened.isConfigured)
+    }
+
+
+    /**
+     * The word lookup, the Google key and what the two gestures do all survive
+     * closing the book - and the key goes to the secret store like every other
+     * key rather than into the settings file.
+     */
+    @Test
+    fun howWordsAreLookedUpIsThereTheNextTimeTheAppOpens() {
+        val store = FakeSettingsStore()
+
+        TranslationSettingsRepository(store, secrets).update(
+            TranslationSettings()
+                .withWordLookup(WordLookup.Wiktionary)
+                .withGoogleApiKey("google-key")
+        )
+
+        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+
+        assertEquals(WordLookup.Wiktionary, reopened.wordLookup)
+        assertEquals("google-key", reopened.googleApiKey)
+        assertTrue(reopened.looksUpWordsElsewhere)
+    }
+
+    @Test
+    fun whatTheGesturesDoIsThereTheNextTimeTheAppOpens() {
+        val store = FakeSettingsStore()
+
+        TranslationSettingsRepository(store, secrets).update(
+            TranslationSettings().withGestures(
+                TranslationGestures(tap = PassageUnit.Paragraph, longPress = PassageUnit.Sentence)
+            )
+        )
+
+        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+
+        assertEquals(PassageUnit.Paragraph, reopened.gestures.tap)
+        assertEquals(PassageUnit.Sentence, reopened.gestures.longPress)
+    }
+
+    /** Off has to survive too, and it is not the same as never having been set. */
+    @Test
+    fun aGestureTurnedOffStaysOff() {
+        val store = FakeSettingsStore()
+
+        TranslationSettingsRepository(store, secrets).update(
+            TranslationSettings().withGestures(TranslationGestures(tap = null, longPress = null))
+        )
+
+        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+
+        assertNull(reopened.gestures.tap)
+        assertNull(reopened.gestures.longPress)
+        assertFalse(reopened.gestures.translatesAnything)
+    }
+
+    @Test
+    fun anUntouchedInstallTapsForTheSentenceAndHoldsForTheWord() {
+        val settings = TranslationSettingsRepository(FakeSettingsStore(), secrets).settings.value
+
+        assertEquals(PassageUnit.Sentence, settings.gestures.tap)
+        assertEquals(PassageUnit.Word, settings.gestures.longPress)
+        assertEquals(WordLookup.Translator, settings.wordLookup)
+        assertFalse(settings.looksUpWordsElsewhere)
     }
 
     /**

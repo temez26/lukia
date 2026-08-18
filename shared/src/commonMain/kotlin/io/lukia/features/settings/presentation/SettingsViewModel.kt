@@ -11,11 +11,14 @@ import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.ModelCatalogue
 import io.lukia.features.translate.domain.ModelWarmUp
+import io.lukia.features.translate.domain.PassageUnit
 import io.lukia.features.translate.domain.TargetLanguage
 import io.lukia.features.translate.domain.TranslationContext
 import io.lukia.features.translate.domain.TranslationProvider
 import io.lukia.features.translate.domain.TranslationRequest
+import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.domain.TranslationSettings
+import io.lukia.features.translate.domain.WordLookup
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -168,6 +171,31 @@ class SettingsViewModel(
      * have.
      */
     fun setTimeoutSeconds(seconds: Int) = edit { withTimeoutSeconds(seconds) }
+
+    /**
+     * What answers when the reader asks about one word.
+     *
+     * Not an [edit]: the connection test proves the translator works, and which
+     * service answers about a single word says nothing about that either way.
+     */
+    fun setWordLookup(lookup: WordLookup) {
+        translation.update(translation.settings.value.withWordLookup(lookup))
+    }
+
+    fun setGoogleApiKey(key: String) {
+        translation.update(translation.settings.value.withGoogleApiKey(key))
+    }
+
+    /** What a tap asks for, or nothing at all when the reader turns it off. */
+    fun setTapGesture(unit: PassageUnit?) = setGestures { copy(tap = unit) }
+
+    fun setLongPressGesture(unit: PassageUnit?) = setGestures { copy(longPress = unit) }
+
+    private fun setGestures(change: TranslationGestures.() -> TranslationGestures) {
+        val current = translation.settings.value
+
+        translation.update(current.withGestures(current.gestures.change()))
+    }
 
     fun setApiKey(key: String) = edit { withApiKey(key) }
 

@@ -21,7 +21,20 @@ data class TranslationSettings(
     private val models: Map<TranslationProvider, String> = emptyMap(),
     private val keys: Map<TranslationProvider, String> = emptyMap(),
     private val baseUrls: Map<TranslationProvider, String> = emptyMap(),
-    private val timeouts: Map<TranslationProvider, Int> = emptyMap()
+    private val timeouts: Map<TranslationProvider, Int> = emptyMap(),
+    /**
+     * What answers when the reader asks about a single word. Not per provider:
+     * it is a choice between providers, not a setting one of them has.
+     */
+    val wordLookup: WordLookup = WordLookup.Default,
+    /**
+     * The Cloud Translation key, when the reader has one. Kept apart from the
+     * per-provider keys above because Google is not one of them - it never
+     * answers about a sentence - and giving it a slot in that map would mean
+     * offering it as a translator everywhere else.
+     */
+    private val googleKey: String? = null,
+    val gestures: TranslationGestures = TranslationGestures.Default
 ) {
 
     /** What the current provider is asked for, or what it offers by default. */
@@ -58,6 +71,23 @@ data class TranslationSettings(
     val timeoutSeconds: Int
         get() = timeouts.timeoutFor(provider) ?: provider.defaultTimeoutSeconds
 
+    /**
+     * The reader's own Google key, or null when they have not given one - in
+     * which case Google is asked over its public endpoint instead.
+     */
+    val googleApiKey: String?
+        get() = googleKey?.trim()?.takeIf { it.isNotEmpty() }
+
+    /**
+     * Whether a single word goes somewhere other than the translator.
+     *
+     * The one thing that can be set up without setting up a translator at all:
+     * a dictionary needs nothing, and Google needs nothing until the reader
+     * wants the supported API.
+     */
+    val looksUpWordsElsewhere: Boolean
+        get() = wordLookup != WordLookup.Translator
+
     /** True once there is enough here to actually ask for a translation. */
     val isConfigured: Boolean
         get() = (!provider.requiresKey || apiKey != null) && isEndpointAllowed
@@ -85,6 +115,14 @@ data class TranslationSettings(
      */
     fun withTimeoutSeconds(seconds: Int): TranslationSettings =
         copy(timeouts = timeouts + (provider to seconds.coerceIn(TimeoutSecondsRange)))
+
+    fun withWordLookup(lookup: WordLookup): TranslationSettings = copy(wordLookup = lookup)
+
+    fun withGoogleApiKey(key: String): TranslationSettings =
+        copy(googleKey = key.takeIf { it.isNotBlank() })
+
+    fun withGestures(gestures: TranslationGestures): TranslationSettings =
+        copy(gestures = gestures)
 
     /** What is stored for a provider that is not the one currently chosen. */
     fun modelFor(provider: TranslationProvider): String =
@@ -121,8 +159,21 @@ data class TranslationSettings(
             models: Map<TranslationProvider, String>,
             keys: Map<TranslationProvider, String>,
             baseUrls: Map<TranslationProvider, String>,
-            timeouts: Map<TranslationProvider, Int> = emptyMap()
-        ) = TranslationSettings(targetLanguage, provider, models, keys, baseUrls, timeouts)
+            timeouts: Map<TranslationProvider, Int> = emptyMap(),
+            wordLookup: WordLookup = WordLookup.Default,
+            googleKey: String? = null,
+            gestures: TranslationGestures = TranslationGestures.Default
+        ) = TranslationSettings(
+            targetLanguage = targetLanguage,
+            provider = provider,
+            models = models,
+            keys = keys,
+            baseUrls = baseUrls,
+            timeouts = timeouts,
+            wordLookup = wordLookup,
+            googleKey = googleKey,
+            gestures = gestures
+        )
     }
 
     /** Every provider's stored value, for whatever writes them back to disk. */
@@ -133,6 +184,8 @@ data class TranslationSettings(
     fun storedBaseUrls(): Map<TranslationProvider, String> = baseUrls
 
     fun storedTimeouts(): Map<TranslationProvider, Int> = timeouts
+
+    fun storedGoogleKey(): String = googleKey.orEmpty()
 }
 
 /** Blank and absent are the same thing: a field cleared to nothing is not a value. */

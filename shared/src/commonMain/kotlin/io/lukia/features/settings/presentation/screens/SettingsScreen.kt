@@ -36,9 +36,11 @@ import io.lukia.features.settings.presentation.ModelReadiness
 import io.lukia.features.settings.presentation.ConnectionTest
 import io.lukia.features.settings.presentation.components.ChoiceList
 import io.lukia.features.settings.presentation.components.SettingsTextField
+import io.lukia.features.translate.domain.PassageUnit
 import io.lukia.features.translate.domain.TargetLanguage
 import io.lukia.features.translate.domain.TranslationProvider
 import io.lukia.features.translate.domain.TranslationSettings
+import io.lukia.features.translate.domain.WordLookup
 import io.lukia.shared.presentation.components.ButtonVariant
 import io.lukia.shared.presentation.components.LukiaButton
 import io.lukia.shared.presentation.components.BackChevron
@@ -83,6 +85,10 @@ fun SettingsScreen(
         onApiKeyChange = viewModel::setApiKey,
         onBaseUrlChange = viewModel::onBaseUrlEdited,
         onTimeoutChange = viewModel::setTimeoutSeconds,
+        onWordLookupChange = viewModel::setWordLookup,
+        onGoogleApiKeyChange = viewModel::setGoogleApiKey,
+        onTapGestureChange = viewModel::setTapGesture,
+        onLongPressGestureChange = viewModel::setLongPressGesture,
         onTestConnection = viewModel::testConnection,
         onLoadModels = viewModel::loadAvailableModels,
         onLoadChosenModel = viewModel::loadChosenModel,
@@ -113,6 +119,10 @@ fun SettingsContent(
     onApiKeyChange: (String) -> Unit,
     onBaseUrlChange: (String) -> Unit,
     onTimeoutChange: (Int) -> Unit = {},
+    onWordLookupChange: (WordLookup) -> Unit = {},
+    onGoogleApiKeyChange: (String) -> Unit = {},
+    onTapGestureChange: (PassageUnit?) -> Unit = {},
+    onLongPressGestureChange: (PassageUnit?) -> Unit = {},
     onTestConnection: () -> Unit,
     onLoadModels: () -> Unit = {},
     onLoadChosenModel: () -> Unit = {},
@@ -148,6 +158,10 @@ fun SettingsContent(
                 onApiKeyChange = onApiKeyChange,
                 onBaseUrlChange = onBaseUrlChange,
                 onTimeoutChange = onTimeoutChange,
+                onWordLookupChange = onWordLookupChange,
+                onGoogleApiKeyChange = onGoogleApiKeyChange,
+                onTapGestureChange = onTapGestureChange,
+                onLongPressGestureChange = onLongPressGestureChange,
                 onTestConnection = onTestConnection,
                 onLoadModels = onLoadModels,
                 onLoadChosenModel = onLoadChosenModel,
@@ -193,6 +207,10 @@ internal fun SettingsBody(
     onApiKeyChange: (String) -> Unit,
     onBaseUrlChange: (String) -> Unit,
     onTimeoutChange: (Int) -> Unit,
+    onWordLookupChange: (WordLookup) -> Unit,
+    onGoogleApiKeyChange: (String) -> Unit,
+    onTapGestureChange: (PassageUnit?) -> Unit,
+    onLongPressGestureChange: (PassageUnit?) -> Unit,
     onTestConnection: () -> Unit,
     onLoadModels: () -> Unit,
     onLoadChosenModel: () -> Unit,
@@ -319,6 +337,61 @@ internal fun SettingsBody(
                         enabled = translation.isConfigured,
                         onTest = onTestConnection
                     )
+                }
+            }
+
+            SettingsSection(
+                title = "Looking up a word",
+                footnote = translation.wordLookup.footnote,
+                groupColor = groupColor,
+                modifier = Modifier.padding(top = dimens.sectionSpacing)
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
+                    SegmentedControl(
+                        options = WordLookup.entries,
+                        selected = translation.wordLookup,
+                        label = { it.label },
+                        onSelect = onWordLookupChange
+                    )
+
+                    // Only where it does anything. Google is the one choice here
+                    // with something to configure, and a key field under a
+                    // dictionary that has never heard of one is a field that
+                    // asks a question with no answer.
+                    if (translation.wordLookup == WordLookup.Google) {
+                        LabelledField(label = "Cloud Translation key (optional)") {
+                            SettingsTextField(
+                                value = translation.googleApiKey.orEmpty(),
+                                onValueChange = onGoogleApiKeyChange,
+                                placeholder = "Public endpoint",
+                                secret = true
+                            )
+                        }
+                    }
+                }
+            }
+
+            SettingsSection(
+                title = "Pointing at the book",
+                footnote = "Each does one thing, always. Doing it again on the same " +
+                    "passage puts the book\u2019s own words back.",
+                groupColor = groupColor,
+                modifier = Modifier.padding(top = dimens.sectionSpacing)
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
+                    LabelledField(label = "Tap") {
+                        GestureControl(
+                            selected = translation.gestures.tap,
+                            onSelect = onTapGestureChange
+                        )
+                    }
+
+                    LabelledField(label = "Press and hold") {
+                        GestureControl(
+                            selected = translation.gestures.longPress,
+                            onSelect = onLongPressGestureChange
+                        )
+                    }
                 }
             }
 
@@ -480,6 +553,29 @@ private fun TimeoutField(
         )
     }
 }
+
+/**
+ * What one gesture asks for, including nothing at all.
+ *
+ * Off is a choice in the same row as the units rather than a switch beside them,
+ * because it is the same question: what does this gesture do? A reader who only
+ * ever looks words up turns the tap off here and stops translating sentences by
+ * accident.
+ */
+@Composable
+private fun GestureControl(
+    selected: PassageUnit?,
+    onSelect: (PassageUnit?) -> Unit
+) {
+    SegmentedControl(
+        options = GestureChoices,
+        selected = selected,
+        label = { it?.label ?: "Off" },
+        onSelect = onSelect
+    )
+}
+
+private val GestureChoices: List<PassageUnit?> = listOf(null) + PassageUnit.entries
 
 /** A caption over one field, for a group holding several of them. */
 @Composable

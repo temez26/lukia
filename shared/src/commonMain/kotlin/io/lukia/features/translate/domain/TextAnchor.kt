@@ -16,8 +16,15 @@ package io.lukia.features.translate.domain
  */
 sealed interface TextAnchor {
 
-    /** Which sentence of the passage this points at. */
-    val sentenceIndex: Int
+    /**
+     * Which sentence of the passage this points at, or null when the whole
+     * block is what was asked about.
+     *
+     * Null rather than a fourth shape of anchor, because everything that files
+     * these already asks "which sentence" and would otherwise need a second
+     * question first. A paragraph is the block with nothing narrower named.
+     */
+    val sentenceIndex: Int?
 
     /**
      * Which word of that sentence, or null when the sentence itself is what was
@@ -34,7 +41,7 @@ sealed interface TextAnchor {
     data class Section(
         val sectionIndex: Int,
         val blockIndex: Int,
-        override val sentenceIndex: Int,
+        override val sentenceIndex: Int?,
         override val wordIndex: Int? = null
     ) : TextAnchor
 
@@ -45,7 +52,7 @@ sealed interface TextAnchor {
      */
     data class Page(
         val pageIndex: Int,
-        override val sentenceIndex: Int,
+        override val sentenceIndex: Int?,
         override val wordIndex: Int? = null
     ) : TextAnchor
 }

@@ -30,18 +30,23 @@ class CachingTranslator(
     private val translator: Translator,
     private val cache: TranslationCache,
     /**
-     * Who would be asked, as "provider/model", read per request for the same
-     * reason [ConfiguredTranslator] resolves per request: it is a setting, and
-     * the reader can change it with the book open.
+     * Who would be asked about this particular passage, read per request for the
+     * same reason [ConfiguredTranslator] resolves per request: it is a setting,
+     * and the reader can change it with the book open.
+     *
+     * Per request rather than one name for the whole app, because a word and a
+     * sentence do not go to the same place - see [WordLookupTranslator] - and a
+     * cache that filed both under the translator's name would hand back the
+     * model's answer to somebody who had since switched words to a dictionary.
      */
-    private val translatorIdentity: () -> String
+    private val translatorIdentity: (TranslationRequest) -> String
 ) : Translator {
 
     override suspend fun translate(
         request: TranslationRequest,
         onPartial: (String) -> Unit
     ): Translation {
-        val key = translationCacheKey(request, translatorIdentity())
+        val key = translationCacheKey(request, translatorIdentity(request))
 
         // A remembered passage is not reported as arriving. There is nothing to
         // watch: it is already whole, and animating it in a piece at a time

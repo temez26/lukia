@@ -27,8 +27,12 @@ import io.lukia.features.translate.infrastructure.CoalescingTranslator
 import io.lukia.features.translate.infrastructure.SqlTranslationCache
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import io.lukia.features.translate.infrastructure.ConfiguredTranslator
+import io.lukia.features.translate.infrastructure.WordLookupTranslator
+import io.lukia.features.translate.infrastructure.google.GoogleTranslator
+import io.lukia.features.translate.infrastructure.wiktionary.WiktionaryTranslator
 import io.lukia.features.translate.infrastructure.anthropic.AnthropicTranslator
 import io.lukia.features.translate.domain.ModelCatalogue
+import io.lukia.features.translate.domain.PassageUnit
 import io.lukia.features.translate.domain.ModelWarmUp
 import io.lukia.features.translate.infrastructure.openai.OpenAiModelCatalogue
 import io.lukia.features.translate.infrastructure.openai.OpenAiModelWarmUp
@@ -139,13 +143,31 @@ val commonModule = module {
             openAiCompatible = OpenAiTranslator(get(), settings)
         )
 
+        // A single word can go somewhere else entirely, and only a single word:
+        // everything larger needs the book around it, which is the one thing a
+        // dictionary and a bare translator do not get.
+        val answering = WordLookupTranslator(
+            lookup = { settings.settings.value.wordLookup },
+            translator = configured,
+            google = GoogleTranslator(get(), settings),
+            dictionary = WiktionaryTranslator(get(), settings)
+        )
+
         CoalescingTranslator(
             CachingTranslator(
-                translator = configured,
+                translator = answering,
                 cache = get(),
-                translatorIdentity = {
+                // Named per request, because a word and a sentence do not go to
+                // the same place - a cache filing both under the translator's
+                // name would answer one with the other.
+                translatorIdentity = { request ->
                     val current = settings.settings.value
-                    "${current.provider.name}/${current.model}"
+
+                    if (request.unit == PassageUnit.Word && current.looksUpWordsElsewhere) {
+                        "word/${current.wordLookup.name}"
+                    } else {
+                        "${current.provider.name}/${current.model}"
+                    }
                 }
             )
         )

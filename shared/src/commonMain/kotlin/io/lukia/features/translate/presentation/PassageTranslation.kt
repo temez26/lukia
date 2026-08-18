@@ -1,6 +1,7 @@
 package io.lukia.features.translate.presentation
 
 import io.lukia.core.domain.AppError
+import io.lukia.features.translate.domain.PassageUnit
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.Translation
 
@@ -68,5 +69,11 @@ data class PassageSelection(
     val passage: String,
     val chapterTitle: String? = null,
     /** The paragraph or page the sentence sits in. */
-    val surroundingText: String? = null
+    val surroundingText: String? = null,
+    /**
+     * How much of the book this is, which is what decides who is asked about it:
+     * a single word can go to a dictionary and everything larger cannot. See
+     * [io.lukia.features.translate.domain.WordLookup].
+     */
+    val unit: PassageUnit = PassageUnit.Sentence
 )

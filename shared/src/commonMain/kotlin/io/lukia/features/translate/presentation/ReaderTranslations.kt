@@ -77,20 +77,23 @@ class ReaderTranslations private constructor(
  */
 private class PassageBuilder {
 
+    private var block: PassageTranslation? = null
     private val sentences = mutableMapOf<Int, PassageTranslation>()
     private val words = mutableMapOf<Int, MutableMap<Int, PassageTranslation>>()
 
-    fun put(sentenceIndex: Int, wordIndex: Int?, state: PassageTranslation) {
-        if (wordIndex == null) {
-            sentences[sentenceIndex] = state
-        } else {
-            words.getOrPut(sentenceIndex, ::mutableMapOf)[wordIndex] = state
+    fun put(sentenceIndex: Int?, wordIndex: Int?, state: PassageTranslation) {
+        when {
+            // No sentence named is the block itself - see TextAnchor.
+            sentenceIndex == null -> block = state
+            wordIndex == null -> sentences[sentenceIndex] = state
+            else -> words.getOrPut(sentenceIndex, ::mutableMapOf)[wordIndex] = state
         }
     }
 
     fun build() = SentenceTranslations(
         sentences = sentences.toMap(),
-        words = words.mapValues { (_, byWord) -> WordTranslations(byWord.toMap()) }
+        words = words.mapValues { (_, byWord) -> WordTranslations(byWord.toMap()) },
+        block = block
     )
 }
 
@@ -123,7 +126,16 @@ class SectionTranslations(private val blocks: Map<Int, SentenceTranslations>) {
 @Immutable
 class SentenceTranslations(
     private val sentences: Map<Int, PassageTranslation>,
-    private val words: Map<Int, WordTranslations> = emptyMap()
+    private val words: Map<Int, WordTranslations> = emptyMap(),
+    /**
+     * What has become of the whole block, when the reader asked for the
+     * paragraph rather than for anything inside it.
+     *
+     * It takes precedence over everything else here while it is showing: a
+     * paragraph translated whole has none of its own sentences left on the page
+     * to have been translated.
+     */
+    val block: PassageTranslation? = null
 ) {
 
     /** What has become of the whole sentence, as opposed to any word in it. */
@@ -133,12 +145,16 @@ class SentenceTranslations(
     fun words(sentenceIndex: Int): WordTranslations =
         words[sentenceIndex] ?: WordTranslations.None
 
-    val isEmpty: Boolean get() = sentences.isEmpty() && words.isEmpty()
+    val isEmpty: Boolean get() = block == null && sentences.isEmpty() && words.isEmpty()
 
     override fun equals(other: Any?): Boolean =
-        other is SentenceTranslations && sentences == other.sentences && words == other.words
+        other is SentenceTranslations &&
+            block == other.block &&
+            sentences == other.sentences &&
+            words == other.words
 
-    override fun hashCode(): Int = 31 * sentences.hashCode() + words.hashCode()
+    override fun hashCode(): Int =
+        31 * (31 * sentences.hashCode() + words.hashCode()) + block.hashCode()
 
     companion object {
         val None = SentenceTranslations(emptyMap())

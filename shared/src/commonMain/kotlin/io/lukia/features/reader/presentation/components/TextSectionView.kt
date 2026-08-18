@@ -63,7 +63,9 @@ import io.lukia.features.reader.domain.TextBlock
 import io.lukia.features.reader.domain.TextRun
 import io.lukia.features.reader.domain.TextSection
 import io.lukia.features.reader.presentation.TranslateOnScreen
+import io.lukia.features.translate.domain.PassageUnit
 import io.lukia.features.translate.domain.Sentence
+import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.domain.Word
 import io.lukia.features.translate.domain.splitIntoSentences
 import io.lukia.features.translate.domain.words
@@ -101,6 +103,8 @@ internal class PassageActions(
     /** A long press: the single word under it. */
     val onWord: (blockIndex: Int, sentence: Sentence, word: Word, paragraph: String) -> Unit =
         { _, _, _, _ -> },
+    /** The whole paragraph, as one passage. */
+    val onParagraph: (blockIndex: Int, paragraph: String) -> Unit = { _, _ -> },
     /** Everything in a block, when the reader asks for what is on screen. */
     val onBlock: (blockIndex: Int, sentences: List<Sentence>, paragraph: String) -> Unit =
         { _, _, _ -> },
@@ -112,6 +116,7 @@ internal class PassageActions(
     fun forBlock(blockIndex: Int) = BlockActions(
         onSentence = { sentence, paragraph -> onSentence(blockIndex, sentence, paragraph) },
         onWord = { sentence, word, paragraph -> onWord(blockIndex, sentence, word, paragraph) },
+        onParagraph = { paragraph -> onParagraph(blockIndex, paragraph) },
         onBlock = { sentences, paragraph -> onBlock(blockIndex, sentences, paragraph) },
         onElsewhere = onElsewhere
     )
@@ -125,6 +130,7 @@ internal class PassageActions(
 internal class BlockActions(
     val onSentence: (Sentence, paragraph: String) -> Unit,
     val onWord: (Sentence, Word, paragraph: String) -> Unit,
+    val onParagraph: (paragraph: String) -> Unit,
     val onBlock: (List<Sentence>, paragraph: String) -> Unit,
     val onElsewhere: () -> Unit
 )
@@ -156,6 +162,8 @@ internal fun TextSectionView(
     actions: PassageActions = PassageActions.None,
     /** Whether what is on screen should be translated without being asked twice. */
     translateOnScreen: TranslateOnScreen = TranslateOnScreen.Idle,
+    /** What a tap and a long press ask for, which is the reader's own setting. */
+    gestures: TranslationGestures = TranslationGestures.Default,
     /**
      * Whether the type is being resized right now - a pinch in progress.
      *
@@ -179,6 +187,7 @@ internal fun TextSectionView(
                 translations = translations.block(index),
                 actions = actions.forBlock(index),
                 translateOnScreen = translateOnScreen,
+                gestures = gestures,
                 resizingType = resizingType
             )
         }
@@ -192,11 +201,12 @@ private fun TextBlockView(
     translations: SentenceTranslations,
     actions: BlockActions,
     translateOnScreen: TranslateOnScreen,
+    gestures: TranslationGestures,
     resizingType: Boolean
 ) {
     when (block) {
         is TextBlock.Heading ->
-            HeadingBlock(block, style, translations, actions, translateOnScreen, resizingType)
+            HeadingBlock(block, style, translations, actions, translateOnScreen, gestures, resizingType)
 
         is TextBlock.Paragraph -> ProseText(
             runs = block.text,
@@ -204,14 +214,15 @@ private fun TextBlockView(
             translations = translations,
             actions = actions,
             translateOnScreen = translateOnScreen,
+            gestures = gestures,
             resizingType = resizingType
         )
 
         is TextBlock.ListItem ->
-            ListItemBlock(block, style, translations, actions, translateOnScreen, resizingType)
+            ListItemBlock(block, style, translations, actions, translateOnScreen, gestures, resizingType)
 
         is TextBlock.Quote ->
-            QuoteBlock(block, style, translations, actions, translateOnScreen, resizingType)
+            QuoteBlock(block, style, translations, actions, translateOnScreen, gestures, resizingType)
         // Preformatted text is not prose. Splitting code at its full stops would
         // offer to translate `object.method()` as a sentence.
         is TextBlock.Code -> CodeBlock(block, style)
@@ -247,6 +258,7 @@ private fun ProseText(
     translations: SentenceTranslations,
     actions: BlockActions,
     translateOnScreen: TranslateOnScreen,
+    gestures: TranslationGestures,
     resizingType: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -275,8 +287,17 @@ private fun ProseText(
         }
     }
 
-    val drawn = remember(runs, sentences, words, shownSentences, shownWords) {
-        buildParagraphText(runs = runs, sentences = sentences, words = words) { sentence, word ->
+    // A paragraph translated whole stands in for everything in it, so nothing
+    // inside is looked up and nothing inside is on the page to be pointed at.
+    val shownBlock = translations.block.shownText
+
+    val drawn = remember(runs, sentences, words, shownBlock, shownSentences, shownWords) {
+        buildParagraphText(
+            runs = runs,
+            sentences = sentences,
+            words = words,
+            block = shownBlock
+        ) { sentence, word ->
             if (word == null) {
                 shownSentences[sentence.index]
             } else {
@@ -324,55 +345,19 @@ private fun ProseText(
         currentActions.onBlock(sentences, paragraph)
     }
 
-    val currentTranslations by rememberUpdatedState(translations)
+    val currentGestures by rememberUpdatedState(gestures)
 
     val tappable = modifier.pointerInput(sentences, words) {
         detectTapGestures(
             onTap = { position ->
-                val offset = layout?.getOffsetForPosition(position)
-
-                // A tap on a passage the reader has already asked about acts on
-                // that passage. Without this, tapping a word they had just
-                // translated - which is exactly where the marks invite a second
-                // tap - would translate the whole sentence around it instead of
-                // giving them the word back.
-                //
-                // Only a word that is marked. An untouched word is part of the
-                // sentence it is in, and tapping it means what it has always
-                // meant.
-                val marked = offset
-                    ?.let { currentDrawn.wordAt(it) }
-                    ?.takeIf { currentTranslations.words(it.sentenceIndex)[it.span.index] != null }
-                    ?.let { words.at(it) }
-
-                val sentence = offset
-                    ?.let { currentDrawn.sentenceAt(it) }
-                    ?.let { sentences.getOrNull(it) }
-
-                when {
-                    marked != null && sentence != null ->
-                        currentActions.onWord(sentence, marked, paragraph)
-
-                    sentence != null -> currentActions.onSentence(sentence, paragraph)
-
-                    // A tap between two sentences, or past the end of the last
-                    // line, is a tap on the page rather than on any words - and
-                    // putting the chrome away is what that has always meant.
-                    else -> currentActions.onElsewhere()
+                ask(currentGestures.tap, position, layout, currentDrawn, sentences, words) {
+                    currentActions.act(it, paragraph)
                 }
             },
-            // Holding a word asks about that word alone, whether or not it has
-            // been asked about before. A tap on an untouched word still means
-            // the sentence, so the two never compete: the finger that stops is
-            // asking the narrower question.
             onLongPress = { position ->
-                val offset = layout?.getOffsetForPosition(position) ?: return@detectTapGestures
-                val word = currentDrawn.wordAt(offset)?.let { words.at(it) }
-                    ?: return@detectTapGestures
-                val sentence = sentences.getOrNull(word.sentenceIndex)
-                    ?: return@detectTapGestures
-
-                currentActions.onWord(sentence, word, paragraph)
+                ask(currentGestures.longPress, position, layout, currentDrawn, sentences, words) {
+                    currentActions.act(it, paragraph)
+                }
             }
         )
     }
@@ -436,6 +421,77 @@ private fun ProseText(
     }
 }
 
+/**
+ * What one gesture landed on, once it is known what that gesture asks for.
+ *
+ * [Nothing] is a gesture that reached no words - a tap in the gap between two
+ * sentences, or past the end of the last line - which has always meant the page
+ * rather than the text, and is how the chrome is put away and brought back.
+ */
+private sealed interface Pointed {
+
+    data object Nothing : Pointed
+
+    data class AtWord(val sentence: Sentence, val word: Word) : Pointed
+
+    data class AtSentence(val sentence: Sentence) : Pointed
+
+    data object AtParagraph : Pointed
+}
+
+/**
+ * Works out what the reader pointed at, for the unit the gesture is set to.
+ *
+ * A gesture that is turned off reaches nothing at all rather than falling back
+ * to something narrower: off is off, and a long press that quietly translated a
+ * sentence because the word under it could not be found would be exactly the
+ * kind of thing this setting exists to stop.
+ *
+ * The one place a gesture does not get what it asked for is a word it cannot
+ * find - the punctuation between two words belongs to neither - and there it
+ * gets nothing, not the sentence around it.
+ */
+private inline fun ask(
+    unit: PassageUnit?,
+    position: Offset,
+    layout: TextLayoutResult?,
+    drawn: ParagraphText,
+    sentences: List<Sentence>,
+    words: List<Word>,
+    act: (Pointed) -> Unit
+) {
+    if (unit == null) return
+
+    val offset = layout?.getOffsetForPosition(position)
+    val sentence = offset?.let { drawn.sentenceAt(it) }?.let { sentences.getOrNull(it) }
+
+    // Nothing under the finger is the page, whatever the gesture was set to.
+    if (offset == null || sentence == null) {
+        act(Pointed.Nothing)
+        return
+    }
+
+    when (unit) {
+        PassageUnit.Paragraph -> act(Pointed.AtParagraph)
+
+        PassageUnit.Sentence -> act(Pointed.AtSentence(sentence))
+
+        PassageUnit.Word -> drawn.wordAt(offset)
+            ?.let { words.at(it) }
+            ?.let { act(Pointed.AtWord(sentence, it)) }
+    }
+}
+
+/** Carries out what the reader asked of this block. */
+private fun BlockActions.act(pointed: Pointed, paragraph: String) {
+    when (pointed) {
+        Pointed.Nothing -> onElsewhere()
+        Pointed.AtParagraph -> onParagraph(paragraph)
+        is Pointed.AtSentence -> onSentence(pointed.sentence, paragraph)
+        is Pointed.AtWord -> onWord(pointed.sentence, pointed.word, paragraph)
+    }
+}
+
 /** The word the book wrote at a place in the paragraph as it is currently drawn. */
 private fun List<Word>.at(drawn: ParagraphText.DrawnWord): Word? =
     firstOrNull { it.sentenceIndex == drawn.sentenceIndex && it.index == drawn.span.index }
@@ -477,6 +533,12 @@ private fun TranslatorsRemarks(
 ) {
     val remarks = remember(sentences, words, translations) {
         buildList {
+            translations.block.remark()?.let { add(it) }
+
+            // Nothing inside a paragraph translated whole is on the page, so
+            // nothing inside it has anything to remark on.
+            if (translations.block.shownText != null) return@buildList
+
             sentences.forEach { sentence ->
                 translations[sentence.index].remark()?.let { add(it) }
 
@@ -596,6 +658,10 @@ private fun passageMarkStyles(
 ): MarkedPassages = remember(sentences, words, translations) {
     MarkedPassages(
         sentences = buildMap {
+            // A paragraph translated whole is drawn as one span under this index,
+            // so its mark is filed under the same one - see WHOLE_BLOCK.
+            translations.block.markStyle()?.let { put(WHOLE_BLOCK, it) }
+
             sentences.forEach { sentence ->
                 translations[sentence.index].markStyle()?.let { put(sentence.index, it) }
             }
@@ -617,6 +683,7 @@ private fun HeadingBlock(
     translations: SentenceTranslations,
     actions: BlockActions,
     translateOnScreen: TranslateOnScreen,
+    gestures: TranslationGestures,
     resizingType: Boolean
 ) {
     val scale = when (block.level) {
@@ -638,6 +705,7 @@ private fun HeadingBlock(
         translations = translations,
         actions = actions,
         translateOnScreen = translateOnScreen,
+        gestures = gestures,
         resizingType = resizingType,
         modifier = Modifier
             .fillMaxWidth()
@@ -655,6 +723,7 @@ private fun ListItemBlock(
     translations: SentenceTranslations,
     actions: BlockActions,
     translateOnScreen: TranslateOnScreen,
+    gestures: TranslationGestures,
     resizingType: Boolean
 ) {
     Row(modifier = Modifier.fillMaxWidth()) {
@@ -672,6 +741,7 @@ private fun ListItemBlock(
             translations = translations,
             actions = actions,
             translateOnScreen = translateOnScreen,
+            gestures = gestures,
             resizingType = resizingType,
             modifier = Modifier.weight(1f)
         )
@@ -690,6 +760,7 @@ private fun QuoteBlock(
     translations: SentenceTranslations,
     actions: BlockActions,
     translateOnScreen: TranslateOnScreen,
+    gestures: TranslationGestures,
     resizingType: Boolean
 ) {
     // The row takes the height its text needs, which is what lets the rule
@@ -710,6 +781,7 @@ private fun QuoteBlock(
             translations = translations,
             actions = actions,
             translateOnScreen = translateOnScreen,
+            gestures = gestures,
             resizingType = resizingType,
             modifier = Modifier.weight(1f)
         )

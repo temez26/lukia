@@ -129,5 +129,11 @@ suspend fun Translator.translate(request: TranslationRequest): Translation =
 data class TranslationRequest(
     val text: String,
     val targetLanguage: TargetLanguage,
-    val context: TranslationContext = TranslationContext.None
+    val context: TranslationContext = TranslationContext.None,
+    /**
+     * How much of the book this is, which decides who is asked about it: a
+     * single word can go to a dictionary, and everything larger cannot. See
+     * [WordLookup].
+     */
+    val unit: PassageUnit = PassageUnit.Sentence
 )

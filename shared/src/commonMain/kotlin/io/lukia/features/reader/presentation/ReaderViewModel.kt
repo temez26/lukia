@@ -22,6 +22,7 @@ import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.PageSentence
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.pageSentences
+import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.asTranslationContext
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
@@ -142,6 +143,19 @@ class ReaderViewModel(
      * with" is worse than no button, and most of a reading app's users never
      * configure one.
      */
+    /**
+     * What a tap and a long press on the book ask for, straight from the
+     * settings - so changing one takes effect on the very next tap rather than
+     * the next book.
+     */
+    val translationGestures: StateFlow<TranslationGestures> = translationSettings.settings
+        .map { it.gestures }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = translationSettings.settings.value.gestures
+        )
+
     val translationConfigured: StateFlow<Boolean> = translationSettings.settings
         .map { it.isConfigured }
         .stateIn(
@@ -348,7 +362,8 @@ class ReaderViewModel(
             bookTitle = info.displayTitle(),
             chapterTitle = selection.chapterTitle ?: chapterOf(selection.anchor),
             surroundingText = selection.surroundingText
-        )
+        ),
+        unit = selection.unit
     )
 
     /**

@@ -94,8 +94,23 @@ internal fun buildParagraphText(
     runs: List<TextRun>,
     sentences: List<Sentence>,
     words: List<Word>,
+    /**
+     * The whole paragraph in place of all of it, when that is what was asked
+     * about. Nothing inside it is drawn then, and nothing inside it is
+     * addressable - a paragraph replaced whole has no sentences of its own left
+     * on the page for a tap to land on.
+     */
+    block: String? = null,
     shown: ShownTranslation
 ): ParagraphText {
+    if (block != null) {
+        return ParagraphText(
+            text = AnnotatedString(block),
+            sentences = listOf(ParagraphText.DrawnSpan(WHOLE_BLOCK, 0, block.length)),
+            words = emptyList()
+        )
+    }
+
     val slices = runs.runSlices()
     val length = slices.lastOrNull()?.end ?: 0
     // Grouped once. Searching the whole list per sentence would make setting a
@@ -184,6 +199,15 @@ private fun AnnotatedString.Builder.appendWords(
 
     appendSlices(slices, offset, end)
 }
+
+/**
+ * The index a paragraph translated whole is filed under.
+ *
+ * Not a sentence of the book: it stands for all of them, and the one thing that
+ * must not happen is a tap on it being read as a tap on the first sentence and
+ * translating that instead. Negative because no sentence is.
+ */
+internal const val WHOLE_BLOCK = -1
 
 /** The paragraph with every mark dropped - what sentence offsets are counted against. */
 internal fun List<TextRun>.plain(): String = joinToString(separator = "") { it.text }

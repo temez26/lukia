@@ -28,6 +28,8 @@ import io.lukia.features.reader.domain.TextBlock
 import io.lukia.features.reader.domain.TextRun
 import io.lukia.features.reader.domain.TextSection
 import io.lukia.features.reader.presentation.TranslateOnScreen
+import io.lukia.features.translate.domain.PassageUnit
+import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.presentation.PassageSelection
@@ -36,6 +38,7 @@ import io.lukia.shared.presentation.theme.LukiaTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
@@ -325,12 +328,16 @@ class ReaderTranslationTest {
 
 
     /**
-     * The marks invite a second tap at exactly the word that was just
-     * translated. That tap has to be about the word - asking for the sentence
-     * around it instead takes away the answer the reader was pointing at.
+     * Each gesture does one thing, always.
+     *
+     * An earlier version had a tap mean the word when the word under it had
+     * already been translated, which reads well as a sentence and terribly as a
+     * gesture - the same finger in the same place did different things depending
+     * on what had happened there before. A tap set to the sentence means the
+     * sentence, whatever is underneath it.
      */
     @Test
-    fun tappingATranslatedWordIsAboutThatWordRatherThanItsSentence() = runComposeUiTest {
+    fun aTapMeansWhatItIsSetToWhateverIsUnderIt() = runComposeUiTest {
         var selected: PassageSelection? = null
 
         setReader(
@@ -345,12 +352,85 @@ class ReaderTranslationTest {
 
         onNodeWithText("Kutsukaa me Ishmael.", substring = true).clickFirstWords()
 
-        val selection = assertNotNull(selected, "nothing was selected")
+        assertEquals(TextAnchor.Section(0, 0, 0), assertNotNull(selected).anchor)
+    }
+
+    /** Which is also how a translated word is put back: the gesture that asked. */
+    @Test
+    fun holdingATranslatedWordAsksAboutThatWordAgain() = runComposeUiTest {
+        var selected: PassageSelection? = null
+
+        setReader(
+            translations = {
+                mapOf(
+                    TextAnchor.Section(0, 0, 0, wordIndex = 0) to
+                        PassageTranslation.Ready(Translation("Kutsukaa"))
+                )
+            },
+            onPassageSelected = { selected = it }
+        )
+
+        onNodeWithText("Kutsukaa me Ishmael.", substring = true).performTouchInput {
+            longClick(Offset(4f, 4f))
+        }
+
         assertEquals(
             TextAnchor.Section(0, 0, 0, wordIndex = 0),
-            selection.anchor,
-            "tapping a translated word asked about its sentence"
+            assertNotNull(selected).anchor
         )
+    }
+
+    /** A gesture set to the paragraph asks about all of it, as one passage. */
+    @Test
+    fun aGestureSetToTheParagraphAsksAboutTheWholeBlock() = runComposeUiTest {
+        var selected: PassageSelection? = null
+
+        setReader(
+            onPassageSelected = { selected = it },
+            gestures = TranslationGestures(tap = PassageUnit.Paragraph, longPress = null)
+        )
+
+        onNodeWithText(opening, substring = true).clickFirstWords()
+
+        val selection = assertNotNull(selected, "nothing was selected")
+        assertEquals(TextAnchor.Section(0, 0, sentenceIndex = null), selection.anchor)
+        assertEquals("$opening $second", selection.passage)
+        assertEquals(PassageUnit.Paragraph, selection.unit)
+    }
+
+    /** A translated paragraph stands in for every sentence that was in it. */
+    @Test
+    fun aTranslatedParagraphReplacesTheWholeBlock() = runComposeUiTest {
+        setReader(
+            translations = {
+                mapOf(
+                    TextAnchor.Section(0, 0, sentenceIndex = null) to
+                        PassageTranslation.Ready(Translation("Koko kappale suomeksi."))
+                )
+            }
+        )
+
+        onNodeWithText("Koko kappale suomeksi.", substring = true).assertExists()
+        assertEquals(
+            0,
+            onAllNodes(hasText(opening, substring = true)).fetchSemanticsNodes().size
+        )
+    }
+
+    /** Off is off - a gesture turned off reaches nothing, not something narrower. */
+    @Test
+    fun aGestureTurnedOffAsksForNothing() = runComposeUiTest {
+        var selected: PassageSelection? = null
+
+        setReader(
+            onPassageSelected = { selected = it },
+            gestures = TranslationGestures(tap = null, longPress = null)
+        )
+
+        onNodeWithText(opening, substring = true).clickFirstWords()
+        onNodeWithText(opening, substring = true).performTouchInput { longClick(Offset(4f, 4f)) }
+
+        assertNull(selected, "a gesture that was turned off still translated something")
     }
 
     /** A word nobody has touched is part of its sentence, and a tap still means that. */
@@ -456,7 +536,8 @@ class ReaderTranslationTest {
         translations: () -> Map<TextAnchor, PassageTranslation> = { emptyMap() },
         onPassageSelected: (PassageSelection) -> Unit = {},
         onPassagesRequested: (List<PassageSelection>) -> Unit = {},
-        translateOnScreen: () -> TranslateOnScreen = { TranslateOnScreen.Idle }
+        translateOnScreen: () -> TranslateOnScreen = { TranslateOnScreen.Idle },
+        gestures: TranslationGestures = TranslationGestures.Default
     ) {
         setContent {
             LukiaTheme {
@@ -466,6 +547,7 @@ class ReaderTranslationTest {
                     outline = ReaderOutline.Chapters(emptyList()),
                     translations = translations(),
                     translateOnScreen = translateOnScreen(),
+                    gestures = gestures,
                     onBack = {},
                     onRetry = {},
                     onSettingsChange = {},

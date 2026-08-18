@@ -3,9 +3,12 @@ package io.lukia.features.translate.infrastructure
 import io.lukia.core.domain.SecretStore
 import io.lukia.core.domain.SettingsStore
 import io.lukia.core.infrastructure.readEnum
+import io.lukia.features.translate.domain.PassageUnit
 import io.lukia.features.translate.domain.TargetLanguage
 import io.lukia.features.translate.domain.TranslationProvider
+import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.domain.TranslationSettings
+import io.lukia.features.translate.domain.WordLookup
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -54,7 +57,10 @@ class TranslationSettingsRepository(
             models = readPerProvider(KEY_MODEL),
             keys = readKeys(),
             baseUrls = readPerProvider(KEY_BASE_URL),
-            timeouts = readTimeouts()
+            timeouts = readTimeouts(),
+            wordLookup = store.readEnum(KEY_WORD_LOOKUP, WordLookup.entries, defaults.wordLookup),
+            googleKey = secrets.getSecret(KEY_GOOGLE_KEY)?.takeIf { it.isNotBlank() },
+            gestures = readGestures(defaults.gestures)
         )
     }
 
@@ -66,6 +72,10 @@ class TranslationSettingsRepository(
         writeKeys(settings.storedKeys())
         writePerProvider(KEY_BASE_URL, settings.storedBaseUrls())
         writePerProvider(KEY_TIMEOUT, settings.storedTimeouts().mapValues { it.value.toString() })
+
+        store.putString(KEY_WORD_LOOKUP, settings.wordLookup.name)
+        secrets.putSecret(KEY_GOOGLE_KEY, settings.storedGoogleKey())
+        writeGestures(settings.gestures)
     }
 
     /**
@@ -102,6 +112,30 @@ class TranslationSettingsRepository(
             stored.toIntOrNull()?.let { provider to it }
         }.toMap()
 
+    /**
+     * What a tap and a long press do. A gesture is stored as the unit it asks
+     * about, and turned off as an empty value - which reads back as null rather
+     * than as a unit nobody chose, and leaves an older build's settings file
+     * meaning what it meant.
+     */
+    private fun readGestures(defaults: TranslationGestures) = TranslationGestures(
+        tap = readGesture(KEY_TAP, defaults.tap),
+        longPress = readGesture(KEY_LONG_PRESS, defaults.longPress)
+    )
+
+    private fun readGesture(key: String, default: PassageUnit?): PassageUnit? {
+        val stored = store.getString(key) ?: return default
+
+        if (stored.isBlank()) return null
+
+        return PassageUnit.entries.firstOrNull { it.name == stored } ?: default
+    }
+
+    private fun writeGestures(gestures: TranslationGestures) {
+        store.putString(KEY_TAP, gestures.tap?.name.orEmpty())
+        store.putString(KEY_LONG_PRESS, gestures.longPress?.name.orEmpty())
+    }
+
     private fun readPerProvider(prefix: String): Map<TranslationProvider, String> =
         TranslationProvider.entries.mapNotNull { provider ->
             store.getString("$prefix.${provider.name}")
@@ -127,5 +161,9 @@ class TranslationSettingsRepository(
         const val KEY_API_KEY = "translation.apiKey"
         const val KEY_BASE_URL = "translation.baseUrl"
         const val KEY_TIMEOUT = "translation.timeoutSeconds"
+        const val KEY_WORD_LOOKUP = "translation.wordLookup"
+        const val KEY_GOOGLE_KEY = "translation.googleApiKey"
+        const val KEY_TAP = "translation.gesture.tap"
+        const val KEY_LONG_PRESS = "translation.gesture.longPress"
     }
 }

@@ -85,7 +85,9 @@ import io.lukia.features.reader.presentation.components.TextSectionView
 import io.lukia.features.translate.domain.PageSentence
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.sentenceAt
+import io.lukia.features.translate.domain.PassageUnit
 import io.lukia.features.translate.domain.Sentence
+import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.presentation.PassageSelection
 import io.lukia.features.translate.presentation.PassageTranslation
 import io.lukia.features.translate.presentation.ReaderTranslations
@@ -149,6 +151,7 @@ fun ReaderScreen(
     val translateOnScreen by viewModel.translateOnScreen.collectAsState()
     val translationConfigured by viewModel.translationConfigured.collectAsState()
     val shownTranslations by viewModel.shownTranslations.collectAsState()
+    val gestures by viewModel.translationGestures.collectAsState()
 
     ReaderContent(
         uiState = uiState,
@@ -159,6 +162,7 @@ fun ReaderScreen(
         translateOnScreen = translateOnScreen,
         translationConfigured = translationConfigured,
         shownTranslations = shownTranslations,
+        gestures = gestures,
         onBack = onBack,
         onRetry = viewModel::retry,
         onSettingsChange = viewModel::updateSettings,
@@ -192,6 +196,8 @@ fun ReaderContent(
     translationConfigured: Boolean = false,
     /** What the reader's own translations are doing, for the control that puts them away. */
     shownTranslations: ShownTranslations = ShownTranslations.None,
+    /** What a tap and a long press on the book ask for. */
+    gestures: TranslationGestures = TranslationGestures.Default,
     onBack: () -> Unit,
     onRetry: () -> Unit,
     onSettingsChange: (ReaderSettings) -> Unit,
@@ -377,7 +383,8 @@ fun ReaderContent(
                             onSettingsChange = onSettingsChange,
                             onPassageSelected = onPassageSelected,
                             onPassagesRequested = onPassagesRequested,
-                            translateOnScreen = translateOnScreen
+                            translateOnScreen = translateOnScreen,
+                            gestures = gestures
                         )
                     }
                 }
@@ -797,7 +804,8 @@ private fun SectionList(
     onSettingsChange: (ReaderSettings) -> Unit,
     onPassageSelected: (PassageSelection) -> Unit,
     onPassagesRequested: (List<PassageSelection>) -> Unit,
-    translateOnScreen: TranslateOnScreen
+    translateOnScreen: TranslateOnScreen,
+    gestures: TranslationGestures
 ) {
     val dimens = LocalLukiaDimens.current
 
@@ -868,6 +876,7 @@ private fun SectionList(
                             style = style,
                             translations = translations.section(index),
                             translateOnScreen = translateOnScreen,
+                            gestures = gestures,
                             resizingType = pinchScale != null,
                             actions = rememberSectionActions(
                                 sectionIndex = index,
@@ -911,36 +920,77 @@ private fun rememberSectionActions(
     return remember(sectionIndex, chapterTitle) {
         fun selection(
             blockIndex: Int,
-            sentence: Sentence,
+            sentenceIndex: Int?,
             wordIndex: Int?,
             passage: String,
-            paragraph: String
+            paragraph: String,
+            unit: PassageUnit
         ) = PassageSelection(
             anchor = TextAnchor.Section(
                 sectionIndex = sectionIndex,
                 blockIndex = blockIndex,
-                sentenceIndex = sentence.index,
+                sentenceIndex = sentenceIndex,
                 wordIndex = wordIndex
             ),
             passage = passage,
             chapterTitle = chapterTitle,
-            surroundingText = paragraph
+            surroundingText = paragraph,
+            unit = unit
         )
 
         PassageActions(
             onSentence = { block, sentence, paragraph ->
-                selected.value(selection(block, sentence, null, sentence.text, paragraph))
+                selected.value(
+                    selection(
+                        blockIndex = block,
+                        sentenceIndex = sentence.index,
+                        wordIndex = null,
+                        passage = sentence.text,
+                        paragraph = paragraph,
+                        unit = PassageUnit.Sentence
+                    )
+                )
             },
             // A word travels with the paragraph around it, exactly as a sentence
             // does. On its own it is a dictionary entry; what makes it a reading
             // is the clause it was taken out of.
             onWord = { block, sentence, word, paragraph ->
-                selected.value(selection(block, sentence, word.index, word.text, paragraph))
+                selected.value(
+                    selection(
+                        blockIndex = block,
+                        sentenceIndex = sentence.index,
+                        wordIndex = word.index,
+                        passage = word.text,
+                        paragraph = paragraph,
+                        unit = PassageUnit.Word
+                    )
+                )
+            },
+            // A paragraph is its own context, so it travels without one: there
+            // is nothing around it left to send that is not already in it.
+            onParagraph = { block, paragraph ->
+                selected.value(
+                    selection(
+                        blockIndex = block,
+                        sentenceIndex = null,
+                        wordIndex = null,
+                        passage = paragraph,
+                        paragraph = paragraph,
+                        unit = PassageUnit.Paragraph
+                    )
+                )
             },
             onBlock = { block, sentences, paragraph ->
                 requested.value(
                     sentences.map { sentence ->
-                        selection(block, sentence, null, sentence.text, paragraph)
+                        selection(
+                            blockIndex = block,
+                            sentenceIndex = sentence.index,
+                            wordIndex = null,
+                            passage = sentence.text,
+                            paragraph = paragraph,
+                            unit = PassageUnit.Sentence
+                        )
                     }
                 )
             },
