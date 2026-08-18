@@ -10,12 +10,14 @@ import io.lukia.features.settings.domain.AppTheme
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.ModelCatalogue
+import io.lukia.features.translate.domain.ModelWarmUp
 import io.lukia.features.translate.domain.TargetLanguage
 import io.lukia.features.translate.domain.TranslationContext
 import io.lukia.features.translate.domain.TranslationProvider
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.TranslationSettings
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -61,6 +63,26 @@ sealed interface AvailableModels {
 }
 
 /**
+ * Whether the chosen model is ready to answer.
+ *
+ * Only ever anything but [Cold] for a server the reader runs themselves. A
+ * hosted service holds everything it offers loaded; a local one holds one model
+ * and reads it off disk when asked for another, which is the wait this state
+ * exists to make visible instead of leaving it to ambush the first tapped
+ * sentence.
+ */
+sealed interface ModelReadiness {
+
+    data object Cold : ModelReadiness
+
+    data object Loading : ModelReadiness
+
+    data object Ready : ModelReadiness
+
+    data class Failed(val error: AppError) : ModelReadiness
+}
+
+/**
  * The settings screen's half of the app's settings.
  *
  * There is no [io.lukia.core.presentation.UiState] here and no loading: the store
@@ -68,16 +90,17 @@ sealed interface AvailableModels {
  * time the screen is composed. A settings screen that opened on a spinner would
  * be slower than the thing it configures.
  *
- * Three dependencies rather than one, because the app's appearance, how it
- * translates, and actually translating something are separately owned. This
- * screen is where they happen to be edited together, which is not a reason for
- * them to live together.
+ * Several dependencies rather than one, because the app's appearance, how it
+ * translates, actually translating something, and what a server can be asked to
+ * run are separately owned. This screen is where they happen to be edited
+ * together, which is not a reason for them to live together.
  */
 class SettingsViewModel(
     private val repository: AppSettingsRepository,
     private val translation: TranslationSettingsRepository,
     private val translatePassage: TranslatePassageUseCase,
-    private val catalogue: ModelCatalogue
+    private val catalogue: ModelCatalogue,
+    private val warmUp: ModelWarmUp
 ) : ViewModel() {
 
     val settings: StateFlow<AppSettings> = repository.settings
@@ -89,6 +112,11 @@ class SettingsViewModel(
 
     private val _availableModels = MutableStateFlow<AvailableModels>(AvailableModels.Unknown)
     val availableModels: StateFlow<AvailableModels> = _availableModels.asStateFlow()
+
+    private val _modelReadiness = MutableStateFlow<ModelReadiness>(ModelReadiness.Cold)
+    val modelReadiness: StateFlow<ModelReadiness> = _modelReadiness.asStateFlow()
+
+    private var warming: Job? = null
 
     fun setTheme(theme: AppTheme) {
         repository.update(repository.settings.value.copy(theme = theme))
@@ -106,6 +134,7 @@ class SettingsViewModel(
     fun setProvider(provider: TranslationProvider) {
         _connectionTest.value = ConnectionTest.Untried
         _availableModels.value = AvailableModels.Unknown
+        stopWarmingUp()
         translation.update(translation.settings.value.copy(provider = provider))
 
         // Asked for straight away when the reader picks a server of their own,
@@ -115,6 +144,30 @@ class SettingsViewModel(
     }
 
     fun setModel(model: String) = edit { withModel(model) }
+
+    /**
+     * Picking one of the models the server offers, as opposed to typing a name.
+     *
+     * The difference matters because the name is also a free text field, and a
+     * reader is halfway through typing for most of the characters in it.
+     * Choosing from the list is the one moment they have settled on a model, so
+     * it is the only one worth making the server load it - see [loadChosenModel].
+     */
+    fun chooseModel(model: String) {
+        setModel(model)
+
+        if (translation.settings.value.provider.hasConfigurableEndpoint) loadChosenModel()
+    }
+
+    /**
+     * How long the current provider may go quiet before the wait is given up on.
+     *
+     * Worth exposing at all because no default fits every machine: the same
+     * model answers in seconds where there is memory for it and minutes where
+     * there is not, and only the person whose machine it is knows which they
+     * have.
+     */
+    fun setTimeoutSeconds(seconds: Int) = edit { withTimeoutSeconds(seconds) }
 
     fun setApiKey(key: String) = edit { withApiKey(key) }
 
@@ -138,6 +191,35 @@ class SettingsViewModel(
                 onFailure = { AvailableModels.Failed(it.toAppError()) }
             )
         }
+    }
+
+    /**
+     * Asks the server to have the chosen model loaded, and shows how that goes.
+     *
+     * Also what the reader taps to try again after typing a model name by hand,
+     * which is the other way of ending up with one that is not loaded.
+     *
+     * Every trigger of this replaces the last: a reader running down a list of
+     * models leaves one request per model behind them otherwise, each holding a
+     * server hostage while it loads something already abandoned.
+     */
+    fun loadChosenModel() {
+        stopWarmingUp()
+
+        _modelReadiness.value = ModelReadiness.Loading
+
+        warming = viewModelScope.launch {
+            _modelReadiness.value = runCatchingApp { warmUp.warmUp() }.fold(
+                onSuccess = { ModelReadiness.Ready },
+                onFailure = { ModelReadiness.Failed(it.toAppError()) }
+            )
+        }
+    }
+
+    private fun stopWarmingUp() {
+        warming?.cancel()
+        warming = null
+        _modelReadiness.value = ModelReadiness.Cold
     }
 
     /**

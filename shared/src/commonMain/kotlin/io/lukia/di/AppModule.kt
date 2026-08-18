@@ -29,7 +29,9 @@ import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import io.lukia.features.translate.infrastructure.ConfiguredTranslator
 import io.lukia.features.translate.infrastructure.anthropic.AnthropicTranslator
 import io.lukia.features.translate.domain.ModelCatalogue
+import io.lukia.features.translate.domain.ModelWarmUp
 import io.lukia.features.translate.infrastructure.openai.OpenAiModelCatalogue
+import io.lukia.features.translate.infrastructure.openai.OpenAiModelWarmUp
 import io.lukia.features.translate.infrastructure.openai.OpenAiTranslator
 import io.lukia.features.translate.infrastructure.translationHttpClient
 import io.lukia.features.settings.presentation.SettingsViewModel
@@ -105,7 +107,7 @@ val commonModule = module {
     }
 
     viewModel {
-        SettingsViewModel(get(), get(), get(), get())
+        SettingsViewModel(get(), get(), get(), get(), get())
     }
 
     // One client for the app, so connections are kept and reused between
@@ -158,6 +160,13 @@ val commonModule = module {
     // local one runs whichever file they loaded this morning.
     single<ModelCatalogue> {
         OpenAiModelCatalogue(get(), get())
+    }
+
+    // Same reasoning, and the same provider: only a model the reader hosts has
+    // to be loaded before it can answer, and only an OpenAI-compatible server
+    // can be asked to.
+    single<ModelWarmUp> {
+        OpenAiModelWarmUp(get(), get())
     }
 
     // A single, like the other settings: the language chosen on the settings

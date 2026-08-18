@@ -20,7 +20,8 @@ data class TranslationSettings(
     val provider: TranslationProvider = TranslationProvider.Default,
     private val models: Map<TranslationProvider, String> = emptyMap(),
     private val keys: Map<TranslationProvider, String> = emptyMap(),
-    private val baseUrls: Map<TranslationProvider, String> = emptyMap()
+    private val baseUrls: Map<TranslationProvider, String> = emptyMap(),
+    private val timeouts: Map<TranslationProvider, Int> = emptyMap()
 ) {
 
     /** What the current provider is asked for, or what it offers by default. */
@@ -45,6 +46,18 @@ data class TranslationSettings(
     val baseUrl: String
         get() = baseUrls.entryFor(provider) ?: provider.defaultBaseUrl
 
+    /**
+     * How long the current provider may go silent before the wait is given up
+     * on. See [TranslationProvider.defaultTimeoutSeconds] for why this is a
+     * measure of silence rather than of how long the whole answer took.
+     *
+     * Editable because no default can be right for a server the reader chose:
+     * the same model is seconds on a machine with the memory for it and minutes
+     * on one that is swapping.
+     */
+    val timeoutSeconds: Int
+        get() = timeouts.timeoutFor(provider) ?: provider.defaultTimeoutSeconds
+
     /** True once there is enough here to actually ask for a translation. */
     val isConfigured: Boolean
         get() = (!provider.requiresKey || apiKey != null) && isEndpointAllowed
@@ -66,6 +79,13 @@ data class TranslationSettings(
     fun withBaseUrl(url: String): TranslationSettings =
         copy(baseUrls = baseUrls.replacing(provider, url))
 
+    /**
+     * Clamped rather than rejected: this arrives from a text field, and a
+     * reader who typed a zero meant "quickly", not "give up before asking".
+     */
+    fun withTimeoutSeconds(seconds: Int): TranslationSettings =
+        copy(timeouts = timeouts + (provider to seconds.coerceIn(TimeoutSecondsRange)))
+
     /** What is stored for a provider that is not the one currently chosen. */
     fun modelFor(provider: TranslationProvider): String =
         models.entryFor(provider) ?: provider.defaultModel
@@ -75,7 +95,20 @@ data class TranslationSettings(
     fun baseUrlFor(provider: TranslationProvider): String =
         baseUrls.entryFor(provider) ?: provider.defaultBaseUrl
 
+    fun timeoutSecondsFor(provider: TranslationProvider): Int =
+        timeouts.timeoutFor(provider) ?: provider.defaultTimeoutSeconds
+
     companion object {
+
+        /**
+         * What the reader is allowed to set the wait to.
+         *
+         * The floor is short enough to be impatient with and long enough that a
+         * hosted service on a slow connection still gets a word in. The ceiling
+         * is half an hour, which is past any model load and short of a request
+         * that would outlive the reading session it belongs to.
+         */
+        val TimeoutSecondsRange = 5..1800
 
         /**
          * Rebuilds the stored values, for whatever read them back off the disk.
@@ -87,8 +120,9 @@ data class TranslationSettings(
             provider: TranslationProvider,
             models: Map<TranslationProvider, String>,
             keys: Map<TranslationProvider, String>,
-            baseUrls: Map<TranslationProvider, String>
-        ) = TranslationSettings(targetLanguage, provider, models, keys, baseUrls)
+            baseUrls: Map<TranslationProvider, String>,
+            timeouts: Map<TranslationProvider, Int> = emptyMap()
+        ) = TranslationSettings(targetLanguage, provider, models, keys, baseUrls, timeouts)
     }
 
     /** Every provider's stored value, for whatever writes them back to disk. */
@@ -97,11 +131,17 @@ data class TranslationSettings(
     fun storedKeys(): Map<TranslationProvider, String> = keys
 
     fun storedBaseUrls(): Map<TranslationProvider, String> = baseUrls
+
+    fun storedTimeouts(): Map<TranslationProvider, Int> = timeouts
 }
 
 /** Blank and absent are the same thing: a field cleared to nothing is not a value. */
 private fun Map<TranslationProvider, String>.entryFor(provider: TranslationProvider): String? =
     this[provider]?.trim()?.takeIf { it.isNotEmpty() }
+
+/** A stored wait outside what can be set is a value from nowhere, not a setting. */
+private fun Map<TranslationProvider, Int>.timeoutFor(provider: TranslationProvider): Int? =
+    this[provider]?.takeIf { it in TranslationSettings.TimeoutSecondsRange }
 
 private fun Map<TranslationProvider, String>.replacing(
     provider: TranslationProvider,

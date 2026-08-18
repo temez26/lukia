@@ -20,6 +20,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,6 +32,7 @@ import io.lukia.features.settings.domain.AppSettings
 import io.lukia.features.settings.domain.AppTheme
 import io.lukia.features.settings.presentation.SettingsViewModel
 import io.lukia.features.settings.presentation.AvailableModels
+import io.lukia.features.settings.presentation.ModelReadiness
 import io.lukia.features.settings.presentation.ConnectionTest
 import io.lukia.features.settings.presentation.components.ChoiceList
 import io.lukia.features.settings.presentation.components.SettingsTextField
@@ -63,20 +67,25 @@ fun SettingsScreen(
     val translation by viewModel.translationSettings.collectAsState()
     val connectionTest by viewModel.connectionTest.collectAsState()
     val availableModels by viewModel.availableModels.collectAsState()
+    val modelReadiness by viewModel.modelReadiness.collectAsState()
 
     SettingsContent(
         settings = settings,
         translation = translation,
         connectionTest = connectionTest,
         availableModels = availableModels,
+        modelReadiness = modelReadiness,
         onThemeChange = viewModel::setTheme,
         onTargetLanguageChange = viewModel::setTargetLanguage,
         onProviderChange = viewModel::setProvider,
         onModelChange = viewModel::setModel,
+        onModelChoose = viewModel::chooseModel,
         onApiKeyChange = viewModel::setApiKey,
         onBaseUrlChange = viewModel::onBaseUrlEdited,
+        onTimeoutChange = viewModel::setTimeoutSeconds,
         onTestConnection = viewModel::testConnection,
         onLoadModels = viewModel::loadAvailableModels,
+        onLoadChosenModel = viewModel::loadChosenModel,
         onBack = onBack
     )
 }
@@ -95,14 +104,18 @@ fun SettingsContent(
     translation: TranslationSettings,
     connectionTest: ConnectionTest = ConnectionTest.Untried,
     availableModels: AvailableModels = AvailableModels.Unknown,
+    modelReadiness: ModelReadiness = ModelReadiness.Cold,
     onThemeChange: (AppTheme) -> Unit,
     onTargetLanguageChange: (TargetLanguage) -> Unit,
     onProviderChange: (TranslationProvider) -> Unit,
     onModelChange: (String) -> Unit,
+    onModelChoose: (String) -> Unit = onModelChange,
     onApiKeyChange: (String) -> Unit,
     onBaseUrlChange: (String) -> Unit,
+    onTimeoutChange: (Int) -> Unit = {},
     onTestConnection: () -> Unit,
     onLoadModels: () -> Unit = {},
+    onLoadChosenModel: () -> Unit = {},
     onBack: () -> Unit
 ) {
     val dimens = LocalLukiaDimens.current
@@ -126,14 +139,18 @@ fun SettingsContent(
                 translation = translation,
                 connectionTest = connectionTest,
                 availableModels = availableModels,
+                modelReadiness = modelReadiness,
                 onThemeChange = onThemeChange,
                 onTargetLanguageChange = onTargetLanguageChange,
                 onProviderChange = onProviderChange,
                 onModelChange = onModelChange,
+                onModelChoose = onModelChoose,
                 onApiKeyChange = onApiKeyChange,
                 onBaseUrlChange = onBaseUrlChange,
+                onTimeoutChange = onTimeoutChange,
                 onTestConnection = onTestConnection,
                 onLoadModels = onLoadModels,
+                onLoadChosenModel = onLoadChosenModel,
                 modifier = Modifier.fillMaxSize()
             )
 
@@ -167,14 +184,18 @@ internal fun SettingsBody(
     translation: TranslationSettings,
     connectionTest: ConnectionTest,
     availableModels: AvailableModels,
+    modelReadiness: ModelReadiness,
     onThemeChange: (AppTheme) -> Unit,
     onTargetLanguageChange: (TargetLanguage) -> Unit,
     onProviderChange: (TranslationProvider) -> Unit,
     onModelChange: (String) -> Unit,
+    onModelChoose: (String) -> Unit,
     onApiKeyChange: (String) -> Unit,
     onBaseUrlChange: (String) -> Unit,
+    onTimeoutChange: (Int) -> Unit,
     onTestConnection: () -> Unit,
     onLoadModels: () -> Unit,
+    onLoadChosenModel: () -> Unit,
     modifier: Modifier = Modifier,
     topClearance: Dp = TopChromeClearance,
     bottomClearance: Dp = SettingsBottomClearance,
@@ -269,17 +290,29 @@ internal fun SettingsBody(
                         ServerModels(
                             state = availableModels,
                             selected = translation.model,
-                            onSelect = onModelChange,
+                            onSelect = onModelChoose,
                             onLoad = onLoadModels
+                        )
+
+                        ModelReadinessRow(
+                            state = modelReadiness,
+                            model = translation.model,
+                            onLoad = onLoadChosenModel
                         )
                     } else if (translation.provider.suggestedModels.isNotEmpty()) {
                         ChoiceList(
                             options = translation.provider.suggestedModels,
                             selected = translation.model,
                             label = { it },
-                            onSelect = onModelChange
+                            onSelect = onModelChoose
                         )
                     }
+
+                    TimeoutField(
+                        provider = translation.provider,
+                        seconds = translation.timeoutSeconds,
+                        onChange = onTimeoutChange
+                    )
 
                     ConnectionTestRow(
                         state = connectionTest,
@@ -357,6 +390,94 @@ private fun ServerModels(
                 color = MaterialTheme.colorScheme.error
             )
         }
+    }
+}
+
+/**
+ * Whether the model the reader just picked is loaded and ready.
+ *
+ * The whole point of showing this is that the waiting has to happen somewhere.
+ * A server holding a different model has to read this one off disk before it
+ * can answer anything, and that is minutes for a large one - so it is spent
+ * here, watched, rather than on the first sentence tapped in a book, where it
+ * looks like the app has stopped.
+ *
+ * The button stays available once it has worked, because the reader can type a
+ * model name by hand instead of picking one, and because a server restarted
+ * since is a server that has forgotten.
+ */
+@Composable
+private fun ModelReadinessRow(
+    state: ModelReadiness,
+    model: String,
+    onLoad: () -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+        LukiaButton(
+            label = when (state) {
+                ModelReadiness.Loading -> "Loading…"
+                else -> "Load this model now"
+            },
+            onClick = onLoad,
+            variant = ButtonVariant.Secondary,
+            enabled = model.isNotBlank() && state != ModelReadiness.Loading
+        )
+
+        when (state) {
+            ModelReadiness.Cold -> Unit
+
+            ModelReadiness.Loading -> Text(
+                text = "Asking the server to load $model. A large model can take a few " +
+                    "minutes the first time.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            ModelReadiness.Ready -> Text(
+                text = "$model is loaded and answering.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            is ModelReadiness.Failed -> Text(
+                text = state.error.displayShortMessage(),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+    }
+}
+
+/**
+ * How long this provider may go quiet before the wait is given up on.
+ *
+ * Silence rather than total time, which is why the number can be this large
+ * without a slow answer hanging the reader: a provider still sending is never
+ * given up on, and one that has stopped is given up on after this.
+ *
+ * The typed text is kept here rather than pushed straight into settings so that
+ * a field being cleared to retype it does not momentarily mean "no wait at
+ * all". What leaves this composable is only ever a number.
+ */
+@Composable
+private fun TimeoutField(
+    provider: TranslationProvider,
+    seconds: Int,
+    onChange: (Int) -> Unit
+) {
+    // Keyed on the provider because each keeps its own, and switching between
+    // them has to show the one now in force rather than what was last typed.
+    var typed by remember(provider) { mutableStateOf(seconds.toString()) }
+
+    LabelledField(label = "Give up after") {
+        SettingsTextField(
+            value = typed,
+            onValueChange = { entry ->
+                typed = entry.filter { it.isDigit() }.take(4)
+                typed.toIntOrNull()?.let(onChange)
+            },
+            placeholder = "${provider.defaultTimeoutSeconds} seconds"
+        )
     }
 }
 

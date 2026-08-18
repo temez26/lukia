@@ -3,6 +3,8 @@ package io.lukia.features.translate.infrastructure.anthropic
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
+import io.ktor.client.plugins.HttpRequestTimeoutException
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.HttpResponseData
@@ -20,6 +22,7 @@ import io.lukia.features.translate.domain.TranslationContext
 import io.lukia.features.translate.domain.TranslationProvider
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.TranslationSettings
+import io.lukia.features.translate.domain.translate
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
@@ -73,23 +76,70 @@ class AnthropicTranslatorTest {
      */
     @Test
     fun theAnswerIsFoundPastAnyThinkingTheModelDid() = runTest {
+        val thinking = json.encodeToString(
+            buildJsonObject {
+                put("type", "content_block_delta")
+                put(
+                    "delta",
+                    buildJsonObject {
+                        put("type", "thinking_delta")
+                        put("thinking", "The greeting is informal here.")
+                    }
+                )
+            }
+        )
+
         val translator = translator(
             answers {
-                respondJson(
-                    """
-                    {
-                      "stop_reason": "end_turn",
-                      "content": [
-                        {"type": "thinking", "thinking": ""},
-                        {"type": "text", "text": "{\"translation\":\"Hei.\",\"note\":\"\"}"}
-                      ]
-                    }
-                    """
+                respondStream(
+                    listOf(thinking, textDelta("""{"translation":"Hei.","note":""}""")) +
+                        stopped("end_turn")
                 )
             }
         )
 
         assertEquals("Hei.", translator.translate(request()).text)
+    }
+
+    @Test
+    fun theAnswerIsAskedForAsAStream() = runTest {
+        var body: JsonObject? = null
+        val translator = translator(answers { body = it.jsonBody(); ok() })
+
+        translator.translate(request())
+
+        assertEquals(true, body?.get("stream")?.jsonPrimitive?.content?.toBoolean())
+    }
+
+    /**
+     * What the reader watches: the sentence filling in, never a JSON fragment
+     * and never anything the finished translation will contradict.
+     */
+    @Test
+    fun theSentenceIsReportedAsItArrives() = runTest {
+        val translator = translator(answers { ok("Kutsukaa minua Ismaeliksi.") })
+        val seen = mutableListOf<String>()
+
+        val translation = translator.translate(request()) { seen += it }
+
+        assertTrue(seen.isNotEmpty(), "nothing was reported while the answer arrived")
+        assertEquals("Kutsukaa minua Ismaeliksi.", seen.last())
+        assertTrue(
+            seen.all { translation.text.startsWith(it) },
+            "something was shown that the finished translation contradicts: $seen"
+        )
+    }
+
+    /** A wait that ran out is not a service that could not be reached. */
+    @Test
+    fun aServiceTakingTooLongSaysSoRatherThanBlamingTheConnection() = runTest {
+        val translator = translator(MockEngine { throw HttpRequestTimeoutException(it) })
+
+        val error = translator.failureFor(request()) as AppError.Unexpected
+        val cause = error.cause.orEmpty()
+
+        assertTrue(cause.contains("did not answer"), cause)
+        assertTrue(cause.contains("Settings"), cause)
     }
 
     @Test
@@ -263,7 +313,7 @@ class AnthropicTranslatorTest {
     @Test
     fun aDeclinedRequestIsAFailureRatherThanAnEmptyTranslation() = runTest {
         val translator = translator(
-            answers { respondJson("""{"stop_reason": "refusal", "content": []}""") }
+            answers { respondStream(listOf(stopped("refusal"))) }
         )
 
         assertEquals(AppError.TranslationFailed, translator.failureFor(request()))
@@ -272,45 +322,59 @@ class AnthropicTranslatorTest {
     @Test
     fun anAnswerThatIsNotTheAgreedShapeIsAFailure() = runTest {
         val translator = translator(
-            answers {
-                respondJson(
-                    """{"stop_reason": "end_turn", "content": [{"type": "text", "text": "Sorry!"}]}"""
-                )
-            }
+            answers { respondStream(listOf(textDelta("Sorry!")) + stopped("end_turn")) }
         )
 
         assertEquals(AppError.TranslationFailed, translator.failureFor(request()))
     }
 
     /**
-     * The answer as the service really sends it: a JSON document whose text
-     * block is itself a JSON document, escaped. Built rather than written out,
-     * because a translation containing a quotation mark is exactly the case
-     * worth covering and exactly the one hand-written JSON gets wrong.
+     * The answer as the service really sends it: a stream of text deltas that
+     * spell out a JSON document, escaped inside the JSON of each event. Built
+     * rather than written out, because a translation containing a quotation
+     * mark is exactly the case worth covering and exactly the one hand-written
+     * JSON gets wrong.
+     *
+     * Split into several deltas on purpose. An answer that arrived whole in one
+     * event would pass without any of the joining being exercised, which is the
+     * part of reading a stream that can actually be wrong.
      */
-    private fun MockEngineScope.ok(translation: String = "Hei.", note: String = ""): HttpResponseData {
-        val passage = buildJsonObject {
-            put("translation", translation)
-            put("note", note)
-        }
+    private fun MockEngineScope.ok(
+        translation: String = "Hei.",
+        note: String = "",
+        stopReason: String = "end_turn"
+    ): HttpResponseData {
+        val passage = json.encodeToString(
+            buildJsonObject {
+                put("translation", translation)
+                put("note", note)
+            }
+        )
 
-        val response = buildJsonObject {
-            put("stop_reason", "end_turn")
+        return respondStream(passage.inThirds().map { textDelta(it) } + stopped(stopReason))
+    }
+
+    /** One `content_block_delta` carrying part of the answer. */
+    private fun textDelta(text: String): String = json.encodeToString(
+        buildJsonObject {
+            put("type", "content_block_delta")
             put(
-                "content",
-                buildJsonArray {
-                    add(
-                        buildJsonObject {
-                            put("type", "text")
-                            put("text", json.encodeToString(passage))
-                        }
-                    )
+                "delta",
+                buildJsonObject {
+                    put("type", "text_delta")
+                    put("text", text)
                 }
             )
         }
+    )
 
-        return respondJson(json.encodeToString(response))
-    }
+    /** The `message_delta` that ends every answer, saying why the model stopped. */
+    private fun stopped(reason: String): String = json.encodeToString(
+        buildJsonObject {
+            put("type", "message_delta")
+            put("delta", buildJsonObject { put("stop_reason", reason) })
+        }
+    )
 
     private fun translator(
         engine: MockEngine,
@@ -329,6 +393,8 @@ class AnthropicTranslatorTest {
         val client = HttpClient(engine) {
             expectSuccess = false
             install(ContentNegotiation) { json(json) }
+            // As the app builds it: every request sets its own, from settings.
+            install(HttpTimeout)
         }
 
         return AnthropicTranslator(client, settings, json)
@@ -356,6 +422,18 @@ private typealias MockEngineScope = io.ktor.client.engine.mock.MockRequestHandle
 private fun answers(
     handle: MockEngineScope.(HttpRequestData) -> io.ktor.client.request.HttpResponseData
 ) = MockEngine { request -> handle(request) }
+
+/**
+ * A streamed answer, in the shape both providers send one: a `data:` line per
+ * event, a blank line between them, and `[DONE]` to close.
+ */
+private fun MockEngineScope.respondStream(events: List<String>) = respond(
+    content = events.joinToString("") { "data: $it\n\n" } + "data: [DONE]\n\n",
+    headers = headersOf("Content-Type", ContentType.Text.EventStream.toString())
+)
+
+/** Three pieces, so joining them is actually exercised. */
+private fun String.inThirds(): List<String> = chunked((length + 2) / 3)
 
 private fun MockEngineScope.respondJson(
     body: String,

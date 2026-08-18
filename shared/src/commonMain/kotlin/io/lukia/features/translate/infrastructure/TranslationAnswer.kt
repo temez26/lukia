@@ -55,3 +55,101 @@ private fun String.enclosedJsonObject(): String? {
 
     return substring(start, end + 1)
 }
+
+/** The key whose value is the sentence, as it appears on the wire. */
+private const val TRANSLATION_KEY = "\"translation\""
+
+/**
+ * As much of the translation as has arrived, out of an answer that is still
+ * arriving.
+ *
+ * A provider streaming its reply sends the JSON object a few characters at a
+ * time, so for most of the wait there is no object to parse - only a prefix of
+ * one. Nothing that expects valid JSON can read that, which would leave the
+ * reader looking at a blank space until the last character landed and make a
+ * model writing steadily for five seconds indistinguishable from one that has
+ * hung.
+ *
+ * So the value is read out by hand rather than parsed: found by its key,
+ * unescaped as far as it goes, and cut off wherever the text currently ends.
+ * Null until the key itself has arrived, and null for an answer that never
+ * mentions it - a model writing a paragraph of prose has not begun translating
+ * anything, and showing its preamble in place of the sentence would be worse
+ * than showing nothing.
+ *
+ * What this returns is only ever a prefix of what [readTranslatedPassage] will
+ * return from the finished answer. It deliberately does not judge whether the
+ * answer was any good: that is still the parser's job, once there is a whole
+ * one to judge.
+ */
+internal fun translationSoFar(answer: String): String? {
+    val key = answer.indexOf(TRANSLATION_KEY)
+    if (key < 0) return null
+
+    val colon = answer.indexOf(':', key + TRANSLATION_KEY.length)
+    if (colon < 0) return null
+
+    val opening = answer.indexOf('"', colon + 1)
+    if (opening < 0) return null
+
+    return answer.unescapedStringFrom(opening + 1)
+}
+
+/**
+ * The JSON string starting at [start], up to its closing quote or up to
+ * wherever the text runs out - which while an answer is streaming is the
+ * ordinary case rather than a malformed one.
+ */
+private fun String.unescapedStringFrom(start: Int): String = buildString {
+    var index = start
+
+    while (index < this@unescapedStringFrom.length) {
+        val character = this@unescapedStringFrom[index]
+
+        if (character == '"') return@buildString
+
+        if (character != '\\') {
+            append(character)
+            index++
+            continue
+        }
+
+        // An escape cut in half by the end of the buffer is a character that has
+        // not finished arriving, not a broken one. Stopping short of it means the
+        // next chunk shows it whole, rather than a stray backslash showing for a
+        // moment in the middle of the sentence.
+        val escape = this@unescapedStringFrom.escapeAt(index) ?: return@buildString
+
+        append(escape.text)
+        index += escape.length
+    }
+}
+
+/** What one escape sequence stands for, and how much of the text it took up. */
+private class Escape(val text: String, val length: Int)
+
+private fun String.escapeAt(index: Int): Escape? {
+    val marker = getOrNull(index + 1) ?: return null
+
+    if (marker == 'u') {
+        val digits = drop(index + 2).take(4)
+        if (digits.length < 4) return null
+
+        val code = digits.toIntOrNull(16) ?: return null
+
+        return Escape(code.toChar().toString(), length = 6)
+    }
+
+    val text = when (marker) {
+        'n' -> "\n"
+        't' -> "\t"
+        'r' -> "\r"
+        'b' -> "\b"
+        'f' -> "\u000C"
+        // Quote, backslash and slash stand for themselves - and so does anything
+        // else a lenient server escaped that it had no need to.
+        else -> marker.toString()
+    }
+
+    return Escape(text, length = 2)
+}

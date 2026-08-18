@@ -53,7 +53,8 @@ class TranslationSettingsRepository(
             provider = store.readEnum(KEY_PROVIDER, TranslationProvider.entries, defaults.provider),
             models = readPerProvider(KEY_MODEL),
             keys = readKeys(),
-            baseUrls = readPerProvider(KEY_BASE_URL)
+            baseUrls = readPerProvider(KEY_BASE_URL),
+            timeouts = readTimeouts()
         )
     }
 
@@ -64,6 +65,7 @@ class TranslationSettingsRepository(
         writePerProvider(KEY_MODEL, settings.storedModels())
         writeKeys(settings.storedKeys())
         writePerProvider(KEY_BASE_URL, settings.storedBaseUrls())
+        writePerProvider(KEY_TIMEOUT, settings.storedTimeouts().mapValues { it.value.toString() })
     }
 
     /**
@@ -90,6 +92,16 @@ class TranslationSettingsRepository(
         }
     }
 
+    /**
+     * A wait that is not a number is a value from an older build or a hand-edited
+     * file, and is left out rather than argued with - the provider's own default
+     * is a better answer than a stored one nobody can read.
+     */
+    private fun readTimeouts(): Map<TranslationProvider, Int> =
+        readPerProvider(KEY_TIMEOUT).mapNotNull { (provider, stored) ->
+            stored.toIntOrNull()?.let { provider to it }
+        }.toMap()
+
     private fun readPerProvider(prefix: String): Map<TranslationProvider, String> =
         TranslationProvider.entries.mapNotNull { provider ->
             store.getString("$prefix.${provider.name}")
@@ -114,5 +126,6 @@ class TranslationSettingsRepository(
         const val KEY_MODEL = "translation.model"
         const val KEY_API_KEY = "translation.apiKey"
         const val KEY_BASE_URL = "translation.baseUrl"
+        const val KEY_TIMEOUT = "translation.timeoutSeconds"
     }
 }

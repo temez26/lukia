@@ -207,7 +207,7 @@ class ReaderTranslationTest {
     @Test
     fun aSentenceStillBeingTranslatedKeepsItsWords() = runComposeUiTest {
         setReader(
-            translations = { mapOf(TextAnchor.Section(0, 0, 0) to PassageTranslation.Loading) }
+            translations = { mapOf(TextAnchor.Section(0, 0, 0) to PassageTranslation.Loading()) }
         )
 
         onNodeWithText(opening, substring = true).assertExists()
@@ -230,7 +230,7 @@ class ReaderTranslationTest {
 
         onNodeWithText(opening, substring = true).assertExists()
 
-        translations = mapOf(TextAnchor.Section(0, 0, 0) to PassageTranslation.Loading)
+        translations = mapOf(TextAnchor.Section(0, 0, 0) to PassageTranslation.Loading())
         waitForIdle()
 
         // Waiting is not a reason to take the reader's book away from them.

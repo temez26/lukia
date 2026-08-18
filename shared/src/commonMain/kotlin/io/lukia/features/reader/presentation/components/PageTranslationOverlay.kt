@@ -87,7 +87,7 @@ internal fun PageTranslationOverlay(
             .drawBehind {
                 marked.forEach { (sentence, state) ->
                     val tint = when (state) {
-                        PassageTranslation.Loading -> colors.onSurface.copy(alpha = PENDING_TINT)
+                        is PassageTranslation.Loading -> colors.onSurface.copy(alpha = PENDING_TINT)
                         is PassageTranslation.Failed -> colors.error.copy(alpha = FAILED_TINT)
                         is PassageTranslation.Ready -> colors.primary.copy(alpha = TRANSLATED_TINT)
                     }
@@ -142,7 +142,12 @@ private data class PanelContent(
  * one still in flight look exactly alike.
  */
 private fun PassageTranslation.panel(): PanelContent? = when (this) {
-    PassageTranslation.Loading -> null
+    // A partly written sentence goes over the page as it arrives, the same as a
+    // finished one. Until the first words come back there is nothing to cover
+    // the original with, and the tint alone says a translation is on its way.
+    is PassageTranslation.Loading -> partial?.let {
+        PanelContent(text = it, detail = null, failed = false)
+    }
 
     is PassageTranslation.Failed -> PanelContent(
         text = error.displayShortMessage(),

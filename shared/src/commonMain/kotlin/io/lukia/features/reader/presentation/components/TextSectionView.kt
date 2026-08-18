@@ -282,7 +282,7 @@ private fun TranslatorsRemarks(
 ) {
     val remarks = sentences.mapNotNull { sentence ->
         when (val state = translations[sentence.index]) {
-            null, PassageTranslation.Loading -> null
+            null, is PassageTranslation.Loading -> null
 
             is PassageTranslation.Failed -> Remark(state.error.displayShortMessage(), failed = true)
 
@@ -347,7 +347,7 @@ private fun sentenceMarks(
             sentences.forEach { sentence ->
                 val tint = when (translations[sentence.index]) {
                     null -> null
-                    PassageTranslation.Loading -> pending
+                    is PassageTranslation.Loading -> pending
                     is PassageTranslation.Failed -> failed
                     is PassageTranslation.Ready -> translated
                 }

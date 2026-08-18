@@ -97,8 +97,33 @@ data class Translation(
  */
 fun interface Translator {
 
-    suspend fun translate(request: TranslationRequest): Translation
+    /**
+     * [onPartial] is handed the translation as far as it has arrived, as often
+     * as more of it does, and is never called with anything the finished
+     * [Translation] will contradict - only with less of it.
+     *
+     * It exists because a passage is not worth waiting for in silence. A model
+     * on the reader's own machine writes a sentence over several seconds, and
+     * showing those seconds as a blank space is the difference between a slow
+     * translation and one that looks broken. Whatever has nothing to report as
+     * it goes - a cache, a dictionary lookup - simply never calls it.
+     */
+    suspend fun translate(
+        request: TranslationRequest,
+        onPartial: (String) -> Unit
+    ): Translation
 }
+
+/**
+ * Translating for somebody who is not watching it arrive.
+ *
+ * The progress callback has no default of its own because a functional
+ * interface cannot give one - and it should not become optional to *implement*
+ * in any case. This is the other half of that: optional to *pass*, for the
+ * callers that have nowhere to put a half-written sentence.
+ */
+suspend fun Translator.translate(request: TranslationRequest): Translation =
+    translate(request) {}
 
 /** One passage, the language it is wanted in, and the book it came out of. */
 data class TranslationRequest(

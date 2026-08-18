@@ -5,9 +5,11 @@ import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.TranslationRequest
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 
 /**
@@ -69,7 +71,7 @@ class TranslationSession(
         when (val current = kept[anchor]) {
             // Tapping again while it is still coming back is not a second
             // request. It is somebody wondering whether the first one landed.
-            PassageTranslation.Loading -> Unit
+            is PassageTranslation.Loading -> Unit
 
             is PassageTranslation.Ready -> put(
                 anchor,
@@ -83,13 +85,28 @@ class TranslationSession(
     }
 
     private fun fetch(anchor: TextAnchor, request: TranslationRequest) {
-        put(anchor, PassageTranslation.Loading)
+        put(anchor, PassageTranslation.Loading())
 
         scope.launch {
-            val state = translate(request).fold(
+            // The translation arrives on whatever thread the connection is read
+            // on, and [kept] belongs to this one. So the pieces are handed over
+            // through a value that can be written from anywhere, and turned back
+            // into state here - which is what keeps a streamed answer from
+            // touching the map from under the taps.
+            val arriving = MutableStateFlow<String?>(null)
+
+            val showing = launch {
+                arriving.filterNotNull().collect { put(anchor, PassageTranslation.Loading(it)) }
+            }
+
+            val state = translate(request) { arriving.value = it }.fold(
                 onSuccess = { PassageTranslation.Ready(it) },
                 onFailure = { PassageTranslation.Failed(it.toAppError()) }
             )
+
+            // Stopped before the finished translation is put, so a last piece
+            // still in the flow cannot land on top of the whole answer.
+            showing.cancelAndJoin()
 
             put(anchor, state)
         }

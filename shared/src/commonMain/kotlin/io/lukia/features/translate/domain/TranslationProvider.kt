@@ -21,6 +21,17 @@ enum class TranslationProvider(
     /** Whether the reader is expected to point this somewhere themselves. */
     val hasConfigurableEndpoint: Boolean,
     /**
+     * How long this is allowed to say nothing before the wait is given up on.
+     *
+     * Silence rather than total duration, because the two providers fail on
+     * opposite scales: a hosted service that has not answered in a minute is
+     * not going to, while a local server given a model it has not loaded yet
+     * spends minutes reading a file off disk before it can say a word. One
+     * number for both is either a hosted request that hangs or a local one that
+     * is abandoned while it is still working.
+     */
+    val defaultTimeoutSeconds: Int,
+    /**
      * Models worth offering as a starting point. Deliberately not the only
      * choices: what a service serves changes faster than an app ships, and a
      * local server's models are whatever the reader happens to have loaded.
@@ -33,6 +44,7 @@ enum class TranslationProvider(
         defaultModel = "claude-opus-5",
         requiresKey = true,
         hasConfigurableEndpoint = false,
+        defaultTimeoutSeconds = 60,
         suggestedModels = listOf("claude-opus-5", "claude-sonnet-5", "claude-haiku-4-5")
     ),
 
@@ -42,6 +54,7 @@ enum class TranslationProvider(
         defaultModel = "gpt-4o",
         requiresKey = true,
         hasConfigurableEndpoint = false,
+        defaultTimeoutSeconds = 60,
         suggestedModels = listOf("gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini")
     ),
 
@@ -58,6 +71,10 @@ enum class TranslationProvider(
         defaultModel = "local-model",
         requiresKey = false,
         hasConfigurableEndpoint = true,
+        // Long enough to cover a model being read off disk into memory, which
+        // is what the first request after choosing one actually waits for and
+        // is measured in minutes on a large model.
+        defaultTimeoutSeconds = 300,
         suggestedModels = emptyList()
     );
 

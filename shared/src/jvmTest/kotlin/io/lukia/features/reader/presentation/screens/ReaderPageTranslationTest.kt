@@ -213,7 +213,7 @@ class ReaderPageTranslationTest {
     fun aSentenceStillBeingTranslatedIsNotCoveredOver() = runComposeUiTest {
         setReader(
             sentences = listOf(wholePage),
-            translations = { mapOf(TextAnchor.Page(0, 0) to PassageTranslation.Loading) }
+            translations = { mapOf(TextAnchor.Page(0, 0) to PassageTranslation.Loading()) }
         )
 
         assertEquals(
@@ -241,7 +241,7 @@ class ReaderPageTranslationTest {
 
         assertEquals(0, onAllNodes(hasText(translated, substring = true)).fetchSemanticsNodes().size)
 
-        translations = mapOf(TextAnchor.Page(0, 0) to PassageTranslation.Loading)
+        translations = mapOf(TextAnchor.Page(0, 0) to PassageTranslation.Loading())
         waitForIdle()
 
         // Still nothing over the words: the page is readable while they wait.

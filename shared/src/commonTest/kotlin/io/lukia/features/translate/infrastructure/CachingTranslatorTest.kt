@@ -7,6 +7,7 @@ import io.lukia.features.translate.domain.TranslationCacheKey
 import io.lukia.features.translate.domain.TranslationContext
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.Translator
+import io.lukia.features.translate.domain.translate
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -44,7 +45,7 @@ class CachingTranslatorTest {
     fun theNoteIsRememberedAlongsideTheTranslation() = runTest {
         val cache = InMemoryCache()
         val translator = CachingTranslator(
-            translator = { Translation("Kutsukaa minua.", note = "A remark about a word.") },
+            translator = { _, _ -> Translation("Kutsukaa minua.", note = "A remark about a word.") },
             cache = cache,
             translatorIdentity = { "Anthropic/claude" }
         )
@@ -62,7 +63,7 @@ class CachingTranslatorTest {
         var model = "claude-a"
 
         val translator = CachingTranslator(
-            translator = { asked += it.text; Translation("Kutsukaa minua Ismaeliksi.") },
+            translator = { request, _ -> asked += request.text; Translation("Kutsukaa minua Ismaeliksi.") },
             cache = cache,
             translatorIdentity = { "Anthropic/$model" }
         )
@@ -96,7 +97,7 @@ class CachingTranslatorTest {
         var attempt = 0
 
         val translator = CachingTranslator(
-            translator = {
+            translator = { _, _ ->
                 attempt++
                 if (attempt == 1) throw RuntimeException("no network") else Translation("Second time.")
             },
@@ -111,7 +112,7 @@ class CachingTranslatorTest {
     }
 
     private fun caching(asked: MutableList<String>): Translator = CachingTranslator(
-        translator = { asked += it.text; Translation("Kutsukaa minua Ismaeliksi.") },
+        translator = { request, _ -> asked += request.text; Translation("Kutsukaa minua Ismaeliksi.") },
         cache = InMemoryCache(),
         translatorIdentity = { "Anthropic/claude" }
     )

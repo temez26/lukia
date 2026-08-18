@@ -37,11 +37,17 @@ class CachingTranslator(
     private val translatorIdentity: () -> String
 ) : Translator {
 
-    override suspend fun translate(request: TranslationRequest): Translation {
+    override suspend fun translate(
+        request: TranslationRequest,
+        onPartial: (String) -> Unit
+    ): Translation {
         val key = translationCacheKey(request, translatorIdentity())
 
+        // A remembered passage is not reported as arriving. There is nothing to
+        // watch: it is already whole, and animating it in a piece at a time
+        // would make the cheap case look like the expensive one.
         cache.get(key)?.let { return it }
 
-        return translator.translate(request).also { cache.put(key, it) }
+        return translator.translate(request, onPartial).also { cache.put(key, it) }
     }
 }

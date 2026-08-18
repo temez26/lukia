@@ -9,6 +9,7 @@ import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.Translator
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -42,7 +43,7 @@ class TranslationSessionTest {
         session.tap(anchor)
         runCurrent()
 
-        assertEquals(PassageTranslation.Loading, session.passages.value[anchor])
+        assertEquals(PassageTranslation.Loading(), session.passages.value[anchor])
 
         answer.complete(Translation("Kutsukaa minua Ismaeliksi."))
         runCurrent()
@@ -106,7 +107,7 @@ class TranslationSessionTest {
         runCurrent()
 
         assertEquals(1, asked)
-        assertEquals(PassageTranslation.Loading, session.passages.value[anchor])
+        assertEquals(PassageTranslation.Loading(), session.passages.value[anchor])
 
         answer.complete(Translation("Done."))
     }
@@ -249,9 +250,64 @@ class TranslationSessionTest {
         assertEquals(1, built)
     }
 
+    /**
+     * What the reader sees while a model is writing: the sentence filling in,
+     * rather than the original sitting there looking untouched.
+     */
+    @Test
+    fun aSentenceStillArrivingIsShownAsFarAsItHasGot() = runTest {
+        val session = TranslationSession(
+            TranslatePassageUseCase(
+                Translator { _, onPartial ->
+                    onPartial("Kutsukaa")
+                    onPartial("Kutsukaa minua")
+                    Translation("Kutsukaa minua Ismaeliksi.")
+                }
+            ),
+            this
+        )
+
+        session.tap(anchor)
+        runCurrent()
+
+        assertEquals(
+            PassageTranslation.Ready(Translation("Kutsukaa minua Ismaeliksi.")),
+            session.passages.value[anchor]
+        )
+    }
+
+    /**
+     * A piece still in flight must not land on top of the finished answer -
+     * which is the one way a streamed translation could end up permanently
+     * showing half of itself.
+     */
+    @Test
+    fun theLastThingShownIsTheWholeTranslation() = runTest {
+        val session = TranslationSession(
+            TranslatePassageUseCase(
+                Translator { _, onPartial ->
+                    repeat(20) { onPartial("Kutsukaa".take(it + 1)) }
+                    Translation("Kutsukaa minua Ismaeliksi.")
+                }
+            ),
+            this
+        )
+
+        session.tap(anchor)
+        advanceUntilIdle()
+
+        assertEquals(
+            "Kutsukaa minua Ismaeliksi.",
+            (session.passages.value[anchor] as PassageTranslation.Ready).translation.text
+        )
+    }
+
     private fun TestScope.session(
         translate: suspend (TranslationRequest) -> Translation
-    ) = TranslationSession(TranslatePassageUseCase(Translator { translate(it) }), this)
+    ) = TranslationSession(
+        TranslatePassageUseCase(Translator { request, _ -> translate(request) }),
+        this
+    )
 
     private fun anchor(sentenceIndex: Int) =
         TextAnchor.Section(sectionIndex = 0, blockIndex = 0, sentenceIndex = sentenceIndex)

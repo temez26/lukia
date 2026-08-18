@@ -112,4 +112,4 @@ class TranslatePassageUseCaseTest {
 /** Reads better than an object at every call site, and the port is one function. */
 private fun TranslatePassageUseCase(
     translate: suspend (TranslationRequest) -> Translation
-) = TranslatePassageUseCase(Translator { translate(it) })
+) = TranslatePassageUseCase(Translator { request, _ -> translate(request) })

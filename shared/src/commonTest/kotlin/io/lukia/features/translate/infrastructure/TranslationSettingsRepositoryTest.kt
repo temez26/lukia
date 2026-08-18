@@ -53,6 +53,58 @@ class TranslationSettingsRepositoryTest {
     }
 
     /**
+     * How long a provider may go quiet is per provider like everything else,
+     * and its default is the provider's own: a hosted service and a machine
+     * loading a model off disk are not waits of the same size.
+     */
+    @Test
+    fun eachProviderStartsAtItsOwnWait() {
+        val settings = TranslationSettingsRepository(FakeSettingsStore(), secrets).settings.value
+
+        assertEquals(TranslationProvider.Anthropic.defaultTimeoutSeconds, settings.timeoutSeconds)
+        assertEquals(
+            TranslationProvider.Local.defaultTimeoutSeconds,
+            settings.timeoutSecondsFor(TranslationProvider.Local)
+        )
+        assertTrue(
+            TranslationProvider.Local.defaultTimeoutSeconds >
+                TranslationProvider.Anthropic.defaultTimeoutSeconds,
+            "a local model is given no longer to load than a hosted one takes to answer"
+        )
+    }
+
+    @Test
+    fun aWaitTheReaderSetIsThereTheNextTimeTheAppOpens() {
+        val store = FakeSettingsStore()
+
+        TranslationSettingsRepository(store, secrets).update(
+            TranslationSettings(provider = TranslationProvider.Local).withTimeoutSeconds(600)
+        )
+
+        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+
+        assertEquals(600, reopened.timeoutSeconds)
+    }
+
+    /**
+     * The field this comes from is text, and a reader who typed a zero meant
+     * "quickly" rather than "give up before asking".
+     */
+    @Test
+    fun aWaitTooShortToBeMeantIsBroughtBackIntoRange() {
+        val settings = TranslationSettings(provider = TranslationProvider.Local)
+
+        assertEquals(
+            TranslationSettings.TimeoutSecondsRange.first,
+            settings.withTimeoutSeconds(0).timeoutSeconds
+        )
+        assertEquals(
+            TranslationSettings.TimeoutSecondsRange.last,
+            settings.withTimeoutSeconds(999_999).timeoutSeconds
+        )
+    }
+
+    /**
      * The reason everything is stored per provider: somebody comparing a local
      * model against a hosted one switches back and forth repeatedly, and losing
      * a key on every switch would make that unbearable.

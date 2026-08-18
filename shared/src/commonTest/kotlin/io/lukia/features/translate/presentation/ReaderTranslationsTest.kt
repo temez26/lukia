@@ -59,7 +59,7 @@ class ReaderTranslationsTest {
             mapOf(
                 TextAnchor.Page(0, 0) to ready,
                 TextAnchor.Page(0, 1) to failed,
-                TextAnchor.Page(1, 0) to PassageTranslation.Loading,
+                TextAnchor.Page(1, 0) to PassageTranslation.Loading(),
                 TextAnchor.Section(0, 0, 0) to ready,
                 TextAnchor.Section(0, 1, 0) to failed
             )
@@ -67,7 +67,7 @@ class ReaderTranslationsTest {
 
         assertEquals(ready, translations.page(0)[0])
         assertEquals(failed, translations.page(0)[1])
-        assertEquals(PassageTranslation.Loading, translations.page(1)[0])
+        assertEquals(PassageTranslation.Loading(), translations.page(1)[0])
         assertEquals(ready, translations.section(0).block(0)[0])
         assertEquals(failed, translations.section(0).block(1)[0])
     }
@@ -83,7 +83,7 @@ class ReaderTranslationsTest {
         val after = ReaderTranslations.of(
             mapOf(
                 TextAnchor.Page(1, 0) to ready,
-                TextAnchor.Page(5, 2) to PassageTranslation.Loading
+                TextAnchor.Page(5, 2) to PassageTranslation.Loading()
             )
         )
 
@@ -98,7 +98,7 @@ class ReaderTranslationsTest {
         val after = ReaderTranslations.of(
             mapOf(
                 TextAnchor.Section(0, 0, 0) to ready,
-                TextAnchor.Section(0, 4, 1) to PassageTranslation.Loading
+                TextAnchor.Section(0, 4, 1) to PassageTranslation.Loading()
             )
         )
 
@@ -124,7 +124,7 @@ class ReaderTranslationsTest {
     /** A sentence going from waiting to translated is a change where it is. */
     @Test
     fun aSentenceChangingStateChangesItsOwnSlice() {
-        val waiting = ReaderTranslations.of(mapOf(TextAnchor.Page(0, 0) to PassageTranslation.Loading))
+        val waiting = ReaderTranslations.of(mapOf(TextAnchor.Page(0, 0) to PassageTranslation.Loading()))
         val arrived = ReaderTranslations.of(mapOf(TextAnchor.Page(0, 0) to ready))
 
         assertNotEquals(waiting.page(0), arrived.page(0))
