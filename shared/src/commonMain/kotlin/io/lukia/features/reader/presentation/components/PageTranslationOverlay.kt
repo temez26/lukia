@@ -81,8 +81,8 @@ internal fun PageTranslationOverlay(
     val markColors = passageMarkColors()
 
     // Read where it is drawn rather than here: read during composition it would
-    // recompose the page on every frame of the breath.
-    val pulse = passagePulse(marked.any { (_, state) -> state is PassageTranslation.Loading })
+    // recompose the page on every frame of the sweep.
+    val sweep = passageSweep(marked.any { (_, state) -> state is PassageTranslation.Loading })
 
     Box(
         modifier = modifier
@@ -98,7 +98,7 @@ internal fun PageTranslationOverlay(
                 marked.forEach { (sentence, state) ->
                     val style = state.markStyle() ?: return@forEach
 
-                    drawSentenceHighlight(sentence, scale, style, markColors, pulse.value)
+                    drawSentenceHighlight(sentence, scale, style, markColors, sweep.value)
                 }
             }
     ) {
@@ -277,13 +277,13 @@ private fun DrawScope.drawSentenceHighlight(
     scale: Float,
     style: PassageMarkStyle,
     colors: PassageMarkColors,
-    pulse: Float
+    sweep: Float
 ) {
     drawPassageHighlight(
         lines = sentence.quads.map { it.asLine(scale) },
         style = style,
         colors = colors,
-        pulse = pulse
+        sweep = sweep
     )
 }
 

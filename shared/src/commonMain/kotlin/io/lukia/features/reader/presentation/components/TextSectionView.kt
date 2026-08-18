@@ -289,9 +289,10 @@ private fun ProseText(
     val colors = passageMarkColors()
 
     // Held as state and read where it is drawn, never here: read during
-    // composition it would recompose the paragraph on every frame of the breath,
-    // which is a paragraph re-measured sixty times a second to move two dots.
-    val pulse = passagePulse(marked.anyWaiting)
+    // composition it would recompose the paragraph on every frame of the sweep,
+    // which is a paragraph re-measured sixty times a second to move a light
+    // along it.
+    val sweep = passageSweep(marked.anyWaiting)
 
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
 
@@ -426,7 +427,7 @@ private fun ProseText(
                 modifier = Modifier.drawBehind {
                     val lines = measured ?: return@drawBehind
 
-                    drawPassageMarks(lines, marks, colors, pulse.value)
+                    drawPassageMarks(lines, marks, colors, sweep.value)
                 }
             )
         }
