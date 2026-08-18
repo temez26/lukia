@@ -95,18 +95,6 @@ internal fun buildParagraphText(
     return ParagraphText(text = text, sentences = drawn)
 }
 
-/** The runs as one string with their marks applied and nothing replaced. */
-internal fun List<TextRun>.annotated(): AnnotatedString = buildAnnotatedString {
-    this@annotated.forEach { run ->
-        if (run.emphasis.isEmpty()) {
-            append(run.text)
-            return@forEach
-        }
-
-        withStyle(run.emphasis.spanStyle()) { append(run.text) }
-    }
-}
-
 /** The paragraph with every mark dropped - what sentence offsets are counted against. */
 internal fun List<TextRun>.plain(): String = joinToString(separator = "") { it.text }
 
