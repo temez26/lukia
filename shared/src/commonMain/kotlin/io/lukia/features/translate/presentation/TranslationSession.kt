@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 
 /**
  * How many translated passages one open book keeps.
@@ -25,6 +27,20 @@ import kotlinx.coroutines.launch
  * the answer is in the stored cache, so asking costs nothing.
  */
 private const val MAX_KEPT_PASSAGES = 400
+
+/**
+ * How many passages are being asked about at once.
+ *
+ * One tap has never needed this. Translating everything on screen does: a page
+ * is thirty or forty sentences, and thirty simultaneous requests is a rate
+ * limit on a hosted service and a queue nobody can get in front of on a local
+ * one - where the reader is still waiting on whichever sentence they actually
+ * pointed at.
+ *
+ * Four is enough to keep a page filling in steadily and few enough that a
+ * single tap still gets through it quickly.
+ */
+private const val MAX_AT_ONCE = 4
 
 /**
  * Every passage translated while one book is open, and what a tap on each of
@@ -59,6 +75,9 @@ class TranslationSession(
      */
     private val kept = LinkedHashMap<TextAnchor, PassageTranslation>()
 
+    /** What keeps a whole page's worth of taps from arriving as a whole page of requests. */
+    private val inFlight = Semaphore(MAX_AT_ONCE)
+
     private val _passages = MutableStateFlow<Map<TextAnchor, PassageTranslation>>(emptyMap())
     val passages: StateFlow<Map<TextAnchor, PassageTranslation>> = _passages.asStateFlow()
 
@@ -67,6 +86,21 @@ class TranslationSession(
      * the sentence came out of - and is passed by name so that a tap which
      * merely flips an already-translated passage never builds one.
      */
+    /**
+     * Translates a passage nobody has asked about yet, and leaves every other
+     * one exactly as it is.
+     *
+     * This is what "translate everything on screen" is made of, which is why it
+     * is not [onPassageTapped]: a page holding a sentence the reader has flipped
+     * back to the original must not have it flipped forward again, and one
+     * holding a failure must not retry it silently forty times over.
+     */
+    fun onPassageRequested(anchor: TextAnchor, request: () -> TranslationRequest) {
+        if (kept.containsKey(anchor)) return
+
+        fetch(anchor, request())
+    }
+
     fun onPassageTapped(anchor: TextAnchor, request: () -> TranslationRequest) {
         when (val current = kept[anchor]) {
             // Tapping again while it is still coming back is not a second
@@ -99,7 +133,9 @@ class TranslationSession(
                 arriving.filterNotNull().collect { put(anchor, PassageTranslation.Loading(it)) }
             }
 
-            val state = translate(request) { arriving.value = it }.fold(
+            val state = inFlight.withPermit {
+                translate(request) { arriving.value = it }
+            }.fold(
                 onSuccess = { PassageTranslation.Ready(it) },
                 onFailure = { PassageTranslation.Failed(it.toAppError()) }
             )

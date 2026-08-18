@@ -302,6 +302,41 @@ class TranslationSessionTest {
         )
     }
 
+
+    /**
+     * Translating a whole page must not undo what the reader has already done to
+     * it: a sentence they flipped back to the original stays as they left it,
+     * and one that failed is not retried behind their back forty times over.
+     */
+    @Test
+    fun askingForAPassageLeavesOneAlreadyAnsweredExactlyAsItWas() = runTest {
+        var asked = 0
+        val session = session { asked++; Translation("Kutsukaa minua Ismaeliksi.") }
+
+        session.tap(anchor)
+        runCurrent()
+        session.tap(anchor)
+
+        val flipped = session.ready(anchor)
+        assertTrue(flipped.showingOriginal, "the sentence was not flipped back")
+
+        session.onPassageRequested(anchor) { request("Call me Ishmael.") }
+        runCurrent()
+
+        assertEquals(1, asked, "a passage already answered was asked about again")
+        assertTrue(session.ready(anchor).showingOriginal, "the reader's own choice was undone")
+    }
+
+    @Test
+    fun askingForAPassageNobodyHasTouchedTranslatesIt() = runTest {
+        val session = session { Translation("Kutsukaa minua Ismaeliksi.") }
+
+        session.onPassageRequested(anchor) { request("Call me Ishmael.") }
+        runCurrent()
+
+        assertEquals("Kutsukaa minua Ismaeliksi.", session.ready(anchor).translation.text)
+    }
+
     private fun TestScope.session(
         translate: suspend (TranslationRequest) -> Translation
     ) = TranslationSession(

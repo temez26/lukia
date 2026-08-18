@@ -10,6 +10,7 @@ import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.click
+import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runComposeUiTest
 import io.lukia.core.domain.AppError
@@ -26,6 +27,7 @@ import io.lukia.features.reader.domain.ReflowableContent
 import io.lukia.features.reader.domain.TextBlock
 import io.lukia.features.reader.domain.TextRun
 import io.lukia.features.reader.domain.TextSection
+import io.lukia.features.reader.presentation.TranslateOnScreen
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.presentation.PassageSelection
@@ -34,6 +36,7 @@ import io.lukia.shared.presentation.theme.LukiaTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 /**
  * The reflowable reader as somebody actually uses it: point at a sentence, see
@@ -245,6 +248,81 @@ class ReaderTranslationTest {
         onNodeWithText(second, substring = true).assertExists()
     }
 
+
+    /**
+     * Holding a word asks about that word alone. A tap on the same words still
+     * means the sentence, which is what lets one gesture cover both without a
+     * mode to switch between them.
+     */
+    @Test
+    fun holdingAWordAsksAboutThatWord() = runComposeUiTest {
+        var selected: PassageSelection? = null
+
+        setReader(onPassageSelected = { selected = it })
+        onNodeWithText(opening, substring = true).performTouchInput {
+            longClick(Offset(4f, 4f))
+        }
+
+        val selection = assertNotNull(selected, "no word was selected")
+        assertEquals("Call", selection.passage)
+        assertEquals(TextAnchor.Section(0, 0, 0, wordIndex = 0), selection.anchor)
+    }
+
+    /** A word travels with the paragraph around it, exactly as a sentence does. */
+    @Test
+    fun aWordArrivesWithTheParagraphAroundIt() = runComposeUiTest {
+        var selected: PassageSelection? = null
+
+        setReader(onPassageSelected = { selected = it })
+        onNodeWithText(opening, substring = true).performTouchInput {
+            longClick(Offset(4f, 4f))
+        }
+
+        assertEquals("$opening $second", assertNotNull(selected).surroundingText)
+    }
+
+    /** One translated word stands in its sentence, and the sentence stays the book's. */
+    @Test
+    fun aTranslatedWordIsShownInsideTheBooksOwnSentence() = runComposeUiTest {
+        setReader(
+            translations = {
+                mapOf(
+                    TextAnchor.Section(0, 0, 0, wordIndex = 2) to
+                        PassageTranslation.Ready(Translation("Ismaeliksi"))
+                )
+            }
+        )
+
+        onNodeWithText("Call me Ismaeliksi.", substring = true).assertExists()
+    }
+
+    /**
+     * Asking for what is on screen asks about every sentence on it, and asks
+     * about each of them once.
+     */
+    @Test
+    fun askingForWhatIsOnScreenAsksAboutTheSentencesThatAreOnIt() = runComposeUiTest {
+        val requested = mutableListOf<PassageSelection>()
+        var translate by mutableStateOf(TranslateOnScreen.Idle)
+
+        setReader(
+            onPassagesRequested = { requested += it },
+            translateOnScreen = { translate }
+        )
+
+        // Nothing until it is asked for: this is not a standing order.
+        assertEquals(0, requested.size)
+
+        translate = translate.requested()
+        waitForIdle()
+
+        val passages = requested.map { it.passage }
+
+        assertTrue(passages.contains(opening), "$passages")
+        assertTrue(passages.contains(second), "$passages")
+        assertEquals(passages.size, passages.distinct().size, "a sentence was asked about twice")
+    }
+
     /**
      * A tap lands where it is aimed. The node is the whole paragraph, so its
      * centre is whichever sentence happens to fall in the middle of it - the
@@ -260,7 +338,9 @@ class ReaderTranslationTest {
      */
     private fun ComposeUiTest.setReader(
         translations: () -> Map<TextAnchor, PassageTranslation> = { emptyMap() },
-        onPassageSelected: (PassageSelection) -> Unit = {}
+        onPassageSelected: (PassageSelection) -> Unit = {},
+        onPassagesRequested: (List<PassageSelection>) -> Unit = {},
+        translateOnScreen: () -> TranslateOnScreen = { TranslateOnScreen.Idle }
     ) {
         setContent {
             LukiaTheme {
@@ -269,10 +349,12 @@ class ReaderTranslationTest {
                     settings = ReaderSettings(),
                     outline = ReaderOutline.Chapters(emptyList()),
                     translations = translations(),
+                    translateOnScreen = translateOnScreen(),
                     onBack = {},
                     onRetry = {},
                     onSettingsChange = {},
                     onPassageSelected = onPassageSelected,
+                    onPassagesRequested = onPassagesRequested,
                     renderPage = { _, _ -> null }
                 )
             }

@@ -19,9 +19,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -78,21 +78,28 @@ internal fun PageTranslationOverlay(
         }
     }
 
+    val markColors = passageMarkColors()
+
+    // Read where it is drawn rather than here: read during composition it would
+    // recompose the page on every frame of the breath.
+    val pulse = passagePulse(marked.any { (_, state) -> state is PassageTranslation.Loading })
+
     Box(
         modifier = modifier
             .fillMaxSize()
             // Every mark in one pass rather than a full-page layer per
-            // sentence: they all draw into the same page, and the tint says
-            // which of the three things is happening to each of them.
+            // sentence: they all draw into the same page.
+            //
+            // A pair of dots rather than a wash over the words, and the same
+            // pair the set text is marked with. A page of a PDF is a picture of
+            // somebody's typesetting, and laying colour over it is the one thing
+            // most likely to make it unreadable - a mark at each end says which
+            // sentence and what has become of it without touching any of it.
             .drawBehind {
                 marked.forEach { (sentence, state) ->
-                    val tint = when (state) {
-                        is PassageTranslation.Loading -> colors.onSurface.copy(alpha = PENDING_TINT)
-                        is PassageTranslation.Failed -> colors.error.copy(alpha = FAILED_TINT)
-                        is PassageTranslation.Ready -> colors.primary.copy(alpha = TRANSLATED_TINT)
-                    }
+                    val style = state.markStyle() ?: return@forEach
 
-                    sentence.quads.forEach { quad -> drawQuad(quad, scale, tint) }
+                    drawSentenceMarks(sentence, scale, style, markColors, pulse.value)
                 }
             }
     ) {
@@ -248,30 +255,44 @@ private const val MIN_TEXT_SP = 9f
 private const val MAX_TEXT_SP = 22f
 
 /**
- * How faint each mark is. A sentence being worked on has to be findable again
- * without the page turning into a highlighter drawing.
- */
-private const val PENDING_TINT = 0.10f
-private const val TRANSLATED_TINT = 0.14f
-private const val FAILED_TINT = 0.16f
-
-/**
  * How long a panel takes to arrive over the words it covers. Short enough that
  * it reads as the answer landing rather than as an animation being played at
  * somebody who is waiting for it.
  */
 private const val PANEL_FADE_MILLIS = 160
 
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawQuad(
-    quad: TextQuad,
+/**
+ * A dot at the start of a sentence's first line and at the end of its last.
+ *
+ * The sentence's own quads rather than its bounding box: a sentence beginning
+ * halfway along one line and ending halfway along another starts and ends where
+ * those lines say, not at the corners of the block between them.
+ */
+private fun DrawScope.drawSentenceMarks(
+    sentence: PageSentence,
     scale: Float,
-    color: Color
+    style: PassageMarkStyle,
+    colors: PassageMarkColors,
+    pulse: Float
 ) {
-    val bleed = Bleed.toPx()
+    val opening = sentence.quads.first()
+    val closing = sentence.quads.last()
 
-    drawRect(
-        color = color,
-        topLeft = Offset(quad.left * scale - bleed, quad.top * scale - bleed),
-        size = Size(quad.width * scale + bleed * 2, quad.height * scale + bleed * 2)
+    drawPassageDots(
+        opening = Rect(
+            left = opening.left * scale,
+            top = opening.top * scale,
+            right = opening.right * scale,
+            bottom = opening.bottom * scale
+        ),
+        closing = Rect(
+            left = closing.left * scale,
+            top = closing.top * scale,
+            right = closing.right * scale,
+            bottom = closing.bottom * scale
+        ),
+        style = style,
+        colors = colors,
+        pulse = pulse
     )
 }

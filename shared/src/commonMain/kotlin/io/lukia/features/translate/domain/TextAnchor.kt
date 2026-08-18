@@ -19,11 +19,23 @@ sealed interface TextAnchor {
     /** Which sentence of the passage this points at. */
     val sentenceIndex: Int
 
+    /**
+     * Which word of that sentence, or null when the sentence itself is what was
+     * asked about.
+     *
+     * A word is addressed through its sentence rather than through the passage,
+     * because the passage is not stable: translating one sentence changes how
+     * many words come before every sentence after it, while the fourth word of
+     * the second sentence is still the fourth word of the second sentence.
+     */
+    val wordIndex: Int?
+
     /** A sentence inside one block of one section of a reflowable book. */
     data class Section(
         val sectionIndex: Int,
         val blockIndex: Int,
-        override val sentenceIndex: Int
+        override val sentenceIndex: Int,
+        override val wordIndex: Int? = null
     ) : TextAnchor
 
     /**
@@ -33,6 +45,7 @@ sealed interface TextAnchor {
      */
     data class Page(
         val pageIndex: Int,
-        override val sentenceIndex: Int
+        override val sentenceIndex: Int,
+        override val wordIndex: Int? = null
     ) : TextAnchor
 }

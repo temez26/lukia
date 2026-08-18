@@ -594,3 +594,107 @@ fun RefreshGlyph(
         drawPath(path = arrow, color = tint)
     }
 }
+
+/**
+ * The mark the reader already knows: two lines of a passage, bracketed by the
+ * same pair of dots that sits at either end of a translated sentence on the
+ * page.
+ *
+ * Deliberately not a letter from one alphabet beside a letter from another,
+ * which is the usual translate icon and says "language" rather than "this
+ * passage". This says what the button does to what is on screen.
+ */
+@Composable
+fun TranslateGlyph(
+    tint: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val rule = 1.8.dp.toPx()
+        val dot = size.minDimension * 0.075f
+
+        drawLine(
+            color = tint,
+            start = androidx.compose.ui.geometry.Offset(size.width * 0.30f, size.height * 0.36f),
+            end = androidx.compose.ui.geometry.Offset(size.width * 0.82f, size.height * 0.36f),
+            strokeWidth = rule,
+            cap = StrokeCap.Round
+        )
+        drawLine(
+            color = tint,
+            start = androidx.compose.ui.geometry.Offset(size.width * 0.18f, size.height * 0.64f),
+            end = androidx.compose.ui.geometry.Offset(size.width * 0.70f, size.height * 0.64f),
+            strokeWidth = rule,
+            cap = StrokeCap.Round
+        )
+
+        // Where the passage opens and where it closes: the first dot before the
+        // first line, the second after the last.
+        drawCircle(
+            color = tint,
+            radius = dot,
+            center = androidx.compose.ui.geometry.Offset(size.width * 0.16f, size.height * 0.36f)
+        )
+        drawCircle(
+            color = tint,
+            radius = dot,
+            center = androidx.compose.ui.geometry.Offset(size.width * 0.84f, size.height * 0.64f)
+        )
+    }
+}
+
+/**
+ * The same passage with an arrow under it: translating does not stop at what is
+ * on screen but carries on down the page as the reader goes.
+ *
+ * The two lines are pulled up and shortened to make room, which also makes the
+ * pair distinguishable at a glance in a toolbar where they sit side by side.
+ */
+@Composable
+fun TranslateOnwardsGlyph(
+    tint: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val rule = 1.8.dp.toPx()
+        val dot = size.minDimension * 0.07f
+
+        drawLine(
+            color = tint,
+            start = androidx.compose.ui.geometry.Offset(size.width * 0.30f, size.height * 0.24f),
+            end = androidx.compose.ui.geometry.Offset(size.width * 0.80f, size.height * 0.24f),
+            strokeWidth = rule,
+            cap = StrokeCap.Round
+        )
+        drawLine(
+            color = tint,
+            start = androidx.compose.ui.geometry.Offset(size.width * 0.20f, size.height * 0.46f),
+            end = androidx.compose.ui.geometry.Offset(size.width * 0.66f, size.height * 0.46f),
+            strokeWidth = rule,
+            cap = StrokeCap.Round
+        )
+
+        drawCircle(
+            color = tint,
+            radius = dot,
+            center = androidx.compose.ui.geometry.Offset(size.width * 0.16f, size.height * 0.24f)
+        )
+        drawCircle(
+            color = tint,
+            radius = dot,
+            center = androidx.compose.ui.geometry.Offset(size.width * 0.80f, size.height * 0.46f)
+        )
+
+        val onwards = Path().apply {
+            moveTo(size.width * 0.34f, size.height * 0.70f)
+            lineTo(size.width * 0.50f, size.height * 0.86f)
+            lineTo(size.width * 0.66f, size.height * 0.70f)
+        }
+
+        drawPath(
+            path = onwards,
+            color = tint,
+            style = Stroke(width = rule, cap = StrokeCap.Round, join = StrokeJoin.Round)
+        )
+    }
+}

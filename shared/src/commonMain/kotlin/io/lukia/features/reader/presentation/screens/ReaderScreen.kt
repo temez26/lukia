@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -77,10 +78,13 @@ import io.lukia.features.reader.presentation.components.ReaderContentsPanel
 import io.lukia.features.reader.presentation.components.ReaderSettingsPanel
 import io.lukia.features.reader.presentation.components.ReaderToolbar
 import io.lukia.features.reader.presentation.components.PageTranslationOverlay
+import io.lukia.features.reader.presentation.TranslateOnScreen
+import io.lukia.features.reader.presentation.components.PassageActions
 import io.lukia.features.reader.presentation.components.TextSectionView
 import io.lukia.features.translate.domain.PageSentence
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.sentenceAt
+import io.lukia.features.translate.domain.Sentence
 import io.lukia.features.translate.presentation.PassageSelection
 import io.lukia.features.translate.presentation.PassageTranslation
 import io.lukia.features.translate.presentation.ReaderTranslations
@@ -93,6 +97,8 @@ import io.lukia.features.reader.presentation.theme.readerPageStyle
 import io.lukia.features.reader.presentation.theme.readerTextStyle
 import io.lukia.shared.presentation.components.LukiaIconButton
 import io.lukia.shared.presentation.components.ShortcutTooltip
+import io.lukia.shared.presentation.components.TranslateGlyph
+import io.lukia.shared.presentation.components.TranslateOnwardsGlyph
 import io.lukia.shared.presentation.components.UiStateContent
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.LukiaElevation
@@ -138,6 +144,8 @@ fun ReaderScreen(
     val outline by viewModel.outline.collectAsState()
     val initialPage by viewModel.initialPage.collectAsState()
     val translations by viewModel.translations.collectAsState()
+    val translateOnScreen by viewModel.translateOnScreen.collectAsState()
+    val translationConfigured by viewModel.translationConfigured.collectAsState()
 
     ReaderContent(
         uiState = uiState,
@@ -145,11 +153,16 @@ fun ReaderScreen(
         outline = outline,
         initialPage = initialPage,
         translations = translations,
+        translateOnScreen = translateOnScreen,
+        translationConfigured = translationConfigured,
         onBack = onBack,
         onRetry = viewModel::retry,
         onSettingsChange = viewModel::updateSettings,
         onPageSettled = viewModel::onPageSettled,
         onPassageSelected = viewModel::onPassageSelected,
+        onPassagesRequested = viewModel::onPassagesRequested,
+        onTranslateOnScreen = viewModel::onTranslateOnScreen,
+        onContinuousTranslationChange = viewModel::setContinuousTranslation,
         sentencesOnPage = viewModel::sentencesOn,
         renderPage = viewModel::page
     )
@@ -168,11 +181,18 @@ fun ReaderContent(
     initialPage: Int? = null,
     /** What has become of each sentence somebody has asked about, by where it is. */
     translations: Map<TextAnchor, PassageTranslation> = emptyMap(),
+    /** Whether what the reader can see should be translated without being tapped. */
+    translateOnScreen: TranslateOnScreen = TranslateOnScreen.Idle,
+    /** Whether there is anything set up to translate with, which is what the controls need. */
+    translationConfigured: Boolean = false,
     onBack: () -> Unit,
     onRetry: () -> Unit,
     onSettingsChange: (ReaderSettings) -> Unit,
     onPageSettled: (pageIndex: Int) -> Unit = {},
     onPassageSelected: (PassageSelection) -> Unit = {},
+    onPassagesRequested: (List<PassageSelection>) -> Unit = {},
+    onTranslateOnScreen: () -> Unit = {},
+    onContinuousTranslationChange: (Boolean) -> Unit = {},
     /** What is written on a page of a fixed-layout document, read when one is looked at. */
     sentencesOnPage: suspend (index: Int) -> List<PageSentence> = { emptyList() },
     renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?
@@ -259,6 +279,10 @@ fun ReaderContent(
             onToggleSettings = {
                 contentsExpanded = false
                 settingsExpanded = !settingsExpanded
+            },
+            onTranslateOnScreen = onTranslateOnScreen,
+            onToggleContinuousTranslation = {
+                onContinuousTranslationChange(!translateOnScreen.continuous)
             }
         )
 
@@ -326,6 +350,8 @@ fun ReaderContent(
                             onToggleChrome = { chromeVisible = !chromeVisible },
                             onPageScaleChange = { onSettingsChange(settings.withPageScale(it)) },
                             onPassageSelected = onPassageSelected,
+                            onPassagesRequested = onPassagesRequested,
+                            translateOnScreen = translateOnScreen,
                             sentencesOnPage = sentencesOnPage,
                             renderPage = renderPage
                         )
@@ -338,7 +364,9 @@ fun ReaderContent(
                             translations = translated,
                             onToggleChrome = { chromeVisible = !chromeVisible },
                             onSettingsChange = onSettingsChange,
-                            onPassageSelected = onPassageSelected
+                            onPassageSelected = onPassageSelected,
+                            onPassagesRequested = onPassagesRequested,
+                            translateOnScreen = translateOnScreen
                         )
                     }
                 }
@@ -400,15 +428,29 @@ fun ReaderContent(
                             }
                         },
                         endControl = {
-                            ShortcutTooltip(description = "Reading settings", shortcut = "T") {
-                                LukiaIconButton(
-                                    label = "Reading settings",
-                                    onClick = {
-                                        contentsExpanded = false
-                                        settingsExpanded = !settingsExpanded
+                            // One child rather than several, because on a narrow
+                            // window the bar spaces its children evenly - and
+                            // three controls drifting apart across half a phone
+                            // is not a group of related buttons.
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                if (translationConfigured) {
+                                    TranslationControls(
+                                        continuous = translateOnScreen.continuous,
+                                        onTranslateOnScreen = onTranslateOnScreen,
+                                        onContinuousChange = onContinuousTranslationChange
+                                    )
+                                }
+
+                                ShortcutTooltip(description = "Reading settings", shortcut = "T") {
+                                    LukiaIconButton(
+                                        label = "Reading settings",
+                                        onClick = {
+                                            contentsExpanded = false
+                                            settingsExpanded = !settingsExpanded
+                                        }
+                                    ) { tint, glyph ->
+                                        TextSettingsGlyph(tint = tint, modifier = glyph)
                                     }
-                                ) { tint, glyph ->
-                                    TextSettingsGlyph(tint = tint, modifier = glyph)
                                 }
                             }
                         }
@@ -453,6 +495,63 @@ fun ReaderContent(
     }
 }
 
+
+/**
+ * Translating what is on screen, once or from now on.
+ *
+ * Two buttons rather than one with a mode, because they answer different
+ * questions: "do this page" is something a reader does at a page they are stuck
+ * on, and "keep doing it" is a decision about the rest of the session. Folding
+ * them together would make the first one a two-step operation.
+ *
+ * The standing one shows its state in its own colour rather than by changing
+ * shape - it is the one control in the bar that stays on after it is pressed,
+ * and a tinted glyph is how the rest of the app says that.
+ *
+ * Shown at all only when something is set up to translate with. A button that
+ * can only produce an error is worse than no button.
+ */
+@Composable
+private fun TranslationControls(
+    continuous: Boolean,
+    onTranslateOnScreen: () -> Unit,
+    onContinuousChange: (Boolean) -> Unit
+) {
+    ShortcutTooltip(description = "Translate what is on screen", shortcut = "R") {
+        LukiaIconButton(
+            label = "Translate what is on screen",
+            onClick = onTranslateOnScreen
+        ) { tint, glyph ->
+            TranslateGlyph(tint = tint, modifier = glyph)
+        }
+    }
+
+    ShortcutTooltip(
+        description = if (continuous) {
+            "Stop translating as you read"
+        } else {
+            "Keep translating as you read"
+        },
+        shortcut = "E"
+    ) {
+        LukiaIconButton(
+            label = if (continuous) {
+                "Stop translating as you read"
+            } else {
+                "Keep translating as you read"
+            },
+            onClick = { onContinuousChange(!continuous) },
+            tint = if (continuous) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            }
+        ) { tint, glyph ->
+            TranslateOnwardsGlyph(tint = tint, modifier = glyph)
+        }
+    }
+}
+
 /**
  * Carries out what the keyboard asked for.
  *
@@ -471,7 +570,9 @@ private fun readerCommands(
     onSettingsChange: (ReaderSettings) -> Unit,
     onBack: () -> Unit,
     onToggleContents: () -> Unit,
-    onToggleSettings: () -> Unit
+    onToggleSettings: () -> Unit,
+    onTranslateOnScreen: () -> Unit,
+    onToggleContinuousTranslation: () -> Unit
 ): (ReaderCommand) -> Unit {
     val scope = rememberCoroutineScope()
 
@@ -525,6 +626,10 @@ private fun readerCommands(
 
             ReaderCommand.ToggleContents -> onToggleContents()
             ReaderCommand.ToggleSettings -> onToggleSettings()
+
+            ReaderCommand.TranslatePage -> onTranslateOnScreen()
+            ReaderCommand.ToggleContinuousTranslation -> onToggleContinuousTranslation()
+
             ReaderCommand.Close -> onBack()
         }
     }
@@ -541,6 +646,8 @@ private fun PageList(
     onToggleChrome: () -> Unit,
     onPageScaleChange: (Float) -> Unit,
     onPassageSelected: (PassageSelection) -> Unit,
+    onPassagesRequested: (List<PassageSelection>) -> Unit,
+    translateOnScreen: TranslateOnScreen,
     sentencesOnPage: suspend (index: Int) -> List<PageSentence>,
     renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?
 ) {
@@ -614,6 +721,8 @@ private fun PageList(
                         translations = translations.page(index),
                         onToggleChrome = onToggleChrome,
                         onPassageSelected = onPassageSelected,
+                        onPassagesRequested = onPassagesRequested,
+                        translateOnScreen = translateOnScreen,
                         sentencesOnPage = sentencesOnPage,
                         renderPage = renderPage
                     )
@@ -648,7 +757,9 @@ private fun SectionList(
     translations: ReaderTranslations,
     onToggleChrome: () -> Unit,
     onSettingsChange: (ReaderSettings) -> Unit,
-    onPassageSelected: (PassageSelection) -> Unit
+    onPassageSelected: (PassageSelection) -> Unit,
+    onPassagesRequested: (List<PassageSelection>) -> Unit,
+    translateOnScreen: TranslateOnScreen
 ) {
     val dimens = LocalLukiaDimens.current
 
@@ -712,30 +823,91 @@ private fun SectionList(
                                     "Section ${index + 1} of ${sections.size}"
                             }
                     ) {
+                        val section = sections[index]
+
                         TextSectionView(
-                            section = sections[index],
+                            section = section,
                             style = style,
                             translations = translations.section(index),
-                            onTapElsewhere = onToggleChrome,
-                            onSentenceTapped = { block, sentence, paragraph ->
-                                onPassageSelected(
-                                    PassageSelection(
-                                        anchor = TextAnchor.Section(
-                                            sectionIndex = index,
-                                            blockIndex = block,
-                                            sentenceIndex = sentence.index
-                                        ),
-                                        passage = sentence.text,
-                                        chapterTitle = sections[index].title,
-                                        surroundingText = paragraph
-                                    )
-                                )
-                            }
+                            translateOnScreen = translateOnScreen,
+                            resizingType = pinchScale != null,
+                            actions = rememberSectionActions(
+                                sectionIndex = index,
+                                chapterTitle = section.title,
+                                onToggleChrome = onToggleChrome,
+                                onPassageSelected = onPassageSelected,
+                                onPassagesRequested = onPassagesRequested
+                            )
                         )
                     }
                 }
             }
         }
+    }
+}
+
+
+/**
+ * What a tap, a long press and a call for the whole page mean in one section.
+ *
+ * Remembered per section rather than rebuilt every composition, because a book
+ * is hundreds of blocks and a fresh set of callbacks for each of them on every
+ * recomposition would make every one of those blocks recompose too - which is
+ * the exact cost the sliced translations exist to avoid.
+ *
+ * The callbacks are read through [rememberUpdatedState] rather than captured,
+ * so remembering these does not pin the reader of a moment ago.
+ */
+@Composable
+private fun rememberSectionActions(
+    sectionIndex: Int,
+    chapterTitle: String?,
+    onToggleChrome: () -> Unit,
+    onPassageSelected: (PassageSelection) -> Unit,
+    onPassagesRequested: (List<PassageSelection>) -> Unit
+): PassageActions {
+    val toggleChrome = rememberUpdatedState(onToggleChrome)
+    val selected = rememberUpdatedState(onPassageSelected)
+    val requested = rememberUpdatedState(onPassagesRequested)
+
+    return remember(sectionIndex, chapterTitle) {
+        fun selection(
+            blockIndex: Int,
+            sentence: Sentence,
+            wordIndex: Int?,
+            passage: String,
+            paragraph: String
+        ) = PassageSelection(
+            anchor = TextAnchor.Section(
+                sectionIndex = sectionIndex,
+                blockIndex = blockIndex,
+                sentenceIndex = sentence.index,
+                wordIndex = wordIndex
+            ),
+            passage = passage,
+            chapterTitle = chapterTitle,
+            surroundingText = paragraph
+        )
+
+        PassageActions(
+            onSentence = { block, sentence, paragraph ->
+                selected.value(selection(block, sentence, null, sentence.text, paragraph))
+            },
+            // A word travels with the paragraph around it, exactly as a sentence
+            // does. On its own it is a dictionary entry; what makes it a reading
+            // is the clause it was taken out of.
+            onWord = { block, sentence, word, paragraph ->
+                selected.value(selection(block, sentence, word.index, word.text, paragraph))
+            },
+            onBlock = { block, sentences, paragraph ->
+                requested.value(
+                    sentences.map { sentence ->
+                        selection(block, sentence, null, sentence.text, paragraph)
+                    }
+                )
+            },
+            onElsewhere = { toggleChrome.value() }
+        )
     }
 }
 
@@ -759,6 +931,8 @@ private fun DocumentPage(
     translations: SentenceTranslations,
     onToggleChrome: () -> Unit,
     onPassageSelected: (PassageSelection) -> Unit,
+    onPassagesRequested: (List<PassageSelection>) -> Unit,
+    translateOnScreen: TranslateOnScreen,
     sentencesOnPage: suspend (index: Int) -> List<PageSentence>,
     renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?
 ) {
@@ -796,6 +970,32 @@ private fun DocumentPage(
     val currentOnSelected by rememberUpdatedState(onPassageSelected)
     val currentOnToggleChrome by rememberUpdatedState(onToggleChrome)
     val currentScale by rememberUpdatedState(scale)
+    val currentOnRequested by rememberUpdatedState(onPassagesRequested)
+
+    // A page is either on screen or it is not - there is nothing on it that can
+    // be half of it - so unlike a paragraph of set text it needs nothing
+    // measured. Being composed at all is close enough: the list keeps a page or
+    // two either side, and translating one page ahead of somebody reading
+    // forward is what they asked for anyway.
+    var actedOn by remember { mutableStateOf(translateOnScreen.generation) }
+
+    LaunchedEffect(translateOnScreen, sentences) {
+        if (sentences.isEmpty()) return@LaunchedEffect
+        if (!translateOnScreen.continuous && translateOnScreen.generation == actedOn) {
+            return@LaunchedEffect
+        }
+
+        actedOn = translateOnScreen.generation
+        currentOnRequested(
+            sentences.map { sentence ->
+                PassageSelection(
+                    anchor = TextAnchor.Page(pageIndex = index, sentenceIndex = sentence.index),
+                    passage = sentence.text,
+                    surroundingText = pageText
+                )
+            }
+        )
+    }
 
     Box(
         modifier = Modifier

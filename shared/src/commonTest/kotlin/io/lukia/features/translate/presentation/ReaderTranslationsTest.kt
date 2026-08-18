@@ -22,6 +22,46 @@ class ReaderTranslationsTest {
     private val ready = PassageTranslation.Ready(Translation("Kutsukaa minua Ismaeliksi."))
     private val failed = PassageTranslation.Failed(AppError.TranslationFailed)
 
+
+    /**
+     * A word and the sentence it sits in are two different passages, and one
+     * must not be read as the other - a sentence with a translated word in it is
+     * still an untranslated sentence.
+     */
+    @Test
+    fun aTranslatedWordIsFiledApartFromItsSentence() {
+        val translations = ReaderTranslations.of(
+            mapOf(
+                TextAnchor.Section(0, 0, 1, wordIndex = 2) to
+                    PassageTranslation.Ready(Translation("valas"))
+            )
+        )
+
+        val block = translations.section(0).block(0)
+
+        assertNull(block[1], "a translated word made its sentence look translated")
+        assertEquals(
+            PassageTranslation.Ready(Translation("valas")),
+            block.words(1)[2]
+        )
+    }
+
+    @Test
+    fun aSentenceAndAWordInsideItAreBothKept() {
+        val translations = ReaderTranslations.of(
+            mapOf(
+                TextAnchor.Page(3, 0) to PassageTranslation.Loading(),
+                TextAnchor.Page(3, 0, wordIndex = 1) to
+                    PassageTranslation.Ready(Translation("valas"))
+            )
+        )
+
+        val page = translations.page(3)
+
+        assertEquals(PassageTranslation.Loading(), page[0])
+        assertEquals(PassageTranslation.Ready(Translation("valas")), page.words(0)[1])
+    }
+
     @Test
     fun aPagesSentenceIsFiledUnderThatPage() {
         val translations = ReaderTranslations.of(mapOf(TextAnchor.Page(3, 7) to ready))
