@@ -52,6 +52,7 @@ fun BookDetailOverlay(
     onDismiss: () -> Unit,
     onRead: (DocumentInfo) -> Unit,
     onToggleFavorite: (DocumentInfo) -> Unit,
+    onRefresh: (DocumentInfo) -> Unit,
     onDelete: (DocumentInfo) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -85,6 +86,7 @@ fun BookDetailOverlay(
                     expanded = menuExpanded,
                     isFavorite = shown.isFavorite,
                     onToggleFavorite = { onToggleFavorite(shown) },
+                    onRefresh = { onRefresh(shown) },
                     onDelete = { onDelete(shown) },
                     onDismissRequest = { menuExpanded = false }
                 )

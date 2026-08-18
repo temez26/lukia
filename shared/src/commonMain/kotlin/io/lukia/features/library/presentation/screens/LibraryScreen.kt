@@ -140,6 +140,7 @@ fun LibraryScreen(
                 if (settingsOpenInPlace) settingsOpen = true else onSettings()
             },
             onToggleFavorite = viewModel::toggleFavorite,
+            onRefresh = viewModel::refreshDocument,
             onDelete = viewModel::deleteDocument,
             onRetry = viewModel::refresh,
             isImporting = isImporting,
@@ -170,6 +171,7 @@ fun LibraryContent(
     onDocumentClick: (DocumentInfo) -> Unit,
     onDocumentDetails: (DocumentInfo) -> Unit,
     onToggleFavorite: (DocumentInfo) -> Unit,
+    onRefresh: (DocumentInfo) -> Unit,
     onDelete: (DocumentInfo) -> Unit,
     onRetry: () -> Unit,
     isImporting: Boolean,
@@ -339,6 +341,7 @@ fun LibraryContent(
                                 openMenu = openMenu,
                                 onOpenMenuChange = { openMenu = it },
                                 onToggleFavorite = onToggleFavorite,
+                                onRefresh = onRefresh,
                                 onDelete = onDelete,
                                 onImport = onImport,
                                 onImportFolder = onImportFolder,
@@ -382,6 +385,7 @@ fun LibraryContent(
                     onDocumentClick(document)
                 },
                 onToggleFavorite = onToggleFavorite,
+                onRefresh = onRefresh,
                 onDelete = onDelete
             )
         }
@@ -444,6 +448,7 @@ private fun LibraryGrid(
     openMenu: OpenMenu?,
     onOpenMenuChange: (OpenMenu?) -> Unit,
     onToggleFavorite: (DocumentInfo) -> Unit,
+    onRefresh: (DocumentInfo) -> Unit,
     onDelete: (DocumentInfo) -> Unit,
     onImport: () -> Unit,
     onImportFolder: () -> Unit,
@@ -501,6 +506,7 @@ private fun LibraryGrid(
                 onMenuRequest = { onOpenMenuChange(OpenMenu.Book(location)) },
                 onMenuDismiss = { onOpenMenuChange(null) },
                 onToggleFavorite = { onToggleFavorite(document) },
+                onRefresh = { onRefresh(document) },
                 onDelete = { onDelete(document) },
                 onShowDetails = { onDocumentDetails(document) },
                 reveal = reveal,

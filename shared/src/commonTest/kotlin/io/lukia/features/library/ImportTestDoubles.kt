@@ -38,12 +38,20 @@ class FakeImportLibraryRepository(
 
     val documents = initialDocuments.toMutableList()
 
+    /**
+     * Keeps the favourite through a replacement, as the real store does: the
+     * flag belongs to the reader and the analyser has no idea it was ever set.
+     */
     override suspend fun addDocument(document: DocumentInfo) {
         val index = documents.indexOfFirst {
             it.document.location == document.document.location
         }
 
-        if (index >= 0) documents[index] = document else documents.add(document)
+        if (index >= 0) {
+            documents[index] = document.copy(isFavorite = documents[index].isFavorite)
+        } else {
+            documents.add(document)
+        }
     }
 
     override suspend fun getDocuments(): List<DocumentInfo> = documents.toList()

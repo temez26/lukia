@@ -23,6 +23,7 @@ fun BookActionsMenu(
     expanded: Boolean,
     isFavorite: Boolean,
     onToggleFavorite: () -> Unit,
+    onRefresh: () -> Unit,
     onDelete: () -> Unit,
     onDismissRequest: () -> Unit,
     onShowDetails: (() -> Unit)? = null
@@ -52,6 +53,17 @@ fun BookActionsMenu(
             onClick = {
                 onDismissRequest()
                 onToggleFavorite()
+            }
+        )
+
+        MenuSeparator()
+
+        MenuRow(
+            label = "Refresh Details",
+            icon = { tint, glyph -> RefreshGlyph(tint = tint, modifier = glyph) },
+            onClick = {
+                onDismissRequest()
+                onRefresh()
             }
         )
 

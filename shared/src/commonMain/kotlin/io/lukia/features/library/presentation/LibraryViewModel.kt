@@ -13,6 +13,7 @@ import io.lukia.features.library.application.GetLibraryDocumentsUseCase
 import io.lukia.features.library.application.ImportDocumentsUseCase
 import io.lukia.features.library.application.ImportFolderUseCase
 import io.lukia.features.library.application.ImportSummary
+import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.reader.domain.ReadingProgress
@@ -28,6 +29,7 @@ class LibraryViewModel(
     private val importDocumentsUseCase: ImportDocumentsUseCase,
     private val importFolderUseCase: ImportFolderUseCase,
     private val setFavoriteUseCase: SetFavoriteUseCase,
+    private val refreshDocumentUseCase: RefreshDocumentUseCase,
     private val removeDocumentUseCase: RemoveDocumentUseCase,
     private val readingProgressRepository: ReadingProgressRepository
 ) : ViewModel() {
@@ -180,6 +182,35 @@ class LibraryViewModel(
                     if (it.document.location == location) it.copy(isFavorite = isFavorite) else it
                 }
             }
+        }
+    }
+
+    /**
+     * Reads one book's file again, for a cover or a title that came in wrong -
+     * or a file that has been replaced on disk since it was imported.
+     *
+     * It says so when it worked, unlike an import: a re-reading that finds
+     * exactly what was there before changes nothing on screen, and silence would
+     * be indistinguishable from the action having done nothing at all.
+     */
+    fun refreshDocument(document: DocumentInfo) {
+        val location = document.document.location
+
+        viewModelScope.launch {
+            runCatchingApp { refreshDocumentUseCase(location).getOrThrow() }
+                .onFailure { _message.value = it.toAppError().displayShortMessage() }
+                .onSuccess { refreshed ->
+                    // Patched in place rather than re-read, for the reason
+                    // favouriting is: one row changing is not a reason to pull
+                    // every cover in the library back out of the database.
+                    updateLoadedDocuments { documents ->
+                        documents.map {
+                            if (it.document.location == location) refreshed else it
+                        }
+                    }
+
+                    _message.value = "Details refreshed"
+                }
         }
     }
 

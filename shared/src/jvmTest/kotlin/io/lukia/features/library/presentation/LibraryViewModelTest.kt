@@ -18,6 +18,7 @@ import io.lukia.features.library.application.GetLibraryDocumentsUseCase
 import io.lukia.features.library.application.ImportDocumentUseCase
 import io.lukia.features.library.application.ImportDocumentsUseCase
 import io.lukia.features.library.application.ImportFolderUseCase
+import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.TypeFromExtensionAnalyzer
@@ -290,6 +291,41 @@ class LibraryViewModelTest {
         assertEquals(listOf(documentInfo.copy(isFavorite = false)), viewModel.documents())
     }
 
+    /**
+     * The row is patched where it stands, and the notice is what tells the
+     * reader anything happened - a re-reading that found the same thing changes
+     * nothing on screen.
+     */
+    @Test
+    fun refreshingABookStoresWhatTheSecondReadingFound() = runTest {
+        val documentInfo = pdfDocumentInfo()
+        val rescanned = documentInfo.copy(sizeBytes = 9999L)
+        val viewModel = createViewModel(
+            repository = FakeLibraryRepository(initialDocuments = listOf(documentInfo)),
+            analyzer = FakeDocumentAnalyzer(rescanned)
+        )
+
+        viewModel.refreshDocument(documentInfo)
+
+        assertEquals(listOf(9999L), viewModel.documents().map { it.sizeBytes })
+        assertEquals("Details refreshed", viewModel.message.value)
+    }
+
+    /** A file that can no longer be read must not take the library down with it. */
+    @Test
+    fun aRefreshThatFailsReportsItselfAndLeavesTheLibraryOnScreen() = runTest {
+        val documentInfo = pdfDocumentInfo()
+        val viewModel = createViewModel(
+            repository = FakeLibraryRepository(initialDocuments = listOf(documentInfo)),
+            analyzer = ThrowingDocumentAnalyzer()
+        )
+
+        viewModel.refreshDocument(documentInfo)
+
+        assertEquals("analysis blew up", viewModel.message.value)
+        assertEquals(UiState.Success(listOf(documentInfo)), viewModel.uiState.value)
+    }
+
     @Test
     fun deleteDocumentRemovesItFromTheLibrary() = runTest {
         val documentInfo = pdfDocumentInfo()
@@ -379,6 +415,15 @@ class LibraryViewModelTest {
                 dispatcher = UnconfinedTestDispatcher()
             ),
             setFavoriteUseCase = SetFavoriteUseCase(repository),
+            refreshDocumentUseCase = RefreshDocumentUseCase(
+                libraryRepository = repository,
+                importDocumentUseCase = ImportDocumentUseCase(
+                    documentAnalyzer = analyzer,
+                    libraryRepository = repository,
+                    dispatcher = UnconfinedTestDispatcher()
+                ),
+                dispatcher = UnconfinedTestDispatcher()
+            ),
             removeDocumentUseCase = RemoveDocumentUseCase(
                 repository,
                 FakeDocumentWorkspace(),
@@ -427,8 +472,20 @@ class LibraryViewModelTest {
     ) : LibraryRepository {
         private val documents = initialDocuments.toMutableList()
 
+        /**
+         * Replaces by location, and keeps the favourite through it, as the real
+         * store does - the flag belongs to the reader, not to the file.
+         */
         override suspend fun addDocument(document: DocumentInfo) {
-            documents.add(document)
+            val index = documents.indexOfFirst {
+                it.document.location == document.document.location
+            }
+
+            if (index >= 0) {
+                documents[index] = document.copy(isFavorite = documents[index].isFavorite)
+            } else {
+                documents.add(document)
+            }
         }
 
         override suspend fun getDocuments(): List<DocumentInfo> {

@@ -20,8 +20,11 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -94,6 +97,15 @@ fun BookDetailScreen(
     viewModel: BookDetailViewModel = koinViewModel(parameters = { parametersOf(location) })
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val message by viewModel.message.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(message) {
+        message?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearMessage()
+        }
+    }
 
     BookDetailContent(
         uiState = uiState,
@@ -101,6 +113,8 @@ fun BookDetailScreen(
         onRead = onRead,
         onRetry = viewModel::retry,
         onToggleFavorite = viewModel::toggleFavorite,
+        onRefresh = viewModel::refreshDocument,
+        snackbarHostState = snackbarHostState,
         // Nothing left on this screen once the entry is gone, so leaving is part
         // of the action rather than something the user is left to do.
         onDelete = {
@@ -122,7 +136,13 @@ fun BookDetailContent(
     onRead: () -> Unit,
     onRetry: () -> Unit,
     onToggleFavorite: () -> Unit,
-    onDelete: () -> Unit
+    onRefresh: () -> Unit,
+    onDelete: () -> Unit,
+    /**
+     * Defaulted so this screen still composes without a ViewModel behind it,
+     * which is how it is tested and previewed.
+     */
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
     val dimens = LocalLukiaDimens.current
     var menuExpanded by remember { mutableStateOf(false) }
@@ -205,11 +225,20 @@ fun BookDetailContent(
                         expanded = menuExpanded,
                         isFavorite = currentDocument.isFavorite,
                         onToggleFavorite = onToggleFavorite,
+                        onRefresh = onRefresh,
                         onDelete = onDelete,
                         onDismissRequest = { menuExpanded = false }
                     )
                 }
             }
+
+            // By hand rather than through a Scaffold: this screen is full-bleed
+            // on purpose, and wrapping it in one to carry a notice would put the
+            // content back inside the insets it deliberately passes under.
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
         }
     }
 }

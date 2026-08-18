@@ -7,8 +7,10 @@ import io.lukia.core.domain.runCatchingApp
 import io.lukia.core.domain.toAppError
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
+import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.bookdetail.application.BookDetails
 import io.lukia.features.bookdetail.application.GetDocumentDetailsUseCase
+import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,11 +22,20 @@ class BookDetailViewModel(
     private val location: String,
     private val getDocumentDetailsUseCase: GetDocumentDetailsUseCase,
     private val setFavoriteUseCase: SetFavoriteUseCase,
+    private val refreshDocumentUseCase: RefreshDocumentUseCase,
     private val removeDocumentUseCase: RemoveDocumentUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState<BookDetails>>(UiState.Loading)
     val uiState: StateFlow<UiState<BookDetails>> = _uiState.asStateFlow()
+
+    /**
+     * Transient notice for the snackbar. Kept apart from [uiState] for the same
+     * reason the library keeps its own apart: a re-reading that failed must not
+     * take a book off the screen that is still perfectly readable.
+     */
+    private val _message = MutableStateFlow<String?>(null)
+    val message: StateFlow<String?> = _message.asStateFlow()
 
     init {
         load()
@@ -64,6 +75,27 @@ class BookDetailViewModel(
             setFavoriteUseCase(location, !current.document.isFavorite)
             load()
         }
+    }
+
+    /**
+     * Reads the book's file again, for a cover or a title that came in wrong.
+     *
+     * Reloads rather than patching what is on screen: this screen shows one
+     * book and nothing else, so re-reading its row costs nothing worth saving.
+     */
+    fun refreshDocument() {
+        viewModelScope.launch {
+            runCatchingApp { refreshDocumentUseCase(location).getOrThrow() }
+                .onFailure { _message.value = it.toAppError().displayShortMessage() }
+                .onSuccess {
+                    _message.value = "Details refreshed"
+                    load()
+                }
+        }
+    }
+
+    fun clearMessage() {
+        _message.value = null
     }
 
     /**
