@@ -37,6 +37,24 @@ private val DotGap: Dp = 3.dp
 private val RingStroke: Dp = 1.2.dp
 
 /**
+ * How far above the middle of the line a mark sits, as a fraction of the line's
+ * own height.
+ *
+ * Set on the middle of the line, a mark is at exactly the height of the letters
+ * on either side of it - and the room beside a sentence is often only the single
+ * space before the next one, which is narrower than the mark and its gap
+ * together. The dot then lands on the first letter of the sentence after it.
+ *
+ * Lifting it to about the height of a capital puts it in the space above the
+ * lowercase letters, which is empty on nearly every line. Sitting there it reads
+ * as a superscript mark - which is what it is - and no longer competes with any
+ * character for the same few points of the line.
+ *
+ * A fraction rather than a distance, so it follows a book set at any size.
+ */
+private const val DOT_RISE = 0.22f
+
+/**
  * How faint the marks on a passage still being translated go, and how long one
  * breath takes.
  *
@@ -154,7 +172,8 @@ internal fun passagePulse(active: Boolean): State<Float> {
  *
  * Placed against the first and last characters rather than the passage's box,
  * so a sentence that wraps is marked at its first word and its last word rather
- * than at the corners of the block it happens to cover.
+ * than at the corners of the block it happens to cover - and lifted clear of
+ * the letters beside them, see [DOT_RISE].
  */
 internal fun DrawScope.drawPassageMarks(
     layout: TextLayoutResult,
@@ -206,7 +225,7 @@ internal fun DrawScope.drawPassageDots(
         // would be clipped away.
         center = Offset(
             x = (opening.left - gap - radius).coerceAtLeast(radius),
-            y = opening.center.y
+            y = opening.risenCenter
         ),
         radius = radius,
         color = color,
@@ -218,7 +237,7 @@ internal fun DrawScope.drawPassageDots(
     drawDot(
         center = Offset(
             x = (closing.right + gap + radius).coerceAtMost(size.width - radius),
-            y = closing.center.y
+            y = closing.risenCenter
         ),
         radius = radius,
         color = color,
@@ -227,6 +246,9 @@ internal fun DrawScope.drawPassageDots(
         stroke = stroke
     )
 }
+
+/** Where a mark sits against one line of text. See [DOT_RISE]. */
+private val Rect.risenCenter: Float get() = center.y - height * DOT_RISE
 
 private fun DrawScope.drawDot(
     center: Offset,
