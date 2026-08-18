@@ -27,32 +27,54 @@ import io.lukia.features.translate.presentation.PassageTranslation
  * How big the marks are, and how far off the words they sit.
  *
  * Small enough to read as punctuation the book might have had rather than as
- * something the app has drawn on top of it, and far enough out that they never
- * touch a descender. Fixed rather than scaled with the type: a mark is a mark
- * at every text size, and one that grew with a book set at 200% would stop
- * being a quiet aside.
+ * something the app has drawn on top of it. Fixed rather than scaled with the
+ * type: a mark is a mark at every text size, and one that grew with a book set
+ * at 200% would stop being a quiet aside.
+ *
+ * The gap is what keeps the mark off the full stop it follows. It is
+ * deliberately not wide enough to clear the *next* word - the space between two
+ * sentences is around four points and a mark plus two gaps will not fit in it,
+ * so horizontal room is not where this problem is solved. See [DotInset].
  */
-private val DotRadius: Dp = 2.5.dp
-private val DotGap: Dp = 3.dp
-private val RingStroke: Dp = 1.2.dp
+private val DotRadius: Dp = 2.dp
+private val DotGap: Dp = 2.5.dp
+private val RingStroke: Dp = 1.dp
 
 /**
- * How far above the middle of the line a mark sits, as a fraction of the line's
- * own height.
+ * The hair of space between a mark and the letters it sits above.
  *
- * Set on the middle of the line, a mark is at exactly the height of the letters
- * on either side of it - and the room beside a sentence is often only the single
- * space before the next one, which is narrower than the mark and its gap
- * together. The dot then lands on the first letter of the sentence after it.
+ * A mark set level with the letters is at the height of whatever is beside it,
+ * and beside a sentence there is usually only the single space before the next
+ * one - narrower than the mark. Level with the *capitals* is no better, which is
+ * where this sat before: a following word beginning with a capital or an
+ * ascender reaches exactly that high, which is precisely the collision this is
+ * fixing.
  *
- * Lifting it to about the height of a capital puts it in the space above the
- * lowercase letters, which is empty on nearly every line. Sitting there it reads
- * as a superscript mark - which is what it is - and no longer competes with any
- * character for the same few points of the line.
- *
- * A fraction rather than a distance, so it follows a book set at any size.
+ * The band that is reliably empty is higher again - between the top of the line
+ * and the top of the tallest letter in it, which is half the leading. Nothing on
+ * the line reaches into it, and neither does the line above, whose descenders
+ * stop at the bottom of its own line box. A mark placed there clears every
+ * neighbour it could ever have, at any text size, without needing any horizontal
+ * room at all - and reads as the superscript mark it is.
  */
-private const val DOT_RISE = 0.22f
+private val DotInset: Dp = 0.5.dp
+
+/**
+ * What the rectangles handed to [drawPassageDots] measure, which is not the same
+ * thing for the two kinds of book.
+ *
+ * The difference matters only for finding the empty band: it is inside a line
+ * box and above a set of letters. Getting it the wrong way round puts the mark
+ * on the words rather than over them.
+ */
+internal enum class MarkedBox {
+
+    /** A line of set text, leading and all: the empty band is inside the top of it. */
+    Line,
+
+    /** The letters themselves, as a PDF reports them: the empty band is above it. */
+    Glyphs
+}
 
 /**
  * How faint the marks on a passage still being translated go, and how long one
@@ -173,7 +195,7 @@ internal fun passagePulse(active: Boolean): State<Float> {
  * Placed against the first and last characters rather than the passage's box,
  * so a sentence that wraps is marked at its first word and its last word rather
  * than at the corners of the block it happens to cover - and lifted clear of
- * the letters beside them, see [DOT_RISE].
+ * the letters beside them, see [DotInset].
  */
 internal fun DrawScope.drawPassageMarks(
     layout: TextLayoutResult,
@@ -188,6 +210,7 @@ internal fun DrawScope.drawPassageMarks(
         drawPassageDots(
             opening = layout.getBoundingBox(mark.start.coerceIn(0, lastOffset)),
             closing = layout.getBoundingBox((mark.end - 1).coerceIn(0, lastOffset)),
+            box = MarkedBox.Line,
             style = mark.style,
             colors = colors,
             pulse = pulse
@@ -207,6 +230,7 @@ internal fun DrawScope.drawPassageMarks(
 internal fun DrawScope.drawPassageDots(
     opening: Rect,
     closing: Rect,
+    box: MarkedBox,
     style: PassageMarkStyle,
     colors: PassageMarkColors,
     pulse: Float
@@ -214,6 +238,7 @@ internal fun DrawScope.drawPassageDots(
     val radius = DotRadius.toPx()
     val gap = DotGap.toPx()
     val stroke = RingStroke.toPx()
+    val inset = DotInset.toPx()
 
     val color = colors.of(style)
     val alpha = if (style == PassageMarkStyle.Waiting) pulse else 1f
@@ -225,7 +250,7 @@ internal fun DrawScope.drawPassageDots(
         // would be clipped away.
         center = Offset(
             x = (opening.left - gap - radius).coerceAtLeast(radius),
-            y = opening.risenCenter
+            y = opening.markHeight(box, radius, inset)
         ),
         radius = radius,
         color = color,
@@ -237,7 +262,7 @@ internal fun DrawScope.drawPassageDots(
     drawDot(
         center = Offset(
             x = (closing.right + gap + radius).coerceAtMost(size.width - radius),
-            y = closing.risenCenter
+            y = closing.markHeight(box, radius, inset)
         ),
         radius = radius,
         color = color,
@@ -247,8 +272,17 @@ internal fun DrawScope.drawPassageDots(
     )
 }
 
-/** Where a mark sits against one line of text. See [DOT_RISE]. */
-private val Rect.risenCenter: Float get() = center.y - height * DOT_RISE
+/**
+ * Where a mark sits against one line: in the band above the tallest letter,
+ * whichever side of the rectangle that band happens to be on. See [DotInset].
+ *
+ * Never above the drawing area, since a passage on the first line of a page
+ * would otherwise have its marks clipped away entirely.
+ */
+private fun Rect.markHeight(box: MarkedBox, radius: Float, inset: Float): Float = when (box) {
+    MarkedBox.Line -> top + radius + inset
+    MarkedBox.Glyphs -> top - radius - inset
+}.coerceAtLeast(radius)
 
 private fun DrawScope.drawDot(
     center: Offset,

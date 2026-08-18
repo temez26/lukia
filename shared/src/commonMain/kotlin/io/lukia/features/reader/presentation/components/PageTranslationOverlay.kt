@@ -291,6 +291,9 @@ private fun DrawScope.drawSentenceMarks(
             right = closing.right * scale,
             bottom = closing.bottom * scale
         ),
+        // A PDF reports the letters themselves rather than the line they sit
+        // on, so the room over them is on the other side of the box.
+        box = MarkedBox.Glyphs,
         style = style,
         colors = colors,
         pulse = pulse
