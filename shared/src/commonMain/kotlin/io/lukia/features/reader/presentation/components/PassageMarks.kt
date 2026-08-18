@@ -22,25 +22,45 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import io.lukia.features.translate.presentation.PassageTranslation
 
 /**
- * How far the highlight is drawn outside the words it sits behind.
- *
- * Sideways, enough that the first and last letters are not touching its edge - a
- * highlight cut flush to the text reads as a box drawn round the words rather
- * than as the words sitting on something.
- *
- * Vertically it is drawn well *inside* the line, because a line box is the type
- * plus its leading and filling all of it makes a tall slab with the words
- * floating in the middle of it. Taken in to about where the letters themselves
- * start and stop, the shape follows the writing rather than the layout - and a
- * passage running down three lines reads as three marked lines rather than as
- * one block of colour, because there is a clear band of page between them.
+ * How far the highlight is drawn outside the words it sits behind, sideways -
+ * enough that the first and last letters are not touching its edge. A highlight
+ * cut flush to the text reads as a box drawn round the words rather than as the
+ * words sitting on something.
  */
 private val HighlightBleed: Dp = 2.5.dp
-private const val LINE_INSET = 0.14f
+
+/**
+ * How far above and below the baseline the highlight reaches, in multiples of
+ * the size the type is set at.
+ *
+ * Measured from the baseline rather than taken in from the edges of the line,
+ * which is what this used to do and why the highlight sat high on the words.
+ * A line box is the type plus its leading, and that leading is not shared out
+ * evenly: it is split in proportion to the ascent and the descent, so most of it
+ * lands above - and it is trimmed off the first line of a paragraph altogether.
+ * The middle of that box is nowhere in particular, and a shape centred on it is
+ * centred on nothing.
+ *
+ * The baseline is where the type actually sits, on every line, trimmed or not.
+ * These two reach past the ascenders and past the descenders by about as much
+ * again, which puts the middle of the shape slightly above the baseline - which
+ * is where the weight of a line of mixed-case text is, and so where the eye
+ * reads the middle of it to be.
+ */
+private const val BAND_ABOVE_BASELINE = 0.86f
+private const val BAND_BELOW_BASELINE = 0.30f
+
+/**
+ * What the band is measured against when the text has no size of its own to
+ * measure it in - a style built in ems, or one that names no size at all. A line
+ * is half again as tall as its type in nearly every book this will open.
+ */
+private const val TYPE_OF_LINE = 0.66f
 
 /**
  * How round the corners are.
@@ -205,7 +225,7 @@ internal fun DrawScope.drawPassageMarks(
 
     marks.forEach { mark ->
         drawPassageHighlight(
-            lines = layout.linesOf(mark, bleed = HighlightBleed.toPx()),
+            lines = layout.linesOf(mark, bleed = HighlightBleed.toPx(), type = typeSize(layout)),
             style = mark.style,
             colors = colors,
             sweep = sweep
@@ -305,6 +325,22 @@ private fun PassageMarkStyle.edge(): Float = when (this) {
 }
 
 /**
+ * The size the type is set at, for measuring the highlight against.
+ *
+ * Read off the layout rather than passed down, so that nothing above this has to
+ * know the mark is measured in ems at all. A style naming its size in anything
+ * but points cannot be read this way, and the line it produced is the next best
+ * thing to measure - see [TYPE_OF_LINE].
+ */
+private fun DrawScope.typeSize(layout: TextLayoutResult): Float {
+    val declared = layout.layoutInput.style.fontSize
+
+    if (declared.type == TextUnitType.Sp) return declared.toPx()
+
+    return (layout.getLineBottom(0) - layout.getLineTop(0)) * TYPE_OF_LINE
+}
+
+/**
  * The stretch of each line this passage covers, as the shape to draw behind it.
  *
  * Built from the layout's own lines rather than from `getPathForRange`, which
@@ -312,7 +348,7 @@ private fun PassageMarkStyle.edge(): Float = when (this) {
  * whitespace is left out, so a highlight ends at the last letter of a line
  * rather than running on to where the next word would have started.
  */
-private fun TextLayoutResult.linesOf(mark: PassageMark, bleed: Float): List<Rect> {
+private fun TextLayoutResult.linesOf(mark: PassageMark, bleed: Float, type: Float): List<Rect> {
     val length = layoutInput.text.length
     val start = mark.start.coerceIn(0, length)
     val end = mark.end.coerceIn(start, length)
@@ -328,14 +364,19 @@ private fun TextLayoutResult.linesOf(mark: PassageMark, bleed: Float): List<Rect
 
         val near = getHorizontalPosition(from, usePrimaryDirection = true)
         val far = getHorizontalPosition(to, usePrimaryDirection = true)
-        val inset = (getLineBottom(line) - getLineTop(line)) * LINE_INSET
+
+        // Measured against the type, but never taller than the line: a book set
+        // with its leading closed right up has nowhere to put a band that would
+        // overflow into the lines either side of it.
+        val height = minOf(type, getLineBottom(line) - getLineTop(line))
+        val baseline = getLineBaseline(line)
 
         Rect(
             // A right-to-left line hands these back the other way round.
             left = minOf(near, far) - bleed,
-            top = getLineTop(line) + inset,
+            top = baseline - height * BAND_ABOVE_BASELINE,
             right = maxOf(near, far) + bleed,
-            bottom = getLineBottom(line) - inset
+            bottom = baseline + height * BAND_BELOW_BASELINE
         )
     }
 }
