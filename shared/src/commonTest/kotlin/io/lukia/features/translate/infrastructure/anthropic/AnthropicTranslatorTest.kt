@@ -27,13 +27,11 @@ import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.add
-import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -63,7 +61,7 @@ class AnthropicTranslatorTest {
     @Test
     fun aNoteWorthMakingIsKept() = runTest {
         val translator = translator(
-            answers { ok(translation = "Hän veti aseensa.", note = "\"piece\" is a weapon here.") }
+            answers { ok(translation = "Hän veti aseensa.", note = "\"piece\" is a weapon here.") },
         )
 
         assertEquals("\"piece\" is a weapon here.", translator.translate(request()).note)
@@ -84,18 +82,18 @@ class AnthropicTranslatorTest {
                     buildJsonObject {
                         put("type", "thinking_delta")
                         put("thinking", "The greeting is informal here.")
-                    }
+                    },
                 )
-            }
+            },
         )
 
         val translator = translator(
             answers {
                 respondStream(
                     listOf(thinking, textDelta("""{"translation":"Hei.","note":""}""")) +
-                        stopped("end_turn")
+                        stopped("end_turn"),
                 )
-            }
+            },
         )
 
         assertEquals("Hei.", translator.translate(request()).text)
@@ -104,7 +102,12 @@ class AnthropicTranslatorTest {
     @Test
     fun theAnswerIsAskedForAsAStream() = runTest {
         var body: JsonObject? = null
-        val translator = translator(answers { body = it.jsonBody(); ok() })
+        val translator = translator(
+            answers {
+                body = it.jsonBody()
+                ok()
+            },
+        )
 
         translator.translate(request())
 
@@ -126,7 +129,7 @@ class AnthropicTranslatorTest {
         assertEquals("Kutsukaa minua Ismaeliksi.", seen.last())
         assertTrue(
             seen.all { translation.text.startsWith(it) },
-            "something was shown that the finished translation contradicts: $seen"
+            "something was shown that the finished translation contradicts: $seen",
         )
     }
 
@@ -145,7 +148,13 @@ class AnthropicTranslatorTest {
     @Test
     fun theKeyAndTheApiVersionAreSentOnEveryRequest() = runTest {
         var sent: HttpRequestData? = null
-        val translator = translator(answers { sent = it; ok() }, apiKey = "sk-ant-test")
+        val translator = translator(
+            answers {
+                sent = it
+                ok()
+            },
+            apiKey = "sk-ant-test",
+        )
 
         translator.translate(request())
 
@@ -158,8 +167,11 @@ class AnthropicTranslatorTest {
     fun theChosenModelIsWhatIsAsked() = runTest {
         var body: JsonObject? = null
         val translator = translator(
-            answers { body = it.jsonBody(); ok() },
-            model = "claude-sonnet-5"
+            answers {
+                body = it.jsonBody()
+                ok()
+            },
+            model = "claude-sonnet-5",
         )
 
         translator.translate(request())
@@ -176,15 +188,18 @@ class AnthropicTranslatorTest {
     fun aModelThisBuildHasNeverHeardOfIsStillAsked() = runTest {
         var body: JsonObject? = null
         val translator = translator(
-            answers { body = it.jsonBody(); ok() },
-            model = "claude-something-not-yet-released"
+            answers {
+                body = it.jsonBody()
+                ok()
+            },
+            model = "claude-something-not-yet-released",
         )
 
         translator.translate(request())
 
         assertEquals(
             "claude-something-not-yet-released",
-            body?.get("model")?.jsonPrimitive?.content
+            body?.get("model")?.jsonPrimitive?.content,
         )
     }
 
@@ -192,15 +207,20 @@ class AnthropicTranslatorTest {
     @Test
     fun theBookTravelsWithTheSentence() = runTest {
         var body: JsonObject? = null
-        val translator = translator(answers { body = it.jsonBody(); ok() })
+        val translator = translator(
+            answers {
+                body = it.jsonBody()
+                ok()
+            },
+        )
 
         translator.translate(
             request(
                 context = TranslationContext(
                     bookTitle = "Moby-Dick",
-                    genres = listOf("Whaling")
-                )
-            )
+                    genres = listOf("Whaling"),
+                ),
+            ),
         )
 
         val message = body?.get("messages")?.jsonArray?.first()?.jsonObject
@@ -215,7 +235,12 @@ class AnthropicTranslatorTest {
     @Test
     fun theAnswerIsConstrainedToASchema() = runTest {
         var body: JsonObject? = null
-        val translator = translator(answers { body = it.jsonBody(); ok() })
+        val translator = translator(
+            answers {
+                body = it.jsonBody()
+                ok()
+            },
+        )
 
         translator.translate(request())
 
@@ -234,12 +259,24 @@ class AnthropicTranslatorTest {
     @Test
     fun effortIsOnlySentToAModelThatTakesOne() = runTest {
         var body: JsonObject? = null
-        val opus = translator(answers { body = it.jsonBody(); ok() }, model = "claude-opus-5")
+        val opus = translator(
+            answers {
+                body = it.jsonBody()
+                ok()
+            },
+            model = "claude-opus-5",
+        )
         opus.translate(request())
 
         assertEquals("low", body?.get("output_config")?.jsonObject?.get("effort")?.jsonPrimitive?.content)
 
-        val haiku = translator(answers { body = it.jsonBody(); ok() }, model = "claude-haiku-4-5")
+        val haiku = translator(
+            answers {
+                body = it.jsonBody()
+                ok()
+            },
+            model = "claude-haiku-4-5",
+        )
         haiku.translate(request())
 
         assertNull(body?.get("output_config")?.jsonObject?.get("effort"))
@@ -249,11 +286,17 @@ class AnthropicTranslatorTest {
     @Test
     fun withoutAKeyNothingIsSent() = runTest {
         var asked = false
-        val translator = translator(answers { asked = true; ok() }, apiKey = null)
+        val translator = translator(
+            answers {
+                asked = true
+                ok()
+            },
+            apiKey = null,
+        )
 
         assertEquals(
             AppError.TranslationUnavailable,
-            translator.failureFor(request())
+            translator.failureFor(request()),
         )
         assertTrue(!asked, "a request was sent without a key")
     }
@@ -281,7 +324,7 @@ class AnthropicTranslatorTest {
     @Test
     fun aServiceOutageIsNotReportedAsTheReadersMistake() = runTest {
         val translator = translator(
-            answers { respondJson("{}", HttpStatusCode.ServiceUnavailable) }
+            answers { respondJson("{}", HttpStatusCode.ServiceUnavailable) },
         )
 
         val error = translator.failureFor(request()) as AppError.Unexpected
@@ -295,14 +338,14 @@ class AnthropicTranslatorTest {
             answers {
                 respondJson(
                     """{"error": {"type": "invalid_request_error", "message": "max_tokens is too large"}}""",
-                    HttpStatusCode.BadRequest
+                    HttpStatusCode.BadRequest,
                 )
-            }
+            },
         )
 
         assertEquals(
             AppError.Unexpected("max_tokens is too large"),
-            translator.failureFor(request())
+            translator.failureFor(request()),
         )
     }
 
@@ -313,7 +356,7 @@ class AnthropicTranslatorTest {
     @Test
     fun aDeclinedRequestIsAFailureRatherThanAnEmptyTranslation() = runTest {
         val translator = translator(
-            answers { respondStream(listOf(stopped("refusal"))) }
+            answers { respondStream(listOf(stopped("refusal"))) },
         )
 
         assertEquals(AppError.TranslationFailed, translator.failureFor(request()))
@@ -322,7 +365,7 @@ class AnthropicTranslatorTest {
     @Test
     fun anAnswerThatIsNotTheAgreedShapeIsAFailure() = runTest {
         val translator = translator(
-            answers { respondStream(listOf(textDelta("Sorry!")) + stopped("end_turn")) }
+            answers { respondStream(listOf(textDelta("Sorry!")) + stopped("end_turn")) },
         )
 
         assertEquals(AppError.TranslationFailed, translator.failureFor(request()))
@@ -342,13 +385,13 @@ class AnthropicTranslatorTest {
     private fun MockEngineScope.ok(
         translation: String = "Hei.",
         note: String = "",
-        stopReason: String = "end_turn"
+        stopReason: String = "end_turn",
     ): HttpResponseData {
         val passage = json.encodeToString(
             buildJsonObject {
                 put("translation", translation)
                 put("note", note)
-            }
+            },
         )
 
         return respondStream(passage.inThirds().map { textDelta(it) } + stopped(stopReason))
@@ -363,9 +406,9 @@ class AnthropicTranslatorTest {
                 buildJsonObject {
                     put("type", "text_delta")
                     put("text", text)
-                }
+                },
             )
-        }
+        },
     )
 
     /** The `message_delta` that ends every answer, saying why the model stopped. */
@@ -373,20 +416,20 @@ class AnthropicTranslatorTest {
         buildJsonObject {
             put("type", "message_delta")
             put("delta", buildJsonObject { put("stop_reason", reason) })
-        }
+        },
     )
 
     private fun translator(
         engine: MockEngine,
         apiKey: String? = "sk-ant-test",
-        model: String = "claude-opus-5"
+        model: String = "claude-opus-5",
     ): AnthropicTranslator {
         val settings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()).apply {
             update(
                 TranslationSettings(
                     targetLanguage = TargetLanguage.Finnish,
-                    provider = TranslationProvider.Anthropic
-                ).withModel(model).withApiKey(apiKey.orEmpty())
+                    provider = TranslationProvider.Anthropic,
+                ).withModel(model).withApiKey(apiKey.orEmpty()),
             )
         }
 
@@ -402,11 +445,11 @@ class AnthropicTranslatorTest {
 
     private fun request(
         text: String = "Call me Ishmael.",
-        context: TranslationContext = TranslationContext.None
+        context: TranslationContext = TranslationContext.None,
     ) = TranslationRequest(
         text = text,
         targetLanguage = TargetLanguage.Finnish,
-        context = context
+        context = context,
     )
 
     private suspend fun AnthropicTranslator.failureFor(request: TranslationRequest): AppError =
@@ -420,7 +463,7 @@ class AnthropicTranslatorTest {
 private typealias MockEngineScope = io.ktor.client.engine.mock.MockRequestHandleScope
 
 private fun answers(
-    handle: MockEngineScope.(HttpRequestData) -> io.ktor.client.request.HttpResponseData
+    handle: MockEngineScope.(HttpRequestData) -> io.ktor.client.request.HttpResponseData,
 ) = MockEngine { request -> handle(request) }
 
 /**
@@ -429,7 +472,7 @@ private fun answers(
  */
 private fun MockEngineScope.respondStream(events: List<String>) = respond(
     content = events.joinToString("") { "data: $it\n\n" } + "data: [DONE]\n\n",
-    headers = headersOf("Content-Type", ContentType.Text.EventStream.toString())
+    headers = headersOf("Content-Type", ContentType.Text.EventStream.toString()),
 )
 
 /** Three pieces, so joining them is actually exercised. */
@@ -437,9 +480,9 @@ private fun String.inThirds(): List<String> = chunked((length + 2) / 3)
 
 private fun MockEngineScope.respondJson(
     body: String,
-    status: HttpStatusCode = HttpStatusCode.OK
+    status: HttpStatusCode = HttpStatusCode.OK,
 ) = respond(
     content = body.trimIndent(),
     status = status,
-    headers = headersOf("Content-Type", ContentType.Application.Json.toString())
+    headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
 )

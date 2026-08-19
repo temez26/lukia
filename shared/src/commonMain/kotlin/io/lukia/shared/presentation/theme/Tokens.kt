@@ -112,7 +112,7 @@ data class LukiaMetrics(
     /** The glyph on a menu row, or beside a label. */
     val iconSmall: Dp,
     /** Minimum height of a menu row, a chapter row, a settings row. */
-    val rowHeight: Dp
+    val rowHeight: Dp,
 )
 
 private val TouchMetrics = LukiaMetrics(
@@ -122,7 +122,7 @@ private val TouchMetrics = LukiaMetrics(
     iconButtonSmall = 32.dp,
     icon = 20.dp,
     iconSmall = 18.dp,
-    rowHeight = MinTouchTarget
+    rowHeight = MinTouchTarget,
 )
 
 private val PointerMetrics = LukiaMetrics(
@@ -132,7 +132,7 @@ private val PointerMetrics = LukiaMetrics(
     iconButtonSmall = 24.dp,
     icon = 17.dp,
     iconSmall = 15.dp,
-    rowHeight = 30.dp
+    rowHeight = 30.dp,
 )
 
 internal fun metricsFor(widthClass: WindowWidthClass): LukiaMetrics =

@@ -1,21 +1,21 @@
 package io.lukia.di
 
+import app.cash.sqldelight.db.SqlDriver
+import io.ktor.client.HttpClient
 import io.lukia.core.domain.DocumentWorkspace
 import io.lukia.core.domain.SecretStore
 import io.lukia.core.domain.SettingsStore
-import io.lukia.features.reader.application.OpenDocumentUseCase
-import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
+import io.lukia.core.infrastructure.lukiaSqlDriver
 import io.lukia.features.library.application.RemoveDocumentUseCase
+import io.lukia.features.reader.application.OpenDocumentUseCase
+import io.lukia.features.reader.domain.ReadingProgressRepository
+import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.ModelCatalogue
 import io.lukia.features.translate.domain.TranslationCache
 import io.lukia.features.translate.domain.Translator
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
-import app.cash.sqldelight.db.SqlDriver
-import io.ktor.client.HttpClient
-import io.lukia.core.infrastructure.lukiaSqlDriver
-import io.lukia.features.reader.domain.ReadingProgressRepository
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import java.io.File
@@ -39,14 +39,14 @@ class AppGraphTest {
      */
     private val databaseFile = File(
         System.getProperty("java.io.tmpdir"),
-        "lukia-graph-test-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}.db"
+        "lukia-graph-test-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}.db",
     )
 
     private val koin = koinApplication {
         modules(
             commonModule,
             platformModule,
-            module { single<SqlDriver> { lukiaSqlDriver(databaseFile) } }
+            module { single<SqlDriver> { lukiaSqlDriver(databaseFile) } },
         )
     }.koin
 
@@ -173,7 +173,7 @@ class AppGraphTest {
     fun translationSettingsAreOneSharedInstance() {
         assertSame(
             koin.get<TranslationSettingsRepository>(),
-            koin.get<TranslationSettingsRepository>()
+            koin.get<TranslationSettingsRepository>(),
         )
     }
 }

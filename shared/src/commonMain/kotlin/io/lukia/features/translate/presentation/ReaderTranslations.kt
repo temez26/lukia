@@ -20,7 +20,7 @@ import io.lukia.features.translate.domain.TextAnchor
 @Immutable
 class ReaderTranslations private constructor(
     private val pages: Map<Int, SentenceTranslations>,
-    private val sections: Map<Int, SectionTranslations>
+    private val sections: Map<Int, SectionTranslations>,
 ) {
 
     fun page(pageIndex: Int): SentenceTranslations =
@@ -61,7 +61,7 @@ class ReaderTranslations private constructor(
                 pages = pages.mapValues { (_, block) -> block.build() },
                 sections = sections.mapValues { (_, blocks) ->
                     SectionTranslations(blocks.mapValues { (_, block) -> block.build() })
-                }
+                },
             )
         }
     }
@@ -93,7 +93,7 @@ private class PassageBuilder {
     fun build() = SentenceTranslations(
         sentences = sentences.toMap(),
         words = words.mapValues { (_, byWord) -> WordTranslations(byWord.toMap()) },
-        block = block
+        block = block,
     )
 }
 
@@ -135,7 +135,7 @@ class SentenceTranslations(
      * paragraph translated whole has none of its own sentences left on the page
      * to have been translated.
      */
-    val block: PassageTranslation? = null
+    val block: PassageTranslation? = null,
 ) {
 
     /** What has become of the whole sentence, as opposed to any word in it. */

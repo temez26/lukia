@@ -37,7 +37,7 @@ internal actual fun inflateRaw(compressedData: ByteArray, uncompressedSize: Int)
             stream.ptr,
             -15,
             zlibVersion()?.toKString(),
-            sizeOf<z_stream>().toInt()
+            sizeOf<z_stream>().toInt(),
         )
         if (initResult != Z_OK) return@memScoped
 

@@ -19,7 +19,7 @@ data class BulkTranslation(
     /** Translating everything on screen, once, when asked. */
     val onScreen: Boolean = false,
     /** Translating what comes into view, until told to stop. */
-    val asYouRead: Boolean = false
+    val asYouRead: Boolean = false,
 ) {
 
     /** Whether either is on, which is whether the reader is offered any of it. */

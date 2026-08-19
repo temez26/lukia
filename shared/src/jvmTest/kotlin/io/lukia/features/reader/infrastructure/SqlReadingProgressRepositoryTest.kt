@@ -15,7 +15,7 @@ class SqlReadingProgressRepositoryTest {
 
     private val repository = SqlReadingProgressRepository(
         database = database,
-        dispatcher = UnconfinedTestDispatcher()
+        dispatcher = UnconfinedTestDispatcher(),
     )
 
     /** Never opened is not the same as opened at page one. */

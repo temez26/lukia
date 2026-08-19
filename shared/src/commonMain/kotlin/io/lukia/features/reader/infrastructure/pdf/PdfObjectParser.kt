@@ -16,7 +16,7 @@ package io.lukia.features.reader.infrastructure.pdf
  */
 internal class PdfObjectParser(
     private val bytes: ByteArray,
-    private val baseOffset: Long = 0L
+    private val baseOffset: Long = 0L,
 ) {
 
     private var position = 0
@@ -46,7 +46,7 @@ internal class PdfObjectParser(
 
         return PdfValue.Stream(
             dictionary = dictionary,
-            dataOffset = baseOffset + position
+            dataOffset = baseOffset + position,
         )
     }
 
@@ -188,8 +188,10 @@ internal class PdfObjectParser(
             in '0'.code.toByte()..'7'.code.toByte() -> {
                 var value = escape - '0'.code.toByte()
                 var digits = 1
-                while (digits < 3 && position < bytes.size &&
-                    bytes[position] >= '0'.code.toByte() && bytes[position] <= '7'.code.toByte()
+                while (digits < 3 &&
+                    position < bytes.size &&
+                    bytes[position] >= '0'.code.toByte() &&
+                    bytes[position] <= '7'.code.toByte()
                 ) {
                     value = value * 8 + (bytes[position] - '0'.code.toByte())
                     position++
@@ -286,7 +288,10 @@ internal class PdfObjectParser(
         }
 
         return bytes.decodeToString(start, position).toDoubleOrNull()
-            ?: run { position = start; null }
+            ?: run {
+                position = start
+                null
+            }
     }
 
     private fun readInteger(): Int? {
@@ -298,7 +303,10 @@ internal class PdfObjectParser(
         if (position == start) return null
 
         return bytes.decodeToString(start, position).toIntOrNull()
-            ?: run { position = start; null }
+            ?: run {
+                position = start
+                null
+            }
     }
 
     /** Consumes [keyword] if it is next, leaving the position alone if not. */
@@ -366,13 +374,23 @@ internal class PdfObjectParser(
 }
 
 internal fun isWhitespace(byte: Byte): Boolean =
-    byte == 0x00.toByte() || byte == 0x09.toByte() || byte == 0x0A.toByte() ||
-        byte == 0x0C.toByte() || byte == 0x0D.toByte() || byte == 0x20.toByte()
+    byte == 0x00.toByte() ||
+        byte == 0x09.toByte() ||
+        byte == 0x0A.toByte() ||
+        byte == 0x0C.toByte() ||
+        byte == 0x0D.toByte() ||
+        byte == 0x20.toByte()
 
 internal fun isDelimiter(byte: Byte): Boolean =
-    byte == 0x28.toByte() || byte == 0x29.toByte() || byte == 0x3C.toByte() ||
-        byte == 0x3E.toByte() || byte == 0x5B.toByte() || byte == 0x5D.toByte() ||
-        byte == 0x7B.toByte() || byte == 0x7D.toByte() || byte == 0x2F.toByte() ||
+    byte == 0x28.toByte() ||
+        byte == 0x29.toByte() ||
+        byte == 0x3C.toByte() ||
+        byte == 0x3E.toByte() ||
+        byte == 0x5B.toByte() ||
+        byte == 0x5D.toByte() ||
+        byte == 0x7B.toByte() ||
+        byte == 0x7D.toByte() ||
+        byte == 0x2F.toByte() ||
         byte == 0x25.toByte()
 
 private fun hexDigit(byte: Byte): Int? = when (byte) {
@@ -421,7 +439,14 @@ private fun pdfDocEncoded(code: Int): Char = when (code) {
 }
 
 private val PDF_DOC_DIACRITICS = charArrayOf(
-    '˘', 'ˇ', 'ˆ', '˙', '˝', '˛', '˚', '˜'
+    '˘',
+    'ˇ',
+    'ˆ',
+    '˙',
+    '˝',
+    '˛',
+    '˚',
+    '˜',
 )
 
 private val PDF_DOC_PUNCTUATION = charArrayOf(
@@ -429,5 +454,5 @@ private val PDF_DOC_PUNCTUATION = charArrayOf(
     '‹', '›', '−', '‰', '„', '“', '”', '‘',
     '’', '‚', '™', 'ﬁ', 'ﬂ', 'Ł', 'Œ', 'Š',
     'Ÿ', 'Ž', 'ı', 'ł', 'œ', 'š', 'ž', '�',
-    '€'
+    '€',
 )

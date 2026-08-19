@@ -44,7 +44,7 @@ class LibraryViewModel(
      * Where the library is narrowed, ordered and measured. Off the main thread
      * in production, and injectable so tests can run it deterministically.
      */
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState<List<DocumentInfo>>>(UiState.Loading)
@@ -169,7 +169,7 @@ class LibraryViewModel(
             _uiState.value = runCatchingApp { getLibraryDocumentsUseCase() }
                 .fold(
                     onSuccess = { UiState.Success(it) },
-                    onFailure = { UiState.Failure(it.toAppError()) }
+                    onFailure = { UiState.Failure(it.toAppError()) },
                 )
 
             // After the library and never instead of it: the books are what the

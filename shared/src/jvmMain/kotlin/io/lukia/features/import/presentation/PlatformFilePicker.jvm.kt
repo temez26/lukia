@@ -7,13 +7,11 @@ import javax.swing.filechooser.FileNameExtensionFilter
 
 @Composable
 actual fun rememberPlatformFilePicker(): PlatformFilePickerState {
-
     return object : PlatformFilePickerState {
 
         override fun launch(
-            onPicked: (List<PickedDocument>) -> Unit
+            onPicked: (List<PickedDocument>) -> Unit,
         ) {
-
             val chooser = JFileChooser()
 
             chooser.isMultiSelectionEnabled = true
@@ -27,7 +25,7 @@ actual fun rememberPlatformFilePicker(): PlatformFilePickerState {
                     "txt",
                     "text",
                     "md",
-                    "markdown"
+                    "markdown",
                 )
 
             val result = chooser.showOpenDialog(null)
@@ -42,9 +40,9 @@ actual fun rememberPlatformFilePicker(): PlatformFilePickerState {
                     PickedDocument(
                         fileName = file.name,
                         extension = file.extension,
-                        location = file.absolutePath
+                        location = file.absolutePath,
                     )
-                }
+                },
             )
         }
     }

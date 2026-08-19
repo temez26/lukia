@@ -4,9 +4,6 @@ import io.lukia.core.domain.AppError
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.FakeDocumentWorkspace
-import io.lukia.features.reader.domain.FakeReadingProgressRepository
-import io.lukia.features.reader.domain.ReadingProgress
-import io.lukia.features.reader.domain.ReadingProgressRepository
 import io.lukia.core.domain.PickedDocument
 import io.lukia.core.domain.PickedFolder
 import io.lukia.core.domain.TestDocuments
@@ -14,6 +11,7 @@ import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.import.domain.DocumentAnalyzer
 import io.lukia.features.import.domain.FolderScanner
+import io.lukia.features.library.TypeFromExtensionAnalyzer
 import io.lukia.features.library.application.GetLibraryDocumentsUseCase
 import io.lukia.features.library.application.ImportDocumentUseCase
 import io.lukia.features.library.application.ImportDocumentsUseCase
@@ -21,8 +19,10 @@ import io.lukia.features.library.application.ImportFolderUseCase
 import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
-import io.lukia.features.library.TypeFromExtensionAnalyzer
 import io.lukia.features.library.domain.LibraryRepository
+import io.lukia.features.reader.domain.FakeReadingProgressRepository
+import io.lukia.features.reader.domain.ReadingProgress
+import io.lukia.features.reader.domain.ReadingProgressRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -65,7 +65,7 @@ class LibraryViewModelTest {
 
         assertEquals(
             UiState.Failure(AppError.Unexpected("library read blew up")),
-            viewModel.uiState.value
+            viewModel.uiState.value,
         )
     }
 
@@ -89,8 +89,8 @@ class LibraryViewModelTest {
                 document = TestDocuments.unsupported(location = "/test/book.mobi"),
                 type = DocumentType.UNKNOWN,
                 exists = true,
-                sizeBytes = 10L
-            )
+                sizeBytes = 10L,
+            ),
         )
         val viewModel = createViewModel(FakeLibraryRepository(), analyzer)
 
@@ -99,7 +99,7 @@ class LibraryViewModelTest {
         assertEquals(emptyList(), viewModel.documents())
         assertEquals(
             AppError.UnsupportedFileType.displayShortMessage(),
-            viewModel.message.value
+            viewModel.message.value,
         )
     }
 
@@ -112,7 +112,7 @@ class LibraryViewModelTest {
     fun analyzerFailureIsReportedAndClearsIsImporting() = runTest {
         val viewModel = createViewModel(
             repository = FakeLibraryRepository(),
-            analyzer = ThrowingDocumentAnalyzer()
+            analyzer = ThrowingDocumentAnalyzer(),
         )
 
         viewModel.importDocuments(listOf(TestDocuments.pdf(location = "/test/book.pdf")))
@@ -127,7 +127,7 @@ class LibraryViewModelTest {
         val documentInfo = pdfDocumentInfo()
         val viewModel = createViewModel(
             repository = FakeLibraryRepository(initialDocuments = listOf(documentInfo)),
-            analyzer = ThrowingDocumentAnalyzer()
+            analyzer = ThrowingDocumentAnalyzer(),
         )
 
         viewModel.importDocuments(listOf(TestDocuments.pdf(location = "/test/other.pdf")))
@@ -140,7 +140,7 @@ class LibraryViewModelTest {
         val documentInfo = pdfDocumentInfo()
         val viewModel = createViewModel(
             repository = FakeLibraryRepository(),
-            analyzer = FakeDocumentAnalyzer(documentInfo)
+            analyzer = FakeDocumentAnalyzer(documentInfo),
         )
 
         assertFalse(viewModel.isImporting.value)
@@ -156,7 +156,7 @@ class LibraryViewModelTest {
         val viewModel = createViewModel(
             repository = FakeLibraryRepository(),
             analyzer = FakeDocumentAnalyzer(documentInfo),
-            folderScanner = FakeFolderScanner(listOf(documentInfo.document))
+            folderScanner = FakeFolderScanner(listOf(documentInfo.document)),
         )
 
         viewModel.importFolder(booksFolder)
@@ -177,9 +177,9 @@ class LibraryViewModelTest {
             folderScanner = FakeFolderScanner(
                 listOf(
                     TestDocuments.pdf(location = "/test/book.pdf"),
-                    TestDocuments.unsupported(location = "/test/notes.mobi")
-                )
-            )
+                    TestDocuments.unsupported(location = "/test/notes.mobi"),
+                ),
+            ),
         )
 
         viewModel.importFolder(booksFolder)
@@ -198,7 +198,7 @@ class LibraryViewModelTest {
         val viewModel = createViewModel(
             repository = FakeLibraryRepository(initialDocuments = listOf(documentInfo)),
             analyzer = ThrowingDocumentAnalyzer(),
-            folderScanner = FakeFolderScanner(listOf(documentInfo.document))
+            folderScanner = FakeFolderScanner(listOf(documentInfo.document)),
         )
 
         viewModel.importFolder(booksFolder)
@@ -212,7 +212,7 @@ class LibraryViewModelTest {
         val documentInfo = pdfDocumentInfo()
         val viewModel = createViewModel(
             repository = FakeLibraryRepository(),
-            analyzer = FakeDocumentAnalyzer(documentInfo)
+            analyzer = FakeDocumentAnalyzer(documentInfo),
         )
 
         viewModel.importDocuments(listOf(documentInfo.document))
@@ -230,9 +230,9 @@ class LibraryViewModelTest {
             folderScanner = FakeFolderScanner(
                 listOf(
                     TestDocuments.pdf(location = "/test/one.pdf"),
-                    TestDocuments.pdf(location = "/test/two.pdf")
-                )
-            )
+                    TestDocuments.pdf(location = "/test/two.pdf"),
+                ),
+            ),
         )
 
         viewModel.importFolder(booksFolder)
@@ -244,7 +244,7 @@ class LibraryViewModelTest {
     fun emptyFolderReportsATypedError() = runTest {
         val viewModel = createViewModel(
             repository = FakeLibraryRepository(),
-            folderScanner = FakeFolderScanner(emptyList())
+            folderScanner = FakeFolderScanner(emptyList()),
         )
 
         viewModel.importFolder(booksFolder)
@@ -259,8 +259,8 @@ class LibraryViewModelTest {
                 document = TestDocuments.unsupported(location = "/test/book.mobi"),
                 type = DocumentType.UNKNOWN,
                 exists = true,
-                sizeBytes = 10L
-            )
+                sizeBytes = 10L,
+            ),
         )
         val viewModel = createViewModel(FakeLibraryRepository(), analyzer)
         viewModel.importDocuments(listOf(TestDocuments.unsupported(location = "/test/book.mobi")))
@@ -303,7 +303,7 @@ class LibraryViewModelTest {
         val rescanned = documentInfo.copy(sizeBytes = 9999L)
         val viewModel = createViewModel(
             repository = FakeLibraryRepository(initialDocuments = listOf(documentInfo)),
-            analyzer = FakeDocumentAnalyzer(rescanned)
+            analyzer = FakeDocumentAnalyzer(rescanned),
         )
 
         viewModel.refreshDocument(documentInfo)
@@ -318,7 +318,7 @@ class LibraryViewModelTest {
         val documentInfo = pdfDocumentInfo()
         val viewModel = createViewModel(
             repository = FakeLibraryRepository(initialDocuments = listOf(documentInfo)),
-            analyzer = ThrowingDocumentAnalyzer()
+            analyzer = ThrowingDocumentAnalyzer(),
         )
 
         viewModel.refreshDocument(documentInfo)
@@ -343,14 +343,14 @@ class LibraryViewModelTest {
     fun loadsWhereEachBookWasLeftOff() = runTest {
         val repository = FakeLibraryRepository(listOf(pdfDocumentInfo()))
         val positions = FakeReadingProgressRepository(
-            mutableMapOf("/test/book.pdf" to ReadingProgress(pageIndex = 41, pageCount = 100))
+            mutableMapOf("/test/book.pdf" to ReadingProgress(pageIndex = 41, pageCount = 100)),
         )
 
         val viewModel = createViewModel(repository, readingProgress = positions)
 
         assertEquals(
             ReadingProgress(pageIndex = 41, pageCount = 100),
-            viewModel.readingProgress.value["/test/book.pdf"]
+            viewModel.readingProgress.value["/test/book.pdf"],
         )
     }
 
@@ -375,9 +375,9 @@ class LibraryViewModelTest {
             FakeLibraryRepository(
                 initialDocuments = listOf(
                     pdfDocumentInfo(location = "/test/solaris.pdf"),
-                    pdfDocumentInfo(location = "/test/dune.pdf", favorite = true)
-                )
-            )
+                    pdfDocumentInfo(location = "/test/dune.pdf", favorite = true),
+                ),
+            ),
         )
 
         viewModel.updateQuery(LibraryQuery(favouritesOnly = true))
@@ -391,9 +391,9 @@ class LibraryViewModelTest {
             FakeLibraryRepository(
                 initialDocuments = listOf(
                     pdfDocumentInfo(location = "/test/solaris.pdf"),
-                    pdfDocumentInfo(location = "/test/dune.pdf", favorite = true)
-                )
-            )
+                    pdfDocumentInfo(location = "/test/dune.pdf", favorite = true),
+                ),
+            ),
         )
 
         val facets = viewModel.facets.value
@@ -414,8 +414,8 @@ class LibraryViewModelTest {
         val favourite = pdfDocumentInfo(location = "/test/dune.pdf", favorite = true)
         val viewModel = createViewModel(
             FakeLibraryRepository(
-                initialDocuments = listOf(favourite, pdfDocumentInfo(location = "/test/solaris.pdf"))
-            )
+                initialDocuments = listOf(favourite, pdfDocumentInfo(location = "/test/solaris.pdf")),
+            ),
         )
         viewModel.updateQuery(LibraryQuery(favouritesOnly = true))
 
@@ -428,9 +428,9 @@ class LibraryViewModelTest {
     private class ThrowingProgressRepository : ReadingProgressRepository {
         override suspend fun progressFor(location: String): ReadingProgress? = null
 
-        override suspend fun allProgress(): Map<String, ReadingProgress> {
-            throw IllegalStateException("position store blew up")
-        }
+        override suspend fun allProgress(): Map<String, ReadingProgress> = throw IllegalStateException(
+            "position store blew up",
+        )
 
         override suspend fun save(location: String, progress: ReadingProgress) = Unit
 
@@ -448,7 +448,7 @@ class LibraryViewModelTest {
         repository: LibraryRepository,
         analyzer: DocumentAnalyzer = FakeDocumentAnalyzer(pdfDocumentInfo()),
         folderScanner: FolderScanner = FakeFolderScanner(emptyList()),
-        readingProgress: ReadingProgressRepository = FakeReadingProgressRepository()
+        readingProgress: ReadingProgressRepository = FakeReadingProgressRepository(),
     ): LibraryViewModel {
         // The use cases move work off the main dispatcher in production;
         // pinning it here keeps imports synchronous so state can be asserted
@@ -457,10 +457,10 @@ class LibraryViewModelTest {
             importDocumentUseCase = ImportDocumentUseCase(
                 documentAnalyzer = analyzer,
                 libraryRepository = repository,
-                dispatcher = UnconfinedTestDispatcher()
+                dispatcher = UnconfinedTestDispatcher(),
             ),
             libraryRepository = repository,
-            dispatcher = UnconfinedTestDispatcher()
+            dispatcher = UnconfinedTestDispatcher(),
         )
 
         return LibraryViewModel(
@@ -469,7 +469,7 @@ class LibraryViewModelTest {
             importFolderUseCase = ImportFolderUseCase(
                 folderScanner = folderScanner,
                 importDocumentsUseCase = importDocumentsUseCase,
-                dispatcher = UnconfinedTestDispatcher()
+                dispatcher = UnconfinedTestDispatcher(),
             ),
             setFavoriteUseCase = SetFavoriteUseCase(repository),
             refreshDocumentUseCase = RefreshDocumentUseCase(
@@ -477,63 +477,59 @@ class LibraryViewModelTest {
                 importDocumentUseCase = ImportDocumentUseCase(
                     documentAnalyzer = analyzer,
                     libraryRepository = repository,
-                    dispatcher = UnconfinedTestDispatcher()
+                    dispatcher = UnconfinedTestDispatcher(),
                 ),
-                dispatcher = UnconfinedTestDispatcher()
+                dispatcher = UnconfinedTestDispatcher(),
             ),
             removeDocumentUseCase = RemoveDocumentUseCase(
                 repository,
                 FakeDocumentWorkspace(),
-                FakeReadingProgressRepository()
+                FakeReadingProgressRepository(),
             ),
             readingProgressRepository = readingProgress,
             // The narrowing runs off the main thread in production; pinning it
             // here means what the grid would show can be read straight after the
             // call that changed it.
-            dispatcher = UnconfinedTestDispatcher()
+            dispatcher = UnconfinedTestDispatcher(),
         )
     }
 
     private val booksFolder = PickedFolder(
         name = "Books",
-        location = "/test"
+        location = "/test",
     )
 
     private fun pdfDocumentInfo(
         location: String = "/test/book.pdf",
-        favorite: Boolean = false
+        favorite: Boolean = false,
     ) = DocumentInfo(
         document = TestDocuments.pdf(location = location),
         type = DocumentType.PDF,
         exists = true,
         sizeBytes = 1024L,
-        isFavorite = favorite
+        isFavorite = favorite,
     )
 
     private class FakeDocumentAnalyzer(
-        private val documentInfo: DocumentInfo
+        private val documentInfo: DocumentInfo,
     ) : DocumentAnalyzer {
-        override suspend fun analyze(document: PickedDocument): DocumentInfo {
-            return documentInfo
-        }
+        override suspend fun analyze(document: PickedDocument): DocumentInfo = documentInfo
     }
 
     private class ThrowingDocumentAnalyzer : DocumentAnalyzer {
-        override suspend fun analyze(document: PickedDocument): DocumentInfo {
-            throw IllegalStateException("analysis blew up")
-        }
+        override suspend fun analyze(
+            document: PickedDocument,
+        ): DocumentInfo = throw IllegalStateException("analysis blew up")
     }
 
     private class FakeFolderScanner(
-        private val documents: List<PickedDocument>
+        private val documents: List<PickedDocument>,
     ) : FolderScanner {
-        override suspend fun scan(folder: PickedFolder): List<PickedDocument> {
-            return documents
-        }
+        override suspend fun scan(folder: PickedFolder): List<PickedDocument> = documents
     }
 
     private class FakeLibraryRepository(
-        initialDocuments: List<DocumentInfo> = emptyList()
+        initialDocuments: List<DocumentInfo> = emptyList(),
     ) : LibraryRepository {
         private val documents = initialDocuments.toMutableList()
 
@@ -553,12 +549,10 @@ class LibraryViewModelTest {
             }
         }
 
-        override suspend fun getDocuments(): List<DocumentInfo> {
-            return documents.toList()
-        }
+        override suspend fun getDocuments(): List<DocumentInfo> = documents.toList()
 
-        override suspend fun getDocument(location: String): DocumentInfo? {
-            return documents.firstOrNull { it.document.location == location }
+        override suspend fun getDocument(location: String): DocumentInfo? = documents.firstOrNull {
+            it.document.location == location
         }
 
         /** Answered the expensive way; nothing in a test cares what it costs. */
@@ -580,9 +574,7 @@ class LibraryViewModelTest {
     private class ThrowingLibraryRepository : LibraryRepository {
         override suspend fun addDocument(document: DocumentInfo) = Unit
 
-        override suspend fun getDocuments(): List<DocumentInfo> {
-            throw IllegalStateException("library read blew up")
-        }
+        override suspend fun getDocuments(): List<DocumentInfo> = throw IllegalStateException("library read blew up")
 
         override suspend fun getDocument(location: String): DocumentInfo? = null
 

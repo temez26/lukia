@@ -50,7 +50,7 @@ internal val LukiaLightColorScheme = lightColorScheme(
     outline = AppleColors.Separator,
     outlineVariant = AppleColors.Separator.copy(alpha = 0.5f),
     error = AppleColors.Red,
-    onError = Color.White
+    onError = Color.White,
 )
 
 internal val LukiaDarkColorScheme = darkColorScheme(
@@ -71,5 +71,5 @@ internal val LukiaDarkColorScheme = darkColorScheme(
     outline = AppleColors.SeparatorDark,
     outlineVariant = AppleColors.SeparatorDark.copy(alpha = 0.6f),
     error = AppleColors.RedDark,
-    onError = Color.White
+    onError = Color.White,
 )

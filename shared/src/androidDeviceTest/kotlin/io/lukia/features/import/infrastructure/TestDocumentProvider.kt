@@ -16,7 +16,7 @@ class TestDocumentProvider : ContentProvider() {
         projection: Array<out String>?,
         selection: String?,
         selectionArgs: Array<out String>?,
-        sortOrder: String?
+        sortOrder: String?,
     ): Cursor? = when (uri.lastPathSegment) {
         "missing" -> null
         "without-size" -> cursorWithSize(null)
@@ -30,18 +30,18 @@ class TestDocumentProvider : ContentProvider() {
     override fun delete(
         uri: Uri,
         selection: String?,
-        selectionArgs: Array<out String>?
+        selectionArgs: Array<out String>?,
     ): Int = 0
 
     override fun update(
         uri: Uri,
         values: ContentValues?,
         selection: String?,
-        selectionArgs: Array<out String>?
+        selectionArgs: Array<out String>?,
     ): Int = 0
 
     private fun cursorWithSize(size: Long?): Cursor = MatrixCursor(
-        arrayOf(OpenableColumns.SIZE)
+        arrayOf(OpenableColumns.SIZE),
     ).apply {
         addRow(arrayOf(size))
     }

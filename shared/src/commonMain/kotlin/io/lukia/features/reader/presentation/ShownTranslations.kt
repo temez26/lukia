@@ -15,7 +15,7 @@ data class ShownTranslations(
     /** Whether the book has any finished translations at all. */
     val any: Boolean = false,
     /** Whether the ones it has are the words currently on the page. */
-    val visible: Boolean = false
+    val visible: Boolean = false,
 ) {
 
     companion object {

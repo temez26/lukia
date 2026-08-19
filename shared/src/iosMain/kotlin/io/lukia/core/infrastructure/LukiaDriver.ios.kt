@@ -13,7 +13,7 @@ import io.lukia.core.infrastructure.db.LukiaDatabase
  */
 fun lukiaSqlDriver(): SqlDriver = NativeSqliteDriver(
     schema = LukiaDatabase.Schema,
-    name = DATABASE_FILE
+    name = DATABASE_FILE,
 )
 
 private const val DATABASE_FILE = "lukia.db"

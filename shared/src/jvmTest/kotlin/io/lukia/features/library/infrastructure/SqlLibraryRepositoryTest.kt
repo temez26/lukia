@@ -20,7 +20,7 @@ class SqlLibraryRepositoryTest {
 
     private val repository = SqlLibraryRepository(
         database = database,
-        dispatcher = UnconfinedTestDispatcher()
+        dispatcher = UnconfinedTestDispatcher(),
     )
 
     @Test
@@ -47,7 +47,7 @@ class SqlLibraryRepositoryTest {
 
         assertEquals(
             listOf("/books/one.pdf", "/books/two.pdf"),
-            reopened.getDocuments().map { it.document.location }
+            reopened.getDocuments().map { it.document.location },
         )
     }
 
@@ -92,7 +92,7 @@ class SqlLibraryRepositoryTest {
 
         assertEquals(
             listOf("/books/one.pdf", "/books/two.pdf", "/books/three.pdf"),
-            repository.getDocuments().map { it.document.location }
+            repository.getDocuments().map { it.document.location },
         )
     }
 
@@ -109,7 +109,7 @@ class SqlLibraryRepositoryTest {
 
         assertContentEquals(
             byteArrayOf(9, 9),
-            repository.getDocument("/books/one.pdf")?.coverImage?.bytes
+            repository.getDocument("/books/one.pdf")?.coverImage?.bytes,
         )
     }
 
@@ -169,7 +169,7 @@ class SqlLibraryRepositoryTest {
             metaDescription = null,
             metaSubjects = null,
             metaIdentifier = null,
-            location = "/books/one.pdf"
+            location = "/books/one.pdf",
         )
 
         assertEquals(DocumentType.UNKNOWN, repository.getDocument("/books/one.pdf")?.type)
@@ -178,16 +178,16 @@ class SqlLibraryRepositoryTest {
     private fun document(
         location: String,
         size: Long = 1024L,
-        cover: ByteArray? = null
+        cover: ByteArray? = null,
     ) = DocumentInfo(
         document = PickedDocument(
             fileName = location.substringAfterLast('/'),
             extension = "pdf",
-            location = location
+            location = location,
         ),
         type = DocumentType.PDF,
         exists = true,
         sizeBytes = size,
-        coverImage = cover?.let { CoverImage(it) }
+        coverImage = cover?.let { CoverImage(it) },
     )
 }

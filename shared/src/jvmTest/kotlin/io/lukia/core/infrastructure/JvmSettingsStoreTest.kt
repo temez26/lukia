@@ -10,7 +10,7 @@ class JvmSettingsStoreTest {
 
     private val directory = File(
         System.getProperty("java.io.tmpdir"),
-        "lukia-settings-test-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}"
+        "lukia-settings-test-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}",
     )
     private val file = File(directory, "settings.properties")
 

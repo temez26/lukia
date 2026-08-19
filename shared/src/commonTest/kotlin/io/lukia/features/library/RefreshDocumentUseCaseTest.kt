@@ -29,7 +29,7 @@ class RefreshDocumentUseCaseTest {
 
         val result = createUseCase(
             repository,
-            analyzer = FixedAnalyzer(storedAs(sizeBytes = 4096L))
+            analyzer = FixedAnalyzer(storedAs(sizeBytes = 4096L)),
         )(book.location)
 
         assertEquals(4096L, result.getOrThrow().sizeBytes)
@@ -42,7 +42,7 @@ class RefreshDocumentUseCaseTest {
         val repository = FakeImportLibraryRepository(listOf(storedAs(sizeBytes = 1L)))
 
         createUseCase(repository, analyzer = FixedAnalyzer(storedAs(sizeBytes = 2L)))(
-            book.location
+            book.location,
         )
 
         assertEquals(1, repository.documents.size)
@@ -52,12 +52,12 @@ class RefreshDocumentUseCaseTest {
     @Test
     fun keepsTheFavouriteThroughARefresh() = runTest {
         val repository = FakeImportLibraryRepository(
-            listOf(storedAs(sizeBytes = 1L).copy(isFavorite = true))
+            listOf(storedAs(sizeBytes = 1L).copy(isFavorite = true)),
         )
 
         val result = createUseCase(
             repository,
-            analyzer = FixedAnalyzer(storedAs(sizeBytes = 2L))
+            analyzer = FixedAnalyzer(storedAs(sizeBytes = 2L)),
         )(book.location)
 
         assertTrue(result.getOrThrow().isFavorite)
@@ -88,7 +88,7 @@ class RefreshDocumentUseCaseTest {
         val thrown = runCatching {
             createUseCase(
                 repository,
-                analyzer = TypeFromExtensionAnalyzer(failingLocations = setOf(book.location))
+                analyzer = TypeFromExtensionAnalyzer(failingLocations = setOf(book.location)),
             )(book.location)
         }
 
@@ -100,25 +100,25 @@ class RefreshDocumentUseCaseTest {
         document = book,
         type = DocumentType.PDF,
         exists = true,
-        sizeBytes = sizeBytes
+        sizeBytes = sizeBytes,
     )
 
     private fun TestScope.createUseCase(
         repository: FakeImportLibraryRepository,
-        analyzer: DocumentAnalyzer = TypeFromExtensionAnalyzer()
+        analyzer: DocumentAnalyzer = TypeFromExtensionAnalyzer(),
     ) = RefreshDocumentUseCase(
         libraryRepository = repository,
         importDocumentUseCase = ImportDocumentUseCase(
             documentAnalyzer = analyzer,
             libraryRepository = repository,
-            dispatcher = UnconfinedTestDispatcher(testScheduler)
+            dispatcher = UnconfinedTestDispatcher(testScheduler),
         ),
-        dispatcher = UnconfinedTestDispatcher(testScheduler)
+        dispatcher = UnconfinedTestDispatcher(testScheduler),
     )
 
     /** Stands in for a second reading of the same file that found something new. */
     private class FixedAnalyzer(
-        private val documentInfo: DocumentInfo
+        private val documentInfo: DocumentInfo,
     ) : DocumentAnalyzer {
         override suspend fun analyze(document: PickedDocument): DocumentInfo = documentInfo
     }

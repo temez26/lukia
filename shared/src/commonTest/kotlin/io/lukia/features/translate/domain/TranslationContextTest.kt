@@ -34,7 +34,7 @@ class TranslationContextTest {
         val context = null.asTranslationContext(
             bookTitle = "notes",
             chapterTitle = "Two",
-            surroundingText = "Some words."
+            surroundingText = "Some words.",
         )
 
         assertEquals("notes", context.bookTitle)
@@ -61,7 +61,7 @@ class TranslationContextTest {
     fun longListsAreTrimmedToWhatActuallyHelps() {
         val context = BookMetadata(
             authors = List(9) { "Author $it" },
-            subjects = List(30) { "Subject $it" }
+            subjects = List(30) { "Subject $it" },
         ).asTranslationContext()
 
         assertEquals(3, context.authors.size)
@@ -76,7 +76,7 @@ class TranslationContextTest {
             title = "   ",
             authors = listOf("", "Melville", "  "),
             language = "",
-            subjects = listOf("  ")
+            subjects = listOf("  "),
         ).asTranslationContext(bookTitle = "  ", chapterTitle = "", surroundingText = " ")
 
         assertNull(context.bookTitle)

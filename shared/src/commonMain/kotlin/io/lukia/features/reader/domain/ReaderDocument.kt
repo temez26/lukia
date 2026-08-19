@@ -12,7 +12,7 @@ import io.lukia.core.domain.WorkingCopy
 class ReaderDocument(
     val info: DocumentInfo,
     val workingCopy: WorkingCopy,
-    val content: ReaderContent
+    val content: ReaderContent,
 ) : AutoCloseable {
 
     override fun close() {

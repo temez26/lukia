@@ -20,7 +20,7 @@ class PdfDocumentPagesTest {
 
     private val directory = File(
         System.getProperty("java.io.tmpdir"),
-        "lukia-pages-test-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}"
+        "lukia-pages-test-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}",
     ).apply { mkdirs() }
 
     @AfterTest
@@ -93,14 +93,14 @@ class PdfDocumentPagesTest {
             document.outline(
                 "Introduction" to 0,
                 "The Middle" to 2,
-                "The End" to 5
+                "The End" to 5,
             )
         }
 
         openPdfPages(file.absolutePath).use { pages ->
             assertEquals(
                 listOf("Introduction", "The Middle", "The End"),
-                pages.outline?.map { it.title }
+                pages.outline?.map { it.title },
             )
             assertEquals(listOf(0, 2, 5), pages.outline?.map { it.pageIndex })
         }
@@ -122,11 +122,11 @@ class PdfDocumentPagesTest {
         openPdfPages(file.absolutePath).use { pages ->
             assertEquals(
                 listOf(0, 1, 1),
-                pages.outline?.map { it.level }
+                pages.outline?.map { it.level },
             )
             assertEquals(
                 listOf("Chapter One", "A Section", "Another Section"),
-                pages.outline?.map { it.title }
+                pages.outline?.map { it.title },
             )
         }
     }
@@ -164,7 +164,7 @@ class PdfDocumentPagesTest {
 
     private fun pdfFile(
         pageCount: Int,
-        configure: (PDDocument) -> Unit = {}
+        configure: (PDDocument) -> Unit = {},
     ): File {
         val file = File(directory, "book-$pageCount-${kotlin.random.Random.nextInt()}.pdf")
 

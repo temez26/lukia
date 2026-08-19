@@ -35,7 +35,7 @@ internal sealed interface PdfValue {
      */
     data class Stream(
         val dictionary: Dictionary,
-        val dataOffset: Long
+        val dataOffset: Long,
     ) : PdfValue
 }
 

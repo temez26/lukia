@@ -63,7 +63,7 @@ private object LaunchRevealGate {
 @Stable
 class LaunchReveal internal constructor(
     private val elapsedMillis: State<Float>,
-    private val playing: Boolean
+    private val playing: Boolean,
 ) {
     /**
      * How far into its arrival the element at [index] is, from 0 to 1. Always 1
@@ -89,7 +89,7 @@ fun rememberLaunchReveal(): LaunchReveal {
             // stagger.
             elapsed.animateTo(
                 targetValue = TotalMillis.toFloat(),
-                animationSpec = tween(durationMillis = TotalMillis, easing = LinearEasing)
+                animationSpec = tween(durationMillis = TotalMillis, easing = LinearEasing),
             )
         }
     }
@@ -107,7 +107,7 @@ fun rememberLaunchReveal(): LaunchReveal {
 fun Modifier.launchReveal(
     reveal: LaunchReveal,
     index: Int,
-    rise: Dp = DefaultRise
+    rise: Dp = DefaultRise,
 ): Modifier = graphicsLayer {
     val progress = LukiaMotion.Standard.transform(reveal.progressFor(index))
     alpha = progress

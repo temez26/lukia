@@ -22,5 +22,5 @@ enum class PassageUnit(val label: String) {
     Sentence("Sentence"),
 
     /** The whole paragraph, replaced at once. */
-    Paragraph("Paragraph")
+    Paragraph("Paragraph"),
 }

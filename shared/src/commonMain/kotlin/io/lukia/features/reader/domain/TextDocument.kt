@@ -4,8 +4,9 @@ package io.lukia.features.reader.domain
 enum class Emphasis {
     Bold,
     Italic,
+
     /** Set in a fixed-pitch face: `code` in Markdown, `<code>` in an EPUB. */
-    Monospace
+    Monospace,
 }
 
 /**
@@ -17,7 +18,7 @@ enum class Emphasis {
  */
 data class TextRun(
     val text: String,
-    val emphasis: Set<Emphasis> = emptySet()
+    val emphasis: Set<Emphasis> = emptySet(),
 )
 
 /** The text of these runs with every mark dropped - for outlines and titles. */
@@ -85,5 +86,5 @@ sealed interface TextBlock {
  */
 data class TextSection(
     val title: String?,
-    val blocks: List<TextBlock>
+    val blocks: List<TextBlock>,
 )

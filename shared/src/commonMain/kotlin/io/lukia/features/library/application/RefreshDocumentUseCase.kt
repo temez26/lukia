@@ -22,7 +22,7 @@ class RefreshDocumentUseCase(
     private val libraryRepository: LibraryRepository,
     private val importDocumentUseCase: ImportDocumentUseCase,
     /** Injectable so tests can refresh deterministically. */
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
     suspend operator fun invoke(location: String): Result<DocumentInfo> =
         withContext(dispatcher) {

@@ -66,9 +66,8 @@ fun App() {
             enterTransition = { pushEnter() },
             exitTransition = { pushExit() },
             popEnterTransition = { popEnter() },
-            popExitTransition = { popExit() }
+            popExitTransition = { popExit() },
         ) {
-
             composable(Routes.Library.route) {
                 LibraryScreen(
                     // Opening the book is what tapping it is for; everything
@@ -79,7 +78,7 @@ fun App() {
                     onDocumentDetails = { document ->
                         navController.navigate(Routes.Detail.createRoute(document.document.location))
                     },
-                    onSettings = { navController.navigate(Routes.Settings.route) }
+                    onSettings = { navController.navigate(Routes.Settings.route) },
                 )
             }
 
@@ -90,7 +89,7 @@ fun App() {
             documentComposable(Routes.Reader) { location ->
                 ReaderScreen(
                     location = location,
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
                 )
             }
 
@@ -98,7 +97,7 @@ fun App() {
                 BookDetailScreen(
                     location = location,
                     onBack = { navController.popBackStack() },
-                    onRead = { navController.navigate(Routes.Reader.createRoute(location)) }
+                    onRead = { navController.navigate(Routes.Reader.createRoute(location)) },
                 )
             }
         }
@@ -109,34 +108,34 @@ fun App() {
 private fun AnimatedContentTransitionScope<NavBackStackEntry>.pushEnter(): EnterTransition =
     slideInHorizontally(
         animationSpec = tween(LukiaMotion.LargeMillis, easing = LukiaMotion.Standard),
-        initialOffsetX = { width -> width }
+        initialOffsetX = { width -> width },
     )
 
 /** The screen underneath is pushed a little way aside and dimmed. */
 private fun AnimatedContentTransitionScope<NavBackStackEntry>.pushExit(): ExitTransition =
     slideOutHorizontally(
         animationSpec = tween(LukiaMotion.LargeMillis, easing = LukiaMotion.Standard),
-        targetOffsetX = { width -> -(width * ParallaxFraction).toInt() }
+        targetOffsetX = { width -> -(width * ParallaxFraction).toInt() },
     ) + fadeOut(
         animationSpec = tween(LukiaMotion.LargeMillis, easing = LukiaMotion.Standard),
-        targetAlpha = ParallaxDimAlpha
+        targetAlpha = ParallaxDimAlpha,
     )
 
 /** Coming back, the screen underneath returns from where it was pushed to. */
 private fun AnimatedContentTransitionScope<NavBackStackEntry>.popEnter(): EnterTransition =
     slideInHorizontally(
         animationSpec = tween(LukiaMotion.LargeMillis, easing = LukiaMotion.Standard),
-        initialOffsetX = { width -> -(width * ParallaxFraction).toInt() }
+        initialOffsetX = { width -> -(width * ParallaxFraction).toInt() },
     ) + fadeIn(
         animationSpec = tween(LukiaMotion.LargeMillis, easing = LukiaMotion.Standard),
-        initialAlpha = ParallaxDimAlpha
+        initialAlpha = ParallaxDimAlpha,
     )
 
 /** And the screen being left slides back off the trailing edge. */
 private fun AnimatedContentTransitionScope<NavBackStackEntry>.popExit(): ExitTransition =
     slideOutHorizontally(
         animationSpec = tween(LukiaMotion.LargeMillis, easing = LukiaMotion.Standard),
-        targetOffsetX = { width -> width }
+        targetOffsetX = { width -> width },
     )
 
 /**
@@ -146,7 +145,7 @@ private fun AnimatedContentTransitionScope<NavBackStackEntry>.popExit(): ExitTra
  */
 private fun NavGraphBuilder.documentComposable(
     route: Routes.DocumentRoute,
-    content: @Composable (location: String) -> Unit
+    content: @Composable (location: String) -> Unit,
 ) {
     composable(route.route) { backStackEntry ->
         val locationToken = backStackEntry.arguments

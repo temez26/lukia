@@ -17,7 +17,7 @@ internal data class ChapterRow(
     val index: Int,
     val entry: OutlineEntry,
     val hasChildren: Boolean,
-    val isCollapsed: Boolean
+    val isCollapsed: Boolean,
 )
 
 /**
@@ -31,7 +31,7 @@ internal data class ChapterRow(
  */
 internal fun chapterRows(
     entries: List<OutlineEntry>,
-    collapsed: Set<Int>
+    collapsed: Set<Int>,
 ): List<ChapterRow> {
     val rows = mutableListOf<ChapterRow>()
 
@@ -54,7 +54,7 @@ internal fun chapterRows(
                 index = index,
                 entry = entry,
                 hasChildren = hasChildren,
-                isCollapsed = isCollapsed
+                isCollapsed = isCollapsed,
             )
         }
     }

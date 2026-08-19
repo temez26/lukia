@@ -4,6 +4,6 @@ import io.lukia.core.domain.PickedFolder
 
 interface PlatformFolderPickerState {
     fun launch(
-        onPicked: (PickedFolder?) -> Unit
+        onPicked: (PickedFolder?) -> Unit,
     )
 }

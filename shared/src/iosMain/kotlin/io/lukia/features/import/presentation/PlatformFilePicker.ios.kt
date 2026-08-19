@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import io.lukia.core.domain.PickedDocument
 import kotlinx.cinterop.ExperimentalForeignApi
-import platform.darwin.NSObject
 import platform.Foundation.NSURL
 import platform.UIKit.UIApplication
 import platform.UIKit.UIDocumentPickerDelegateProtocol
@@ -14,6 +13,7 @@ import platform.UniformTypeIdentifiers.UTType
 import platform.UniformTypeIdentifiers.UTTypeEPUB
 import platform.UniformTypeIdentifiers.UTTypePDF
 import platform.UniformTypeIdentifiers.UTTypePlainText
+import platform.darwin.NSObject
 
 /**
  * The types the document picker will let through.
@@ -31,7 +31,7 @@ private fun supportedContentTypes(): List<UTType> = listOfNotNull(
     UTTypeEPUB,
     UTTypePlainText,
     UTType.typeWithFilenameExtension("docx"),
-    UTType.typeWithFilenameExtension("md")
+    UTType.typeWithFilenameExtension("md"),
 )
 
 @OptIn(ExperimentalForeignApi::class)
@@ -43,13 +43,13 @@ actual fun rememberPlatformFilePicker(): PlatformFilePickerState {
             private var delegate: UIDocumentPickerDelegateProtocol? = null
 
             override fun launch(
-                onPicked: (List<PickedDocument>) -> Unit
+                onPicked: (List<PickedDocument>) -> Unit,
             ) {
                 val contentTypes = supportedContentTypes()
 
                 val picker = UIDocumentPickerViewController(
                     forOpeningContentTypes = contentTypes,
-                    asCopy = true
+                    asCopy = true,
                 )
 
                 // A reader adding books has usually just saved several, and one
@@ -62,7 +62,7 @@ actual fun rememberPlatformFilePicker(): PlatformFilePickerState {
 
                     override fun documentPicker(
                         controller: UIDocumentPickerViewController,
-                        didPickDocumentsAtURLs: List<*>
+                        didPickDocumentsAtURLs: List<*>,
                     ) {
                         onPicked(
                             didPickDocumentsAtURLs
@@ -71,14 +71,14 @@ actual fun rememberPlatformFilePicker(): PlatformFilePickerState {
                                     PickedDocument(
                                         fileName = url.lastPathComponent ?: return@mapNotNull null,
                                         extension = url.pathExtension ?: "",
-                                        location = url.absoluteString ?: return@mapNotNull null
+                                        location = url.absoluteString ?: return@mapNotNull null,
                                     )
-                                }
+                                },
                         )
                     }
 
                     override fun documentPickerWasCancelled(
-                        controller: UIDocumentPickerViewController
+                        controller: UIDocumentPickerViewController,
                     ) {
                         onPicked(emptyList())
                     }
@@ -97,7 +97,7 @@ actual fun rememberPlatformFilePicker(): PlatformFilePickerState {
                 rootViewController?.presentViewController(
                     picker,
                     animated = true,
-                    completion = null
+                    completion = null,
                 )
             }
         }

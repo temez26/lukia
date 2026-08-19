@@ -26,9 +26,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -39,12 +39,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.settings.domain.AppSettings
 import io.lukia.features.settings.domain.AppTheme
-import io.lukia.features.settings.presentation.SettingsViewModel
 import io.lukia.features.settings.presentation.AvailableModels
-import io.lukia.features.settings.presentation.ModelReadiness
 import io.lukia.features.settings.presentation.ConnectionTest
+import io.lukia.features.settings.presentation.ModelReadiness
+import io.lukia.features.settings.presentation.SettingsViewModel
 import io.lukia.features.settings.presentation.components.ChoiceList
 import io.lukia.features.settings.presentation.components.SettingsTextField
 import io.lukia.features.translate.domain.PassageUnit
@@ -52,13 +53,12 @@ import io.lukia.features.translate.domain.TargetLanguage
 import io.lukia.features.translate.domain.TranslationProvider
 import io.lukia.features.translate.domain.TranslationSettings
 import io.lukia.features.translate.domain.WordLookup
-import io.lukia.shared.presentation.components.ButtonVariant
-import io.lukia.shared.presentation.components.LukiaButton
 import io.lukia.shared.presentation.components.BackChevron
+import io.lukia.shared.presentation.components.ButtonVariant
 import io.lukia.shared.presentation.components.GroupCard
 import io.lukia.shared.presentation.components.IconButtonVariant
+import io.lukia.shared.presentation.components.LukiaButton
 import io.lukia.shared.presentation.components.LukiaIconButton
-import io.lukia.core.presentation.displayShortMessage
 import io.lukia.shared.presentation.components.SectionLabel
 import io.lukia.shared.presentation.components.SegmentedControl
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
@@ -74,7 +74,7 @@ private val SettingsBottomClearance: Dp = 32.dp
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
-    viewModel: SettingsViewModel = koinViewModel()
+    viewModel: SettingsViewModel = koinViewModel(),
 ) {
     val settings by viewModel.settings.collectAsState()
     val translation by viewModel.translationSettings.collectAsState()
@@ -105,7 +105,7 @@ fun SettingsScreen(
         onTestConnection = viewModel::testConnection,
         onLoadModels = viewModel::loadAvailableModels,
         onLoadChosenModel = viewModel::loadChosenModel,
-        onBack = onBack
+        onBack = onBack,
     )
 }
 
@@ -141,14 +141,14 @@ fun SettingsContent(
     onTestConnection: () -> Unit,
     onLoadModels: () -> Unit = {},
     onLoadChosenModel: () -> Unit = {},
-    onBack: () -> Unit
+    onBack: () -> Unit,
 ) {
     val dimens = LocalLukiaDimens.current
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(MaterialTheme.colorScheme.background),
     ) {
         // Full-bleed like the detail screen, so content passes under the floating
         // back button - which means window insets are applied by hand. The
@@ -157,7 +157,7 @@ fun SettingsContent(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .windowInsetsPadding(WindowInsets.safeDrawing)
+                .windowInsetsPadding(WindowInsets.safeDrawing),
         ) {
             SettingsBody(
                 settings = settings,
@@ -182,7 +182,7 @@ fun SettingsContent(
                 onTestConnection = onTestConnection,
                 onLoadModels = onLoadModels,
                 onLoadChosenModel = onLoadChosenModel,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             )
 
             LukiaIconButton(
@@ -191,7 +191,7 @@ fun SettingsContent(
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(start = dimens.screenPadding, top = Space.lg),
-                variant = IconButtonVariant.Glass
+                variant = IconButtonVariant.Glass,
             ) { tint, glyph ->
                 BackChevron(tint = tint, modifier = glyph)
             }
@@ -241,14 +241,14 @@ internal fun SettingsBody(
      * and that differs: the screen lays it on the window background, the panel on
      * a raised surface, and in the dark theme the background is true black.
      */
-    groupColor: Color = MaterialTheme.colorScheme.surface
+    groupColor: Color = MaterialTheme.colorScheme.surface,
 ) {
     val dimens = LocalLukiaDimens.current
     val scroll = rememberScrollState()
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.verticalScroll(scroll)
+        modifier = modifier.verticalScroll(scroll),
     ) {
         Spacer(modifier = Modifier.height(topClearance))
 
@@ -256,9 +256,8 @@ internal fun SettingsBody(
             modifier = Modifier
                 .widthIn(max = dimens.maxDetailWidth)
                 .fillMaxWidth()
-                .padding(horizontal = dimens.screenPadding)
+                .padding(horizontal = dimens.screenPadding),
         ) {
-
             // Open on the first one rather than on a menu of them. Settings is
             // three groups, not a place to navigate around: the same control the
             // library narrows itself with switches between them, in place, with
@@ -268,7 +267,7 @@ internal fun SettingsBody(
             Text(
                 text = "Settings",
                 style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.onBackground,
             )
 
             SegmentedControl(
@@ -276,7 +275,7 @@ internal fun SettingsBody(
                 selected = area,
                 label = { it.title },
                 onSelect = { area = it },
-                modifier = Modifier.padding(top = Space.lg)
+                modifier = Modifier.padding(top = Space.lg),
             )
 
             // Back to the top of whatever was opened. Switching from a long
@@ -294,12 +293,12 @@ internal fun SettingsBody(
                 animationSpec = tween(AreaFadeMillis, easing = LinearOutSlowInEasing),
                 modifier = Modifier
                     .animateContentSize(
-                        animationSpec = tween(AreaSettleMillis, easing = FastOutSlowInEasing)
+                        animationSpec = tween(AreaSettleMillis, easing = FastOutSlowInEasing),
                     )
                     // Applied inside the animation, so what eases between the
                     // groups is already the held height rather than the height
                     // of whichever group happens to be shortest.
-                    .heightIn(min = MinAreaHeight)
+                    .heightIn(min = MinAreaHeight),
             ) { shown ->
                 Column(modifier = Modifier.fillMaxWidth()) {
                     when (shown) {
@@ -311,13 +310,13 @@ internal fun SettingsBody(
                                 // the word alone.
                                 footnote = "System follows your device’s light and dark setting.",
                                 groupColor = groupColor,
-                                modifier = Modifier.padding(top = dimens.sectionSpacing)
+                                modifier = Modifier.padding(top = dimens.sectionSpacing),
                             ) {
                                 SegmentedControl(
                                     options = AppTheme.entries,
                                     selected = settings.theme,
                                     label = { it.name },
-                                    onSelect = onThemeChange
+                                    onSelect = onThemeChange,
                                 )
                             }
                         }
@@ -328,20 +327,20 @@ internal fun SettingsBody(
                                 footnote = "Each does one thing, always. Doing it again on the same " +
                                     "passage puts the book\u2019s own words back.",
                                 groupColor = groupColor,
-                                modifier = Modifier.padding(top = dimens.sectionSpacing)
+                                modifier = Modifier.padding(top = dimens.sectionSpacing),
                             ) {
                                 Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
                                     LabelledField(label = "Tap") {
                                         GestureControl(
                                             selected = translation.gestures.tap,
-                                            onSelect = onTapGestureChange
+                                            onSelect = onTapGestureChange,
                                         )
                                     }
 
                                     LabelledField(label = "Press and hold") {
                                         GestureControl(
                                             selected = translation.gestures.longPress,
-                                            onSelect = onLongPressGestureChange
+                                            onSelect = onLongPressGestureChange,
                                         )
                                     }
                                 }
@@ -354,7 +353,7 @@ internal fun SettingsBody(
                                     "pointed at. Off until you ask for them, and hidden from the " +
                                     "reader entirely while they are.",
                                 groupColor = groupColor,
-                                modifier = Modifier.padding(top = dimens.sectionSpacing)
+                                modifier = Modifier.padding(top = dimens.sectionSpacing),
                             ) {
                                 Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
                                     BetaToggle(
@@ -362,7 +361,7 @@ internal fun SettingsBody(
                                         detail = "Adds a button that translates every sentence you " +
                                             "can see, once.",
                                         checked = translation.bulkTranslation.onScreen,
-                                        onChange = onTranslateOnScreenChange
+                                        onChange = onTranslateOnScreenChange,
                                     )
 
                                     BetaToggle(
@@ -371,7 +370,7 @@ internal fun SettingsBody(
                                             "scrolls into view until you turn it off. This is the " +
                                             "expensive one.",
                                         checked = translation.bulkTranslation.asYouRead,
-                                        onChange = onTranslateAsYouReadChange
+                                        onChange = onTranslateAsYouReadChange,
                                     )
                                 }
                             }
@@ -382,14 +381,14 @@ internal fun SettingsBody(
                                 title = "Translation service",
                                 footnote = translation.provider.footnote(),
                                 groupColor = groupColor,
-                                modifier = Modifier.padding(top = dimens.sectionSpacing)
+                                modifier = Modifier.padding(top = dimens.sectionSpacing),
                             ) {
                                 Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
                                     SegmentedControl(
                                         options = TranslationProvider.entries,
                                         selected = translation.provider,
                                         label = { it.label },
-                                        onSelect = onProviderChange
+                                        onSelect = onProviderChange,
                                     )
 
                                     if (translation.provider.hasConfigurableEndpoint) {
@@ -397,19 +396,19 @@ internal fun SettingsBody(
                                             SettingsTextField(
                                                 value = translation.baseUrl,
                                                 onValueChange = onBaseUrlChange,
-                                                placeholder = translation.provider.defaultBaseUrl
+                                                placeholder = translation.provider.defaultBaseUrl,
                                             )
                                         }
                                     }
 
-                                    LabelledField(
-                                        label = if (translation.provider.requiresKey) "API key" else "API key (optional)"
-                                    ) {
+                                    val apiKeyLabel =
+                                        if (translation.provider.requiresKey) "API key" else "API key (optional)"
+                                    LabelledField(label = apiKeyLabel) {
                                         SettingsTextField(
                                             value = translation.apiKey.orEmpty(),
                                             onValueChange = onApiKeyChange,
                                             placeholder = if (translation.provider.requiresKey) "Required" else "None",
-                                            secret = true
+                                            secret = true,
                                         )
                                     }
 
@@ -417,7 +416,7 @@ internal fun SettingsBody(
                                         SettingsTextField(
                                             value = translation.model,
                                             onValueChange = onModelChange,
-                                            placeholder = translation.provider.defaultModel
+                                            placeholder = translation.provider.defaultModel,
                                         )
                                     }
 
@@ -426,33 +425,33 @@ internal fun SettingsBody(
                                             state = availableModels,
                                             selected = translation.model,
                                             onSelect = onModelChoose,
-                                            onLoad = onLoadModels
+                                            onLoad = onLoadModels,
                                         )
 
                                         ModelReadinessRow(
                                             state = modelReadiness,
                                             model = translation.model,
-                                            onLoad = onLoadChosenModel
+                                            onLoad = onLoadChosenModel,
                                         )
                                     } else if (translation.provider.suggestedModels.isNotEmpty()) {
                                         ChoiceList(
                                             options = translation.provider.suggestedModels,
                                             selected = translation.model,
                                             label = { it },
-                                            onSelect = onModelChoose
+                                            onSelect = onModelChoose,
                                         )
                                     }
 
                                     TimeoutField(
                                         provider = translation.provider,
                                         seconds = translation.timeoutSeconds,
-                                        onChange = onTimeoutChange
+                                        onChange = onTimeoutChange,
                                     )
 
                                     ConnectionTestRow(
                                         state = connectionTest,
                                         enabled = translation.isConfigured,
-                                        onTest = onTestConnection
+                                        onTest = onTestConnection,
                                     )
                                 }
                             }
@@ -461,14 +460,14 @@ internal fun SettingsBody(
                                 title = "Looking up a word",
                                 footnote = translation.wordLookup.footnote,
                                 groupColor = groupColor,
-                                modifier = Modifier.padding(top = dimens.sectionSpacing)
+                                modifier = Modifier.padding(top = dimens.sectionSpacing),
                             ) {
                                 Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
                                     SegmentedControl(
                                         options = WordLookup.entries,
                                         selected = translation.wordLookup,
                                         label = { it.label },
-                                        onSelect = onWordLookupChange
+                                        onSelect = onWordLookupChange,
                                     )
 
                                     // Only where it does anything. Google is the one choice here
@@ -481,7 +480,7 @@ internal fun SettingsBody(
                                                 value = translation.googleApiKey.orEmpty(),
                                                 onValueChange = onGoogleApiKeyChange,
                                                 placeholder = "Public endpoint",
-                                                secret = true
+                                                secret = true,
                                             )
                                         }
                                     }
@@ -494,7 +493,7 @@ internal fun SettingsBody(
                                     "tap it again for the original.",
                                 groupColor = groupColor,
                                 padding = Space.xs,
-                                modifier = Modifier.padding(top = dimens.sectionSpacing)
+                                modifier = Modifier.padding(top = dimens.sectionSpacing),
                             ) {
                                 ChoiceList(
                                     options = TargetLanguage.entries,
@@ -503,7 +502,7 @@ internal fun SettingsBody(
                                     // The English name too, so somebody who cannot yet read the
                                     // language they are learning can still find it in the list.
                                     detail = { it.englishName.takeIf { name -> name != it.endonym } },
-                                    onSelect = onTargetLanguageChange
+                                    onSelect = onTargetLanguageChange,
                                 )
                             }
                         }
@@ -515,7 +514,6 @@ internal fun SettingsBody(
         Spacer(modifier = Modifier.height(bottomClearance))
     }
 }
-
 
 /**
  * The least room a group is given, however little it has to put in it.
@@ -554,7 +552,8 @@ enum class SettingsArea(val title: String) {
     Reading("Reading"),
 
     /** Who does the translating, what they are asked for, and into what. */
-    Translating("Translating");
+    Translating("Translating"),
+    ;
 
     companion object {
 
@@ -579,19 +578,19 @@ private fun BetaToggle(
     label: String,
     detail: String,
     checked: Boolean,
-    onChange: (Boolean) -> Unit
+    onChange: (Boolean) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Space.xs)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = label,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
 
                 BetaBadge(modifier = Modifier.padding(start = Space.sm))
@@ -603,7 +602,7 @@ private fun BetaToggle(
         Text(
             text = detail,
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
@@ -617,7 +616,7 @@ private fun BetaBadge(modifier: Modifier = Modifier) {
         modifier = modifier
             .clip(MaterialTheme.shapes.extraSmall)
             .background(MaterialTheme.colorScheme.surfaceVariant)
-            .padding(horizontal = Space.xs, vertical = 1.dp)
+            .padding(horizontal = Space.xs, vertical = 1.dp),
     )
 }
 
@@ -635,7 +634,7 @@ private fun ServerModels(
     state: AvailableModels,
     selected: String,
     onSelect: (String) -> Unit,
-    onLoad: () -> Unit
+    onLoad: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
         LukiaButton(
@@ -646,7 +645,7 @@ private fun ServerModels(
             },
             onClick = onLoad,
             variant = ButtonVariant.Secondary,
-            enabled = state != AvailableModels.Loading
+            enabled = state != AvailableModels.Loading,
         )
 
         when (state) {
@@ -656,13 +655,13 @@ private fun ServerModels(
                 options = state.models,
                 selected = selected,
                 label = { it },
-                onSelect = onSelect
+                onSelect = onSelect,
             )
 
             is AvailableModels.Failed -> Text(
                 text = state.error.displayShortMessage(),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error
+                color = MaterialTheme.colorScheme.error,
             )
         }
     }
@@ -685,7 +684,7 @@ private fun ServerModels(
 private fun ModelReadinessRow(
     state: ModelReadiness,
     model: String,
-    onLoad: () -> Unit
+    onLoad: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
         LukiaButton(
@@ -695,7 +694,7 @@ private fun ModelReadinessRow(
             },
             onClick = onLoad,
             variant = ButtonVariant.Secondary,
-            enabled = model.isNotBlank() && state != ModelReadiness.Loading
+            enabled = model.isNotBlank() && state != ModelReadiness.Loading,
         )
 
         when (state) {
@@ -705,19 +704,19 @@ private fun ModelReadinessRow(
                 text = "Asking the server to load $model. A large model can take a few " +
                     "minutes the first time.",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             ModelReadiness.Ready -> Text(
                 text = "$model is loaded and answering.",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             is ModelReadiness.Failed -> Text(
                 text = state.error.displayShortMessage(),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error
+                color = MaterialTheme.colorScheme.error,
             )
         }
     }
@@ -738,7 +737,7 @@ private fun ModelReadinessRow(
 private fun TimeoutField(
     provider: TranslationProvider,
     seconds: Int,
-    onChange: (Int) -> Unit
+    onChange: (Int) -> Unit,
 ) {
     // Keyed on the provider because each keeps its own, and switching between
     // them has to show the one now in force rather than what was last typed.
@@ -751,7 +750,7 @@ private fun TimeoutField(
                 typed = entry.filter { it.isDigit() }.take(4)
                 typed.toIntOrNull()?.let(onChange)
             },
-            placeholder = "${provider.defaultTimeoutSeconds} seconds"
+            placeholder = "${provider.defaultTimeoutSeconds} seconds",
         )
     }
 }
@@ -767,13 +766,13 @@ private fun TimeoutField(
 @Composable
 private fun GestureControl(
     selected: PassageUnit?,
-    onSelect: (PassageUnit?) -> Unit
+    onSelect: (PassageUnit?) -> Unit,
 ) {
     SegmentedControl(
         options = GestureChoices,
         selected = selected,
         label = { it?.label ?: "Off" },
-        onSelect = onSelect
+        onSelect = onSelect,
     )
 }
 
@@ -786,7 +785,7 @@ private fun LabelledField(label: String, content: @Composable () -> Unit) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         content()
@@ -806,14 +805,14 @@ private fun LabelledField(label: String, content: @Composable () -> Unit) {
 private fun ConnectionTestRow(
     state: ConnectionTest,
     enabled: Boolean,
-    onTest: () -> Unit
+    onTest: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
         LukiaButton(
             label = if (state is ConnectionTest.Trying) "Testing…" else "Test translation",
             onClick = onTest,
             variant = ButtonVariant.Secondary,
-            enabled = enabled && state !is ConnectionTest.Trying
+            enabled = enabled && state !is ConnectionTest.Trying,
         )
 
         when (state) {
@@ -822,13 +821,13 @@ private fun ConnectionTestRow(
             is ConnectionTest.Worked -> Text(
                 text = "\u201CThe sea was calm that morning.\u201D became \u201C${state.sample}\u201D",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             is ConnectionTest.Failed -> Text(
                 text = state.error.displayShortMessage(),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error
+                color = MaterialTheme.colorScheme.error,
             )
         }
     }
@@ -840,7 +839,7 @@ private fun ConnectionTestRow(
  */
 private fun TranslationProvider.footnote(): String = when (this) {
     TranslationProvider.Anthropic, TranslationProvider.OpenAi ->
-        "Your key is stored on this device and sent only to ${label}, with the " +
+        "Your key is stored on this device and sent only to $label, with the " +
             "sentence you tapped and what the book says about itself."
 
     TranslationProvider.Local ->
@@ -860,12 +859,12 @@ private fun SettingsSection(
     footnote: String? = null,
     /** Rows that draw their own vertical padding ask for none of the card's. */
     padding: Dp = Space.lg,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         SectionLabel(
             text = title,
-            modifier = Modifier.padding(start = Space.xs, bottom = Space.sm)
+            modifier = Modifier.padding(start = Space.xs, bottom = Space.sm),
         )
 
         GroupCard(color = groupColor) {
@@ -879,7 +878,7 @@ private fun SettingsSection(
                 text = footnote,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = Space.xs, top = Space.sm)
+                modifier = Modifier.padding(start = Space.xs, top = Space.sm),
             )
         }
     }

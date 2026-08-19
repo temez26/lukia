@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.asStateFlow
  * dependency graph.
  */
 class AppSettingsRepository(
-    private val store: SettingsStore
+    private val store: SettingsStore,
 ) {
 
     private val _settings = MutableStateFlow(load())
@@ -36,7 +36,7 @@ class AppSettingsRepository(
         val defaults = AppSettings()
 
         return AppSettings(
-            theme = store.readEnum(KEY_THEME, AppTheme.entries, defaults.theme)
+            theme = store.readEnum(KEY_THEME, AppTheme.entries, defaults.theme),
         )
     }
 

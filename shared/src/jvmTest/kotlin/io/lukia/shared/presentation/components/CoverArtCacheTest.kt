@@ -83,7 +83,7 @@ class CoverArtCacheTest {
                 CoverArtCache.artworkFor(cover(1)) {
                     decodes++
                     null
-                }
+                },
             )
         }
 

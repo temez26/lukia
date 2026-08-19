@@ -28,9 +28,9 @@ class EpubTextReaderTest {
                 """.trimIndent(),
                 entries = mapOf(
                     "OEBPS/one.xhtml" to chapter("Chapter One", "The first."),
-                    "OEBPS/two.xhtml" to chapter("Chapter Two", "The second.")
-                )
-            )
+                    "OEBPS/two.xhtml" to chapter("Chapter Two", "The second."),
+                ),
+            ),
         )
 
         assertNotNull(content)
@@ -70,9 +70,9 @@ class EpubTextReaderTest {
                 entries = mapOf(
                     "OEBPS/nav.xhtml" to nav,
                     "OEBPS/one.xhtml" to chapter("Chapter One", "The first."),
-                    "OEBPS/two.xhtml" to chapter("Chapter Two", "The second.")
-                )
-            )
+                    "OEBPS/two.xhtml" to chapter("Chapter Two", "The second."),
+                ),
+            ),
         )
 
         assertNotNull(content)
@@ -80,9 +80,9 @@ class EpubTextReaderTest {
             listOf(
                 Triple("Chapter One", 0, 0),
                 Triple("Part Two", 0, 1),
-                Triple("Chapter Two", 1, 0)
+                Triple("Chapter Two", 1, 0),
             ),
-            content.outline.orEmpty().map { Triple(it.title, it.pageIndex, it.level) }
+            content.outline.orEmpty().map { Triple(it.title, it.pageIndex, it.level) },
         )
     }
 
@@ -122,9 +122,9 @@ class EpubTextReaderTest {
                 entries = mapOf(
                     "OEBPS/toc.ncx" to ncx,
                     "OEBPS/one.xhtml" to chapter("Chapter One", "The first."),
-                    "OEBPS/two.xhtml" to chapter("Chapter Two", "The second.")
-                )
-            )
+                    "OEBPS/two.xhtml" to chapter("Chapter Two", "The second."),
+                ),
+            ),
         )
 
         assertNotNull(content)
@@ -132,9 +132,9 @@ class EpubTextReaderTest {
             listOf(
                 Triple("Chapter One", 0, 0),
                 Triple("Part Two", 0, 1),
-                Triple("Chapter Two", 1, 0)
+                Triple("Chapter Two", 1, 0),
             ),
-            content.outline.orEmpty().map { Triple(it.title, it.pageIndex, it.level) }
+            content.outline.orEmpty().map { Triple(it.title, it.pageIndex, it.level) },
         )
     }
 
@@ -153,15 +153,15 @@ class EpubTextReaderTest {
                 """.trimIndent(),
                 entries = mapOf(
                     "OEBPS/one.xhtml" to chapter("Chapter One", "The first."),
-                    "OEBPS/two.xhtml" to chapter("Chapter Two", "The second.")
-                )
-            )
+                    "OEBPS/two.xhtml" to chapter("Chapter Two", "The second."),
+                ),
+            ),
         )
 
         assertNotNull(content)
         assertEquals(
             listOf("Chapter One", "Chapter Two"),
-            content.outline.orEmpty().map { it.title }
+            content.outline.orEmpty().map { it.title },
         )
     }
 
@@ -179,9 +179,9 @@ class EpubTextReaderTest {
                 entries = mapOf(
                     "OEBPS/text/one.xhtml" to
                         """<html><body><p>Look:</p><img src="../images/plate.png"/></body></html>""",
-                    "OEBPS/images/plate.png" to plate
-                )
-            )
+                    "OEBPS/images/plate.png" to plate,
+                ),
+            ),
         )
 
         assertNotNull(content)
@@ -203,8 +203,8 @@ class EpubTextReaderTest {
                     <item id="c1" href="Chapter%20One.xhtml" media-type="application/xhtml+xml"/>
                 """.trimIndent(),
                 spine = """<itemref idref="c1"/>""",
-                entries = mapOf("OEBPS/Chapter One.xhtml" to chapter("Chapter One", "Words."))
-            )
+                entries = mapOf("OEBPS/Chapter One.xhtml" to chapter("Chapter One", "Words.")),
+            ),
         )
 
         assertNotNull(content)
@@ -222,13 +222,13 @@ class EpubTextReaderTest {
         val content = readEpub(
             epub(
                 manifest =
-                    """<item id="c1" href="one.xhtml" media-type="application/xhtml+xml"/>""",
+                """<item id="c1" href="one.xhtml" media-type="application/xhtml+xml"/>""",
                 spine = """<itemref idref="c1"/>""",
                 entries = mapOf(
                     "OEBPS/one.xhtml" to
-                        "<html><body><p>the <em>Pequod</em> sailed</p></body></html>"
-                )
-            )
+                        "<html><body><p>the <em>Pequod</em> sailed</p></body></html>",
+                ),
+            ),
         )
 
         assertNotNull(content)
@@ -254,7 +254,7 @@ class EpubTextReaderTest {
     private fun epub(
         manifest: String,
         spine: String,
-        entries: Map<String, Any>
+        entries: Map<String, Any>,
     ): ByteArray {
         val container = """
             <?xml version="1.0"?>
@@ -282,8 +282,8 @@ class EpubTextReaderTest {
         return zip(
             mapOf(
                 "META-INF/container.xml" to container,
-                "OEBPS/content.opf" to opf
-            ) + entries
+                "OEBPS/content.opf" to opf,
+            ) + entries,
         )
     }
 
@@ -297,7 +297,7 @@ class EpubTextReaderTest {
                     when (content) {
                         is ByteArray -> content
                         else -> content.toString().encodeToByteArray()
-                    }
+                    },
                 )
                 stream.closeEntry()
             }

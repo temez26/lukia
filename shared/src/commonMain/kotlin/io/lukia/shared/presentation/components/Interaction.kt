@@ -33,12 +33,12 @@ import io.lukia.shared.presentation.theme.LukiaMotion
 @Composable
 fun Modifier.scaleOnPress(
     interactionSource: MutableInteractionSource,
-    pressedScale: Float = 0.9f
+    pressedScale: Float = 0.9f,
 ): Modifier {
     val scale by animateFloatAsState(
         targetValue = if (interactionSource.collectIsPressedAsState().value) pressedScale else 1f,
         animationSpec = LukiaMotion.gentle(),
-        label = "pressScale"
+        label = "pressScale",
     )
 
     return graphicsLayer {
@@ -63,7 +63,7 @@ fun rememberHoverFraction(interactionSource: MutableInteractionSource): Float {
     val hover by animateFloatAsState(
         targetValue = if (interactionSource.collectIsHoveredAsState().value) 1f else 0f,
         animationSpec = LukiaMotion.gentle(),
-        label = "hoverFraction"
+        label = "hoverFraction",
     )
 
     return hover
@@ -84,12 +84,12 @@ fun Modifier.hoverLift(
     fraction: Float,
     lift: Dp = 4.dp,
     hoveredScale: Float = 1.03f,
-    pressedScale: Float = 1f
+    pressedScale: Float = 1f,
 ): Modifier {
     val press by animateFloatAsState(
         targetValue = if (interactionSource.collectIsPressedAsState().value) pressedScale else 1f,
         animationSpec = LukiaMotion.gentle(),
-        label = "cardPress"
+        label = "cardPress",
     )
 
     return graphicsLayer {
@@ -111,7 +111,7 @@ fun Modifier.hoverLift(
 @Composable
 fun Modifier.focusRing(
     interactionSource: MutableInteractionSource,
-    shape: Shape
+    shape: Shape,
 ): Modifier {
     val focused by interactionSource.collectIsFocusedAsState()
 
@@ -133,7 +133,7 @@ fun Modifier.focusRing(
 @Composable
 fun Modifier.hoverHighlight(
     interactionSource: MutableInteractionSource,
-    shape: Shape
+    shape: Shape,
 ): Modifier {
     val hovered by interactionSource.collectIsHoveredAsState()
     val pressed by interactionSource.collectIsPressedAsState()
@@ -145,7 +145,7 @@ fun Modifier.hoverHighlight(
             else -> 0f
         },
         animationSpec = LukiaMotion.quick(),
-        label = "hoverHighlight"
+        label = "hoverHighlight",
     )
 
     return if (alpha == 0f) {

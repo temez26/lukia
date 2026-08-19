@@ -31,9 +31,9 @@ import io.lukia.features.reader.domain.TextQuad
 import io.lukia.features.translate.domain.PageSentence
 import io.lukia.features.translate.domain.PageWord
 import io.lukia.features.translate.domain.PassageUnit
-import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.Translation
+import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.presentation.PassageSelection
 import io.lukia.features.translate.presentation.PassageTranslation
 import io.lukia.shared.presentation.theme.LukiaTheme
@@ -60,7 +60,7 @@ class ReaderPageTranslationTest {
     private val wholePage = PageSentence(
         index = 0,
         text = opening,
-        quads = listOf(TextQuad(left = 0f, top = 0f, right = 800f, bottom = 300f))
+        quads = listOf(TextQuad(left = 0f, top = 0f, right = 800f, bottom = 300f)),
     )
 
     /**
@@ -78,30 +78,30 @@ class ReaderPageTranslationTest {
             PageWord(
                 index = 0,
                 text = "Call",
-                quads = listOf(TextQuad(left = 0f, top = 0f, right = 200f, bottom = 300f))
+                quads = listOf(TextQuad(left = 0f, top = 0f, right = 200f, bottom = 300f)),
             ),
             PageWord(
                 index = 1,
                 text = "Ishmael",
-                quads = listOf(TextQuad(left = 220f, top = 0f, right = 800f, bottom = 300f))
-            )
-        )
+                quads = listOf(TextQuad(left = 220f, top = 0f, right = 800f, bottom = 300f)),
+            ),
+        ),
     )
 
     /** The same page with nothing under the middle of it, which is where a tap lands. */
     private val pageWithAGapInTheMiddle = pageOfWords.copy(
         words = pageOfWords.words.map { word ->
             word.copy(
-                quads = listOf(TextQuad(left = 0f, top = 0f, right = 20f, bottom = 20f))
+                quads = listOf(TextQuad(left = 0f, top = 0f, right = 20f, bottom = 20f)),
             )
-        }
+        },
     )
 
     /** A word in the very corner, so the middle of the page is not on it. */
     private val cornerWord = PageSentence(
         index = 0,
         text = opening,
-        quads = listOf(TextQuad(left = 0f, top = 0f, right = 8f, bottom = 6f))
+        quads = listOf(TextQuad(left = 0f, top = 0f, right = 8f, bottom = 6f)),
     )
 
     /**
@@ -130,7 +130,7 @@ class ReaderPageTranslationTest {
 
         val page = listOf(
             wholePage,
-            PageSentence(1, "Some years ago.", listOf(TextQuad(0f, 280f, 100f, 300f)))
+            PageSentence(1, "Some years ago.", listOf(TextQuad(0f, 280f, 100f, 300f))),
         )
 
         setReader(sentences = page, onPassageSelected = { selected = it })
@@ -138,7 +138,7 @@ class ReaderPageTranslationTest {
 
         assertEquals(
             "$opening Some years ago.",
-            assertNotNull(selected).surroundingText
+            assertNotNull(selected).surroundingText,
         )
     }
 
@@ -157,7 +157,7 @@ class ReaderPageTranslationTest {
         assertNull(selected, "the margin was read as a sentence")
         assertEquals(
             0,
-            onAllNodes(hasContentDescription("Close book")).fetchSemanticsNodes().size
+            onAllNodes(hasContentDescription("Close book")).fetchSemanticsNodes().size,
         )
     }
 
@@ -171,7 +171,7 @@ class ReaderPageTranslationTest {
 
         assertEquals(
             0,
-            onAllNodes(hasContentDescription("Close book")).fetchSemanticsNodes().size
+            onAllNodes(hasContentDescription("Close book")).fetchSemanticsNodes().size,
         )
     }
 
@@ -181,7 +181,7 @@ class ReaderPageTranslationTest {
             sentences = listOf(wholePage),
             translations = {
                 mapOf(TextAnchor.Page(0, 0) to PassageTranslation.Ready(Translation(translated)))
-            }
+            },
         )
 
         onNodeWithText(translated, substring = true).assertExists()
@@ -194,10 +194,10 @@ class ReaderPageTranslationTest {
             translations = {
                 mapOf(
                     TextAnchor.Page(0, 0) to PassageTranslation.Ready(
-                        Translation(translated, note = "A remark about a word.")
-                    )
+                        Translation(translated, note = "A remark about a word."),
+                    ),
                 )
-            }
+            },
         )
 
         onNodeWithText("A remark about a word.", substring = true).assertExists()
@@ -212,15 +212,15 @@ class ReaderPageTranslationTest {
                 mapOf(
                     TextAnchor.Page(0, 0) to PassageTranslation.Ready(
                         translation = Translation(translated),
-                        showingOriginal = true
-                    )
+                        showingOriginal = true,
+                    ),
                 )
-            }
+            },
         )
 
         assertEquals(
             0,
-            onAllNodes(hasText(translated, substring = true)).fetchSemanticsNodes().size
+            onAllNodes(hasText(translated, substring = true)).fetchSemanticsNodes().size,
         )
     }
 
@@ -236,10 +236,10 @@ class ReaderPageTranslationTest {
             translations = {
                 mapOf(
                     TextAnchor.Page(0, 0) to PassageTranslation.Failed(
-                        AppError.Unexpected("Your OpenAI account is out of API credit.")
-                    )
+                        AppError.Unexpected("Your OpenAI account is out of API credit."),
+                    ),
                 )
-            }
+            },
         )
 
         onNodeWithText("out of API credit", substring = true).assertExists()
@@ -250,13 +250,13 @@ class ReaderPageTranslationTest {
     fun aSentenceStillBeingTranslatedIsNotCoveredOver() = runComposeUiTest {
         setReader(
             sentences = listOf(wholePage),
-            translations = { mapOf(TextAnchor.Page(0, 0) to PassageTranslation.Loading()) }
+            translations = { mapOf(TextAnchor.Page(0, 0) to PassageTranslation.Loading()) },
         )
 
         assertEquals(
             0,
             onAllNodes(hasText("", substring = true)).fetchSemanticsNodes()
-                .count { it.config.toString().contains(opening) }
+                .count { it.config.toString().contains(opening) },
         )
     }
 
@@ -285,7 +285,7 @@ class ReaderPageTranslationTest {
         assertEquals(0, onAllNodes(hasText(translated, substring = true)).fetchSemanticsNodes().size)
 
         translations = mapOf(
-            TextAnchor.Page(0, 0) to PassageTranslation.Ready(Translation(translated))
+            TextAnchor.Page(0, 0) to PassageTranslation.Ready(Translation(translated)),
         )
         waitForIdle()
 
@@ -299,7 +299,7 @@ class ReaderPageTranslationTest {
 
         assertEquals(
             0,
-            onAllNodes(hasText(opening, substring = true)).fetchSemanticsNodes().size
+            onAllNodes(hasText(opening, substring = true)).fetchSemanticsNodes().size,
         )
     }
 
@@ -315,7 +315,7 @@ class ReaderPageTranslationTest {
         setReader(
             sentences = listOf(pageOfWords),
             onPassageSelected = { selected = it },
-            gestures = TranslationGestures(tap = PassageUnit.Word, longPress = null)
+            gestures = TranslationGestures(tap = PassageUnit.Word, longPress = null),
         )
         tapPageTwo()
 
@@ -324,7 +324,6 @@ class ReaderPageTranslationTest {
         assertEquals(PassageUnit.Word, selection.unit)
         assertEquals(TextAnchor.Page(1, sentenceIndex = 0, wordIndex = 1), selection.anchor)
     }
-
 
     /**
      * The space between two words belongs to neither, so a gesture set to the
@@ -338,7 +337,7 @@ class ReaderPageTranslationTest {
         setReader(
             sentences = listOf(pageWithAGapInTheMiddle),
             onPassageSelected = { selected = it },
-            gestures = TranslationGestures(tap = PassageUnit.Word, longPress = null)
+            gestures = TranslationGestures(tap = PassageUnit.Word, longPress = null),
         )
         tapPageTwo()
 
@@ -353,7 +352,7 @@ class ReaderPageTranslationTest {
         setReader(
             sentences = listOf(pageOfWords),
             onPassageSelected = { selected = it },
-            gestures = TranslationGestures(tap = PassageUnit.Sentence, longPress = null)
+            gestures = TranslationGestures(tap = PassageUnit.Sentence, longPress = null),
         )
         tapPageTwo()
 
@@ -374,7 +373,7 @@ class ReaderPageTranslationTest {
         setReader(
             sentences = listOf(pageOfWords),
             onPassageSelected = { selected = it },
-            gestures = TranslationGestures(tap = PassageUnit.Paragraph, longPress = null)
+            gestures = TranslationGestures(tap = PassageUnit.Paragraph, longPress = null),
         )
         tapPageTwo()
 
@@ -389,16 +388,16 @@ class ReaderPageTranslationTest {
             translations = {
                 mapOf(
                     TextAnchor.Page(1, sentenceIndex = 0, wordIndex = 1) to
-                        PassageTranslation.Ready(Translation("Ismaeliksi"))
+                        PassageTranslation.Ready(Translation("Ismaeliksi")),
                 )
-            }
+            },
         )
 
         onNodeWithText("Ismaeliksi", substring = true).assertExists()
         // The sentence itself is untouched, so nothing covers the rest of it.
         assertEquals(
             0,
-            onAllNodes(hasText(translated, substring = true)).fetchSemanticsNodes().size
+            onAllNodes(hasText(translated, substring = true)).fetchSemanticsNodes().size,
         )
     }
 
@@ -414,7 +413,7 @@ class ReaderPageTranslationTest {
         sentences: List<PageSentence>,
         translations: () -> Map<TextAnchor, PassageTranslation> = { emptyMap() },
         onPassageSelected: (PassageSelection) -> Unit = {},
-        gestures: TranslationGestures = TranslationGestures.Default
+        gestures: TranslationGestures = TranslationGestures.Default,
     ) {
         setContent {
             LukiaTheme {
@@ -429,7 +428,7 @@ class ReaderPageTranslationTest {
                     onPassageSelected = onPassageSelected,
                     gestures = gestures,
                     sentencesOnPage = { sentences },
-                    renderPage = { _, _ -> null }
+                    renderPage = { _, _ -> null },
                 )
             }
         }
@@ -440,18 +439,18 @@ class ReaderPageTranslationTest {
             document = PickedDocument(
                 fileName = "moby-dick.pdf",
                 extension = "pdf",
-                location = "/library/moby-dick.pdf"
+                location = "/library/moby-dick.pdf",
             ),
             type = DocumentType.PDF,
             exists = true,
             sizeBytes = 1024L,
-            metadata = BookMetadata(title = "Moby-Dick")
+            metadata = BookMetadata(title = "Moby-Dick"),
         ),
         workingCopy = WorkingCopy(
             sourceLocation = "/library/moby-dick.pdf",
-            path = "/workspace/moby-dick.pdf"
+            path = "/workspace/moby-dick.pdf",
         ),
-        content = PagedContent(TwoWidePages)
+        content = PagedContent(TwoWidePages),
     )
 
     /**

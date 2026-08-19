@@ -32,7 +32,7 @@ fun <T> UiStateContent(
     loadingMessage: String? = null,
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
-    content: @Composable (T) -> Unit
+    content: @Composable (T) -> Unit,
 ) {
     AnimatedContent(
         targetState = state,
@@ -52,12 +52,12 @@ fun <T> UiStateContent(
                 is UiState.Success -> "success"
             }
         },
-        label = "uiState"
+        label = "uiState",
     ) { current ->
         when (current) {
             is UiState.Loading -> LoadingState(
                 message = loadingMessage,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             )
 
             is UiState.Failure -> ErrorState(
@@ -65,7 +65,7 @@ fun <T> UiStateContent(
                 message = current.error.displayMessage(),
                 actionLabel = actionLabel,
                 onAction = onAction,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             )
 
             is UiState.Success -> content(current.data)

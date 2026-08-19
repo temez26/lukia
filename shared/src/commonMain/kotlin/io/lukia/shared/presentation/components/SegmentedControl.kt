@@ -60,7 +60,7 @@ fun <T> SegmentedControl(
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    height: Dp = Dp.Unspecified
+    height: Dp = Dp.Unspecified,
 ) {
     if (options.isEmpty()) return
 
@@ -79,7 +79,7 @@ fun <T> SegmentedControl(
     val animatedIndex by animateFloatAsState(
         targetValue = selectedIndex.coerceAtLeast(0).toFloat(),
         animationSpec = LukiaMotion.gentle(),
-        label = "segmentedSelection"
+        label = "segmentedSelection",
     )
 
     BoxWithConstraints(
@@ -87,10 +87,10 @@ fun <T> SegmentedControl(
             .fillMaxWidth()
             .clip(trackShape)
             .background(
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (enabled) 1f else 0.5f)
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (enabled) 1f else 0.5f),
             )
             .height(trackHeight)
-            .padding(TrackPadding)
+            .padding(TrackPadding),
     ) {
         val segmentWidth = maxWidth / options.size
 
@@ -101,7 +101,7 @@ fun <T> SegmentedControl(
                     .width(segmentWidth)
                     .fillMaxHeight()
                     .clip(pillShape)
-                    .background(MaterialTheme.colorScheme.surface)
+                    .background(MaterialTheme.colorScheme.surface),
             )
         }
 
@@ -124,9 +124,9 @@ fun <T> SegmentedControl(
                             interactionSource = interactionSource,
                             indication = null,
                             role = Role.RadioButton,
-                            onClick = { onSelect(option) }
+                            onClick = { onSelect(option) },
                         )
-                        .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default)
+                        .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default),
                 ) {
                     Text(
                         text = label(option),
@@ -136,8 +136,8 @@ fun <T> SegmentedControl(
                         overflow = TextOverflow.Ellipsis,
                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                         color = MaterialTheme.colorScheme.onSurface.copy(
-                            alpha = if (enabled) 1f else LukiaAlpha.Disabled
-                        )
+                            alpha = if (enabled) 1f else LukiaAlpha.Disabled,
+                        ),
                     )
                 }
             }

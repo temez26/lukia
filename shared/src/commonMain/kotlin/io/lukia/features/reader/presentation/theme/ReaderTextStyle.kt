@@ -45,7 +45,7 @@ internal fun readerTextStyle(settings: ReaderSettings): TextStyle {
             fontFamily = when (settings.typeface) {
                 ReaderTypeface.Serif -> FontFamily.Serif
                 ReaderTypeface.SansSerif -> FontFamily.SansSerif
-            }
+            },
         )
     }
 }

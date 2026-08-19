@@ -24,7 +24,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonPrimitive
 
 /** Google's supported API, which wants a key and bills for what it translates. */
 private const val CLOUD_ENDPOINT = "https://translation.googleapis.com/language/translate/v2"
@@ -60,12 +59,12 @@ private const val PUBLIC_ENDPOINT = "https://translate.googleapis.com/translate_
 class GoogleTranslator(
     private val client: HttpClient,
     private val settings: TranslationSettingsRepository,
-    private val json: Json = Json { ignoreUnknownKeys = true }
+    private val json: Json = Json { ignoreUnknownKeys = true },
 ) : Translator {
 
     override suspend fun translate(
         request: TranslationRequest,
-        onPartial: (String) -> Unit
+        onPartial: (String) -> Unit,
     ): Translation {
         val configured = settings.settings.value
         val key = configured.googleApiKey
@@ -98,8 +97,8 @@ class GoogleTranslator(
                 CloudRequest(
                     q = listOf(request.text),
                     target = request.targetLanguage.tag,
-                    format = "text"
-                )
+                    format = "text",
+                ),
             )
         }
 
@@ -108,8 +107,8 @@ class GoogleTranslator(
                 AppError.Unexpected(
                     response.googleError()
                         ?: "Google would not translate that. Check the Cloud Translation " +
-                        "key in Settings."
-                )
+                        "key in Settings.",
+                ),
             )
         }
 
@@ -147,8 +146,8 @@ class GoogleTranslator(
                 AppError.Unexpected(
                     "Google would not answer. It limits how often it will be asked " +
                         "without a key - add a Cloud Translation key in Settings, or " +
-                        "look words up with the translator instead."
-                )
+                        "look words up with the translator instead.",
+                ),
             )
         }
 
@@ -171,7 +170,7 @@ class GoogleTranslator(
 private data class CloudRequest(
     val q: List<String>,
     val target: String,
-    val format: String
+    val format: String,
 )
 
 @Serializable
@@ -182,7 +181,7 @@ private data class CloudTranslations(val translations: List<CloudTranslation> = 
 
 @Serializable
 private data class CloudTranslation(
-    @SerialName("translatedText") val translatedText: String = ""
+    @SerialName("translatedText") val translatedText: String = "",
 )
 
 @Serializable

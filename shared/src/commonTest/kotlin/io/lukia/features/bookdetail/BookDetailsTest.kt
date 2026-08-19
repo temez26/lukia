@@ -17,12 +17,12 @@ class BookDetailsTest {
         document = TestDocuments.pdf(location = "/books/one.pdf"),
         type = DocumentType.PDF,
         exists = true,
-        sizeBytes = 1024L
+        sizeBytes = 1024L,
     )
 
     private fun details(pageIndex: Int, pageCount: Int) = BookDetails(
         document = book,
-        progress = ReadingProgress(pageIndex = pageIndex, pageCount = pageCount)
+        progress = ReadingProgress(pageIndex = pageIndex, pageCount = pageCount),
     )
 
     @Test

@@ -103,7 +103,7 @@ internal fun ReaderSettingsPanel(
     typographyEnabled: Boolean,
     onSettingsChange: (ReaderSettings) -> Unit,
     onDismissRequest: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val progress = rememberPopoverProgress(expanded, label = "readerSettingsPanel")
 
@@ -117,7 +117,7 @@ internal fun ReaderSettingsPanel(
     GlassSurface(
         shape = MaterialTheme.shapes.large,
         tone = GlassTone.Panel,
-        modifier = modifier.popoverTransition(progress, PanelTransformOrigin)
+        modifier = modifier.popoverTransition(progress, PanelTransformOrigin),
     ) {
         Column(
             modifier = Modifier
@@ -127,7 +127,7 @@ internal fun ReaderSettingsPanel(
                 // reach it.
                 .heightIn(max = if (wide) WidePanelMaxHeight else CompactPanelMaxHeight)
                 .verticalScroll(rememberScrollState())
-                .padding(vertical = Space.md)
+                .padding(vertical = Space.md),
         ) {
             SectionHeading(label = "Page", wide = wide, inset = inset)
 
@@ -136,7 +136,7 @@ internal fun ReaderSettingsPanel(
                     options = ReaderTheme.entries,
                     selected = settings.theme,
                     label = { it.name },
-                    onSelect = { onSettingsChange(settings.copy(theme = it)) }
+                    onSelect = { onSettingsChange(settings.copy(theme = it)) },
                 )
             }
 
@@ -150,21 +150,21 @@ internal fun ReaderSettingsPanel(
                     // between two presets, which is the honest answer.
                     selected = settings.matchingWidth,
                     label = { "${(it.fraction * 100).roundToInt()}%" },
-                    onSelect = { onSettingsChange(settings.withPageScale(it.fraction)) }
+                    onSelect = { onSettingsChange(settings.withPageScale(it.fraction)) },
                 )
             }
 
             LukiaDivider(
                 inset = inset,
                 endInset = inset,
-                modifier = Modifier.padding(vertical = Space.md)
+                modifier = Modifier.padding(vertical = Space.md),
             )
 
             SectionHeading(
                 label = "Text",
                 wide = wide,
                 inset = inset,
-                enabled = typographyEnabled
+                enabled = typographyEnabled,
             )
 
             // Placed before the controls it explains, so it is read first
@@ -179,8 +179,8 @@ internal fun ReaderSettingsPanel(
                         start = inset,
                         end = inset,
                         top = Space.xxs,
-                        bottom = Space.md
-                    )
+                        bottom = Space.md,
+                    ),
                 )
             }
 
@@ -188,12 +188,12 @@ internal fun ReaderSettingsPanel(
                 label = "Text size",
                 wide = wide,
                 inset = inset,
-                enabled = typographyEnabled
+                enabled = typographyEnabled,
             ) {
                 TextSizeStepper(
                     settings = settings,
                     enabled = typographyEnabled,
-                    onSettingsChange = onSettingsChange
+                    onSettingsChange = onSettingsChange,
                 )
             }
 
@@ -201,14 +201,14 @@ internal fun ReaderSettingsPanel(
                 label = "Line spacing",
                 wide = wide,
                 inset = inset,
-                enabled = typographyEnabled
+                enabled = typographyEnabled,
             ) {
                 SegmentedControl(
                     options = LineSpacing.entries,
                     selected = settings.lineSpacing,
                     label = { it.name },
                     enabled = typographyEnabled,
-                    onSelect = { onSettingsChange(settings.copy(lineSpacing = it)) }
+                    onSelect = { onSettingsChange(settings.copy(lineSpacing = it)) },
                 )
             }
 
@@ -216,14 +216,14 @@ internal fun ReaderSettingsPanel(
                 label = "Typeface",
                 wide = wide,
                 inset = inset,
-                enabled = typographyEnabled
+                enabled = typographyEnabled,
             ) {
                 SegmentedControl(
                     options = ReaderTypeface.entries,
                     selected = settings.typeface,
                     label = { if (it == ReaderTypeface.Serif) "Serif" else "Sans" },
                     enabled = typographyEnabled,
-                    onSelect = { onSettingsChange(settings.copy(typeface = it)) }
+                    onSelect = { onSettingsChange(settings.copy(typeface = it)) },
                 )
             }
 
@@ -231,7 +231,7 @@ internal fun ReaderSettingsPanel(
                 LukiaDivider(
                     inset = inset,
                     endInset = inset,
-                    modifier = Modifier.padding(vertical = Space.md)
+                    modifier = Modifier.padding(vertical = Space.md),
                 )
                 SectionHeading(label = "Keyboard", wide = true, inset = inset)
                 ShortcutList(reflowable = typographyEnabled, inset = inset)
@@ -260,7 +260,7 @@ private fun ShortcutList(reflowable: Boolean, inset: Dp) {
         // do depends on the book, since there is no widening a re-set page.
         (if (reflowable) "Larger, smaller" else "Wider, narrower") to "+  −  0",
         "Contents, settings" to "C  T",
-        "Close book" to "Esc"
+        "Close book" to "Esc",
     )
 
     shortcuts.forEach { (action, keys) ->
@@ -268,14 +268,14 @@ private fun ShortcutList(reflowable: Boolean, inset: Dp) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = inset, vertical = Space.xxs)
+                .padding(horizontal = inset, vertical = Space.xxs),
         ) {
             Text(
                 text = action,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
 
             Text(
@@ -283,7 +283,7 @@ private fun ShortcutList(reflowable: Boolean, inset: Dp) {
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1
+                maxLines = 1,
             )
         }
     }
@@ -303,23 +303,23 @@ private fun SettingGroup(
     wide: Boolean,
     inset: Dp,
     enabled: Boolean = true,
-    control: @Composable () -> Unit
+    control: @Composable () -> Unit,
 ) {
     if (wide) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = inset, vertical = Space.xs)
+                .padding(horizontal = inset, vertical = Space.xs),
         ) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface.copy(
-                    alpha = if (enabled) 1f else LukiaAlpha.Disabled
+                    alpha = if (enabled) 1f else LukiaAlpha.Disabled,
                 ),
                 maxLines = 1,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
 
             Box(modifier = Modifier.width(WideControlWidth)) {
@@ -330,12 +330,12 @@ private fun SettingGroup(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = inset, vertical = Space.sm)
+                .padding(horizontal = inset, vertical = Space.sm),
         ) {
             SectionLabel(
                 text = label,
                 enabled = enabled,
-                modifier = Modifier.padding(bottom = Space.sm)
+                modifier = Modifier.padding(bottom = Space.sm),
             )
 
             control()
@@ -357,7 +357,7 @@ private fun SectionHeading(
     label: String,
     wide: Boolean,
     inset: Dp,
-    enabled: Boolean = true
+    enabled: Boolean = true,
 ) {
     if (!wide) return
 
@@ -368,8 +368,8 @@ private fun SectionHeading(
             start = inset,
             end = inset,
             top = Space.sm,
-            bottom = Space.xxs
-        )
+            bottom = Space.xxs,
+        ),
     )
 }
 
@@ -385,7 +385,7 @@ private fun SectionHeading(
 private fun TextSizeStepper(
     settings: ReaderSettings,
     enabled: Boolean,
-    onSettingsChange: (ReaderSettings) -> Unit
+    onSettingsChange: (ReaderSettings) -> Unit,
 ) {
     val metrics = LocalLukiaMetrics.current
 
@@ -395,16 +395,16 @@ private fun TextSizeStepper(
             .fillMaxWidth()
             .clip(MaterialTheme.shapes.small)
             .background(
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (enabled) 1f else 0.5f)
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (enabled) 1f else 0.5f),
             )
             .height(metrics.controlHeight)
-            .padding(2.dp)
+            .padding(2.dp),
     ) {
         StepperButton(
             symbolSize = 12.sp,
             label = "Decrease text size",
             enabled = enabled && settings.canReduceText,
-            onClick = { onSettingsChange(settings.withSmallerText()) }
+            onClick = { onSettingsChange(settings.withSmallerText()) },
         )
 
         Text(
@@ -413,18 +413,18 @@ private fun TextSizeStepper(
             textAlign = TextAlign.Center,
             maxLines = 1,
             color = MaterialTheme.colorScheme.onSurface.copy(
-                alpha = if (enabled) 1f else LukiaAlpha.Disabled
+                alpha = if (enabled) 1f else LukiaAlpha.Disabled,
             ),
             modifier = Modifier
                 .weight(1f)
-                .semantics { contentDescription = "Text size ${settings.textScalePercent} percent" }
+                .semantics { contentDescription = "Text size ${settings.textScalePercent} percent" },
         )
 
         StepperButton(
             symbolSize = 17.sp,
             label = "Increase text size",
             enabled = enabled && settings.canEnlargeText,
-            onClick = { onSettingsChange(settings.withLargerText()) }
+            onClick = { onSettingsChange(settings.withLargerText()) },
         )
     }
 }
@@ -443,7 +443,7 @@ private fun StepperButton(
     symbolSize: TextUnit,
     label: String,
     enabled: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val shape = MaterialTheme.shapes.extraSmall
@@ -463,17 +463,17 @@ private fun StepperButton(
                 interactionSource = interactionSource,
                 indication = null,
                 onClickLabel = label,
-                onClick = onClick
+                onClick = onClick,
             )
-            .semantics { contentDescription = label }
+            .semantics { contentDescription = label },
     ) {
         Text(
             text = "A",
             fontSize = symbolSize,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface.copy(
-                alpha = if (enabled) 1f else LukiaAlpha.Disabled
-            )
+                alpha = if (enabled) 1f else LukiaAlpha.Disabled,
+            ),
         )
     }
 }
@@ -488,7 +488,7 @@ private fun StepperButton(
 @Composable
 internal fun TextSettingsGlyph(
     tint: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(contentAlignment = Alignment.Center, modifier = modifier) {
         Text(
@@ -498,7 +498,7 @@ internal fun TextSettingsGlyph(
             fontFamily = FontFamily.Serif,
             color = tint,
             maxLines = 1,
-            modifier = Modifier.wrapContentSize(unbounded = true)
+            modifier = Modifier.wrapContentSize(unbounded = true),
         )
     }
 }

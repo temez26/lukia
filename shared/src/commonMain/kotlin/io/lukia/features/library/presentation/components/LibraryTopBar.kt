@@ -98,7 +98,7 @@ internal fun LibraryNavBar(
     onImport: () -> Unit,
     onImportFolder: () -> Unit,
     onSettings: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val dimens = LocalLukiaDimens.current
     val compact = !isWideWindow
@@ -126,9 +126,9 @@ internal fun LibraryNavBar(
                     color = hairlineColor.copy(alpha = progress),
                     start = Offset(0f, size.height),
                     end = Offset(size.width, size.height),
-                    strokeWidth = 1f
+                    strokeWidth = 1f,
                 )
-            }
+            },
     ) {
         // Its contents follow the grid's own measure instead, so the search field
         // stays beside the books rather than out at the edge of a wide window.
@@ -137,7 +137,7 @@ internal fun LibraryNavBar(
             modifier = Modifier
                 .widthIn(max = dimens.maxGridWidth)
                 .fillMaxSize()
-                .padding(horizontal = dimens.screenPadding)
+                .padding(horizontal = dimens.screenPadding),
         ) {
             // A phone gives the field the whole row, having nothing else to put
             // there. Anything wider keeps it beside the button, where a toolbar
@@ -152,7 +152,7 @@ internal fun LibraryNavBar(
                     Modifier.weight(1f)
                 } else {
                     Modifier.width(ToolbarSearchWidth)
-                }
+                },
             )
 
             Spacer(modifier = Modifier.width(Space.md))
@@ -160,7 +160,7 @@ internal fun LibraryNavBar(
             Box {
                 MenuButton(
                     expanded = menuExpanded,
-                    onClick = { onMenuExpandedChange(!menuExpanded) }
+                    onClick = { onMenuExpandedChange(!menuExpanded) },
                 )
 
                 LibraryMenu(
@@ -168,7 +168,7 @@ internal fun LibraryNavBar(
                     onDismissRequest = { onMenuExpandedChange(false) },
                     onImport = onImport,
                     onImportFolder = onImportFolder,
-                    onSettings = onSettings
+                    onSettings = onSettings,
                 )
             }
         }
@@ -188,18 +188,18 @@ internal fun LibraryNavBar(
 @Composable
 private fun MenuButton(
     expanded: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val openness by animateFloatAsState(
         targetValue = if (expanded) 1f else 0f,
         animationSpec = LukiaMotion.standard(),
-        label = "menuButtonOpenness"
+        label = "menuButtonOpenness",
     )
 
     LukiaIconButton(
         label = if (expanded) "Close menu" else "Library actions",
         onClick = onClick,
-        variant = IconButtonVariant.Filled
+        variant = IconButtonVariant.Filled,
     ) { tint, glyph ->
         // The two glyphs cross-fade in place, and the close mark turns in as it
         // arrives, so the swap reads as one control changing rather than as two
@@ -209,7 +209,7 @@ private fun MenuButton(
                 tint = tint,
                 modifier = Modifier
                     .fillMaxSize()
-                    .graphicsLayer { alpha = 1f - openness }
+                    .graphicsLayer { alpha = 1f - openness },
             )
 
             PlusGlyph(
@@ -219,7 +219,7 @@ private fun MenuButton(
                     .graphicsLayer {
                         alpha = openness
                         rotationZ = 45f * openness
-                    }
+                    },
             )
         }
     }
@@ -239,7 +239,7 @@ private fun MenuButton(
 internal fun ColumnScope.ImportMenuRows(
     onDismissRequest: () -> Unit,
     onImport: () -> Unit,
-    onImportFolder: () -> Unit
+    onImportFolder: () -> Unit,
 ) {
     MenuRow(
         label = "Import Books",
@@ -247,7 +247,7 @@ internal fun ColumnScope.ImportMenuRows(
         onClick = {
             onDismissRequest()
             onImport()
-        }
+        },
     )
 
     MenuSeparator()
@@ -258,7 +258,7 @@ internal fun ColumnScope.ImportMenuRows(
         onClick = {
             onDismissRequest()
             onImportFolder()
-        }
+        },
     )
 }
 
@@ -268,16 +268,16 @@ private fun LibraryMenu(
     onDismissRequest: () -> Unit,
     onImport: () -> Unit,
     onImportFolder: () -> Unit,
-    onSettings: () -> Unit
+    onSettings: () -> Unit,
 ) {
     AnchoredMenu(
         expanded = expanded,
-        onDismissRequest = onDismissRequest
+        onDismissRequest = onDismissRequest,
     ) {
         ImportMenuRows(
             onDismissRequest = onDismissRequest,
             onImport = onImport,
-            onImportFolder = onImportFolder
+            onImportFolder = onImportFolder,
         )
 
         MenuSeparator()
@@ -288,7 +288,7 @@ private fun LibraryMenu(
             onClick = {
                 onDismissRequest()
                 onSettings()
-            }
+            },
         )
     }
 }

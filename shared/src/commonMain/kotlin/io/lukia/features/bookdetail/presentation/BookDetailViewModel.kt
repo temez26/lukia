@@ -23,7 +23,7 @@ class BookDetailViewModel(
     private val getDocumentDetailsUseCase: GetDocumentDetailsUseCase,
     private val setFavoriteUseCase: SetFavoriteUseCase,
     private val refreshDocumentUseCase: RefreshDocumentUseCase,
-    private val removeDocumentUseCase: RemoveDocumentUseCase
+    private val removeDocumentUseCase: RemoveDocumentUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState<BookDetails>>(UiState.Loading)
@@ -54,7 +54,7 @@ class BookDetailViewModel(
                             ?.let { UiState.Success(it) }
                             ?: UiState.Failure(AppError.DocumentNotFound)
                     },
-                    onFailure = { UiState.Failure(it.toAppError()) }
+                    onFailure = { UiState.Failure(it.toAppError()) },
                 )
         }
     }

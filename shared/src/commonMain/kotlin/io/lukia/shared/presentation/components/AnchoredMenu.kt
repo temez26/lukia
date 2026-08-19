@@ -71,7 +71,7 @@ fun AnchoredMenu(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
     minWidth: Dp = 196.dp,
-    content: @Composable ColumnScope.() -> Unit
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     val progress = rememberPopoverProgress(expanded, label = "anchoredMenu")
 
@@ -86,15 +86,15 @@ fun AnchoredMenu(
     Popup(
         popupPositionProvider = positionProvider,
         onDismissRequest = onDismissRequest,
-        properties = PopupProperties(focusable = false)
+        properties = PopupProperties(focusable = false),
     ) {
         GlassSurface(
             shape = MaterialTheme.shapes.medium,
             tone = GlassTone.Panel,
             modifier = modifier.popoverTransition(
                 progress = progress,
-                transformOrigin = TransformOrigin(1f, 0f)
-            )
+                transformOrigin = TransformOrigin(1f, 0f),
+            ),
         ) {
             // Intrinsic width, not wrap: the rows below fill the menu's width,
             // and inside a Popup "fill" means the whole window unless the column
@@ -103,7 +103,7 @@ fun AnchoredMenu(
                 modifier = Modifier
                     .widthIn(min = minWidth)
                     .width(IntrinsicSize.Max),
-                content = content
+                content = content,
             )
         }
     }
@@ -132,7 +132,7 @@ fun MenuRow(
     modifier: Modifier = Modifier,
     tint: Color = MaterialTheme.colorScheme.onSurface,
     selected: Boolean = false,
-    icon: (@Composable (Color, Modifier) -> Unit)? = null
+    icon: (@Composable (Color, Modifier) -> Unit)? = null,
 ) {
     val metrics = LocalLukiaMetrics.current
     val interactionSource = remember { MutableInteractionSource() }
@@ -150,14 +150,14 @@ fun MenuRow(
                 interactionSource = interactionSource,
                 indication = null,
                 onClickLabel = label,
-                onClick = onClick
+                onClick = onClick,
             )
             .heightIn(min = metrics.rowHeight)
             .padding(horizontal = MenuInset, vertical = Space.sm)
             .semantics {
                 contentDescription = label
                 this.selected = selected
-            }
+            },
     ) {
         if (icon != null) {
             icon(tint, Modifier.size(metrics.iconSmall))
@@ -168,7 +168,7 @@ fun MenuRow(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
             color = tint,
-            maxLines = 1
+            maxLines = 1,
         )
 
         if (selected) {
@@ -178,7 +178,7 @@ fun MenuRow(
 
             CheckGlyph(
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(metrics.iconSmall)
+                modifier = Modifier.size(metrics.iconSmall),
             )
         }
     }
@@ -196,14 +196,14 @@ fun MenuSeparator() {
  * open below the screen - does not push its menu out of sight.
  */
 private class AnchoredMenuPositionProvider(
-    private val gapPx: Int
+    private val gapPx: Int,
 ) : PopupPositionProvider {
 
     override fun calculatePosition(
         anchorBounds: IntRect,
         windowSize: IntSize,
         layoutDirection: LayoutDirection,
-        popupContentSize: IntSize
+        popupContentSize: IntSize,
     ): IntOffset {
         val x = if (layoutDirection == LayoutDirection.Ltr) {
             anchorBounds.right - popupContentSize.width
@@ -214,7 +214,7 @@ private class AnchoredMenuPositionProvider(
         return IntOffset(
             x = x.coerceIn(0, (windowSize.width - popupContentSize.width).coerceAtLeast(0)),
             y = (anchorBounds.bottom + gapPx)
-                .coerceIn(0, (windowSize.height - popupContentSize.height).coerceAtLeast(0))
+                .coerceIn(0, (windowSize.height - popupContentSize.height).coerceAtLeast(0)),
         )
     }
 }

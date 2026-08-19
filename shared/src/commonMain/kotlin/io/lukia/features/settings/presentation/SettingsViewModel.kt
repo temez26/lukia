@@ -15,9 +15,9 @@ import io.lukia.features.translate.domain.ModelWarmUp
 import io.lukia.features.translate.domain.PassageUnit
 import io.lukia.features.translate.domain.TargetLanguage
 import io.lukia.features.translate.domain.TranslationContext
+import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.domain.TranslationProvider
 import io.lukia.features.translate.domain.TranslationRequest
-import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.domain.TranslationSettings
 import io.lukia.features.translate.domain.WordLookup
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
@@ -104,7 +104,7 @@ class SettingsViewModel(
     private val translation: TranslationSettingsRepository,
     private val translatePassage: TranslatePassageUseCase,
     private val catalogue: ModelCatalogue,
-    private val warmUp: ModelWarmUp
+    private val warmUp: ModelWarmUp,
 ) : ViewModel() {
 
     val settings: StateFlow<AppSettings> = repository.settings
@@ -232,7 +232,7 @@ class SettingsViewModel(
         viewModelScope.launch {
             _availableModels.value = runCatchingApp { catalogue.models() }.fold(
                 onSuccess = { AvailableModels.Loaded(it) },
-                onFailure = { AvailableModels.Failed(it.toAppError()) }
+                onFailure = { AvailableModels.Failed(it.toAppError()) },
             )
         }
     }
@@ -255,7 +255,7 @@ class SettingsViewModel(
         warming = viewModelScope.launch {
             _modelReadiness.value = runCatchingApp { warmUp.warmUp() }.fold(
                 onSuccess = { ModelReadiness.Ready },
-                onFailure = { ModelReadiness.Failed(it.toAppError()) }
+                onFailure = { ModelReadiness.Failed(it.toAppError()) },
             )
         }
     }
@@ -283,12 +283,12 @@ class SettingsViewModel(
             val request = TranslationRequest(
                 text = SAMPLE_SENTENCE,
                 targetLanguage = translation.settings.value.targetLanguage,
-                context = TranslationContext.None
+                context = TranslationContext.None,
             )
 
             _connectionTest.value = translatePassage(request).fold(
                 onSuccess = { ConnectionTest.Worked(it.text) },
-                onFailure = { ConnectionTest.Failed(it.toAppError()) }
+                onFailure = { ConnectionTest.Failed(it.toAppError()) },
             )
         }
     }

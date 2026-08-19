@@ -4,8 +4,8 @@ import io.lukia.core.domain.FakeSecretStore
 import io.lukia.core.domain.FakeSettingsStore
 import io.lukia.features.translate.domain.PassageUnit
 import io.lukia.features.translate.domain.TargetLanguage
-import io.lukia.features.translate.domain.TranslationProvider
 import io.lukia.features.translate.domain.TranslationGestures
+import io.lukia.features.translate.domain.TranslationProvider
 import io.lukia.features.translate.domain.TranslationSettings
 import io.lukia.features.translate.domain.WordLookup
 import kotlin.test.Test
@@ -42,8 +42,8 @@ class TranslationSettingsRepositoryTest {
         TranslationSettingsRepository(store, secrets).update(
             TranslationSettings(
                 targetLanguage = TargetLanguage.Finnish,
-                provider = TranslationProvider.OpenAi
-            ).withModel("gpt-4o-mini").withApiKey("sk-test")
+                provider = TranslationProvider.OpenAi,
+            ).withModel("gpt-4o-mini").withApiKey("sk-test"),
         )
 
         val reopened = TranslationSettingsRepository(store, secrets).settings.value
@@ -54,7 +54,6 @@ class TranslationSettingsRepositoryTest {
         assertEquals("sk-test", reopened.apiKey)
         assertTrue(reopened.isConfigured)
     }
-
 
     /**
      * The word lookup, the Google key and what the two gestures do all survive
@@ -68,7 +67,7 @@ class TranslationSettingsRepositoryTest {
         TranslationSettingsRepository(store, secrets).update(
             TranslationSettings()
                 .withWordLookup(WordLookup.Wiktionary)
-                .withGoogleApiKey("google-key")
+                .withGoogleApiKey("google-key"),
         )
 
         val reopened = TranslationSettingsRepository(store, secrets).settings.value
@@ -84,8 +83,8 @@ class TranslationSettingsRepositoryTest {
 
         TranslationSettingsRepository(store, secrets).update(
             TranslationSettings().withGestures(
-                TranslationGestures(tap = PassageUnit.Paragraph, longPress = PassageUnit.Sentence)
-            )
+                TranslationGestures(tap = PassageUnit.Paragraph, longPress = PassageUnit.Sentence),
+            ),
         )
 
         val reopened = TranslationSettingsRepository(store, secrets).settings.value
@@ -100,7 +99,7 @@ class TranslationSettingsRepositoryTest {
         val store = FakeSettingsStore()
 
         TranslationSettingsRepository(store, secrets).update(
-            TranslationSettings().withGestures(TranslationGestures(tap = null, longPress = null))
+            TranslationSettings().withGestures(TranslationGestures(tap = null, longPress = null)),
         )
 
         val reopened = TranslationSettingsRepository(store, secrets).settings.value
@@ -132,12 +131,12 @@ class TranslationSettingsRepositoryTest {
         assertEquals(TranslationProvider.Anthropic.defaultTimeoutSeconds, settings.timeoutSeconds)
         assertEquals(
             TranslationProvider.Local.defaultTimeoutSeconds,
-            settings.timeoutSecondsFor(TranslationProvider.Local)
+            settings.timeoutSecondsFor(TranslationProvider.Local),
         )
         assertTrue(
             TranslationProvider.Local.defaultTimeoutSeconds >
                 TranslationProvider.Anthropic.defaultTimeoutSeconds,
-            "a local model is given no longer to load than a hosted one takes to answer"
+            "a local model is given no longer to load than a hosted one takes to answer",
         )
     }
 
@@ -146,7 +145,7 @@ class TranslationSettingsRepositoryTest {
         val store = FakeSettingsStore()
 
         TranslationSettingsRepository(store, secrets).update(
-            TranslationSettings(provider = TranslationProvider.Local).withTimeoutSeconds(600)
+            TranslationSettings(provider = TranslationProvider.Local).withTimeoutSeconds(600),
         )
 
         val reopened = TranslationSettingsRepository(store, secrets).settings.value
@@ -164,11 +163,11 @@ class TranslationSettingsRepositoryTest {
 
         assertEquals(
             TranslationSettings.TimeoutSecondsRange.first,
-            settings.withTimeoutSeconds(0).timeoutSeconds
+            settings.withTimeoutSeconds(0).timeoutSeconds,
         )
         assertEquals(
             TranslationSettings.TimeoutSecondsRange.last,
-            settings.withTimeoutSeconds(999_999).timeoutSeconds
+            settings.withTimeoutSeconds(999_999).timeoutSeconds,
         )
     }
 

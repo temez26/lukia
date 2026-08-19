@@ -30,7 +30,7 @@ class PdfPageTextTest {
 
     private val root = File(
         System.getProperty("java.io.tmpdir"),
-        "lukia-pagetext-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}"
+        "lukia-pagetext-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}",
     ).apply { mkdirs() }
 
     @AfterTest
@@ -89,8 +89,8 @@ class PdfPageTextTest {
             "Call me Ishmael.",
             sentences.sentenceAt(
                 x = bounds.left + bounds.width / 2,
-                y = bounds.top + bounds.height / 2
-            )?.text
+                y = bounds.top + bounds.height / 2,
+            )?.text,
         )
         assertNull(sentences.sentenceAt(x = bounds.left, y = bounds.bottom + 100f))
         pages.close()
@@ -135,6 +135,6 @@ class PdfPageTextTest {
 
                 document.save(file)
             }
-        }.absolutePath
+        }.absolutePath,
     )
 }

@@ -23,7 +23,7 @@ import kotlinx.coroutines.withContext
 class SqlLibraryRepository(
     database: LukiaDatabase,
     /** Injectable so tests can run against a database deterministically. */
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : LibraryRepository {
 
     private val documents = database.documentQueries
@@ -54,7 +54,7 @@ class SqlLibraryRepository(
                 metaLanguage = metadata?.language,
                 metaDescription = metadata?.description,
                 metaSubjects = metadata?.subjects.toStoredList(),
-                metaIdentifier = metadata?.identifier
+                metaIdentifier = metadata?.identifier,
             )
 
             documents.refresh(
@@ -73,7 +73,7 @@ class SqlLibraryRepository(
                 metaDescription = metadata?.description,
                 metaSubjects = metadata?.subjects.toStoredList(),
                 metaIdentifier = metadata?.identifier,
-                location = picked.location
+                location = picked.location,
             )
         }
     }
@@ -116,14 +116,14 @@ private fun Document.toDocumentInfo(): DocumentInfo = DocumentInfo(
     document = PickedDocument(
         fileName = fileName,
         extension = extension,
-        location = location
+        location = location,
     ),
     type = DocumentType.entries.firstOrNull { it.name == type } ?: DocumentType.UNKNOWN,
     exists = fileExists,
     sizeBytes = sizeBytes,
     coverImage = coverImage?.let { CoverImage(it) },
     isFavorite = isFavorite,
-    metadata = storedMetadata()
+    metadata = storedMetadata(),
 )
 
 /**
@@ -139,7 +139,7 @@ private fun Document.storedMetadata(): BookMetadata? {
         language = metaLanguage,
         description = metaDescription,
         subjects = metaSubjects.fromStoredList(),
-        identifier = metaIdentifier
+        identifier = metaIdentifier,
     )
 
     return metadata.takeIf { !it.isEmpty }

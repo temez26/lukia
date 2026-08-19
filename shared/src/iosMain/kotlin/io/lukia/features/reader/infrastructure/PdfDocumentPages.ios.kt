@@ -107,7 +107,7 @@ private class IOSDocumentPages(path: String) : DocumentPages {
 
                     val thumbnail = page.thumbnailOfSize(
                         CGSizeMake(widthPoints, heightPoints),
-                        forBox = kPDFDisplayBoxCropBox
+                        forBox = kPDFDisplayBoxCropBox,
                     )
 
                     UIImagePNGRepresentation(thumbnail)
@@ -164,8 +164,8 @@ private class IOSDocumentPages(path: String) : DocumentPages {
                         left = left.toFloat(),
                         top = (bottom - size.height).toFloat(),
                         right = (left + size.width).toFloat(),
-                        bottom = bottom.toFloat()
-                    )
+                        bottom = bottom.toFloat(),
+                    ),
                 )
             }
         }

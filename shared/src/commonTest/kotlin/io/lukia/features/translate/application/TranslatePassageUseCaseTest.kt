@@ -56,7 +56,7 @@ class TranslatePassageUseCaseTest {
 
         assertEquals(
             "\"piece\" reads as a weapon here.",
-            useCase(request()).getOrThrow().note
+            useCase(request()).getOrThrow().note,
         )
     }
 
@@ -103,7 +103,7 @@ class TranslatePassageUseCaseTest {
 
     private fun request(text: String = "Call me Ishmael.") = TranslationRequest(
         text = text,
-        targetLanguage = TargetLanguage.Finnish
+        targetLanguage = TargetLanguage.Finnish,
     )
 
     private fun Result<*>.errorOrNull(): AppError? = exceptionOrNull()?.toAppError()
@@ -111,5 +111,5 @@ class TranslatePassageUseCaseTest {
 
 /** Reads better than an object at every call site, and the port is one function. */
 private fun TranslatePassageUseCase(
-    translate: suspend (TranslationRequest) -> Translation
+    translate: suspend (TranslationRequest) -> Translation,
 ) = TranslatePassageUseCase(Translator { request, _ -> translate(request) })

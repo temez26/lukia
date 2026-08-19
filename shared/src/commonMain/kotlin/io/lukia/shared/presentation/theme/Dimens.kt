@@ -22,7 +22,8 @@ enum class WindowWidthClass {
     Compact,
     Medium,
     Expanded,
-    Large;
+    Large,
+    ;
 
     companion object {
         fun fromWidth(width: Dp): WindowWidthClass = when {
@@ -82,7 +83,7 @@ data class LukiaDimens(
     /** Gap between one block of content and the next within a screen. */
     val sectionSpacing: Dp,
     /** Inset from a floating panel's edge to its contents. */
-    val panelPadding: Dp
+    val panelPadding: Dp,
 )
 
 private val CompactDimens = LukiaDimens(
@@ -97,7 +98,7 @@ private val CompactDimens = LukiaDimens(
     maxReaderWidth = Dp.Unspecified,
     detailCoverWidth = 200.dp,
     sectionSpacing = 22.dp,
-    panelPadding = 16.dp
+    panelPadding = 16.dp,
 )
 
 private val MediumDimens = LukiaDimens(
@@ -110,7 +111,7 @@ private val MediumDimens = LukiaDimens(
     maxReaderWidth = 720.dp,
     detailCoverWidth = 200.dp,
     sectionSpacing = 22.dp,
-    panelPadding = 14.dp
+    panelPadding = 14.dp,
 )
 
 private val ExpandedDimens = LukiaDimens(
@@ -123,7 +124,7 @@ private val ExpandedDimens = LukiaDimens(
     maxReaderWidth = 800.dp,
     detailCoverWidth = 208.dp,
     sectionSpacing = 24.dp,
-    panelPadding = 14.dp
+    panelPadding = 14.dp,
 )
 
 /**
@@ -145,7 +146,7 @@ private val LargeDimens = LukiaDimens(
     maxReaderWidth = 860.dp,
     detailCoverWidth = 220.dp,
     sectionSpacing = 26.dp,
-    panelPadding = 14.dp
+    panelPadding = 14.dp,
 )
 
 internal fun dimensFor(widthClass: WindowWidthClass): LukiaDimens = when (widthClass) {

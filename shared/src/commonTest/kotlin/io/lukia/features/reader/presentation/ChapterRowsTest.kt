@@ -14,7 +14,7 @@ class ChapterRowsTest {
         entry("A Section", page = 129, level = 1),
         entry("A Sub-section", page = 133, level = 2),
         entry("Another Section", page = 140, level = 1),
-        entry("The End", page = 300, level = 0)
+        entry("The End", page = 300, level = 0),
     )
 
     /** A chapter is a chapter because of what follows it, not because of itself. */
@@ -42,7 +42,7 @@ class ChapterRowsTest {
 
         assertEquals(
             listOf("Introduction", "The Middle", "The End"),
-            rows.map { it.entry.title }
+            rows.map { it.entry.title },
         )
         assertTrue(rows.first { it.entry.title == "The Middle" }.isCollapsed)
     }
@@ -54,7 +54,7 @@ class ChapterRowsTest {
 
         assertEquals(
             listOf("Introduction", "The Middle", "A Section", "Another Section", "The End"),
-            rows.map { it.entry.title }
+            rows.map { it.entry.title },
         )
     }
 

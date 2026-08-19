@@ -13,7 +13,7 @@ data class Sentence(
     val index: Int,
     val start: Int,
     val end: Int,
-    val text: String
+    val text: String,
 )
 
 /**
@@ -85,7 +85,7 @@ private val CLOSERS = charArrayOf('"', '\'', '»', '”', '’', ')', ']', '」'
  */
 private val ABBREVIATIONS = setOf(
     "mr", "mrs", "ms", "mx", "dr", "prof", "rev", "hon", "st", "jr", "sr",
-    "vs", "etc", "ie", "eg", "cf", "al", "fig", "vol", "ch", "pp", "approx"
+    "vs", "etc", "ie", "eg", "cf", "al", "fig", "vol", "ch", "pp", "approx",
 )
 
 /**

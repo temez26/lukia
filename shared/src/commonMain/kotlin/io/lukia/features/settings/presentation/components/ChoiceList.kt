@@ -47,7 +47,7 @@ internal fun <T> ChoiceList(
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
     /** A second line under the label, for a choice whose name is not the whole story. */
-    detail: (T) -> String? = { null }
+    detail: (T) -> String? = { null },
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         options.forEachIndexed { index, option ->
@@ -55,7 +55,7 @@ internal fun <T> ChoiceList(
                 // Inset past the tick so the rules line up under the labels
                 // rather than cutting across the whole card.
                 LukiaDivider(
-                    modifier = Modifier.padding(start = CheckSize + Space.md)
+                    modifier = Modifier.padding(start = CheckSize + Space.md),
                 )
             }
 
@@ -63,7 +63,7 @@ internal fun <T> ChoiceList(
                 label = label(option),
                 detail = detail(option),
                 selected = option == selected,
-                onSelect = { onSelect(option) }
+                onSelect = { onSelect(option) },
             )
         }
     }
@@ -74,7 +74,7 @@ private fun ChoiceRow(
     label: String,
     detail: String?,
     selected: Boolean,
-    onSelect: () -> Unit
+    onSelect: () -> Unit,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -82,14 +82,14 @@ private fun ChoiceRow(
             .fillMaxWidth()
             .selectable(selected = selected, role = Role.RadioButton, onClick = onSelect)
             .pointerHoverIcon(PointerIcon.Hand)
-            .padding(vertical = RowPadding)
+            .padding(vertical = RowPadding),
     ) {
         // The tick's space is held whether or not it is drawn, so choosing a
         // different row moves nothing but the tick.
         if (selected) {
             CheckGlyph(
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(CheckSize)
+                modifier = Modifier.size(CheckSize),
             )
         } else {
             Spacer(modifier = Modifier.size(CheckSize))
@@ -102,14 +102,14 @@ private fun ChoiceRow(
                 text = label,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
 
             if (detail != null) {
                 Text(
                     text = detail,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }

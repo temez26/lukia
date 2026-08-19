@@ -12,5 +12,5 @@ import io.lukia.core.infrastructure.db.LukiaDatabase
  * questions with whatever the stand-in was written to believe.
  */
 internal fun testDatabase(): LukiaDatabase = LukiaDatabase(
-    JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY, schema = LukiaDatabase.Schema)
+    JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY, schema = LukiaDatabase.Schema),
 )

@@ -15,14 +15,14 @@ import java.util.Properties
  */
 fun lukiaSqlDriver(
     /** Injectable so tests can work in a temporary directory. */
-    file: File = File(lukiaAppDirectory(), DATABASE_FILE)
+    file: File = File(lukiaAppDirectory(), DATABASE_FILE),
 ): SqlDriver {
     file.parentFile?.mkdirs()
 
     return JdbcSqliteDriver(
         url = "jdbc:sqlite:${file.absolutePath}",
         properties = Properties(),
-        schema = LukiaDatabase.Schema
+        schema = LukiaDatabase.Schema,
     )
 }
 

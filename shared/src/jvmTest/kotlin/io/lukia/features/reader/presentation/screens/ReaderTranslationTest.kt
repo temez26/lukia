@@ -7,12 +7,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.click
-import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runComposeUiTest
 import io.lukia.core.domain.AppError
@@ -32,9 +32,9 @@ import io.lukia.features.reader.domain.TextSection
 import io.lukia.features.reader.presentation.TranslateOnScreen
 import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.PassageUnit
-import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.Translation
+import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.presentation.PassageSelection
 import io.lukia.features.translate.presentation.PassageTranslation
 import io.lukia.shared.presentation.theme.LukiaTheme
@@ -124,9 +124,9 @@ class ReaderTranslationTest {
         setReader(
             translations = {
                 mapOf(
-                    TextAnchor.Section(0, 0, 0) to PassageTranslation.Ready(Translation(translated))
+                    TextAnchor.Section(0, 0, 0) to PassageTranslation.Ready(Translation(translated)),
                 )
-            }
+            },
         )
 
         onNodeWithText(translated, substring = true).assertExists()
@@ -142,16 +142,16 @@ class ReaderTranslationTest {
                 mapOf(
                     TextAnchor.Section(0, 0, 0) to PassageTranslation.Ready(
                         translation = Translation(translated),
-                        showingOriginal = true
-                    )
+                        showingOriginal = true,
+                    ),
                 )
-            }
+            },
         )
 
         onNodeWithText(opening, substring = true).assertExists()
         assertEquals(
             0,
-            onAllNodes(hasText(translated, substring = true)).fetchSemanticsNodes().size
+            onAllNodes(hasText(translated, substring = true)).fetchSemanticsNodes().size,
         )
     }
 
@@ -165,10 +165,10 @@ class ReaderTranslationTest {
             translations = {
                 mapOf(
                     TextAnchor.Section(0, 0, 0) to PassageTranslation.Ready(
-                        Translation(translated, note = "\"Ishmael\" is kept as the book writes it.")
-                    )
+                        Translation(translated, note = "\"Ishmael\" is kept as the book writes it."),
+                    ),
                 )
-            }
+            },
         )
 
         onNodeWithText("is kept as the book writes it", substring = true).assertExists()
@@ -182,15 +182,15 @@ class ReaderTranslationTest {
                 mapOf(
                     TextAnchor.Section(0, 0, 0) to PassageTranslation.Ready(
                         translation = Translation(translated, note = "A remark about a word."),
-                        showingOriginal = true
-                    )
+                        showingOriginal = true,
+                    ),
                 )
-            }
+            },
         )
 
         assertEquals(
             0,
-            onAllNodes(hasText("A remark about a word.", substring = true)).fetchSemanticsNodes().size
+            onAllNodes(hasText("A remark about a word.", substring = true)).fetchSemanticsNodes().size,
         )
     }
 
@@ -201,10 +201,10 @@ class ReaderTranslationTest {
             translations = {
                 mapOf(
                     TextAnchor.Section(0, 0, 0) to PassageTranslation.Failed(
-                        AppError.Unexpected("That passage is too long to translate.")
-                    )
+                        AppError.Unexpected("That passage is too long to translate."),
+                    ),
                 )
-            }
+            },
         )
 
         onNodeWithText("too long to translate", substring = true).assertExists()
@@ -216,7 +216,7 @@ class ReaderTranslationTest {
     @Test
     fun aSentenceStillBeingTranslatedKeepsItsWords() = runComposeUiTest {
         setReader(
-            translations = { mapOf(TextAnchor.Section(0, 0, 0) to PassageTranslation.Loading()) }
+            translations = { mapOf(TextAnchor.Section(0, 0, 0) to PassageTranslation.Loading()) },
         )
 
         onNodeWithText(opening, substring = true).assertExists()
@@ -246,14 +246,13 @@ class ReaderTranslationTest {
         onNodeWithText(opening, substring = true).assertExists()
 
         translations = mapOf(
-            TextAnchor.Section(0, 0, 0) to PassageTranslation.Ready(Translation(translated))
+            TextAnchor.Section(0, 0, 0) to PassageTranslation.Ready(Translation(translated)),
         )
         waitForIdle()
 
         onNodeWithText(translated, substring = true).assertExists()
         onNodeWithText(second, substring = true).assertExists()
     }
-
 
     /**
      * Holding a word asks about that word alone. A tap on the same words still
@@ -294,9 +293,9 @@ class ReaderTranslationTest {
             translations = {
                 mapOf(
                     TextAnchor.Section(0, 0, 0, wordIndex = 2) to
-                        PassageTranslation.Ready(Translation("Ismaeliksi"))
+                        PassageTranslation.Ready(Translation("Ismaeliksi")),
                 )
-            }
+            },
         )
 
         onNodeWithText("Call me Ismaeliksi.", substring = true).assertExists()
@@ -313,7 +312,7 @@ class ReaderTranslationTest {
 
         setReader(
             onPassagesRequested = { requested += it },
-            translateOnScreen = { translate }
+            translateOnScreen = { translate },
         )
 
         // Nothing until it is asked for: this is not a standing order.
@@ -328,7 +327,6 @@ class ReaderTranslationTest {
         assertTrue(passages.contains(second), "$passages")
         assertEquals(passages.size, passages.distinct().size, "a sentence was asked about twice")
     }
-
 
     /**
      * Each gesture does one thing, always.
@@ -347,10 +345,10 @@ class ReaderTranslationTest {
             translations = {
                 mapOf(
                     TextAnchor.Section(0, 0, 0, wordIndex = 0) to
-                        PassageTranslation.Ready(Translation("Kutsukaa"))
+                        PassageTranslation.Ready(Translation("Kutsukaa")),
                 )
             },
-            onPassageSelected = { selected = it }
+            onPassageSelected = { selected = it },
         )
 
         onNodeWithText("Kutsukaa me Ishmael.", substring = true).clickFirstWords()
@@ -367,10 +365,10 @@ class ReaderTranslationTest {
             translations = {
                 mapOf(
                     TextAnchor.Section(0, 0, 0, wordIndex = 0) to
-                        PassageTranslation.Ready(Translation("Kutsukaa"))
+                        PassageTranslation.Ready(Translation("Kutsukaa")),
                 )
             },
-            onPassageSelected = { selected = it }
+            onPassageSelected = { selected = it },
         )
 
         onNodeWithText("Kutsukaa me Ishmael.", substring = true).performTouchInput {
@@ -379,7 +377,7 @@ class ReaderTranslationTest {
 
         assertEquals(
             TextAnchor.Section(0, 0, 0, wordIndex = 0),
-            assertNotNull(selected).anchor
+            assertNotNull(selected).anchor,
         )
     }
 
@@ -390,7 +388,7 @@ class ReaderTranslationTest {
 
         setReader(
             onPassageSelected = { selected = it },
-            gestures = TranslationGestures(tap = PassageUnit.Paragraph, longPress = null)
+            gestures = TranslationGestures(tap = PassageUnit.Paragraph, longPress = null),
         )
 
         onNodeWithText(opening, substring = true).clickFirstWords()
@@ -408,15 +406,15 @@ class ReaderTranslationTest {
             translations = {
                 mapOf(
                     TextAnchor.Section(0, 0, sentenceIndex = null) to
-                        PassageTranslation.Ready(Translation("Koko kappale suomeksi."))
+                        PassageTranslation.Ready(Translation("Koko kappale suomeksi.")),
                 )
-            }
+            },
         )
 
         onNodeWithText("Koko kappale suomeksi.", substring = true).assertExists()
         assertEquals(
             0,
-            onAllNodes(hasText(opening, substring = true)).fetchSemanticsNodes().size
+            onAllNodes(hasText(opening, substring = true)).fetchSemanticsNodes().size,
         )
     }
 
@@ -427,7 +425,7 @@ class ReaderTranslationTest {
 
         setReader(
             onPassageSelected = { selected = it },
-            gestures = TranslationGestures(tap = null, longPress = null)
+            gestures = TranslationGestures(tap = null, longPress = null),
         )
 
         onNodeWithText(opening, substring = true).clickFirstWords()
@@ -445,10 +443,10 @@ class ReaderTranslationTest {
             translations = {
                 mapOf(
                     TextAnchor.Section(0, 0, 0, wordIndex = 2) to
-                        PassageTranslation.Ready(Translation("Ismaeliksi"))
+                        PassageTranslation.Ready(Translation("Ismaeliksi")),
                 )
             },
-            onPassageSelected = { selected = it }
+            onPassageSelected = { selected = it },
         )
 
         // "Call" is untouched; the translated word is the third one.
@@ -468,10 +466,10 @@ class ReaderTranslationTest {
             translations = {
                 mapOf(
                     TextAnchor.Section(0, 0, 0, wordIndex = 2) to PassageTranslation.Ready(
-                        Translation("Ismaeliksi", note = "kept as the book writes it")
-                    )
+                        Translation("Ismaeliksi", note = "kept as the book writes it"),
+                    ),
                 )
-            }
+            },
         )
 
         onNodeWithText("Ishmael: kept as the book writes it", substring = true).assertExists()
@@ -484,10 +482,10 @@ class ReaderTranslationTest {
             translations = {
                 mapOf(
                     TextAnchor.Section(0, 0, 0, wordIndex = 0) to PassageTranslation.Failed(
-                        AppError.Unexpected("That API key was not accepted.")
-                    )
+                        AppError.Unexpected("That API key was not accepted."),
+                    ),
                 )
-            }
+            },
         )
 
         onNodeWithText("was not accepted", substring = true).assertExists()
@@ -507,21 +505,19 @@ class ReaderTranslationTest {
                 mapOf(
                     TextAnchor.Section(0, 0, 0) to PassageTranslation.Ready(Translation(translated)),
                     TextAnchor.Section(0, 0, 0, wordIndex = 2) to PassageTranslation.Ready(
-                        Translation("Ismaeliksi", note = "kept as the book writes it")
-                    )
+                        Translation("Ismaeliksi", note = "kept as the book writes it"),
+                    ),
                 )
-            }
+            },
         )
 
         assertEquals(
             0,
             onAllNodes(hasText("kept as the book writes it", substring = true))
                 .fetchSemanticsNodes()
-                .size
+                .size,
         )
     }
-
-
 
     /**
      * A tap the reader has turned off is still a tap on the page, and a tap on
@@ -543,10 +539,9 @@ class ReaderTranslationTest {
         assertEquals(
             0,
             onAllNodes(hasContentDescription("Reading settings")).fetchSemanticsNodes().size,
-            "a tap set to nothing reached nothing at all"
+            "a tap set to nothing reached nothing at all",
         )
     }
-
 
     /**
      * A control for something the reader has not asked to be offered is not in
@@ -562,7 +557,7 @@ class ReaderTranslationTest {
             0,
             onAllNodes(hasContentDescription("Translate what is on screen"))
                 .fetchSemanticsNodes()
-                .size
+                .size,
         )
     }
 
@@ -570,7 +565,7 @@ class ReaderTranslationTest {
     fun aControlAskedForIsInTheBar() = runComposeUiTest {
         setReader(
             translationConfigured = true,
-            bulkTranslation = BulkTranslation(onScreen = true, asYouRead = false)
+            bulkTranslation = BulkTranslation(onScreen = true, asYouRead = false),
         )
 
         onNodeWithContentDescription("Translate what is on screen").assertExists()
@@ -579,7 +574,7 @@ class ReaderTranslationTest {
             0,
             onAllNodes(hasContentDescription("Keep translating as you read"))
                 .fetchSemanticsNodes()
-                .size
+                .size,
         )
     }
 
@@ -603,7 +598,7 @@ class ReaderTranslationTest {
         translateOnScreen: () -> TranslateOnScreen = { TranslateOnScreen.Idle },
         gestures: TranslationGestures = TranslationGestures.Default,
         translationConfigured: Boolean = false,
-        bulkTranslation: BulkTranslation = BulkTranslation.Default
+        bulkTranslation: BulkTranslation = BulkTranslation.Default,
     ) {
         setContent {
             LukiaTheme {
@@ -621,7 +616,7 @@ class ReaderTranslationTest {
                     onSettingsChange = {},
                     onPassageSelected = onPassageSelected,
                     onPassagesRequested = onPassagesRequested,
-                    renderPage = { _, _ -> null }
+                    renderPage = { _, _ -> null },
                 )
             }
         }
@@ -632,7 +627,7 @@ class ReaderTranslationTest {
             document = PickedDocument(
                 fileName = "moby-dick.epub",
                 extension = "epub",
-                location = "/library/moby-dick.epub"
+                location = "/library/moby-dick.epub",
             ),
             type = DocumentType.EPUB,
             exists = true,
@@ -640,12 +635,12 @@ class ReaderTranslationTest {
             metadata = BookMetadata(
                 title = "Moby-Dick",
                 authors = listOf("Herman Melville"),
-                subjects = listOf("Adventure fiction")
-            )
+                subjects = listOf("Adventure fiction"),
+            ),
         ),
         workingCopy = WorkingCopy(
             sourceLocation = "/library/moby-dick.epub",
-            path = "/workspace/moby-dick.epub"
+            path = "/workspace/moby-dick.epub",
         ),
         content = ReflowableContent(
             sections = listOf(
@@ -654,11 +649,11 @@ class ReaderTranslationTest {
                     blocks = listOf(
                         TextBlock.Paragraph(listOf(TextRun("$opening $second"))),
                         TextBlock.Paragraph(listOf(TextRun("It was cold."))),
-                        TextBlock.Paragraph(listOf(TextRun(afterword)))
-                    )
-                )
+                        TextBlock.Paragraph(listOf(TextRun(afterword))),
+                    ),
+                ),
             ),
-            outline = emptyList()
-        )
+            outline = emptyList(),
+        ),
     )
 }

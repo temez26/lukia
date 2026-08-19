@@ -15,7 +15,7 @@ class DocumentDisplayTest {
             document = TestDocuments.pdf(location = "/test/book.pdf"),
             type = DocumentType.PDF,
             exists = true,
-            sizeBytes = 1024L
+            sizeBytes = 1024L,
         )
 
         assertEquals("book", documentInfo.displayTitle())
@@ -27,11 +27,11 @@ class DocumentDisplayTest {
             document = PickedDocument(
                 fileName = "book",
                 extension = "",
-                location = "/test/book"
+                location = "/test/book",
             ),
             type = DocumentType.UNKNOWN,
             exists = true,
-            sizeBytes = 0L
+            sizeBytes = 0L,
         )
 
         assertEquals("book", documentInfo.displayTitle())
@@ -43,13 +43,13 @@ class DocumentDisplayTest {
             document = TestDocuments.pdf(location = "/test/book.pdf"),
             type = DocumentType.PDF,
             exists = true,
-            sizeBytes = 1024L
+            sizeBytes = 1024L,
         )
         val epub = DocumentInfo(
             document = TestDocuments.epub(location = "/test/book.epub"),
             type = DocumentType.EPUB,
             exists = true,
-            sizeBytes = 1024L
+            sizeBytes = 1024L,
         )
 
         assertEquals("PDF", pdf.displayType())
@@ -71,7 +71,7 @@ class DocumentDisplayTest {
         document = TestDocuments.pdf(location = "/test/book"),
         type = type,
         exists = true,
-        sizeBytes = 1024L
+        sizeBytes = 1024L,
     )
 
     @Test
@@ -80,7 +80,7 @@ class DocumentDisplayTest {
             document = TestDocuments.pdf(location = "/test/book.pdf"),
             type = DocumentType.PDF,
             exists = true,
-            sizeBytes = 2048L
+            sizeBytes = 2048L,
         )
 
         assertEquals(formatFileSize(2048L), documentInfo.formattedSize())

@@ -63,8 +63,8 @@ import io.lukia.shared.presentation.components.rememberLaunchReveal
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.isWideWindow
-import io.lukia.shared.presentation.theme.stateSwapIn
 import io.lukia.shared.presentation.theme.softFadeOut
+import io.lukia.shared.presentation.theme.stateSwapIn
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -91,7 +91,7 @@ fun LibraryScreen(
     viewModel: LibraryViewModel = koinViewModel(),
     onDocumentClick: (DocumentInfo) -> Unit = {},
     onDocumentDetails: (DocumentInfo) -> Unit = {},
-    onSettings: () -> Unit = {}
+    onSettings: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val books by viewModel.books.collectAsState()
@@ -153,14 +153,14 @@ fun LibraryScreen(
             isImporting = isImporting,
             importProgress = importProgress,
             snackbarHostState = snackbarHostState,
-            readingProgress = readingProgress
+            readingProgress = readingProgress,
         )
 
         // Over the library and its own overlays both, since it is opened from the
         // bar that floats above them.
         SettingsOverlay(
             visible = settingsOpen,
-            onDismiss = { settingsOpen = false }
+            onDismiss = { settingsOpen = false },
         )
     }
 }
@@ -204,7 +204,7 @@ fun LibraryContent(
      * whose details are open is looked up here; the grid draws its bars from
      * [books], which already carries each book's position.
      */
-    readingProgress: Map<String, ReadingProgress> = emptyMap()
+    readingProgress: Map<String, ReadingProgress> = emptyMap(),
 ) {
     val dimens = LocalLukiaDimens.current
     val reveal = rememberLaunchReveal()
@@ -249,16 +249,16 @@ fun LibraryContent(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(paddingValues),
         ) {
             Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.TopCenter
+                contentAlignment = Alignment.TopCenter,
             ) {
                 // Reading the library is the outer state; everything inside is
                 // what a successfully read library can look like.
@@ -274,7 +274,7 @@ fun LibraryContent(
                         // Capped first, then filled, so wide desktop windows keep
                         // a readable measure instead of stretching edge to edge.
                         .widthIn(max = dimens.maxGridWidth)
-                        .fillMaxSize()
+                        .fillMaxSize(),
                     // The library it hands back is only used to tell an empty
                     // shelf from a full one; the grid draws [books].
                 ) { loaded ->
@@ -297,14 +297,14 @@ fun LibraryContent(
                         },
                         contentAlignment = Alignment.TopCenter,
                         modifier = Modifier.fillMaxSize(),
-                        label = "libraryContent"
+                        label = "libraryContent",
                     ) { state ->
                         when (state) {
                             LibraryContentState.Importing -> LoadingState(
                                 message = importingMessage(importProgress),
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .padding(top = libraryNavBarHeight())
+                                    .padding(top = libraryNavBarHeight()),
                             )
 
                             LibraryContentState.Empty -> LibraryEmptyState(
@@ -314,7 +314,7 @@ fun LibraryContent(
                                 onImport = onImport,
                                 onImportFolder = onImportFolder,
                                 reveal = reveal,
-                                modifier = Modifier.fillMaxSize()
+                                modifier = Modifier.fillMaxSize(),
                             )
 
                             LibraryContentState.Content -> LibraryGrid(
@@ -341,7 +341,7 @@ fun LibraryContent(
                                 onDelete = onDelete,
                                 onImport = onImport,
                                 onImportFolder = onImportFolder,
-                                modifier = Modifier.fillMaxSize()
+                                modifier = Modifier.fillMaxSize(),
                             )
                         }
                     }
@@ -359,14 +359,14 @@ fun LibraryContent(
                 onImport = onImport,
                 onImportFolder = onImportFolder,
                 onSettings = onSettings,
-                modifier = Modifier.align(Alignment.TopCenter)
+                modifier = Modifier.align(Alignment.TopCenter),
             )
 
             // Every menu on this screen is a non-focusable popup drawn above this
             // layer, so the press that dismisses one has to be caught here.
             ActionMenuScrim(
                 visible = openMenu != null,
-                onDismiss = { openMenu = null }
+                onDismiss = { openMenu = null },
             )
 
             // Last, so it covers the library and its chrome both. Draws nothing
@@ -381,7 +381,7 @@ fun LibraryContent(
                 },
                 onToggleFavorite = onToggleFavorite,
                 onRefresh = onRefresh,
-                onDelete = onDelete
+                onDelete = onDelete,
             )
         }
     }
@@ -405,7 +405,7 @@ private fun importingMessage(progress: ImportProgress?): String =
 private enum class LibraryContentState {
     Importing,
     Empty,
-    Content
+    Content,
 }
 
 @Composable
@@ -427,7 +427,7 @@ private fun LibraryGrid(
     onDelete: (DocumentInfo) -> Unit,
     onImport: () -> Unit,
     onImportFolder: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val dimens = LocalLukiaDimens.current
 
@@ -441,10 +441,10 @@ private fun LibraryGrid(
             // Content scrolls under the compact bar, so the header has to start
             // clear of where it sits at rest.
             top = libraryNavBarHeight() + Space.md,
-            bottom = GridBottomPadding
+            bottom = GridBottomPadding,
         ),
         horizontalArrangement = Arrangement.spacedBy(dimens.gridSpacing),
-        verticalArrangement = Arrangement.spacedBy(dimens.gridRowSpacing)
+        verticalArrangement = Arrangement.spacedBy(dimens.gridRowSpacing),
     ) {
         item(span = { GridItemSpan(maxLineSpan) }, key = "header", contentType = "header") {
             LibraryHeader(
@@ -455,7 +455,7 @@ private fun LibraryGrid(
                 onOpenMenuChange = onOpenMenuChange,
                 isImporting = isImporting,
                 importProgress = importProgress,
-                reveal = reveal
+                reveal = reveal,
             )
         }
 
@@ -479,7 +479,7 @@ private fun LibraryGrid(
             // Every cell in the body of the grid is the same kind of thing, so
             // scrolling reuses the layout it already has rather than building a
             // new one for each row that comes into view.
-            contentType = { _, _ -> "book" }
+            contentType = { _, _ -> "book" },
         ) { index, book ->
             BookCard(
                 document = book.document,
@@ -494,7 +494,7 @@ private fun LibraryGrid(
                 onShowDetails = { onDocumentDetails(book.document) },
                 reveal = reveal,
                 revealIndex = index + GridRevealOffset,
-                modifier = Modifier.animateItem()
+                modifier = Modifier.animateItem(),
             )
         }
 
@@ -518,7 +518,7 @@ private fun LibraryGrid(
                     onImportFolder = onImportFolder,
                     reveal = reveal,
                     revealIndex = books.size + GridRevealOffset,
-                    modifier = Modifier.animateItem()
+                    modifier = Modifier.animateItem(),
                 )
             }
         }
@@ -542,7 +542,7 @@ private fun NoMatchesNotice(query: LibraryQuery) {
         contentAlignment = Alignment.TopCenter,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 40.dp)
+            .padding(top = 40.dp),
     ) {
         EmptyState(
             title = "No Results",
@@ -551,7 +551,7 @@ private fun NoMatchesNotice(query: LibraryQuery) {
                 query.isRefined || query.shelf != LibraryShelf.All ->
                     "Nothing matching “$trimmed” is left once your filters are applied."
                 else -> "No books match “$trimmed”."
-            }
+            },
         )
     }
 }
@@ -564,14 +564,14 @@ private fun LibraryEmptyState(
     onImport: () -> Unit,
     onImportFolder: () -> Unit,
     reveal: LaunchReveal,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val dimens = LocalLukiaDimens.current
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = dimens.screenPadding)
+            .padding(horizontal = dimens.screenPadding),
     ) {
         // No heading of its own: there is nothing here to head, and "Your library
         // is empty" below is a better one than the word "Library" would be.
@@ -582,7 +582,7 @@ private fun LibraryEmptyState(
             message = "Choose the cover to add a PDF, EPUB, Word or text file.",
             modifier = Modifier
                 .align(Alignment.Center)
-                .launchReveal(reveal, index = 1)
+                .launchReveal(reveal, index = 1),
         ) {
             // The same slot that ends a full library, standing alone here. One
             // card to learn, and it asks the same question in both places.
@@ -595,7 +595,7 @@ private fun LibraryEmptyState(
                 reveal = reveal,
                 revealIndex = 1,
                 label = null,
-                modifier = Modifier.width(EmptyStateCoverWidth)
+                modifier = Modifier.width(EmptyStateCoverWidth),
             )
         }
     }

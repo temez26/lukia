@@ -81,7 +81,7 @@ class WordLookupTranslatorTest {
             lookup = { lookup },
             translator = naming("translator", asked),
             google = naming("google", asked),
-            dictionary = naming("dictionary", asked)
+            dictionary = naming("dictionary", asked),
         )
 
     private fun naming(name: String, asked: MutableList<String>) = Translator { _, _ ->
@@ -92,6 +92,6 @@ class WordLookupTranslatorTest {
     private fun request(text: String, unit: PassageUnit) = TranslationRequest(
         text = text,
         targetLanguage = TargetLanguage.Finnish,
-        unit = unit
+        unit = unit,
     )
 }

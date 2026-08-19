@@ -14,7 +14,7 @@ internal data class EpubManifestItem(
     val path: String,
     val mediaType: String,
     /** EPUB 3's `properties`, which is where `cover-image` and `nav` are declared. */
-    val properties: String
+    val properties: String,
 )
 
 /**
@@ -36,7 +36,7 @@ internal class EpubPackage private constructor(
     private val packageXml: String,
     val manifest: List<EpubManifestItem>,
     /** Manifest ids in reading order. */
-    val spine: List<String>
+    val spine: List<String>,
 ) {
 
     private val manifestById: Map<String, EpubManifestItem> = manifest.associateBy { it.id }
@@ -85,7 +85,7 @@ internal class EpubPackage private constructor(
     fun resolveFrom(fromPath: String, href: String): String =
         resolveArchivePath(
             baseDirectory = fromPath.substringBeforeLast('/', missingDelimiterValue = ""),
-            relativePath = decodePercentEncoding(href)
+            relativePath = decodePercentEncoding(href),
         )
 
     private fun metaContent(name: String): String? =
@@ -122,7 +122,7 @@ internal class EpubPackage private constructor(
                                     id = id,
                                     path = resolveArchivePath(directory, decodePercentEncoding(href)),
                                     mediaType = event.attributes["media-type"].orEmpty(),
-                                    properties = event.attributes["properties"].orEmpty()
+                                    properties = event.attributes["properties"].orEmpty(),
                                 )
                             }
                         }
@@ -146,7 +146,7 @@ internal class EpubPackage private constructor(
                 zip = zip,
                 packageXml = packageXml,
                 manifest = manifest,
-                spine = spine
+                spine = spine,
             )
         }
 

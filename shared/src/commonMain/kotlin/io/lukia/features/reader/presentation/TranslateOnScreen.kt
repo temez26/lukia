@@ -22,7 +22,7 @@ import androidx.compose.runtime.Immutable
 @Immutable
 data class TranslateOnScreen(
     val generation: Long = 0,
-    val continuous: Boolean = false
+    val continuous: Boolean = false,
 ) {
 
     /** The next round, for whoever is holding the button. */

@@ -71,7 +71,7 @@ class ReadingPositionMigrationTest {
             INSERT INTO reading_position(location, pageIndex, pageCount)
             VALUES ('/books/moby.epub', 41, 300)
             """.trimIndent(),
-            0
+            0,
         )
 
         driver.execute(null, "PRAGMA user_version = 3", 0)
@@ -87,7 +87,7 @@ class ReadingPositionMigrationTest {
     fun aPositionStoredBeforeTheColumnExistedIsStillWhereItWas() = runTest {
         val repository = SqlReadingProgressRepository(
             LukiaDatabase(migrated()),
-            Dispatchers.Unconfined
+            Dispatchers.Unconfined,
         )
 
         val stored = assertNotNull(repository.progressFor("/books/moby.epub"))
@@ -104,7 +104,7 @@ class ReadingPositionMigrationTest {
     fun aPositionFromBeforeCountingBeganRanksBelowOneWrittenSince() = runTest {
         val repository = SqlReadingProgressRepository(
             LukiaDatabase(migrated()),
-            Dispatchers.Unconfined
+            Dispatchers.Unconfined,
         )
 
         repository.save("/books/dune.pdf", ReadingProgress(pageIndex = 1, pageCount = 100))

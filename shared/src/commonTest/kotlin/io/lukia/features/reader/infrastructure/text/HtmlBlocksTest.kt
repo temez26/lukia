@@ -18,7 +18,7 @@ class HtmlBlocksTest {
               <p>The first paragraph.</p>
               <p>The second.</p>
             </body>
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         val heading = blocks.first() as TextBlock.Heading
@@ -27,7 +27,7 @@ class HtmlBlocksTest {
         assertEquals(2, heading.level)
         assertEquals(
             listOf("The first paragraph.", "The second."),
-            blocks.drop(1).map { (it as TextBlock.Paragraph).text.plainText() }
+            blocks.drop(1).map { (it as TextBlock.Paragraph).text.plainText() },
         )
     }
 
@@ -44,12 +44,12 @@ class HtmlBlocksTest {
               It was the best of times,
               it was the worst of times.
             </p>
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         assertEquals(
             "It was the best of times, it was the worst of times.",
-            (blocks.single() as TextBlock.Paragraph).text.plainText()
+            (blocks.single() as TextBlock.Paragraph).text.plainText(),
         )
     }
 
@@ -61,7 +61,7 @@ class HtmlBlocksTest {
 
         assertEquals(
             listOf(emptySet(), setOf(Emphasis.Italic), emptySet(), setOf(Emphasis.Bold)),
-            runs.map { it.emphasis }
+            runs.map { it.emphasis },
         )
         assertEquals("the Pequod sailed at dawn", runs.plainText())
     }
@@ -79,7 +79,7 @@ class HtmlBlocksTest {
     @Test
     fun listsCarryTheirOwnMarkers() {
         val blocks = htmlBlocks(
-            "<ul><li>first</li><li>second</li></ul><ol><li>one</li><li>two</li></ol>"
+            "<ul><li>first</li><li>second</li></ul><ol><li>one</li><li>two</li></ol>",
         )
 
         val items = blocks.filterIsInstance<TextBlock.ListItem>()
@@ -117,7 +117,7 @@ class HtmlBlocksTest {
             """
             <head><title>Book</title><style>p { color: red }</style></head>
             <body><script>alert('hi')</script><p>only this</p></body>
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         assertEquals("only this", (blocks.single() as TextBlock.Paragraph).text.plainText())
@@ -128,7 +128,7 @@ class HtmlBlocksTest {
         val bytes = byteArrayOf(1, 2, 3)
 
         val blocks = htmlBlocks(
-            """<p>text</p><img src="images/plate.png" alt="A plate"/>"""
+            """<p>text</p><img src="images/plate.png" alt="A plate"/>""",
         ) { source -> if (source == "images/plate.png") bytes else null }
 
         val figure = blocks.filterIsInstance<TextBlock.Figure>().single()
@@ -143,7 +143,7 @@ class HtmlBlocksTest {
         val bytes = byteArrayOf(4, 5, 6)
 
         val blocks = htmlBlocks(
-            """<svg viewBox="0 0 600 800"><image xlink:href="cover.jpg"/></svg>"""
+            """<svg viewBox="0 0 600 800"><image xlink:href="cover.jpg"/></svg>""",
         ) { bytes }
 
         assertEquals(bytes.toList(), blocks.filterIsInstance<TextBlock.Figure>().single().bytes.toList())
@@ -156,7 +156,7 @@ class HtmlBlocksTest {
 
         assertEquals(
             listOf("first", "second"),
-            blocks.filterIsInstance<TextBlock.Paragraph>().map { it.text.plainText() }
+            blocks.filterIsInstance<TextBlock.Paragraph>().map { it.text.plainText() },
         )
         assertEquals("Heading", blocks.filterIsInstance<TextBlock.Heading>().single().text.plainText())
     }
@@ -167,7 +167,7 @@ class HtmlBlocksTest {
 
         assertEquals(
             "first line\nsecond line",
-            (blocks.single() as TextBlock.Paragraph).text.plainText()
+            (blocks.single() as TextBlock.Paragraph).text.plainText(),
         )
     }
 }

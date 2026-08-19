@@ -1,17 +1,17 @@
 package io.lukia.di
 
+import io.lukia.core.infrastructure.db.LukiaDatabase
 import io.lukia.features.bookdetail.application.GetDocumentDetailsUseCase
 import io.lukia.features.bookdetail.presentation.BookDetailViewModel
+import io.lukia.features.library.application.GetLibraryDocumentsUseCase
 import io.lukia.features.library.application.ImportDocumentUseCase
 import io.lukia.features.library.application.ImportDocumentsUseCase
 import io.lukia.features.library.application.ImportFolderUseCase
-import io.lukia.features.library.application.GetLibraryDocumentsUseCase
-import io.lukia.features.library.domain.LibraryRepository
-import io.lukia.core.infrastructure.db.LukiaDatabase
-import io.lukia.features.library.infrastructure.SqlLibraryRepository
 import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
+import io.lukia.features.library.domain.LibraryRepository
+import io.lukia.features.library.infrastructure.SqlLibraryRepository
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.domain.ReadingProgressRepository
@@ -19,26 +19,26 @@ import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import io.lukia.features.reader.infrastructure.SqlReadingProgressRepository
 import io.lukia.features.reader.presentation.ReaderViewModel
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
+import io.lukia.features.settings.presentation.SettingsViewModel
 import io.lukia.features.translate.application.TranslatePassageUseCase
+import io.lukia.features.translate.domain.ModelCatalogue
+import io.lukia.features.translate.domain.ModelWarmUp
+import io.lukia.features.translate.domain.PassageUnit
 import io.lukia.features.translate.domain.TranslationCache
 import io.lukia.features.translate.domain.Translator
 import io.lukia.features.translate.infrastructure.CachingTranslator
 import io.lukia.features.translate.infrastructure.CoalescingTranslator
+import io.lukia.features.translate.infrastructure.ConfiguredTranslator
 import io.lukia.features.translate.infrastructure.SqlTranslationCache
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
-import io.lukia.features.translate.infrastructure.ConfiguredTranslator
 import io.lukia.features.translate.infrastructure.WordLookupTranslator
-import io.lukia.features.translate.infrastructure.google.GoogleTranslator
-import io.lukia.features.translate.infrastructure.wiktionary.WiktionaryTranslator
 import io.lukia.features.translate.infrastructure.anthropic.AnthropicTranslator
-import io.lukia.features.translate.domain.ModelCatalogue
-import io.lukia.features.translate.domain.PassageUnit
-import io.lukia.features.translate.domain.ModelWarmUp
+import io.lukia.features.translate.infrastructure.google.GoogleTranslator
 import io.lukia.features.translate.infrastructure.openai.OpenAiModelCatalogue
 import io.lukia.features.translate.infrastructure.openai.OpenAiModelWarmUp
 import io.lukia.features.translate.infrastructure.openai.OpenAiTranslator
 import io.lukia.features.translate.infrastructure.translationHttpClient
-import io.lukia.features.settings.presentation.SettingsViewModel
+import io.lukia.features.translate.infrastructure.wiktionary.WiktionaryTranslator
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
@@ -140,7 +140,7 @@ val commonModule = module {
         val configured = ConfiguredTranslator(
             provider = { settings.settings.value.provider },
             anthropic = AnthropicTranslator(get(), settings),
-            openAiCompatible = OpenAiTranslator(get(), settings)
+            openAiCompatible = OpenAiTranslator(get(), settings),
         )
 
         // A single word can go somewhere else entirely, and only a single word:
@@ -150,7 +150,7 @@ val commonModule = module {
             lookup = { settings.settings.value.wordLookup },
             translator = configured,
             google = GoogleTranslator(get(), settings),
-            dictionary = WiktionaryTranslator(get(), settings)
+            dictionary = WiktionaryTranslator(get(), settings),
         )
 
         CoalescingTranslator(
@@ -168,8 +168,8 @@ val commonModule = module {
                     } else {
                         "${current.provider.name}/${current.model}"
                     }
-                }
-            )
+                },
+            ),
         )
     }
 

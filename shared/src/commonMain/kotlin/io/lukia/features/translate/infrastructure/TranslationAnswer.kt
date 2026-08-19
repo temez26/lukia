@@ -10,7 +10,7 @@ import kotlinx.serialization.json.Json
 @Serializable
 internal data class TranslatedPassage(
     val translation: String,
-    val note: String = ""
+    val note: String = "",
 )
 
 /**
@@ -35,7 +35,7 @@ internal fun readTranslatedPassage(answer: String, json: Json): Translation {
 
     return Translation(
         text = passage.translation.trim(),
-        note = passage.note.trim().takeIf { it.isNotEmpty() }
+        note = passage.note.trim().takeIf { it.isNotEmpty() },
     )
 }
 

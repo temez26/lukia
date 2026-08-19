@@ -27,7 +27,7 @@ sealed interface PassageTranslation {
 
     data class Ready(
         val translation: Translation,
-        val showingOriginal: Boolean = false
+        val showingOriginal: Boolean = false,
     ) : PassageTranslation
 
     data class Failed(val error: AppError) : PassageTranslation
@@ -75,5 +75,5 @@ data class PassageSelection(
      * a single word can go to a dictionary and everything larger cannot. See
      * [io.lukia.features.translate.domain.WordLookup].
      */
-    val unit: PassageUnit = PassageUnit.Sentence
+    val unit: PassageUnit = PassageUnit.Sentence,
 )

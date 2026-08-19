@@ -1,9 +1,9 @@
 package io.lukia.features.import.infrastructure
 
-import io.lukia.features.import.domain.DocumentAnalyzer
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.PickedDocument
+import io.lukia.features.import.domain.DocumentAnalyzer
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
@@ -20,36 +20,35 @@ import platform.posix.memcpy
 class IOSDocumentAnalyzer : DocumentAnalyzer {
 
     override suspend fun analyze(
-        document: PickedDocument
+        document: PickedDocument,
     ): DocumentInfo {
-
         val url = NSURL.URLWithString(document.location)
             ?: throw IllegalArgumentException(
-                "Invalid document URL: ${document.location}"
+                "Invalid document URL: ${document.location}",
             )
 
         val fileManager = NSFileManager.defaultManager
         val path = url.path
             ?: throw IllegalArgumentException(
-                "Document URL has no path: ${document.location}"
+                "Document URL has no path: ${document.location}",
             )
 
         val exists = fileManager.fileExistsAtPath(path)
 
         if (!exists) {
             throw IllegalArgumentException(
-                "File does not exist: ${document.location}"
+                "File does not exist: ${document.location}",
             )
         }
 
         val attributes = fileManager.attributesOfItemAtPath(
             path,
-            null
+            null,
         )
 
         if (attributes?.get(NSFileType) == NSFileTypeDirectory) {
             throw IllegalArgumentException(
-                "Path is not a file: ${document.location}"
+                "Path is not a file: ${document.location}",
             )
         }
 
@@ -75,7 +74,7 @@ class IOSDocumentAnalyzer : DocumentAnalyzer {
             exists = true,
             sizeBytes = size,
             coverImage = contents.coverImage,
-            metadata = contents.metadata
+            metadata = contents.metadata,
         )
     }
 

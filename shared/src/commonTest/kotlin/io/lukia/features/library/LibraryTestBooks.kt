@@ -15,7 +15,7 @@ import io.lukia.features.reader.domain.ReadingProgress
  */
 internal class TestBook(
     val document: DocumentInfo,
-    val progress: ReadingProgress?
+    val progress: ReadingProgress?,
 )
 
 internal fun book(
@@ -27,7 +27,7 @@ internal fun book(
     language: String? = null,
     declaredTitle: String? = null,
     sizeBytes: Long = 1024L,
-    progress: ReadingProgress? = null
+    progress: ReadingProgress? = null,
 ): TestBook {
     val extension = when (type) {
         DocumentType.EPUB -> "epub"
@@ -41,7 +41,7 @@ internal fun book(
         title = declaredTitle,
         authors = authors,
         language = language,
-        subjects = subjects
+        subjects = subjects,
     ).takeIf { !it.isEmpty }
 
     return TestBook(
@@ -49,15 +49,15 @@ internal fun book(
             document = PickedDocument(
                 fileName = "$title.$extension",
                 extension = extension,
-                location = "/library/$title.$extension"
+                location = "/library/$title.$extension",
             ),
             type = type,
             exists = true,
             sizeBytes = sizeBytes,
             isFavorite = favorite,
-            metadata = metadata
+            metadata = metadata,
         ),
-        progress = progress
+        progress = progress,
     )
 }
 
@@ -65,7 +65,7 @@ internal fun library(vararg books: TestBook): List<LibraryBook> =
     books.map { it.document }.asLibrary(
         books.mapNotNull { book ->
             book.progress?.let { book.document.document.location to it }
-        }.toMap()
+        }.toMap(),
     )
 
 /** What the cards would say, for assertions that read like the grid looks. */

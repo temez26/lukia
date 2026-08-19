@@ -32,7 +32,7 @@ class TranslationSessionTest {
 
         assertEquals(
             "Kutsukaa minua Ismaeliksi.",
-            (session.passages.value[anchor] as PassageTranslation.Ready).translation.text
+            (session.passages.value[anchor] as PassageTranslation.Ready).translation.text,
         )
     }
 
@@ -122,7 +122,7 @@ class TranslationSessionTest {
 
         assertEquals(
             AppError.Unexpected("no network"),
-            (session.passages.value[anchor] as PassageTranslation.Failed).error
+            (session.passages.value[anchor] as PassageTranslation.Failed).error,
         )
     }
 
@@ -263,9 +263,9 @@ class TranslationSessionTest {
                     onPartial("Kutsukaa")
                     onPartial("Kutsukaa minua")
                     Translation("Kutsukaa minua Ismaeliksi.")
-                }
+                },
             ),
-            this
+            this,
         )
 
         session.tap(anchor)
@@ -273,7 +273,7 @@ class TranslationSessionTest {
 
         assertEquals(
             PassageTranslation.Ready(Translation("Kutsukaa minua Ismaeliksi.")),
-            session.passages.value[anchor]
+            session.passages.value[anchor],
         )
     }
 
@@ -289,9 +289,9 @@ class TranslationSessionTest {
                 Translator { _, onPartial ->
                     repeat(20) { onPartial("Kutsukaa".take(it + 1)) }
                     Translation("Kutsukaa minua Ismaeliksi.")
-                }
+                },
             ),
-            this
+            this,
         )
 
         session.tap(anchor)
@@ -299,10 +299,9 @@ class TranslationSessionTest {
 
         assertEquals(
             "Kutsukaa minua Ismaeliksi.",
-            (session.passages.value[anchor] as PassageTranslation.Ready).translation.text
+            (session.passages.value[anchor] as PassageTranslation.Ready).translation.text,
         )
     }
-
 
     /**
      * Translating a whole page must not undo what the reader has already done to
@@ -312,7 +311,10 @@ class TranslationSessionTest {
     @Test
     fun askingForAPassageLeavesOneAlreadyAnsweredExactlyAsItWas() = runTest {
         var asked = 0
-        val session = session { asked++; Translation("Kutsukaa minua Ismaeliksi.") }
+        val session = session {
+            asked++
+            Translation("Kutsukaa minua Ismaeliksi.")
+        }
 
         session.tap(anchor)
         runCurrent()
@@ -337,7 +339,6 @@ class TranslationSessionTest {
 
         assertEquals("Kutsukaa minua Ismaeliksi.", session.ready(anchor).translation.text)
     }
-
 
     /**
      * Putting the translations away is how somebody reads a stretch they have
@@ -406,10 +407,10 @@ class TranslationSessionTest {
     }
 
     private fun TestScope.session(
-        translate: suspend (TranslationRequest) -> Translation
+        translate: suspend (TranslationRequest) -> Translation,
     ) = TranslationSession(
         TranslatePassageUseCase(Translator { request, _ -> translate(request) }),
-        this
+        this,
     )
 
     private fun anchor(sentenceIndex: Int) =
@@ -417,7 +418,7 @@ class TranslationSessionTest {
 
     private fun TranslationSession.tap(
         anchor: TextAnchor,
-        passage: String = "Call me Ishmael."
+        passage: String = "Call me Ishmael.",
     ) = onPassageTapped(anchor) { request(passage) }
 
     private fun TranslationSession.ready(anchor: TextAnchor) =
@@ -425,6 +426,6 @@ class TranslationSessionTest {
 
     private fun request(passage: String) = TranslationRequest(
         text = passage,
-        targetLanguage = TargetLanguage.Finnish
+        targetLanguage = TargetLanguage.Finnish,
     )
 }

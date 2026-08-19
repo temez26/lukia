@@ -1,0 +1,26 @@
+# Kotlin files that already exceeded the 400-line limit when it was introduced.
+# They are reported as warnings, not failures. Split one and delete its line;
+# never add a new line here for code you are writing now.
+#
+# Regenerate the measurements with:
+#   git ls-files '*.kt' | xargs wc -l | awk '$1 > 400 && $2 != "total" { print $2 }'
+
+shared/src/commonMain/kotlin/io/lukia/features/bookdetail/presentation/screens/BookDetailScreen.kt
+shared/src/commonMain/kotlin/io/lukia/features/library/presentation/screens/LibraryScreen.kt
+shared/src/commonMain/kotlin/io/lukia/features/reader/infrastructure/pdf/PdfObjectIndex.kt
+shared/src/commonMain/kotlin/io/lukia/features/reader/infrastructure/pdf/PdfObjectParser.kt
+shared/src/commonMain/kotlin/io/lukia/features/reader/presentation/ReaderViewModel.kt
+shared/src/commonMain/kotlin/io/lukia/features/reader/presentation/components/ReaderContentsPanel.kt
+shared/src/commonMain/kotlin/io/lukia/features/reader/presentation/components/ReaderSettingsPanel.kt
+shared/src/commonMain/kotlin/io/lukia/features/reader/presentation/components/TextSectionView.kt
+shared/src/commonMain/kotlin/io/lukia/features/reader/presentation/screens/ReaderScreen.kt
+shared/src/commonMain/kotlin/io/lukia/features/settings/presentation/screens/SettingsScreen.kt
+shared/src/commonMain/kotlin/io/lukia/shared/presentation/components/LukiaIcons.kt
+shared/src/commonTest/kotlin/io/lukia/features/translate/infrastructure/anthropic/AnthropicTranslatorTest.kt
+shared/src/commonTest/kotlin/io/lukia/features/translate/infrastructure/openai/OpenAiTranslatorTest.kt
+shared/src/commonTest/kotlin/io/lukia/features/translate/presentation/TranslationSessionTest.kt
+shared/src/jvmTest/kotlin/io/lukia/features/library/presentation/LibraryViewModelTest.kt
+shared/src/jvmTest/kotlin/io/lukia/features/reader/presentation/ReaderViewModelTest.kt
+shared/src/jvmTest/kotlin/io/lukia/features/reader/presentation/screens/ReaderContentTest.kt
+shared/src/jvmTest/kotlin/io/lukia/features/reader/presentation/screens/ReaderPageTranslationTest.kt
+shared/src/jvmTest/kotlin/io/lukia/features/reader/presentation/screens/ReaderTranslationTest.kt

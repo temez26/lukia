@@ -61,7 +61,7 @@ internal fun SettingsTextField(
     onValueChange: (String) -> Unit,
     placeholder: String,
     modifier: Modifier = Modifier,
-    secret: Boolean = false
+    secret: Boolean = false,
 ) {
     var revealed by remember { mutableStateOf(false) }
     val masked = secret && !revealed
@@ -75,7 +75,7 @@ internal fun SettingsTextField(
             .clip(MaterialTheme.shapes.small)
             .background(colors.surfaceVariant.copy(alpha = LukiaAlpha.Fill))
             .focusRing(interactionSource, MaterialTheme.shapes.small)
-            .padding(horizontal = FieldPadding, vertical = 4.dp)
+            .padding(horizontal = FieldPadding, vertical = 4.dp),
     ) {
         Box(modifier = Modifier.weight(1f)) {
             if (value.isEmpty()) {
@@ -84,7 +84,7 @@ internal fun SettingsTextField(
                     style = MaterialTheme.typography.bodyLarge,
                     color = colors.onSurfaceVariant,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
 
@@ -106,9 +106,9 @@ internal fun SettingsTextField(
                 // is silently rejected.
                 keyboardOptions = KeyboardOptions(
                     keyboardType = if (secret) KeyboardType.Password else KeyboardType.Uri,
-                    imeAction = ImeAction.Done
+                    imeAction = ImeAction.Done,
                 ),
-                modifier = Modifier.fillMaxWidth().padding(vertical = Space.sm)
+                modifier = Modifier.fillMaxWidth().padding(vertical = Space.sm),
             )
         }
 
@@ -120,12 +120,12 @@ internal fun SettingsTextField(
             LukiaIconButton(
                 label = "Clear",
                 onClick = { onValueChange("") },
-                variant = IconButtonVariant.Plain
+                variant = IconButtonVariant.Plain,
             ) { tint, glyph ->
                 ClearGlyph(
                     tint = tint,
                     knockout = MaterialTheme.colorScheme.surface,
-                    modifier = glyph
+                    modifier = glyph,
                 )
             }
         }
@@ -149,10 +149,10 @@ private fun RevealToggle(revealed: Boolean, onToggle: () -> Unit) {
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
-                onClick = onToggle
+                onClick = onToggle,
             )
             .focusRing(interactionSource, MaterialTheme.shapes.extraSmall)
             .pointerHoverIcon(PointerIcon.Hand)
-            .padding(horizontal = Space.sm, vertical = Space.xs)
+            .padding(horizontal = Space.sm, vertical = Space.xs),
     )
 }

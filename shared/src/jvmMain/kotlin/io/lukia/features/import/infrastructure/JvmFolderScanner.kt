@@ -23,7 +23,7 @@ class JvmFolderScanner : FolderScanner {
                 PickedDocument(
                     fileName = file.name,
                     extension = file.extension,
-                    location = file.absolutePath
+                    location = file.absolutePath,
                 )
             }
             .toList()

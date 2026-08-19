@@ -13,7 +13,7 @@ package io.lukia.features.translate.domain
 enum class WordLookup(
     val label: String,
     /** What is worth saying under the choice, which differs for each. */
-    val footnote: String
+    val footnote: String,
 ) {
 
     /**
@@ -23,7 +23,7 @@ enum class WordLookup(
     Translator(
         label = "Translator",
         footnote = "Words go to the same service as sentences, with the paragraph " +
-            "around them - so the answer is the sense the book meant."
+            "around them - so the answer is the sense the book meant.",
     ),
 
     /**
@@ -34,7 +34,7 @@ enum class WordLookup(
         label = "Google",
         footnote = "Fast and free, and it never sees the book - only the word. " +
             "Add a Cloud Translation key below to use Google's supported API " +
-            "rather than the public endpoint."
+            "rather than the public endpoint.",
     ),
 
     /**
@@ -45,8 +45,9 @@ enum class WordLookup(
         label = "Dictionary",
         footnote = "Wiktionary's own entry for the word: every sense it has, " +
             "rather than the one sense something guessed at. Free, and nothing " +
-            "to set up."
-    );
+            "to set up.",
+    ),
+    ;
 
     companion object {
         val Default = Translator

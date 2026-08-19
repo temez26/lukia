@@ -36,7 +36,7 @@ enum class TranslationProvider(
      * choices: what a service serves changes faster than an app ships, and a
      * local server's models are whatever the reader happens to have loaded.
      */
-    val suggestedModels: List<String>
+    val suggestedModels: List<String>,
 ) {
     Anthropic(
         label = "Anthropic",
@@ -45,7 +45,7 @@ enum class TranslationProvider(
         requiresKey = true,
         hasConfigurableEndpoint = false,
         defaultTimeoutSeconds = 60,
-        suggestedModels = listOf("claude-opus-5", "claude-sonnet-5", "claude-haiku-4-5")
+        suggestedModels = listOf("claude-opus-5", "claude-sonnet-5", "claude-haiku-4-5"),
     ),
 
     OpenAi(
@@ -55,7 +55,7 @@ enum class TranslationProvider(
         requiresKey = true,
         hasConfigurableEndpoint = false,
         defaultTimeoutSeconds = 60,
-        suggestedModels = listOf("gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini")
+        suggestedModels = listOf("gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini"),
     ),
 
     /**
@@ -75,8 +75,9 @@ enum class TranslationProvider(
         // is what the first request after choosing one actually waits for and
         // is measured in minutes on a large model.
         defaultTimeoutSeconds = 300,
-        suggestedModels = emptyList()
-    );
+        suggestedModels = emptyList(),
+    ),
+    ;
 
     /**
      * Whether this speaks OpenAI's chat endpoint, which is the thing [OpenAi]

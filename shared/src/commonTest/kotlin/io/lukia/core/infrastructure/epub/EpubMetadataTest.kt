@@ -29,8 +29,8 @@ class EpubMetadataTest {
                 <dc:publisher>Harper &amp; Brothers</dc:publisher>
                 <dc:date>1851-11-14</dc:date>
                 <dc:language>en-US</dc:language>
-                """
-            )
+                """,
+            ),
         )
 
         assertEquals("Moby Dick; or, The Whale", metadata.title)
@@ -48,8 +48,8 @@ class EpubMetadataTest {
                 """
                 <dc:creator>Ursula K. Le Guin</dc:creator>
                 <dc:creator>Brian Attebery</dc:creator>
-                """
-            )
+                """,
+            ),
         )
 
         assertEquals(listOf("Ursula K. Le Guin", "Brian Attebery"), metadata.authors)
@@ -83,7 +83,7 @@ class EpubMetadataTest {
     @Test
     fun stripsMarkupFromTheDescription() {
         val metadata = readEpubMetadata(
-            opf("<dc:description>&lt;p&gt;A &lt;i&gt;whale&lt;/i&gt; of a book.&lt;/p&gt;</dc:description>")
+            opf("<dc:description>&lt;p&gt;A &lt;i&gt;whale&lt;/i&gt; of a book.&lt;/p&gt;</dc:description>"),
         )
 
         assertEquals("A whale of a book.", metadata.description)
@@ -99,8 +99,8 @@ class EpubMetadataTest {
                     A Very
                     Long Title
                 </dc:title>
-                """
-            )
+                """,
+            ),
         )
 
         assertEquals("A Very Long Title", metadata.title)
@@ -117,8 +117,8 @@ class EpubMetadataTest {
                 """
                 <dc:identifier id="uuid">urn:uuid:8f1c-4b2e-9a77</dc:identifier>
                 <dc:identifier opf:scheme="ISBN">9780142437247</dc:identifier>
-                """
-            )
+                """,
+            ),
         )
 
         assertEquals("9780142437247", metadata.identifier)
@@ -127,7 +127,7 @@ class EpubMetadataTest {
     @Test
     fun readsAnIsbnDeclaredAsAUrn() {
         val metadata = readEpubMetadata(
-            opf("<dc:identifier>urn:isbn:9780142437247</dc:identifier>")
+            opf("<dc:identifier>urn:isbn:9780142437247</dc:identifier>"),
         )
 
         assertEquals("9780142437247", metadata.identifier)
@@ -136,7 +136,7 @@ class EpubMetadataTest {
     @Test
     fun fallsBackToWhateverIdentifierThereIs() {
         val metadata = readEpubMetadata(
-            opf("<dc:identifier>urn:uuid:8f1c-4b2e-9a77</dc:identifier>")
+            opf("<dc:identifier>urn:uuid:8f1c-4b2e-9a77</dc:identifier>"),
         )
 
         assertEquals("urn:uuid:8f1c-4b2e-9a77", metadata.identifier)
@@ -150,8 +150,8 @@ class EpubMetadataTest {
                 <dc:subject>Fiction</dc:subject>
                 <dc:subject>Sea stories</dc:subject>
                 <dc:subject>Fiction</dc:subject>
-                """
-            )
+                """,
+            ),
         )
 
         assertEquals(listOf("Fiction", "Sea stories"), metadata.subjects)
@@ -175,8 +175,8 @@ class EpubMetadataTest {
                 """
                 <dc:title>   </dc:title>
                 <dc:publisher></dc:publisher>
-                """
-            )
+                """,
+            ),
         )
 
         assertNull(metadata.title)

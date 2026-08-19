@@ -5,7 +5,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,7 +22,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -65,7 +63,7 @@ internal fun PageTranslationOverlay(
     translations: SentenceTranslations,
     scale: Float,
     pageColor: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val colors = MaterialTheme.colorScheme
 
@@ -124,10 +122,10 @@ internal fun PageTranslationOverlay(
                         lines = passage.quads.map { it.asLine(scale) },
                         style = style,
                         colors = markColors,
-                        sweep = sweep.value
+                        sweep = sweep.value,
                     )
                 }
-            }
+            },
     ) {
         marked.forEach { passage ->
             val panel = passage.state.panel()
@@ -137,7 +135,7 @@ internal fun PageTranslationOverlay(
             AnimatedVisibility(
                 visible = panel != null,
                 enter = fadeIn(tween(PANEL_FADE_MILLIS)),
-                exit = fadeOut(tween(PANEL_FADE_MILLIS))
+                exit = fadeOut(tween(PANEL_FADE_MILLIS)),
             ) {
                 // Held after it goes, so the panel fades out with words in it
                 // rather than emptying first and then fading.
@@ -159,10 +157,10 @@ internal fun PageTranslationOverlay(
                     detail = shown.detail,
                     textColor = if (shown.failed) colors.error else colors.onSurface,
                     tint = markColors.of(
-                        passage.state.markStyle() ?: PassageMarkStyle.Translated
+                        passage.state.markStyle() ?: PassageMarkStyle.Translated,
                     ),
                     scale = scale,
-                    pageColor = pageColor
+                    pageColor = pageColor,
                 )
             }
         }
@@ -173,7 +171,7 @@ internal fun PageTranslationOverlay(
 private data class PanelContent(
     val text: String,
     val detail: String?,
-    val failed: Boolean
+    val failed: Boolean,
 )
 
 /**
@@ -195,7 +193,7 @@ private fun PassageTranslation.panel(): PanelContent? = when (this) {
     is PassageTranslation.Failed -> PanelContent(
         text = error.displayShortMessage(),
         detail = null,
-        failed = true
+        failed = true,
     )
 
     is PassageTranslation.Ready -> takeIf { !showingOriginal }?.let {
@@ -222,7 +220,7 @@ private fun TranslationPanel(
     textColor: Color,
     tint: Color,
     scale: Float,
-    pageColor: Color
+    pageColor: Color,
 ) {
     val density = LocalDensity.current
 
@@ -259,7 +257,7 @@ private fun TranslationPanel(
             // than off the edge of it.
             .widthIn(
                 min = width + Bleed * 2,
-                max = (available - left + Bleed).coerceAtLeast(width + Bleed * 2)
+                max = (available - left + Bleed).coerceAtLeast(width + Bleed * 2),
             )
             .clip(RoundedCornerShape(PanelRadius))
             // The page's own colour first, because what is underneath is the
@@ -269,16 +267,16 @@ private fun TranslationPanel(
             // where the passage is.
             .background(pageColor)
             .background(tint.copy(alpha = PANEL_TINT))
-            .padding(PanelPadding)
+            .padding(PanelPadding),
     ) {
         Text(
             text = text,
             color = textColor,
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontSize = textSize,
-                lineHeight = textSize * 1.25f
+                lineHeight = textSize * 1.25f,
             ),
-            textAlign = TextAlign.Start
+            textAlign = TextAlign.Start,
         )
 
         if (detail != null) {
@@ -288,9 +286,9 @@ private fun TranslationPanel(
                 style = MaterialTheme.typography.bodySmall.copy(
                     fontSize = textSize * 0.8f,
                     lineHeight = textSize,
-                    fontStyle = FontStyle.Italic
+                    fontStyle = FontStyle.Italic,
                 ),
-                modifier = Modifier.padding(top = 2.dp)
+                modifier = Modifier.padding(top = 2.dp),
             )
         }
     }
@@ -343,7 +341,7 @@ private const val PANEL_FADE_MILLIS = 160
 private data class MarkedPassage(
     val quads: List<TextQuad>,
     val bounds: TextQuad,
-    val state: PassageTranslation
+    val state: PassageTranslation,
 )
 
 /**
@@ -368,7 +366,7 @@ private fun TextQuad.asLine(): TextQuad = TextQuad(
     left = left,
     top = top - height * LINE_ABOVE_GLYPHS,
     right = right,
-    bottom = bottom + height * LINE_BELOW_GLYPHS
+    bottom = bottom + height * LINE_BELOW_GLYPHS,
 )
 
 private fun TextQuad.asLine(scale: Float): Rect = asLine().let { line ->
@@ -376,6 +374,6 @@ private fun TextQuad.asLine(scale: Float): Rect = asLine().let { line ->
         left = line.left * scale,
         top = line.top * scale,
         right = line.right * scale,
-        bottom = line.bottom * scale
+        bottom = line.bottom * scale,
     )
 }

@@ -122,8 +122,9 @@ private fun docxBlocks(xml: String, image: (relationshipId: String) -> ByteArray
 
                 "instrtext", "del" -> if (!event.selfClosing) hiddenDepth++
 
-                "pstyle" -> paragraph?.style =
-                    event.attributes["w:val"].orEmpty().lowercase().replace(" ", "")
+                "pstyle" ->
+                    paragraph?.style =
+                        event.attributes["w:val"].orEmpty().lowercase().replace(" ", "")
 
                 "numpr" -> paragraph?.isListItem = true
 
@@ -220,7 +221,7 @@ private fun MutableList<TextBlock>.addParagraph(paragraph: DocxParagraph) {
             isQuoteStyle(paragraph.style) -> TextBlock.Quote(runs)
 
             else -> TextBlock.Paragraph(runs)
-        }
+        },
     )
 }
 

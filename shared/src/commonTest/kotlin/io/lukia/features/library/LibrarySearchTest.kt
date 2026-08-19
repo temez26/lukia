@@ -10,7 +10,7 @@ class LibrarySearchTest {
     private val shelf = library(
         book("Moby Dick"),
         book("The Hobbit"),
-        book("dune", authors = listOf("Frank Herbert"), declaredTitle = "Dune: A Novel")
+        book("dune", authors = listOf("Frank Herbert"), declaredTitle = "Dune: A Novel"),
     )
 
     private fun found(query: String) = shelf.matching(LibraryQuery(search = query)).titles()

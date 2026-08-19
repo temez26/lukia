@@ -1,9 +1,9 @@
 package io.lukia.di
 
+import app.cash.sqldelight.db.SqlDriver
 import io.lukia.core.domain.DocumentWorkspace
 import io.lukia.core.domain.SecretStore
 import io.lukia.core.domain.SettingsStore
-import app.cash.sqldelight.db.SqlDriver
 import io.lukia.core.infrastructure.IOSDocumentWorkspace
 import io.lukia.core.infrastructure.IOSSecretStore
 import io.lukia.core.infrastructure.IOSSettingsStore
@@ -39,5 +39,4 @@ val platformModule = module {
     single<FolderScanner> {
         IOSFolderScanner()
     }
-
 }

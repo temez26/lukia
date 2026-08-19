@@ -70,7 +70,12 @@ class OpenAiTranslatorTest {
     @Test
     fun theAnswerIsAskedForAsAStream() = runTest {
         var body: JsonObject? = null
-        val translator = translator(answers { body = it.jsonBody(); ok() })
+        val translator = translator(
+            answers {
+                body = it.jsonBody()
+                ok()
+            },
+        )
 
         translator.translate(request())
 
@@ -92,7 +97,7 @@ class OpenAiTranslatorTest {
         assertEquals("Kutsukaa minua Ismaeliksi.", seen.last())
         assertTrue(
             seen.all { translation.text.startsWith(it) },
-            "something was shown that the finished translation contradicts: $seen"
+            "something was shown that the finished translation contradicts: $seen",
         )
     }
 
@@ -103,7 +108,7 @@ class OpenAiTranslatorTest {
             answers { content("Sure! Here you go:") },
             provider = TranslationProvider.Local,
             baseUrl = "http://localhost:1234/v1",
-            apiKey = null
+            apiKey = null,
         )
         val seen = mutableListOf<String>()
 
@@ -124,7 +129,7 @@ class OpenAiTranslatorTest {
             provider = TranslationProvider.Local,
             baseUrl = "http://localhost:1234/v1",
             apiKey = null,
-            model = "qwen2.5-7b-instruct"
+            model = "qwen2.5-7b-instruct",
         )
 
         val error = translator.failureFor(request()) as AppError.Unexpected
@@ -138,7 +143,12 @@ class OpenAiTranslatorTest {
     @Test
     fun theRequestGoesToTheChatEndpointUnderTheConfiguredAddress() = runTest {
         var sent: HttpRequestData? = null
-        val translator = translator(answers { sent = it; ok() })
+        val translator = translator(
+            answers {
+                sent = it
+                ok()
+            },
+        )
 
         translator.translate(request())
 
@@ -150,8 +160,11 @@ class OpenAiTranslatorTest {
     fun aTrailingSlashOnTheAddressIsNotADoubledOne() = runTest {
         var sent: HttpRequestData? = null
         val translator = translator(
-            answers { sent = it; ok() },
-            baseUrl = "https://api.openai.com/v1/"
+            answers {
+                sent = it
+                ok()
+            },
+            baseUrl = "https://api.openai.com/v1/",
         )
 
         translator.translate(request())
@@ -162,7 +175,13 @@ class OpenAiTranslatorTest {
     @Test
     fun theKeyIsSentAsABearerToken() = runTest {
         var sent: HttpRequestData? = null
-        val translator = translator(answers { sent = it; ok() }, apiKey = "sk-test")
+        val translator = translator(
+            answers {
+                sent = it
+                ok()
+            },
+            apiKey = "sk-test",
+        )
 
         translator.translate(request())
 
@@ -172,10 +191,15 @@ class OpenAiTranslatorTest {
     @Test
     fun thePromptTravelsAsASystemMessageAndAUserMessage() = runTest {
         var body: JsonObject? = null
-        val translator = translator(answers { body = it.jsonBody(); ok() })
+        val translator = translator(
+            answers {
+                body = it.jsonBody()
+                ok()
+            },
+        )
 
         translator.translate(
-            request(context = TranslationContext(bookTitle = "Moby-Dick", genres = listOf("Whaling")))
+            request(context = TranslationContext(bookTitle = "Moby-Dick", genres = listOf("Whaling"))),
         )
 
         val messages = body?.get("messages")?.jsonArray.orEmpty()
@@ -191,7 +215,12 @@ class OpenAiTranslatorTest {
     @Test
     fun openAiIsHeldToASchema() = runTest {
         var body: JsonObject? = null
-        val translator = translator(answers { body = it.jsonBody(); ok() })
+        val translator = translator(
+            answers {
+                body = it.jsonBody()
+                ok()
+            },
+        )
 
         translator.translate(request())
 
@@ -212,10 +241,13 @@ class OpenAiTranslatorTest {
     fun aLocalServerIsAskedForTheShapeInWordsInstead() = runTest {
         var body: JsonObject? = null
         val translator = translator(
-            answers { body = it.jsonBody(); ok() },
+            answers {
+                body = it.jsonBody()
+                ok()
+            },
             provider = TranslationProvider.Local,
             baseUrl = "http://localhost:1234/v1",
-            apiKey = null
+            apiKey = null,
         )
 
         translator.translate(request())
@@ -232,10 +264,13 @@ class OpenAiTranslatorTest {
     fun aLocalServerIsAskedWithoutAKey() = runTest {
         var sent: HttpRequestData? = null
         val translator = translator(
-            answers { sent = it; ok() },
+            answers {
+                sent = it
+                ok()
+            },
             provider = TranslationProvider.Local,
             baseUrl = "http://localhost:1234/v1",
-            apiKey = null
+            apiKey = null,
         )
 
         translator.translate(request())
@@ -248,10 +283,13 @@ class OpenAiTranslatorTest {
     fun aLocalServerStillGetsAKeyWhenOneWasGiven() = runTest {
         var sent: HttpRequestData? = null
         val translator = translator(
-            answers { sent = it; ok() },
+            answers {
+                sent = it
+                ok()
+            },
             provider = TranslationProvider.Local,
             baseUrl = "http://localhost:1234/v1",
-            apiKey = "behind-a-proxy"
+            apiKey = "behind-a-proxy",
         )
 
         translator.translate(request())
@@ -271,12 +309,12 @@ class OpenAiTranslatorTest {
                 content(
                     "Sure! Here is the translation:\n" +
                         "```json\n{\"translation\": \"Hei.\", \"note\": \"\"}\n```\n" +
-                        "Let me know if you need anything else."
+                        "Let me know if you need anything else.",
                 )
             },
             provider = TranslationProvider.Local,
             baseUrl = "http://localhost:1234/v1",
-            apiKey = null
+            apiKey = null,
         )
 
         assertEquals("Hei.", translator.translate(request()).text)
@@ -293,7 +331,13 @@ class OpenAiTranslatorTest {
     @Test
     fun withoutAKeyOpenAiIsNotAskedAtAll() = runTest {
         var asked = false
-        val translator = translator(answers { asked = true; ok() }, apiKey = null)
+        val translator = translator(
+            answers {
+                asked = true
+                ok()
+            },
+            apiKey = null,
+        )
 
         assertEquals(AppError.TranslationUnavailable, translator.failureFor(request()))
         assertTrue(!asked, "a request was sent without a key")
@@ -307,10 +351,13 @@ class OpenAiTranslatorTest {
     fun cleartextToThePublicInternetIsRefusedBeforeAnythingIsSent() = runTest {
         var asked = false
         val translator = translator(
-            answers { asked = true; ok() },
+            answers {
+                asked = true
+                ok()
+            },
             provider = TranslationProvider.Local,
             baseUrl = "http://models.example.com/v1",
-            apiKey = null
+            apiKey = null,
         )
 
         val error = translator.failureFor(request()) as AppError.Unexpected
@@ -326,7 +373,7 @@ class OpenAiTranslatorTest {
             MockEngine { throw kotlinx.io.IOException("Connection refused") },
             provider = TranslationProvider.Local,
             baseUrl = "http://localhost:1234/v1",
-            apiKey = null
+            apiKey = null,
         )
 
         val error = translator.failureFor(request()) as AppError.Unexpected
@@ -349,7 +396,7 @@ class OpenAiTranslatorTest {
             answers { respondJson("{}", HttpStatusCode.NotFound) },
             provider = TranslationProvider.Local,
             baseUrl = "http://localhost:1234",
-            apiKey = null
+            apiKey = null,
         )
 
         val error = translator.failureFor(request()) as AppError.Unexpected
@@ -363,14 +410,14 @@ class OpenAiTranslatorTest {
             answers {
                 respondJson(
                     """{"error": {"message": "model 'qwen' not found", "type": "invalid_request_error"}}""",
-                    HttpStatusCode.BadRequest
+                    HttpStatusCode.BadRequest,
                 )
-            }
+            },
         )
 
         assertEquals(
             AppError.Unexpected("model 'qwen' not found"),
-            translator.failureFor(request())
+            translator.failureFor(request()),
         )
     }
 
@@ -386,9 +433,9 @@ class OpenAiTranslatorTest {
             answers {
                 respondJson(
                     """{"error": {"message": "You exceeded your current quota.", "type": "insufficient_quota", "code": "insufficient_quota"}}""",
-                    HttpStatusCode.TooManyRequests
+                    HttpStatusCode.TooManyRequests,
                 )
-            }
+            },
         )
 
         val error = translator.failureFor(request()) as AppError.Unexpected
@@ -404,14 +451,14 @@ class OpenAiTranslatorTest {
             answers {
                 respondJson(
                     """{"error": {"message": "Rate limit reached for gpt-4.1", "type": "rate_limit_error"}}""",
-                    HttpStatusCode.TooManyRequests
+                    HttpStatusCode.TooManyRequests,
                 )
-            }
+            },
         )
 
         assertEquals(
             AppError.Unexpected("Rate limit reached for gpt-4.1"),
-            translator.failureFor(request())
+            translator.failureFor(request()),
         )
     }
 
@@ -427,7 +474,7 @@ class OpenAiTranslatorTest {
     @Test
     fun anAnswerCutShortSaysWhyRatherThanFailingToParse() = runTest {
         val translator = translator(
-            answers { content("""{"translation": "Kut""", finishReason = "length") }
+            answers { content("""{"translation": "Kut""", finishReason = "length") },
         )
 
         val error = translator.failureFor(request()) as AppError.Unexpected
@@ -436,14 +483,14 @@ class OpenAiTranslatorTest {
 
     private fun MockRequestHandleScope.ok(
         translation: String = "Hei.",
-        note: String = ""
+        note: String = "",
     ): HttpResponseData = content(
         json.encodeToString(
             buildJsonObject {
                 put("translation", translation)
                 put("note", note)
-            }
-        )
+            },
+        ),
     )
 
     /**
@@ -456,9 +503,9 @@ class OpenAiTranslatorTest {
      */
     private fun MockRequestHandleScope.content(
         text: String,
-        finishReason: String = "stop"
+        finishReason: String = "stop",
     ): HttpResponseData = respondStream(
-        text.inThirds().map { contentChunk(it) } + finished(finishReason)
+        text.inThirds().map { contentChunk(it) } + finished(finishReason),
     )
 
     private fun contentChunk(text: String): String = json.encodeToString(
@@ -467,9 +514,9 @@ class OpenAiTranslatorTest {
                 "choices",
                 buildJsonArray {
                     add(buildJsonObject { put("delta", buildJsonObject { put("content", text) }) })
-                }
+                },
             )
-        }
+        },
     )
 
     private fun finished(reason: String): String = json.encodeToString(
@@ -481,11 +528,11 @@ class OpenAiTranslatorTest {
                         buildJsonObject {
                             put("delta", buildJsonObject { })
                             put("finish_reason", reason)
-                        }
+                        },
                     )
-                }
+                },
             )
-        }
+        },
     )
 
     private fun translator(
@@ -493,17 +540,17 @@ class OpenAiTranslatorTest {
         provider: TranslationProvider = TranslationProvider.OpenAi,
         apiKey: String? = "sk-test",
         baseUrl: String? = null,
-        model: String = "gpt-4o"
+        model: String = "gpt-4o",
     ): OpenAiTranslator {
         val settings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()).apply {
             update(
                 TranslationSettings(
                     targetLanguage = TargetLanguage.Finnish,
-                    provider = provider
+                    provider = provider,
                 )
                     .withModel(model)
                     .withApiKey(apiKey.orEmpty())
-                    .let { if (baseUrl != null) it.withBaseUrl(baseUrl) else it }
+                    .let { if (baseUrl != null) it.withBaseUrl(baseUrl) else it },
             )
         }
 
@@ -519,11 +566,11 @@ class OpenAiTranslatorTest {
 
     private fun request(
         text: String = "Call me Ishmael.",
-        context: TranslationContext = TranslationContext.None
+        context: TranslationContext = TranslationContext.None,
     ) = TranslationRequest(
         text = text,
         targetLanguage = TargetLanguage.Finnish,
-        context = context
+        context = context,
     )
 
     private suspend fun OpenAiTranslator.failureFor(request: TranslationRequest): AppError =
@@ -535,7 +582,7 @@ class OpenAiTranslatorTest {
 }
 
 private fun answers(
-    handle: MockRequestHandleScope.(HttpRequestData) -> HttpResponseData
+    handle: MockRequestHandleScope.(HttpRequestData) -> HttpResponseData,
 ) = MockEngine { request -> handle(request) }
 
 /**
@@ -544,7 +591,7 @@ private fun answers(
  */
 private fun MockRequestHandleScope.respondStream(chunks: List<String>) = respond(
     content = chunks.joinToString("") { "data: $it\n\n" } + "data: [DONE]\n\n",
-    headers = headersOf("Content-Type", ContentType.Text.EventStream.toString())
+    headers = headersOf("Content-Type", ContentType.Text.EventStream.toString()),
 )
 
 /** Three pieces, so joining them is actually exercised. */
@@ -552,9 +599,9 @@ private fun String.inThirds(): List<String> = chunked((length + 2) / 3)
 
 private fun MockRequestHandleScope.respondJson(
     body: String,
-    status: HttpStatusCode = HttpStatusCode.OK
+    status: HttpStatusCode = HttpStatusCode.OK,
 ) = respond(
     content = body,
     status = status,
-    headers = headersOf("Content-Type", ContentType.Application.Json.toString())
+    headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
 )

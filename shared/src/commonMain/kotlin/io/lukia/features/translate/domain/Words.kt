@@ -19,7 +19,7 @@ data class Word(
     val index: Int,
     val start: Int,
     val end: Int,
-    val text: String
+    val text: String,
 )
 
 /**
@@ -50,7 +50,7 @@ fun Sentence.words(): List<Word> {
             index = words.size,
             start = start + cursor,
             end = start + end,
-            text = text.substring(cursor, end)
+            text = text.substring(cursor, end),
         )
 
         cursor = end

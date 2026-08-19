@@ -31,7 +31,7 @@ import io.lukia.shared.presentation.theme.WindowWidthClass
 fun ShortcutTooltip(
     description: String,
     shortcut: String,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     if (LocalWindowWidthClass.current == WindowWidthClass.Compact) {
         content()
@@ -44,13 +44,13 @@ fun ShortcutTooltip(
             PlainTooltip {
                 Text(
                     text = "$description  $shortcut",
-                    style = MaterialTheme.typography.labelSmall
+                    style = MaterialTheme.typography.labelSmall,
                 )
             }
         },
         state = rememberTooltipState(),
         focusable = false,
-        enableUserInput = true
+        enableUserInput = true,
     ) {
         Box(modifier = Modifier) { content() }
     }

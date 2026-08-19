@@ -39,7 +39,7 @@ class LibraryContentTest {
     private fun book(
         title: String,
         type: DocumentType = DocumentType.PDF,
-        favorite: Boolean = false
+        favorite: Boolean = false,
     ): DocumentInfo {
         val extension = if (type == DocumentType.EPUB) "epub" else "pdf"
 
@@ -47,12 +47,12 @@ class LibraryContentTest {
             document = PickedDocument(
                 fileName = "$title.$extension",
                 extension = extension,
-                location = "/library/$title.$extension"
+                location = "/library/$title.$extension",
             ),
             type = type,
             exists = true,
             sizeBytes = 1024L,
-            isFavorite = favorite
+            isFavorite = favorite,
         )
     }
 
@@ -63,13 +63,13 @@ class LibraryContentTest {
      */
     private val library = listOf(
         book("Moby Dick", favorite = true),
-        book("The Hobbit", DocumentType.EPUB)
+        book("The Hobbit", DocumentType.EPUB),
     )
 
     private fun ComposeUiTest.setLibrary(
         documents: List<DocumentInfo> = library,
         width: Dp = 1000.dp,
-        onDocumentDetails: (DocumentInfo) -> Unit = {}
+        onDocumentDetails: (DocumentInfo) -> Unit = {},
     ) {
         setContent {
             // The query is the ViewModel's in the app, so the test plays that
@@ -100,7 +100,7 @@ class LibraryContentTest {
                         onRefresh = {},
                         onDelete = {},
                         onRetry = {},
-                        isImporting = false
+                        isImporting = false,
                     )
                 }
             }

@@ -45,15 +45,18 @@ class GoogleTranslatorTest {
     fun aKeyIsSentToTheSupportedApi() = runTest {
         var sent: HttpRequestData? = null
         val translator = translator(
-            answers { sent = it; respondJson(CLOUD_ANSWER) },
-            apiKey = "google-key"
+            answers {
+                sent = it
+                respondJson(CLOUD_ANSWER)
+            },
+            apiKey = "google-key",
         )
 
         val translation = translator.translate(request())
 
         assertTrue(
             sent?.url.toString().startsWith("https://translation.googleapis.com/"),
-            sent?.url.toString()
+            sent?.url.toString(),
         )
         assertTrue(sent?.url.toString().contains("key=google-key"), sent?.url.toString())
         assertEquals("valas", translation.text)
@@ -64,15 +67,18 @@ class GoogleTranslatorTest {
     fun withoutAKeyThePublicEndpointIsAsked() = runTest {
         var sent: HttpRequestData? = null
         val translator = translator(
-            answers { sent = it; respondJson(PUBLIC_ANSWER) },
-            apiKey = null
+            answers {
+                sent = it
+                respondJson(PUBLIC_ANSWER)
+            },
+            apiKey = null,
         )
 
         val translation = translator.translate(request())
 
         assertTrue(
             sent?.url.toString().startsWith("https://translate.googleapis.com/"),
-            sent?.url.toString()
+            sent?.url.toString(),
         )
         assertEquals("valas", translation.text)
     }
@@ -81,7 +87,13 @@ class GoogleTranslatorTest {
     @Test
     fun theTargetLanguageIsAskedFor() = runTest {
         var sent: HttpRequestData? = null
-        val translator = translator(answers { sent = it; respondJson(PUBLIC_ANSWER) }, apiKey = null)
+        val translator = translator(
+            answers {
+                sent = it
+                respondJson(PUBLIC_ANSWER)
+            },
+            apiKey = null,
+        )
 
         translator.translate(request())
 
@@ -96,7 +108,7 @@ class GoogleTranslatorTest {
     fun everyPieceOfAPublicAnswerIsJoinedUp() = runTest {
         val translator = translator(
             answers { respondJson("""[[["itse","self",null,null,1],["-","-",null,null,1]]]""") },
-            apiKey = null
+            apiKey = null,
         )
 
         assertEquals("itse-", translator.translate(request("self-")).text)
@@ -107,7 +119,7 @@ class GoogleTranslatorTest {
     fun beingTurnedAwayWithoutAKeySaysToAddOne() = runTest {
         val translator = translator(
             answers { respondJson("", HttpStatusCode.TooManyRequests) },
-            apiKey = null
+            apiKey = null,
         )
 
         val error = translator.failure() as AppError.Unexpected
@@ -122,10 +134,10 @@ class GoogleTranslatorTest {
             answers {
                 respondJson(
                     """{"error": {"message": "API key not valid"}}""",
-                    HttpStatusCode.BadRequest
+                    HttpStatusCode.BadRequest,
                 )
             },
-            apiKey = "wrong"
+            apiKey = "wrong",
         )
 
         assertEquals(AppError.Unexpected("API key not valid"), translator.failure())
@@ -142,7 +154,7 @@ class GoogleTranslatorTest {
         val settings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()).apply {
             update(
                 TranslationSettings(targetLanguage = TargetLanguage.Finnish)
-                    .withGoogleApiKey(apiKey.orEmpty())
+                    .withGoogleApiKey(apiKey.orEmpty()),
             )
         }
 
@@ -158,7 +170,7 @@ class GoogleTranslatorTest {
     private fun request(text: String = "whale") = TranslationRequest(
         text = text,
         targetLanguage = TargetLanguage.Finnish,
-        unit = PassageUnit.Word
+        unit = PassageUnit.Word,
     )
 
     private suspend fun GoogleTranslator.failure(): AppError =
@@ -175,14 +187,14 @@ class GoogleTranslatorTest {
 }
 
 private fun answers(
-    handle: MockRequestHandleScope.(HttpRequestData) -> HttpResponseData
+    handle: MockRequestHandleScope.(HttpRequestData) -> HttpResponseData,
 ) = MockEngine { request -> handle(request) }
 
 private fun MockRequestHandleScope.respondJson(
     body: String,
-    status: HttpStatusCode = HttpStatusCode.OK
+    status: HttpStatusCode = HttpStatusCode.OK,
 ) = respond(
     content = body,
     status = status,
-    headers = headersOf("Content-Type", ContentType.Application.Json.toString())
+    headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
 )

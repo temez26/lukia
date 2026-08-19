@@ -24,7 +24,7 @@ import kotlinx.coroutines.CancellationException
  */
 class OpenAiModelCatalogue(
     private val client: HttpClient,
-    private val settings: TranslationSettingsRepository
+    private val settings: TranslationSettingsRepository,
 ) : ModelCatalogue {
 
     override suspend fun models(): List<String> {
@@ -33,8 +33,8 @@ class OpenAiModelCatalogue(
         if (!configured.isEndpointAllowed) {
             throw AppErrorException(
                 AppError.Unexpected(
-                    "Translating over plain HTTP is only allowed to your own network."
-                )
+                    "Translating over plain HTTP is only allowed to your own network.",
+                ),
             )
         }
 
@@ -56,8 +56,8 @@ class OpenAiModelCatalogue(
             throw AppErrorException(
                 AppError.Unexpected(
                     "${configured.baseUrl} did not answer with a list of models. Check the " +
-                        "address - it should end in /v1."
-                )
+                        "address - it should end in /v1.",
+                ),
             )
         }
 
@@ -72,7 +72,7 @@ class OpenAiModelCatalogue(
         // looks like the request never happened.
         if (models.isEmpty()) {
             throw AppErrorException(
-                AppError.Unexpected("That server has no models loaded at the moment.")
+                AppError.Unexpected("That server has no models loaded at the moment."),
             )
         }
 

@@ -3,19 +3,19 @@ package io.lukia.features.reader.presentation.screens
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ComposeUiTest
-import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.performKeyInput
-import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsNotEnabled
-import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollToIndexAction
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performScrollToIndex
+import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.runComposeUiTest
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
@@ -23,9 +23,9 @@ import io.lukia.core.domain.PickedDocument
 import io.lukia.core.domain.WorkingCopy
 import io.lukia.core.presentation.UiState
 import io.lukia.features.reader.domain.DocumentPages
-import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.OutlineEntry
 import io.lukia.features.reader.domain.PageSize
+import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
@@ -58,7 +58,7 @@ class ReaderContentTest {
         assertEquals(
             1,
             onAllNodes(hasContentDescription("Page 1 of 348") and hasClickAction())
-                .fetchSemanticsNodes().size
+                .fetchSemanticsNodes().size,
         )
     }
 
@@ -102,7 +102,7 @@ class ReaderContentTest {
                     onBack = {},
                     onRetry = {},
                     onSettingsChange = {},
-                    renderPage = { _, _ -> null }
+                    renderPage = { _, _ -> null },
                 )
             }
         }
@@ -135,7 +135,7 @@ class ReaderContentTest {
         waitForIdle()
         assertEquals(
             0,
-            onAllNodes(hasContentDescription("Close book")).fetchSemanticsNodes().size
+            onAllNodes(hasContentDescription("Close book")).fetchSemanticsNodes().size,
         )
 
         onNodeWithContentDescription("Page 2 of 348").performClick()
@@ -207,7 +207,7 @@ class ReaderContentTest {
     fun theBookStillReadsAtTheLargestPageWidth() = runComposeUiTest {
         setReader(
             pageCount = 348,
-            settings = ReaderSettings(pageScale = ReadingWidth.Largest.fraction)
+            settings = ReaderSettings(pageScale = ReadingWidth.Largest.fraction),
         )
 
         onNodeWithText("1 / 348").assertExists()
@@ -230,8 +230,10 @@ class ReaderContentTest {
 
         onNode(hasContentDescription("Increase text size") and hasClickAction())
             .assertIsNotEnabled()
-        onNodeWithText("Text settings apply to reflowable books - this one " +
-            "carries its own fixed layout.").assertExists()
+        onNodeWithText(
+            "Text settings apply to reflowable books - this one " +
+                "carries its own fixed layout.",
+        ).assertExists()
         assertNull(changed)
     }
 
@@ -292,7 +294,7 @@ class ReaderContentTest {
         assertEquals(
             0,
             onAllNodes(hasContentDescription("Hide sections of Introduction"))
-                .fetchSemanticsNodes().size
+                .fetchSemanticsNodes().size,
         )
     }
 
@@ -305,7 +307,7 @@ class ReaderContentTest {
 
         assertEquals(
             0,
-            onAllNodes(hasContentDescription("A Section, page 130")).fetchSemanticsNodes().size
+            onAllNodes(hasContentDescription("A Section, page 130")).fetchSemanticsNodes().size,
         )
 
         onNodeWithContentDescription("Show sections of The Middle").performClick()
@@ -334,7 +336,7 @@ class ReaderContentTest {
 
         assertEquals(
             0,
-            onAllNodes(hasContentDescription("A Section, page 130")).fetchSemanticsNodes().size
+            onAllNodes(hasContentDescription("A Section, page 130")).fetchSemanticsNodes().size,
         )
 
         onNodeWithContentDescription("Expand all").performClick()
@@ -348,15 +350,15 @@ class ReaderContentTest {
         setReader(
             pageCount = 348,
             outline = ReaderOutline.Chapters(
-                listOf(OutlineEntry(title = "Introduction", pageIndex = 0, level = 0))
-            )
+                listOf(OutlineEntry(title = "Introduction", pageIndex = 0, level = 0)),
+            ),
         )
 
         openContents(pageCount = 348)
 
         assertEquals(
             0,
-            onAllNodes(hasContentDescription("Collapse all")).fetchSemanticsNodes().size
+            onAllNodes(hasContentDescription("Collapse all")).fetchSemanticsNodes().size,
         )
     }
 
@@ -392,7 +394,7 @@ class ReaderContentTest {
         onNodeWithText("Chapters could not be read from this document.").assertExists()
         assertEquals(
             0,
-            onAllNodes(hasText("This document has no chapters.")).fetchSemanticsNodes().size
+            onAllNodes(hasText("This document has no chapters.")).fetchSemanticsNodes().size,
         )
     }
 
@@ -569,7 +571,7 @@ class ReaderContentTest {
         waitForIdle()
         assertEquals(
             0,
-            onAllNodes(hasContentDescription("Close book")).fetchSemanticsNodes().size
+            onAllNodes(hasContentDescription("Close book")).fetchSemanticsNodes().size,
         )
 
         onRoot().performKeyInput { pressKey(Key.Equals) }
@@ -597,8 +599,8 @@ class ReaderContentTest {
         listOf(
             OutlineEntry(title = "Introduction", pageIndex = 0, level = 0),
             OutlineEntry(title = "The Middle", pageIndex = 119, level = 0),
-            OutlineEntry(title = "A Section", pageIndex = 129, level = 1)
-        )
+            OutlineEntry(title = "A Section", pageIndex = 129, level = 1),
+        ),
     )
 
     private fun ComposeUiTest.setReader(
@@ -608,7 +610,7 @@ class ReaderContentTest {
         initialPage: Int? = null,
         onBack: () -> Unit = {},
         onSettingsChange: (ReaderSettings) -> Unit = {},
-        onPageSettled: (Int) -> Unit = {}
+        onPageSettled: (Int) -> Unit = {},
     ) {
         setContent {
             LukiaTheme {
@@ -623,7 +625,7 @@ class ReaderContentTest {
                     onPageSettled = onPageSettled,
                     // Pages never arrive: this is about the chrome around them,
                     // and a page's own sheet is laid out before it renders.
-                    renderPage = { _, _ -> null }
+                    renderPage = { _, _ -> null },
                 )
             }
         }
@@ -634,17 +636,17 @@ class ReaderContentTest {
             document = PickedDocument(
                 fileName = "book.pdf",
                 extension = "pdf",
-                location = "/library/book.pdf"
+                location = "/library/book.pdf",
             ),
             type = DocumentType.PDF,
             exists = true,
-            sizeBytes = 1024L
+            sizeBytes = 1024L,
         ),
         workingCopy = WorkingCopy(
             sourceLocation = "/library/book.pdf",
-            path = "/workspace/book.pdf"
+            path = "/workspace/book.pdf",
         ),
-        content = PagedContent(FakePages(pageCount))
+        content = PagedContent(FakePages(pageCount)),
     )
 
     private class FakePages(pageCount: Int) : DocumentPages {

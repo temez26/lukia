@@ -26,11 +26,11 @@ fun BookActionsMenu(
     onRefresh: () -> Unit,
     onDelete: () -> Unit,
     onDismissRequest: () -> Unit,
-    onShowDetails: (() -> Unit)? = null
+    onShowDetails: (() -> Unit)? = null,
 ) {
     AnchoredMenu(
         expanded = expanded,
-        onDismissRequest = onDismissRequest
+        onDismissRequest = onDismissRequest,
     ) {
         if (onShowDetails != null) {
             MenuRow(
@@ -39,7 +39,7 @@ fun BookActionsMenu(
                 onClick = {
                     onDismissRequest()
                     onShowDetails()
-                }
+                },
             )
 
             MenuSeparator()
@@ -53,7 +53,7 @@ fun BookActionsMenu(
             onClick = {
                 onDismissRequest()
                 onToggleFavorite()
-            }
+            },
         )
 
         MenuSeparator()
@@ -64,7 +64,7 @@ fun BookActionsMenu(
             onClick = {
                 onDismissRequest()
                 onRefresh()
-            }
+            },
         )
 
         MenuSeparator()
@@ -76,7 +76,7 @@ fun BookActionsMenu(
             onClick = {
                 onDismissRequest()
                 onDelete()
-            }
+            },
         )
     }
 }

@@ -25,12 +25,12 @@ import org.koin.compose.viewmodel.koinViewModel
 fun SettingsOverlay(
     visible: Boolean,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     OverlayPanel(
         visible = visible,
         onDismiss = onDismiss,
-        modifier = modifier
+        modifier = modifier,
     ) {
         SettingsPanelBody()
     }
@@ -73,6 +73,6 @@ private fun SettingsPanelBody(viewModel: SettingsViewModel = koinViewModel()) {
         bottomClearance = dimens.sectionSpacing,
         // A step away from the panel it sits on, rather than from the window
         // background the screen version sits on.
-        groupColor = MaterialTheme.colorScheme.surfaceVariant
+        groupColor = MaterialTheme.colorScheme.surfaceVariant,
     )
 }

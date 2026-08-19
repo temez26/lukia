@@ -24,20 +24,20 @@ class ImportFolderUseCaseTest {
 
     private val folder = PickedFolder(
         name = "Books",
-        location = "/test/books"
+        location = "/test/books",
     )
 
     @Test
     fun importsEveryScannedDocument() = runTest {
         val documents = listOf(
             TestDocuments.pdf(location = "/test/books/book.pdf"),
-            TestDocuments.epub(location = "/test/books/series/book.epub")
+            TestDocuments.epub(location = "/test/books/series/book.epub"),
         )
 
         val repository = FakeImportLibraryRepository()
         val useCase = createUseCase(
             scanner = FakeFolderScanner(documents),
-            repository = repository
+            repository = repository,
         )
 
         val result = useCase(folder)
@@ -45,7 +45,7 @@ class ImportFolderUseCaseTest {
         assertTrue(result.isSuccess)
         assertEquals(
             ImportSummary(imported = 2, alreadyInLibrary = 0, failed = 0),
-            result.getOrThrow()
+            result.getOrThrow(),
         )
         assertEquals(documents, repository.documents.map { it.document })
     }
@@ -55,7 +55,7 @@ class ImportFolderUseCaseTest {
         val repository = FakeImportLibraryRepository()
         val useCase = createUseCase(
             scanner = FakeFolderScanner(emptyList()),
-            repository = repository
+            repository = repository,
         )
 
         val result = useCase(folder)
@@ -63,7 +63,7 @@ class ImportFolderUseCaseTest {
         assertFalse(result.isSuccess)
         assertEquals(
             AppError.EmptyFolder,
-            result.exceptionOrNull()?.toAppError()
+            result.exceptionOrNull()?.toAppError(),
         )
         assertTrue(repository.documents.isEmpty())
     }
@@ -73,14 +73,14 @@ class ImportFolderUseCaseTest {
     fun reportsProgressOverTheWholeFolder() = runTest {
         val documents = listOf(
             TestDocuments.pdf(location = "/test/books/one.pdf"),
-            TestDocuments.pdf(location = "/test/books/two.pdf")
+            TestDocuments.pdf(location = "/test/books/two.pdf"),
         )
 
         val seen = mutableListOf<Pair<Int, Int>>()
 
         val useCase = createUseCase(
             scanner = FakeFolderScanner(documents),
-            repository = FakeImportLibraryRepository()
+            repository = FakeImportLibraryRepository(),
         )
 
         useCase(folder) { completed, total -> seen += completed to total }
@@ -90,27 +90,25 @@ class ImportFolderUseCaseTest {
 
     private fun TestScope.createUseCase(
         scanner: FolderScanner,
-        repository: FakeImportLibraryRepository
+        repository: FakeImportLibraryRepository,
     ) = ImportFolderUseCase(
         folderScanner = scanner,
         importDocumentsUseCase = ImportDocumentsUseCase(
             importDocumentUseCase = ImportDocumentUseCase(
                 documentAnalyzer = TypeFromExtensionAnalyzer(),
                 libraryRepository = repository,
-                dispatcher = UnconfinedTestDispatcher(testScheduler)
+                dispatcher = UnconfinedTestDispatcher(testScheduler),
             ),
             libraryRepository = repository,
-            dispatcher = UnconfinedTestDispatcher(testScheduler)
+            dispatcher = UnconfinedTestDispatcher(testScheduler),
         ),
-        dispatcher = UnconfinedTestDispatcher(testScheduler)
+        dispatcher = UnconfinedTestDispatcher(testScheduler),
     )
 
     private class FakeFolderScanner(
-        private val documents: List<PickedDocument>
+        private val documents: List<PickedDocument>,
     ) : FolderScanner {
 
-        override suspend fun scan(folder: PickedFolder): List<PickedDocument> {
-            return documents
-        }
+        override suspend fun scan(folder: PickedFolder): List<PickedDocument> = documents
     }
 }

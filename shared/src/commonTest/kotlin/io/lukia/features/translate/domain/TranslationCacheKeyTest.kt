@@ -39,7 +39,7 @@ class TranslationCacheKeyTest {
     fun theSamePassageInAnotherLanguageIsADifferentKey() {
         assertNotEquals(
             key(request()),
-            key(request(language = TargetLanguage.Spanish))
+            key(request(language = TargetLanguage.Spanish)),
         )
     }
 
@@ -52,7 +52,7 @@ class TranslationCacheKeyTest {
     fun anotherModelIsADifferentKey() {
         assertNotEquals(
             translationCacheKey(request(), translator = "Anthropic/claude-a"),
-            translationCacheKey(request(), translator = "Anthropic/claude-b")
+            translationCacheKey(request(), translator = "Anthropic/claude-b"),
         )
     }
 
@@ -64,7 +64,7 @@ class TranslationCacheKeyTest {
     fun theSameSentenceInDifferentSurroundingsIsADifferentKey() {
         assertNotEquals(
             key(request(context = TranslationContext(surroundingText = "He drew his piece."))),
-            key(request(context = TranslationContext(surroundingText = "She drew her piece.")))
+            key(request(context = TranslationContext(surroundingText = "She drew her piece."))),
         )
     }
 
@@ -72,7 +72,7 @@ class TranslationCacheKeyTest {
     fun aDifferentBookIsADifferentKey() {
         assertNotEquals(
             key(request(context = TranslationContext(bookTitle = "Moby-Dick"))),
-            key(request(context = TranslationContext(bookTitle = "Middlemarch")))
+            key(request(context = TranslationContext(bookTitle = "Middlemarch"))),
         )
     }
 
@@ -84,7 +84,7 @@ class TranslationCacheKeyTest {
     fun aFieldCannotSpillIntoTheOneAfterIt() {
         assertNotEquals(
             key(request(context = TranslationContext(bookTitle = "Moby", chapterTitle = "Dick"))),
-            key(request(context = TranslationContext(bookTitle = "MobyDick")))
+            key(request(context = TranslationContext(bookTitle = "MobyDick"))),
         )
     }
 
@@ -105,6 +105,6 @@ class TranslationCacheKeyTest {
     private fun request(
         text: String = passage,
         language: TargetLanguage = TargetLanguage.Finnish,
-        context: TranslationContext = TranslationContext.None
+        context: TranslationContext = TranslationContext.None,
     ) = TranslationRequest(text = text, targetLanguage = language, context = context)
 }

@@ -13,7 +13,7 @@ class SentencesTest {
 
         assertEquals(
             listOf("Call me Ishmael.", "Some years ago I went to sea."),
-            sentences.map { it.text }
+            sentences.map { it.text },
         )
     }
 
@@ -88,7 +88,7 @@ class SentencesTest {
 
         assertEquals(
             listOf("It cost 3.14 pounds.", "That was too much."),
-            sentences.map { it.text }
+            sentences.map { it.text },
         )
     }
 
@@ -98,7 +98,7 @@ class SentencesTest {
 
         assertEquals(
             listOf("Mr. Bennet was among the earliest.", "Mrs. Bennet was not."),
-            sentences.map { it.text }
+            sentences.map { it.text },
         )
     }
 
@@ -108,7 +108,7 @@ class SentencesTest {
 
         assertEquals(
             listOf("J. R. R. Tolkien wrote it.", "He took years."),
-            sentences.map { it.text }
+            sentences.map { it.text },
         )
     }
 

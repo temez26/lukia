@@ -36,7 +36,7 @@ private val SUPPORTED_MIME_TYPES = arrayOf(
     "text/plain",
     "text/markdown",
     "text/*",
-    "application/octet-stream"
+    "application/octet-stream",
 )
 
 /**
@@ -58,7 +58,6 @@ private class OpenPersistableDocuments :
 
 @Composable
 actual fun rememberPlatformFilePicker(): PlatformFilePickerState {
-
     val context = LocalContext.current
 
     val callback = remember {
@@ -80,21 +79,20 @@ actual fun rememberPlatformFilePicker(): PlatformFilePickerState {
                     runCatching {
                         resolver.takePersistableUriPermission(
                             uri,
-                            Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION,
                         )
                     }
 
                     uri.asPickedDocument(resolver)
-                }
+                },
             )
         }
 
     return object : PlatformFilePickerState {
 
         override fun launch(
-            onPicked: (List<PickedDocument>) -> Unit
+            onPicked: (List<PickedDocument>) -> Unit,
         ) {
-
             callback.value = onPicked
 
             launcher.launch(SUPPORTED_MIME_TYPES)
@@ -108,7 +106,6 @@ actual fun rememberPlatformFilePicker(): PlatformFilePickerState {
  * nothing about the file.
  */
 private fun Uri.asPickedDocument(resolver: ContentResolver): PickedDocument {
-
     var fileName = "Unknown"
 
     resolver.query(
@@ -116,11 +113,10 @@ private fun Uri.asPickedDocument(resolver: ContentResolver): PickedDocument {
         arrayOf(OpenableColumns.DISPLAY_NAME),
         null,
         null,
-        null
+        null,
     )?.use { cursor ->
 
         if (cursor.moveToFirst()) {
-
             val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
 
             if (index >= 0) {
@@ -132,6 +128,6 @@ private fun Uri.asPickedDocument(resolver: ContentResolver): PickedDocument {
     return PickedDocument(
         fileName = fileName,
         extension = fileName.substringAfterLast('.', ""),
-        location = toString()
+        location = toString(),
     )
 }

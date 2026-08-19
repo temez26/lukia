@@ -14,7 +14,7 @@ package io.lukia.features.settings.domain
 enum class AppTheme {
     System,
     Light,
-    Dark
+    Dark,
 }
 
 /**
@@ -26,5 +26,5 @@ enum class AppTheme {
  * the repository rather than a new pipe through the app.
  */
 data class AppSettings(
-    val theme: AppTheme = AppTheme.System
+    val theme: AppTheme = AppTheme.System,
 )

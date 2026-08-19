@@ -4,12 +4,12 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -62,10 +62,10 @@ import androidx.compose.ui.unit.dp
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
 import io.lukia.core.presentation.displayTitle
+import io.lukia.features.reader.domain.PageSize
 import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
-import io.lukia.features.reader.domain.PageSize
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReflowableContent
 import io.lukia.features.reader.domain.TextSection
@@ -73,33 +73,33 @@ import io.lukia.features.reader.presentation.PAGE_SCALE_STEP
 import io.lukia.features.reader.presentation.ReaderCommand
 import io.lukia.features.reader.presentation.ReaderViewModel
 import io.lukia.features.reader.presentation.SCROLL_NUDGE_FRACTION
+import io.lukia.features.reader.presentation.ShownTranslations
+import io.lukia.features.reader.presentation.TranslateOnScreen
 import io.lukia.features.reader.presentation.components.PageIndicatorButton
-import io.lukia.features.reader.presentation.readerCommandFor
+import io.lukia.features.reader.presentation.components.PageTranslationOverlay
+import io.lukia.features.reader.presentation.components.PassageActions
 import io.lukia.features.reader.presentation.components.ReaderContentsPanel
 import io.lukia.features.reader.presentation.components.ReaderSettingsPanel
 import io.lukia.features.reader.presentation.components.ReaderToolbar
-import io.lukia.features.reader.presentation.components.PageTranslationOverlay
-import io.lukia.features.reader.presentation.ShownTranslations
-import io.lukia.features.reader.presentation.TranslateOnScreen
-import io.lukia.features.reader.presentation.components.PassageActions
 import io.lukia.features.reader.presentation.components.TextSectionView
-import io.lukia.features.translate.domain.PageSentence
-import io.lukia.features.translate.domain.TextAnchor
-import io.lukia.features.translate.domain.sentenceAt
-import io.lukia.features.translate.domain.BulkTranslation
-import io.lukia.features.translate.domain.PassageUnit
-import io.lukia.features.translate.domain.Sentence
-import io.lukia.features.translate.domain.TranslationGestures
-import io.lukia.features.translate.presentation.PassageSelection
-import io.lukia.features.translate.presentation.PassageTranslation
-import io.lukia.features.translate.presentation.ReaderTranslations
-import io.lukia.features.translate.presentation.SentenceTranslations
 import io.lukia.features.reader.presentation.components.TextSettingsGlyph
 import io.lukia.features.reader.presentation.components.readerToolbarHeight
+import io.lukia.features.reader.presentation.readerCommandFor
 import io.lukia.features.reader.presentation.renderWidthFor
 import io.lukia.features.reader.presentation.theme.ReaderTheming
 import io.lukia.features.reader.presentation.theme.readerPageStyle
 import io.lukia.features.reader.presentation.theme.readerTextStyle
+import io.lukia.features.translate.domain.BulkTranslation
+import io.lukia.features.translate.domain.PageSentence
+import io.lukia.features.translate.domain.PassageUnit
+import io.lukia.features.translate.domain.Sentence
+import io.lukia.features.translate.domain.TextAnchor
+import io.lukia.features.translate.domain.TranslationGestures
+import io.lukia.features.translate.domain.sentenceAt
+import io.lukia.features.translate.presentation.PassageSelection
+import io.lukia.features.translate.presentation.PassageTranslation
+import io.lukia.features.translate.presentation.ReaderTranslations
+import io.lukia.features.translate.presentation.SentenceTranslations
 import io.lukia.shared.presentation.components.LukiaIconButton
 import io.lukia.shared.presentation.components.ShortcutTooltip
 import io.lukia.shared.presentation.components.TranslateGlyph
@@ -143,7 +143,7 @@ private val SheetPadding: Dp = 20.dp
 fun ReaderScreen(
     location: String,
     onBack: () -> Unit,
-    viewModel: ReaderViewModel = koinViewModel(parameters = { parametersOf(location) })
+    viewModel: ReaderViewModel = koinViewModel(parameters = { parametersOf(location) }),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val settings by viewModel.settings.collectAsState()
@@ -177,7 +177,7 @@ fun ReaderScreen(
         onContinuousTranslationChange = viewModel::setContinuousTranslation,
         onTranslationsVisibleChange = viewModel::setTranslationsVisible,
         sentencesOnPage = viewModel::sentencesOn,
-        renderPage = viewModel::page
+        renderPage = viewModel::page,
     )
 }
 
@@ -215,7 +215,7 @@ fun ReaderContent(
     onTranslationsVisibleChange: (Boolean) -> Unit = {},
     /** What is written on a page of a fixed-layout document, read when one is looked at. */
     sentencesOnPage: suspend (index: Int) -> List<PageSentence> = { emptyList() },
-    renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?
+    renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?,
 ) {
     val dimens = LocalLukiaDimens.current
     val scope = rememberCoroutineScope()
@@ -311,7 +311,7 @@ fun ReaderContent(
             },
             onToggleTranslationsShown = {
                 if (shownTranslations.any) onTranslationsVisibleChange(!shownTranslations.visible)
-            }
+            },
         )
 
         val focusRequester = remember { FocusRequester() }
@@ -350,12 +350,12 @@ fun ReaderContent(
                     chromeVisible = true
                     commands(command)
                     true
-                }
+                },
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                    .windowInsetsPadding(WindowInsets.safeDrawing),
             ) {
                 UiStateContent(
                     state = uiState,
@@ -365,7 +365,7 @@ fun ReaderContent(
                     // moved.
                     actionLabel = "Try again",
                     onAction = onRetry,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
                 ) { openDocument ->
                     when (val content = openDocument.content) {
                         is PagedContent -> PageList(
@@ -382,7 +382,7 @@ fun ReaderContent(
                             translateOnScreen = translateOnScreen,
                             gestures = gestures,
                             sentencesOnPage = sentencesOnPage,
-                            renderPage = renderPage
+                            renderPage = renderPage,
                         )
 
                         is ReflowableContent -> SectionList(
@@ -396,7 +396,7 @@ fun ReaderContent(
                             onPassageSelected = onPassageSelected,
                             onPassagesRequested = onPassagesRequested,
                             translateOnScreen = translateOnScreen,
-                            gestures = gestures
+                            gestures = gestures,
                         )
                     }
                 }
@@ -413,7 +413,7 @@ fun ReaderContent(
                         onDismiss = {
                             settingsExpanded = false
                             contentsExpanded = false
-                        }
+                        },
                     )
                 }
 
@@ -424,7 +424,7 @@ fun ReaderContent(
                     visible = chromeShown,
                     enter = topChromeIn(),
                     exit = topChromeOut(),
-                    modifier = Modifier.align(Alignment.TopCenter)
+                    modifier = Modifier.align(Alignment.TopCenter),
                 ) {
                     ReaderToolbar(
                         onBack = onBack,
@@ -441,7 +441,7 @@ fun ReaderContent(
                                 start = dimens.screenPadding,
                                 end = dimens.screenPadding,
                                 top = ChromeVerticalPadding,
-                                bottom = ChromeVerticalPadding
+                                bottom = ChromeVerticalPadding,
                             ),
                         centerControl = {
                             // Only once there is a book to be somewhere in.
@@ -453,7 +453,7 @@ fun ReaderContent(
                                     onClick = {
                                         settingsExpanded = false
                                         contentsExpanded = !contentsExpanded
-                                    }
+                                    },
                                 )
                             }
                         },
@@ -470,7 +470,7 @@ fun ReaderContent(
                                         offered = bulkTranslation,
                                         onTranslateOnScreen = onTranslateOnScreen,
                                         onContinuousChange = onContinuousTranslationChange,
-                                        onVisibleChange = onTranslationsVisibleChange
+                                        onVisibleChange = onTranslationsVisibleChange,
                                     )
                                 }
 
@@ -480,13 +480,13 @@ fun ReaderContent(
                                         onClick = {
                                             contentsExpanded = false
                                             settingsExpanded = !settingsExpanded
-                                        }
+                                        },
                                     ) { tint, glyph ->
                                         TextSettingsGlyph(tint = tint, modifier = glyph)
                                     }
                                 }
                             }
-                        }
+                        },
                     )
                 }
 
@@ -508,7 +508,7 @@ fun ReaderContent(
                         onDismissRequest = { contentsExpanded = false },
                         modifier = Modifier
                             .align(Alignment.TopCenter)
-                            .padding(top = chromeHeight)
+                            .padding(top = chromeHeight),
                     )
                 }
 
@@ -521,13 +521,12 @@ fun ReaderContent(
                     onDismissRequest = { settingsExpanded = false },
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(top = chromeHeight, end = dimens.screenPadding)
+                        .padding(top = chromeHeight, end = dimens.screenPadding),
                 )
             }
         }
     }
 }
-
 
 /**
  * Translating what is on screen, once or from now on.
@@ -551,7 +550,7 @@ private fun TranslationControls(
     offered: BulkTranslation,
     onTranslateOnScreen: () -> Unit,
     onContinuousChange: (Boolean) -> Unit,
-    onVisibleChange: (Boolean) -> Unit
+    onVisibleChange: (Boolean) -> Unit,
 ) {
     // Not there at all until the reader has asked for them in Settings. These
     // two are the ones that spend a screenful at a time - see BulkTranslation -
@@ -561,7 +560,7 @@ private fun TranslationControls(
         ShortcutTooltip(description = "Translate what is on screen", shortcut = "R") {
             LukiaIconButton(
                 label = "Translate what is on screen",
-                onClick = onTranslateOnScreen
+                onClick = onTranslateOnScreen,
             ) { tint, glyph ->
                 TranslateGlyph(tint = tint, modifier = glyph)
             }
@@ -575,7 +574,7 @@ private fun TranslationControls(
             } else {
                 "Keep translating as you read"
             },
-            shortcut = "E"
+            shortcut = "E",
         ) {
             LukiaIconButton(
                 label = if (continuous) {
@@ -588,7 +587,7 @@ private fun TranslationControls(
                     MaterialTheme.colorScheme.primary
                 } else {
                     MaterialTheme.colorScheme.onSurfaceVariant
-                }
+                },
             ) { tint, glyph ->
                 TranslateOnwardsGlyph(tint = tint, modifier = glyph)
             }
@@ -600,7 +599,7 @@ private fun TranslationControls(
     // until there is something for it to do.
     ShortcutTooltip(
         description = if (shown.visible) "Hide the translations" else "Show the translations",
-        shortcut = "H"
+        shortcut = "H",
     ) {
         LukiaIconButton(
             label = if (shown.visible) "Hide the translations" else "Show the translations",
@@ -610,7 +609,7 @@ private fun TranslationControls(
                 MaterialTheme.colorScheme.primary
             } else {
                 MaterialTheme.colorScheme.onSurfaceVariant
-            }
+            },
         ) { tint, glyph ->
             TranslationsShownGlyph(tint = tint, shown = shown.visible, modifier = glyph)
         }
@@ -638,7 +637,7 @@ private fun readerCommands(
     onToggleSettings: () -> Unit,
     onTranslateOnScreen: () -> Unit,
     onToggleContinuousTranslation: () -> Unit,
-    onToggleTranslationsShown: () -> Unit
+    onToggleTranslationsShown: () -> Unit,
 ): (ReaderCommand) -> Unit {
     val scope = rememberCoroutineScope()
 
@@ -671,7 +670,7 @@ private fun readerCommands(
                     settings.withLargerText()
                 } else {
                     settings.withPageScale(settings.pageScale + PAGE_SCALE_STEP)
-                }
+                },
             )
 
             ReaderCommand.Narrower -> onSettingsChange(
@@ -679,7 +678,7 @@ private fun readerCommands(
                     settings.withSmallerText()
                 } else {
                     settings.withPageScale(settings.pageScale - PAGE_SCALE_STEP)
-                }
+                },
             )
 
             ReaderCommand.ActualSize -> onSettingsChange(
@@ -687,7 +686,7 @@ private fun readerCommands(
                     settings.withTextScale(ReaderSettings.DEFAULT_TEXT_SCALE)
                 } else {
                     settings.withPageScale(ReaderSettings.DEFAULT_PAGE_SCALE)
-                }
+                },
             )
 
             ReaderCommand.ToggleContents -> onToggleContents()
@@ -717,7 +716,7 @@ private fun PageList(
     translateOnScreen: TranslateOnScreen,
     gestures: TranslationGestures,
     sentencesOnPage: suspend (index: Int) -> List<PageSentence>,
-    renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?
+    renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?,
 ) {
     val dimens = LocalLukiaDimens.current
     val pageSizes = pages.pages.pageSizes
@@ -756,12 +755,12 @@ private fun PageList(
                     onPinchEnd = {
                         pinchScale?.let(onPageScaleChange)
                         pinchScale = null
-                    }
+                    },
                 )
                 .pointerInput(Unit) {
                     detectTapGestures(onTap = { onToggleChrome() })
                 }
-                .horizontalScroll(rememberScrollState())
+                .horizontalScroll(rememberScrollState()),
         ) {
             LazyColumn(
                 state = listState,
@@ -771,11 +770,11 @@ private fun PageList(
                     // Clears the floating chrome, so the first page is not behind
                     // it when the book opens.
                     top = chromeHeight(),
-                    bottom = PageListPadding
+                    bottom = PageListPadding,
                 ),
                 modifier = Modifier
                     .width(contentWidth)
-                    .fillMaxHeight()
+                    .fillMaxHeight(),
             ) {
                 items(count = pageSizes.size) { index ->
                     DocumentPage(
@@ -793,7 +792,7 @@ private fun PageList(
                         translateOnScreen = translateOnScreen,
                         gestures = gestures,
                         sentencesOnPage = sentencesOnPage,
-                        renderPage = renderPage
+                        renderPage = renderPage,
                     )
                 }
             }
@@ -829,7 +828,7 @@ private fun SectionList(
     onPassageSelected: (PassageSelection) -> Unit,
     onPassagesRequested: (List<PassageSelection>) -> Unit,
     translateOnScreen: TranslateOnScreen,
-    gestures: TranslationGestures
+    gestures: TranslationGestures,
 ) {
     val dimens = LocalLukiaDimens.current
 
@@ -862,11 +861,11 @@ private fun SectionList(
                     onPinchEnd = {
                         pinchScale?.let { onSettingsChange(settings.withTextScale(it)) }
                         pinchScale = null
-                    }
+                    },
                 )
                 .pointerInput(Unit) {
                     detectTapGestures(onTap = { onToggleChrome() })
-                }
+                },
         ) {
             LazyColumn(
                 state = listState,
@@ -874,9 +873,9 @@ private fun SectionList(
                 verticalArrangement = Arrangement.spacedBy(PageGap),
                 contentPadding = PaddingValues(
                     top = chromeHeight(),
-                    bottom = PageListPadding
+                    bottom = PageListPadding,
                 ),
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             ) {
                 items(count = sections.size) { index ->
                     Box(
@@ -891,7 +890,7 @@ private fun SectionList(
                             .semantics {
                                 contentDescription =
                                     "Section ${index + 1} of ${sections.size}"
-                            }
+                            },
                     ) {
                         val section = sections[index]
 
@@ -907,8 +906,8 @@ private fun SectionList(
                                 chapterTitle = section.title,
                                 onToggleChrome = onToggleChrome,
                                 onPassageSelected = onPassageSelected,
-                                onPassagesRequested = onPassagesRequested
-                            )
+                                onPassagesRequested = onPassagesRequested,
+                            ),
                         )
                     }
                 }
@@ -916,7 +915,6 @@ private fun SectionList(
         }
     }
 }
-
 
 /**
  * What a tap, a long press and a call for the whole page mean in one section.
@@ -935,7 +933,7 @@ private fun rememberSectionActions(
     chapterTitle: String?,
     onToggleChrome: () -> Unit,
     onPassageSelected: (PassageSelection) -> Unit,
-    onPassagesRequested: (List<PassageSelection>) -> Unit
+    onPassagesRequested: (List<PassageSelection>) -> Unit,
 ): PassageActions {
     val toggleChrome = rememberUpdatedState(onToggleChrome)
     val selected = rememberUpdatedState(onPassageSelected)
@@ -948,18 +946,18 @@ private fun rememberSectionActions(
             wordIndex: Int?,
             passage: String,
             paragraph: String,
-            unit: PassageUnit
+            unit: PassageUnit,
         ) = PassageSelection(
             anchor = TextAnchor.Section(
                 sectionIndex = sectionIndex,
                 blockIndex = blockIndex,
                 sentenceIndex = sentenceIndex,
-                wordIndex = wordIndex
+                wordIndex = wordIndex,
             ),
             passage = passage,
             chapterTitle = chapterTitle,
             surroundingText = paragraph,
-            unit = unit
+            unit = unit,
         )
 
         PassageActions(
@@ -971,8 +969,8 @@ private fun rememberSectionActions(
                         wordIndex = null,
                         passage = sentence.text,
                         paragraph = paragraph,
-                        unit = PassageUnit.Sentence
-                    )
+                        unit = PassageUnit.Sentence,
+                    ),
                 )
             },
             // A word travels with the paragraph around it, exactly as a sentence
@@ -986,8 +984,8 @@ private fun rememberSectionActions(
                         wordIndex = word.index,
                         passage = word.text,
                         paragraph = paragraph,
-                        unit = PassageUnit.Word
-                    )
+                        unit = PassageUnit.Word,
+                    ),
                 )
             },
             // A paragraph is its own context, so it travels without one: there
@@ -1000,8 +998,8 @@ private fun rememberSectionActions(
                         wordIndex = null,
                         passage = paragraph,
                         paragraph = paragraph,
-                        unit = PassageUnit.Paragraph
-                    )
+                        unit = PassageUnit.Paragraph,
+                    ),
                 )
             },
             onBlock = { block, sentences, paragraph ->
@@ -1013,12 +1011,12 @@ private fun rememberSectionActions(
                             wordIndex = null,
                             passage = sentence.text,
                             paragraph = paragraph,
-                            unit = PassageUnit.Sentence
+                            unit = PassageUnit.Sentence,
                         )
-                    }
+                    },
                 )
             },
-            onElsewhere = { toggleChrome.value() }
+            onElsewhere = { toggleChrome.value() },
         )
     }
 }
@@ -1047,7 +1045,7 @@ private fun DocumentPage(
     translateOnScreen: TranslateOnScreen,
     gestures: TranslationGestures,
     sentencesOnPage: suspend (index: Int) -> List<PageSentence>,
-    renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?
+    renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?,
 ) {
     // Keyed on the width as well as the page: a resized window, or a different
     // zoom, invalidates what was drawn for the old one.
@@ -1105,9 +1103,9 @@ private fun DocumentPage(
                 PassageSelection(
                     anchor = TextAnchor.Page(pageIndex = index, sentenceIndex = sentence.index),
                     passage = sentence.text,
-                    surroundingText = pageText
+                    surroundingText = pageText,
                 )
-            }
+            },
         )
     }
 
@@ -1153,14 +1151,14 @@ private fun DocumentPage(
                             anchor = TextAnchor.Page(
                                 pageIndex = index,
                                 sentenceIndex = sentence.index,
-                                wordIndex = word?.index
+                                wordIndex = word?.index,
                             ),
                             passage = word?.text ?: sentence.text,
                             // A page has no chapter of its own to name, and the
                             // rest of the page is the context around a passage.
                             surroundingText = currentPageText,
-                            unit = if (word == null) PassageUnit.Sentence else PassageUnit.Word
-                        )
+                            unit = if (word == null) PassageUnit.Sentence else PassageUnit.Word,
+                        ),
                     )
                 }
 
@@ -1168,7 +1166,7 @@ private fun DocumentPage(
                     onTap = { position ->
                         val sentence = currentSentences.sentenceAt(
                             x = position.x / currentScale,
-                            y = position.y / currentScale
+                            y = position.y / currentScale,
                         )
 
                         // A tap that landed on no words is a tap on the page: a
@@ -1181,9 +1179,9 @@ private fun DocumentPage(
                             select(position, currentGestures.tap)
                         }
                     },
-                    onLongPress = { position -> select(position, currentGestures.longPress) }
+                    onLongPress = { position -> select(position, currentGestures.longPress) },
                 )
-            }
+            },
     ) {
         page?.let {
             Image(
@@ -1193,7 +1191,7 @@ private fun DocumentPage(
                 // ever scales - it never crops or letterboxes.
                 contentScale = ContentScale.FillBounds,
                 colorFilter = pageFilter,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             )
         }
 
@@ -1201,7 +1199,7 @@ private fun DocumentPage(
             sentences = sentences,
             translations = translations,
             scale = scale,
-            pageColor = pageColor
+            pageColor = pageColor,
         )
     }
 }
@@ -1223,7 +1221,7 @@ private fun Modifier.pinchToZoom(
     scale: Float,
     range: ClosedFloatingPointRange<Float>,
     onPinch: (Float) -> Unit,
-    onPinchEnd: () -> Unit
+    onPinchEnd: () -> Unit,
 ): Modifier {
     val currentScale by rememberUpdatedState(scale)
     val currentOnPinch by rememberUpdatedState(onPinch)
@@ -1264,7 +1262,7 @@ private fun DismissLayer(onDismiss: () -> Unit) {
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
-                onClick = onDismiss
-            )
+                onClick = onDismiss,
+            ),
     )
 }

@@ -39,7 +39,7 @@ data class TranslationSettings(
      * Whether the reader has asked for the two ways of translating more of the
      * book than they pointed at. Off until they do - see [BulkTranslation].
      */
-    val bulkTranslation: BulkTranslation = BulkTranslation.Default
+    val bulkTranslation: BulkTranslation = BulkTranslation.Default,
 ) {
 
     /** What the current provider is asked for, or what it offers by default. */
@@ -171,7 +171,7 @@ data class TranslationSettings(
             wordLookup: WordLookup = WordLookup.Default,
             googleKey: String? = null,
             gestures: TranslationGestures = TranslationGestures.Default,
-            bulkTranslation: BulkTranslation = BulkTranslation.Default
+            bulkTranslation: BulkTranslation = BulkTranslation.Default,
         ) = TranslationSettings(
             targetLanguage = targetLanguage,
             provider = provider,
@@ -182,7 +182,7 @@ data class TranslationSettings(
             wordLookup = wordLookup,
             googleKey = googleKey,
             gestures = gestures,
-            bulkTranslation = bulkTranslation
+            bulkTranslation = bulkTranslation,
         )
     }
 
@@ -208,5 +208,5 @@ private fun Map<TranslationProvider, Int>.timeoutFor(provider: TranslationProvid
 
 private fun Map<TranslationProvider, String>.replacing(
     provider: TranslationProvider,
-    value: String
+    value: String,
 ): Map<TranslationProvider, String> = if (value.isBlank()) this - provider else this + (provider to value)

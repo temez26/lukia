@@ -65,7 +65,7 @@ class TranslationCacheMigrationTest {
             INSERT INTO document(location, fileName, extension, type, fileExists, sizeBytes, isFavorite, coverImage, sortKey)
             VALUES ('/books/moby.epub', 'moby.epub', 'epub', 'EPUB', 1, 2048, 1, NULL, 1)
             """.trimIndent(),
-            0
+            0,
         )
 
         driver.execute(null, "PRAGMA user_version = 2", 0)
@@ -83,7 +83,7 @@ class TranslationCacheMigrationTest {
 
         assertEquals(
             "Kutsukaa minua Ismaeliksi.",
-            assertNotNull(cache.get(TranslationCacheKey("a"))).text
+            assertNotNull(cache.get(TranslationCacheKey("a"))).text,
         )
     }
 
@@ -105,7 +105,7 @@ class TranslationCacheMigrationTest {
         assertTrue(
             LukiaDatabase.Schema.version > 2,
             "The cache table needs a schema version bump, or no installed " +
-                "database will ever be migrated to it."
+                "database will ever be migrated to it.",
         )
     }
 }

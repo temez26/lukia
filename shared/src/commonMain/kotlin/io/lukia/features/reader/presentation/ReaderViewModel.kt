@@ -7,6 +7,7 @@ import io.lukia.core.domain.runCatchingApp
 import io.lukia.core.domain.toAppError
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
+import io.lukia.core.presentation.displayTitle
 import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderDocument
@@ -17,31 +18,30 @@ import io.lukia.features.reader.domain.ReadingProgressRepository
 import io.lukia.features.reader.domain.asTableOfContents
 import io.lukia.features.reader.domain.chapterCovering
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
-import io.lukia.core.presentation.displayTitle
 import io.lukia.features.translate.application.TranslatePassageUseCase
+import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.PageSentence
 import io.lukia.features.translate.domain.TextAnchor
-import io.lukia.features.translate.domain.pageSentences
-import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.asTranslationContext
+import io.lukia.features.translate.domain.pageSentences
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import io.lukia.features.translate.presentation.PassageSelection
 import io.lukia.features.translate.presentation.PassageTranslation
 import io.lukia.features.translate.presentation.TranslationSession
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 /**
  * How much drawn page is kept in memory, counted in pixels rather than pages.
@@ -74,7 +74,7 @@ class ReaderViewModel(
     private val settingsRepository: ReaderSettingsRepository,
     private val progressRepository: ReadingProgressRepository,
     translatePassage: TranslatePassageUseCase,
-    private val translationSettings: TranslationSettingsRepository
+    private val translationSettings: TranslationSettingsRepository,
 ) : ViewModel() {
 
     /**
@@ -122,7 +122,7 @@ class ReaderViewModel(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
-            initialValue = translationSettings.settings.value.bulkTranslation
+            initialValue = translationSettings.settings.value.bulkTranslation,
         )
 
     /**
@@ -141,7 +141,7 @@ class ReaderViewModel(
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
-            initialValue = TranslateOnScreen.Idle
+            initialValue = TranslateOnScreen.Idle,
         )
 
     /**
@@ -158,13 +158,13 @@ class ReaderViewModel(
 
             ShownTranslations(
                 any = answered.isNotEmpty(),
-                visible = answered.any { !it.showingOriginal }
+                visible = answered.any { !it.showingOriginal },
             )
         }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
-            initialValue = ShownTranslations.None
+            initialValue = ShownTranslations.None,
         )
 
     /**
@@ -175,6 +175,7 @@ class ReaderViewModel(
      * with" is worse than no button, and most of a reading app's users never
      * configure one.
      */
+
     /**
      * What a tap and a long press on the book ask for, straight from the
      * settings - so changing one takes effect on the very next tap rather than
@@ -185,7 +186,7 @@ class ReaderViewModel(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
-            initialValue = translationSettings.settings.value.gestures
+            initialValue = translationSettings.settings.value.gestures,
         )
 
     val translationConfigured: StateFlow<Boolean> = translationSettings.settings
@@ -193,7 +194,7 @@ class ReaderViewModel(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
-            initialValue = translationSettings.settings.value.isConfigured
+            initialValue = translationSettings.settings.value.isConfigured,
         )
 
     fun updateSettings(settings: ReaderSettings) {
@@ -220,7 +221,7 @@ class ReaderViewModel(
             val state = runCatchingApp { openDocumentUseCase(location).getOrThrow() }
                 .fold(
                     onSuccess = { UiState.Success(it) },
-                    onFailure = { UiState.Failure(it.toAppError()) }
+                    onFailure = { UiState.Failure(it.toAppError()) },
                 )
 
             _uiState.value = state
@@ -265,8 +266,8 @@ class ReaderViewModel(
                     location = location,
                     progress = ReadingProgress(
                         pageIndex = pageIndex,
-                        pageCount = document.content.unitCount
-                    )
+                        pageCount = document.content.unitCount,
+                    ),
                 )
             }
         }
@@ -397,9 +398,9 @@ class ReaderViewModel(
         context = info.metadata.asTranslationContext(
             bookTitle = info.displayTitle(),
             chapterTitle = selection.chapterTitle ?: chapterOf(selection.anchor),
-            surroundingText = selection.surroundingText
+            surroundingText = selection.surroundingText,
         ),
-        unit = selection.unit
+        unit = selection.unit,
     )
 
     /**

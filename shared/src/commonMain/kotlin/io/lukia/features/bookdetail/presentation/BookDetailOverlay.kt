@@ -54,7 +54,7 @@ fun BookDetailOverlay(
     onToggleFavorite: (DocumentInfo) -> Unit,
     onRefresh: (DocumentInfo) -> Unit,
     onDelete: (DocumentInfo) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val dimens = LocalLukiaDimens.current
 
@@ -77,7 +77,7 @@ fun BookDetailOverlay(
                 LukiaIconButton(
                     label = "Book actions",
                     onClick = { menuExpanded = true },
-                    variant = IconButtonVariant.Glass
+                    variant = IconButtonVariant.Glass,
                 ) { tint, glyph ->
                     EllipsisGlyph(tint = tint, modifier = glyph)
                 }
@@ -88,9 +88,9 @@ fun BookDetailOverlay(
                     onToggleFavorite = { onToggleFavorite(shown) },
                     onRefresh = { onRefresh(shown) },
                     onDelete = { onDelete(shown) },
-                    onDismissRequest = { menuExpanded = false }
+                    onDismissRequest = { menuExpanded = false },
                 )
-            }
+            },
         ) {
             BookDetailBody(
                 details = BookDetails(document = shown, progress = progress),
@@ -102,7 +102,7 @@ fun BookDetailOverlay(
                 coverWidth = PanelCoverWidth,
                 // A step away from the panel it sits on, rather than from the
                 // window background the screen version sits on.
-                infoCardColor = MaterialTheme.colorScheme.surfaceVariant
+                infoCardColor = MaterialTheme.colorScheme.surfaceVariant,
             )
         }
 
@@ -111,7 +111,7 @@ fun BookDetailOverlay(
         // reach the panel instead of dismissing the menu.
         ActionMenuScrim(
             visible = menuExpanded,
-            onDismiss = { menuExpanded = false }
+            onDismiss = { menuExpanded = false },
         )
     }
 }

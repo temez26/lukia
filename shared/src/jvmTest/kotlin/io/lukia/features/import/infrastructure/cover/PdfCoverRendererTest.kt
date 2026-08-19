@@ -1,8 +1,8 @@
 package io.lukia.features.import.infrastructure.cover
 
-import java.io.ByteArrayOutputStream
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
+import java.io.ByteArrayOutputStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull

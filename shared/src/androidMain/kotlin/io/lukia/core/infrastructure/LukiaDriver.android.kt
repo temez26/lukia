@@ -14,7 +14,7 @@ import io.lukia.core.infrastructure.db.LukiaDatabase
 fun lukiaSqlDriver(context: Context): SqlDriver = AndroidSqliteDriver(
     schema = LukiaDatabase.Schema,
     context = context,
-    name = DATABASE_FILE
+    name = DATABASE_FILE,
 )
 
 private const val DATABASE_FILE = "lukia.db"

@@ -1,7 +1,7 @@
 package io.lukia.features.import.infrastructure
 
-import io.lukia.core.domain.TestDocuments
 import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.TestDocuments
 import kotlinx.coroutines.test.runTest
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
@@ -25,7 +25,7 @@ class DesktopDocumentAnalyzerTest {
     fun analyzesPdfDocument() = runTest {
         val file = createTempFile(
             prefix = "lukia-test-",
-            suffix = ".pdf"
+            suffix = ".pdf",
         )
 
         try {
@@ -33,7 +33,7 @@ class DesktopDocumentAnalyzerTest {
             file.toFile().writeBytes(content)
 
             val document = TestDocuments.pdf(
-                location = file.toString()
+                location = file.toString(),
             )
 
             val result = analyzer.analyze(document)
@@ -51,7 +51,7 @@ class DesktopDocumentAnalyzerTest {
     fun analyzesEpubDocument() = runTest {
         val file = createTempFile(
             prefix = "lukia-test-",
-            suffix = ".epub"
+            suffix = ".epub",
         )
 
         try {
@@ -59,7 +59,7 @@ class DesktopDocumentAnalyzerTest {
             file.toFile().writeBytes(content)
 
             val document = TestDocuments.epub(
-                location = file.toString()
+                location = file.toString(),
             )
 
             val result = analyzer.analyze(document)
@@ -77,12 +77,12 @@ class DesktopDocumentAnalyzerTest {
     fun extensionIsCaseInsensitive() = runTest {
         val file = createTempFile(
             prefix = "lukia-test-",
-            suffix = ".PDF"
+            suffix = ".PDF",
         )
 
         try {
             val document = TestDocuments.uppercasePdf(
-                location = file.toString()
+                location = file.toString(),
             )
 
             val result = analyzer.analyze(document)
@@ -97,12 +97,12 @@ class DesktopDocumentAnalyzerTest {
     fun unsupportedExtensionReturnsUnknown() = runTest {
         val file = createTempFile(
             prefix = "lukia-test-",
-            suffix = ".mobi"
+            suffix = ".mobi",
         )
 
         try {
             val document = TestDocuments.unsupported(
-                location = file.toString()
+                location = file.toString(),
             )
 
             val result = analyzer.analyze(document)
@@ -117,12 +117,12 @@ class DesktopDocumentAnalyzerTest {
     fun analyzesEmptyDocumentWithZeroSize() = runTest {
         val file = createTempFile(
             prefix = "lukia-test-",
-            suffix = ".pdf"
+            suffix = ".pdf",
         )
 
         try {
             val document = TestDocuments.pdf(
-                location = file.toString()
+                location = file.toString(),
             )
 
             val result = analyzer.analyze(document)
@@ -139,7 +139,7 @@ class DesktopDocumentAnalyzerTest {
 
         try {
             val document = TestDocuments.pdf(
-                location = directory.toString()
+                location = directory.toString(),
             )
 
             val exception = assertFailsWith<IllegalArgumentException> {
@@ -147,7 +147,7 @@ class DesktopDocumentAnalyzerTest {
             }
 
             assertTrue(
-                exception.message!!.startsWith("Path is not a file:")
+                exception.message!!.startsWith("Path is not a file:"),
             )
         } finally {
             directory.toFile().deleteRecursively()
@@ -157,7 +157,7 @@ class DesktopDocumentAnalyzerTest {
     @Test
     fun nonexistentFileThrowsException() = runTest {
         val document = TestDocuments.missingPdf(
-            location = "/this/file/does/not/exist/book.pdf"
+            location = "/this/file/does/not/exist/book.pdf",
         )
 
         val exception = assertFailsWith<IllegalArgumentException> {
@@ -165,7 +165,7 @@ class DesktopDocumentAnalyzerTest {
         }
 
         assertTrue(
-            exception.message!!.startsWith("File does not exist:")
+            exception.message!!.startsWith("File does not exist:"),
         )
     }
 
@@ -173,14 +173,14 @@ class DesktopDocumentAnalyzerTest {
     fun analyzesPdfDocumentPopulatesCoverImage() = runTest {
         val file = createTempFile(
             prefix = "lukia-test-",
-            suffix = ".pdf"
+            suffix = ".pdf",
         )
 
         try {
             file.toFile().writeBytes(buildPdf())
 
             val document = TestDocuments.pdf(
-                location = file.toString()
+                location = file.toString(),
             )
 
             val result = analyzer.analyze(document)
@@ -200,7 +200,7 @@ class DesktopDocumentAnalyzerTest {
     fun analyzesEpubDocumentPopulatesCoverImage() = runTest {
         val file = createTempFile(
             prefix = "lukia-test-",
-            suffix = ".epub"
+            suffix = ".epub",
         )
 
         try {
@@ -208,7 +208,7 @@ class DesktopDocumentAnalyzerTest {
             file.toFile().writeBytes(buildEpub(coverBytes))
 
             val document = TestDocuments.epub(
-                location = file.toString()
+                location = file.toString(),
             )
 
             val result = analyzer.analyze(document)
@@ -246,7 +246,7 @@ class DesktopDocumentAnalyzerTest {
                         <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
                       </rootfiles>
                     </container>
-                """.trimIndent().encodeToByteArray()
+                """.trimIndent().encodeToByteArray(),
             )
 
             addEntry(
@@ -261,7 +261,7 @@ class DesktopDocumentAnalyzerTest {
                         <item id="cover-image" href="images/cover.jpg" media-type="image/jpeg"/>
                       </manifest>
                     </package>
-                """.trimIndent().encodeToByteArray()
+                """.trimIndent().encodeToByteArray(),
             )
 
             addEntry("OEBPS/images/cover.jpg", coverBytes)

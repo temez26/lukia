@@ -76,7 +76,7 @@ internal fun ReaderToolbar(
     title: String?,
     modifier: Modifier = Modifier,
     centerControl: @Composable () -> Unit,
-    endControl: @Composable () -> Unit
+    endControl: @Composable () -> Unit,
 ) {
     val wide = isWideWindow
 
@@ -84,14 +84,14 @@ internal fun ReaderToolbar(
         // A capsule, because this is the one piece of chrome in the app that
         // genuinely floats free of everything around it.
         shape = MaterialTheme.shapes.large,
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth(),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = if (wide) Arrangement.Start else Arrangement.SpaceBetween,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(readerToolbarHeight())
+                .height(readerToolbarHeight()),
         ) {
             val back: @Composable () -> Unit = {
                 ShortcutTooltip(description = "Close the book", shortcut = "Esc") {
@@ -108,7 +108,7 @@ internal fun ReaderToolbar(
                 // title beside it runs.
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 ) {
                     back()
 
@@ -120,7 +120,7 @@ internal fun ReaderToolbar(
                             color = MaterialTheme.colorScheme.onSurface,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.padding(start = Space.xs, end = Space.lg)
+                            modifier = Modifier.padding(start = Space.xs, end = Space.lg),
                         )
                     }
                 }
@@ -130,7 +130,7 @@ internal fun ReaderToolbar(
                 Row(
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 ) {
                     endControl()
                 }
@@ -160,7 +160,7 @@ internal fun PageIndicatorButton(
     listState: LazyListState,
     unitCount: Int,
     unit: ReadingUnit,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val current by remember(listState) {
         derivedStateOf { listState.firstVisibleItemIndex + 1 }
@@ -176,7 +176,7 @@ internal fun PageIndicatorButton(
             modifier = Modifier
                 .clip(shape)
                 .background(
-                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = LukiaAlpha.Fill)
+                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = LukiaAlpha.Fill),
                 )
                 .hoverHighlight(interactionSource, shape)
                 .focusRing(interactionSource, shape)
@@ -185,7 +185,7 @@ internal fun PageIndicatorButton(
                     interactionSource = interactionSource,
                     indication = null,
                     onClickLabel = "Open contents",
-                    onClick = onClick
+                    onClick = onClick,
                 )
                 .padding(horizontal = Space.md, vertical = Space.xs)
                 // "12 / 348" is a clear enough label to look at and a poor one to
@@ -194,20 +194,20 @@ internal fun PageIndicatorButton(
                 // Deliberately not a live region: this changes on every page, and
                 // announcing each one would talk over a reader scrolling through a
                 // long book. The pages themselves carry the position instead.
-                .semantics { contentDescription = "${unit.singular} $current of $unitCount" }
+                .semantics { contentDescription = "${unit.singular} $current of $unitCount" },
         ) {
             Text(
                 text = "$current / $unitCount",
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
 
             DisclosureChevron(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier
                     .padding(start = Space.xs)
-                    .size(metrics.iconSmall * 0.6f)
+                    .size(metrics.iconSmall * 0.6f),
             )
         }
     }

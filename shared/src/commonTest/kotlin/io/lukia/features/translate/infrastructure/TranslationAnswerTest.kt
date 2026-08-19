@@ -34,7 +34,7 @@ class TranslationAnswerTest {
         assertEquals("Kutsukaa", translationSoFar("""{"translation":"Kutsukaa"""))
         assertEquals(
             "Kutsukaa minua Ismaeliksi.",
-            translationSoFar("""{"translation":"Kutsukaa minua Ismaeliksi."""")
+            translationSoFar("""{"translation":"Kutsukaa minua Ismaeliksi.""""),
         )
     }
 
@@ -42,7 +42,7 @@ class TranslationAnswerTest {
     fun theSentenceStopsAtItsClosingQuoteRatherThanRunningIntoTheNote() {
         assertEquals(
             "Hei.",
-            translationSoFar("""{"translation":"Hei.","note":"An informal greeting."}""")
+            translationSoFar("""{"translation":"Hei.","note":"An informal greeting."}"""),
         )
     }
 
@@ -51,7 +51,7 @@ class TranslationAnswerTest {
     fun anEscapedQuoteIsPartOfTheSentenceRatherThanTheEndOfIt() {
         assertEquals(
             """He said "hello".""",
-            translationSoFar("""{"translation":"He said \"hello\".","note":""}""")
+            translationSoFar("""{"translation":"He said \"hello\".","note":""}"""),
         )
     }
 
@@ -59,7 +59,7 @@ class TranslationAnswerTest {
     fun escapesAreReadAsTheCharactersTheyStandFor() {
         assertEquals(
             "One\nTwo\tThree\\Four/Five",
-            translationSoFar("""{"translation":"One\nTwo\tThree\\Four\/Five"}""")
+            translationSoFar("""{"translation":"One\nTwo\tThree\\Four\/Five"}"""),
         )
         assertEquals("Ismaël", translationSoFar("""{"translation":"Isma\u00ebl"}"""))
     }
@@ -84,7 +84,7 @@ class TranslationAnswerTest {
     fun anAnswerWrappedInProseIsStillRead() {
         assertEquals(
             "Hei.",
-            translationSoFar("Sure! Here you go:\n```json\n{\"translation\": \"Hei.\"")
+            translationSoFar("Sure! Here you go:\n```json\n{\"translation\": \"Hei.\""),
         )
     }
 

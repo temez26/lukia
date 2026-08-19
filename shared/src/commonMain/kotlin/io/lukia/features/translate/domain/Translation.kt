@@ -28,7 +28,7 @@ data class TranslationContext(
      * Carried separately from the sentence itself so that whoever builds the
      * prompt can say which of the two is to be translated.
      */
-    val surroundingText: String? = null
+    val surroundingText: String? = null,
 ) {
 
     /** True when the book told us nothing worth sending. */
@@ -58,14 +58,14 @@ data class TranslationContext(
 fun BookMetadata?.asTranslationContext(
     bookTitle: String? = null,
     chapterTitle: String? = null,
-    surroundingText: String? = null
+    surroundingText: String? = null,
 ): TranslationContext = TranslationContext(
     bookTitle = this?.title?.takeIf { it.isNotBlank() } ?: bookTitle?.takeIf { it.isNotBlank() },
     authors = this?.authors.orEmpty().filter { it.isNotBlank() }.take(MAX_AUTHORS),
     genres = this?.subjects.orEmpty().filter { it.isNotBlank() }.take(MAX_GENRES),
     sourceLanguage = this?.language?.takeIf { it.isNotBlank() },
     chapterTitle = chapterTitle?.takeIf { it.isNotBlank() },
-    surroundingText = surroundingText?.takeIf { it.isNotBlank() }
+    surroundingText = surroundingText?.takeIf { it.isNotBlank() },
 )
 
 private const val MAX_AUTHORS = 3
@@ -80,7 +80,7 @@ data class Translation(
      * most sentences translate without anything worth saying about them, and a
      * note on every one of them would be noise rather than help.
      */
-    val note: String? = null
+    val note: String? = null,
 )
 
 /**
@@ -110,7 +110,7 @@ fun interface Translator {
      */
     suspend fun translate(
         request: TranslationRequest,
-        onPartial: (String) -> Unit
+        onPartial: (String) -> Unit,
     ): Translation
 }
 
@@ -135,5 +135,5 @@ data class TranslationRequest(
      * single word can go to a dictionary, and everything larger cannot. See
      * [WordLookup].
      */
-    val unit: PassageUnit = PassageUnit.Sentence
+    val unit: PassageUnit = PassageUnit.Sentence,
 )

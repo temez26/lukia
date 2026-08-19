@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.asStateFlow
  * reset someone's whole reader.
  */
 class ReaderSettingsRepository(
-    private val store: SettingsStore
+    private val store: SettingsStore,
 ) {
 
     private val _settings = MutableStateFlow(load())
@@ -48,7 +48,7 @@ class ReaderSettingsRepository(
                 ?: defaults.textScale,
             lineSpacing = store.readEnum(KEY_LINE_SPACING, LineSpacing.entries, defaults.lineSpacing),
             pageScale = readPageScale(defaults),
-            typeface = store.readEnum(KEY_TYPEFACE, ReaderTypeface.entries, defaults.typeface)
+            typeface = store.readEnum(KEY_TYPEFACE, ReaderTypeface.entries, defaults.typeface),
         )
     }
 

@@ -6,7 +6,7 @@ package io.lukia.features.reader.domain
  * `SqlReadingProgressRepositoryTest`.
  */
 class FakeReadingProgressRepository(
-    private val positions: MutableMap<String, ReadingProgress> = mutableMapOf()
+    private val positions: MutableMap<String, ReadingProgress> = mutableMapOf(),
 ) : ReadingProgressRepository {
 
     override suspend fun progressFor(location: String): ReadingProgress? = positions[location]

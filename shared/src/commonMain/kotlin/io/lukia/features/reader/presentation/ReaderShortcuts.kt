@@ -42,7 +42,7 @@ internal enum class ReaderCommand {
     /** Put every translation away, or bring them all back. */
     ToggleTranslationsShown,
 
-    Close
+    Close,
 }
 
 /**

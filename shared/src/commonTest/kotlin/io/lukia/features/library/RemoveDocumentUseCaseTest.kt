@@ -58,7 +58,7 @@ class RemoveDocumentUseCaseTest {
         document = TestDocuments.pdf(location = LOCATION),
         type = DocumentType.PDF,
         exists = true,
-        sizeBytes = 1024L
+        sizeBytes = 1024L,
     )
 
     /** Private to this test, as the other use-case tests here keep theirs. */

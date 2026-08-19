@@ -78,7 +78,7 @@ private fun markdownBlocks(source: String): List<TextBlock> {
 
                 blocks += TextBlock.Heading(
                     text = markdownRuns(text),
-                    level = if (line.trimStart().startsWith('=')) 1 else 2
+                    level = if (line.trimStart().startsWith('=')) 1 else 2,
                 )
             }
 
@@ -98,7 +98,7 @@ private fun markdownBlocks(source: String): List<TextBlock> {
                         flushParagraph()
                         blocks += TextBlock.Heading(
                             text = markdownRuns(heading.groupValues[2]),
-                            level = heading.groupValues[1].length
+                            level = heading.groupValues[1].length,
                         )
                     }
 
@@ -106,7 +106,7 @@ private fun markdownBlocks(source: String): List<TextBlock> {
                         flushParagraph()
                         blocks += TextBlock.ListItem(
                             text = markdownRuns(bullet.groupValues[1]),
-                            marker = "•"
+                            marker = "•",
                         )
                     }
 
@@ -117,7 +117,7 @@ private fun markdownBlocks(source: String): List<TextBlock> {
                             // The document's own number, not a count: a list that
                             // starts at 4, or that repeats 1., is written that way
                             // on purpose often enough to be worth honouring.
-                            marker = "${numbered.groupValues[1]}."
+                            marker = "${numbered.groupValues[1]}.",
                         )
                     }
 
@@ -146,7 +146,7 @@ private fun markdownBlocks(source: String): List<TextBlock> {
 private fun MutableList<TextBlock>.addFencedCode(
     lines: List<String>,
     from: Int,
-    fence: String
+    fence: String,
 ): Int {
     val code = mutableListOf<String>()
     var index = from
@@ -292,7 +292,7 @@ private fun parseLink(source: String, start: Int): MarkdownLink? {
 
     return MarkdownLink(
         text = source.substring(start + 1, textEnd),
-        end = targetEnd + 1
+        end = targetEnd + 1,
     )
 }
 

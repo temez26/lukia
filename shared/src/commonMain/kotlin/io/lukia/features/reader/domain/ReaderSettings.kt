@@ -8,20 +8,20 @@ import kotlin.math.roundToInt
 enum class ReaderTheme {
     Light,
     Sepia,
-    Dark
+    Dark,
 }
 
 /** Body face for reflowable text. Both resolve to the platform's own faces. */
 enum class ReaderTypeface {
     SansSerif,
-    Serif
+    Serif,
 }
 
 /** Leading presets, as a multiple of the text size. */
 enum class LineSpacing(val multiplier: Float) {
     Tight(1.2f),
     Normal(1.45f),
-    Relaxed(1.75f)
+    Relaxed(1.75f),
 }
 
 /**
@@ -36,7 +36,8 @@ enum class ReadingWidth(val fraction: Float) {
     Medium(0.9f),
     Wide(1f),
     Larger(1.25f),
-    Largest(1.5f);
+    Largest(1.5f),
+    ;
 
     /** True once the page no longer fits the space it is drawn in. */
     val overflowsColumn: Boolean
@@ -67,7 +68,7 @@ data class ReaderSettings(
      * has to be able to settle anywhere.
      */
     val pageScale: Float = DEFAULT_PAGE_SCALE,
-    val typeface: ReaderTypeface = ReaderTypeface.SansSerif
+    val typeface: ReaderTypeface = ReaderTypeface.SansSerif,
 ) {
 
     /** The preset this scale sits on, if it sits on one. */

@@ -29,17 +29,17 @@ actual fun rememberPlatformFolderPicker(): PlatformFolderPickerState {
             private var scopedFolders = mutableListOf<NSURL>()
 
             override fun launch(
-                onPicked: (PickedFolder?) -> Unit
+                onPicked: (PickedFolder?) -> Unit,
             ) {
                 val contentTypes = listOf(
-                    UTTypeFolder
+                    UTTypeFolder,
                 )
 
                 // asCopy = false: copying would duplicate the entire library
                 // folder into the app's sandbox.
                 val picker = UIDocumentPickerViewController(
                     forOpeningContentTypes = contentTypes,
-                    asCopy = false
+                    asCopy = false,
                 )
 
                 val pickerDelegate = object :
@@ -48,7 +48,7 @@ actual fun rememberPlatformFolderPicker(): PlatformFolderPickerState {
 
                     override fun documentPicker(
                         controller: UIDocumentPickerViewController,
-                        didPickDocumentsAtURLs: List<*>
+                        didPickDocumentsAtURLs: List<*>,
                     ) {
                         val url = didPickDocumentsAtURLs
                             .firstOrNull() as? NSURL
@@ -68,13 +68,13 @@ actual fun rememberPlatformFolderPicker(): PlatformFolderPickerState {
                         onPicked(
                             PickedFolder(
                                 name = name,
-                                location = location
-                            )
+                                location = location,
+                            ),
                         )
                     }
 
                     override fun documentPickerWasCancelled(
-                        controller: UIDocumentPickerViewController
+                        controller: UIDocumentPickerViewController,
                     ) {
                         onPicked(null)
                     }
@@ -93,7 +93,7 @@ actual fun rememberPlatformFolderPicker(): PlatformFolderPickerState {
                 rootViewController?.presentViewController(
                     picker,
                     animated = true,
-                    completion = null
+                    completion = null,
                 )
             }
         }

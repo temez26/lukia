@@ -16,7 +16,7 @@ class FakeDocumentWorkspace : DocumentWorkspace {
 
         return WorkingCopy(
             sourceLocation = location,
-            path = "/workspace/${document.document.fileName}"
+            path = "/workspace/${document.document.fileName}",
         )
     }
 

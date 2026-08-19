@@ -75,6 +75,27 @@ Examples of shared code include:
 - Kotlin Coroutines for asynchronous programming
 - Native Kotlin platform APIs
 
+## Code style
+
+Kotlin in this project is held to a written style guide, enforced on every pull request by
+**ktlint** (formatting), **detekt** (structure, complexity and Compose usage) and a
+project-specific file length check.
+
+The rule that shapes the codebase most: **a Kotlin file stays under 400 lines, and aims for
+350.** Past that, a file is doing more than one job and gets split along the layer
+boundaries above.
+
+```bash
+./gradlew ktlintFormat
+```
+
+```bash
+./gradlew ktlintCheck detekt checkFileLength
+```
+
+See [CODING_STYLE.md](CODING_STYLE.md) for the full guide - size limits, naming, Compose
+conventions, correctness rules, and how the baselines for existing violations work.
+
 ## Contributing
 
 See our [Guidelines](CONTRIBUTING.md) for details on how to submit changes, write clear PR titles, and structure your commits.

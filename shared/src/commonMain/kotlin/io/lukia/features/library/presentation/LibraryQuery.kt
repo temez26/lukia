@@ -29,7 +29,7 @@ data class LibraryQuery(
     val author: String? = null,
     /** A primary language subtag, lower-cased - see [LibraryBook.language]. */
     val language: String? = null,
-    val sort: LibrarySort = LibrarySort.Added
+    val sort: LibrarySort = LibrarySort.Added,
 ) {
     /**
      * True when anything in the filter menu is on. What decides whether the
@@ -59,7 +59,7 @@ data class LibraryQuery(
         format = null,
         category = null,
         author = null,
-        language = null
+        language = null,
     )
 
     /**
@@ -76,7 +76,7 @@ data class LibraryQuery(
         format = format?.takeIf { it in facets.formats },
         category = category?.takeIf { facets.categories.holds(it) },
         author = author?.takeIf { facets.authors.holds(it) },
-        language = language?.takeIf { it in facets.languages }
+        language = language?.takeIf { it in facets.languages },
     )
 }
 

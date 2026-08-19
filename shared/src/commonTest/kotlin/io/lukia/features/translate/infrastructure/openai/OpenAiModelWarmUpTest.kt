@@ -47,8 +47,12 @@ class OpenAiModelWarmUpTest {
         var body: JsonObject? = null
         var sent: HttpRequestData? = null
         val warmUp = warmUp(
-            answers { sent = it; body = it.jsonBody(); ok() },
-            model = "qwen2.5-7b-instruct"
+            answers {
+                sent = it
+                body = it.jsonBody()
+                ok()
+            },
+            model = "qwen2.5-7b-instruct",
         )
 
         warmUp.warmUp()
@@ -61,7 +65,12 @@ class OpenAiModelWarmUpTest {
     @Test
     fun onlyASingleTokenIsAskedFor() = runTest {
         var body: JsonObject? = null
-        val warmUp = warmUp(answers { body = it.jsonBody(); ok() })
+        val warmUp = warmUp(
+            answers {
+                body = it.jsonBody()
+                ok()
+            },
+        )
 
         warmUp.warmUp()
 
@@ -75,9 +84,9 @@ class OpenAiModelWarmUpTest {
             answers {
                 respondJson(
                     """{"error": {"message": "model 'qwen' not found"}}""",
-                    HttpStatusCode.NotFound
+                    HttpStatusCode.NotFound,
                 )
-            }
+            },
         )
 
         assertEquals(AppError.Unexpected("model 'qwen' not found"), warmUp.failure())
@@ -99,14 +108,14 @@ class OpenAiModelWarmUpTest {
 
     private fun warmUp(
         engine: MockEngine,
-        model: String = "local-model"
+        model: String = "local-model",
     ): OpenAiModelWarmUp {
         val settings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()).apply {
             update(
                 TranslationSettings(
                     targetLanguage = TargetLanguage.Finnish,
-                    provider = TranslationProvider.Local
-                ).withModel(model)
+                    provider = TranslationProvider.Local,
+                ).withModel(model),
             )
         }
 
@@ -127,16 +136,16 @@ class OpenAiModelWarmUpTest {
 }
 
 private fun answers(
-    handle: MockRequestHandleScope.(HttpRequestData) -> io.ktor.client.request.HttpResponseData
+    handle: MockRequestHandleScope.(HttpRequestData) -> io.ktor.client.request.HttpResponseData,
 ) = MockEngine { request -> handle(request) }
 
 private fun MockRequestHandleScope.ok() = respondJson("""{"choices": []}""")
 
 private fun MockRequestHandleScope.respondJson(
     body: String,
-    status: HttpStatusCode = HttpStatusCode.OK
+    status: HttpStatusCode = HttpStatusCode.OK,
 ) = respond(
     content = body,
     status = status,
-    headers = headersOf("Content-Type", ContentType.Application.Json.toString())
+    headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
 )

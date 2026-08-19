@@ -18,7 +18,7 @@ enum class TargetLanguage(
     /** The language's own name for itself, for the picker. */
     val endonym: String,
     /** Its English name, for the prompt - which is written in English. */
-    val englishName: String
+    val englishName: String,
 ) {
     English("en", "English", "English"),
     Finnish("fi", "Suomi", "Finnish"),
@@ -36,7 +36,8 @@ enum class TargetLanguage(
     Hindi("hi", "हिन्दी", "Hindi"),
     ChineseSimplified("zh-Hans", "简体中文", "Simplified Chinese"),
     Japanese("ja", "日本語", "Japanese"),
-    Korean("ko", "한국어", "Korean");
+    Korean("ko", "한국어", "Korean"),
+    ;
 
     companion object {
 

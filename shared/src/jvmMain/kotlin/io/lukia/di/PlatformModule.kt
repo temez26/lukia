@@ -1,9 +1,9 @@
 package io.lukia.di
 
+import app.cash.sqldelight.db.SqlDriver
 import io.lukia.core.domain.DocumentWorkspace
 import io.lukia.core.domain.SecretStore
 import io.lukia.core.domain.SettingsStore
-import app.cash.sqldelight.db.SqlDriver
 import io.lukia.core.infrastructure.JvmDocumentWorkspace
 import io.lukia.core.infrastructure.JvmSecretStore
 import io.lukia.core.infrastructure.JvmSettingsStore

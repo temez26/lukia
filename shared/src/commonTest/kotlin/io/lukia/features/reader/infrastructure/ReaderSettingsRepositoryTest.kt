@@ -36,7 +36,7 @@ class ReaderSettingsRepositoryTest {
             textScale = 1.4f,
             lineSpacing = LineSpacing.Relaxed,
             pageScale = ReadingWidth.Narrow.fraction,
-            typeface = ReaderTypeface.Serif
+            typeface = ReaderTypeface.Serif,
         )
 
         ReaderSettingsRepository(store).update(settings)
@@ -49,7 +49,7 @@ class ReaderSettingsRepositoryTest {
         val store = FakeSettingsStore()
 
         ReaderSettingsRepository(store).update(
-            ReaderSettings(theme = ReaderTheme.Sepia, pageScale = ReadingWidth.Medium.fraction)
+            ReaderSettings(theme = ReaderTheme.Sepia, pageScale = ReadingWidth.Medium.fraction),
         )
 
         assertEquals(ReaderTheme.Sepia.name, store.values["reader.theme"])
@@ -65,8 +65,8 @@ class ReaderSettingsRepositoryTest {
         val store = FakeSettingsStore(
             mapOf(
                 "reader.theme" to "Neon",
-                "reader.readingWidth" to ReadingWidth.Narrow.name
-            )
+                "reader.readingWidth" to ReadingWidth.Narrow.name,
+            ),
         )
 
         val settings = ReaderSettingsRepository(store).settings.value
@@ -81,7 +81,7 @@ class ReaderSettingsRepositoryTest {
 
         assertEquals(
             ReaderSettings().textScale,
-            ReaderSettingsRepository(store).settings.value.textScale
+            ReaderSettingsRepository(store).settings.value.textScale,
         )
     }
 
@@ -92,7 +92,7 @@ class ReaderSettingsRepositoryTest {
 
         assertEquals(
             ReaderSettings.MAX_TEXT_SCALE,
-            ReaderSettingsRepository(store).settings.value.textScale
+            ReaderSettingsRepository(store).settings.value.textScale,
         )
     }
 

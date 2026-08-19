@@ -23,7 +23,7 @@ import kotlinx.coroutines.withContext
  * being closed, which nothing held in memory can.
  */
 class CoalescingTranslator(
-    private val translator: Translator
+    private val translator: Translator,
 ) : Translator {
 
     private val guard = Mutex()
@@ -38,7 +38,7 @@ class CoalescingTranslator(
      */
     override suspend fun translate(
         request: TranslationRequest,
-        onPartial: (String) -> Unit
+        onPartial: (String) -> Unit,
     ): Translation {
         val answer = CompletableDeferred<Translation>()
 

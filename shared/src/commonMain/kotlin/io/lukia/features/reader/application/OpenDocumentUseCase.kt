@@ -20,7 +20,7 @@ class OpenDocumentUseCase(
     private val libraryRepository: LibraryRepository,
     private val documentWorkspace: DocumentWorkspace,
     /** Injectable so tests can open documents deterministically. */
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
     /**
      * Copying a book and reading its structure both run for as long as the file
@@ -55,8 +55,8 @@ class OpenDocumentUseCase(
                 ReaderDocument(
                     info = documentInfo,
                     workingCopy = workingCopy,
-                    content = content
-                )
+                    content = content,
+                ),
             )
         }
 }

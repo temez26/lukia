@@ -11,14 +11,13 @@ import io.lukia.features.library.domain.LibraryRepository
  * locations a platform analyzer would fail to open.
  */
 class TypeFromExtensionAnalyzer(
-    private val failingLocations: Set<String> = emptySet()
+    private val failingLocations: Set<String> = emptySet(),
 ) : DocumentAnalyzer {
 
     override suspend fun analyze(document: PickedDocument): DocumentInfo {
-
         if (document.location in failingLocations) {
             throw IllegalArgumentException(
-                "File does not exist: ${document.location}"
+                "File does not exist: ${document.location}",
             )
         }
 
@@ -26,14 +25,14 @@ class TypeFromExtensionAnalyzer(
             document = document,
             type = DocumentType.fromExtension(document.extension),
             exists = true,
-            sizeBytes = 1024L
+            sizeBytes = 1024L,
         )
     }
 }
 
 /** An in-memory library, keyed by location the way the real one is. */
 class FakeImportLibraryRepository(
-    initialDocuments: List<DocumentInfo> = emptyList()
+    initialDocuments: List<DocumentInfo> = emptyList(),
 ) : LibraryRepository {
 
     val documents = initialDocuments.toMutableList()

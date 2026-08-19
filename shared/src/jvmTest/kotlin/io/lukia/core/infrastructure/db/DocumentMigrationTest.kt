@@ -59,7 +59,7 @@ class DocumentMigrationTest {
             INSERT INTO document(location, fileName, extension, type, fileExists, sizeBytes, isFavorite, coverImage, sortKey)
             VALUES ('/books/moby.epub', 'moby.epub', 'epub', 'EPUB', 1, 2048, 1, NULL, 1)
             """.trimIndent(),
-            0
+            0,
         )
 
         driver.execute(null, "PRAGMA user_version = 1", 0)
@@ -101,9 +101,9 @@ class DocumentMigrationTest {
             existing.copy(
                 metadata = io.lukia.core.domain.BookMetadata(
                     title = "Moby Dick",
-                    authors = listOf("Herman Melville")
-                )
-            )
+                    authors = listOf("Herman Melville"),
+                ),
+            ),
         )
 
         val refreshed = repository.getDocument("/books/moby.epub")
@@ -119,7 +119,7 @@ class DocumentMigrationTest {
         assertTrue(
             LukiaDatabase.Schema.version > 1,
             "The metadata columns need a schema version bump, or no installed " +
-                "database will ever be migrated to them."
+                "database will ever be migrated to them.",
         )
     }
 }

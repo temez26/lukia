@@ -8,6 +8,7 @@ import io.lukia.core.domain.FakeSecretStore
 import io.lukia.core.domain.FakeSettingsStore
 import io.lukia.core.domain.PickedDocument
 import io.lukia.core.infrastructure.JvmDocumentWorkspace
+import io.lukia.core.infrastructure.testDatabase
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.library.domain.LibraryRepository
@@ -15,7 +16,6 @@ import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderTheme
-import io.lukia.core.infrastructure.testDatabase
 import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import io.lukia.features.reader.infrastructure.SqlReadingProgressRepository
@@ -26,8 +26,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeoutOrNull
@@ -51,7 +51,7 @@ class ReaderViewModelTest {
 
     private val root = File(
         System.getProperty("java.io.tmpdir"),
-        "lukia-reader-test-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}"
+        "lukia-reader-test-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}",
     )
     private val library = File(root, "library").also { it.mkdirs() }
     private val workspace = JvmDocumentWorkspace(directory = File(root, "workspace"))
@@ -71,7 +71,7 @@ class ReaderViewModelTest {
      */
     private val progress = SqlReadingProgressRepository(
         database = testDatabase(),
-        dispatcher = UnconfinedTestDispatcher()
+        dispatcher = UnconfinedTestDispatcher(),
     )
 
     /**
@@ -152,12 +152,12 @@ class ReaderViewModelTest {
             openDocumentUseCase = OpenDocumentUseCase(
                 libraryRepository = FakeLibraryRepository(),
                 documentWorkspace = workspace,
-                dispatcher = openDispatcher
+                dispatcher = openDispatcher,
             ),
             settingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
             progressRepository = progress,
             translatePassage = TranslatePassageUseCase(FakeTranslator()),
-            translationSettings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore())
+            translationSettings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()),
         ).also { track(it) }
 
         assertEquals(UiState.Failure(AppError.DocumentNotFound), viewModel.settled())
@@ -174,11 +174,11 @@ class ReaderViewModelTest {
             document = PickedDocument(
                 fileName = epub.name,
                 extension = "epub",
-                location = epub.absolutePath
+                location = epub.absolutePath,
             ),
             type = DocumentType.EPUB,
             exists = true,
-            sizeBytes = epub.length()
+            sizeBytes = epub.length(),
         )
 
         val viewModel = createViewModel(document)
@@ -193,11 +193,11 @@ class ReaderViewModelTest {
             document = PickedDocument(
                 fileName = broken.name,
                 extension = "pdf",
-                location = broken.absolutePath
+                location = broken.absolutePath,
             ),
             type = DocumentType.PDF,
             exists = true,
-            sizeBytes = broken.length()
+            sizeBytes = broken.length(),
         )
 
         val viewModel = createViewModel(document)
@@ -214,12 +214,12 @@ class ReaderViewModelTest {
             openDocumentUseCase = OpenDocumentUseCase(
                 libraryRepository = repository,
                 documentWorkspace = workspace,
-                dispatcher = openDispatcher
+                dispatcher = openDispatcher,
             ),
             settingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
             progressRepository = progress,
             translatePassage = TranslatePassageUseCase(FakeTranslator()),
-            translationSettings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore())
+            translationSettings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()),
         ).also { track(it) }
 
         assertEquals(UiState.Failure(AppError.DocumentNotFound), viewModel.settled())
@@ -300,7 +300,7 @@ class ReaderViewModelTest {
 
         assertEquals(
             listOf("Chapter 1", "Chapter 2"),
-            (outline as? ReaderOutline.Chapters)?.entries?.map { it.title }
+            (outline as? ReaderOutline.Chapters)?.entries?.map { it.title },
         )
     }
 
@@ -328,7 +328,7 @@ class ReaderViewModelTest {
         val document = pdfInLibrary(pageCount = 20)
         progress.save(
             location = document.document.location,
-            progress = ReadingProgress(pageIndex = 11, pageCount = 20)
+            progress = ReadingProgress(pageIndex = 11, pageCount = 20),
         )
 
         val viewModel = createViewModel(document)
@@ -363,7 +363,7 @@ class ReaderViewModelTest {
         val document = pdfInLibrary(pageCount = 5)
         progress.save(
             location = document.document.location,
-            progress = ReadingProgress(pageIndex = 400, pageCount = 500)
+            progress = ReadingProgress(pageIndex = 400, pageCount = 500),
         )
 
         val viewModel = createViewModel(document)
@@ -380,12 +380,12 @@ class ReaderViewModelTest {
             openDocumentUseCase = OpenDocumentUseCase(
                 libraryRepository = FakeLibraryRepository(),
                 documentWorkspace = workspace,
-                dispatcher = openDispatcher
+                dispatcher = openDispatcher,
             ),
             settingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
             progressRepository = progress,
             translatePassage = TranslatePassageUseCase(FakeTranslator()),
-            translationSettings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore())
+            translationSettings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()),
         ).also { track(it) }
         viewModel.settled()
 
@@ -424,12 +424,12 @@ class ReaderViewModelTest {
             openDocumentUseCase = OpenDocumentUseCase(
                 libraryRepository = FakeLibraryRepository(),
                 documentWorkspace = workspace,
-                dispatcher = openDispatcher
+                dispatcher = openDispatcher,
             ),
             settingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
             progressRepository = progress,
             translatePassage = TranslatePassageUseCase(FakeTranslator()),
-            translationSettings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore())
+            translationSettings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()),
         ).also { track(it) }
 
         assertNull(viewModel.page(index = 0, widthPx = 384))
@@ -451,12 +451,12 @@ class ReaderViewModelTest {
         openDocumentUseCase = OpenDocumentUseCase(
             libraryRepository = FakeLibraryRepository(listOf(document)),
             documentWorkspace = workspace,
-            dispatcher = openDispatcher
+            dispatcher = openDispatcher,
         ),
         settingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
         progressRepository = progress,
         translatePassage = TranslatePassageUseCase(FakeTranslator()),
-        translationSettings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore())
+        translationSettings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()),
     ).also { track(it) }
 
     private fun pdfInLibrary(pageCount: Int, chapters: Int = 0): DocumentInfo {
@@ -476,7 +476,7 @@ class ReaderViewModelTest {
                             destination = PDPageFitWidthDestination().apply {
                                 page = document.getPage(index % pageCount)
                             }
-                        }
+                        },
                     )
                 }
             }
@@ -488,11 +488,11 @@ class ReaderViewModelTest {
             document = PickedDocument(
                 fileName = file.name,
                 extension = "pdf",
-                location = file.absolutePath
+                location = file.absolutePath,
             ),
             type = DocumentType.PDF,
             exists = true,
-            sizeBytes = file.length()
+            sizeBytes = file.length(),
         )
     }
 
@@ -502,7 +502,7 @@ class ReaderViewModelTest {
     }
 
     private class FakeLibraryRepository(
-        initialDocuments: List<DocumentInfo> = emptyList()
+        initialDocuments: List<DocumentInfo> = emptyList(),
     ) : LibraryRepository {
         private val documents = initialDocuments.toMutableList()
 

@@ -22,7 +22,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.lerp as lerpColor
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.style.TextOverflow
@@ -41,6 +40,7 @@ import io.lukia.shared.presentation.theme.LukiaElevation
 import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.Space
 import kotlinx.coroutines.launch
+import androidx.compose.ui.graphics.lerp as lerpColor
 
 /** How far the cover swings open, in degrees about its spine. */
 private const val OpenAngle = -34f
@@ -67,7 +67,7 @@ internal fun ImportBookCard(
     reveal: LaunchReveal,
     revealIndex: Int,
     modifier: Modifier = Modifier,
-    label: String? = "Add Books"
+    label: String? = "Add Books",
 ) {
     val scope = rememberCoroutineScope()
     val openAngle = remember { Animatable(0f) }
@@ -82,7 +82,7 @@ internal fun ImportBookCard(
     val glyphTint = lerpColor(
         start = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f),
         stop = MaterialTheme.colorScheme.primary,
-        fraction = hover
+        fraction = hover,
     )
 
     Column(
@@ -90,7 +90,7 @@ internal fun ImportBookCard(
             .launchReveal(reveal, index = revealIndex)
             // The same inset a book card carries, so this slot's tile and caption
             // line up with its neighbours' rather than sitting a few pixels low.
-            .padding(Space.xs)
+            .padding(Space.xs),
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             Box(
@@ -116,7 +116,7 @@ internal fun ImportBookCard(
                     .shadow(
                         elevation = lerp(0.dp, LukiaElevation.cardHovered, hover),
                         shape = shape,
-                        clip = false
+                        clip = false,
                     )
                     .pointerHoverIcon(PointerIcon.Hand)
                     .clip(shape)
@@ -124,13 +124,13 @@ internal fun ImportBookCard(
                     .border(
                         width = HairlineWidth,
                         color = MaterialTheme.colorScheme.outlineVariant,
-                        shape = shape
+                        shape = shape,
                     )
                     .focusRing(interactionSource, shape)
                     .clickable(
                         interactionSource = interactionSource,
                         indication = null,
-                        onClickLabel = "Add books"
+                        onClickLabel = "Add books",
                     ) {
                         scope.launch {
                             openAngle.animateTo(OpenAngle, LukiaMotion.standard())
@@ -139,7 +139,7 @@ internal fun ImportBookCard(
                             onMenuRequest()
                             openAngle.animateTo(0f, LukiaMotion.bouncy())
                         }
-                    }
+                    },
             ) {
                 PlusGlyph(tint = glyphTint, modifier = Modifier.size(26.dp))
             }
@@ -148,12 +148,12 @@ internal fun ImportBookCard(
             // menu hangs under that one.
             AnchoredMenu(
                 expanded = menuExpanded,
-                onDismissRequest = onMenuDismiss
+                onDismissRequest = onMenuDismiss,
             ) {
                 ImportMenuRows(
                     onDismissRequest = onMenuDismiss,
                     onImport = onImport,
-                    onImportFolder = onImportFolder
+                    onImportFolder = onImportFolder,
                 )
             }
         }
@@ -168,7 +168,7 @@ internal fun ImportBookCard(
                 // caption sits on the same line as its neighbours'.
                 minLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(top = Space.md)
+                modifier = Modifier.padding(top = Space.md),
             )
         }
     }

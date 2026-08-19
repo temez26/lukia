@@ -127,7 +127,7 @@ internal fun ReaderContentsPanel(
     outline: ReaderOutline,
     onGoToPage: (pageIndex: Int) -> Unit,
     onDismissRequest: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val progress = rememberPopoverProgress(expanded, label = "readerContentsPanel")
 
@@ -148,25 +148,25 @@ internal fun ReaderContentsPanel(
     GlassSurface(
         shape = MaterialTheme.shapes.large,
         tone = GlassTone.Panel,
-        modifier = modifier.popoverTransition(progress, PanelTransformOrigin)
+        modifier = modifier.popoverTransition(progress, PanelTransformOrigin),
     ) {
         Column(
             modifier = Modifier
                 .width(if (wide) WidePanelWidth else CompactPanelWidth)
-                .padding(vertical = Space.md)
+                .padding(vertical = Space.md),
         ) {
             PositionScrubber(
                 current = currentPage,
                 unitCount = unitCount,
                 unit = unit,
                 inset = inset,
-                onGoTo = onGoToPage
+                onGoTo = onGoToPage,
             )
 
             LukiaDivider(
                 inset = inset,
                 endInset = inset,
-                modifier = Modifier.padding(vertical = Space.md)
+                modifier = Modifier.padding(vertical = Space.md),
             )
 
             Chapters(
@@ -178,7 +178,7 @@ internal fun ReaderContentsPanel(
                 onGoToPage = {
                     onGoToPage(it)
                     onDismissRequest()
-                }
+                },
             )
         }
     }
@@ -198,7 +198,7 @@ private fun PositionScrubber(
     unitCount: Int,
     unit: ReadingUnit,
     inset: Dp,
-    onGoTo: (index: Int) -> Unit
+    onGoTo: (index: Int) -> Unit,
 ) {
     var dragged by remember { mutableStateOf<Int?>(null) }
 
@@ -212,12 +212,12 @@ private fun PositionScrubber(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
                 text = "${unit.singular} $shown of $unitCount",
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             // How far in, which the page number alone does not say: page 120 is
@@ -225,7 +225,7 @@ private fun PositionScrubber(
             Text(
                 text = "${percentThrough(shown, unitCount)}%",
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
 
@@ -242,15 +242,15 @@ private fun PositionScrubber(
                 colors = SliderDefaults.colors(
                     thumbColor = MaterialTheme.colorScheme.primary,
                     activeTrackColor = MaterialTheme.colorScheme.primary,
-                    inactiveTrackColor = MaterialTheme.colorScheme.outlineVariant
+                    inactiveTrackColor = MaterialTheme.colorScheme.outlineVariant,
                 ),
                 modifier = Modifier
                     .height(ScrubberHeight)
                     .semantics {
                         contentDescription =
                             "Go to ${unit.singular.lowercase()}. " +
-                                "${unit.singular} $shown of $unitCount"
-                    }
+                            "${unit.singular} $shown of $unitCount"
+                    },
             )
         }
     }
@@ -273,7 +273,7 @@ private fun Chapters(
     unit: ReadingUnit,
     inset: Dp,
     listMaxHeight: Dp,
-    onGoToPage: (pageIndex: Int) -> Unit
+    onGoToPage: (pageIndex: Int) -> Unit,
 ) {
     // Outside the branch below, so the heading reads the same whether what
     // follows it is the contents or the reason there are none, and so the
@@ -288,7 +288,7 @@ private fun Chapters(
         inset = inset,
         onToggleAll = {
             collapsed = if (collapsed == collapsible) emptySet() else collapsible
-        }
+        },
     )
 
     when {
@@ -309,7 +309,7 @@ private fun Chapters(
             onToggle = { index ->
                 collapsed = if (index in collapsed) collapsed - index else collapsed + index
             },
-            onGoToPage = onGoToPage
+            onGoToPage = onGoToPage,
         )
     }
 }
@@ -323,7 +323,7 @@ private fun ChapterList(
     inset: Dp,
     listMaxHeight: Dp,
     onToggle: (index: Int) -> Unit,
-    onGoToPage: (pageIndex: Int) -> Unit
+    onGoToPage: (pageIndex: Int) -> Unit,
 ) {
     val rows = remember(entries, collapsed) { chapterRows(entries, collapsed) }
 
@@ -352,7 +352,7 @@ private fun ChapterList(
 
     LazyColumn(
         state = listState,
-        modifier = Modifier.heightIn(max = listMaxHeight)
+        modifier = Modifier.heightIn(max = listMaxHeight),
     ) {
         items(items = rows, key = { it.index }) { row ->
             ChapterRowItem(
@@ -361,7 +361,7 @@ private fun ChapterList(
                 inset = inset,
                 isCurrent = row.index == currentRow?.index,
                 onToggle = { onToggle(row.index) },
-                onClick = { onGoToPage(row.entry.pageIndex) }
+                onClick = { onGoToPage(row.entry.pageIndex) },
             )
         }
     }
@@ -375,7 +375,7 @@ private fun ChapterList(
 private fun ChaptersHeader(
     collapseAll: Boolean?,
     inset: Dp,
-    onToggleAll: () -> Unit
+    onToggleAll: () -> Unit,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -384,7 +384,7 @@ private fun ChaptersHeader(
             .fillMaxWidth()
             // The trailing inset is smaller because the ghost button beside it
             // carries padding of its own; matching them would double it.
-            .padding(start = inset, end = inset - Space.md, bottom = Space.xxs)
+            .padding(start = inset, end = inset - Space.md, bottom = Space.xxs),
     ) {
         SectionLabel(text = "Chapters")
 
@@ -393,7 +393,7 @@ private fun ChaptersHeader(
                 label = if (collapseAll) "Collapse all" else "Expand all",
                 onClick = onToggleAll,
                 variant = ButtonVariant.Ghost,
-                size = ButtonSize.Compact
+                size = ButtonSize.Compact,
             )
         }
     }
@@ -417,7 +417,7 @@ private fun ChapterRowItem(
     inset: Dp,
     isCurrent: Boolean,
     onToggle: () -> Unit,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val entry = row.entry
     val isChapter = entry.level == 0
@@ -435,7 +435,7 @@ private fun ChapterRowItem(
                     MaterialTheme.colorScheme.primary.copy(alpha = LukiaAlpha.Selected)
                 } else {
                     Color.Transparent
-                }
+                },
             )
             .drawBehind {
                 if (isCurrent) {
@@ -443,7 +443,7 @@ private fun ChapterRowItem(
                         color = markerColor,
                         topLeft = Offset(0f, size.height * 0.18f),
                         size = Size(CurrentMarkerWidth.toPx(), size.height * 0.64f),
-                        cornerRadius = CornerRadius(CurrentMarkerWidth.toPx())
+                        cornerRadius = CornerRadius(CurrentMarkerWidth.toPx()),
                     )
                 }
 
@@ -457,7 +457,7 @@ private fun ChapterRowItem(
                         color = guideColor,
                         start = Offset(x, 0f),
                         end = Offset(x, size.height),
-                        strokeWidth = HairlineWidth.toPx()
+                        strokeWidth = HairlineWidth.toPx(),
                     )
                 }
             }
@@ -468,21 +468,21 @@ private fun ChapterRowItem(
                 interactionSource = interactionSource,
                 indication = null,
                 onClickLabel = "Go to ${entry.title}",
-                onClick = onClick
+                onClick = onClick,
             )
             .heightIn(min = metrics.rowHeight)
             .padding(start = inset + LevelIndent * entry.level, end = inset)
             .semantics {
                 contentDescription =
                     "${entry.title}, ${unit.singular.lowercase()} ${entry.pageIndex + 1}"
-            }
+            },
     ) {
         if (row.hasChildren) {
             DisclosureToggle(
                 collapsed = row.isCollapsed,
                 title = entry.title,
                 rowHeight = metrics.rowHeight,
-                onClick = onToggle
+                onClick = onToggle,
             )
         } else {
             // Kept empty rather than closed up, so titles line up down the panel
@@ -507,7 +507,7 @@ private fun ChapterRowItem(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
                 .weight(1f)
-                .padding(vertical = Space.sm)
+                .padding(vertical = Space.sm),
         )
 
         Text(
@@ -522,7 +522,7 @@ private fun ChapterRowItem(
             maxLines = 1,
             modifier = Modifier
                 .padding(start = Space.md)
-                .widthIn(min = PageNumberWidth)
+                .widthIn(min = PageNumberWidth),
         )
     }
 }
@@ -539,12 +539,12 @@ private fun DisclosureToggle(
     collapsed: Boolean,
     title: String,
     rowHeight: Dp,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val rotation by animateFloatAsState(
         targetValue = if (collapsed) -90f else 0f,
         animationSpec = LukiaMotion.gentle(),
-        label = "chapterDisclosure"
+        label = "chapterDisclosure",
     )
 
     val label = if (collapsed) "Show sections of $title" else "Hide sections of $title"
@@ -563,15 +563,15 @@ private fun DisclosureToggle(
                 interactionSource = interactionSource,
                 indication = null,
                 onClickLabel = label,
-                onClick = onClick
+                onClick = onClick,
             )
-            .semantics { contentDescription = label }
+            .semantics { contentDescription = label },
     ) {
         DisclosureChevron(
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
                 .size(10.dp)
-                .graphicsLayer { rotationZ = rotation }
+                .graphicsLayer { rotationZ = rotation },
         )
     }
 }
@@ -582,6 +582,6 @@ private fun ChaptersNotice(message: String, inset: Dp) {
         text = message,
         style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(horizontal = inset, vertical = Space.md)
+        modifier = Modifier.padding(horizontal = inset, vertical = Space.md),
     )
 }

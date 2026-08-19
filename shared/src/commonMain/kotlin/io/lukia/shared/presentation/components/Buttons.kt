@@ -52,13 +52,13 @@ enum class ButtonVariant {
     Ghost,
 
     /** Deleting. Carries the error colour so it reads as destructive on sight. */
-    Destructive
+    Destructive,
 }
 
 /** Buttons come in two weights: one that leads a screen, one that trims a panel. */
 enum class ButtonSize {
     Regular,
-    Compact
+    Compact,
 }
 
 /**
@@ -93,7 +93,7 @@ fun LukiaButton(
     variant: ButtonVariant = ButtonVariant.Primary,
     size: ButtonSize = ButtonSize.Regular,
     enabled: Boolean = true,
-    icon: (@Composable (Color, Modifier) -> Unit)? = null
+    icon: (@Composable (Color, Modifier) -> Unit)? = null,
 ) {
     val metrics = LocalLukiaMetrics.current
     val interactionSource = remember { MutableInteractionSource() }
@@ -141,7 +141,7 @@ fun LukiaButton(
                     Modifier.border(HairlineWidth, MaterialTheme.colorScheme.outlineVariant, shape)
                 } else {
                     Modifier
-                }
+                },
             )
             .hoverHighlight(interactionSource, shape)
             .focusRing(interactionSource, shape)
@@ -151,10 +151,10 @@ fun LukiaButton(
                 interactionSource = interactionSource,
                 indication = null,
                 onClickLabel = label,
-                onClick = onClick
+                onClick = onClick,
             )
             .padding(horizontal = horizontalPadding)
-            .semantics { contentDescription = label }
+            .semantics { contentDescription = label },
     ) {
         if (icon != null) {
             icon(tint, Modifier.size(metrics.iconSmall))
@@ -165,7 +165,7 @@ fun LukiaButton(
             text = label,
             style = textStyle,
             color = tint,
-            maxLines = 1
+            maxLines = 1,
         )
     }
 }
@@ -187,7 +187,7 @@ enum class IconButtonVariant {
     Filled,
 
     /** Floating over scrolling content, where it needs a surface of its own. */
-    Glass
+    Glass,
 }
 
 /**
@@ -212,7 +212,7 @@ fun LukiaIconButton(
     size: Dp = Dp.Unspecified,
     glyphSize: Dp = Dp.Unspecified,
     enabled: Boolean = true,
-    glyph: @Composable (Color, Modifier) -> Unit
+    glyph: @Composable (Color, Modifier) -> Unit,
 ) {
     val metrics = LocalLukiaMetrics.current
     val interactionSource = remember { MutableInteractionSource() }
@@ -234,11 +234,11 @@ fun LukiaIconButton(
                         // often as a plain surface is.
                         Modifier.background(
                             MaterialTheme.colorScheme.surfaceVariant
-                                .copy(alpha = LukiaAlpha.OverArtwork)
+                                .copy(alpha = LukiaAlpha.OverArtwork),
                         )
                     } else {
                         Modifier
-                    }
+                    },
                 )
                 .hoverHighlight(interactionSource, CircleShape)
                 .focusRing(interactionSource, CircleShape)
@@ -248,9 +248,9 @@ fun LukiaIconButton(
                     interactionSource = interactionSource,
                     indication = null,
                     onClickLabel = label,
-                    onClick = onClick
+                    onClick = onClick,
                 )
-                .semantics { contentDescription = label }
+                .semantics { contentDescription = label },
         ) {
             glyph(contentTint, Modifier.size(resolvedGlyphSize))
         }
@@ -260,7 +260,7 @@ fun LukiaIconButton(
         GlassSurface(
             shape = CircleShape,
             modifier = modifier.scaleOnPress(interactionSource),
-            content = { target() }
+            content = { target() },
         )
     } else {
         Box(modifier = modifier.scaleOnPress(interactionSource)) {

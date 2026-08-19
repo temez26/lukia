@@ -26,7 +26,7 @@ class EpubCoverExtractorTest {
                 </package>
             """.trimIndent(),
             coverPath = "OEBPS/images/cover.jpg",
-            coverBytes = coverBytes
+            coverBytes = coverBytes,
         )
 
         assertEquals(coverBytes.toList(), extractEpubCover(epubBytes)?.toList())
@@ -47,7 +47,7 @@ class EpubCoverExtractorTest {
                 </package>
             """.trimIndent(),
             coverPath = "OEBPS/cover.png",
-            coverBytes = coverBytes
+            coverBytes = coverBytes,
         )
 
         assertEquals(coverBytes.toList(), extractEpubCover(epubBytes)?.toList())
@@ -66,7 +66,7 @@ class EpubCoverExtractorTest {
                 </package>
             """.trimIndent(),
             coverPath = null,
-            coverBytes = null
+            coverBytes = null,
         )
 
         assertNull(extractEpubCover(epubBytes))
@@ -80,7 +80,7 @@ class EpubCoverExtractorTest {
     private fun buildEpub(
         opf: String,
         coverPath: String?,
-        coverBytes: ByteArray?
+        coverBytes: ByteArray?,
     ): ByteArray {
         val output = ByteArrayOutputStream()
         ZipOutputStream(output).use { zip ->
@@ -99,7 +99,7 @@ class EpubCoverExtractorTest {
                         <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
                       </rootfiles>
                     </container>
-                """.trimIndent().encodeToByteArray()
+                """.trimIndent().encodeToByteArray(),
             )
 
             addEntry("OEBPS/content.opf", opf.encodeToByteArray())

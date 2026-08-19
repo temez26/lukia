@@ -58,7 +58,6 @@ import io.lukia.shared.presentation.components.BadgeTone
 import io.lukia.shared.presentation.components.BookActionsMenu
 import io.lukia.shared.presentation.components.ButtonSize
 import io.lukia.shared.presentation.components.ButtonVariant
-import io.lukia.shared.presentation.components.buttonInset
 import io.lukia.shared.presentation.components.EllipsisGlyph
 import io.lukia.shared.presentation.components.FavoriteBadge
 import io.lukia.shared.presentation.components.GroupCard
@@ -69,6 +68,7 @@ import io.lukia.shared.presentation.components.LukiaIconButton
 import io.lukia.shared.presentation.components.SectionLabel
 import io.lukia.shared.presentation.components.StatusBadge
 import io.lukia.shared.presentation.components.UiStateContent
+import io.lukia.shared.presentation.components.buttonInset
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import org.koin.compose.viewmodel.koinViewModel
@@ -94,7 +94,7 @@ fun BookDetailScreen(
     location: String,
     onBack: () -> Unit,
     onRead: () -> Unit,
-    viewModel: BookDetailViewModel = koinViewModel(parameters = { parametersOf(location) })
+    viewModel: BookDetailViewModel = koinViewModel(parameters = { parametersOf(location) }),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val message by viewModel.message.collectAsState()
@@ -120,7 +120,7 @@ fun BookDetailScreen(
         onDelete = {
             viewModel.deleteDocument()
             onBack()
-        }
+        },
     )
 }
 
@@ -142,7 +142,7 @@ fun BookDetailContent(
      * Defaulted so this screen still composes without a ViewModel behind it,
      * which is how it is tested and previewed.
      */
-    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     val dimens = LocalLukiaDimens.current
     var menuExpanded by remember { mutableStateOf(false) }
@@ -152,7 +152,7 @@ fun BookDetailContent(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(MaterialTheme.colorScheme.background),
     ) {
         // This screen has no Scaffold - it is deliberately full-bleed so
         // content passes under the floating back button - so window insets have
@@ -164,7 +164,7 @@ fun BookDetailContent(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .windowInsetsPadding(WindowInsets.safeDrawing)
+                .windowInsetsPadding(WindowInsets.safeDrawing),
         ) {
             UiStateContent(
                 state = uiState,
@@ -173,13 +173,13 @@ fun BookDetailContent(
                 // way out of the failure is a retry rather than a way back.
                 actionLabel = "Try again",
                 onAction = onRetry,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             ) { details ->
                 BookDetailBody(
                     details = details,
                     onRead = onRead,
                     onLongPress = { menuExpanded = true },
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
 
@@ -188,7 +188,7 @@ fun BookDetailContent(
             // the content but below both floating controls.
             ActionMenuScrim(
                 visible = menuExpanded,
-                onDismiss = { menuExpanded = false }
+                onDismiss = { menuExpanded = false },
             )
 
             // Floats above the scrolling content: this is the piece that most
@@ -199,7 +199,7 @@ fun BookDetailContent(
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(start = dimens.screenPadding, top = Space.lg),
-                variant = IconButtonVariant.Glass
+                variant = IconButtonVariant.Glass,
             ) { tint, glyph ->
                 BackChevron(tint = tint, modifier = glyph)
             }
@@ -211,12 +211,12 @@ fun BookDetailContent(
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(end = dimens.screenPadding, top = Space.lg)
+                        .padding(end = dimens.screenPadding, top = Space.lg),
                 ) {
                     LukiaIconButton(
                         label = "Book actions",
                         onClick = { menuExpanded = true },
-                        variant = IconButtonVariant.Glass
+                        variant = IconButtonVariant.Glass,
                     ) { tint, glyph ->
                         EllipsisGlyph(tint = tint, modifier = glyph)
                     }
@@ -227,7 +227,7 @@ fun BookDetailContent(
                         onToggleFavorite = onToggleFavorite,
                         onRefresh = onRefresh,
                         onDelete = onDelete,
-                        onDismissRequest = { menuExpanded = false }
+                        onDismissRequest = { menuExpanded = false },
                     )
                 }
             }
@@ -237,7 +237,7 @@ fun BookDetailContent(
             // content back inside the insets it deliberately passes under.
             SnackbarHost(
                 hostState = snackbarHostState,
-                modifier = Modifier.align(Alignment.BottomCenter)
+                modifier = Modifier.align(Alignment.BottomCenter),
             )
         }
     }
@@ -273,7 +273,7 @@ internal fun BookDetailBody(
      * the panel on a raised surface, and one colour cannot be a step away from
      * both - in the dark theme especially, where the background is true black.
      */
-    infoCardColor: Color = MaterialTheme.colorScheme.surface
+    infoCardColor: Color = MaterialTheme.colorScheme.surface,
 ) {
     val dimens = LocalLukiaDimens.current
     val document = details.document
@@ -288,7 +288,7 @@ internal fun BookDetailBody(
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.verticalScroll(rememberScrollState())
+        modifier = modifier.verticalScroll(rememberScrollState()),
     ) {
         Spacer(modifier = Modifier.height(topClearance))
 
@@ -297,7 +297,7 @@ internal fun BookDetailBody(
             modifier = Modifier
                 .widthIn(max = dimens.maxDetailWidth)
                 .fillMaxWidth()
-                .padding(horizontal = dimens.screenPadding)
+                .padding(horizontal = dimens.screenPadding),
         ) {
             Box {
                 ReadableCover(
@@ -307,7 +307,7 @@ internal fun BookDetailBody(
                     enabled = document.exists,
                     onRead = onRead,
                     onLongPress = onLongPress,
-                    width = resolvedCoverWidth
+                    width = resolvedCoverWidth,
                 )
 
                 FavoriteBadge(
@@ -315,7 +315,7 @@ internal fun BookDetailBody(
                     size = 28.dp,
                     modifier = Modifier
                         .align(Alignment.TopStart)
-                        .padding(Space.md)
+                        .padding(Space.md),
                 )
             }
 
@@ -324,7 +324,7 @@ internal fun BookDetailBody(
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = dimens.sectionSpacing)
+                modifier = Modifier.padding(top = dimens.sectionSpacing),
             )
 
             // The accent colour, as a book's byline is set everywhere it is set:
@@ -337,7 +337,7 @@ internal fun BookDetailBody(
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.primary,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = Space.xs)
+                    modifier = Modifier.padding(top = Space.xs),
                 )
             }
 
@@ -352,33 +352,33 @@ internal fun BookDetailBody(
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = Space.sm)
+                modifier = Modifier.padding(top = Space.sm),
             )
 
             if (!document.exists) {
                 StatusBadge(
                     text = "This file is no longer available",
-                    modifier = Modifier.padding(top = Space.lg)
+                    modifier = Modifier.padding(top = Space.lg),
                 )
             }
 
             metadata?.description?.let { description ->
                 DescriptionSection(
                     description = description,
-                    modifier = Modifier.padding(top = dimens.sectionSpacing)
+                    modifier = Modifier.padding(top = dimens.sectionSpacing),
                 )
             }
 
             InformationCard(
                 details = details,
                 color = infoCardColor,
-                modifier = Modifier.padding(top = dimens.sectionSpacing)
+                modifier = Modifier.padding(top = dimens.sectionSpacing),
             )
 
             metadata?.subjects?.takeIf { it.isNotEmpty() }?.let { subjects ->
                 SubjectSection(
                     subjects = subjects,
-                    modifier = Modifier.padding(top = dimens.sectionSpacing)
+                    modifier = Modifier.padding(top = dimens.sectionSpacing),
                 )
             }
         }
@@ -398,7 +398,7 @@ internal fun BookDetailBody(
 @Composable
 private fun DescriptionSection(
     description: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     var expanded by remember(description) { mutableStateOf(false) }
     var overflows by remember(description) { mutableStateOf(false) }
@@ -420,7 +420,7 @@ private fun DescriptionSection(
             onTextLayout = { layout ->
                 if (!expanded) overflows = layout.hasVisualOverflow
             },
-            modifier = Modifier.padding(top = Space.sm)
+            modifier = Modifier.padding(top = Space.sm),
         )
 
         if (overflows || expanded) {
@@ -432,7 +432,7 @@ private fun DescriptionSection(
                 // Pulled back by its own inset so the label starts on the same
                 // line as the paragraph it belongs to; a ghost button has no
                 // container to make that padding look deliberate.
-                modifier = Modifier.offset(x = -buttonInset(ButtonSize.Compact))
+                modifier = Modifier.offset(x = -buttonInset(ButtonSize.Compact)),
             )
         }
     }
@@ -451,7 +451,7 @@ private fun DescriptionSection(
 private fun InformationCard(
     details: BookDetails,
     color: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val document = details.document
     val metadata = document.metadata
@@ -471,7 +471,7 @@ private fun InformationCard(
 
         GroupCard(
             color = color,
-            modifier = Modifier.padding(top = Space.sm)
+            modifier = Modifier.padding(top = Space.sm),
         ) {
             Column {
                 rows.forEachIndexed { index, (label, value) ->
@@ -486,7 +486,7 @@ private fun InformationCard(
             text = document.document.location,
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = Space.xs, top = Space.sm)
+            modifier = Modifier.padding(start = Space.xs, top = Space.sm),
         )
     }
 }
@@ -498,12 +498,12 @@ private fun InfoRow(label: String, value: String) {
             .fillMaxWidth()
             .padding(horizontal = InfoRowInset, vertical = Space.md),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
         )
         Text(
             text = value,
@@ -512,7 +512,7 @@ private fun InfoRow(label: String, value: String) {
             maxLines = 2,
             textAlign = TextAlign.End,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(start = InfoRowInset)
+            modifier = Modifier.padding(start = InfoRowInset),
         )
     }
 }
@@ -528,7 +528,7 @@ private fun InfoRow(label: String, value: String) {
 @Composable
 private fun SubjectSection(
     subjects: List<String>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         SectionLabel(text = "Subjects")
@@ -536,7 +536,7 @@ private fun SubjectSection(
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(Space.sm),
             verticalArrangement = Arrangement.spacedBy(Space.sm),
-            modifier = Modifier.padding(top = Space.sm)
+            modifier = Modifier.padding(top = Space.sm),
         ) {
             subjects.forEach { subject ->
                 StatusBadge(text = subject, tone = BadgeTone.Neutral)

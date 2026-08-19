@@ -6,7 +6,8 @@ enum class DocumentType {
     DOCX,
     TEXT,
     MARKDOWN,
-    UNKNOWN;
+    UNKNOWN,
+    ;
 
     companion object {
         /**

@@ -12,7 +12,6 @@ import io.lukia.core.domain.PickedFolder
 
 @Composable
 actual fun rememberPlatformFolderPicker(): PlatformFolderPickerState {
-
     val context = LocalContext.current
 
     val callback = remember {
@@ -21,7 +20,7 @@ actual fun rememberPlatformFolderPicker(): PlatformFolderPickerState {
 
     val launcher =
         rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.OpenDocumentTree()
+            contract = ActivityResultContracts.OpenDocumentTree(),
         ) { treeUri ->
 
             if (treeUri == null) {
@@ -35,7 +34,7 @@ actual fun rememberPlatformFolderPicker(): PlatformFolderPickerState {
             runCatching {
                 context.contentResolver.takePersistableUriPermission(
                     treeUri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION,
                 )
             }
 
@@ -45,17 +44,16 @@ actual fun rememberPlatformFolderPicker(): PlatformFolderPickerState {
             callback.value(
                 PickedFolder(
                     name = name,
-                    location = treeUri.toString()
-                )
+                    location = treeUri.toString(),
+                ),
             )
         }
 
     return object : PlatformFolderPickerState {
 
         override fun launch(
-            onPicked: (PickedFolder?) -> Unit
+            onPicked: (PickedFolder?) -> Unit,
         ) {
-
             callback.value = onPicked
 
             launcher.launch(null)

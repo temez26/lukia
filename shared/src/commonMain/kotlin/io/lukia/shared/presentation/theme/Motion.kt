@@ -53,13 +53,13 @@ object LukiaMotion {
     /** Settling with a trace of overshoot: a badge popping, a cover springing back. */
     fun <T> bouncy(): FiniteAnimationSpec<T> = spring(
         dampingRatio = Spring.DampingRatioMediumBouncy,
-        stiffness = Spring.StiffnessLow
+        stiffness = Spring.StiffnessLow,
     )
 
     /** Settling with no overshoot, for anything tracking a pointer or a press. */
     fun <T> gentle(): FiniteAnimationSpec<T> = spring(
         dampingRatio = 0.85f,
-        stiffness = Spring.StiffnessMediumLow
+        stiffness = Spring.StiffnessMediumLow,
     )
 
     fun <T> quick(): FiniteAnimationSpec<T> = tween(QuickMillis, easing = Standard)
@@ -81,12 +81,12 @@ object LukiaMotion {
 fun softRiseIn(
     durationMillis: Int = LukiaMotion.StandardMillis,
     delayMillis: Int = 0,
-    riseFraction: Float = 0.06f
+    riseFraction: Float = 0.06f,
 ): EnterTransition = fadeIn(
-    animationSpec = tween(durationMillis, delayMillis, LukiaMotion.Standard)
+    animationSpec = tween(durationMillis, delayMillis, LukiaMotion.Standard),
 ) + slideInVertically(
     animationSpec = tween(durationMillis, delayMillis, LukiaMotion.Standard),
-    initialOffsetY = { height -> (height * riseFraction).toInt() }
+    initialOffsetY = { height -> (height * riseFraction).toInt() },
 )
 
 /** The counterpart to [softRiseIn]: leaves in place rather than sinking back. */
@@ -105,7 +105,7 @@ fun stateSwapIn(durationMillis: Int = LukiaMotion.StandardMillis): EnterTransiti
     fadeIn(animationSpec = tween(durationMillis, easing = LukiaMotion.Standard)) +
         scaleIn(
             animationSpec = tween(durationMillis, easing = LukiaMotion.Standard),
-            initialScale = 0.97f
+            initialScale = 0.97f,
         )
 
 /**
@@ -114,10 +114,10 @@ fun stateSwapIn(durationMillis: Int = LukiaMotion.StandardMillis): EnterTransiti
  */
 fun topChromeIn(): EnterTransition = slideInVertically(
     animationSpec = tween(LukiaMotion.StandardMillis, easing = LukiaMotion.Standard),
-    initialOffsetY = { -it }
+    initialOffsetY = { -it },
 ) + fadeIn(animationSpec = tween(LukiaMotion.StandardMillis, easing = LukiaMotion.Standard))
 
 fun topChromeOut(): ExitTransition = slideOutVertically(
     animationSpec = tween(LukiaMotion.ExitMillis, easing = LukiaMotion.Exit),
-    targetOffsetY = { -it }
+    targetOffsetY = { -it },
 ) + fadeOut(animationSpec = tween(LukiaMotion.ExitMillis, easing = LukiaMotion.Exit))

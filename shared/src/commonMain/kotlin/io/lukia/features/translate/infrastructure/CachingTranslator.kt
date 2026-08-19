@@ -39,12 +39,12 @@ class CachingTranslator(
      * cache that filed both under the translator's name would hand back the
      * model's answer to somebody who had since switched words to a dictionary.
      */
-    private val translatorIdentity: (TranslationRequest) -> String
+    private val translatorIdentity: (TranslationRequest) -> String,
 ) : Translator {
 
     override suspend fun translate(
         request: TranslationRequest,
-        onPartial: (String) -> Unit
+        onPartial: (String) -> Unit,
     ): Translation {
         val key = translationCacheKey(request, translatorIdentity(request))
 

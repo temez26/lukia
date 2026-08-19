@@ -16,7 +16,7 @@ internal sealed interface XmlEvent {
         val name: String,
         val attributes: Map<String, String>,
         /** True for `<br/>`, which has no [Close] of its own. */
-        val selfClosing: Boolean
+        val selfClosing: Boolean,
     ) : XmlEvent
 
     data class Close(val name: String) : XmlEvent
@@ -160,7 +160,7 @@ private fun parseTag(body: String): XmlEvent? {
 }
 
 private val AttributePattern = Regex(
-    """([\w:.\-]+)\s*(?:=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?"""
+    """([\w:.\-]+)\s*(?:=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?""",
 )
 
 /**
@@ -222,7 +222,7 @@ private val NamedEntities = mapOf(
     "uuml" to "ü",
     "ouml" to "ö",
     "auml" to "ä",
-    "szlig" to "ß"
+    "szlig" to "ß",
 )
 
 private val EntityPattern = Regex("""&(#[Xx]?[0-9A-Fa-f]+|\w+);""")
@@ -258,7 +258,7 @@ private fun codePointOrNull(digits: String, radix: Int): String? {
         val offset = code - 0x10000
         charArrayOf(
             (0xD800 + (offset shr 10)).toChar(),
-            (0xDC00 + (offset and 0x3FF)).toChar()
+            (0xDC00 + (offset and 0x3FF)).toChar(),
         ).concatToString()
     }
 }

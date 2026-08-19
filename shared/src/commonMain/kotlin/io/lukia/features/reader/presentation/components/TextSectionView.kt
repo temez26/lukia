@@ -12,8 +12,8 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -25,13 +25,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,7 +58,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import io.lukia.core.presentation.displayShortMessage
-import io.lukia.shared.presentation.components.LukiaDivider
 import io.lukia.features.reader.domain.TextBlock
 import io.lukia.features.reader.domain.TextRun
 import io.lukia.features.reader.domain.TextSection
@@ -73,6 +72,7 @@ import io.lukia.features.translate.presentation.PassageTranslation
 import io.lukia.features.translate.presentation.SectionTranslations
 import io.lukia.features.translate.presentation.SentenceTranslations
 import io.lukia.features.translate.presentation.shownText
+import io.lukia.shared.presentation.components.LukiaDivider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -109,7 +109,7 @@ internal class PassageActions(
     val onBlock: (blockIndex: Int, sentences: List<Sentence>, paragraph: String) -> Unit =
         { _, _, _ -> },
     /** A tap that landed on no words, which is a tap on the page rather than on text. */
-    val onElsewhere: () -> Unit = {}
+    val onElsewhere: () -> Unit = {},
 ) {
 
     /** The same actions, with the block already named. */
@@ -118,7 +118,7 @@ internal class PassageActions(
         onWord = { sentence, word, paragraph -> onWord(blockIndex, sentence, word, paragraph) },
         onParagraph = { paragraph -> onParagraph(blockIndex, paragraph) },
         onBlock = { sentences, paragraph -> onBlock(blockIndex, sentences, paragraph) },
-        onElsewhere = onElsewhere
+        onElsewhere = onElsewhere,
     )
 
     companion object {
@@ -132,7 +132,7 @@ internal class BlockActions(
     val onWord: (Sentence, Word, paragraph: String) -> Unit,
     val onParagraph: (paragraph: String) -> Unit,
     val onBlock: (List<Sentence>, paragraph: String) -> Unit,
-    val onElsewhere: () -> Unit
+    val onElsewhere: () -> Unit,
 )
 
 /**
@@ -170,7 +170,7 @@ internal fun TextSectionView(
      * While it is, a block changing height is the reader's fingers rather than a
      * translation landing, and the two want opposite things from an animation.
      */
-    resizingType: Boolean = false
+    resizingType: Boolean = false,
 ) {
     val spacing = with(LocalDensity.current) {
         (style.fontSize * BLOCK_SPACING).toDp()
@@ -178,7 +178,7 @@ internal fun TextSectionView(
 
     Column(
         verticalArrangement = Arrangement.spacedBy(spacing),
-        modifier = modifier
+        modifier = modifier,
     ) {
         section.blocks.forEachIndexed { index, block ->
             TextBlockView(
@@ -188,7 +188,7 @@ internal fun TextSectionView(
                 actions = actions.forBlock(index),
                 translateOnScreen = translateOnScreen,
                 gestures = gestures,
-                resizingType = resizingType
+                resizingType = resizingType,
             )
         }
     }
@@ -202,7 +202,7 @@ private fun TextBlockView(
     actions: BlockActions,
     translateOnScreen: TranslateOnScreen,
     gestures: TranslationGestures,
-    resizingType: Boolean
+    resizingType: Boolean,
 ) {
     when (block) {
         is TextBlock.Heading ->
@@ -215,7 +215,7 @@ private fun TextBlockView(
             actions = actions,
             translateOnScreen = translateOnScreen,
             gestures = gestures,
-            resizingType = resizingType
+            resizingType = resizingType,
         )
 
         is TextBlock.ListItem ->
@@ -260,7 +260,7 @@ private fun ProseText(
     translateOnScreen: TranslateOnScreen,
     gestures: TranslationGestures,
     resizingType: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val paragraph = remember(runs) { runs.plain() }
     val sentences = remember(paragraph) { splitIntoSentences(paragraph) }
@@ -296,7 +296,7 @@ private fun ProseText(
             runs = runs,
             sentences = sentences,
             words = words,
-            block = shownBlock
+            block = shownBlock,
         ) { sentence, word ->
             if (word == null) {
                 shownSentences[sentence.index]
@@ -369,7 +369,7 @@ private fun ProseText(
                 ask(currentGestures.longPress, position, layout, currentDrawn, sentences, words) {
                     currentActions.act(it, paragraph)
                 }
-            }
+            },
         )
     }
 
@@ -391,16 +391,16 @@ private fun ProseText(
                     Modifier.animateContentSize(
                         animationSpec = tween(
                             durationMillis = TRANSLATION_SETTLE_MILLIS,
-                            easing = TranslationEasing
-                        )
+                            easing = TranslationEasing,
+                        ),
                     )
-                }
-            )
+                },
+            ),
     ) {
         Crossfade(
             targetState = drawn,
             animationSpec = tween(TRANSLATION_FADE_MILLIS, easing = TranslationEasing),
-            modifier = tappable
+            modifier = tappable,
         ) { paragraphText ->
             // Each copy measures itself. The outgoing one is still on screen
             // while the fade runs and its marks have to sit on its own lines,
@@ -424,7 +424,7 @@ private fun ProseText(
                     val lines = measured ?: return@drawBehind
 
                     drawPassageMarks(lines, marks, colors, sweep.value)
-                }
+                },
             )
         }
 
@@ -469,7 +469,7 @@ private inline fun ask(
     drawn: ParagraphText,
     sentences: List<Sentence>,
     words: List<Word>,
-    act: (Pointed) -> Unit
+    act: (Pointed) -> Unit,
 ) {
     if (unit == null) return
 
@@ -540,7 +540,7 @@ private fun TranslatorsRemarks(
     sentences: List<Sentence>,
     words: List<Word>,
     translations: SentenceTranslations,
-    style: TextStyle
+    style: TextStyle,
 ) {
     val remarks = remember(sentences, words, translations) {
         buildList {
@@ -572,7 +572,7 @@ private fun TranslatorsRemarks(
 
     Column(
         verticalArrangement = Arrangement.spacedBy(2.dp),
-        modifier = Modifier.padding(top = 6.dp)
+        modifier = Modifier.padding(top = 6.dp),
     ) {
         remarks.forEach { remark ->
             Text(
@@ -585,8 +585,8 @@ private fun TranslatorsRemarks(
                         MaterialTheme.colorScheme.error
                     } else {
                         MaterialTheme.colorScheme.onSurfaceVariant
-                    }
-                )
+                    },
+                ),
             )
         }
     }
@@ -631,7 +631,7 @@ private data class Remark(val text: String, val failed: Boolean)
  */
 private class MarkedPassages(
     private val sentences: Map<Int, PassageMarkStyle>,
-    private val words: Map<Pair<Int, Int>, PassageMarkStyle>
+    private val words: Map<Pair<Int, Int>, PassageMarkStyle>,
 ) {
 
     val anyWaiting: Boolean = sentences.values.any { it == PassageMarkStyle.Waiting } ||
@@ -665,7 +665,7 @@ private class MarkedPassages(
 private fun passageMarkStyles(
     sentences: List<Sentence>,
     words: List<Word>,
-    translations: SentenceTranslations
+    translations: SentenceTranslations,
 ): MarkedPassages = remember(sentences, words, translations) {
     MarkedPassages(
         sentences = buildMap {
@@ -683,7 +683,7 @@ private fun passageMarkStyles(
                     put(word.sentenceIndex to word.index, it)
                 }
             }
-        }
+        },
     )
 }
 
@@ -695,7 +695,7 @@ private fun HeadingBlock(
     actions: BlockActions,
     translateOnScreen: TranslateOnScreen,
     gestures: TranslationGestures,
-    resizingType: Boolean
+    resizingType: Boolean,
 ) {
     val scale = when (block.level) {
         1 -> 1.6f
@@ -711,7 +711,7 @@ private fun HeadingBlock(
             // Headings are set tighter than prose: the leading that makes a
             // paragraph readable makes a two-line title look like two titles.
             lineHeight = style.fontSize * scale * 1.25f,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
         ),
         translations = translations,
         actions = actions,
@@ -723,7 +723,7 @@ private fun HeadingBlock(
             // Bound to what it introduces rather than floating between two
             // blocks, so a heading sits with the text below it.
             .padding(top = 8.dp)
-            .semantics { heading() }
+            .semantics { heading() },
     )
 }
 
@@ -735,7 +735,7 @@ private fun ListItemBlock(
     actions: BlockActions,
     translateOnScreen: TranslateOnScreen,
     gestures: TranslationGestures,
-    resizingType: Boolean
+    resizingType: Boolean,
 ) {
     Row(modifier = Modifier.fillMaxWidth()) {
         Text(
@@ -743,7 +743,7 @@ private fun ListItemBlock(
             style = style,
             modifier = Modifier
                 .padding(start = IndentWidth)
-                .width(MarkerWidth)
+                .width(MarkerWidth),
         )
 
         ProseText(
@@ -754,7 +754,7 @@ private fun ListItemBlock(
             translateOnScreen = translateOnScreen,
             gestures = gestures,
             resizingType = resizingType,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
     }
 }
@@ -772,7 +772,7 @@ private fun QuoteBlock(
     actions: BlockActions,
     translateOnScreen: TranslateOnScreen,
     gestures: TranslationGestures,
-    resizingType: Boolean
+    resizingType: Boolean,
 ) {
     // The row takes the height its text needs, which is what lets the rule
     // beside it fill that height rather than collapsing to nothing.
@@ -783,7 +783,7 @@ private fun QuoteBlock(
                 .width(3.dp)
                 .fillMaxHeight()
                 .clip(RoundedCornerShape(2.dp))
-                .background(MaterialTheme.colorScheme.outlineVariant)
+                .background(MaterialTheme.colorScheme.outlineVariant),
         )
 
         ProseText(
@@ -794,7 +794,7 @@ private fun QuoteBlock(
             translateOnScreen = translateOnScreen,
             gestures = gestures,
             resizingType = resizingType,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
     }
 }
@@ -811,16 +811,16 @@ private fun CodeBlock(block: TextBlock.Code, style: TextStyle) {
             .clip(MaterialTheme.shapes.small)
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .horizontalScroll(rememberScrollState())
-            .padding(horizontal = 12.dp, vertical = 10.dp)
+            .padding(horizontal = 12.dp, vertical = 10.dp),
     ) {
         Text(
             text = block.text,
             style = style.copy(
                 fontFamily = FontFamily.Monospace,
                 fontSize = style.fontSize * 0.88f,
-                lineHeight = style.fontSize * 1.3f
+                lineHeight = style.fontSize * 1.3f,
             ),
-            softWrap = false
+            softWrap = false,
         )
     }
 }
@@ -849,7 +849,7 @@ private fun FigureBlock(block: TextBlock.Figure) {
             bitmap = bitmap,
             contentDescription = block.description?.takeIf { it.isNotBlank() },
             contentScale = ContentScale.FillWidth,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }
@@ -861,7 +861,7 @@ private fun SeparatorBlock() {
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp)
+            .padding(vertical = 12.dp),
     ) {
         LukiaDivider(modifier = Modifier.fillMaxWidth(0.3f))
     }

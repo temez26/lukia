@@ -86,8 +86,8 @@ private class GlyphStripper : PDFTextStripper() {
                     left = position.xDirAdj,
                     top = position.yDirAdj - position.heightDir,
                     right = position.xDirAdj + position.widthDirAdj,
-                    bottom = position.yDirAdj
-                )
+                    bottom = position.yDirAdj,
+                ),
             )
         }
     }

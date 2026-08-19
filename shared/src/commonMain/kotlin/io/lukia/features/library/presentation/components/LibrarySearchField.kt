@@ -35,7 +35,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import io.lukia.shared.presentation.components.ClearGlyph
 import io.lukia.shared.presentation.components.LukiaIconButton
 import io.lukia.shared.presentation.components.SearchGlyph
@@ -79,7 +78,7 @@ internal fun LibrarySearchField(
     query: String,
     onQueryChange: (String) -> Unit,
     placeholder: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val metrics = LocalLukiaMetrics.current
     val compact = !isWideWindow
@@ -99,7 +98,7 @@ internal fun LibrarySearchField(
         onValueChange = onQueryChange,
         singleLine = true,
         textStyle = LocalTextStyle.current.merge(
-            textStyle.copy(color = MaterialTheme.colorScheme.onSurface)
+            textStyle.copy(color = MaterialTheme.colorScheme.onSurface),
         ),
         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
@@ -122,11 +121,11 @@ internal fun LibrarySearchField(
         decorationBox = { textField ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = Space.md)
+                modifier = Modifier.padding(horizontal = Space.md),
             ) {
                 SearchGlyph(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(metrics.iconSmall)
+                    modifier = Modifier.size(metrics.iconSmall),
                 )
 
                 Spacer(modifier = Modifier.width(Space.sm))
@@ -141,7 +140,7 @@ internal fun LibrarySearchField(
                             // bug rather than as a hint.
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
 
@@ -158,10 +157,10 @@ internal fun LibrarySearchField(
                     onClick = {
                         onQueryChange("")
                         focusManager.clearFocus()
-                    }
+                    },
                 )
             }
-        }
+        },
     )
 }
 
@@ -171,21 +170,21 @@ private fun ClearButton(
     size: Dp,
     glyphSize: Dp,
     knockout: Color,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     AnimatedVisibility(
         visible = visible,
         enter = fadeIn(LukiaMotion.quick()) +
             scaleIn(LukiaMotion.quick(), initialScale = 0.7f),
         exit = fadeOut(LukiaMotion.quick()) +
-            scaleOut(LukiaMotion.quick(), targetScale = 0.7f)
+            scaleOut(LukiaMotion.quick(), targetScale = 0.7f),
     ) {
         LukiaIconButton(
             label = "Clear search",
             onClick = onClick,
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             size = size,
-            glyphSize = glyphSize
+            glyphSize = glyphSize,
         ) { tint, glyph ->
             ClearGlyph(tint = tint, knockout = knockout, modifier = glyph)
         }

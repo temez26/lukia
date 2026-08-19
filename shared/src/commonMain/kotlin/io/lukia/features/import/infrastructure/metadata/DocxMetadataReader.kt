@@ -68,7 +68,7 @@ internal fun extractDocxMetadata(docxBytes: ByteArray): BookMetadata? {
         title = title,
         authors = listOfNotNull(creator),
         description = description,
-        subjects = keywords.orEmpty().splitKeywords()
+        subjects = keywords.orEmpty().splitKeywords(),
     )
 
     return metadata.takeIf { !it.isEmpty }
