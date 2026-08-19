@@ -17,7 +17,7 @@ package io.lukia.features.reader.domain
 private val ProducerBookmark = Regex(
     "^(?:_{1,2}(?:DdeLink|RefHeading|RefNumPara|RefNumParaDoc|UnoMark|Fieldmark|" +
         "Toc|Tos|Ref|Hlk|Hlt|GoBack|Int|MailOriginal|Mendeley)|OLE_LINK)[\\w.\\-]*$",
-    RegexOption.IGNORE_CASE
+    RegexOption.IGNORE_CASE,
 )
 
 /**

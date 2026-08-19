@@ -67,7 +67,7 @@ internal fun LibraryHeader(
     isImporting: Boolean,
     importProgress: ImportProgress?,
     reveal: LaunchReveal,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val compact = !isWideWindow
 
@@ -87,9 +87,9 @@ internal fun LibraryHeader(
                             Modifier.fillMaxWidth()
                         } else {
                             Modifier.width(ShelfControlWidth * facets.shelves.size / MaxShelfSegments)
-                        }
+                        },
                     )
-                    .launchReveal(reveal, index = 0)
+                    .launchReveal(reveal, index = 0),
             )
 
             Spacer(modifier = Modifier.height(Space.md))
@@ -101,13 +101,13 @@ internal fun LibraryHeader(
             onQueryChange = onQueryChange,
             openMenu = openMenu,
             onOpenMenuChange = onOpenMenuChange,
-            modifier = Modifier.launchReveal(reveal, index = 1)
+            modifier = Modifier.launchReveal(reveal, index = 1),
         )
 
         ImportingNotice(
             visible = isImporting,
             progress = importProgress,
-            modifier = Modifier.launchReveal(reveal, index = 2)
+            modifier = Modifier.launchReveal(reveal, index = 2),
         )
     }
 }
@@ -124,22 +124,22 @@ internal fun LibraryHeader(
 private fun ImportingNotice(
     visible: Boolean,
     progress: ImportProgress?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     AnimatedVisibility(
         visible = visible,
         enter = expandVertically(LukiaMotion.standard()) + fadeIn(LukiaMotion.standard()),
         exit = shrinkVertically(LukiaMotion.exit()) + fadeOut(LukiaMotion.exit()),
-        modifier = modifier
+        modifier = modifier,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(top = Space.md)
+            modifier = Modifier.padding(top = Space.md),
         ) {
             CircularProgressIndicator(
                 strokeWidth = 2.dp,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(12.dp)
+                modifier = Modifier.size(12.dp),
             )
 
             Spacer(modifier = Modifier.width(Space.md))
@@ -152,7 +152,7 @@ private fun ImportingNotice(
                     ?.let { "Importing ${it.completed} of ${it.total}…" }
                     ?: "Importing…",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }

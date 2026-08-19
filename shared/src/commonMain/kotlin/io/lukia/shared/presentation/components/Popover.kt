@@ -45,7 +45,7 @@ fun rememberPopoverProgress(expanded: Boolean, label: String): Float {
         } else {
             tween(LukiaMotion.ExitMillis, easing = LukiaMotion.Exit)
         },
-        label = label
+        label = label,
     )
 
     return progress
@@ -58,7 +58,7 @@ fun rememberPopoverProgress(expanded: Boolean, label: String): Float {
  */
 fun Modifier.popoverTransition(
     progress: Float,
-    transformOrigin: TransformOrigin
+    transformOrigin: TransformOrigin,
 ): Modifier = graphicsLayer {
     alpha = progress
     val scale = PopoverInitialScale + (1f - PopoverInitialScale) * progress
@@ -83,7 +83,7 @@ fun Modifier.popoverTransition(
 @Composable
 fun DismissOnBack(
     enabled: Boolean,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     BackHandler(enabled = enabled, onBack = onDismiss)
 }

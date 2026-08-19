@@ -28,17 +28,17 @@ import io.lukia.shared.presentation.theme.Space
 @Composable
 fun LoadingState(
     modifier: Modifier = Modifier,
-    message: String? = null
+    message: String? = null,
 ) {
     Box(
         modifier = modifier.semantics { contentDescription = message ?: "Loading" },
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             CircularProgressIndicator(
                 color = MaterialTheme.colorScheme.primary,
                 strokeWidth = 2.5.dp,
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(28.dp),
             )
 
             if (message != null) {
@@ -47,7 +47,7 @@ fun LoadingState(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = Space.lg)
+                    modifier = Modifier.padding(top = Space.lg),
                 )
             }
         }

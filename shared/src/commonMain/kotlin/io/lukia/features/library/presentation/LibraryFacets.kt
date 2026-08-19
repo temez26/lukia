@@ -24,7 +24,7 @@ data class LibraryFacets(
     val authors: List<String> = emptyList(),
     /** Primary language subtags, lower-cased - see [LibraryBook.language]. */
     val languages: List<String> = emptyList(),
-    val hasFavourites: Boolean = false
+    val hasFavourites: Boolean = false,
 ) {
     companion object {
         val Empty = LibraryFacets()
@@ -51,7 +51,7 @@ fun List<LibraryBook>.facets(): LibraryFacets {
             .filter { value -> divides { it.authors.holds(value) } },
         languages = distinctValues { listOfNotNull(it.language) }
             .filter { value -> divides { it.language == value } },
-        hasFavourites = divides { it.document.isFavorite }
+        hasFavourites = divides { it.document.isFavorite },
     )
 }
 
@@ -70,7 +70,7 @@ private inline fun List<LibraryBook>.divides(predicate: (LibraryBook) -> Boolean
  * filed twice, and offering both is offering the same row twice.
  */
 private inline fun List<LibraryBook>.distinctValues(
-    values: (LibraryBook) -> List<String>
+    values: (LibraryBook) -> List<String>,
 ): List<String> = flatMap(values)
     .distinctBy { it.lowercase() }
     .sortedBy { it.lowercase() }

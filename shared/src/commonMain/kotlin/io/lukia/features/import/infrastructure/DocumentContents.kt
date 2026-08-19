@@ -16,7 +16,7 @@ import io.lukia.features.import.infrastructure.metadata.extractMetadata
  */
 internal class DocumentContents(
     val coverImage: CoverImage?,
-    val metadata: BookMetadata?
+    val metadata: BookMetadata?,
 ) {
     companion object {
         val Empty = DocumentContents(coverImage = null, metadata = null)
@@ -34,5 +34,5 @@ internal class DocumentContents(
 internal fun extractContents(type: DocumentType, documentBytes: ByteArray): DocumentContents =
     DocumentContents(
         coverImage = extractCover(type, documentBytes)?.let(::CoverImage),
-        metadata = extractMetadata(type, documentBytes)
+        metadata = extractMetadata(type, documentBytes),
     )

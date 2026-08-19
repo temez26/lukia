@@ -13,10 +13,10 @@ import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.AppErrorException
+import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.domain.TranslationProvider
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.TranslationSettings
-import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.domain.Translator
 import io.lukia.features.translate.infrastructure.StreamedAnswer
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
@@ -40,7 +40,9 @@ private val SHAPE_INSTRUCTION = """
     after it, and no code fence around it. It has exactly two string fields,
     "translation" and "note", and "note" is an empty string when there is
     nothing worth remarking on.
-""".trimIndent().lines().joinToString(" ") { it.trim() }.trim()
+""".trimIndent().lines().joinToString(" ") {
+    it.trim()
+}.trim()
 
 /**
  * Translates through anything that speaks OpenAI's chat endpoint.
@@ -66,12 +68,12 @@ private val SHAPE_INSTRUCTION = """
 class OpenAiTranslator(
     private val client: HttpClient,
     private val settings: TranslationSettingsRepository,
-    private val json: Json = Json { ignoreUnknownKeys = true }
+    private val json: Json = Json { ignoreUnknownKeys = true },
 ) : Translator {
 
     override suspend fun translate(
         request: TranslationRequest,
-        onPartial: (String) -> Unit
+        onPartial: (String) -> Unit,
     ): Translation {
         val configured = settings.settings.value
         val provider = configured.provider
@@ -86,8 +88,8 @@ class OpenAiTranslator(
             throw AppErrorException(
                 AppError.Unexpected(
                     "Translating over plain HTTP is only allowed to your own network. " +
-                        "Use https, or an address on this machine."
-                )
+                        "Use https, or an address on this machine.",
+                ),
             )
         }
 
@@ -115,11 +117,11 @@ class OpenAiTranslator(
                         stream = true,
                         messages = listOf(
                             ChatMessage.system(
-                                if (enforcesSchema) prompt.system else prompt.system.withShape()
+                                if (enforcesSchema) prompt.system else prompt.system.withShape(),
                             ),
-                            ChatMessage.user(prompt.user)
-                        )
-                    )
+                            ChatMessage.user(prompt.user),
+                        ),
+                    ),
                 )
             }.execute { response ->
                 if (!response.status.isSuccess()) throw response.asAppError(configured)
@@ -153,7 +155,7 @@ class OpenAiTranslator(
         // reason is worth giving rather than leaving as a parse failure.
         if (finishReason == "length") {
             throw AppErrorException(
-                AppError.Unexpected("The translation was cut short. Try a shorter passage.")
+                AppError.Unexpected("The translation was cut short. Try a shorter passage."),
             )
         }
 
@@ -169,7 +171,7 @@ class OpenAiTranslator(
     private fun String.withShape(): String = this + "\n\n" + SHAPE_INSTRUCTION
 
     private suspend fun HttpResponse.asAppError(
-        configured: TranslationSettings
+        configured: TranslationSettings,
     ): AppErrorException {
         val error = when (status) {
             HttpStatusCode.Unauthorized, HttpStatusCode.Forbidden ->
@@ -177,7 +179,7 @@ class OpenAiTranslator(
 
             HttpStatusCode.NotFound -> AppError.Unexpected(
                 "Nothing answered at ${configured.baseUrl}. Check the address in Settings - " +
-                    "it should end in /v1."
+                    "it should end in /v1.",
             )
 
             // Being out of credit and asking too often arrive as the same
@@ -191,13 +193,13 @@ class OpenAiTranslator(
                     reported?.isOutOfCredit == true -> AppError.Unexpected(
                         "Your ${configured.provider.label} account is out of API credit. " +
                             "API billing is separate from any subscription - add credit in " +
-                            "your account's billing settings."
+                            "your account's billing settings.",
                     )
 
                     reported?.message != null -> AppError.Unexpected(reported.message)
 
                     else -> AppError.Unexpected(
-                        "Too many translations at once. Try again in a moment."
+                        "Too many translations at once. Try again in a moment.",
                     )
                 }
             }

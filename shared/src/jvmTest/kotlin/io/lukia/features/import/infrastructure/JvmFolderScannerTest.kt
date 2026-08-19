@@ -23,7 +23,7 @@ class JvmFolderScannerTest {
             "notes.txt",
             "readme.md",
             "cover.jpg",
-            "sequel.mobi"
+            "sequel.mobi",
         )
 
         val documents = scanner.scan(folder.asPickedFolder())
@@ -31,7 +31,7 @@ class JvmFolderScannerTest {
         // Compared as a set: File.listFiles gives no ordering guarantee.
         assertEquals(
             setOf("book.pdf", "novel.epub", "report.docx", "notes.txt", "readme.md"),
-            documents.map { it.fileName }.toSet()
+            documents.map { it.fileName }.toSet(),
         )
         assertTrue(documents.all { File(it.location).isFile })
     }
@@ -47,7 +47,7 @@ class JvmFolderScannerTest {
 
         assertEquals(
             setOf("loose.pdf", "wizard.epub"),
-            documents.map { it.fileName }.toSet()
+            documents.map { it.fileName }.toSet(),
         )
     }
 
@@ -96,7 +96,7 @@ class JvmFolderScannerTest {
     fun returnsEmptyListForAPathThatIsNotAFolder() = runTest {
         val missing = File(
             Files.createTempDirectory("lukia-scan").toFile(),
-            "does-not-exist"
+            "does-not-exist",
         )
 
         assertTrue(scanner.scan(missing.asPickedFolder()).isEmpty())
@@ -118,6 +118,6 @@ class JvmFolderScannerTest {
 
     private fun File.asPickedFolder() = PickedFolder(
         name = name,
-        location = absolutePath
+        location = absolutePath,
     )
 }

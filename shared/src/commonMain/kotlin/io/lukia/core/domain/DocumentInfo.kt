@@ -12,5 +12,5 @@ data class DocumentInfo(
      * format that carries none and for one that carried none worth keeping -
      * see [BookMetadata].
      */
-    val metadata: BookMetadata? = null
+    val metadata: BookMetadata? = null,
 )

@@ -32,7 +32,7 @@ class PdfOutlineReaderTest {
 
     private val directory = File(
         System.getProperty("java.io.tmpdir"),
-        "lukia-outline-test-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}"
+        "lukia-outline-test-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}",
     ).apply { mkdirs() }
 
     @AfterTest
@@ -48,7 +48,7 @@ class PdfOutlineReaderTest {
 
         assertEquals(
             listOf("Introduction" to 0, "The Middle" to 2, "The End" to 5),
-            file.outline()?.map { it.title to it.pageIndex }
+            file.outline()?.map { it.title to it.pageIndex },
         )
     }
 
@@ -66,7 +66,7 @@ class PdfOutlineReaderTest {
 
         assertEquals(
             listOf("Introduction" to 0, "The Middle" to 2, "The End" to 5),
-            file.outline()?.map { it.title to it.pageIndex }
+            file.outline()?.map { it.title to it.pageIndex },
         )
     }
 
@@ -85,7 +85,7 @@ class PdfOutlineReaderTest {
 
         assertEquals(
             listOf("Chapter One" to 0, "A Section" to 1, "Another Section" to 1, "Chapter Two" to 0),
-            file.outline()?.map { it.title to it.level }
+            file.outline()?.map { it.title to it.level },
         )
     }
 
@@ -103,7 +103,7 @@ class PdfOutlineReaderTest {
                 PDOutlineItem().apply {
                     title = "By Name"
                     action = PDActionGoTo().apply { this.destination = PDNamedDestination("section.1") }
-                }
+                },
             )
         }
 
@@ -118,7 +118,7 @@ class PdfOutlineReaderTest {
 
         assertEquals(
             listOf("Kapitel Ä — Einführung", "Глава 2"),
-            file.outline()?.map { it.title }
+            file.outline()?.map { it.title },
         )
     }
 
@@ -140,7 +140,7 @@ class PdfOutlineReaderTest {
         assertTrue(file.length() > 1 shl 20, "expected a file larger than one scan window")
         assertEquals(
             listOf("Beginning" to 0, "Far In" to 59),
-            file.outline()?.map { it.title to it.pageIndex }
+            file.outline()?.map { it.title to it.pageIndex },
         )
     }
 
@@ -184,7 +184,7 @@ class PdfOutlineReaderTest {
 
         assertEquals(
             listOf("On /Encrypt and other trailers"),
-            file.outline()?.map { it.title }
+            file.outline()?.map { it.title },
         )
     }
 
@@ -219,7 +219,7 @@ class PdfOutlineReaderTest {
 
         assertEquals(
             listOf(MinimalPdf.FIRST_CHAPTER_TITLE to 0, MinimalPdf.SECOND_CHAPTER_TITLE to 2),
-            outline?.map { it.title to it.pageIndex }
+            outline?.map { it.title to it.pageIndex },
         )
     }
 
@@ -232,7 +232,7 @@ class PdfOutlineReaderTest {
             assertEquals(MinimalPdf.PAGE_COUNT, pages.pageCount)
             assertEquals(
                 listOf(MinimalPdf.FIRST_CHAPTER_TITLE, MinimalPdf.SECOND_CHAPTER_TITLE),
-                pages.outline?.map { it.title }
+                pages.outline?.map { it.title },
             )
         }
     }
@@ -308,7 +308,7 @@ class PdfOutlineReaderTest {
 
     private fun PDDocument.nameDestination(
         name: String,
-        destination: PDPageFitWidthDestination
+        destination: PDPageFitWidthDestination,
     ) {
         val tree = PDDestinationNameTreeNode().apply { names = mapOf(name to destination) }
 
@@ -323,7 +323,7 @@ class PdfOutlineReaderTest {
         pageCount: Int,
         compress: Boolean = false,
         bulky: Boolean = false,
-        configure: (PDDocument) -> Unit = {}
+        configure: (PDDocument) -> Unit = {},
     ): File {
         val file = File(directory, "book-${kotlin.random.Random.nextInt()}.pdf")
 

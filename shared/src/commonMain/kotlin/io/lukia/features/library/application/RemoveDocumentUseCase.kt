@@ -15,7 +15,7 @@ import io.lukia.features.reader.domain.ReadingProgressRepository
 class RemoveDocumentUseCase(
     private val repository: LibraryRepository,
     private val workspace: DocumentWorkspace,
-    private val progressRepository: ReadingProgressRepository
+    private val progressRepository: ReadingProgressRepository,
 ) {
     suspend operator fun invoke(location: String) {
         repository.removeDocument(location)

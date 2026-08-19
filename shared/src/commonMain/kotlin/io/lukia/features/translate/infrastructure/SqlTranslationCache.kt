@@ -38,7 +38,7 @@ private const val TRIM_BATCH = MAX_ENTRIES / 10
 class SqlTranslationCache(
     database: LukiaDatabase,
     /** Injectable so tests can run against a database deterministically. */
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : TranslationCache {
 
     private val cache = database.translationCacheQueries
@@ -58,7 +58,7 @@ class SqlTranslationCache(
             cache.put(
                 cacheKey = key.value,
                 translation = translation.text,
-                note = translation.note
+                note = translation.note,
             )
 
             if (cache.count().executeAsOne() > MAX_ENTRIES) {

@@ -42,7 +42,7 @@ sealed interface TextAnchor {
         val sectionIndex: Int,
         val blockIndex: Int,
         override val sentenceIndex: Int?,
-        override val wordIndex: Int? = null
+        override val wordIndex: Int? = null,
     ) : TextAnchor
 
     /**
@@ -53,6 +53,6 @@ sealed interface TextAnchor {
     data class Page(
         val pageIndex: Int,
         override val sentenceIndex: Int?,
-        override val wordIndex: Int? = null
+        override val wordIndex: Int? = null,
     ) : TextAnchor
 }

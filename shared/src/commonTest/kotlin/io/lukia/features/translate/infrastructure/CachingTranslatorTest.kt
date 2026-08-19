@@ -47,7 +47,7 @@ class CachingTranslatorTest {
         val translator = CachingTranslator(
             translator = { _, _ -> Translation("Kutsukaa minua.", note = "A remark about a word.") },
             cache = cache,
-            translatorIdentity = { "Anthropic/claude" }
+            translatorIdentity = { "Anthropic/claude" },
         )
 
         translator.translate(request())
@@ -63,9 +63,12 @@ class CachingTranslatorTest {
         var model = "claude-a"
 
         val translator = CachingTranslator(
-            translator = { request, _ -> asked += request.text; Translation("Kutsukaa minua Ismaeliksi.") },
+            translator = { request, _ ->
+                asked += request.text
+                Translation("Kutsukaa minua Ismaeliksi.")
+            },
             cache = cache,
-            translatorIdentity = { "Anthropic/$model" }
+            translatorIdentity = { "Anthropic/$model" },
         )
 
         translator.translate(request())
@@ -102,7 +105,7 @@ class CachingTranslatorTest {
                 if (attempt == 1) throw RuntimeException("no network") else Translation("Second time.")
             },
             cache = cache,
-            translatorIdentity = { "Anthropic/claude" }
+            translatorIdentity = { "Anthropic/claude" },
         )
 
         assertFailsWith<RuntimeException> { translator.translate(request()) }
@@ -112,15 +115,18 @@ class CachingTranslatorTest {
     }
 
     private fun caching(asked: MutableList<String>): Translator = CachingTranslator(
-        translator = { request, _ -> asked += request.text; Translation("Kutsukaa minua Ismaeliksi.") },
+        translator = { request, _ ->
+            asked += request.text
+            Translation("Kutsukaa minua Ismaeliksi.")
+        },
         cache = InMemoryCache(),
-        translatorIdentity = { "Anthropic/claude" }
+        translatorIdentity = { "Anthropic/claude" },
     )
 
     private fun request(text: String = passage) = TranslationRequest(
         text = text,
         targetLanguage = TargetLanguage.Finnish,
-        context = TranslationContext(bookTitle = "Moby-Dick")
+        context = TranslationContext(bookTitle = "Moby-Dick"),
     )
 
     /** What is stored is the point here, not how. See `SqlTranslationCacheTest`. */

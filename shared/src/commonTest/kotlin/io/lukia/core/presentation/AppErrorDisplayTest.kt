@@ -20,7 +20,7 @@ class AppErrorDisplayTest {
             AppError.TranslationUnavailable,
             AppError.TranslationFailed,
             AppError.Unexpected("boom"),
-            AppError.Unexpected(null)
+            AppError.Unexpected(null),
         )
 
         errors.forEach { error ->

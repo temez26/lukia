@@ -16,7 +16,7 @@ import java.util.Properties
  */
 class JvmSettingsStore(
     /** Injectable so tests can work in a temporary directory. */
-    private val file: File = File(lukiaAppDirectory(), FILE_NAME)
+    private val file: File = File(lukiaAppDirectory(), FILE_NAME),
 ) : SettingsStore {
 
     private val properties: Properties by lazy {

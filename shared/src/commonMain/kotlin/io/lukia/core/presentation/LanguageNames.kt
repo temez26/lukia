@@ -67,5 +67,5 @@ private val LanguageNames = mapOf(
     "tr" to "Turkish",
     "uk" to "Ukrainian",
     "vi" to "Vietnamese",
-    "zh" to "Chinese"
+    "zh" to "Chinese",
 )

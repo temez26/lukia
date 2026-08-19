@@ -11,7 +11,7 @@ import java.nio.file.StandardCopyOption
 
 class JvmDocumentWorkspace(
     /** Injectable so tests can work in a temporary directory. */
-    private val directory: File = defaultWorkspaceDirectory()
+    private val directory: File = defaultWorkspaceDirectory(),
 ) : DocumentWorkspace {
 
     override suspend fun workingCopy(document: DocumentInfo): WorkingCopy =
@@ -19,7 +19,7 @@ class JvmDocumentWorkspace(
             val location = document.document.location
             val target = File(
                 directory,
-                WorkingCopyNaming.fileName(location, document.document.extension)
+                WorkingCopyNaming.fileName(location, document.document.extension),
             )
 
             // A zero-length copy is treated as absent rather than reused: it is

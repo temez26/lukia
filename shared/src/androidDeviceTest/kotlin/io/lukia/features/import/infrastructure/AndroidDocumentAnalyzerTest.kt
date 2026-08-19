@@ -1,8 +1,8 @@
 package io.lukia.features.import.infrastructure
 
 import androidx.test.platform.app.InstrumentationRegistry
-import io.lukia.core.domain.TestDocuments
 import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.TestDocuments
 import io.lukia.features.import.infrastructure.AndroidDocumentAnalyzer
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -13,13 +13,13 @@ import kotlin.test.assertTrue
 class AndroidDocumentAnalyzerTest {
 
     private val analyzer = AndroidDocumentAnalyzer(
-        InstrumentationRegistry.getInstrumentation().targetContext
+        InstrumentationRegistry.getInstrumentation().targetContext,
     )
 
     @Test
     fun analyzesContentDocumentMetadata() = runTest {
         val document = TestDocuments.pdf(
-            location = "content://io.lukia.shared.test.documents/with-size"
+            location = "content://io.lukia.shared.test.documents/with-size",
         )
 
         val result = analyzer.analyze(document)
@@ -33,7 +33,7 @@ class AndroidDocumentAnalyzerTest {
     @Test
     fun usesZeroWhenContentProviderDoesNotSupplySize() = runTest {
         val document = TestDocuments.epub(
-            location = "content://io.lukia.shared.test.documents/without-size"
+            location = "content://io.lukia.shared.test.documents/without-size",
         )
 
         val result = analyzer.analyze(document)
@@ -47,8 +47,8 @@ class AndroidDocumentAnalyzerTest {
     fun extensionIsCaseInsensitive() = runTest {
         val result = analyzer.analyze(
             TestDocuments.uppercasePdf(
-                location = "content://io.lukia.shared.test.documents/with-size"
-            )
+                location = "content://io.lukia.shared.test.documents/with-size",
+            ),
         )
 
         assertEquals(DocumentType.PDF, result.type)
@@ -58,8 +58,8 @@ class AndroidDocumentAnalyzerTest {
     fun unsupportedExtensionReturnsUnknown() = runTest {
         val result = analyzer.analyze(
             TestDocuments.unsupported(
-                location = "content://io.lukia.shared.test.documents/with-size"
-            )
+                location = "content://io.lukia.shared.test.documents/with-size",
+            ),
         )
 
         assertEquals(DocumentType.UNKNOWN, result.type)
@@ -68,7 +68,7 @@ class AndroidDocumentAnalyzerTest {
     @Test
     fun missingContentDocumentIsRejected() = runTest {
         val document = TestDocuments.missingPdf(
-            location = "content://io.lukia.shared.test.documents/missing"
+            location = "content://io.lukia.shared.test.documents/missing",
         )
 
         val exception = assertFailsWith<IllegalArgumentException> {

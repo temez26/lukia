@@ -124,7 +124,7 @@ internal enum class PassageMarkStyle {
     Translated,
 
     /** Asked for and not come back. */
-    Failed
+    Failed,
 }
 
 /**
@@ -152,7 +152,7 @@ internal data class PassageMark(val start: Int, val end: Int, val style: Passage
 internal data class PassageMarkColors(
     val waiting: Color,
     val translated: Color,
-    val failed: Color
+    val failed: Color,
 ) {
     fun of(style: PassageMarkStyle): Color = when (style) {
         PassageMarkStyle.Waiting -> waiting
@@ -167,7 +167,7 @@ internal fun passageMarkColors(): PassageMarkColors = MaterialTheme.colorScheme.
         PassageMarkColors(
             waiting = colors.onSurfaceVariant,
             translated = colors.primary,
-            failed = colors.error
+            failed = colors.error,
         )
     }
 }
@@ -195,9 +195,9 @@ internal fun passageSweep(active: Boolean): State<Float> {
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
             animation = tween(SWEEP_MILLIS, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
+            repeatMode = RepeatMode.Restart,
         ),
-        label = "passage-sweep-progress"
+        label = "passage-sweep-progress",
     )
 }
 
@@ -219,7 +219,7 @@ internal fun DrawScope.drawPassageMarks(
     layout: TextLayoutResult,
     marks: List<PassageMark>,
     colors: PassageMarkColors,
-    sweep: Float
+    sweep: Float,
 ) {
     if (layout.layoutInput.text.isEmpty()) return
 
@@ -228,7 +228,7 @@ internal fun DrawScope.drawPassageMarks(
             lines = layout.linesOf(mark, bleed = HighlightBleed.toPx(), type = typeSize(layout)),
             style = mark.style,
             colors = colors,
-            sweep = sweep
+            sweep = sweep,
         )
     }
 }
@@ -245,7 +245,7 @@ internal fun DrawScope.drawPassageHighlight(
     lines: List<Rect>,
     style: PassageMarkStyle,
     colors: PassageMarkColors,
-    sweep: Float
+    sweep: Float,
 ) {
     val drawn = lines.filter { it.width > 0f && it.height > 0f }
     if (drawn.isEmpty()) return
@@ -266,7 +266,7 @@ internal fun DrawScope.drawPassageHighlight(
             alpha = style.fill(),
             topLeft = line.topLeft,
             size = line.size,
-            cornerRadius = radius
+            cornerRadius = radius,
         )
 
         travelling?.let {
@@ -281,7 +281,7 @@ internal fun DrawScope.drawPassageHighlight(
             topLeft = Offset(line.left + stroke / 2, line.top + stroke / 2),
             size = Size(line.width - stroke, line.height - stroke),
             cornerRadius = radius,
-            style = Stroke(width = stroke)
+            style = Stroke(width = stroke),
         )
     }
 }
@@ -308,7 +308,7 @@ private fun List<Rect>.sweep(color: Color, progress: Float): Brush {
         0.5f to color.copy(alpha = SWEEP_ALPHA),
         1f to color.copy(alpha = 0f),
         startX = head,
-        endX = head + band
+        endX = head + band,
     )
 }
 
@@ -376,7 +376,7 @@ private fun TextLayoutResult.linesOf(mark: PassageMark, bleed: Float, type: Floa
             left = minOf(near, far) - bleed,
             top = baseline - height * BAND_ABOVE_BASELINE,
             right = maxOf(near, far) + bleed,
-            bottom = baseline + height * BAND_BELOW_BASELINE
+            bottom = baseline + height * BAND_BELOW_BASELINE,
         )
     }
 }

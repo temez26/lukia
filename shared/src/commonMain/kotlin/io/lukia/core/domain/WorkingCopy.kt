@@ -13,5 +13,5 @@ package io.lukia.core.domain
  */
 data class WorkingCopy(
     val sourceLocation: String,
-    val path: String
+    val path: String,
 )

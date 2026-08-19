@@ -18,7 +18,7 @@ import java.io.File
  * platform PDF renderer wants a real file descriptor rather than a stream.
  */
 class AndroidDocumentWorkspace(
-    private val context: Context
+    private val context: Context,
 ) : DocumentWorkspace {
 
     private val directory: File
@@ -29,7 +29,7 @@ class AndroidDocumentWorkspace(
             val location = document.document.location
             val target = File(
                 directory,
-                WorkingCopyNaming.fileName(location, document.document.extension)
+                WorkingCopyNaming.fileName(location, document.document.extension),
             )
 
             // A zero-length copy is treated as absent rather than reused: it is

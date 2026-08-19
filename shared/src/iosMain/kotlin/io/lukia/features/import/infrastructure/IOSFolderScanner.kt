@@ -15,7 +15,6 @@ import platform.Foundation.NSURL
 class IOSFolderScanner : FolderScanner {
 
     override suspend fun scan(folder: PickedFolder): List<PickedDocument> {
-
         val url = NSURL.URLWithString(folder.location)
             ?: return emptyList()
 
@@ -30,7 +29,7 @@ class IOSFolderScanner : FolderScanner {
             null,
             NSDirectoryEnumerationSkipsHiddenFiles or
                 NSDirectoryEnumerationSkipsPackageDescendants,
-            null
+            null,
         ) ?: return emptyList()
 
         val documents = mutableListOf<PickedDocument>()
@@ -59,7 +58,7 @@ class IOSFolderScanner : FolderScanner {
             documents += PickedDocument(
                 fileName = fileName,
                 extension = extension,
-                location = location
+                location = location,
             )
         }
 

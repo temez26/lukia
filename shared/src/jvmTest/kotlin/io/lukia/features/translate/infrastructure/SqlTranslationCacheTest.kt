@@ -81,7 +81,7 @@ class SqlTranslationCacheTest {
             queries.put(
                 cacheKey = "key-$index",
                 translation = "Translation $index",
-                note = null
+                note = null,
             )
         }
 

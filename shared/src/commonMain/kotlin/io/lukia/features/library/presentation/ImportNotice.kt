@@ -8,7 +8,7 @@ import io.lukia.features.library.application.ImportSummary
  */
 data class ImportProgress(
     val completed: Int,
-    val total: Int
+    val total: Int,
 )
 
 /**

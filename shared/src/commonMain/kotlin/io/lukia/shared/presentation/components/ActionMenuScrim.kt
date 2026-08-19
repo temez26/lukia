@@ -1,9 +1,9 @@
 package io.lukia.shared.presentation.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -26,7 +26,7 @@ import io.lukia.shared.presentation.theme.LukiaMotion
 fun ActionMenuScrim(
     visible: Boolean,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
@@ -34,7 +34,7 @@ fun ActionMenuScrim(
         visible = visible,
         enter = fadeIn(tween(LukiaMotion.StandardMillis, easing = LukiaMotion.Standard)),
         exit = fadeOut(tween(LukiaMotion.ExitMillis, easing = LukiaMotion.Exit)),
-        modifier = modifier
+        modifier = modifier,
     ) {
         Box(
             modifier = Modifier
@@ -43,8 +43,8 @@ fun ActionMenuScrim(
                 .clickable(
                     interactionSource = interactionSource,
                     indication = null,
-                    onClick = onDismiss
-                )
+                    onClick = onDismiss,
+                ),
         )
     }
 }

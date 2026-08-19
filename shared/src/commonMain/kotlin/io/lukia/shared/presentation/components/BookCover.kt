@@ -110,7 +110,7 @@ private val bookCoverPalette = listOf(
     Color(0xFF54607A),
     Color(0xFF7A4F5A),
     Color(0xFF41665C),
-    Color(0xFF6E5B8B)
+    Color(0xFF6E5B8B),
 )
 
 internal fun bookCoverColor(seed: String): Color {
@@ -134,7 +134,7 @@ fun BookCover(
     modifier: Modifier = Modifier,
     shape: Shape = MaterialTheme.shapes.medium,
     elevation: Dp = LukiaElevation.card,
-    monogramFontSize: TextUnit = 30.sp
+    monogramFontSize: TextUnit = 30.sp,
 ) {
     val art = rememberCoverArt(coverImage)
     val baseColor = remember(title) { bookCoverColor(title) }
@@ -142,7 +142,7 @@ fun BookCover(
     val artworkAlpha by animateFloatAsState(
         targetValue = if (art is CoverArt.Artwork) 1f else 0f,
         animationSpec = LukiaMotion.standard(),
-        label = "coverArtwork"
+        label = "coverArtwork",
     )
 
     Box(
@@ -154,17 +154,17 @@ fun BookCover(
                 Brush.linearGradient(
                     listOf(
                         lerp(baseColor, Color.White, 0.12f),
-                        lerp(baseColor, Color.Black, 0.22f)
-                    )
-                )
+                        lerp(baseColor, Color.Black, 0.22f),
+                    ),
+                ),
             )
             // A faint inner edge keeps light covers from bleeding into a light page.
             .border(
                 width = 1.dp,
                 color = Color.Black.copy(alpha = 0.08f),
-                shape = shape
+                shape = shape,
             ),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         when (art) {
             is CoverArt.Artwork -> Image(
@@ -173,7 +173,7 @@ fun BookCover(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
-                    .graphicsLayer { alpha = artworkAlpha }
+                    .graphicsLayer { alpha = artworkAlpha },
             )
 
             CoverArt.Absent -> Text(
@@ -183,8 +183,8 @@ fun BookCover(
                 fontWeight = FontWeight.SemiBold,
                 style = MaterialTheme.typography.displaySmall.copy(
                     fontSize = monogramFontSize,
-                    fontWeight = FontWeight.SemiBold
-                )
+                    fontWeight = FontWeight.SemiBold,
+                ),
             )
 
             // Nothing but the tile, which is already drawn behind this.

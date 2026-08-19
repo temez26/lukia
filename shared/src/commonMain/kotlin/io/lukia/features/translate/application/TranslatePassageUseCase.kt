@@ -26,7 +26,7 @@ private const val MAX_PASSAGE_CHARS = 2000
  * and so does the shape of the failure when they do not come back.
  */
 class TranslatePassageUseCase(
-    private val translator: Translator
+    private val translator: Translator,
 ) {
 
     /**
@@ -37,7 +37,7 @@ class TranslatePassageUseCase(
      */
     suspend operator fun invoke(
         request: TranslationRequest,
-        onPartial: (String) -> Unit = {}
+        onPartial: (String) -> Unit = {},
     ): Result<Translation> {
         val passage = request.text.trim()
 
@@ -64,8 +64,8 @@ class TranslatePassageUseCase(
         return Result.success(
             Translation(
                 text = translation.text.trim(),
-                note = translation.note?.trim()?.takeIf { it.isNotEmpty() }
-            )
+                note = translation.note?.trim()?.takeIf { it.isNotEmpty() },
+            ),
         )
     }
 }

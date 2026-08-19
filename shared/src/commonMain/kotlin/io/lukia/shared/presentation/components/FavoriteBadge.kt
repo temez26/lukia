@@ -29,7 +29,7 @@ import io.lukia.shared.presentation.theme.LukiaMotion
 fun FavoriteBadge(
     visible: Boolean,
     modifier: Modifier = Modifier,
-    size: Dp = 22.dp
+    size: Dp = 22.dp,
 ) {
     AnimatedVisibility(
         visible = visible,
@@ -39,21 +39,21 @@ fun FavoriteBadge(
             scaleIn(animationSpec = LukiaMotion.bouncy(), initialScale = 0.5f),
         exit = fadeOut(LukiaMotion.exit()) +
             scaleOut(LukiaMotion.exit(), targetScale = 0.5f),
-        modifier = modifier
+        modifier = modifier,
     ) {
         Box(
             modifier = Modifier
                 .size(size)
                 .clip(CircleShape)
                 .background(
-                    MaterialTheme.colorScheme.surface.copy(alpha = LukiaAlpha.OverArtwork)
+                    MaterialTheme.colorScheme.surface.copy(alpha = LukiaAlpha.OverArtwork),
                 ),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             HeartGlyph(
                 tint = MaterialTheme.colorScheme.primary,
                 filled = true,
-                modifier = Modifier.size(size * 0.55f)
+                modifier = Modifier.size(size * 0.55f),
             )
         }
     }

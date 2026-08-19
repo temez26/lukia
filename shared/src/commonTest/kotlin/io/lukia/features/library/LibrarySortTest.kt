@@ -11,7 +11,7 @@ class LibrarySortTest {
     private val shelf = library(
         book("Solaris", authors = listOf("Stanisław Lem"), sizeBytes = 3_000L),
         book("Dune", authors = listOf("Frank Herbert"), sizeBytes = 9_000L),
-        book("Notes", sizeBytes = 100L)
+        book("Notes", sizeBytes = 100L),
     )
 
     /** The order the books were imported in, which is the one the reader built. */
@@ -19,11 +19,11 @@ class LibrarySortTest {
     fun theDefaultIsTheShelfsOwnOrder() {
         assertEquals(
             listOf("Solaris", "Dune", "Notes"),
-            shelf.sortedFor(LibrarySort.Added).titles()
+            shelf.sortedFor(LibrarySort.Added).titles(),
         )
         assertEquals(
             listOf("Notes", "Dune", "Solaris"),
-            shelf.sortedFor(LibrarySort.RecentlyAdded).titles()
+            shelf.sortedFor(LibrarySort.RecentlyAdded).titles(),
         )
     }
 
@@ -31,11 +31,11 @@ class LibrarySortTest {
     fun titlesSortBothWays() {
         assertEquals(
             listOf("Dune", "Notes", "Solaris"),
-            shelf.sortedFor(LibrarySort.Title).titles()
+            shelf.sortedFor(LibrarySort.Title).titles(),
         )
         assertEquals(
             listOf("Solaris", "Notes", "Dune"),
-            shelf.sortedFor(LibrarySort.TitleReversed).titles()
+            shelf.sortedFor(LibrarySort.TitleReversed).titles(),
         )
     }
 
@@ -44,7 +44,7 @@ class LibrarySortTest {
     fun booksWithNoAuthorSortToTheEnd() {
         assertEquals(
             listOf("Dune", "Solaris", "Notes"),
-            shelf.sortedFor(LibrarySort.Author).titles()
+            shelf.sortedFor(LibrarySort.Author).titles(),
         )
     }
 
@@ -52,7 +52,7 @@ class LibrarySortTest {
     fun sizeSortsLargestFirst() {
         assertEquals(
             listOf("Dune", "Solaris", "Notes"),
-            shelf.sortedFor(LibrarySort.Largest).titles()
+            shelf.sortedFor(LibrarySort.Largest).titles(),
         )
     }
 
@@ -65,12 +65,12 @@ class LibrarySortTest {
         val books = library(
             book("Solaris", progress = ReadingProgress(1, 100, readAt = 4)),
             book("Dune", progress = ReadingProgress(1, 100, readAt = 9)),
-            book("Notes")
+            book("Notes"),
         )
 
         assertEquals(
             listOf("Dune", "Solaris", "Notes"),
-            books.sortedFor(LibrarySort.LastRead).titles()
+            books.sortedFor(LibrarySort.LastRead).titles(),
         )
     }
 
@@ -83,7 +83,7 @@ class LibrarySortTest {
     fun aBookReadBeforeCountingBeganStillOutranksAnUnreadOne() {
         val books = library(
             book("Notes"),
-            book("Dune", progress = ReadingProgress(1, 100, readAt = 0))
+            book("Dune", progress = ReadingProgress(1, 100, readAt = 0)),
         )
 
         assertEquals(listOf("Dune", "Notes"), books.sortedFor(LibrarySort.LastRead).titles())
@@ -94,12 +94,12 @@ class LibrarySortTest {
     fun sortingIsStable() {
         val books = library(
             book("Zeta", authors = listOf("Same Author")),
-            book("Alpha", authors = listOf("Same Author"))
+            book("Alpha", authors = listOf("Same Author")),
         )
 
         assertEquals(
             listOf("Alpha", "Zeta"),
-            books.sortedFor(LibrarySort.Author).titles()
+            books.sortedFor(LibrarySort.Author).titles(),
         )
     }
 }

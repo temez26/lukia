@@ -10,5 +10,5 @@ package io.lukia.features.library.application
 data class ImportSummary(
     val imported: Int,
     val alreadyInLibrary: Int,
-    val failed: Int
+    val failed: Int,
 )

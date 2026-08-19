@@ -25,7 +25,7 @@ import java.util.Properties
  */
 class JvmSecretStore(
     /** Injectable so tests can work in a temporary directory. */
-    private val file: File = File(lukiaAppDirectory(), FILE_NAME)
+    private val file: File = File(lukiaAppDirectory(), FILE_NAME),
 ) : SecretStore {
 
     private val secrets: Properties by lazy {
@@ -73,7 +73,7 @@ class JvmSecretStore(
         val posix = runCatching {
             Files.setPosixFilePermissions(
                 toPath(),
-                setOf(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE)
+                setOf(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE),
             )
         }
 

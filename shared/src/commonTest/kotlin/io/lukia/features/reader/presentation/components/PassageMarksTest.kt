@@ -34,7 +34,7 @@ class PassageMarksTest {
     fun aTranslationOnThePageIsMarked() {
         assertEquals(
             PassageMarkStyle.Translated,
-            PassageTranslation.Ready(translation).markStyle()
+            PassageTranslation.Ready(translation).markStyle(),
         )
     }
 
@@ -42,7 +42,7 @@ class PassageMarksTest {
     @Test
     fun aPassageShowingTheOriginalIsNotMarked() {
         assertNull(
-            PassageTranslation.Ready(translation, showingOriginal = true).markStyle()
+            PassageTranslation.Ready(translation, showingOriginal = true).markStyle(),
         )
     }
 
@@ -50,7 +50,7 @@ class PassageMarksTest {
     fun aFailureIsMarkedAsOneSoItCanBeTappedAgain() {
         assertEquals(
             PassageMarkStyle.Failed,
-            PassageTranslation.Failed(AppError.TranslationFailed).markStyle()
+            PassageTranslation.Failed(AppError.TranslationFailed).markStyle(),
         )
     }
 }

@@ -62,7 +62,7 @@ private const val MAX_AT_ONCE = 4
  */
 class TranslationSession(
     private val translate: TranslatePassageUseCase,
-    private val scope: CoroutineScope
+    private val scope: CoroutineScope,
 ) {
 
     /**
@@ -86,6 +86,7 @@ class TranslationSession(
      * the sentence came out of - and is passed by name so that a tap which
      * merely flips an already-translated passage never builds one.
      */
+
     /**
      * Translates a passage nobody has asked about yet, and leaves every other
      * one exactly as it is.
@@ -109,7 +110,7 @@ class TranslationSession(
 
             is PassageTranslation.Ready -> put(
                 anchor,
-                current.copy(showingOriginal = !current.showingOriginal)
+                current.copy(showingOriginal = !current.showingOriginal),
             )
 
             // A failure is not a state worth keeping. Tapping it is how the
@@ -137,7 +138,7 @@ class TranslationSession(
                 translate(request) { arriving.value = it }
             }.fold(
                 onSuccess = { PassageTranslation.Ready(it) },
-                onFailure = { PassageTranslation.Failed(it.toAppError()) }
+                onFailure = { PassageTranslation.Failed(it.toAppError()) },
             )
 
             // Stopped before the finished translation is put, so a last piece

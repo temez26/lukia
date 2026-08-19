@@ -1,0 +1,10 @@
+# Kotlin files allowed to exceed the 400-line limit, one path per line. They are
+# reported as warnings rather than failures.
+#
+# This list is empty, and the intention is that it stays that way: it existed to
+# carry the files that predated the rule, and every one of them has since been
+# split. Add a path here only to carry an existing file through a change that is
+# not about its length - never for code being written now.
+#
+# Find what would go here with:
+#   git ls-files '*.kt' | xargs wc -l | awk '$1 > 400 && $2 != "total" { print $2 }'

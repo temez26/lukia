@@ -39,7 +39,7 @@ class ParagraphTextTest {
         val runs = listOf(
             run("Call me Ishmael. "),
             run("Some", Emphasis.Italic),
-            run(" years ago.")
+            run(" years ago."),
         )
 
         val drawn = paragraph(runs) { sentence ->
@@ -66,7 +66,7 @@ class ParagraphTextTest {
 
         assertEquals(
             0,
-            drawn.text.spanStyles.count { it.start < "Kutsukaa minua.".length }
+            drawn.text.spanStyles.count { it.start < "Kutsukaa minua.".length },
         )
     }
 
@@ -151,7 +151,6 @@ class ParagraphTextTest {
         assertNull(drawn.sentenceAt(999))
     }
 
-
     /**
      * A single word is replaced where it stands, leaving the sentence around it
      * exactly as the book set it - which is the whole difference between looking
@@ -220,20 +219,20 @@ class ParagraphTextTest {
 
     private fun paragraph(
         runs: List<TextRun>,
-        translationOf: (Sentence) -> String?
+        translationOf: (Sentence) -> String?,
     ): ParagraphText = paragraph(runs, translationOf) { _, _ -> null }
 
     private fun paragraph(
         runs: List<TextRun>,
         translationOf: (Sentence) -> String?,
-        wordTranslationOf: (Sentence, Word) -> String?
+        wordTranslationOf: (Sentence, Word) -> String?,
     ): ParagraphText {
         val sentences = splitIntoSentences(runs.plain())
 
         return buildParagraphText(
             runs = runs,
             sentences = sentences,
-            words = sentences.words()
+            words = sentences.words(),
         ) { sentence, word ->
             if (word == null) translationOf(sentence) else wordTranslationOf(sentence, word)
         }

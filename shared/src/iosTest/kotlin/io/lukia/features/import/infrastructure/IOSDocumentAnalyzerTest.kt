@@ -1,14 +1,14 @@
 package io.lukia.features.import.infrastructure
 
-import io.lukia.core.domain.TestDocuments
 import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.TestDocuments
 import io.lukia.features.import.infrastructure.IOSDocumentAnalyzer
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.test.runTest
 import platform.Foundation.NSFileManager
+import platform.Foundation.NSTemporaryDirectory
 import platform.Foundation.NSURL
 import platform.Foundation.NSUUID
-import platform.Foundation.NSTemporaryDirectory
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -24,7 +24,7 @@ class IOSDocumentAnalyzerTest {
     fun analyzesEmptyPdfDocument() = runTest {
         withTemporaryFile("pdf") { path ->
             val document = TestDocuments.pdf(
-                location = location(path)
+                location = location(path),
             )
 
             val result = analyzer.analyze(document)
@@ -40,7 +40,7 @@ class IOSDocumentAnalyzerTest {
     fun analyzesEpubDocument() = runTest {
         withTemporaryFile("epub") { path ->
             val document = TestDocuments.epub(
-                location = location(path)
+                location = location(path),
             )
 
             val result = analyzer.analyze(document)
@@ -55,8 +55,8 @@ class IOSDocumentAnalyzerTest {
         withTemporaryFile("PDF") { path ->
             val result = analyzer.analyze(
                 TestDocuments.uppercasePdf(
-                    location = location(path)
-                )
+                    location = location(path),
+                ),
             )
 
             assertEquals(DocumentType.PDF, result.type)
@@ -68,8 +68,8 @@ class IOSDocumentAnalyzerTest {
         withTemporaryFile("txt") { path ->
             val result = analyzer.analyze(
                 TestDocuments.unsupported(
-                    location = location(path)
-                )
+                    location = location(path),
+                ),
             )
 
             assertEquals(DocumentType.UNKNOWN, result.type)
@@ -79,7 +79,7 @@ class IOSDocumentAnalyzerTest {
     @Test
     fun nonexistentFileThrowsException() = runTest {
         val document = TestDocuments.missingPdf(
-            location = "file:///lukia-test-missing.pdf"
+            location = "file:///lukia-test-missing.pdf",
         )
 
         val exception = assertFailsWith<IllegalArgumentException> {
@@ -98,8 +98,8 @@ class IOSDocumentAnalyzerTest {
             val exception = assertFailsWith<IllegalArgumentException> {
                 analyzer.analyze(
                     TestDocuments.pdf(
-                        location = location(path)
-                    )
+                        location = location(path),
+                    ),
                 )
             }
 
@@ -111,7 +111,7 @@ class IOSDocumentAnalyzerTest {
 
     private suspend fun withTemporaryFile(
         extension: String,
-        block: suspend (String) -> Unit
+        block: suspend (String) -> Unit,
     ) {
         val path = temporaryPath(extension)
         assertTrue(fileManager.createFileAtPath(path, null, null))

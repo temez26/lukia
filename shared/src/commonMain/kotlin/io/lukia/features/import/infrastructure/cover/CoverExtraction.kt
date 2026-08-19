@@ -11,11 +11,9 @@ import io.lukia.core.domain.DocumentType
  * only the words - so they have no branch here rather than a branch that always
  * fails.
  */
-internal fun extractCover(type: DocumentType, documentBytes: ByteArray): ByteArray? {
-    return when (type) {
-        DocumentType.PDF -> runCatching { renderPdfCover(documentBytes) }.getOrNull()
-        DocumentType.EPUB -> runCatching { extractEpubCover(documentBytes) }.getOrNull()
-        DocumentType.DOCX -> runCatching { extractDocxCover(documentBytes) }.getOrNull()
-        DocumentType.TEXT, DocumentType.MARKDOWN, DocumentType.UNKNOWN -> null
-    }
+internal fun extractCover(type: DocumentType, documentBytes: ByteArray): ByteArray? = when (type) {
+    DocumentType.PDF -> runCatching { renderPdfCover(documentBytes) }.getOrNull()
+    DocumentType.EPUB -> runCatching { extractEpubCover(documentBytes) }.getOrNull()
+    DocumentType.DOCX -> runCatching { extractDocxCover(documentBytes) }.getOrNull()
+    DocumentType.TEXT, DocumentType.MARKDOWN, DocumentType.UNKNOWN -> null
 }

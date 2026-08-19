@@ -3,8 +3,8 @@ package io.lukia.features.library.application
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
-import io.lukia.core.domain.asFailure
 import io.lukia.core.domain.PickedDocument
+import io.lukia.core.domain.asFailure
 import io.lukia.features.import.domain.DocumentAnalyzer
 import io.lukia.features.library.domain.LibraryRepository
 import kotlinx.coroutines.CoroutineDispatcher
@@ -15,7 +15,7 @@ class ImportDocumentUseCase(
     private val documentAnalyzer: DocumentAnalyzer,
     private val libraryRepository: LibraryRepository,
     /** Injectable so tests can run the import deterministically. */
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
     /**
      * Analysis reads the whole file and renders or inflates a cover image -

@@ -96,7 +96,7 @@ internal fun readEpubMetadata(packageXml: String): BookMetadata {
         language = language,
         description = description?.takeIf { it.isNotBlank() },
         subjects = subjects.distinct(),
-        identifier = isbn ?: identifier
+        identifier = isbn ?: identifier,
     )
 }
 

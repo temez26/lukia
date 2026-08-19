@@ -15,7 +15,7 @@ import io.lukia.core.domain.SettingsStore
 fun <T : Enum<T>> SettingsStore.readEnum(
     key: String,
     entries: List<T>,
-    default: T
+    default: T,
 ): T {
     val stored = getString(key) ?: return default
     return entries.firstOrNull { it.name == stored } ?: default

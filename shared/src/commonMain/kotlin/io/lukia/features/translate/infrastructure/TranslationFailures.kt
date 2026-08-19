@@ -21,7 +21,7 @@ import io.lukia.features.translate.domain.TranslationSettings
  * transport failures through here so the two never get the same words again.
  */
 internal fun Throwable.asTranslationFailure(
-    settings: TranslationSettings
+    settings: TranslationSettings,
 ): AppErrorException = AppErrorException(AppError.Unexpected(settings.explain(this)))
 
 private fun TranslationSettings.explain(failure: Throwable): String = when {

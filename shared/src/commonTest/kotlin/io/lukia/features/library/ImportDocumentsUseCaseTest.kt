@@ -22,7 +22,7 @@ class ImportDocumentsUseCaseTest {
     fun importsEveryDocumentItIsGiven() = runTest {
         val documents = listOf(
             TestDocuments.pdf(location = "/test/book.pdf"),
-            TestDocuments.epub(location = "/test/novel.epub")
+            TestDocuments.epub(location = "/test/novel.epub"),
         )
 
         val repository = FakeImportLibraryRepository()
@@ -38,7 +38,7 @@ class ImportDocumentsUseCaseTest {
         val documents = listOf(
             TestDocuments.pdf(location = "/test/book.pdf"),
             TestDocuments.unsupported(location = "/test/notes.mobi"),
-            TestDocuments.epub(location = "/test/novel.epub")
+            TestDocuments.epub(location = "/test/novel.epub"),
         )
 
         val repository = FakeImportLibraryRepository()
@@ -58,7 +58,7 @@ class ImportDocumentsUseCaseTest {
 
         val summary = createUseCase(
             repository = repository,
-            failingLocations = setOf(unreadable.location)
+            failingLocations = setOf(unreadable.location),
         )(listOf(unreadable, readable)).getOrThrow()
 
         assertEquals(ImportSummary(imported = 1, alreadyInLibrary = 0, failed = 1), summary)
@@ -80,9 +80,9 @@ class ImportDocumentsUseCaseTest {
                     document = stored,
                     type = DocumentType.PDF,
                     exists = true,
-                    sizeBytes = 1024L
-                )
-            )
+                    sizeBytes = 1024L,
+                ),
+            ),
         )
 
         val analyzed = mutableListOf<String>()
@@ -91,10 +91,10 @@ class ImportDocumentsUseCaseTest {
             importDocumentUseCase = ImportDocumentUseCase(
                 documentAnalyzer = RecordingAnalyzer(analyzed),
                 libraryRepository = repository,
-                dispatcher = UnconfinedTestDispatcher(testScheduler)
+                dispatcher = UnconfinedTestDispatcher(testScheduler),
             ),
             libraryRepository = repository,
-            dispatcher = UnconfinedTestDispatcher(testScheduler)
+            dispatcher = UnconfinedTestDispatcher(testScheduler),
         )(listOf(stored, fresh)).getOrThrow()
 
         assertEquals(ImportSummary(imported = 1, alreadyInLibrary = 1, failed = 0), summary)
@@ -108,12 +108,12 @@ class ImportDocumentsUseCaseTest {
     @Test
     fun aSingleUnreadableFileFailsWithItsOwnReason() = runTest {
         val result = createUseCase(FakeImportLibraryRepository())(
-            listOf(TestDocuments.unsupported(location = "/test/notes.mobi"))
+            listOf(TestDocuments.unsupported(location = "/test/notes.mobi")),
         )
 
         assertEquals(
             AppError.UnsupportedFileType,
-            result.exceptionOrNull()?.toAppError()
+            result.exceptionOrNull()?.toAppError(),
         )
     }
 
@@ -125,8 +125,8 @@ class ImportDocumentsUseCaseTest {
             listOf(
                 TestDocuments.pdf(location = "/test/one.pdf"),
                 TestDocuments.pdf(location = "/test/two.pdf"),
-                TestDocuments.pdf(location = "/test/three.pdf")
-            )
+                TestDocuments.pdf(location = "/test/three.pdf"),
+            ),
         ) { completed, total -> seen += completed to total }
 
         assertEquals(listOf(1 to 3, 2 to 3, 3 to 3), seen)
@@ -134,20 +134,20 @@ class ImportDocumentsUseCaseTest {
 
     private fun TestScope.createUseCase(
         repository: FakeImportLibraryRepository,
-        failingLocations: Set<String> = emptySet()
+        failingLocations: Set<String> = emptySet(),
     ) = ImportDocumentsUseCase(
         importDocumentUseCase = ImportDocumentUseCase(
             documentAnalyzer = TypeFromExtensionAnalyzer(failingLocations),
             libraryRepository = repository,
-            dispatcher = UnconfinedTestDispatcher(testScheduler)
+            dispatcher = UnconfinedTestDispatcher(testScheduler),
         ),
         libraryRepository = repository,
-        dispatcher = UnconfinedTestDispatcher(testScheduler)
+        dispatcher = UnconfinedTestDispatcher(testScheduler),
     )
 
     /** Records what it was asked to open, so a skipped file can be proven skipped. */
     private class RecordingAnalyzer(
-        private val analyzed: MutableList<String>
+        private val analyzed: MutableList<String>,
     ) : io.lukia.features.import.domain.DocumentAnalyzer {
 
         private val delegate = TypeFromExtensionAnalyzer()

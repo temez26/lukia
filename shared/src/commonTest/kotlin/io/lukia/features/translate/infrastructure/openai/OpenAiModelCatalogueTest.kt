@@ -3,13 +3,10 @@ package io.lukia.features.translate.infrastructure.openai
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
-import io.ktor.client.engine.mock.respond
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.HttpResponseData
-import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.FakeSecretStore
@@ -45,21 +42,26 @@ class OpenAiModelCatalogueTest {
                       {"id": "qwen2.5-7b-instruct", "object": "model"},
                       {"id": "llama-3.2-3b-instruct", "object": "model"}
                     ]}
-                    """
+                    """,
                 )
-            }
+            },
         )
 
         assertEquals(
             listOf("llama-3.2-3b-instruct", "qwen2.5-7b-instruct"),
-            catalogue.models()
+            catalogue.models(),
         )
     }
 
     @Test
     fun theCatalogueIsAskedForUnderTheConfiguredAddress() = runTest {
         var sent: HttpRequestData? = null
-        val catalogue = catalogue(answers { sent = it; oneModel() })
+        val catalogue = catalogue(
+            answers {
+                sent = it
+                oneModel()
+            },
+        )
 
         catalogue.models()
 
@@ -70,8 +72,11 @@ class OpenAiModelCatalogueTest {
     fun aTrailingSlashOnTheAddressIsNotADoubledOne() = runTest {
         var sent: HttpRequestData? = null
         val catalogue = catalogue(
-            answers { sent = it; oneModel() },
-            baseUrl = "http://localhost:1234/v1/"
+            answers {
+                sent = it
+                oneModel()
+            },
+            baseUrl = "http://localhost:1234/v1/",
         )
 
         catalogue.models()
@@ -83,7 +88,13 @@ class OpenAiModelCatalogueTest {
     @Test
     fun aKeyIsSentWhenThereIsOne() = runTest {
         var sent: HttpRequestData? = null
-        val catalogue = catalogue(answers { sent = it; oneModel() }, apiKey = "behind-a-proxy")
+        val catalogue = catalogue(
+            answers {
+                sent = it
+                oneModel()
+            },
+            apiKey = "behind-a-proxy",
+        )
 
         catalogue.models()
 
@@ -94,7 +105,7 @@ class OpenAiModelCatalogueTest {
     @Test
     fun aServerThatIsNotThereSaysWhereItWasLookedFor() = runTest {
         val catalogue = catalogue(
-            MockEngine { throw kotlinx.io.IOException("Connection refused") }
+            MockEngine { throw kotlinx.io.IOException("Connection refused") },
         )
 
         val error = catalogue.failure() as AppError.Unexpected
@@ -130,8 +141,11 @@ class OpenAiModelCatalogueTest {
     fun cleartextToThePublicInternetIsRefusedBeforeAnythingIsSent() = runTest {
         var asked = false
         val catalogue = catalogue(
-            answers { asked = true; oneModel() },
-            baseUrl = "http://models.example.com/v1"
+            answers {
+                asked = true
+                oneModel()
+            },
+            baseUrl = "http://models.example.com/v1",
         )
 
         catalogue.failure()
@@ -145,13 +159,13 @@ class OpenAiModelCatalogueTest {
     private fun catalogue(
         engine: MockEngine,
         baseUrl: String = "http://localhost:1234/v1",
-        apiKey: String? = null
+        apiKey: String? = null,
     ): OpenAiModelCatalogue {
         val settings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()).apply {
             update(
                 TranslationSettings(provider = TranslationProvider.Local)
                     .withBaseUrl(baseUrl)
-                    .withApiKey(apiKey.orEmpty())
+                    .withApiKey(apiKey.orEmpty()),
             )
         }
 
@@ -166,16 +180,3 @@ class OpenAiModelCatalogueTest {
     private suspend fun OpenAiModelCatalogue.failure(): AppError =
         runCatching { models() }.exceptionOrNull()?.toAppError() ?: error("expected a failure")
 }
-
-private fun answers(
-    handle: MockRequestHandleScope.(HttpRequestData) -> HttpResponseData
-) = MockEngine { request -> handle(request) }
-
-private fun MockRequestHandleScope.respondJson(
-    body: String,
-    status: HttpStatusCode = HttpStatusCode.OK
-) = respond(
-    content = body.trimIndent(),
-    status = status,
-    headers = headersOf("Content-Type", ContentType.Application.Json.toString())
-)

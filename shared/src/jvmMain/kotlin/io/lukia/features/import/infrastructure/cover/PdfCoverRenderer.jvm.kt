@@ -1,9 +1,9 @@
 package io.lukia.features.import.infrastructure.cover
 
 import org.apache.pdfbox.Loader
+import org.apache.pdfbox.rendering.PDFRenderer
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
-import org.apache.pdfbox.rendering.PDFRenderer
 
 internal actual fun renderPdfCover(pdfBytes: ByteArray): ByteArray? {
     return try {

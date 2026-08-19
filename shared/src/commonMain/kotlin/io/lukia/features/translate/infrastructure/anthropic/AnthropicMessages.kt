@@ -30,13 +30,13 @@ internal data class MessagesRequest(
      * a stream makes that silence visible rather than indistinguishable from a
      * request that has stalled.
      */
-    val stream: Boolean = false
+    val stream: Boolean = false,
 )
 
 @Serializable
 internal data class Message(
     val role: String,
-    val content: String
+    val content: String,
 ) {
     companion object {
         fun user(content: String) = Message(role = "user", content = content)
@@ -66,7 +66,7 @@ internal data class OutputConfig(
      * not encoded either - and a request that quietly dropped the schema would
      * come back as prose that fails to parse rather than as an error.
      */
-    val format: JsonObject
+    val format: JsonObject,
 )
 
 /**
@@ -83,14 +83,14 @@ internal data class OutputConfig(
 internal data class MessagesEvent(
     val type: String? = null,
     val delta: EventDelta? = null,
-    val error: ErrorBody? = null
+    val error: ErrorBody? = null,
 )
 
 @Serializable
 internal data class EventDelta(
     val type: String? = null,
     val text: String? = null,
-    @SerialName("stop_reason") val stopReason: String? = null
+    @SerialName("stop_reason") val stopReason: String? = null,
 ) {
 
     /**
@@ -115,7 +115,7 @@ internal data class ErrorResponse(val error: ErrorBody? = null)
 @Serializable
 internal data class ErrorBody(
     val type: String? = null,
-    val message: String? = null
+    val message: String? = null,
 )
 
 /**
@@ -135,8 +135,8 @@ internal val TranslationSchema: JsonObject = buildJsonObject {
         put(
             "required",
             kotlinx.serialization.json.JsonArray(
-                listOf(JsonPrimitive("translation"), JsonPrimitive("note"))
-            )
+                listOf(JsonPrimitive("translation"), JsonPrimitive("note")),
+            ),
         )
         put("additionalProperties", false)
     }

@@ -13,6 +13,6 @@ interface PlatformFilePickerState {
      * selection of none.
      */
     fun launch(
-        onPicked: (List<PickedDocument>) -> Unit
+        onPicked: (List<PickedDocument>) -> Unit,
     )
 }

@@ -12,7 +12,7 @@ import io.lukia.features.translate.domain.TranslationRequest
  */
 data class TranslationPrompt(
     val system: String,
-    val user: String
+    val user: String,
 )
 
 /**

@@ -38,7 +38,7 @@ sealed interface ReaderContent : AutoCloseable {
  */
 enum class ReadingUnit(val singular: String, val plural: String) {
     Page("Page", "pages"),
-    Section("Section", "sections")
+    Section("Section", "sections"),
 }
 
 /** A document that carries its own layout, drawn page by page. */
@@ -65,7 +65,7 @@ class PagedContent(val pages: DocumentPages) : ReaderContent {
  */
 class ReflowableContent(
     val sections: List<TextSection>,
-    override val outline: List<OutlineEntry>?
+    override val outline: List<OutlineEntry>?,
 ) : ReaderContent {
 
     override val unitCount: Int get() = sections.size

@@ -15,7 +15,7 @@ enum class LibrarySort(val label: String) {
     TitleReversed("Title Z–A"),
     Author("Author A–Z"),
     LastRead("Recently read"),
-    Largest("Largest first")
+    Largest("Largest first"),
 }
 
 /**
@@ -40,7 +40,7 @@ fun List<LibraryBook>.sortedFor(sort: LibrarySort): List<LibraryBook> = when (so
     LibrarySort.Author -> sortedWith(
         compareBy<LibraryBook> { it.sortAuthor.isEmpty() }
             .thenBy { it.sortAuthor }
-            .thenBy { it.sortTitle }
+            .thenBy { it.sortTitle },
     )
     // Never opened sorts below read-but-unstamped, which is every position
     // stored before the app began recording this - see `ReadingPosition.sq`.

@@ -32,14 +32,14 @@ class CoverImageTest {
             type = DocumentType.PDF,
             exists = true,
             sizeBytes = 1024L,
-            coverImage = CoverImage(byteArrayOf(1, 2, 3))
+            coverImage = CoverImage(byteArrayOf(1, 2, 3)),
         )
         val second = DocumentInfo(
             document = document,
             type = DocumentType.PDF,
             exists = true,
             sizeBytes = 1024L,
-            coverImage = CoverImage(byteArrayOf(1, 2, 3))
+            coverImage = CoverImage(byteArrayOf(1, 2, 3)),
         )
 
         assertEquals(first, second)

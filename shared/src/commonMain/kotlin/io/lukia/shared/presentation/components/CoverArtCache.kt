@@ -70,7 +70,7 @@ internal object CoverArtCache {
      */
     suspend fun artworkFor(
         cover: CoverImage,
-        decode: suspend (CoverImage) -> ImageBitmap?
+        decode: suspend (CoverImage) -> ImageBitmap?,
     ): ImageBitmap? {
         held(cover)?.let { return it }
 
@@ -127,7 +127,7 @@ internal fun coverTargetSize(width: Int, height: Int, maxEdge: Int): IntSize {
     // rounds to nothing is still a bitmap that has to have a size.
     return IntSize(
         width = (width * scale).toInt().coerceAtLeast(1),
-        height = (height * scale).toInt().coerceAtLeast(1)
+        height = (height * scale).toInt().coerceAtLeast(1),
     )
 }
 
@@ -147,7 +147,7 @@ internal fun ImageBitmap.scaledToFit(maxEdge: Int): ImageBitmap {
         density = Density(1f),
         layoutDirection = LayoutDirection.Ltr,
         canvas = canvas,
-        size = Size(target.width.toFloat(), target.height.toFloat())
+        size = Size(target.width.toFloat(), target.height.toFloat()),
     ) {
         drawImage(
             image = this@scaledToFit,
@@ -157,7 +157,7 @@ internal fun ImageBitmap.scaledToFit(maxEdge: Int): ImageBitmap {
             dstSize = target,
             // Cheaper than the highest quality and indistinguishable at the size
             // a cover is actually drawn, which is smaller again than this.
-            filterQuality = FilterQuality.Medium
+            filterQuality = FilterQuality.Medium,
         )
     }
 

@@ -24,7 +24,7 @@ import io.lukia.features.reader.domain.TextRun
  */
 internal fun htmlBlocks(
     html: String,
-    image: (src: String) -> ByteArray? = { null }
+    image: (src: String) -> ByteArray? = { null },
 ): List<TextBlock> {
     val builder = HtmlBlockBuilder(image)
 
@@ -39,7 +39,7 @@ private enum class BlockKind {
     Heading,
     ListItem,
     Quote,
-    Code
+    Code,
 }
 
 private class OpenBlock(
@@ -48,7 +48,7 @@ private class OpenBlock(
     /** Only meaningful for [BlockKind.Heading]. */
     val headingLevel: Int = 0,
     /** Only meaningful for [BlockKind.ListItem]. */
-    val marker: String = ""
+    val marker: String = "",
 )
 
 private class ListContext(val ordered: Boolean) {
@@ -72,14 +72,14 @@ private val EmphasisElements = mapOf(
     "code" to Emphasis.Monospace,
     "kbd" to Emphasis.Monospace,
     "samp" to Emphasis.Monospace,
-    "tt" to Emphasis.Monospace
+    "tt" to Emphasis.Monospace,
 )
 
 /** Elements that end whatever text came before them and start something new. */
 private val BlockElements = setOf(
     "p", "div", "section", "article", "aside", "header", "footer", "main",
     "blockquote", "pre", "li", "dt", "dd", "figcaption", "caption",
-    "h1", "h2", "h3", "h4", "h5", "h6", "td", "th", "tr"
+    "h1", "h2", "h3", "h4", "h5", "h6", "td", "th", "tr",
 )
 
 /** Elements with no content and so no closing tag to wait for. */
@@ -168,7 +168,7 @@ private class HtmlBlockBuilder(private val image: (src: String) -> ByteArray?) {
             OpenBlock(
                 tag = name,
                 kind = BlockKind.Heading,
-                headingLevel = name[1].digitToInt()
+                headingLevel = name[1].digitToInt(),
             )
 
         name == "blockquote" -> OpenBlock(tag = name, kind = BlockKind.Quote)

@@ -23,7 +23,7 @@ class ZipArchiveReaderSizeCapTest {
             compressionMethod = 8,
             compressedData = compressed,
             compressedSizeField = compressed.size,
-            uncompressedSizeField = content.size
+            uncompressedSizeField = content.size,
         )
 
         val result = ZipArchiveReader(zipBytes).readEntry("small.bin")
@@ -41,7 +41,7 @@ class ZipArchiveReaderSizeCapTest {
             compressionMethod = 8,
             compressedData = compressed,
             compressedSizeField = compressed.size,
-            uncompressedSizeField = 500_000_000
+            uncompressedSizeField = 500_000_000,
         )
 
         assertNull(ZipArchiveReader(zipBytes).readEntry("huge.bin"))
@@ -57,7 +57,7 @@ class ZipArchiveReaderSizeCapTest {
             compressionMethod = 8,
             compressedData = compressed,
             compressedSizeField = -16,
-            uncompressedSizeField = content.size
+            uncompressedSizeField = content.size,
         )
 
         assertNull(ZipArchiveReader(zipBytes).readEntry("negative.bin"))
@@ -82,7 +82,7 @@ class ZipArchiveReaderSizeCapTest {
         compressionMethod: Int,
         compressedData: ByteArray,
         compressedSizeField: Int,
-        uncompressedSizeField: Int
+        uncompressedSizeField: Int,
     ): ByteArray {
         val nameBytes = name.encodeToByteArray()
 

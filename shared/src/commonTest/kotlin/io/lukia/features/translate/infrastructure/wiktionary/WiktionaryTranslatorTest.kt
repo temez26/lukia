@@ -44,7 +44,12 @@ class WiktionaryTranslatorTest {
     @Test
     fun theReadersOwnWiktionaryIsAskedFirst() = runTest {
         var sent: HttpRequestData? = null
-        val translator = translator(answers { sent = it; respondJson(FINNISH_ENTRY) })
+        val translator = translator(
+            answers {
+                sent = it
+                respondJson(FINNISH_ENTRY)
+            },
+        )
 
         translator.translate(request())
 
@@ -76,7 +81,6 @@ class WiktionaryTranslatorTest {
 
         assertTrue(translator.translate(request()).note.orEmpty().contains("valaskala"))
     }
-
 
     /**
      * The page that prompted all of this. An entry opens with its headword and
@@ -163,7 +167,7 @@ sauna
                 } else {
                     respondJson(ENGLISH_ENTRY)
                 }
-            }
+            },
         )
 
         assertEquals("a large marine mammal", translator.translate(request()).text)
@@ -175,8 +179,11 @@ sauna
     fun anEnglishReaderIsNotAskedTheSameWikiTwice() = runTest {
         val asked = mutableListOf<String>()
         val translator = translator(
-            answers { request -> asked += request.url.host; respondJson(MISSING_PAGE) },
-            language = TargetLanguage.English
+            answers { request ->
+                asked += request.url.host
+                respondJson(MISSING_PAGE)
+            },
+            language = TargetLanguage.English,
         )
 
         translator.failure(request(language = TargetLanguage.English))
@@ -195,7 +202,7 @@ sauna
 
     private fun translator(
         engine: MockEngine,
-        language: TargetLanguage = TargetLanguage.Finnish
+        language: TargetLanguage = TargetLanguage.Finnish,
     ): WiktionaryTranslator {
         val settings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()).apply {
             update(TranslationSettings(targetLanguage = language))
@@ -212,11 +219,11 @@ sauna
 
     private fun request(
         text: String = "whale",
-        language: TargetLanguage = TargetLanguage.Finnish
+        language: TargetLanguage = TargetLanguage.Finnish,
     ) = TranslationRequest(text = text, targetLanguage = language, unit = PassageUnit.Word)
 
     private suspend fun WiktionaryTranslator.failure(
-        request: TranslationRequest = request()
+        request: TranslationRequest = request(),
     ): AppError = runCatching { translate(request) }.exceptionOrNull()?.toAppError()
         ?: error("expected a failure")
 
@@ -262,14 +269,14 @@ soutien
 }
 
 private fun answers(
-    handle: MockRequestHandleScope.(HttpRequestData) -> HttpResponseData
+    handle: MockRequestHandleScope.(HttpRequestData) -> HttpResponseData,
 ) = MockEngine { request -> handle(request) }
 
 private fun MockRequestHandleScope.respondJson(
     body: String,
-    status: HttpStatusCode = HttpStatusCode.OK
+    status: HttpStatusCode = HttpStatusCode.OK,
 ) = respond(
     content = body,
     status = status,
-    headers = headersOf("Content-Type", ContentType.Application.Json.toString())
+    headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
 )

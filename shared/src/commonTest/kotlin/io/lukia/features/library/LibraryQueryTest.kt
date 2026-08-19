@@ -16,7 +16,7 @@ class LibraryQueryTest {
     private val shelf = library(
         book("Dune", type = DocumentType.PDF, favorite = true, progress = partRead()),
         book("Solaris", type = DocumentType.EPUB, authors = listOf("Stanisław Lem")),
-        book("Notes", type = DocumentType.DOCX, progress = finished())
+        book("Notes", type = DocumentType.DOCX, progress = finished()),
     )
 
     @Test
@@ -28,15 +28,15 @@ class LibraryQueryTest {
     fun aShelfIsWhereEachBookStandsWithItsReader() {
         assertEquals(
             listOf("Dune"),
-            shelf.matching(LibraryQuery(shelf = LibraryShelf.Reading)).titles()
+            shelf.matching(LibraryQuery(shelf = LibraryShelf.Reading)).titles(),
         )
         assertEquals(
             listOf("Solaris"),
-            shelf.matching(LibraryQuery(shelf = LibraryShelf.Unread)).titles()
+            shelf.matching(LibraryQuery(shelf = LibraryShelf.Unread)).titles(),
         )
         assertEquals(
             listOf("Notes"),
-            shelf.matching(LibraryQuery(shelf = LibraryShelf.Finished)).titles()
+            shelf.matching(LibraryQuery(shelf = LibraryShelf.Finished)).titles(),
         )
     }
 
@@ -44,18 +44,18 @@ class LibraryQueryTest {
     fun favouritesAndFormatNarrowIndependently() {
         assertEquals(
             listOf("Dune"),
-            shelf.matching(LibraryQuery(favouritesOnly = true)).titles()
+            shelf.matching(LibraryQuery(favouritesOnly = true)).titles(),
         )
         assertEquals(
             listOf("Solaris"),
-            shelf.matching(LibraryQuery(format = DocumentType.EPUB)).titles()
+            shelf.matching(LibraryQuery(format = DocumentType.EPUB)).titles(),
         )
         // Both at once is both, which is nothing here: the favourite is a PDF.
         assertEquals(
             emptyList(),
             shelf.matching(
-                LibraryQuery(favouritesOnly = true, format = DocumentType.EPUB)
-            ).titles()
+                LibraryQuery(favouritesOnly = true, format = DocumentType.EPUB),
+            ).titles(),
         )
     }
 
@@ -69,12 +69,12 @@ class LibraryQueryTest {
         val books = library(
             book("Dune", subjects = listOf("Science Fiction")),
             book("Solaris", subjects = listOf("science fiction")),
-            book("Notes", subjects = listOf("Reference"))
+            book("Notes", subjects = listOf("Reference")),
         )
 
         assertEquals(
             listOf("Dune", "Solaris"),
-            books.matching(LibraryQuery(category = "Science Fiction")).titles()
+            books.matching(LibraryQuery(category = "Science Fiction")).titles(),
         )
     }
 
@@ -83,12 +83,12 @@ class LibraryQueryTest {
         val books = library(
             book("Solaris", authors = listOf("Stanisław Lem")),
             book("The Invincible", authors = listOf("Stanisław Lem")),
-            book("Dune", authors = listOf("Frank Herbert"))
+            book("Dune", authors = listOf("Frank Herbert")),
         )
 
         assertEquals(
             listOf("Solaris", "The Invincible"),
-            books.matching(LibraryQuery(author = "Stanisław Lem")).titles()
+            books.matching(LibraryQuery(author = "Stanisław Lem")).titles(),
         )
     }
 
@@ -98,12 +98,12 @@ class LibraryQueryTest {
         val books = library(
             book("Dune", language = "en-GB"),
             book("Solaris", language = "en"),
-            book("Seitsemän veljestä", language = "fi")
+            book("Seitsemän veljestä", language = "fi"),
         )
 
         assertEquals(
             listOf("Dune", "Solaris"),
-            books.matching(LibraryQuery(language = "en")).titles()
+            books.matching(LibraryQuery(language = "en")).titles(),
         )
     }
 
@@ -112,12 +112,12 @@ class LibraryQueryTest {
         val books = library(
             book("Dune", favorite = true),
             book("Dune Messiah"),
-            book("Solaris", favorite = true)
+            book("Solaris", favorite = true),
         )
 
         assertEquals(
             listOf("Dune"),
-            books.matching(LibraryQuery(search = "dune", favouritesOnly = true)).titles()
+            books.matching(LibraryQuery(search = "dune", favouritesOnly = true)).titles(),
         )
     }
 
@@ -128,7 +128,7 @@ class LibraryQueryTest {
             search = "dune",
             favouritesOnly = true,
             format = DocumentType.PDF,
-            category = "Fiction"
+            category = "Fiction",
         )
 
         val cleared = query.cleared()
@@ -166,7 +166,7 @@ class LibraryQueryTest {
             category = "Fiction",
             author = "Frank Herbert",
             language = "fi",
-            search = "dune"
+            search = "dune",
         )
 
         val limited = query.limitedTo(LibraryFacets.Empty)

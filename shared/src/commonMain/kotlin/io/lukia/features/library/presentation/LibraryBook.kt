@@ -9,7 +9,7 @@ import io.lukia.features.reader.domain.ReadingProgress
 enum class ReadingStatus {
     Unread,
     Reading,
-    Finished
+    Finished,
 }
 
 /**
@@ -48,7 +48,7 @@ data class LibraryBook(
     /** Whatever the document filed itself under, as written. */
     val categories: List<String> = emptyList(),
     /** The primary language subtag, lower-cased - `en` for both `en-GB` and `en`. */
-    val language: String? = null
+    val language: String? = null,
 ) {
     val location: String get() = document.document.location
 
@@ -91,7 +91,7 @@ fun List<DocumentInfo>.asLibrary(progress: Map<String, ReadingProgress>): List<L
                 ?.substringBefore('_')
                 ?.trim()
                 ?.lowercase()
-                ?.takeIf { it.isNotEmpty() }
+                ?.takeIf { it.isNotEmpty() },
         )
     }
 

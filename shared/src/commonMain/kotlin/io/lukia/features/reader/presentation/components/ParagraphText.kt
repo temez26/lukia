@@ -32,7 +32,7 @@ import io.lukia.features.translate.domain.Word
 internal class ParagraphText(
     val text: AnnotatedString,
     val sentences: List<DrawnSpan>,
-    val words: List<DrawnWord>
+    val words: List<DrawnWord>,
 ) {
 
     /** Which sentence is at [offset] in the drawn text, if any. */
@@ -101,13 +101,13 @@ internal fun buildParagraphText(
      * on the page for a tap to land on.
      */
     block: String? = null,
-    shown: ShownTranslation
+    shown: ShownTranslation,
 ): ParagraphText {
     if (block != null) {
         return ParagraphText(
             text = AnnotatedString(block),
             sentences = listOf(ParagraphText.DrawnSpan(WHOLE_BLOCK, 0, block.length)),
-            words = emptyList()
+            words = emptyList(),
         )
     }
 
@@ -142,7 +142,7 @@ internal fun buildParagraphText(
                     words = wordsBySentence[sentence.index].orEmpty(),
                     end = end,
                     shown = shown,
-                    drawn = drawnWords
+                    drawn = drawnWords,
                 )
             }
 
@@ -169,7 +169,7 @@ private fun AnnotatedString.Builder.appendWords(
     words: List<Word>,
     end: Int,
     shown: ShownTranslation,
-    drawn: MutableList<ParagraphText.DrawnWord>
+    drawn: MutableList<ParagraphText.DrawnWord>,
 ) {
     var offset = sentence.start
 
@@ -191,7 +191,7 @@ private fun AnnotatedString.Builder.appendWords(
 
         drawn += ParagraphText.DrawnWord(
             sentenceIndex = sentence.index,
-            span = ParagraphText.DrawnSpan(word.index, start, this.length)
+            span = ParagraphText.DrawnSpan(word.index, start, this.length),
         )
 
         offset = wordEnd
@@ -215,7 +215,7 @@ internal fun List<TextRun>.plain(): String = joinToString(separator = "") { it.t
 internal fun Set<Emphasis>.spanStyle(): SpanStyle = SpanStyle(
     fontWeight = if (Emphasis.Bold in this) FontWeight.Bold else null,
     fontStyle = if (Emphasis.Italic in this) FontStyle.Italic else null,
-    fontFamily = if (Emphasis.Monospace in this) FontFamily.Monospace else null
+    fontFamily = if (Emphasis.Monospace in this) FontFamily.Monospace else null,
 )
 
 /** One run, and where it falls in the paragraph's plain text. */
@@ -223,7 +223,7 @@ private data class RunSlice(
     val start: Int,
     val end: Int,
     val text: String,
-    val emphasis: Set<Emphasis>
+    val emphasis: Set<Emphasis>,
 )
 
 private fun List<TextRun>.runSlices(): List<RunSlice> {
@@ -249,8 +249,12 @@ private fun AnnotatedString.Builder.appendSlices(slices: List<RunSlice>, from: I
 
         val text = slice.text.substring(start - slice.start, end - slice.start)
 
-        if (slice.emphasis.isEmpty()) append(text) else withStyle(slice.emphasis.spanStyle()) {
+        if (slice.emphasis.isEmpty()) {
             append(text)
+        } else {
+            withStyle(slice.emphasis.spanStyle()) {
+                append(text)
+            }
         }
     }
 }

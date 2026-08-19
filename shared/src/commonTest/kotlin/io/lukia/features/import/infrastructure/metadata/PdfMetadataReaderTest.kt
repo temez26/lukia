@@ -11,7 +11,7 @@ class PdfMetadataReaderTest {
     @Test
     fun readsTheInformationDictionary() {
         val metadata = extractPdfMetadata(
-            MinimalPdf.withInfo("/Title (The Elements of Typographic Style) /Author (Robert Bringhurst)")
+            MinimalPdf.withInfo("/Title (The Elements of Typographic Style) /Author (Robert Bringhurst)"),
         )
 
         assertEquals("The Elements of Typographic Style", metadata?.title)
@@ -26,7 +26,7 @@ class PdfMetadataReaderTest {
     @Test
     fun dropsATitleThatIsPlainlyAFileName() {
         val metadata = extractPdfMetadata(
-            MinimalPdf.withInfo("/Title (Microsoft Word - report_final_v3.docx) /Author (Jane Roe)")
+            MinimalPdf.withInfo("/Title (Microsoft Word - report_final_v3.docx) /Author (Jane Roe)"),
         )
 
         assertNull(metadata?.title)
@@ -37,7 +37,7 @@ class PdfMetadataReaderTest {
     @Test
     fun dropsATitleThatIsJustAHash() {
         val metadata = extractPdfMetadata(
-            MinimalPdf.withInfo("/Title (8f1c4b2e9a77d3e10c5b) /Author (Jane Roe)")
+            MinimalPdf.withInfo("/Title (8f1c4b2e9a77d3e10c5b) /Author (Jane Roe)"),
         )
 
         assertNull(metadata?.title)
@@ -47,7 +47,7 @@ class PdfMetadataReaderTest {
     @Test
     fun splitsSeveralAuthorsOutOfOneField() {
         val metadata = extractPdfMetadata(
-            MinimalPdf.withInfo("/Author (Ada Lovelace; Charles Babbage)")
+            MinimalPdf.withInfo("/Author (Ada Lovelace; Charles Babbage)"),
         )
 
         assertEquals(listOf("Ada Lovelace", "Charles Babbage"), metadata?.authors)
@@ -56,7 +56,7 @@ class PdfMetadataReaderTest {
     @Test
     fun splitsAuthorsJoinedByAnd() {
         val metadata = extractPdfMetadata(
-            MinimalPdf.withInfo("/Author (Ada Lovelace and Charles Babbage)")
+            MinimalPdf.withInfo("/Author (Ada Lovelace and Charles Babbage)"),
         )
 
         assertEquals(listOf("Ada Lovelace", "Charles Babbage"), metadata?.authors)
@@ -70,7 +70,7 @@ class PdfMetadataReaderTest {
     @Test
     fun keepsOnlyTheYearFromAPdfDate() {
         val metadata = extractPdfMetadata(
-            MinimalPdf.withInfo("/Author (Jane Roe) /CreationDate (D:20180415103000Z)")
+            MinimalPdf.withInfo("/Author (Jane Roe) /CreationDate (D:20180415103000Z)"),
         )
 
         assertEquals("2018", metadata?.published)
@@ -79,7 +79,7 @@ class PdfMetadataReaderTest {
     @Test
     fun readsKeywordsAsSubjects() {
         val metadata = extractPdfMetadata(
-            MinimalPdf.withInfo("/Author (Jane Roe) /Keywords (typography, design, printing)")
+            MinimalPdf.withInfo("/Author (Jane Roe) /Keywords (typography, design, printing)"),
         )
 
         assertEquals(listOf("typography", "design", "printing"), metadata?.subjects)
@@ -89,7 +89,7 @@ class PdfMetadataReaderTest {
     @Test
     fun aDictionaryWithNothingUsableIsNothing() {
         val metadata = extractPdfMetadata(
-            MinimalPdf.withInfo("/Producer (Acrobat Distiller 9.0) /Creator (PScript5.dll)")
+            MinimalPdf.withInfo("/Producer (Acrobat Distiller 9.0) /Creator (PScript5.dll)"),
         )
 
         assertNull(metadata)
@@ -111,7 +111,7 @@ class PdfMetadataReaderTest {
     fun theExtractionSwitchRoutesPdfsHere() {
         val metadata = extractMetadata(
             type = io.lukia.core.domain.DocumentType.PDF,
-            documentBytes = MinimalPdf.withInfo("/Title (A Real Book) /Author (Jane Roe)")
+            documentBytes = MinimalPdf.withInfo("/Title (A Real Book) /Author (Jane Roe)"),
         )
 
         assertEquals("A Real Book", metadata?.title)
@@ -122,8 +122,8 @@ class PdfMetadataReaderTest {
         assertTrue(
             extractMetadata(
                 type = io.lukia.core.domain.DocumentType.TEXT,
-                documentBytes = "Call me Ishmael.".encodeToByteArray()
-            ) == null
+                documentBytes = "Call me Ishmael.".encodeToByteArray(),
+            ) == null,
         )
     }
 }

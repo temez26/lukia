@@ -88,7 +88,7 @@ internal fun BookCard(
     onShowDetails: () -> Unit,
     reveal: LaunchReveal,
     revealIndex: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val title = document.displayTitle()
     val haptics = LocalHapticFeedback.current
@@ -110,7 +110,7 @@ internal fun BookCard(
                 fraction = hover,
                 lift = 4.dp,
                 hoveredScale = 1.03f,
-                pressedScale = 0.97f
+                pressedScale = 0.97f,
             )
             .pointerHoverIcon(PointerIcon.Hand)
             .combinedClickable(
@@ -121,11 +121,11 @@ internal fun BookCard(
                 onLongClick = {
                     haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                     onMenuRequest()
-                }
+                },
             )
             // Leaves the cover's shadow somewhere to fall inside the cell rather
             // than straight onto the neighbouring one.
-            .padding(Space.xs)
+            .padding(Space.xs),
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             BookCover(
@@ -139,7 +139,7 @@ internal fun BookCard(
                     .fillMaxWidth()
                     // The card is what the keyboard focuses, and the cover is the
                     // part of it worth ringing.
-                    .focusRing(interactionSource, coverShape)
+                    .focusRing(interactionSource, coverShape),
             )
 
             // Clipped to the cover's own shape so the bar stops where the
@@ -150,12 +150,12 @@ internal fun BookCard(
                 Box(
                     modifier = Modifier
                         .matchParentSize()
-                        .clip(coverShape)
+                        .clip(coverShape),
                 ) {
                     ReadingProgressBar(
                         fraction = progress,
                         height = CardProgressBarHeight,
-                        modifier = Modifier.align(Alignment.BottomStart)
+                        modifier = Modifier.align(Alignment.BottomStart),
                     )
                 }
             }
@@ -164,7 +164,7 @@ internal fun BookCard(
                 visible = document.isFavorite,
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .padding(Space.sm)
+                    .padding(Space.sm),
             )
 
             MenuTrigger(
@@ -175,7 +175,7 @@ internal fun BookCard(
                 onClick = onMenuRequest,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(Space.xs)
+                    .padding(Space.xs),
             )
 
             // Anchored here so the popup hangs off the cover's top-end corner
@@ -187,7 +187,7 @@ internal fun BookCard(
                 onRefresh = onRefresh,
                 onDelete = onDelete,
                 onDismissRequest = onMenuDismiss,
-                onShowDetails = onShowDetails
+                onShowDetails = onShowDetails,
             )
         }
 
@@ -200,7 +200,7 @@ internal fun BookCard(
             // whether a title wraps or not.
             minLines = 2,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(top = Space.md)
+            modifier = Modifier.padding(top = Space.md),
         )
 
         Text(
@@ -209,13 +209,13 @@ internal fun BookCard(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(top = Space.xxs)
+            modifier = Modifier.padding(top = Space.xxs),
         )
 
         if (!document.exists) {
             StatusBadge(
                 text = "Unavailable",
-                modifier = Modifier.padding(top = Space.sm)
+                modifier = Modifier.padding(top = Space.sm),
             )
         }
     }
@@ -226,7 +226,7 @@ internal fun BookCard(
 private fun MenuTrigger(
     visible: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val metrics = LocalLukiaMetrics.current
 
@@ -236,7 +236,7 @@ private fun MenuTrigger(
             scaleIn(LukiaMotion.quick(), initialScale = 0.8f),
         exit = fadeOut(LukiaMotion.exit()) +
             scaleOut(LukiaMotion.exit(), targetScale = 0.8f),
-        modifier = modifier
+        modifier = modifier,
     ) {
         LukiaIconButton(
             label = "Book actions",
@@ -244,7 +244,7 @@ private fun MenuTrigger(
             variant = IconButtonVariant.Filled,
             tint = MaterialTheme.colorScheme.onSurface,
             size = metrics.iconButtonSmall,
-            glyphSize = metrics.iconSmall
+            glyphSize = metrics.iconSmall,
         ) { tint, glyph ->
             EllipsisGlyph(tint = tint, modifier = glyph)
         }

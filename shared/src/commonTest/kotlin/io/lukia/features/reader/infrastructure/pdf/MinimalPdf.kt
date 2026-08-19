@@ -31,7 +31,7 @@ internal object MinimalPdf {
             "<< /Title ($SECOND_CHAPTER_TITLE) /Parent 6 0 R /Prev 7 0 R /Dest [5 0 R /Fit] >>",
             emptyContentStream(),
             emptyContentStream(),
-            emptyContentStream()
+            emptyContentStream(),
         )
 
         return assemble(objects, extraTrailerEntries = "")
@@ -51,7 +51,7 @@ internal object MinimalPdf {
             "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
             page(contentsObject = 4),
             emptyContentStream(),
-            "<< $entries >>"
+            "<< $entries >>",
         )
 
         return assemble(objects, extraTrailerEntries = " /Info 5 0 R")

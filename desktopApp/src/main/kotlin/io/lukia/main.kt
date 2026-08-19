@@ -19,11 +19,10 @@ private val windowIcon: Painter by lazy {
 }
 
 fun main() {
-
     startKoin {
         modules(
             commonModule,
-            platformModule
+            platformModule,
         )
     }
 

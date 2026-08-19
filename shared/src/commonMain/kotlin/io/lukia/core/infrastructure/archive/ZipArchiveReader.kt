@@ -69,7 +69,7 @@ internal class ZipArchiveReader(private val data: ByteArray) {
                 compressionMethod = compressionMethod,
                 compressedSize = compressedSize,
                 uncompressedSize = uncompressedSize,
-                localHeaderOffset = localHeaderOffset
+                localHeaderOffset = localHeaderOffset,
             )
 
             offset = nameStart + nameLength + extraLength + commentLength
@@ -89,23 +89,19 @@ internal class ZipArchiveReader(private val data: ByteArray) {
         return null
     }
 
-    private fun readU16(offset: Int): Int {
-        return (data[offset].toInt() and 0xFF) or
-            ((data[offset + 1].toInt() and 0xFF) shl 8)
-    }
+    private fun readU16(offset: Int): Int = (data[offset].toInt() and 0xFF) or
+        ((data[offset + 1].toInt() and 0xFF) shl 8)
 
-    private fun readU32(offset: Int): Int {
-        return (data[offset].toInt() and 0xFF) or
-            ((data[offset + 1].toInt() and 0xFF) shl 8) or
-            ((data[offset + 2].toInt() and 0xFF) shl 16) or
-            ((data[offset + 3].toInt() and 0xFF) shl 24)
-    }
+    private fun readU32(offset: Int): Int = (data[offset].toInt() and 0xFF) or
+        ((data[offset + 1].toInt() and 0xFF) shl 8) or
+        ((data[offset + 2].toInt() and 0xFF) shl 16) or
+        ((data[offset + 3].toInt() and 0xFF) shl 24)
 
     private class ZipEntryInfo(
         val compressionMethod: Int,
         val compressedSize: Int,
         val uncompressedSize: Int,
-        val localHeaderOffset: Int
+        val localHeaderOffset: Int,
     )
 
     private companion object {

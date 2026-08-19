@@ -64,12 +64,12 @@ private const val FALLBACK_WIKI = "en"
 class WiktionaryTranslator(
     private val client: HttpClient,
     private val settings: TranslationSettingsRepository,
-    private val json: Json = Json { ignoreUnknownKeys = true }
+    private val json: Json = Json { ignoreUnknownKeys = true },
 ) : Translator {
 
     override suspend fun translate(
         request: TranslationRequest,
-        onPartial: (String) -> Unit
+        onPartial: (String) -> Unit,
     ): Translation {
         val word = request.text.trim()
         val reader = request.targetLanguage.tag.substringBefore('-')
@@ -95,7 +95,7 @@ class WiktionaryTranslator(
             // The rest go where a translator's remark goes, under the paragraph:
             // a dictionary's second meaning is an aside about the word, not a
             // second thing to read in place of it.
-            note = senses.drop(1).takeIf { it.isNotEmpty() }?.joinToString("  •  ")
+            note = senses.drop(1).takeIf { it.isNotEmpty() }?.joinToString("  •  "),
         )
     }
 

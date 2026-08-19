@@ -1,13 +1,13 @@
 package io.lukia.features.translate.infrastructure
 
 import io.lukia.core.domain.SecretStore
-import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.core.domain.SettingsStore
 import io.lukia.core.infrastructure.readEnum
+import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.PassageUnit
 import io.lukia.features.translate.domain.TargetLanguage
-import io.lukia.features.translate.domain.TranslationProvider
 import io.lukia.features.translate.domain.TranslationGestures
+import io.lukia.features.translate.domain.TranslationProvider
 import io.lukia.features.translate.domain.TranslationSettings
 import io.lukia.features.translate.domain.WordLookup
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,7 +32,7 @@ class TranslationSettingsRepository(
      * actually offers for a secret. See [SecretStore] for why the two are not
      * the same store wearing different names.
      */
-    private val secrets: SecretStore
+    private val secrets: SecretStore,
 ) {
 
     private val _settings = MutableStateFlow(load())
@@ -52,7 +52,7 @@ class TranslationSettingsRepository(
             targetLanguage = store.readEnum(
                 KEY_TARGET_LANGUAGE,
                 TargetLanguage.entries,
-                defaults.targetLanguage
+                defaults.targetLanguage,
             ),
             provider = store.readEnum(KEY_PROVIDER, TranslationProvider.entries, defaults.provider),
             models = readPerProvider(KEY_MODEL),
@@ -64,8 +64,8 @@ class TranslationSettingsRepository(
             gestures = readGestures(defaults.gestures),
             bulkTranslation = BulkTranslation(
                 onScreen = store.readFlag(KEY_TRANSLATE_ON_SCREEN),
-                asYouRead = store.readFlag(KEY_TRANSLATE_AS_YOU_READ)
-            )
+                asYouRead = store.readFlag(KEY_TRANSLATE_AS_YOU_READ),
+            ),
         )
     }
 
@@ -128,7 +128,7 @@ class TranslationSettingsRepository(
      */
     private fun readGestures(defaults: TranslationGestures) = TranslationGestures(
         tap = readGesture(KEY_TAP, defaults.tap),
-        longPress = readGesture(KEY_LONG_PRESS, defaults.longPress)
+        longPress = readGesture(KEY_LONG_PRESS, defaults.longPress),
     )
 
     private fun readGesture(key: String, default: PassageUnit?): PassageUnit? {

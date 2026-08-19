@@ -32,13 +32,13 @@ internal data class ChatRequest(
      * the reader watches it appear, and so that a model taking its time keeps
      * saying so rather than going silent and being given up on.
      */
-    val stream: Boolean = false
+    val stream: Boolean = false,
 )
 
 @Serializable
 internal data class ChatMessage(
     val role: String,
-    val content: String
+    val content: String,
 ) {
     companion object {
         fun system(content: String) = ChatMessage(role = "system", content = content)
@@ -57,7 +57,7 @@ internal data class ChatMessage(
  */
 @Serializable
 internal data class ChatChunk(
-    val choices: List<StreamChoice> = emptyList()
+    val choices: List<StreamChoice> = emptyList(),
 ) {
     val text: String? get() = choices.firstOrNull()?.delta?.content
 
@@ -67,7 +67,7 @@ internal data class ChatChunk(
 @Serializable
 internal data class StreamChoice(
     val delta: ChatDelta? = null,
-    @SerialName("finish_reason") val finishReason: String? = null
+    @SerialName("finish_reason") val finishReason: String? = null,
 )
 
 @Serializable
@@ -81,7 +81,7 @@ internal data class ChatError(val error: ChatErrorBody? = null)
 internal data class ChatErrorBody(
     val message: String? = null,
     val type: String? = null,
-    val code: String? = null
+    val code: String? = null,
 ) {
 
     /**
@@ -118,7 +118,7 @@ internal val TranslationResponseFormat: JsonObject = buildJsonObject {
             }
             put(
                 "required",
-                JsonArray(listOf(JsonPrimitive("translation"), JsonPrimitive("note")))
+                JsonArray(listOf(JsonPrimitive("translation"), JsonPrimitive("note"))),
             )
             put("additionalProperties", false)
         }
@@ -136,7 +136,7 @@ internal val TranslationResponseFormat: JsonObject = buildJsonObject {
  */
 @Serializable
 internal data class ModelCatalogueResponse(
-    val data: List<ModelEntry> = emptyList()
+    val data: List<ModelEntry> = emptyList(),
 )
 
 @Serializable

@@ -30,5 +30,5 @@ internal enum class LibraryFacet {
     Category,
     Author,
     Language,
-    Sort
+    Sort,
 }

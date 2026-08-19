@@ -12,14 +12,14 @@ import io.lukia.features.reader.domain.ReadingProgressRepository
  */
 class GetDocumentDetailsUseCase(
     private val libraryRepository: LibraryRepository,
-    private val readingProgressRepository: ReadingProgressRepository
+    private val readingProgressRepository: ReadingProgressRepository,
 ) {
     suspend operator fun invoke(location: String): BookDetails? {
         val document = libraryRepository.getDocument(location) ?: return null
 
         return BookDetails(
             document = document,
-            progress = readingProgressRepository.progressFor(location)
+            progress = readingProgressRepository.progressFor(location),
         )
     }
 }

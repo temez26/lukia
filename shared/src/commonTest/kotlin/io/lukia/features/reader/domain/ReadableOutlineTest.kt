@@ -21,7 +21,7 @@ class ReadableOutlineTest {
             entry("_Hlk61423"),
             entry("_GoBack"),
             entry("OLE_LINK1"),
-            entry("Chapter One")
+            entry("Chapter One"),
         )
 
         assertEquals(listOf("Chapter One"), outline.asTableOfContents().map { it.title })
@@ -36,7 +36,7 @@ class ReadableOutlineTest {
             entry("Reference: TOC handling"),
             entry("Table of Contents"),
             entry("Refactoring"),
-            entry("Interfaces")
+            entry("Interfaces"),
         )
 
         assertEquals(outline.map { it.title }, outline.asTableOfContents().map { it.title })
@@ -48,12 +48,12 @@ class ReadableOutlineTest {
         val outline = listOf(
             entry("_Toc001", level = 0),
             entry("The Real Chapter", level = 1),
-            entry("A Section", level = 2)
+            entry("A Section", level = 2),
         )
 
         assertEquals(
             listOf("The Real Chapter" to 0, "A Section" to 1),
-            outline.asTableOfContents().map { it.title to it.level }
+            outline.asTableOfContents().map { it.title to it.level },
         )
     }
 
@@ -64,12 +64,12 @@ class ReadableOutlineTest {
             entry("Chapter", level = 0),
             entry("Section", level = 3),
             entry("Sub-section", level = 5),
-            entry("Next Chapter", level = 0)
+            entry("Next Chapter", level = 0),
         )
 
         assertEquals(
             listOf(0, 1, 2, 0),
-            outline.asTableOfContents().map { it.level }
+            outline.asTableOfContents().map { it.level },
         )
     }
 
@@ -79,7 +79,7 @@ class ReadableOutlineTest {
         val outline = listOf(
             entry("Chapter", level = 0),
             entry("Section", level = 1),
-            entry("Next Chapter", level = 0)
+            entry("Next Chapter", level = 0),
         )
 
         assertEquals(outline, outline.asTableOfContents())
@@ -104,7 +104,7 @@ class ChapterCoveringTest {
         OutlineEntry(title = "Introduction", pageIndex = 4, level = 0),
         OutlineEntry(title = "Functions", pageIndex = 180, level = 0),
         OutlineEntry(title = "Closures", pageIndex = 194, level = 1),
-        OutlineEntry(title = "Classes", pageIndex = 230, level = 0)
+        OutlineEntry(title = "Classes", pageIndex = 230, level = 0),
     )
 
     @Test
@@ -150,4 +150,3 @@ class ChapterCoveringTest {
         assertNull(nameless.chapterCovering(5))
     }
 }
-

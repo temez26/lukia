@@ -61,7 +61,7 @@ data class GlassStyle(
     val highlightAlpha: Float,
     /** Opacity of the hairline border. */
     val borderAlpha: Float,
-    val shadowElevation: Dp
+    val shadowElevation: Dp,
 )
 
 /** More translucent, with a pronounced specular edge. */
@@ -70,7 +70,7 @@ internal val AppleGlassStyle = GlassStyle(
     panelAlpha = 0.98f,
     highlightAlpha = 0.45f,
     borderAlpha = 0.30f,
-    shadowElevation = 12.dp
+    shadowElevation = 12.dp,
 )
 
 /** Flatter and more opaque, closer to Material's elevated surfaces. */
@@ -79,7 +79,7 @@ internal val StandardGlassStyle = GlassStyle(
     panelAlpha = 1f,
     highlightAlpha = 0.18f,
     borderAlpha = 0.14f,
-    shadowElevation = 6.dp
+    shadowElevation = 6.dp,
 )
 
 /**

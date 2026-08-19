@@ -12,15 +12,15 @@ class XmlEventsTest {
 
         assertEquals(
             listOf("p", "em"),
-            events.filterIsInstance<XmlEvent.Open>().map { it.name }
+            events.filterIsInstance<XmlEvent.Open>().map { it.name },
         )
         assertEquals(
             listOf("Call me ", "Ishmael", "."),
-            events.filterIsInstance<XmlEvent.Text>().map { it.text }
+            events.filterIsInstance<XmlEvent.Text>().map { it.text },
         )
         assertEquals(
             listOf("em", "p"),
-            events.filterIsInstance<XmlEvent.Close>().map { it.name }
+            events.filterIsInstance<XmlEvent.Close>().map { it.name },
         )
     }
 

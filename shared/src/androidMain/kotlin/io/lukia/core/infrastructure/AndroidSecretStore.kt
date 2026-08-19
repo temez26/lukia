@@ -84,7 +84,7 @@ class AndroidSecretStore(context: Context) : SecretStore {
         generator.init(
             KeyGenParameterSpec.Builder(
                 KEY_ALIAS,
-                KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+                KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
             )
                 .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                 .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
@@ -92,7 +92,7 @@ class AndroidSecretStore(context: Context) : SecretStore {
                 // is read on a train with the screen on, and a translation that
                 // failed until the reader authenticated again would be a worse
                 // trade than the one this is making.
-                .build()
+                .build(),
         )
 
         return generator.generateKey()

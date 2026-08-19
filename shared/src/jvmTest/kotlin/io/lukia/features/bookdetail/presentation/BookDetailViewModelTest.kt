@@ -1,10 +1,10 @@
 package io.lukia.features.bookdetail.presentation
 
+import io.lukia.MainDispatcherTest
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.FakeDocumentWorkspace
-import io.lukia.features.reader.domain.FakeReadingProgressRepository
 import io.lukia.core.domain.TestDocuments
 import io.lukia.core.presentation.UiState
 import io.lukia.features.bookdetail.application.BookDetails
@@ -16,29 +16,13 @@ import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.domain.LibraryRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import io.lukia.features.reader.domain.FakeReadingProgressRepository
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
-class BookDetailViewModelTest {
-
-    @BeforeTest
-    fun setUp() {
-        Dispatchers.setMain(UnconfinedTestDispatcher())
-    }
-
-    @AfterTest
-    fun tearDown() {
-        Dispatchers.resetMain()
-    }
+class BookDetailViewModelTest : MainDispatcherTest() {
 
     @Test
     fun loadsMatchingDocumentOnInit() = runTest {
@@ -57,7 +41,7 @@ class BookDetailViewModelTest {
     fun aLocationWithNoMatchBecomesDocumentNotFound() = runTest {
         val viewModel = createViewModel(
             location = "/test/missing.pdf",
-            repository = FakeLibraryRepository()
+            repository = FakeLibraryRepository(),
         )
 
         assertEquals(UiState.Failure(AppError.DocumentNotFound), viewModel.uiState.value)
@@ -67,12 +51,12 @@ class BookDetailViewModelTest {
     fun aReadThatThrowsBecomesAnUnexpectedFailure() = runTest {
         val viewModel = createViewModel(
             location = "/test/book.pdf",
-            repository = ThrowingLibraryRepository()
+            repository = ThrowingLibraryRepository(),
         )
 
         assertEquals(
             UiState.Failure(AppError.Unexpected("detail read blew up")),
-            viewModel.uiState.value
+            viewModel.uiState.value,
         )
     }
 
@@ -99,7 +83,7 @@ class BookDetailViewModelTest {
 
         assertEquals(
             UiState.Success(BookDetails(pdfDocumentInfo().copy(isFavorite = true))),
-            viewModel.uiState.value
+            viewModel.uiState.value,
         )
     }
 
@@ -113,7 +97,7 @@ class BookDetailViewModelTest {
 
         assertEquals(
             UiState.Success(BookDetails(documentInfo.copy(isFavorite = false))),
-            viewModel.uiState.value
+            viewModel.uiState.value,
         )
     }
 
@@ -148,7 +132,7 @@ class BookDetailViewModelTest {
 
         assertEquals(
             1024L,
-            (viewModel.uiState.value as UiState.Success).data.document.sizeBytes
+            (viewModel.uiState.value as UiState.Success).data.document.sizeBytes,
         )
         assertEquals("Details refreshed", viewModel.message.value)
     }
@@ -162,15 +146,15 @@ class BookDetailViewModelTest {
             location = "/test/book.pdf",
             repository = repository,
             analyzer = TypeFromExtensionAnalyzer(
-                failingLocations = setOf("/test/book.pdf")
-            )
+                failingLocations = setOf("/test/book.pdf"),
+            ),
         )
 
         viewModel.refreshDocument()
 
         assertEquals(
             documentInfo,
-            (viewModel.uiState.value as UiState.Success).data.document
+            (viewModel.uiState.value as UiState.Success).data.document,
         )
         assertEquals("File does not exist: /test/book.pdf", viewModel.message.value)
     }
@@ -179,40 +163,38 @@ class BookDetailViewModelTest {
         document = TestDocuments.pdf(location = "/test/book.pdf"),
         type = DocumentType.PDF,
         exists = true,
-        sizeBytes = 1024L
+        sizeBytes = 1024L,
     )
 
     private fun createViewModel(
         location: String,
         repository: LibraryRepository,
-        analyzer: DocumentAnalyzer = TypeFromExtensionAnalyzer()
-    ): BookDetailViewModel {
-        return BookDetailViewModel(
-            location = location,
-            getDocumentDetailsUseCase = GetDocumentDetailsUseCase(
-                repository,
-                FakeReadingProgressRepository()
-            ),
-            setFavoriteUseCase = SetFavoriteUseCase(repository),
-            refreshDocumentUseCase = RefreshDocumentUseCase(
+        analyzer: DocumentAnalyzer = TypeFromExtensionAnalyzer(),
+    ): BookDetailViewModel = BookDetailViewModel(
+        location = location,
+        getDocumentDetailsUseCase = GetDocumentDetailsUseCase(
+            repository,
+            FakeReadingProgressRepository(),
+        ),
+        setFavoriteUseCase = SetFavoriteUseCase(repository),
+        refreshDocumentUseCase = RefreshDocumentUseCase(
+            libraryRepository = repository,
+            importDocumentUseCase = ImportDocumentUseCase(
+                documentAnalyzer = analyzer,
                 libraryRepository = repository,
-                importDocumentUseCase = ImportDocumentUseCase(
-                    documentAnalyzer = analyzer,
-                    libraryRepository = repository,
-                    dispatcher = UnconfinedTestDispatcher()
-                ),
-                dispatcher = UnconfinedTestDispatcher()
+                dispatcher = UnconfinedTestDispatcher(),
             ),
-            removeDocumentUseCase = RemoveDocumentUseCase(
-                repository,
-                FakeDocumentWorkspace(),
-                FakeReadingProgressRepository()
-            )
-        )
-    }
+            dispatcher = UnconfinedTestDispatcher(),
+        ),
+        removeDocumentUseCase = RemoveDocumentUseCase(
+            repository,
+            FakeDocumentWorkspace(),
+            FakeReadingProgressRepository(),
+        ),
+    )
 
     private class FakeLibraryRepository(
-        initialDocuments: List<DocumentInfo> = emptyList()
+        initialDocuments: List<DocumentInfo> = emptyList(),
     ) : LibraryRepository {
         private val documents = initialDocuments.toMutableList()
 
@@ -232,12 +214,10 @@ class BookDetailViewModelTest {
             }
         }
 
-        override suspend fun getDocuments(): List<DocumentInfo> {
-            return documents.toList()
-        }
+        override suspend fun getDocuments(): List<DocumentInfo> = documents.toList()
 
-        override suspend fun getDocument(location: String): DocumentInfo? {
-            return documents.firstOrNull { it.document.location == location }
+        override suspend fun getDocument(location: String): DocumentInfo? = documents.firstOrNull {
+            it.document.location == location
         }
 
         /** Answered the expensive way; nothing in a test cares what it costs. */
@@ -261,9 +241,9 @@ class BookDetailViewModelTest {
 
         override suspend fun getDocuments(): List<DocumentInfo> = emptyList()
 
-        override suspend fun getDocument(location: String): DocumentInfo? {
-            throw IllegalStateException("detail read blew up")
-        }
+        override suspend fun getDocument(location: String): DocumentInfo? = throw IllegalStateException(
+            "detail read blew up",
+        )
 
         /** Answered the expensive way; nothing in a test cares what it costs. */
         override suspend fun knownLocations(): Set<String> =

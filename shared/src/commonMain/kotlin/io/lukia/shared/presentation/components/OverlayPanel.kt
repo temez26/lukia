@@ -49,7 +49,7 @@ fun OverlayPanel(
     modifier: Modifier = Modifier,
     widthCap: Dp = Dp.Unspecified,
     trailing: (@Composable () -> Unit)? = null,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val progress = rememberPopoverProgress(visible, label = "overlayPanel")
 
@@ -85,7 +85,7 @@ fun OverlayPanel(
                 // control.
                 .popoverTransition(progress, TransformOrigin.Center)
                 .width(panelWidth)
-                .heightIn(max = maxHeight * MaxHeightFraction)
+                .heightIn(max = maxHeight * MaxHeightFraction),
         ) {
             Box(modifier = Modifier.fillMaxWidth()) {
                 content()
@@ -99,11 +99,11 @@ fun OverlayPanel(
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .padding(start = dimens.screenPadding, top = Space.lg),
-                    variant = IconButtonVariant.Glass
+                    variant = IconButtonVariant.Glass,
                 ) { tint, glyph ->
                     PlusGlyph(
                         tint = tint,
-                        modifier = glyph.graphicsLayer { rotationZ = 45f }
+                        modifier = glyph.graphicsLayer { rotationZ = 45f },
                     )
                 }
 
@@ -111,7 +111,7 @@ fun OverlayPanel(
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .padding(end = dimens.screenPadding, top = Space.lg)
+                            .padding(end = dimens.screenPadding, top = Space.lg),
                     ) {
                         trailing()
                     }

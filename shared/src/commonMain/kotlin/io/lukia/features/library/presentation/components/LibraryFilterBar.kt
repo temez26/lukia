@@ -61,12 +61,12 @@ internal fun LibraryFilterBar(
     onQueryChange: (LibraryQuery) -> Unit,
     openMenu: OpenMenu?,
     onOpenMenuChange: (OpenMenu?) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Space.sm),
-        modifier = modifier.horizontalScroll(rememberScrollState())
+        modifier = modifier.horizontalScroll(rememberScrollState()),
     ) {
         if (facets.hasFavourites) {
             LukiaChip(
@@ -75,7 +75,7 @@ internal fun LibraryFilterBar(
                 onClick = { onQueryChange(query.copy(favouritesOnly = !query.favouritesOnly)) },
                 icon = { tint, glyph ->
                     HeartGlyph(tint = tint, filled = query.favouritesOnly, modifier = glyph)
-                }
+                },
             )
         }
 
@@ -87,7 +87,7 @@ internal fun LibraryFilterBar(
             selectedIndex = facets.formats.indexOf(query.format).takeIf { it >= 0 },
             onSelect = { index -> onQueryChange(query.copy(format = index?.let(facets.formats::get))) },
             openMenu = openMenu,
-            onOpenMenuChange = onOpenMenuChange
+            onOpenMenuChange = onOpenMenuChange,
         )
 
         ValueChip(
@@ -100,7 +100,7 @@ internal fun LibraryFilterBar(
                 onQueryChange(query.copy(category = index?.let(facets.categories::get)))
             },
             openMenu = openMenu,
-            onOpenMenuChange = onOpenMenuChange
+            onOpenMenuChange = onOpenMenuChange,
         )
 
         ValueChip(
@@ -113,7 +113,7 @@ internal fun LibraryFilterBar(
                 onQueryChange(query.copy(author = index?.let(facets.authors::get)))
             },
             openMenu = openMenu,
-            onOpenMenuChange = onOpenMenuChange
+            onOpenMenuChange = onOpenMenuChange,
         )
 
         ValueChip(
@@ -128,14 +128,14 @@ internal fun LibraryFilterBar(
                 onQueryChange(query.copy(language = index?.let(facets.languages::get)))
             },
             openMenu = openMenu,
-            onOpenMenuChange = onOpenMenuChange
+            onOpenMenuChange = onOpenMenuChange,
         )
 
         SortChip(
             sort = query.sort,
             onSortChange = { onQueryChange(query.copy(sort = it)) },
             openMenu = openMenu,
-            onOpenMenuChange = onOpenMenuChange
+            onOpenMenuChange = onOpenMenuChange,
         )
 
         // Last, and only while there is something to undo. A permanent "Clear"
@@ -144,7 +144,7 @@ internal fun LibraryFilterBar(
             LukiaChip(
                 label = "Clear",
                 selected = false,
-                onClick = { onQueryChange(query.cleared()) }
+                onClick = { onQueryChange(query.cleared()) },
             )
         }
     }
@@ -166,7 +166,7 @@ private fun ValueChip(
     selectedIndex: Int?,
     onSelect: (Int?) -> Unit,
     openMenu: OpenMenu?,
-    onOpenMenuChange: (OpenMenu?) -> Unit
+    onOpenMenuChange: (OpenMenu?) -> Unit,
 ) {
     if (options.isEmpty()) return
 
@@ -178,7 +178,7 @@ private fun ValueChip(
         label = selectedIndex?.let(options::get) ?: name,
         selected = selectedIndex != null,
         openMenu = openMenu,
-        onOpenMenuChange = onOpenMenuChange
+        onOpenMenuChange = onOpenMenuChange,
     ) { dismiss ->
         MenuRow(
             label = anyLabel,
@@ -186,7 +186,7 @@ private fun ValueChip(
             onClick = {
                 dismiss()
                 onSelect(null)
-            }
+            },
         )
 
         options.forEachIndexed { index, option ->
@@ -198,7 +198,7 @@ private fun ValueChip(
                 onClick = {
                     dismiss()
                     onSelect(index)
-                }
+                },
             )
         }
     }
@@ -209,7 +209,7 @@ private fun SortChip(
     sort: LibrarySort,
     onSortChange: (LibrarySort) -> Unit,
     openMenu: OpenMenu?,
-    onOpenMenuChange: (OpenMenu?) -> Unit
+    onOpenMenuChange: (OpenMenu?) -> Unit,
 ) {
     ChipMenu(
         facet = LibraryFacet.Sort,
@@ -220,7 +220,7 @@ private fun SortChip(
         selected = false,
         icon = { tint, glyph -> SortGlyph(tint = tint, modifier = glyph) },
         openMenu = openMenu,
-        onOpenMenuChange = onOpenMenuChange
+        onOpenMenuChange = onOpenMenuChange,
     ) { dismiss ->
         LibrarySort.entries.forEachIndexed { index, option ->
             if (index > 0) MenuSeparator()
@@ -231,7 +231,7 @@ private fun SortChip(
                 onClick = {
                     dismiss()
                     onSortChange(option)
-                }
+                },
             )
         }
     }
@@ -252,7 +252,7 @@ private fun ChipMenu(
     openMenu: OpenMenu?,
     onOpenMenuChange: (OpenMenu?) -> Unit,
     icon: (@Composable (Color, Modifier) -> Unit)? = null,
-    content: @Composable ColumnScope.(dismiss: () -> Unit) -> Unit
+    content: @Composable ColumnScope.(dismiss: () -> Unit) -> Unit,
 ) {
     val menu = remember(facet) { OpenMenu.Chip(facet) }
     val expanded = openMenu == menu
@@ -264,14 +264,14 @@ private fun ChipMenu(
             selected = selected,
             chevron = true,
             icon = icon,
-            onClick = { onOpenMenuChange(if (expanded) null else menu) }
+            onClick = { onOpenMenuChange(if (expanded) null else menu) },
         )
 
         AnchoredMenu(expanded = expanded, onDismissRequest = dismiss) {
             Column(
                 modifier = Modifier
                     .heightIn(max = ChipMenuMaxHeight)
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(rememberScrollState()),
             ) {
                 content(dismiss)
             }

@@ -10,7 +10,7 @@ import kotlinx.coroutines.withContext
 class SqlReadingProgressRepository(
     database: LukiaDatabase,
     /** Injectable so tests can run against a database deterministically. */
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ReadingProgressRepository {
 
     private val positions = database.readingPositionQueries
@@ -21,7 +21,7 @@ class SqlReadingProgressRepository(
                 ReadingProgress(
                     pageIndex = it.pageIndex.toInt(),
                     pageCount = it.pageCount.toInt(),
-                    readAt = it.readAt
+                    readAt = it.readAt,
                 )
             }
         }
@@ -32,7 +32,7 @@ class SqlReadingProgressRepository(
                 row.location to ReadingProgress(
                     pageIndex = row.pageIndex.toInt(),
                     pageCount = row.pageCount.toInt(),
-                    readAt = row.readAt
+                    readAt = row.readAt,
                 )
             }
         }
@@ -47,7 +47,7 @@ class SqlReadingProgressRepository(
             positions.put(
                 location = location,
                 pageIndex = progress.pageIndex.toLong(),
-                pageCount = progress.pageCount.toLong()
+                pageCount = progress.pageCount.toLong(),
             )
             Unit
         }

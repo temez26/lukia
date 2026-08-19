@@ -20,7 +20,7 @@ import io.lukia.features.import.domain.isSupportedDocument
 private val ScanColumns = arrayOf(
     DocumentsContract.Document.COLUMN_DOCUMENT_ID,
     DocumentsContract.Document.COLUMN_DISPLAY_NAME,
-    DocumentsContract.Document.COLUMN_MIME_TYPE
+    DocumentsContract.Document.COLUMN_MIME_TYPE,
 )
 
 /**
@@ -29,11 +29,10 @@ private val ScanColumns = arrayOf(
  * [AndroidDocumentAnalyzer] can resolve them without any special handling.
  */
 class AndroidFolderScanner(
-    private val context: Context
+    private val context: Context,
 ) : FolderScanner {
 
     override suspend fun scan(folder: PickedFolder): List<PickedDocument> {
-
         val treeUri = Uri.parse(folder.location)
 
         val rootDocumentId = runCatching {
@@ -49,7 +48,6 @@ class AndroidFolderScanner(
         var depth = 0
 
         while (level.isNotEmpty() && depth <= MaxFolderScanDepth) {
-
             val next = mutableListOf<String>()
 
             level.forEach { documentId ->
@@ -65,7 +63,7 @@ class AndroidFolderScanner(
                                 extension = extension,
                                 location = DocumentsContract
                                     .buildDocumentUriUsingTree(treeUri, childId)
-                                    .toString()
+                                    .toString(),
                             )
                         }
                     }
@@ -87,11 +85,11 @@ class AndroidFolderScanner(
     private inline fun readChildren(
         treeUri: Uri,
         documentId: String,
-        onChild: (id: String, name: String, mimeType: String?) -> Unit
+        onChild: (id: String, name: String, mimeType: String?) -> Unit,
     ) {
         val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(
             treeUri,
-            documentId
+            documentId,
         )
 
         val cursor: Cursor? = runCatching {

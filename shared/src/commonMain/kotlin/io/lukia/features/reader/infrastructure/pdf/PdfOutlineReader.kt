@@ -40,7 +40,7 @@ internal class PdfOutlineReader(private val source: PdfByteSource) {
             reference = outlineRoot["First"],
             level = 0,
             visited = mutableSetOf(),
-            into = entries
+            into = entries,
         )
 
         return entries
@@ -53,7 +53,7 @@ internal class PdfOutlineReader(private val source: PdfByteSource) {
         reference: PdfValue?,
         level: Int,
         visited: MutableSet<Int>,
-        into: MutableList<OutlineEntry>
+        into: MutableList<OutlineEntry>,
     ) {
         if (level > MAX_DEPTH) return
 
@@ -93,7 +93,7 @@ internal class PdfOutlineReader(private val source: PdfByteSource) {
         index: PdfObjectIndex,
         pageNumbers: Map<Int, Int>,
         destinations: NamedDestinations,
-        item: PdfValue.Dictionary
+        item: PdfValue.Dictionary,
     ): Int? {
         val destination = item["Dest"]
             ?: index.resolve(item["A"]).asDictionary
@@ -108,15 +108,17 @@ internal class PdfOutlineReader(private val source: PdfByteSource) {
         pageNumbers: Map<Int, Int>,
         destinations: NamedDestinations,
         destination: PdfValue?,
-        hops: Int
+        hops: Int,
     ): Int? {
         if (hops > MAX_NAME_HOPS) return null
 
-        return when (val resolved = if (destination is PdfValue.Reference) {
-            index.resolve(destination)
-        } else {
-            destination
-        }) {
+        return when (
+            val resolved = if (destination is PdfValue.Reference) {
+                index.resolve(destination)
+            } else {
+                destination
+            }
+        ) {
             // [ pageRef /XYZ left top zoom ]
             is PdfValue.Array -> resolved.items.firstOrNull()?.let { target ->
                 when (target) {
@@ -130,15 +132,27 @@ internal class PdfOutlineReader(private val source: PdfByteSource) {
             // A named destination, which the name table turns into the array
             // above - or, in older files, a dictionary holding one under /D.
             is PdfValue.Name -> resolveDestination(
-                index, pageNumbers, destinations, destinations.lookUp(resolved.value), hops + 1
+                index,
+                pageNumbers,
+                destinations,
+                destinations.lookUp(resolved.value),
+                hops + 1,
             )
 
             is PdfValue.Text -> resolveDestination(
-                index, pageNumbers, destinations, destinations.lookUp(resolved.value), hops + 1
+                index,
+                pageNumbers,
+                destinations,
+                destinations.lookUp(resolved.value),
+                hops + 1,
             )
 
             is PdfValue.Dictionary -> resolveDestination(
-                index, pageNumbers, destinations, resolved["D"], hops + 1
+                index,
+                pageNumbers,
+                destinations,
+                resolved["D"],
+                hops + 1,
             )
 
             else -> null
@@ -171,7 +185,7 @@ private class PageOrder(private val index: PdfObjectIndex) {
         node: PdfValue.Dictionary,
         depth: Int,
         visited: MutableSet<Int>,
-        into: LinkedHashMap<Int, Int>
+        into: LinkedHashMap<Int, Int>,
     ) {
         if (depth > MAX_DEPTH || into.size >= MAX_PAGES) return
 
@@ -210,7 +224,7 @@ private class PageOrder(private val index: PdfObjectIndex) {
  */
 private class NamedDestinations(
     private val index: PdfObjectIndex,
-    private val catalog: PdfValue.Dictionary
+    private val catalog: PdfValue.Dictionary,
 ) {
 
     private val byName: Map<String, PdfValue> by lazy { read() }
@@ -234,7 +248,7 @@ private class NamedDestinations(
     private fun collectTree(
         node: PdfValue.Dictionary,
         depth: Int,
-        into: HashMap<String, PdfValue>
+        into: HashMap<String, PdfValue>,
     ) {
         if (depth > MAX_DEPTH || into.size >= MAX_NAMES) return
 

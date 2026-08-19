@@ -1,0 +1,234 @@
+# Overrides on top of detekt's default rule set (`buildUponDefaultConfig = true`).
+# Only rules that differ from the defaults are listed here.
+#
+# Division of labour: detekt owns structural rules (size, complexity, correctness,
+# Compose usage); ktlint owns formatting and imports, configured in `.editorconfig`.
+# Rules that ktlint already covers are switched off here so a single problem is not
+# reported twice.
+
+build:
+  maxIssues: 0
+
+config:
+  validation: true
+  warningsAsErrors: false
+
+comments:
+  UndocumentedPublicClass:
+    active: false
+  UndocumentedPublicFunction:
+    active: false
+  UndocumentedPublicProperty:
+    active: false
+  OutdatedDocumentation:
+    active: true
+
+complexity:
+  CyclomaticComplexMethod:
+    active: true
+    threshold: 15
+    ignoreSingleWhenExpression: true
+  LargeClass:
+    active: true
+    threshold: 400
+  LongMethod:
+    active: true
+    threshold: 60
+  LongParameterList:
+    active: true
+    functionThreshold: 6
+    constructorThreshold: 7
+    # A composable's optional parameters are its configuration surface, not the
+    # argument list a caller has to reckon with, so only required ones count.
+    ignoreDefaultParameters: true
+    # A composable's parameters are its API: a screen section legitimately takes
+    # more than a plain function does, and detekt cannot hold the two to
+    # different numbers. Composables are held to eight in review instead - see
+    # CODING_STYLE.md - so that splitting a long screen does not have to trade a
+    # long file for several long signatures.
+    ignoreAnnotated: ['Composable']
+  NestedBlockDepth:
+    active: true
+    threshold: 4
+  TooManyFunctions:
+    active: true
+    thresholdInFiles: 25
+    thresholdInClasses: 20
+    thresholdInInterfaces: 20
+    thresholdInObjects: 20
+    ignorePrivate: true
+    ignoreOverridden: true
+  NamedArguments:
+    active: true
+    threshold: 4
+    ignoreArgumentsMatchingNames: true
+
+coroutines:
+  GlobalCoroutineUsage:
+    active: true
+  InjectDispatcher:
+    active: true
+  RedundantSuspendModifier:
+    active: true
+  SuspendFunWithFlowReturnType:
+    active: true
+
+exceptions:
+  SwallowedException:
+    active: true
+  ThrowingExceptionsWithoutMessageOrCause:
+    active: true
+  TooGenericExceptionCaught:
+    active: true
+  TooGenericExceptionThrown:
+    active: true
+
+naming:
+  FunctionNaming:
+    active: true
+    # Composables are PascalCase; they name a piece of UI, not an action.
+    ignoreAnnotated: ['Composable']
+  # A file may group several related composables or extensions, so its name is not
+  # required to match one declaration inside it.
+  MatchingDeclarationName:
+    active: false
+  TopLevelPropertyNaming:
+    active: true
+    constantPattern: '[A-Z][_A-Za-z0-9]*'
+    privatePropertyPattern: '_?[A-Za-z][_A-Za-z0-9]*'
+
+performance:
+  SpreadOperator:
+    active: true
+  UnnecessaryPartOfBinaryExpression:
+    active: true
+
+potential-bugs:
+  CastToNullableType:
+    active: true
+  DontDowncastCollectionTypes:
+    active: true
+  ElseCaseInsteadOfExhaustiveWhen:
+    active: true
+  ExitOutsideMain:
+    active: true
+  ImplicitUnitReturnType:
+    active: true
+  UnnecessaryNotNullCheck:
+    active: true
+  UnsafeCallOnNullableType:
+    active: true
+
+style:
+  # Formatting and imports belong to ktlint - see `.editorconfig`.
+  MaxLineLength:
+    active: false
+  WildcardImport:
+    active: false
+  NewLineAtEndOfFile:
+    active: false
+  TrailingWhitespace:
+    active: false
+
+  CanBeNonNullable:
+    active: true
+  DataClassContainsFunctions:
+    active: false
+  ExplicitCollectionElementAccessMethod:
+    active: true
+  ForbiddenComment:
+    active: true
+    comments:
+      - reason: 'Ship-blocking markers must never reach a shared branch.'
+        value: 'STOPSHIP:'
+      - reason: 'Fix it or open an issue; FIXME rots in place.'
+        value: 'FIXME:'
+  ForbiddenMethodCall:
+    active: true
+    methods:
+      - reason: 'Console output is invisible on device. Use the shared logger.'
+        value: 'kotlin.io.println'
+      - reason: 'Console output is invisible on device. Use the shared logger.'
+        value: 'kotlin.io.print'
+  MagicNumber:
+    active: true
+    ignoreNumbers: ['-1', '0', '1', '2']
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreConstantDeclaration: true
+    ignoreAnnotation: true
+    # Layout literals read better inline than hoisted into named constants; the
+    # design system's tokens cover the values that genuinely need a name.
+    ignoreAnnotated: ['Composable', 'Preview']
+  MandatoryBracesLoops:
+    active: true
+  MandatoryBracesIfStatements:
+    active: true
+  ReturnCount:
+    active: true
+    max: 3
+    excludeGuardClauses: true
+  ThrowsCount:
+    active: true
+    max: 2
+  UnnecessaryLet:
+    active: true
+  UnusedImports:
+    active: true
+  UnusedPrivateMember:
+    active: true
+    # A @Preview has no caller by design; the tooling is what invokes it.
+    ignoreAnnotated: ['Preview']
+  UseCheckOrError:
+    active: true
+  UseRequire:
+    active: true
+  VarCouldBeVal:
+    active: true
+
+# Compose-specific rules, supplied by the io.nlopez.compose.rules detekt plugin.
+Compose:
+  ComposableAnnotationNaming:
+    active: true
+  ComposableParamOrder:
+    active: true
+  CompositionLocalAllowlist:
+    active: true
+  ContentEmitterReturningValues:
+    active: true
+  DefaultsVisibility:
+    active: true
+  ModifierClickableOrder:
+    active: true
+  ModifierComposable:
+    active: true
+  ModifierMissing:
+    active: true
+  ModifierNaming:
+    active: true
+  ModifierNotUsedAtRoot:
+    active: true
+  ModifierReused:
+    active: true
+  ModifierWithoutDefault:
+    active: true
+  MultipleEmitters:
+    active: true
+  MutableParams:
+    active: true
+  MutableStateAutoboxing:
+    active: true
+  ParameterNaming:
+    active: true
+  PreviewAnnotationNaming:
+    active: true
+  PreviewPublic:
+    active: true
+  RememberMissing:
+    active: true
+  UnstableCollections:
+    active: false
+  ViewModelForwarding:
+    active: true
+  ViewModelInjection:
+    active: true

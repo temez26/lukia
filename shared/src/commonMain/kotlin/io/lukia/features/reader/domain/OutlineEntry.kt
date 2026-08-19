@@ -12,5 +12,5 @@ data class OutlineEntry(
     /** Zero-based, matching how pages are addressed everywhere else. */
     val pageIndex: Int,
     /** 0 for a top-level chapter, 1 for a section inside it, and so on. */
-    val level: Int
+    val level: Int,
 )

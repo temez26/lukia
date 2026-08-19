@@ -17,7 +17,7 @@ private val ReadableMediaTypes = setOf(
     "",
     "application/xhtml+xml",
     "text/html",
-    "application/x-dtbook+xml"
+    "application/x-dtbook+xml",
 )
 
 /**
@@ -65,7 +65,7 @@ internal fun readEpub(epubBytes: ByteArray): ReflowableContent? {
 
     return ReflowableContent(
         sections = sections,
-        outline = epub.tableOfContents(sectionByPath).ifEmpty { sections.headingOutline() }
+        outline = epub.tableOfContents(sectionByPath).ifEmpty { sections.headingOutline() },
     )
 }
 
@@ -168,7 +168,7 @@ private fun navigationEntries(xml: String, sectionOf: (String) -> Int?): List<Ou
                     entries.addEntry(
                         title = label.toString(),
                         section = href?.let(sectionOf),
-                        level = listDepth - 1
+                        level = listDepth - 1,
                     )
 
                     href = null
@@ -212,7 +212,7 @@ private fun ncxEntries(xml: String, sectionOf: (String) -> Int?): List<OutlineEn
                 "content" -> entries.addEntry(
                     title = label.toString(),
                     section = event.attributes["src"]?.let(sectionOf),
-                    level = depth - 1
+                    level = depth - 1,
                 )
             }
 

@@ -23,7 +23,7 @@ class LukiaApplication : Application() {
             androidContext(this@LukiaApplication)
             modules(
                 commonModule,
-                platformModule
+                platformModule,
             )
         }
     }

@@ -1,8 +1,8 @@
 package io.lukia.features.library
 
-import io.lukia.core.domain.TestDocuments
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.TestDocuments
 import io.lukia.features.library.application.GetLibraryDocumentsUseCase
 import io.lukia.features.library.domain.LibraryRepository
 import kotlinx.coroutines.test.runTest
@@ -25,7 +25,7 @@ class GetLibraryDocumentsUseCaseTest {
             document = TestDocuments.pdf(location = "/test/book.pdf"),
             type = DocumentType.PDF,
             exists = true,
-            sizeBytes = 1024L
+            sizeBytes = 1024L,
         )
         val repository = FakeLibraryRepository().apply {
             addDocument(documentInfo)
@@ -43,12 +43,10 @@ class GetLibraryDocumentsUseCaseTest {
             documents.add(document)
         }
 
-        override suspend fun getDocuments(): List<DocumentInfo> {
-            return documents.toList()
-        }
+        override suspend fun getDocuments(): List<DocumentInfo> = documents.toList()
 
-        override suspend fun getDocument(location: String): DocumentInfo? {
-            return documents.firstOrNull { it.document.location == location }
+        override suspend fun getDocument(location: String): DocumentInfo? = documents.firstOrNull {
+            it.document.location == location
         }
 
         /** Answered the expensive way; nothing in a test cares what it costs. */

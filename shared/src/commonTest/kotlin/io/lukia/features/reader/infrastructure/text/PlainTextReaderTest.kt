@@ -22,16 +22,16 @@ class PlainTextReaderTest {
             in possession of a good fortune, must be in want of a wife.
 
             However little known the feelings of such a man may be.
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         assertEquals(
             listOf(
                 "It is a truth universally acknowledged, that a single man " +
                     "in possession of a good fortune, must be in want of a wife.",
-                "However little known the feelings of such a man may be."
+                "However little known the feelings of such a man may be.",
             ),
-            content.paragraphs()
+            content.paragraphs(),
         )
     }
 
@@ -43,7 +43,7 @@ class PlainTextReaderTest {
             A list follows:
             - first
             - second
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         assertEquals("A list follows:\n- first\n- second", content.paragraphs().single())

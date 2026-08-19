@@ -5,7 +5,7 @@ package io.lukia.core.domain
  * Counts writes so tests can tell a saved change from a no-op.
  */
 class FakeSettingsStore(
-    initialValues: Map<String, String> = emptyMap()
+    initialValues: Map<String, String> = emptyMap(),
 ) : SettingsStore {
 
     val values = initialValues.toMutableMap()

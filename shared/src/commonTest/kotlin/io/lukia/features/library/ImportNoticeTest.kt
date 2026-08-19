@@ -17,7 +17,7 @@ class ImportNoticeTest {
     fun oneBookAlreadyHeldSaysSoWithoutACount() {
         assertEquals(
             "Already in your library",
-            ImportSummary(imported = 0, alreadyInLibrary = 1, failed = 0).notice()
+            ImportSummary(imported = 0, alreadyInLibrary = 1, failed = 0).notice(),
         )
     }
 
@@ -25,7 +25,7 @@ class ImportNoticeTest {
     fun severalBooksAlreadyHeldAreCounted() {
         assertEquals(
             "All 4 already in your library",
-            ImportSummary(imported = 0, alreadyInLibrary = 4, failed = 0).notice()
+            ImportSummary(imported = 0, alreadyInLibrary = 4, failed = 0).notice(),
         )
     }
 
@@ -34,7 +34,7 @@ class ImportNoticeTest {
     fun aFailureAlwaysLeadsWithWhatDidArrive() {
         assertEquals(
             "Imported 0, 1 skipped",
-            ImportSummary(imported = 0, alreadyInLibrary = 0, failed = 1).notice()
+            ImportSummary(imported = 0, alreadyInLibrary = 0, failed = 1).notice(),
         )
     }
 
@@ -42,7 +42,7 @@ class ImportNoticeTest {
     fun aMixedImportReportsEveryOutcome() {
         assertEquals(
             "Imported 5, 2 already added, 1 skipped",
-            ImportSummary(imported = 5, alreadyInLibrary = 2, failed = 1).notice()
+            ImportSummary(imported = 5, alreadyInLibrary = 2, failed = 1).notice(),
         )
     }
 }

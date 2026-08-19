@@ -16,7 +16,8 @@ enum class LibraryShelf(val label: String) {
     All("All"),
     Reading("Reading"),
     Unread("Unread"),
-    Finished("Finished");
+    Finished("Finished"),
+    ;
 
     fun matches(book: LibraryBook): Boolean = when (this) {
         All -> true

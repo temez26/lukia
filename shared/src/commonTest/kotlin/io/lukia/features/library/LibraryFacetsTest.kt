@@ -25,7 +25,7 @@ class LibraryFacetsTest {
     fun aLibraryOfOneFormatOffersNoFormatFilter() {
         val books = library(
             book("Dune", type = DocumentType.EPUB),
-            book("Solaris", type = DocumentType.EPUB)
+            book("Solaris", type = DocumentType.EPUB),
         )
 
         assertEquals(emptyList(), books.facets().formats)
@@ -36,12 +36,12 @@ class LibraryFacetsTest {
         val books = library(
             book("Dune", type = DocumentType.PDF),
             book("Solaris", type = DocumentType.EPUB),
-            book("Notes", type = DocumentType.DOCX)
+            book("Notes", type = DocumentType.DOCX),
         )
 
         assertEquals(
             listOf(DocumentType.PDF, DocumentType.EPUB, DocumentType.DOCX),
-            books.facets().formats
+            books.facets().formats,
         )
     }
 
@@ -50,7 +50,7 @@ class LibraryFacetsTest {
         assertFalse(library(book("Dune")).facets().hasFavourites)
         assertFalse(library(book("Dune", favorite = true)).facets().hasFavourites)
         assertTrue(
-            library(book("Dune", favorite = true), book("Solaris")).facets().hasFavourites
+            library(book("Dune", favorite = true), book("Solaris")).facets().hasFavourites,
         )
     }
 
@@ -58,12 +58,12 @@ class LibraryFacetsTest {
     fun theShelvesAreTheOnesWithBooksOnThem() {
         val books = library(
             book("Dune", progress = partRead()),
-            book("Solaris")
+            book("Solaris"),
         )
 
         assertEquals(
             listOf(LibraryShelf.All, LibraryShelf.Reading, LibraryShelf.Unread),
-            books.facets().shelves
+            books.facets().shelves,
         )
     }
 
@@ -80,7 +80,7 @@ class LibraryFacetsTest {
         val books = library(
             book("Dune", subjects = listOf("Science Fiction")),
             book("Solaris", subjects = listOf("science fiction")),
-            book("Notes", subjects = listOf("Reference"))
+            book("Notes", subjects = listOf("Reference")),
         )
 
         assertEquals(listOf("Reference", "Science Fiction"), books.facets().categories)
@@ -91,7 +91,7 @@ class LibraryFacetsTest {
     fun aCategoryEveryBookCarriesIsNotOffered() {
         val books = library(
             book("Dune", subjects = listOf("Fiction")),
-            book("Solaris", subjects = listOf("Fiction"))
+            book("Solaris", subjects = listOf("Fiction")),
         )
 
         assertEquals(emptyList(), books.facets().categories)
@@ -101,7 +101,7 @@ class LibraryFacetsTest {
     fun authorsAndLanguagesFollowTheSameRule() {
         val books = library(
             book("Solaris", authors = listOf("Stanisław Lem"), language = "pl"),
-            book("Dune", authors = listOf("Frank Herbert"), language = "en-US")
+            book("Dune", authors = listOf("Frank Herbert"), language = "en-US"),
         )
 
         val facets = books.facets()

@@ -21,14 +21,14 @@ class DocxTextReaderTest {
             paragraph("Chapter One", style = "Heading1") +
                 paragraph("Opening words.") +
                 paragraph("Chapter Two", style = "Heading1") +
-                paragraph("More words.")
+                paragraph("More words."),
         )
 
         assertNotNull(content)
         assertEquals(listOf("Chapter One", "Chapter Two"), content.sections.map { it.title })
         assertEquals(
             listOf("Chapter One" to 0, "Chapter Two" to 1),
-            content.outline.orEmpty().map { it.title to it.pageIndex }
+            content.outline.orEmpty().map { it.title to it.pageIndex },
         )
     }
 
@@ -37,7 +37,7 @@ class DocxTextReaderTest {
     fun headingStylesAreMatchedHoweverTheyAreWritten() {
         val content = read(
             paragraph("One", style = "Heading 1") +
-                paragraph("Two", style = "heading1")
+                paragraph("Two", style = "heading1"),
         )
 
         assertNotNull(content)
@@ -60,7 +60,7 @@ class DocxTextReaderTest {
         assertEquals("the Pequod sailed at dawn", runs.plainText())
         assertEquals(
             listOf(emptySet(), setOf(Emphasis.Italic), emptySet(), setOf(Emphasis.Bold)),
-            runs.map { it.emphasis }
+            runs.map { it.emphasis },
         )
     }
 
@@ -143,7 +143,7 @@ class DocxTextReaderTest {
 
         assertEquals(
             "See page 7",
-            (read(body)!!.blocks().single() as TextBlock.Paragraph).text.plainText()
+            (read(body)!!.blocks().single() as TextBlock.Paragraph).text.plainText(),
         )
     }
 
@@ -158,7 +158,7 @@ class DocxTextReaderTest {
         val content = read(
             body = body,
             relationships = """<Relationship Id="rId7" Target="media/image1.png"/>""",
-            extra = mapOf("word/media/image1.png" to plate)
+            extra = mapOf("word/media/image1.png" to plate),
         )
 
         val figure = content!!.blocks().filterIsInstance<TextBlock.Figure>().single()
@@ -181,16 +181,16 @@ class DocxTextReaderTest {
     private fun read(
         body: String,
         relationships: String = "",
-        extra: Map<String, Any> = emptyMap()
+        extra: Map<String, Any> = emptyMap(),
     ) = readDocx(
         zip(
             mapOf(
                 "word/document.xml" to
                     """<?xml version="1.0"?><w:document><w:body>$body</w:body></w:document>""",
                 "word/_rels/document.xml.rels" to
-                    """<?xml version="1.0"?><Relationships>$relationships</Relationships>"""
-            ) + extra
-        )
+                    """<?xml version="1.0"?><Relationships>$relationships</Relationships>""",
+            ) + extra,
+        ),
     )
 
     private fun io.lukia.features.reader.domain.ReflowableContent.blocks(): List<TextBlock> =
@@ -206,7 +206,7 @@ class DocxTextReaderTest {
                     when (content) {
                         is ByteArray -> content
                         else -> content.toString().encodeToByteArray()
-                    }
+                    },
                 )
                 stream.closeEntry()
             }

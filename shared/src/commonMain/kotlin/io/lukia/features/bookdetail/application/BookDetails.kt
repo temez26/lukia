@@ -14,7 +14,7 @@ import io.lukia.features.reader.domain.ReadingProgress
 data class BookDetails(
     val document: DocumentInfo,
     /** Null when the book has never been opened, which is not the same as page one. */
-    val progress: ReadingProgress? = null
+    val progress: ReadingProgress? = null,
 ) {
     /**
      * How far in, as a percentage, or null for a book never opened. See

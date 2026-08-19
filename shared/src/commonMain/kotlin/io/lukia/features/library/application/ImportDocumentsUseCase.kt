@@ -20,7 +20,7 @@ class ImportDocumentsUseCase(
     private val importDocumentUseCase: ImportDocumentUseCase,
     private val libraryRepository: LibraryRepository,
     /** Injectable so tests can run the import deterministically. */
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
     /**
      * [onProgress] is called after each file with how many of [documents] are
@@ -33,7 +33,7 @@ class ImportDocumentsUseCase(
      */
     suspend operator fun invoke(
         documents: List<PickedDocument>,
-        onProgress: (completed: Int, total: Int) -> Unit = { _, _ -> }
+        onProgress: (completed: Int, total: Int) -> Unit = { _, _ -> },
     ): Result<ImportSummary> = withContext(dispatcher) {
         // Read once, up front. Analysing a file means opening it and rendering a
         // cover, so a folder that is rescanned after two books were added to it
@@ -45,7 +45,7 @@ class ImportDocumentsUseCase(
 
             if (only.location in known) {
                 return@withContext Result.success(
-                    ImportSummary(imported = 0, alreadyInLibrary = 1, failed = 0)
+                    ImportSummary(imported = 0, alreadyInLibrary = 1, failed = 0),
                 )
             }
 
@@ -91,8 +91,8 @@ class ImportDocumentsUseCase(
             ImportSummary(
                 imported = imported,
                 alreadyInLibrary = alreadyInLibrary,
-                failed = failed
-            )
+                failed = failed,
+            ),
         )
     }
 }

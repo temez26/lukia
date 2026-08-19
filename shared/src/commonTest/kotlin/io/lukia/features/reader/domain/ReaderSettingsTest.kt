@@ -77,11 +77,11 @@ class ReaderSettingsTest {
     fun aPageScaleFromOutsideTheRangeIsClamped() {
         assertEquals(
             ReaderSettings.MAX_PAGE_SCALE,
-            ReaderSettings().withPageScale(40f).pageScale
+            ReaderSettings().withPageScale(40f).pageScale,
         )
         assertEquals(
             ReaderSettings.MIN_PAGE_SCALE,
-            ReaderSettings().withPageScale(0.01f).pageScale
+            ReaderSettings().withPageScale(0.01f).pageScale,
         )
     }
 
@@ -94,7 +94,7 @@ class ReaderSettingsTest {
         assertNull(ReaderSettings().withPageScale(1.13f).matchingWidth)
         assertEquals(
             ReadingWidth.Larger,
-            ReaderSettings().withPageScale(ReadingWidth.Larger.fraction).matchingWidth
+            ReaderSettings().withPageScale(ReadingWidth.Larger.fraction).matchingWidth,
         )
     }
 

@@ -13,7 +13,7 @@ class WorkingCopyNamingTest {
 
         assertEquals(
             WorkingCopyNaming.fileName(location, "pdf"),
-            WorkingCopyNaming.fileName(location, "pdf")
+            WorkingCopyNaming.fileName(location, "pdf"),
         )
     }
 
@@ -21,7 +21,7 @@ class WorkingCopyNamingTest {
     fun differentLocationsGetDifferentNames() {
         assertNotEquals(
             WorkingCopyNaming.fileName("/books/one.pdf", "pdf"),
-            WorkingCopyNaming.fileName("/books/two.pdf", "pdf")
+            WorkingCopyNaming.fileName("/books/two.pdf", "pdf"),
         )
     }
 
@@ -33,7 +33,7 @@ class WorkingCopyNamingTest {
     fun nearIdenticalLocationsGetDifferentNames() {
         assertNotEquals(
             WorkingCopyNaming.fileName("/books/chapter-01.pdf", "pdf"),
-            WorkingCopyNaming.fileName("/books/chapter-02.pdf", "pdf")
+            WorkingCopyNaming.fileName("/books/chapter-02.pdf", "pdf"),
         )
     }
 
@@ -58,7 +58,7 @@ class WorkingCopyNamingTest {
             "/storage/emulated/0/Download/book.pdf",
             "content://com.android.providers.downloads.documents/document/42",
             "file:///Users/test/Documents/book.pdf",
-            "C:\\Users\\test\\Documents\\book.pdf"
+            "C:\\Users\\test\\Documents\\book.pdf",
         )
 
         locations.forEach { location ->
@@ -86,7 +86,7 @@ class WorkingCopyNamingTest {
 
         assertTrue(
             WorkingCopyNaming.fileName(location, "pdf")
-                .startsWith(WorkingCopyNaming.prefix(location))
+                .startsWith(WorkingCopyNaming.prefix(location)),
         )
     }
 }

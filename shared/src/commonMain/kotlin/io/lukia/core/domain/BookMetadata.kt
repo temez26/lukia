@@ -41,7 +41,7 @@ data class BookMetadata(
     /** Genres, keywords, BISAC headings - whatever the document filed itself under. */
     val subjects: List<String> = emptyList(),
     /** An ISBN where the document carries one, otherwise whatever identifier it does. */
-    val identifier: String? = null
+    val identifier: String? = null,
 ) {
     /**
      * True when the document told us nothing. Worth asking before showing a

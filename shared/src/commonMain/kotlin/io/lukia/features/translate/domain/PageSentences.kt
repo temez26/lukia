@@ -25,7 +25,7 @@ data class PageSentence(
      * has been reduced to a string and some rectangles, which rectangle covers
      * the fourth word is no longer answerable.
      */
-    val words: List<PageWord> = emptyList()
+    val words: List<PageWord> = emptyList(),
 ) {
 
     /** The whole sentence's extent, for hit-testing and for placing a caption. */
@@ -41,7 +41,7 @@ data class PageWord(
     /** Its place in the sentence, which is how it is addressed - see [Word]. */
     val index: Int,
     val text: String,
-    val quads: List<TextQuad>
+    val quads: List<TextQuad>,
 ) {
 
     val bounds: TextQuad get() = quads.union()
@@ -120,7 +120,7 @@ private fun List<List<PageGlyph>>.sentences(from: Int): List<PageSentence> {
                 owners.between(word.start, word.end)
                     .takeIf { it.isNotEmpty() }
                     ?.let { PageWord(index = word.index, text = word.text, quads = it.intoQuads()) }
-            }
+            },
         )
     }
 }
@@ -166,7 +166,7 @@ private fun List<List<PageGlyph>>.intoBlocks(): List<List<List<PageGlyph>>> {
 private fun List<PageGlyph>.followsOn(previous: List<PageGlyph>): Boolean {
     val height = maxOf(
         maxOf { it.bounds.height },
-        previous.maxOf { it.bounds.height }
+        previous.maxOf { it.bounds.height },
     )
 
     val gap = minOf { it.bounds.top } - previous.maxOf { it.bounds.bottom }
@@ -203,7 +203,7 @@ fun List<TextQuad>.union(): TextQuad = TextQuad(
     left = minOf { it.left },
     top = minOf { it.top },
     right = maxOf { it.right },
-    bottom = maxOf { it.bottom }
+    bottom = maxOf { it.bottom },
 )
 
 private data class PlacedGlyph(val glyph: PageGlyph, val line: Int)
@@ -266,7 +266,9 @@ private fun List<PageGlyph>.sharesLineWith(glyph: PageGlyph): Boolean {
     return any { onLine ->
         val theirMiddle = onLine.bounds.top + onLine.bounds.height / 2
 
-        middle >= onLine.bounds.top && middle <= onLine.bounds.bottom ||
-            theirMiddle >= glyph.bounds.top && theirMiddle <= glyph.bounds.bottom
+        middle >= onLine.bounds.top &&
+            middle <= onLine.bounds.bottom ||
+            theirMiddle >= glyph.bounds.top &&
+            theirMiddle <= glyph.bounds.bottom
     }
 }

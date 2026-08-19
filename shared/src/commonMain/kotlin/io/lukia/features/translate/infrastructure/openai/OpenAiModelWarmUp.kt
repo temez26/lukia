@@ -40,7 +40,7 @@ private const val WARM_UP_PROMPT = "Hi"
 class OpenAiModelWarmUp(
     private val client: HttpClient,
     private val settings: TranslationSettingsRepository,
-    private val json: Json = Json { ignoreUnknownKeys = true }
+    private val json: Json = Json { ignoreUnknownKeys = true },
 ) : ModelWarmUp {
 
     override suspend fun warmUp() {
@@ -49,8 +49,8 @@ class OpenAiModelWarmUp(
         if (!configured.isEndpointAllowed) {
             throw AppErrorException(
                 AppError.Unexpected(
-                    "Translating over plain HTTP is only allowed to your own network."
-                )
+                    "Translating over plain HTTP is only allowed to your own network.",
+                ),
             )
         }
 
@@ -66,8 +66,8 @@ class OpenAiModelWarmUp(
                     ChatRequest(
                         model = configured.model,
                         maxTokens = 1,
-                        messages = listOf(ChatMessage.user(WARM_UP_PROMPT))
-                    )
+                        messages = listOf(ChatMessage.user(WARM_UP_PROMPT)),
+                    ),
                 )
             }
         } catch (cancellation: CancellationException) {
@@ -87,8 +87,8 @@ class OpenAiModelWarmUp(
         throw AppErrorException(
             AppError.Unexpected(
                 reported ?: "${configured.model} could not be loaded. Check it is one of " +
-                    "the models this server offers."
-            )
+                    "the models this server offers.",
+            ),
         )
     }
 }

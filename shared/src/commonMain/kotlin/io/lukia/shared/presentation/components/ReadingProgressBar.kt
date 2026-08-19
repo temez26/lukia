@@ -36,7 +36,7 @@ val ReadingProgressBarHeight: Dp = 4.dp
 fun ReadingProgressBar(
     fraction: Float,
     modifier: Modifier = Modifier,
-    height: Dp = ReadingProgressBarHeight
+    height: Dp = ReadingProgressBarHeight,
 ) {
     val trackColor = MaterialTheme.colorScheme.surface.copy(alpha = TrackAlpha)
     val fillColor = MaterialTheme.colorScheme.primary
@@ -50,9 +50,9 @@ fun ReadingProgressBar(
                 drawRect(color = trackColor)
                 drawRect(
                     color = fillColor,
-                    size = Size(width = size.width * filled, height = size.height)
+                    size = Size(width = size.width * filled, height = size.height),
                 )
-            }
+            },
     )
 }
 

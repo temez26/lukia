@@ -27,21 +27,21 @@ fun ErrorState(
     message: String,
     modifier: Modifier = Modifier,
     actionLabel: String? = null,
-    onAction: (() -> Unit)? = null
+    onAction: (() -> Unit)? = null,
 ) {
     Box(
         modifier = modifier,
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.widthIn(max = 340.dp)
+            modifier = Modifier.widthIn(max = 340.dp),
         ) {
             AlertGlyph(
                 // Muted rather than full error red: this is an explanation, not
                 // an alarm, and a large saturated glyph reads as the latter.
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(36.dp)
+                modifier = Modifier.size(36.dp),
             )
 
             Text(
@@ -49,7 +49,7 @@ fun ErrorState(
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = Space.xl)
+                modifier = Modifier.padding(top = Space.xl),
             )
 
             Text(
@@ -57,7 +57,7 @@ fun ErrorState(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = Space.sm)
+                modifier = Modifier.padding(top = Space.sm),
             )
 
             if (actionLabel != null && onAction != null) {
@@ -65,7 +65,7 @@ fun ErrorState(
                     label = actionLabel,
                     onClick = onAction,
                     variant = ButtonVariant.Secondary,
-                    modifier = Modifier.padding(top = Space.xl)
+                    modifier = Modifier.padding(top = Space.xl),
                 )
             }
         }

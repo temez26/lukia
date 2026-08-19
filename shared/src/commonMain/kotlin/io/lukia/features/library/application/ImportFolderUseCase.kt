@@ -16,11 +16,11 @@ class ImportFolderUseCase(
     private val folderScanner: FolderScanner,
     private val importDocumentsUseCase: ImportDocumentsUseCase,
     /** Injectable so tests can run the import deterministically. */
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
     suspend operator fun invoke(
         folder: PickedFolder,
-        onProgress: (completed: Int, total: Int) -> Unit = { _, _ -> }
+        onProgress: (completed: Int, total: Int) -> Unit = { _, _ -> },
     ): Result<ImportSummary> = withContext(dispatcher) {
         val documents = folderScanner.scan(folder)
 

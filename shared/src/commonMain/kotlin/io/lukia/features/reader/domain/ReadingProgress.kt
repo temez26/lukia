@@ -18,7 +18,7 @@ data class ReadingProgress(
      * ignored; it is only ever worth reading. Zero for a position stored before
      * the app began recording this at all.
      */
-    val readAt: Long = 0L
+    val readAt: Long = 0L,
 ) {
     /**
      * How far through, from 0 to 1, or null for a document with no length to

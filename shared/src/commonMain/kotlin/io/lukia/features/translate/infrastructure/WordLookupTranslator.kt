@@ -24,12 +24,12 @@ class WordLookupTranslator(
     private val lookup: () -> WordLookup,
     private val translator: Translator,
     private val google: Translator,
-    private val dictionary: Translator
+    private val dictionary: Translator,
 ) : Translator {
 
     override suspend fun translate(
         request: TranslationRequest,
-        onPartial: (String) -> Unit
+        onPartial: (String) -> Unit,
     ): Translation {
         if (request.unit != PassageUnit.Word) return translator.translate(request, onPartial)
 

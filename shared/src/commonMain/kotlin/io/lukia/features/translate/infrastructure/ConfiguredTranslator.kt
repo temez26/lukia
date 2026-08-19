@@ -1,7 +1,7 @@
 package io.lukia.features.translate.infrastructure
 
-import io.lukia.features.translate.domain.TranslationProvider
 import io.lukia.features.translate.domain.Translation
+import io.lukia.features.translate.domain.TranslationProvider
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.Translator
 
@@ -19,12 +19,12 @@ import io.lukia.features.translate.domain.Translator
 class ConfiguredTranslator(
     private val provider: () -> TranslationProvider,
     private val anthropic: Translator,
-    private val openAiCompatible: Translator
+    private val openAiCompatible: Translator,
 ) : Translator {
 
     override suspend fun translate(
         request: TranslationRequest,
-        onPartial: (String) -> Unit
+        onPartial: (String) -> Unit,
     ): Translation {
         val translator = when (provider()) {
             TranslationProvider.Anthropic -> anthropic

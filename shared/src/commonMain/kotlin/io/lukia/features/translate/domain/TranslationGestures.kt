@@ -20,7 +20,7 @@ package io.lukia.features.translate.domain
  */
 data class TranslationGestures(
     val tap: PassageUnit? = PassageUnit.Sentence,
-    val longPress: PassageUnit? = PassageUnit.Word
+    val longPress: PassageUnit? = PassageUnit.Word,
 ) {
 
     /** Whether anything at all happens when the reader points at the book. */

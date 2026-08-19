@@ -38,19 +38,19 @@ import io.lukia.shared.presentation.theme.Space
 fun LukiaDivider(
     modifier: Modifier = Modifier,
     inset: Dp = 0.dp,
-    endInset: Dp = 0.dp
+    endInset: Dp = 0.dp,
 ) {
     HorizontalDivider(
         thickness = Dp.Hairline,
         color = MaterialTheme.colorScheme.outlineVariant,
-        modifier = modifier.padding(start = inset, end = endInset)
+        modifier = modifier.padding(start = inset, end = endInset),
     )
 }
 
 /** What a badge is saying, which is the only thing that changes between them. */
 enum class BadgeTone {
     Error,
-    Neutral
+    Neutral,
 }
 
 /**
@@ -65,7 +65,7 @@ enum class BadgeTone {
 fun StatusBadge(
     text: String,
     modifier: Modifier = Modifier,
-    tone: BadgeTone = BadgeTone.Error
+    tone: BadgeTone = BadgeTone.Error,
 ) {
     val color = when (tone) {
         BadgeTone.Error -> MaterialTheme.colorScheme.error
@@ -76,12 +76,12 @@ fun StatusBadge(
         modifier = modifier
             .clip(MaterialTheme.shapes.extraSmall)
             .background(color.copy(alpha = LukiaAlpha.Badge))
-            .padding(horizontal = Space.md, vertical = Space.xxs)
+            .padding(horizontal = Space.md, vertical = Space.xxs),
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.labelSmall,
-            color = color
+            color = color,
         )
     }
 }
@@ -100,13 +100,13 @@ fun StatusBadge(
 fun GroupCard(
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.surface,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
         color = color,
-        content = content
+        content = content,
     )
 }
 
@@ -121,16 +121,16 @@ fun GroupCard(
 fun SectionLabel(
     text: String,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    enabled: Boolean = true,
 ) {
     Text(
         text = text,
         style = MaterialTheme.typography.labelSmall,
         fontWeight = FontWeight.SemiBold,
         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
-            alpha = if (enabled) 1f else LukiaAlpha.Disabled
+            alpha = if (enabled) 1f else LukiaAlpha.Disabled,
         ),
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -147,11 +147,11 @@ fun EmptyState(
     message: String,
     modifier: Modifier = Modifier,
     maxWidth: Dp = 360.dp,
-    content: (@Composable () -> Unit)? = null
+    content: (@Composable () -> Unit)? = null,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.widthIn(max = maxWidth)
+        modifier = modifier.widthIn(max = maxWidth),
     ) {
         if (content != null) {
             content()
@@ -162,7 +162,7 @@ fun EmptyState(
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = if (content != null) Space.xxl else 0.dp)
+            modifier = Modifier.padding(top = if (content != null) Space.xxl else 0.dp),
         )
 
         Text(
@@ -170,7 +170,7 @@ fun EmptyState(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = Space.sm)
+            modifier = Modifier.padding(top = Space.sm),
         )
     }
 }

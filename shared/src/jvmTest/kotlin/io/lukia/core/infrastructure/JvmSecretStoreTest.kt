@@ -13,7 +13,7 @@ class JvmSecretStoreTest {
 
     private val directory = File(
         System.getProperty("java.io.tmpdir"),
-        "lukia-secrets-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}"
+        "lukia-secrets-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}",
     )
     private val file = File(directory, "secrets.properties")
 
@@ -68,7 +68,7 @@ class JvmSecretStoreTest {
 
         assertEquals(
             setOf(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE),
-            permissions
+            permissions,
         )
     }
 

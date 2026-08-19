@@ -4,9 +4,7 @@ import io.lukia.core.domain.DocumentInfo
 import io.lukia.features.library.domain.LibraryRepository
 
 class GetLibraryDocumentsUseCase(
-    private val repository: LibraryRepository
+    private val repository: LibraryRepository,
 ) {
-    suspend operator fun invoke(): List<DocumentInfo> {
-        return repository.getDocuments()
-    }
+    suspend operator fun invoke(): List<DocumentInfo> = repository.getDocuments()
 }

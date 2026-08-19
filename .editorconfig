@@ -1,0 +1,43 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{kt,kts}]
+max_line_length = 120
+ij_kotlin_allow_trailing_comma = true
+ij_kotlin_allow_trailing_comma_on_call_site = true
+ij_kotlin_name_count_to_use_star_import = 2147483647
+ij_kotlin_name_count_to_use_star_import_for_members = 2147483647
+
+ktlint_code_style = intellij_idea
+# Composable functions and test names are PascalCase / backticked by convention.
+ktlint_function_naming_ignore_when_annotated_with = Composable, Test
+# A component file legitimately holds several related composables, so its name
+# cannot be expected to match a single top-level declaration.
+ktlint_standard_filename = disabled
+# Structural limits are detekt's job; keeping them there avoids two tools
+# disagreeing about the same code.
+ktlint_standard_function-signature = disabled
+ktlint_standard_class-signature = disabled
+# The design system names its tokens PascalCase (LukiaAlpha.Disabled, Motion.Fast),
+# following Compose and Material rather than SCREAMING_SNAKE_CASE. detekt's
+# TopLevelPropertyNaming enforces that shape instead.
+ktlint_standard_property-naming = disabled
+
+[*.{yml,yaml,json}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.{xml,sq}]
+indent_size = 4
+
+[gradle-wrapper.properties]
+insert_final_newline = false

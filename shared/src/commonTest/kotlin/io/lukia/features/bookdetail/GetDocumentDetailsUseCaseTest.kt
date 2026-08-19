@@ -1,9 +1,9 @@
 package io.lukia.features.bookdetail
 
-import io.lukia.features.bookdetail.application.GetDocumentDetailsUseCase
-import io.lukia.core.domain.TestDocuments
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.TestDocuments
+import io.lukia.features.bookdetail.application.GetDocumentDetailsUseCase
 import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.reader.domain.FakeReadingProgressRepository
 import io.lukia.features.reader.domain.ReadingProgress
@@ -18,7 +18,7 @@ class GetDocumentDetailsUseCaseTest {
         document = TestDocuments.pdf(location = "/test/book.pdf"),
         type = DocumentType.PDF,
         exists = true,
-        sizeBytes = 1024L
+        sizeBytes = 1024L,
     )
 
     @Test
@@ -39,7 +39,7 @@ class GetDocumentDetailsUseCaseTest {
         val progress = ReadingProgress(pageIndex = 41, pageCount = 100)
         val useCase = useCase(
             documents = listOf(documentInfo),
-            positions = mapOf("/test/book.pdf" to progress)
+            positions = mapOf("/test/book.pdf" to progress),
         )
 
         val details = useCase("/test/book.pdf")
@@ -68,7 +68,7 @@ class GetDocumentDetailsUseCaseTest {
     @Test
     fun aPositionWithNoLibraryEntryIsStillNothing() = runTest {
         val useCase = useCase(
-            positions = mapOf("/test/book.pdf" to ReadingProgress(pageIndex = 3, pageCount = 10))
+            positions = mapOf("/test/book.pdf" to ReadingProgress(pageIndex = 3, pageCount = 10)),
         )
 
         assertNull(useCase("/test/book.pdf"))
@@ -76,14 +76,14 @@ class GetDocumentDetailsUseCaseTest {
 
     private fun useCase(
         documents: List<DocumentInfo> = emptyList(),
-        positions: Map<String, ReadingProgress> = emptyMap()
+        positions: Map<String, ReadingProgress> = emptyMap(),
     ) = GetDocumentDetailsUseCase(
         libraryRepository = FakeLibraryRepository(documents),
-        readingProgressRepository = FakeReadingProgressRepository(positions.toMutableMap())
+        readingProgressRepository = FakeReadingProgressRepository(positions.toMutableMap()),
     )
 
     private class FakeLibraryRepository(
-        initial: List<DocumentInfo> = emptyList()
+        initial: List<DocumentInfo> = emptyList(),
     ) : LibraryRepository {
         private val documents = initial.toMutableList()
 
@@ -91,12 +91,10 @@ class GetDocumentDetailsUseCaseTest {
             documents.add(document)
         }
 
-        override suspend fun getDocuments(): List<DocumentInfo> {
-            return documents.toList()
-        }
+        override suspend fun getDocuments(): List<DocumentInfo> = documents.toList()
 
-        override suspend fun getDocument(location: String): DocumentInfo? {
-            return documents.firstOrNull { it.document.location == location }
+        override suspend fun getDocument(location: String): DocumentInfo? = documents.firstOrNull {
+            it.document.location == location
         }
 
         /** Answered the expensive way; nothing in a test cares what it costs. */

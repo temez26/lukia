@@ -49,7 +49,7 @@ value class TranslationCacheKey(val value: String)
 fun translationCacheKey(
     request: TranslationRequest,
     /** Who would be asked, as "provider/model" - see [TranslationProvider]. */
-    translator: String
+    translator: String,
 ): TranslationCacheKey {
     val identity = buildString {
         append(translator).append(SEPARATOR)
@@ -60,7 +60,7 @@ fun translationCacheKey(
 
     return TranslationCacheKey(
         identity.fnv1a(FIRST_OFFSET, FIRST_PRIME, reversed = false).hex() +
-            identity.fnv1a(SECOND_OFFSET, SECOND_PRIME, reversed = true).hex()
+            identity.fnv1a(SECOND_OFFSET, SECOND_PRIME, reversed = true).hex(),
     )
 }
 

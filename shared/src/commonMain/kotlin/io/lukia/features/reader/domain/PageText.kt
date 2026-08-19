@@ -16,7 +16,7 @@ data class TextQuad(
     val left: Float,
     val top: Float,
     val right: Float,
-    val bottom: Float
+    val bottom: Float,
 ) {
     val width: Float get() = right - left
     val height: Float get() = bottom - top
@@ -36,5 +36,5 @@ data class TextQuad(
  */
 data class PageGlyph(
     val text: String,
-    val bounds: TextQuad
+    val bounds: TextQuad,
 )

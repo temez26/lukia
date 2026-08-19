@@ -80,12 +80,12 @@ private fun String.takesEffort(): Boolean = !contains("haiku", ignoreCase = true
 class AnthropicTranslator(
     private val client: HttpClient,
     private val settings: TranslationSettingsRepository,
-    private val json: Json = Json { ignoreUnknownKeys = true }
+    private val json: Json = Json { ignoreUnknownKeys = true },
 ) : Translator {
 
     override suspend fun translate(
         request: TranslationRequest,
-        onPartial: (String) -> Unit
+        onPartial: (String) -> Unit,
     ): Translation {
         val configured = settings.settings.value
         val key = configured.apiKey?.takeIf { it.isNotBlank() }
@@ -119,9 +119,9 @@ class AnthropicTranslator(
                         stream = true,
                         outputConfig = OutputConfig(
                             effort = EFFORT.takeIf { configured.model.takesEffort() },
-                            format = TranslationSchema
-                        )
-                    )
+                            format = TranslationSchema,
+                        ),
+                    ),
                 )
             }.execute { response ->
                 if (!response.status.isSuccess()) throw response.asAppError()
@@ -173,7 +173,7 @@ class AnthropicTranslator(
             // The service says which of "too often" and "nothing left to
             // spend" this is far better than a guess from the status code.
             HttpStatusCode.TooManyRequests -> AppError.Unexpected(
-                readErrorMessage() ?: "Too many translations at once. Try again in a moment."
+                readErrorMessage() ?: "Too many translations at once. Try again in a moment.",
             )
 
             HttpStatusCode.PayloadTooLarge ->

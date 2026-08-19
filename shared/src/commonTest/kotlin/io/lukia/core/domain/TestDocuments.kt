@@ -1,38 +1,37 @@
 package io.lukia.core.domain
 
-
 object TestDocuments {
 
     fun pdf(
-        location: String
+        location: String,
     ) = PickedDocument(
         fileName = "book.pdf",
         extension = "pdf",
-        location = location
+        location = location,
     )
 
     fun epub(
-        location: String
+        location: String,
     ) = PickedDocument(
         fileName = "book.epub",
         extension = "epub",
-        location = location
+        location = location,
     )
 
     fun uppercasePdf(
-        location: String
+        location: String,
     ) = PickedDocument(
         fileName = "book.PDF",
         extension = "PDF",
-        location = location
+        location = location,
     )
 
     fun text(
-        location: String
+        location: String,
     ) = PickedDocument(
         fileName = "book.txt",
         extension = "txt",
-        location = location
+        location = location,
     )
 
     /**
@@ -42,18 +41,18 @@ object TestDocuments {
      * would ever try to import does not test that.
      */
     fun unsupported(
-        location: String
+        location: String,
     ) = PickedDocument(
         fileName = "book.mobi",
         extension = "mobi",
-        location = location
+        location = location,
     )
 
     fun missingPdf(
-        location: String
+        location: String,
     ) = PickedDocument(
         fileName = "missing.pdf",
         extension = "pdf",
-        location = location
+        location = location,
     )
 }

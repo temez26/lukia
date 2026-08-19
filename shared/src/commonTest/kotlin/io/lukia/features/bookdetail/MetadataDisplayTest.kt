@@ -22,17 +22,17 @@ class MetadataDisplayTest {
     private fun book(
         fileName: String = "moby-dick.epub",
         type: DocumentType = DocumentType.EPUB,
-        metadata: BookMetadata? = null
+        metadata: BookMetadata? = null,
     ) = DocumentInfo(
         document = PickedDocument(
             fileName = fileName,
             extension = fileName.substringAfterLast('.'),
-            location = "/books/$fileName"
+            location = "/books/$fileName",
         ),
         type = type,
         exists = true,
         sizeBytes = 1024L,
-        metadata = metadata
+        metadata = metadata,
     )
 
     // ------------------------------------------------------------------ title
@@ -67,7 +67,7 @@ class MetadataDisplayTest {
     fun twoAuthorsAreJoinedWithAnd() {
         assertEquals(
             "Ada Lovelace and Charles Babbage",
-            BookMetadata(authors = listOf("Ada Lovelace", "Charles Babbage")).authorLine()
+            BookMetadata(authors = listOf("Ada Lovelace", "Charles Babbage")).authorLine(),
         )
     }
 
@@ -75,7 +75,7 @@ class MetadataDisplayTest {
     fun moreThanTwoAuthorsTakeCommasAndAFinalAnd() {
         assertEquals(
             "One, Two and Three",
-            BookMetadata(authors = listOf("One", "Two", "Three")).authorLine()
+            BookMetadata(authors = listOf("One", "Two", "Three")).authorLine(),
         )
     }
 
@@ -139,7 +139,7 @@ class MetadataDisplayTest {
     fun aPdfIsMeasuredInPages() {
         val details = BookDetails(
             document = book(fileName = "one.pdf", type = DocumentType.PDF),
-            progress = ReadingProgress(pageIndex = 0, pageCount = 348)
+            progress = ReadingProgress(pageIndex = 0, pageCount = 348),
         )
 
         assertEquals("348 pages", details.lengthLabel())
@@ -153,7 +153,7 @@ class MetadataDisplayTest {
     fun aReflowableBookIsMeasuredInSections() {
         val details = BookDetails(
             document = book(),
-            progress = ReadingProgress(pageIndex = 0, pageCount = 24)
+            progress = ReadingProgress(pageIndex = 0, pageCount = 24),
         )
 
         assertEquals("24 sections", details.lengthLabel())
@@ -163,7 +163,7 @@ class MetadataDisplayTest {
     fun oneOfSomethingIsNotPluralised() {
         val details = BookDetails(
             document = book(fileName = "one.pdf", type = DocumentType.PDF),
-            progress = ReadingProgress(pageIndex = 0, pageCount = 1)
+            progress = ReadingProgress(pageIndex = 0, pageCount = 1),
         )
 
         assertEquals("1 page", details.lengthLabel())
@@ -183,7 +183,7 @@ class MetadataDisplayTest {
     fun aBookPartWayThroughReportsHowFar() {
         val details = BookDetails(
             document = book(),
-            progress = ReadingProgress(pageIndex = 41, pageCount = 100)
+            progress = ReadingProgress(pageIndex = 41, pageCount = 100),
         )
 
         assertEquals("42% read", details.progressLabel())
@@ -194,7 +194,7 @@ class MetadataDisplayTest {
     fun aFinishedBookSaysSoOutright() {
         val details = BookDetails(
             document = book(),
-            progress = ReadingProgress(pageIndex = 99, pageCount = 100)
+            progress = ReadingProgress(pageIndex = 99, pageCount = 100),
         )
 
         assertEquals("Finished", details.progressLabel())

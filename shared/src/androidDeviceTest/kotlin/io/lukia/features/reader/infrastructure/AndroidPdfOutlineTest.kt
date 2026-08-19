@@ -39,11 +39,11 @@ class AndroidPdfOutlineTest {
 
             assertEquals(
                 listOf(MinimalPdf.FIRST_CHAPTER_TITLE, MinimalPdf.SECOND_CHAPTER_TITLE),
-                outline.map { it.title }
+                outline.map { it.title },
             )
             assertEquals(
                 MinimalPdf.SECOND_CHAPTER_PAGE_INDEX,
-                outline.last().pageIndex
+                outline.last().pageIndex,
             )
         }
     }

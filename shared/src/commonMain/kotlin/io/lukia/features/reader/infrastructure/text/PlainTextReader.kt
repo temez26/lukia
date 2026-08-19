@@ -30,7 +30,7 @@ internal fun readPlainText(bytes: ByteArray): ReflowableContent {
         sections = sectioned.sections,
         // Empty rather than null: plain text genuinely has no chapters to read,
         // which is a different thing from not being able to look for them.
-        outline = sectioned.outline
+        outline = sectioned.outline,
     )
 }
 

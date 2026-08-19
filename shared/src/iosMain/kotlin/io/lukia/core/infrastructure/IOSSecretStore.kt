@@ -97,7 +97,7 @@ class IOSSecretStore : SecretStore {
         CFDictionaryAddValue(
             entry,
             kSecAttrAccessible,
-            kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+            kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
         )
 
         SecItemAdd(entry, null)
@@ -121,7 +121,7 @@ class IOSSecretStore : SecretStore {
             null,
             0,
             kCFTypeDictionaryKeyCallBacks.ptr,
-            kCFTypeDictionaryValueCallBacks.ptr
+            kCFTypeDictionaryValueCallBacks.ptr,
         )
 
         CFDictionaryAddValue(query, kSecClass, kSecClassGenericPassword)

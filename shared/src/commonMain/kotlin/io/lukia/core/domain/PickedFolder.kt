@@ -7,5 +7,5 @@ package io.lukia.core.domain
  */
 data class PickedFolder(
     val name: String,
-    val location: String
+    val location: String,
 )

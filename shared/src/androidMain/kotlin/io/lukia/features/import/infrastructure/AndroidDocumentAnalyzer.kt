@@ -3,19 +3,18 @@ package io.lukia.features.import.infrastructure
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
-import io.lukia.features.import.domain.DocumentAnalyzer
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.PickedDocument
+import io.lukia.features.import.domain.DocumentAnalyzer
 
 class AndroidDocumentAnalyzer(
-    private val context: Context
+    private val context: Context,
 ) : DocumentAnalyzer {
 
     override suspend fun analyze(
-        document: PickedDocument
+        document: PickedDocument,
     ): DocumentInfo {
-
         val uri = Uri.parse(document.location)
 
         val resolver = context.contentResolver
@@ -28,11 +27,10 @@ class AndroidDocumentAnalyzer(
             arrayOf(OpenableColumns.SIZE),
             null,
             null,
-            null
+            null,
         )?.use { cursor ->
 
             if (cursor.moveToFirst()) {
-
                 exists = true
 
                 val sizeIndex =
@@ -46,7 +44,7 @@ class AndroidDocumentAnalyzer(
 
         if (!exists) {
             throw IllegalArgumentException(
-                "File does not exist: ${document.location}"
+                "File does not exist: ${document.location}",
             )
         }
 
@@ -68,7 +66,7 @@ class AndroidDocumentAnalyzer(
             exists = exists,
             sizeBytes = size,
             coverImage = contents.coverImage,
-            metadata = contents.metadata
+            metadata = contents.metadata,
         )
     }
 }

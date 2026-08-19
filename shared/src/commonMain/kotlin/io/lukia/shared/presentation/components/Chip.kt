@@ -56,7 +56,7 @@ fun LukiaChip(
     modifier: Modifier = Modifier,
     /** Marks a chip that opens a menu beneath itself. */
     chevron: Boolean = false,
-    icon: (@Composable (Color, Modifier) -> Unit)? = null
+    icon: (@Composable (Color, Modifier) -> Unit)? = null,
 ) {
     val metrics = LocalLukiaMetrics.current
     val interactionSource = remember { MutableInteractionSource() }
@@ -71,7 +71,7 @@ fun LukiaChip(
             MaterialTheme.colorScheme.onSurfaceVariant
         },
         animationSpec = LukiaMotion.quick(),
-        label = "chipContent"
+        label = "chipContent",
     )
 
     val container by animateColorAsState(
@@ -81,7 +81,7 @@ fun LukiaChip(
             MaterialTheme.colorScheme.surfaceVariant
         },
         animationSpec = LukiaMotion.quick(),
-        label = "chipContainer"
+        label = "chipContainer",
     )
 
     Row(
@@ -98,9 +98,9 @@ fun LukiaChip(
                 indication = null,
                 role = Role.Button,
                 onClickLabel = label,
-                onClick = onClick
+                onClick = onClick,
             )
-            .padding(horizontal = ChipPadding)
+            .padding(horizontal = ChipPadding),
     ) {
         if (icon != null) {
             icon(content, Modifier.size(metrics.iconSmall))
@@ -113,7 +113,7 @@ fun LukiaChip(
             color = content,
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
         )
 
         if (chevron) {
@@ -121,7 +121,7 @@ fun LukiaChip(
 
             DisclosureChevron(
                 tint = content,
-                modifier = Modifier.size(metrics.iconSmall)
+                modifier = Modifier.size(metrics.iconSmall),
             )
         }
     }

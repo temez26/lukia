@@ -14,8 +14,8 @@ import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  * The settings screen's half of the seam between what the reader chooses and
@@ -75,7 +75,6 @@ class SettingsViewModelGesturesTest {
         assertEquals(PassageUnit.Paragraph, translation.settings.value.gestures.longPress)
     }
 
-
     /**
      * The two expensive ones are off until asked for, and asking for one does
      * not ask for the other - they cost very different amounts.
@@ -119,12 +118,12 @@ class SettingsViewModelGesturesTest {
 
     private fun viewModel(
         store: SettingsStore,
-        translation: TranslationSettingsRepository
+        translation: TranslationSettingsRepository,
     ) = SettingsViewModel(
         repository = AppSettingsRepository(store),
         translation = translation,
         translatePassage = TranslatePassageUseCase(FakeTranslator()),
         catalogue = ModelCatalogue { emptyList() },
-        warmUp = ModelWarmUp { }
+        warmUp = ModelWarmUp { },
     )
 }

@@ -92,7 +92,7 @@ class PageSentencesTest {
 
         assertEquals(
             listOf("She left.", "He stayed."),
-            pageSentences(glyphs).map { it.text }
+            pageSentences(glyphs).map { it.text },
         )
     }
 
@@ -118,7 +118,7 @@ class PageSentencesTest {
 
         assertEquals(
             listOf("Chapter One", "It was cold.", "She left."),
-            pageSentences(glyphs).map { it.text }
+            pageSentences(glyphs).map { it.text },
         )
     }
 
@@ -131,7 +131,7 @@ class PageSentencesTest {
 
         assertEquals(
             listOf("Call me Ishmael and nothing else."),
-            pageSentences(glyphs).map { it.text }
+            pageSentences(glyphs).map { it.text },
         )
     }
 
@@ -173,7 +173,7 @@ class PageSentencesTest {
 
         assertEquals(
             listOf("A whal-", "ing ship."),
-            pageSentences(glyphs).map { it.text }
+            pageSentences(glyphs).map { it.text },
         )
     }
 
@@ -242,7 +242,6 @@ class PageSentencesTest {
 
         assertEquals(listOf(0, 1, 2), pageSentences(glyphs).map { it.index })
     }
-
 
     /**
      * A word on a page has a place of its own, which is the whole of what lets
@@ -314,9 +313,9 @@ class PageSentencesTest {
         x: Float,
         top: Float,
         width: Float = glyphWidth,
-        height: Float = glyphHeight
+        height: Float = glyphHeight,
     ) = PageGlyph(
         text = text,
-        bounds = TextQuad(left = x, top = top, right = x + width, bottom = top + height)
+        bounds = TextQuad(left = x, top = top, right = x + width, bottom = top + height),
     )
 }

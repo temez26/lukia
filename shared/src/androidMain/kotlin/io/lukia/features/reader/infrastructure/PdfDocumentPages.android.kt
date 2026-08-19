@@ -78,7 +78,7 @@ private class AndroidDocumentPages(path: String) : DocumentPages {
                         val bitmap = Bitmap.createBitmap(
                             targetWidthPx,
                             height,
-                            Bitmap.Config.ARGB_8888
+                            Bitmap.Config.ARGB_8888,
                         )
 
                         // PdfRenderer draws only what the page paints, so a page
@@ -90,7 +90,7 @@ private class AndroidDocumentPages(path: String) : DocumentPages {
                             bitmap,
                             null,
                             null,
-                            PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY
+                            PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY,
                         )
 
                         bitmap.asImageBitmap()

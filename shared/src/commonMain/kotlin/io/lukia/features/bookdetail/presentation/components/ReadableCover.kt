@@ -1,9 +1,9 @@
 package io.lukia.features.bookdetail.presentation.components
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
@@ -28,7 +28,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.CoverImage
 import io.lukia.shared.presentation.components.BookCover
 import io.lukia.shared.presentation.components.OpenBookGlyph
@@ -78,7 +77,7 @@ internal fun ReadableCover(
     onRead: () -> Unit,
     onLongPress: () -> Unit,
     width: Dp,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val haptics = LocalHapticFeedback.current
     val interactionSource = remember { MutableInteractionSource() }
@@ -89,7 +88,7 @@ internal fun ReadableCover(
     val focusReveal by animateFloatAsState(
         targetValue = if (focused) 1f else 0f,
         animationSpec = LukiaMotion.quick(),
-        label = "coverFocusReveal"
+        label = "coverFocusReveal",
     )
 
     // A pointer reveals the control; a finger has nothing to reveal it with, so
@@ -111,17 +110,17 @@ internal fun ReadableCover(
                 onLongClick = {
                     haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                     onLongPress()
-                }
+                },
             )
             .focusRing(interactionSource, shape)
-            .semantics { contentDescription = title }
+            .semantics { contentDescription = title },
     ) {
         BookCover(
             coverImage = coverImage,
             title = title,
             shape = shape,
             elevation = LukiaElevation.feature,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         )
 
         // Everything laid over the artwork shares the cover's clip, so the scrim
@@ -133,7 +132,7 @@ internal fun ReadableCover(
         Box(
             modifier = Modifier
                 .matchParentSize()
-                .clip(shape)
+                .clip(shape),
         ) {
             if (enabled) {
                 Box(
@@ -142,20 +141,20 @@ internal fun ReadableCover(
                         // Only the mouse case dims; the touch case leaves the
                         // artwork alone and lets the control's own backing carry it.
                         .graphicsLayer { alpha = maxOf(hover, focusReveal) }
-                        .background(Color.Black.copy(alpha = ScrimAlpha))
+                        .background(Color.Black.copy(alpha = ScrimAlpha)),
                 )
 
                 ReadControl(
                     reveal = reveal,
                     diameter = width * ReadControlFraction,
-                    modifier = Modifier.align(Alignment.Center)
+                    modifier = Modifier.align(Alignment.Center),
                 )
             }
 
             if (progress != null) {
                 ReadingProgressBar(
                     fraction = progress,
-                    modifier = Modifier.align(Alignment.BottomStart)
+                    modifier = Modifier.align(Alignment.BottomStart),
                 )
             }
         }
@@ -170,7 +169,7 @@ internal fun ReadableCover(
 private fun ReadControl(
     reveal: Float,
     diameter: Dp,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(
         contentAlignment = Alignment.Center,
@@ -185,11 +184,11 @@ private fun ReadControl(
             }
             .size(diameter)
             .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surface.copy(alpha = LukiaAlpha.OverArtwork))
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = LukiaAlpha.OverArtwork)),
     ) {
         OpenBookGlyph(
             tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(diameter * 0.54f)
+            modifier = Modifier.size(diameter * 0.54f),
         )
     }
 }

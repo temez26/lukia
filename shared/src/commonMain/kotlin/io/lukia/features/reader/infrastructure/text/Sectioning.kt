@@ -23,7 +23,7 @@ private const val MAX_BLOCKS_PER_SECTION = 400
 /** A document divided into what the reader lists, and the way into it. */
 internal data class SectionedText(
     val sections: List<TextSection>,
-    val outline: List<OutlineEntry>
+    val outline: List<OutlineEntry>,
 )
 
 /**
@@ -78,7 +78,7 @@ internal fun sectionText(blocks: List<TextBlock>): SectionedText {
 
     return SectionedText(
         sections = sections,
-        outline = outlineOf(sections, topLevel)
+        outline = outlineOf(sections, topLevel),
     )
 }
 
@@ -111,7 +111,7 @@ private fun outlineOf(sections: List<TextSection>, topLevel: Int?): List<Outline
                     OutlineEntry(
                         title = title,
                         pageIndex = index,
-                        level = heading.level - topLevel
+                        level = heading.level - topLevel,
                     )
                 }
             }

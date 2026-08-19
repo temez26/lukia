@@ -24,7 +24,7 @@ enum class GlassTone {
     Chrome,
 
     /** A panel or a menu: rows of text, over content that is still there behind. */
-    Panel
+    Panel,
 }
 
 /**
@@ -40,7 +40,7 @@ fun GlassSurface(
     shape: Shape,
     modifier: Modifier = Modifier,
     tone: GlassTone = GlassTone.Chrome,
-    content: @Composable BoxScope.() -> Unit
+    content: @Composable BoxScope.() -> Unit,
 ) {
     val glass = LocalGlassStyle.current
     val surface = MaterialTheme.colorScheme.surface
@@ -59,19 +59,19 @@ fun GlassSurface(
                 Brush.verticalGradient(
                     listOf(
                         surface.copy(alpha = fillAlpha),
-                        surface.copy(alpha = (fillAlpha + 0.08f).coerceAtMost(1f))
-                    )
-                )
+                        surface.copy(alpha = (fillAlpha + 0.08f).coerceAtMost(1f)),
+                    ),
+                ),
             )
             .border(
                 width = 1.dp,
                 brush = Brush.verticalGradient(
                     0f to Color.White.copy(alpha = glass.highlightAlpha),
                     0.55f to outline.copy(alpha = glass.borderAlpha * 0.4f),
-                    1f to outline.copy(alpha = glass.borderAlpha)
+                    1f to outline.copy(alpha = glass.borderAlpha),
                 ),
-                shape = shape
+                shape = shape,
             ),
-        content = content
+        content = content,
     )
 }

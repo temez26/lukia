@@ -16,7 +16,7 @@ class WordsTest {
     fun aSentenceIsCutIntoTheWordsItIsMadeOf() {
         assertEquals(
             listOf("Call", "me", "Ishmael"),
-            "Call me Ishmael.".onlySentence().words().map { it.text }
+            "Call me Ishmael.".onlySentence().words().map { it.text },
         )
     }
 
@@ -25,7 +25,7 @@ class WordsTest {
     fun thePunctuationAroundAWordIsNotPartOfIt() {
         assertEquals(
             listOf("Run", "he", "shouted"),
-            "\"Run!\" he shouted.".onlySentence().words().map { it.text }
+            "\"Run!\" he shouted.".onlySentence().words().map { it.text },
         )
     }
 
@@ -37,7 +37,7 @@ class WordsTest {
     fun anApostropheOrAHyphenInsideAWordKeepsItWhole() {
         assertEquals(
             listOf("It's", "self-evident", "he'd", "say"),
-            "It's self-evident, he'd say.".onlySentence().words().map { it.text }
+            "It's self-evident, he'd say.".onlySentence().words().map { it.text },
         )
     }
 
@@ -46,7 +46,7 @@ class WordsTest {
     fun aTrailingJoinerIsNotPartOfTheWord() {
         assertEquals(
             listOf("the", "whale", "was", "quiet"),
-            "the 'whale' was quiet-".onlySentence().words().map { it.text }
+            "the 'whale' was quiet-".onlySentence().words().map { it.text },
         )
     }
 

@@ -41,7 +41,7 @@ internal fun extractPdfMetadata(pdfBytes: ByteArray): BookMetadata? {
         authors = entry("Author").orEmpty().splitAuthors(),
         published = entry("CreationDate")?.asPdfYear(),
         description = entry("Subject"),
-        subjects = entry("Keywords").orEmpty().splitKeywords()
+        subjects = entry("Keywords").orEmpty().splitKeywords(),
     )
 
     return metadata.takeIf { !it.isEmpty }
@@ -66,12 +66,12 @@ private fun String.isPlausibleTitle(): Boolean {
 
 private val ProducerPrefix = Regex(
     """^(microsoft\s+word|microsoft\s+powerpoint|microsoft\s+excel|untitled)\b""",
-    RegexOption.IGNORE_CASE
+    RegexOption.IGNORE_CASE,
 )
 
 private val FileExtension = Regex(
     """\.(docx?|pdf|odt|rtf|tex|pages|indd|qxd)\s*$""",
-    RegexOption.IGNORE_CASE
+    RegexOption.IGNORE_CASE,
 )
 
 private val HexBlob = Regex("""[0-9a-fA-F-]{16,}""")

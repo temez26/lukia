@@ -31,13 +31,13 @@ internal val LukiaShapes = Shapes(
     small = RoundedCornerShape(8.dp),
     medium = RoundedCornerShape(10.dp),
     large = RoundedCornerShape(14.dp),
-    extraLarge = RoundedCornerShape(20.dp)
+    extraLarge = RoundedCornerShape(20.dp),
 )
 
 @Composable
 fun LukiaTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val colorScheme = if (darkTheme) LukiaDarkColorScheme else LukiaLightColorScheme
     val glassStyle = remember { platformGlassStyle() }
@@ -51,13 +51,13 @@ fun LukiaTheme(
             LocalLukiaDimens provides dimensFor(widthClass),
             LocalLukiaMetrics provides metricsFor(widthClass),
             LocalWindowWidthClass provides widthClass,
-            LocalGlassStyle provides glassStyle
+            LocalGlassStyle provides glassStyle,
         ) {
             MaterialTheme(
                 colorScheme = colorScheme,
                 typography = LukiaTypography,
                 shapes = LukiaShapes,
-                content = content
+                content = content,
             )
         }
     }
