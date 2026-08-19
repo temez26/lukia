@@ -53,15 +53,20 @@ Other size limits, enforced by detekt:
 | Function length | 60 lines |
 | Cyclomatic complexity per function | 15 |
 | Nested block depth | 4 |
-| Required parameters per function | 6 |
+| Required parameters per function | 6 (composables exempt — see below) |
 | Required constructor parameters | 7 |
 | Class length | 400 lines |
 | Functions per file / class | 25 / 20 |
 
-Parameters with default values do not count toward the parameter limits, so a composable
-may expose more than six as long as the caller is not forced to pass them. Keep the
-required ones — the ones without defaults — at six or fewer, and stay under roughly eight
-parameters total before reaching for a state holder.
+Parameters with default values do not count toward the parameter limits, so anything may
+expose more than six as long as the caller is not forced to pass them.
+
+`@Composable` functions are exempt from the parameter limit, because a composable's
+parameters are its API and detekt cannot hold a screen section and a plain function to
+different numbers. **They are held to eight required parameters in review instead.** Past
+that, gather the related ones into a state holder or an actions object — which is also
+what makes a long screen splittable, rather than trading one long file for several long
+signatures.
 
 ## Splitting a file
 

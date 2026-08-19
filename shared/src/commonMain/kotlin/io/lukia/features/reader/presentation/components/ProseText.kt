@@ -39,9 +39,6 @@ import io.lukia.features.translate.domain.words
 import io.lukia.features.translate.presentation.SentenceTranslations
 import io.lukia.features.translate.presentation.shownText
 
-/** The space between one block and the next, as a multiple of the text size. */
-private const val BLOCK_SPACING = 0.7f
-
 // A paragraph of the book, and everything that happens when the reader points
 // at part of it.
 

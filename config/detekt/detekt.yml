@@ -41,6 +41,12 @@ complexity:
     # A composable's optional parameters are its configuration surface, not the
     # argument list a caller has to reckon with, so only required ones count.
     ignoreDefaultParameters: true
+    # A composable's parameters are its API: a screen section legitimately takes
+    # more than a plain function does, and detekt cannot hold the two to
+    # different numbers. Composables are held to eight in review instead - see
+    # CODING_STYLE.md - so that splitting a long screen does not have to trade a
+    # long file for several long signatures.
+    ignoreAnnotated: ['Composable']
   NestedBlockDepth:
     active: true
     threshold: 4

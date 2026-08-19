@@ -9,9 +9,6 @@ import io.lukia.features.translate.domain.Word
 import io.lukia.features.translate.domain.words
 import io.lukia.features.translate.presentation.SentenceTranslations
 
-/** The space between one block and the next, as a multiple of the text size. */
-private const val BLOCK_SPACING = 0.7f
-
 /**
  * Which passages of this paragraph are marked, and how - named by index rather
  * than by where they ended up on the page.

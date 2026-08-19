@@ -24,9 +24,6 @@ import io.lukia.features.translate.presentation.shownText
 /** A note is an aside about the text, and is set smaller than the text. */
 internal const val NOTE_SCALE = 0.82f
 
-/** The space between one block and the next, as a multiple of the text size. */
-private const val BLOCK_SPACING = 0.7f
-
 /**
  * What the translator had to say about this paragraph, under it.
  *

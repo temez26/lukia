@@ -1,117 +1,59 @@
 package io.lukia.features.reader.presentation.screens
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.gestures.animateScrollBy
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.calculateZoom
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
-import io.lukia.core.presentation.displayTitle
-import io.lukia.features.reader.domain.PageSize
 import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReflowableContent
-import io.lukia.features.reader.domain.TextSection
-import io.lukia.features.reader.presentation.PAGE_SCALE_STEP
 import io.lukia.features.reader.presentation.ReaderCommand
 import io.lukia.features.reader.presentation.ReaderViewModel
-import io.lukia.features.reader.presentation.SCROLL_NUDGE_FRACTION
 import io.lukia.features.reader.presentation.ShownTranslations
 import io.lukia.features.reader.presentation.TranslateOnScreen
-import io.lukia.features.reader.presentation.components.PageIndicatorButton
-import io.lukia.features.reader.presentation.components.PageTranslationOverlay
-import io.lukia.features.reader.presentation.components.PassageActions
 import io.lukia.features.reader.presentation.components.ReaderContentsPanel
 import io.lukia.features.reader.presentation.components.ReaderSettingsPanel
-import io.lukia.features.reader.presentation.components.ReaderToolbar
-import io.lukia.features.reader.presentation.components.TextSectionView
-import io.lukia.features.reader.presentation.components.TextSettingsGlyph
 import io.lukia.features.reader.presentation.components.readerToolbarHeight
 import io.lukia.features.reader.presentation.readerCommandFor
-import io.lukia.features.reader.presentation.renderWidthFor
 import io.lukia.features.reader.presentation.theme.ReaderTheming
 import io.lukia.features.reader.presentation.theme.readerPageStyle
-import io.lukia.features.reader.presentation.theme.readerTextStyle
 import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.PageSentence
-import io.lukia.features.translate.domain.PassageUnit
-import io.lukia.features.translate.domain.Sentence
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.TranslationGestures
-import io.lukia.features.translate.domain.sentenceAt
 import io.lukia.features.translate.presentation.PassageSelection
 import io.lukia.features.translate.presentation.PassageTranslation
 import io.lukia.features.translate.presentation.ReaderTranslations
-import io.lukia.features.translate.presentation.SentenceTranslations
-import io.lukia.shared.presentation.components.LukiaIconButton
-import io.lukia.shared.presentation.components.ShortcutTooltip
-import io.lukia.shared.presentation.components.TranslateGlyph
-import io.lukia.shared.presentation.components.TranslateOnwardsGlyph
-import io.lukia.shared.presentation.components.TranslationsShownGlyph
 import io.lukia.shared.presentation.components.UiStateContent
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
-import io.lukia.shared.presentation.theme.LukiaElevation
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.isWideWindow
-import io.lukia.shared.presentation.theme.topChromeIn
-import io.lukia.shared.presentation.theme.topChromeOut
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
@@ -119,13 +61,7 @@ import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
-/** Gap between pages, which is what makes them read as separate sheets. */
-private val PageGap: Dp = Space.lg
-
-/** Breathing room at the end of the book. */
-private val PageListPadding: Dp = Space.md
-
-private val ChromeVerticalPadding: Dp = Space.md
+internal val ChromeVerticalPadding: Dp = Space.md
 
 /**
  * What the floating toolbar occupies, and so what the first page must clear.
@@ -134,10 +70,10 @@ private val ChromeVerticalPadding: Dp = Space.md
  * whether the window is being pointed at or touched.
  */
 @Composable
-private fun chromeHeight(): Dp = readerToolbarHeight() + ChromeVerticalPadding * 2
+internal fun chromeHeight(): Dp = readerToolbarHeight() + ChromeVerticalPadding * 2
 
 /** The margin a section's text is set inside its sheet. */
-private val SheetPadding: Dp = 20.dp
+internal val SheetPadding: Dp = 20.dp
 
 @Composable
 fun ReaderScreen(
@@ -219,17 +155,20 @@ fun ReaderContent(
 ) {
     val dimens = LocalLukiaDimens.current
     val scope = rememberCoroutineScope()
-    var settingsExpanded by remember { mutableStateOf(false) }
-    var contentsExpanded by remember { mutableStateOf(false) }
-    var chromeVisible by remember { mutableStateOf(true) }
+    val chrome = rememberReaderChromeState()
 
     val compact = !isWideWindow
-    val panelOpen = settingsExpanded || contentsExpanded
     val chromeHeight = chromeHeight()
 
-    // A panel hangs off the toolbar, so the toolbar cannot leave while one is
-    // open without stranding it.
-    val chromeShown = chromeVisible || panelOpen
+    val translationUi = ReaderTranslationUi(
+        configured = translationConfigured,
+        onScreen = translateOnScreen,
+        shown = shownTranslations,
+        offered = bulkTranslation,
+        onTranslateOnScreen = onTranslateOnScreen,
+        onContinuousChange = onContinuousTranslationChange,
+        onVisibleChange = onTranslationsVisibleChange,
+    )
 
     // Filed by where each translation belongs, once per change, so that a
     // sentence changing state reaches the block or the page it is on and no
@@ -257,7 +196,7 @@ fun ReaderContent(
 
             snapshotFlow { listState.isScrollInProgress }
                 .filter { it }
-                .collect { chromeVisible = false }
+                .collect { chrome.hideChrome() }
         }
 
         // Opening where the book was left off. Done as a scroll rather than as
@@ -292,14 +231,8 @@ fun ReaderContent(
             settings = settings,
             onSettingsChange = onSettingsChange,
             onBack = onBack,
-            onToggleContents = {
-                settingsExpanded = false
-                contentsExpanded = !contentsExpanded
-            },
-            onToggleSettings = {
-                contentsExpanded = false
-                settingsExpanded = !settingsExpanded
-            },
+            onToggleContents = chrome::toggleContents,
+            onToggleSettings = chrome::toggleSettings,
             // A shortcut for something the reader has not asked to be offered
             // does nothing, exactly as its button does not appear. Off is off
             // wherever it is reached from.
@@ -338,16 +271,15 @@ fun ReaderContent(
                     // platform's back gesture, which not every platform routes a
                     // key into, and "Escape leaves the book" firing under an
                     // open panel is not a mistake worth risking.
-                    if (command == ReaderCommand.Close && panelOpen) {
-                        settingsExpanded = false
-                        contentsExpanded = false
+                    if (command == ReaderCommand.Close && chrome.panelOpen) {
+                        chrome.closePanels()
                         return@onKeyEvent true
                     }
 
                     // A shortcut is a reason to show the chrome: it is how the
                     // reader sees that the page width changed, or which page
                     // they landed on.
-                    chromeVisible = true
+                    chrome.showChrome()
                     commands(command)
                     true
                 },
@@ -375,7 +307,7 @@ fun ReaderContent(
                             pageColor = pageStyle.pageColor,
                             pageFilter = pageStyle.pageFilter,
                             translations = translated,
-                            onToggleChrome = { chromeVisible = !chromeVisible },
+                            onToggleChrome = chrome::toggleChrome,
                             onPageScaleChange = { onSettingsChange(settings.withPageScale(it)) },
                             onPassageSelected = onPassageSelected,
                             onPassagesRequested = onPassagesRequested,
@@ -391,7 +323,7 @@ fun ReaderContent(
                             settings = settings,
                             pageColor = pageStyle.pageColor,
                             translations = translated,
-                            onToggleChrome = { chromeVisible = !chromeVisible },
+                            onToggleChrome = chrome::toggleChrome,
                             onSettingsChange = onSettingsChange,
                             onPassageSelected = onPassageSelected,
                             onPassagesRequested = onPassagesRequested,
@@ -408,87 +340,18 @@ fun ReaderContent(
                 // from one panel to the other is one press rather than two.
                 // Deliberately not dimmed: the point of these panels is watching
                 // the page change as they are used.
-                if (panelOpen) {
-                    DismissLayer(
-                        onDismiss = {
-                            settingsExpanded = false
-                            contentsExpanded = false
-                        },
-                    )
+                if (chrome.panelOpen) {
+                    DismissLayer(onDismiss = chrome::closePanels)
                 }
 
-                // Floats over the page rather than taking a row of its own, so
-                // that putting it away gives the book the whole screen without
-                // re-laying out a single page.
-                AnimatedVisibility(
-                    visible = chromeShown,
-                    enter = topChromeIn(),
-                    exit = topChromeOut(),
+                ReaderTopChrome(
+                    chrome = chrome,
+                    document = document,
+                    listState = listState,
+                    translation = translationUi,
+                    onBack = onBack,
                     modifier = Modifier.align(Alignment.TopCenter),
-                ) {
-                    ReaderToolbar(
-                        onBack = onBack,
-                        // Named only where the bar has room to say it, which is
-                        // also where a window has no other title of its own.
-                        title = document?.info?.displayTitle(),
-                        modifier = Modifier
-                            // Held to the width of the page it acts on rather
-                            // than to the window's. A capsule stretched across a
-                            // monitor puts its three controls an inch from three
-                            // different edges, and relates to nothing on screen.
-                            .widthIn(max = dimens.maxReaderWidth)
-                            .padding(
-                                start = dimens.screenPadding,
-                                end = dimens.screenPadding,
-                                top = ChromeVerticalPadding,
-                                bottom = ChromeVerticalPadding,
-                            ),
-                        centerControl = {
-                            // Only once there is a book to be somewhere in.
-                            if (document != null) {
-                                PageIndicatorButton(
-                                    listState = listState,
-                                    unitCount = document.content.unitCount,
-                                    unit = document.content.unit,
-                                    onClick = {
-                                        settingsExpanded = false
-                                        contentsExpanded = !contentsExpanded
-                                    },
-                                )
-                            }
-                        },
-                        endControl = {
-                            // One child rather than several, because on a narrow
-                            // window the bar spaces its children evenly - and
-                            // three controls drifting apart across half a phone
-                            // is not a group of related buttons.
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                if (translationConfigured) {
-                                    TranslationControls(
-                                        continuous = translateOnScreen.continuous,
-                                        shown = shownTranslations,
-                                        offered = bulkTranslation,
-                                        onTranslateOnScreen = onTranslateOnScreen,
-                                        onContinuousChange = onContinuousTranslationChange,
-                                        onVisibleChange = onTranslationsVisibleChange,
-                                    )
-                                }
-
-                                ShortcutTooltip(description = "Reading settings", shortcut = "T") {
-                                    LukiaIconButton(
-                                        label = "Reading settings",
-                                        onClick = {
-                                            contentsExpanded = false
-                                            settingsExpanded = !settingsExpanded
-                                        },
-                                    ) { tint, glyph ->
-                                        TextSettingsGlyph(tint = tint, modifier = glyph)
-                                    }
-                                }
-                            }
-                        },
-                    )
-                }
+                )
 
                 // The panels are laid out in the reader's own window rather than
                 // in popups of their own. A popup is a separate, non-focusable
@@ -497,7 +360,7 @@ fun ReaderContent(
                 // that should have opened the other panel. In-window, both work.
                 if (document != null) {
                     ReaderContentsPanel(
-                        expanded = contentsExpanded,
+                        expanded = chrome.contentsExpanded,
                         listState = listState,
                         unitCount = document.content.unitCount,
                         unit = document.content.unit,
@@ -505,7 +368,7 @@ fun ReaderContent(
                         onGoToPage = { pageIndex ->
                             scope.launch { listState.scrollToItem(pageIndex) }
                         },
-                        onDismissRequest = { contentsExpanded = false },
+                        onDismissRequest = chrome::closePanels,
                         modifier = Modifier
                             .align(Alignment.TopCenter)
                             .padding(top = chromeHeight),
@@ -513,12 +376,12 @@ fun ReaderContent(
                 }
 
                 ReaderSettingsPanel(
-                    expanded = settingsExpanded,
+                    expanded = chrome.settingsExpanded,
                     settings = settings,
                     // A PDF's type was set when the file was made.
                     typographyEnabled = document?.content is ReflowableContent,
                     onSettingsChange = onSettingsChange,
-                    onDismissRequest = { settingsExpanded = false },
+                    onDismissRequest = chrome::closePanels,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(top = chromeHeight, end = dimens.screenPadding),
@@ -526,743 +389,4 @@ fun ReaderContent(
             }
         }
     }
-}
-
-/**
- * Translating what is on screen, once or from now on.
- *
- * Two buttons rather than one with a mode, because they answer different
- * questions: "do this page" is something a reader does at a page they are stuck
- * on, and "keep doing it" is a decision about the rest of the session. Folding
- * them together would make the first one a two-step operation.
- *
- * The standing one shows its state in its own colour rather than by changing
- * shape - it is the one control in the bar that stays on after it is pressed,
- * and a tinted glyph is how the rest of the app says that.
- *
- * Shown at all only when something is set up to translate with. A button that
- * can only produce an error is worse than no button.
- */
-@Composable
-private fun TranslationControls(
-    continuous: Boolean,
-    shown: ShownTranslations,
-    offered: BulkTranslation,
-    onTranslateOnScreen: () -> Unit,
-    onContinuousChange: (Boolean) -> Unit,
-    onVisibleChange: (Boolean) -> Unit,
-) {
-    // Not there at all until the reader has asked for them in Settings. These
-    // two are the ones that spend a screenful at a time - see BulkTranslation -
-    // and a button that can do that sitting in the bar of a reading app is a
-    // button somebody presses to find out what it does.
-    if (offered.onScreen) {
-        ShortcutTooltip(description = "Translate what is on screen", shortcut = "R") {
-            LukiaIconButton(
-                label = "Translate what is on screen",
-                onClick = onTranslateOnScreen,
-            ) { tint, glyph ->
-                TranslateGlyph(tint = tint, modifier = glyph)
-            }
-        }
-    }
-
-    if (offered.asYouRead) {
-        ShortcutTooltip(
-            description = if (continuous) {
-                "Stop translating as you read"
-            } else {
-                "Keep translating as you read"
-            },
-            shortcut = "E",
-        ) {
-            LukiaIconButton(
-                label = if (continuous) {
-                    "Stop translating as you read"
-                } else {
-                    "Keep translating as you read"
-                },
-                onClick = { onContinuousChange(!continuous) },
-                tint = if (continuous) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
-            ) { tint, glyph ->
-                TranslateOnwardsGlyph(tint = tint, modifier = glyph)
-            }
-        }
-    }
-
-    // Nothing to put away until something has been translated, so the control is
-    // there from the start - where the reader will look for it - but does nothing
-    // until there is something for it to do.
-    ShortcutTooltip(
-        description = if (shown.visible) "Hide the translations" else "Show the translations",
-        shortcut = "H",
-    ) {
-        LukiaIconButton(
-            label = if (shown.visible) "Hide the translations" else "Show the translations",
-            onClick = { onVisibleChange(!shown.visible) },
-            enabled = shown.any,
-            tint = if (shown.visible) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
-            },
-        ) { tint, glyph ->
-            TranslationsShownGlyph(tint = tint, shown = shown.visible, modifier = glyph)
-        }
-    }
-}
-
-/**
- * Carries out what the keyboard asked for.
- *
- * Deliberately built per composition rather than remembered: every one of these
- * closes over something that changes as the book is read - the settings, the
- * page count, which panel is open - and a lambda held across those changes would
- * act on the reader of a moment ago. It costs an allocation the page list would
- * not notice.
- */
-@Composable
-private fun readerCommands(
-    listState: LazyListState,
-    unitCount: Int,
-    reflowable: Boolean,
-    settings: ReaderSettings,
-    onSettingsChange: (ReaderSettings) -> Unit,
-    onBack: () -> Unit,
-    onToggleContents: () -> Unit,
-    onToggleSettings: () -> Unit,
-    onTranslateOnScreen: () -> Unit,
-    onToggleContinuousTranslation: () -> Unit,
-    onToggleTranslationsShown: () -> Unit,
-): (ReaderCommand) -> Unit {
-    val scope = rememberCoroutineScope()
-
-    return { command ->
-        val lastPage = unitCount - 1
-        val page = listState.firstVisibleItemIndex
-
-        fun goTo(index: Int) {
-            if (unitCount > 0) {
-                scope.launch { listState.animateScrollToItem(index.coerceIn(0, lastPage)) }
-            }
-        }
-
-        fun nudge(fraction: Float) {
-            val viewport = listState.layoutInfo.viewportSize.height
-            if (viewport > 0) scope.launch { listState.animateScrollBy(viewport * fraction) }
-        }
-
-        when (command) {
-            ReaderCommand.NextPage -> goTo(page + 1)
-            ReaderCommand.PreviousPage -> goTo(page - 1)
-            ReaderCommand.FirstPage -> goTo(0)
-            ReaderCommand.LastPage -> goTo(lastPage)
-
-            ReaderCommand.ScrollDown -> nudge(SCROLL_NUDGE_FRACTION)
-            ReaderCommand.ScrollUp -> nudge(-SCROLL_NUDGE_FRACTION)
-
-            ReaderCommand.Wider -> onSettingsChange(
-                if (reflowable) {
-                    settings.withLargerText()
-                } else {
-                    settings.withPageScale(settings.pageScale + PAGE_SCALE_STEP)
-                },
-            )
-
-            ReaderCommand.Narrower -> onSettingsChange(
-                if (reflowable) {
-                    settings.withSmallerText()
-                } else {
-                    settings.withPageScale(settings.pageScale - PAGE_SCALE_STEP)
-                },
-            )
-
-            ReaderCommand.ActualSize -> onSettingsChange(
-                if (reflowable) {
-                    settings.withTextScale(ReaderSettings.DEFAULT_TEXT_SCALE)
-                } else {
-                    settings.withPageScale(ReaderSettings.DEFAULT_PAGE_SCALE)
-                },
-            )
-
-            ReaderCommand.ToggleContents -> onToggleContents()
-            ReaderCommand.ToggleSettings -> onToggleSettings()
-
-            ReaderCommand.TranslatePage -> onTranslateOnScreen()
-            ReaderCommand.ToggleContinuousTranslation -> onToggleContinuousTranslation()
-            ReaderCommand.ToggleTranslationsShown -> onToggleTranslationsShown()
-
-            ReaderCommand.Close -> onBack()
-        }
-    }
-}
-
-@Composable
-private fun PageList(
-    pages: PagedContent,
-    listState: LazyListState,
-    pageScale: Float,
-    pageColor: Color,
-    pageFilter: ColorFilter?,
-    translations: ReaderTranslations,
-    onToggleChrome: () -> Unit,
-    onPageScaleChange: (Float) -> Unit,
-    onPassageSelected: (PassageSelection) -> Unit,
-    onPassagesRequested: (List<PassageSelection>) -> Unit,
-    translateOnScreen: TranslateOnScreen,
-    gestures: TranslationGestures,
-    sentencesOnPage: suspend (index: Int) -> List<PageSentence>,
-    renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?,
-) {
-    val dimens = LocalLukiaDimens.current
-    val pageSizes = pages.pages.pageSizes
-
-    // Held here while a pinch is in progress and committed when it ends. Writing
-    // every intermediate scale into the settings would persist it to storage
-    // sixty times a second, and the page follows the fingers just as closely
-    // from here.
-    var pinchScale by remember { mutableStateOf<Float?>(null) }
-    val effectiveScale = pinchScale ?: pageScale
-
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        // One measurement for the whole book: every page is drawn to the same
-        // width, so working it out per page would be the same answer computed
-        // hundreds of times.
-        val columnWidth = if (dimens.maxReaderWidth == Dp.Unspecified) {
-            maxWidth
-        } else {
-            minOf(maxWidth, dimens.maxReaderWidth)
-        }
-        val pageWidth = columnWidth * effectiveScale
-        val renderWidthPx = with(LocalDensity.current) { renderWidthFor(pageWidth.roundToPx()) }
-
-        // Zoomed in, the page is wider than the window and the extra width is
-        // the point - so the book is laid out at its own width and panned,
-        // rather than squeezed back into the space available.
-        val contentWidth = maxOf(pageWidth, maxWidth)
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .pinchToZoom(
-                    scale = effectiveScale,
-                    range = ReaderSettings.MIN_PAGE_SCALE..ReaderSettings.MAX_PAGE_SCALE,
-                    onPinch = { pinchScale = it },
-                    onPinchEnd = {
-                        pinchScale?.let(onPageScaleChange)
-                        pinchScale = null
-                    },
-                )
-                .pointerInput(Unit) {
-                    detectTapGestures(onTap = { onToggleChrome() })
-                }
-                .horizontalScroll(rememberScrollState()),
-        ) {
-            LazyColumn(
-                state = listState,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(PageGap),
-                contentPadding = PaddingValues(
-                    // Clears the floating chrome, so the first page is not behind
-                    // it when the book opens.
-                    top = chromeHeight(),
-                    bottom = PageListPadding,
-                ),
-                modifier = Modifier
-                    .width(contentWidth)
-                    .fillMaxHeight(),
-            ) {
-                items(count = pageSizes.size) { index ->
-                    DocumentPage(
-                        index = index,
-                        pageCount = pageSizes.size,
-                        pageSize = pageSizes[index],
-                        width = pageWidth,
-                        renderWidthPx = renderWidthPx,
-                        pageColor = pageColor,
-                        pageFilter = pageFilter,
-                        translations = translations.page(index),
-                        onToggleChrome = onToggleChrome,
-                        onPassageSelected = onPassageSelected,
-                        onPassagesRequested = onPassagesRequested,
-                        translateOnScreen = translateOnScreen,
-                        gestures = gestures,
-                        sentencesOnPage = sentencesOnPage,
-                        renderPage = renderPage,
-                    )
-                }
-            }
-        }
-    }
-}
-
-/**
- * A reflowable book, section by section.
- *
- * The same scrolling list of sheets a PDF gets, so moving between a PDF and an
- * EPUB is not moving between two different readers - but what a sheet holds is
- * text this app has set, so the sheet is as tall as its text needs and the
- * settings act on the words rather than on a picture of them.
- *
- * The measure never exceeds the window. Above 100% a PDF page is deliberately
- * drawn wider than the space available and panned, because that is the only way
- * to get closer to type whose size was fixed when the file was made; text has no
- * such problem, and a line of prose running off both edges of the window is not
- * a way to read anything. So the width presets set the measure up to the width
- * available and stop there, and getting closer is what the text size is for -
- * which is also what a pinch does here.
- */
-@Composable
-private fun SectionList(
-    sections: List<TextSection>,
-    listState: LazyListState,
-    settings: ReaderSettings,
-    pageColor: Color,
-    translations: ReaderTranslations,
-    onToggleChrome: () -> Unit,
-    onSettingsChange: (ReaderSettings) -> Unit,
-    onPassageSelected: (PassageSelection) -> Unit,
-    onPassagesRequested: (List<PassageSelection>) -> Unit,
-    translateOnScreen: TranslateOnScreen,
-    gestures: TranslationGestures,
-) {
-    val dimens = LocalLukiaDimens.current
-
-    // Held here while a pinch is in progress and committed when it ends, so the
-    // type follows the fingers without every intermediate size being written to
-    // storage.
-    var pinchScale by remember { mutableStateOf<Float?>(null) }
-    val effectiveScale = pinchScale ?: settings.textScale
-
-    // Built from the size the fingers are at rather than the size that has been
-    // stored, which is what makes the whole page re-set as the pinch happens.
-    val style = readerTextStyle(settings.withTextScale(effectiveScale))
-
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        val columnWidth = if (dimens.maxReaderWidth == Dp.Unspecified) {
-            maxWidth
-        } else {
-            minOf(maxWidth, dimens.maxReaderWidth)
-        }
-
-        val sheetWidth = minOf(columnWidth * settings.pageScale, maxWidth)
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .pinchToZoom(
-                    scale = effectiveScale,
-                    range = ReaderSettings.MIN_TEXT_SCALE..ReaderSettings.MAX_TEXT_SCALE,
-                    onPinch = { pinchScale = it },
-                    onPinchEnd = {
-                        pinchScale?.let { onSettingsChange(settings.withTextScale(it)) }
-                        pinchScale = null
-                    },
-                )
-                .pointerInput(Unit) {
-                    detectTapGestures(onTap = { onToggleChrome() })
-                },
-        ) {
-            LazyColumn(
-                state = listState,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(PageGap),
-                contentPadding = PaddingValues(
-                    top = chromeHeight(),
-                    bottom = PageListPadding,
-                ),
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                items(count = sections.size) { index ->
-                    Box(
-                        modifier = Modifier
-                            .width(sheetWidth)
-                            .shadow(elevation = LukiaElevation.page)
-                            .background(pageColor)
-                            .padding(SheetPadding)
-                            // Unlike a rendered page there is real text behind
-                            // this, so the description says where in the book it
-                            // is and leaves the reading to the text itself.
-                            .semantics {
-                                contentDescription =
-                                    "Section ${index + 1} of ${sections.size}"
-                            },
-                    ) {
-                        val section = sections[index]
-
-                        TextSectionView(
-                            section = section,
-                            style = style,
-                            translations = translations.section(index),
-                            translateOnScreen = translateOnScreen,
-                            gestures = gestures,
-                            resizingType = pinchScale != null,
-                            actions = rememberSectionActions(
-                                sectionIndex = index,
-                                chapterTitle = section.title,
-                                onToggleChrome = onToggleChrome,
-                                onPassageSelected = onPassageSelected,
-                                onPassagesRequested = onPassagesRequested,
-                            ),
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-/**
- * What a tap, a long press and a call for the whole page mean in one section.
- *
- * Remembered per section rather than rebuilt every composition, because a book
- * is hundreds of blocks and a fresh set of callbacks for each of them on every
- * recomposition would make every one of those blocks recompose too - which is
- * the exact cost the sliced translations exist to avoid.
- *
- * The callbacks are read through [rememberUpdatedState] rather than captured,
- * so remembering these does not pin the reader of a moment ago.
- */
-@Composable
-private fun rememberSectionActions(
-    sectionIndex: Int,
-    chapterTitle: String?,
-    onToggleChrome: () -> Unit,
-    onPassageSelected: (PassageSelection) -> Unit,
-    onPassagesRequested: (List<PassageSelection>) -> Unit,
-): PassageActions {
-    val toggleChrome = rememberUpdatedState(onToggleChrome)
-    val selected = rememberUpdatedState(onPassageSelected)
-    val requested = rememberUpdatedState(onPassagesRequested)
-
-    return remember(sectionIndex, chapterTitle) {
-        fun selection(
-            blockIndex: Int,
-            sentenceIndex: Int?,
-            wordIndex: Int?,
-            passage: String,
-            paragraph: String,
-            unit: PassageUnit,
-        ) = PassageSelection(
-            anchor = TextAnchor.Section(
-                sectionIndex = sectionIndex,
-                blockIndex = blockIndex,
-                sentenceIndex = sentenceIndex,
-                wordIndex = wordIndex,
-            ),
-            passage = passage,
-            chapterTitle = chapterTitle,
-            surroundingText = paragraph,
-            unit = unit,
-        )
-
-        PassageActions(
-            onSentence = { block, sentence, paragraph ->
-                selected.value(
-                    selection(
-                        blockIndex = block,
-                        sentenceIndex = sentence.index,
-                        wordIndex = null,
-                        passage = sentence.text,
-                        paragraph = paragraph,
-                        unit = PassageUnit.Sentence,
-                    ),
-                )
-            },
-            // A word travels with the paragraph around it, exactly as a sentence
-            // does. On its own it is a dictionary entry; what makes it a reading
-            // is the clause it was taken out of.
-            onWord = { block, sentence, word, paragraph ->
-                selected.value(
-                    selection(
-                        blockIndex = block,
-                        sentenceIndex = sentence.index,
-                        wordIndex = word.index,
-                        passage = word.text,
-                        paragraph = paragraph,
-                        unit = PassageUnit.Word,
-                    ),
-                )
-            },
-            // A paragraph is its own context, so it travels without one: there
-            // is nothing around it left to send that is not already in it.
-            onParagraph = { block, paragraph ->
-                selected.value(
-                    selection(
-                        blockIndex = block,
-                        sentenceIndex = null,
-                        wordIndex = null,
-                        passage = paragraph,
-                        paragraph = paragraph,
-                        unit = PassageUnit.Paragraph,
-                    ),
-                )
-            },
-            onBlock = { block, sentences, paragraph ->
-                requested.value(
-                    sentences.map { sentence ->
-                        selection(
-                            blockIndex = block,
-                            sentenceIndex = sentence.index,
-                            wordIndex = null,
-                            passage = sentence.text,
-                            paragraph = paragraph,
-                            unit = PassageUnit.Sentence,
-                        )
-                    },
-                )
-            },
-            onElsewhere = { toggleChrome.value() },
-        )
-    }
-}
-
-/**
- * One page. The sheet is laid out at the page's own proportions before anything
- * is drawn into it, so the list's height is settled from the start and scrolling
- * never jumps as pages arrive.
- *
- * [pageFilter] is what makes the reading theme instant: switching it re-draws
- * the page that is already rendered rather than rendering it again.
- */
-@Composable
-private fun DocumentPage(
-    index: Int,
-    pageCount: Int,
-    pageSize: PageSize,
-    width: Dp,
-    renderWidthPx: Int,
-    pageColor: Color,
-    pageFilter: ColorFilter?,
-    translations: SentenceTranslations,
-    onToggleChrome: () -> Unit,
-    onPassageSelected: (PassageSelection) -> Unit,
-    onPassagesRequested: (List<PassageSelection>) -> Unit,
-    translateOnScreen: TranslateOnScreen,
-    gestures: TranslationGestures,
-    sentencesOnPage: suspend (index: Int) -> List<PageSentence>,
-    renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?,
-) {
-    // Keyed on the width as well as the page: a resized window, or a different
-    // zoom, invalidates what was drawn for the old one.
-    val page by produceState<ImageBitmap?>(initialValue = null, index, renderWidthPx) {
-        value = renderPage(index, renderWidthPx)
-
-        // Draw the next page while this one is being read, so arriving at it
-        // does not mean waiting for it. Cancelled along with this page when it
-        // scrolls away, which is what stops a fast scroll from queueing work for
-        // pages already passed.
-        renderPage(index + 1, renderWidthPx)
-    }
-
-    // Read once per page and kept: parsing the text out of a page is far too
-    // much to do again on every tap, and a reader working through a page taps
-    // it several times.
-    val sentences by produceState(initialValue = emptyList<PageSentence>(), index) {
-        value = sentencesOnPage(index)
-    }
-
-    // The one number relating the file to what is on screen. Everything the
-    // overlay draws is measured in the page's own units and scaled by this, so
-    // a pinch or a resize moves it without recalculating anything.
-    val scale = with(LocalDensity.current) { width.toPx() } / pageSize.width
-
-    // The rest of the page, which is the context a sentence on it travels with.
-    // Built once per page rather than once per tap: it is every word on the
-    // page joined up, and a reader works through a page a tap at a time.
-    val pageText = remember(sentences) { sentences.joinToString(" ") { it.text } }
-
-    val currentSentences by rememberUpdatedState(sentences)
-    val currentPageText by rememberUpdatedState(pageText)
-    val currentOnSelected by rememberUpdatedState(onPassageSelected)
-    val currentOnToggleChrome by rememberUpdatedState(onToggleChrome)
-    val currentScale by rememberUpdatedState(scale)
-    val currentOnRequested by rememberUpdatedState(onPassagesRequested)
-    val currentGestures by rememberUpdatedState(gestures)
-
-    // A page is either on screen or it is not - there is nothing on it that can
-    // be half of it - so unlike a paragraph of set text it needs nothing
-    // measured. Being composed at all is close enough: the list keeps a page or
-    // two either side, and translating one page ahead of somebody reading
-    // forward is what they asked for anyway.
-    var actedOn by remember { mutableStateOf(translateOnScreen.generation) }
-
-    LaunchedEffect(translateOnScreen, sentences) {
-        if (sentences.isEmpty()) return@LaunchedEffect
-        if (!translateOnScreen.continuous && translateOnScreen.generation == actedOn) {
-            return@LaunchedEffect
-        }
-
-        actedOn = translateOnScreen.generation
-        currentOnRequested(
-            sentences.map { sentence ->
-                PassageSelection(
-                    anchor = TextAnchor.Page(pageIndex = index, sentenceIndex = sentence.index),
-                    passage = sentence.text,
-                    surroundingText = pageText,
-                )
-            },
-        )
-    }
-
-    Box(
-        modifier = Modifier
-            .width(width)
-            .aspectRatio(pageSize.aspectRatio)
-            .shadow(elevation = LukiaElevation.page)
-            .background(pageColor)
-            // A page is a picture with no text behind it, so this is the only
-            // thing a screen reader can be told about it. Without it the whole
-            // document is silence.
-            .semantics { contentDescription = "Page ${index + 1} of $pageCount" }
-            .pointerInput(index) {
-                // A page of a PDF answers the same gestures as set text, down to
-                // the word: the words are inferred back out of the glyphs along
-                // with the sentences, so each of them has a piece of the page of
-                // its own to be pointed at and drawn over.
-                //
-                // The paragraph is the one unit a page cannot offer. A PDF
-                // records no paragraphs at all - what this reads as a block is a
-                // guess from the space left between lines, and it is not
-                // something an anchor into the page can name - so a gesture set
-                // to the paragraph takes the sentence instead.
-                fun select(position: Offset, unit: PassageUnit?) {
-                    if (unit == null) return
-
-                    // Back out of the drawn page into the file's own space,
-                    // which is where the sentences know they are.
-                    val x = position.x / currentScale
-                    val y = position.y / currentScale
-
-                    val sentence = currentSentences.sentenceAt(x, y) ?: return
-                    val word = if (unit == PassageUnit.Word) sentence.wordAt(x, y) else null
-
-                    // A gesture set to the word that landed between two of them
-                    // asks about nothing, exactly as it does in set text: the
-                    // punctuation between two words belongs to neither.
-                    if (unit == PassageUnit.Word && word == null) return
-
-                    currentOnSelected(
-                        PassageSelection(
-                            anchor = TextAnchor.Page(
-                                pageIndex = index,
-                                sentenceIndex = sentence.index,
-                                wordIndex = word?.index,
-                            ),
-                            passage = word?.text ?: sentence.text,
-                            // A page has no chapter of its own to name, and the
-                            // rest of the page is the context around a passage.
-                            surroundingText = currentPageText,
-                            unit = if (word == null) PassageUnit.Sentence else PassageUnit.Word,
-                        ),
-                    )
-                }
-
-                detectTapGestures(
-                    onTap = { position ->
-                        val sentence = currentSentences.sentenceAt(
-                            x = position.x / currentScale,
-                            y = position.y / currentScale,
-                        )
-
-                        // A tap that landed on no words is a tap on the page: a
-                        // margin, a figure, or a page with no text layer at all.
-                        // That is how the chrome is put away and brought back,
-                        // and so is a tap the reader has set to do nothing.
-                        if (sentence == null || currentGestures.tap == null) {
-                            currentOnToggleChrome()
-                        } else {
-                            select(position, currentGestures.tap)
-                        }
-                    },
-                    onLongPress = { position -> select(position, currentGestures.longPress) },
-                )
-            },
-    ) {
-        page?.let {
-            Image(
-                bitmap = it,
-                contentDescription = null,
-                // The sheet is already at the page's proportions, so this only
-                // ever scales - it never crops or letterboxes.
-                contentScale = ContentScale.FillBounds,
-                colorFilter = pageFilter,
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
-
-        PageTranslationOverlay(
-            sentences = sentences,
-            translations = translations,
-            scale = scale,
-            pageColor = pageColor,
-        )
-    }
-}
-
-/**
- * Pinch to zoom, without taking the drag that scrolls the book.
- *
- * Only claims the gesture once a second finger is down: one finger stays a
- * scroll, two become a zoom. A plain transform gesture would swallow both.
- *
- * A composable extension rather than a `composed` modifier: `composed` makes a
- * chain opaque to Compose's modifier comparison, so the whole chain it appears in
- * is rebuilt on every recomposition instead of being reused. The `rememberUpdated`
- * values below are what let the gesture keep a single `pointerInput` across a
- * changing scale, which is the thing that actually matters here.
- */
-@Composable
-private fun Modifier.pinchToZoom(
-    scale: Float,
-    range: ClosedFloatingPointRange<Float>,
-    onPinch: (Float) -> Unit,
-    onPinchEnd: () -> Unit,
-): Modifier {
-    val currentScale by rememberUpdatedState(scale)
-    val currentOnPinch by rememberUpdatedState(onPinch)
-    val currentOnPinchEnd by rememberUpdatedState(onPinchEnd)
-
-    return pointerInput(Unit) {
-        awaitEachGesture {
-            awaitFirstDown(requireUnconsumed = false)
-            var pinched = false
-
-            do {
-                val event = awaitPointerEvent()
-
-                if (event.changes.size > 1) {
-                    val zoom = event.calculateZoom()
-
-                    if (zoom != 1f) {
-                        pinched = true
-                        currentOnPinch((currentScale * zoom).coerceIn(range))
-                        event.changes.forEach { it.consume() }
-                    }
-                }
-            } while (event.changes.any { it.pressed })
-
-            if (pinched) currentOnPinchEnd()
-        }
-    }
-}
-
-/** A transparent press catcher covering the reader. */
-@Composable
-private fun DismissLayer(onDismiss: () -> Unit) {
-    val interactionSource = remember { MutableInteractionSource() }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onDismiss,
-            ),
-    )
 }

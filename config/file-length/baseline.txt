@@ -5,17 +5,6 @@
 # Regenerate the measurements with:
 #   git ls-files '*.kt' | xargs wc -l | awk '$1 > 400 && $2 != "total" { print $2 }'
 
-shared/src/commonMain/kotlin/io/lukia/features/bookdetail/presentation/screens/BookDetailScreen.kt
-shared/src/commonMain/kotlin/io/lukia/features/library/presentation/screens/LibraryScreen.kt
-shared/src/commonMain/kotlin/io/lukia/features/reader/infrastructure/pdf/PdfObjectIndex.kt
-shared/src/commonMain/kotlin/io/lukia/features/reader/infrastructure/pdf/PdfObjectParser.kt
-shared/src/commonMain/kotlin/io/lukia/features/reader/presentation/ReaderViewModel.kt
-shared/src/commonMain/kotlin/io/lukia/features/reader/presentation/components/ReaderContentsPanel.kt
-shared/src/commonMain/kotlin/io/lukia/features/reader/presentation/components/ReaderSettingsPanel.kt
-shared/src/commonMain/kotlin/io/lukia/features/reader/presentation/components/TextSectionView.kt
-shared/src/commonMain/kotlin/io/lukia/features/reader/presentation/screens/ReaderScreen.kt
-shared/src/commonMain/kotlin/io/lukia/features/settings/presentation/screens/SettingsScreen.kt
-shared/src/commonMain/kotlin/io/lukia/shared/presentation/components/LukiaIcons.kt
 shared/src/commonTest/kotlin/io/lukia/features/translate/infrastructure/anthropic/AnthropicTranslatorTest.kt
 shared/src/commonTest/kotlin/io/lukia/features/translate/infrastructure/openai/OpenAiTranslatorTest.kt
 shared/src/commonTest/kotlin/io/lukia/features/translate/presentation/TranslationSessionTest.kt

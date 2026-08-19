@@ -40,9 +40,6 @@ import io.lukia.shared.presentation.components.LukiaDivider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-/** The space between one block and the next, as a multiple of the text size. */
-private const val BLOCK_SPACING = 0.7f
-
 /** What a quotation and a list item are set in from the edge of the text. */
 private val IndentWidth: Dp = 20.dp
 
