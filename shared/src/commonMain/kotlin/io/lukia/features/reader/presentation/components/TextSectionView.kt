@@ -350,10 +350,21 @@ private fun ProseText(
     val tappable = modifier.pointerInput(sentences, words) {
         detectTapGestures(
             onTap = { position ->
-                ask(currentGestures.tap, position, layout, currentDrawn, sentences, words) {
-                    currentActions.act(it, paragraph)
+                // A tap set to nothing is still a tap on the page, and a tap on
+                // the page has always put the chrome away and brought it back.
+                // Swallowing it would leave a reader who turned tapping off with
+                // no way to reach the toolbar over their own text.
+                if (currentGestures.tap == null) {
+                    currentActions.onElsewhere()
+                } else {
+                    ask(currentGestures.tap, position, layout, currentDrawn, sentences, words) {
+                        currentActions.act(it, paragraph)
+                    }
                 }
             },
+            // Nothing for a long press that asks for nothing: holding a finger
+            // on the page has never meant anything else, so there is nothing for
+            // it to fall through to.
             onLongPress = { position ->
                 ask(currentGestures.longPress, position, layout, currentDrawn, sentences, words) {
                     currentActions.act(it, paragraph)

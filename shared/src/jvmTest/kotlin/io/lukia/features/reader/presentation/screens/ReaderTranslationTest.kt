@@ -7,7 +7,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.longClick
@@ -518,6 +520,31 @@ class ReaderTranslationTest {
         )
     }
 
+
+
+    /**
+     * A tap the reader has turned off is still a tap on the page, and a tap on
+     * the page has always reached the chrome. Swallowing it left somebody who
+     * only wanted to look words up with no way to get the toolbar back over
+     * their own text.
+     */
+    @Test
+    fun aTapTurnedOffStillReachesThePage() = runComposeUiTest {
+        setReader(gestures = TranslationGestures(tap = null, longPress = PassageUnit.Word))
+
+        // The chrome is what a tap on the page has always reached, so it is what
+        // proves the tap arrived at all.
+        onNodeWithContentDescription("Reading settings").assertExists()
+
+        onNodeWithText(opening, substring = true).clickFirstWords()
+        waitForIdle()
+
+        assertEquals(
+            0,
+            onAllNodes(hasContentDescription("Reading settings")).fetchSemanticsNodes().size,
+            "a tap set to nothing reached nothing at all"
+        )
+    }
 
     /**
      * A tap lands where it is aimed. The node is the whole paragraph, so its

@@ -47,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
@@ -369,6 +370,7 @@ fun ReaderContent(
                             onPassageSelected = onPassageSelected,
                             onPassagesRequested = onPassagesRequested,
                             translateOnScreen = translateOnScreen,
+                            gestures = gestures,
                             sentencesOnPage = sentencesOnPage,
                             renderPage = renderPage
                         )
@@ -693,6 +695,7 @@ private fun PageList(
     onPassageSelected: (PassageSelection) -> Unit,
     onPassagesRequested: (List<PassageSelection>) -> Unit,
     translateOnScreen: TranslateOnScreen,
+    gestures: TranslationGestures,
     sentencesOnPage: suspend (index: Int) -> List<PageSentence>,
     renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?
 ) {
@@ -768,6 +771,7 @@ private fun PageList(
                         onPassageSelected = onPassageSelected,
                         onPassagesRequested = onPassagesRequested,
                         translateOnScreen = translateOnScreen,
+                        gestures = gestures,
                         sentencesOnPage = sentencesOnPage,
                         renderPage = renderPage
                     )
@@ -1021,6 +1025,7 @@ private fun DocumentPage(
     onPassageSelected: (PassageSelection) -> Unit,
     onPassagesRequested: (List<PassageSelection>) -> Unit,
     translateOnScreen: TranslateOnScreen,
+    gestures: TranslationGestures,
     sentencesOnPage: suspend (index: Int) -> List<PageSentence>,
     renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?
 ) {
@@ -1059,6 +1064,7 @@ private fun DocumentPage(
     val currentOnToggleChrome by rememberUpdatedState(onToggleChrome)
     val currentScale by rememberUpdatedState(scale)
     val currentOnRequested by rememberUpdatedState(onPassagesRequested)
+    val currentGestures by rememberUpdatedState(gestures)
 
     // A page is either on screen or it is not - there is nothing on it that can
     // be half of it - so unlike a paragraph of set text it needs nothing
@@ -1096,22 +1102,22 @@ private fun DocumentPage(
             // document is silence.
             .semantics { contentDescription = "Page ${index + 1} of $pageCount" }
             .pointerInput(index) {
-                detectTapGestures { position ->
+                // A page of a PDF answers the same two gestures as set text,
+                // with one thing it cannot do: a word and a paragraph are not
+                // things a page has. What a PDF records is glyphs and where they
+                // landed, and the sentences here are inferred back out of that -
+                // there is no paragraph in the file to point at, and no word with
+                // a place of its own to cover. So a gesture that is on selects
+                // the sentence whatever it is set to, and only off is off.
+                fun select(position: Offset, unit: PassageUnit?) {
+                    if (unit == null) return
+
                     // Back out of the drawn page into the file's own space,
                     // which is where the sentences know they are.
                     val sentence = currentSentences.sentenceAt(
                         x = position.x / currentScale,
                         y = position.y / currentScale
-                    )
-
-                    // A tap that landed on no words is a tap on the page: a
-                    // margin, a figure, or a page with no text layer at all.
-                    // That is how the chrome is put away and brought back, and
-                    // offering to translate has not taken it over.
-                    if (sentence == null) {
-                        currentOnToggleChrome()
-                        return@detectTapGestures
-                    }
+                    ) ?: return
 
                     currentOnSelected(
                         PassageSelection(
@@ -1126,6 +1132,26 @@ private fun DocumentPage(
                         )
                     )
                 }
+
+                detectTapGestures(
+                    onTap = { position ->
+                        val sentence = currentSentences.sentenceAt(
+                            x = position.x / currentScale,
+                            y = position.y / currentScale
+                        )
+
+                        // A tap that landed on no words is a tap on the page: a
+                        // margin, a figure, or a page with no text layer at all.
+                        // That is how the chrome is put away and brought back,
+                        // and so is a tap the reader has set to do nothing.
+                        if (sentence == null || currentGestures.tap == null) {
+                            currentOnToggleChrome()
+                        } else {
+                            select(position, currentGestures.tap)
+                        }
+                    },
+                    onLongPress = { position -> select(position, currentGestures.longPress) }
+                )
             }
     ) {
         page?.let {
