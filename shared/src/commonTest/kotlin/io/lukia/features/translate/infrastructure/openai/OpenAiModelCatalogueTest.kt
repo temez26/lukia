@@ -3,13 +3,10 @@ package io.lukia.features.translate.infrastructure.openai
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
-import io.ktor.client.engine.mock.respond
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.HttpResponseData
-import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.FakeSecretStore
@@ -183,16 +180,3 @@ class OpenAiModelCatalogueTest {
     private suspend fun OpenAiModelCatalogue.failure(): AppError =
         runCatching { models() }.exceptionOrNull()?.toAppError() ?: error("expected a failure")
 }
-
-private fun answers(
-    handle: MockRequestHandleScope.(HttpRequestData) -> HttpResponseData,
-) = MockEngine { request -> handle(request) }
-
-private fun MockRequestHandleScope.respondJson(
-    body: String,
-    status: HttpStatusCode = HttpStatusCode.OK,
-) = respond(
-    content = body.trimIndent(),
-    status = status,
-    headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
-)

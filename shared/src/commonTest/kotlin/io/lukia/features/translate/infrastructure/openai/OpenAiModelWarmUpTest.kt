@@ -3,15 +3,12 @@ package io.lukia.features.translate.infrastructure.openai
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
-import io.ktor.client.engine.mock.respond
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.HttpRequestData
 import io.ktor.content.TextContent
-import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.FakeSecretStore
@@ -50,7 +47,7 @@ class OpenAiModelWarmUpTest {
             answers {
                 sent = it
                 body = it.jsonBody()
-                ok()
+                noChoices()
             },
             model = "qwen2.5-7b-instruct",
         )
@@ -68,7 +65,7 @@ class OpenAiModelWarmUpTest {
         val warmUp = warmUp(
             answers {
                 body = it.jsonBody()
-                ok()
+                noChoices()
             },
         )
 
@@ -135,17 +132,4 @@ class OpenAiModelWarmUpTest {
         json.parseToJsonElement((body as TextContent).text).jsonObject
 }
 
-private fun answers(
-    handle: MockRequestHandleScope.(HttpRequestData) -> io.ktor.client.request.HttpResponseData,
-) = MockEngine { request -> handle(request) }
-
-private fun MockRequestHandleScope.ok() = respondJson("""{"choices": []}""")
-
-private fun MockRequestHandleScope.respondJson(
-    body: String,
-    status: HttpStatusCode = HttpStatusCode.OK,
-) = respond(
-    content = body,
-    status = status,
-    headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
-)
+private fun MockRequestHandleScope.noChoices() = respondJson("""{"choices": []}""")
