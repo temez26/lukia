@@ -6,11 +6,13 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -98,7 +100,7 @@ internal fun PageTranslationOverlay(
     // recompose the page on every frame of the sweep.
     val sweep = passageSweep(marked.any { it.state is PassageTranslation.Loading })
 
-    Box(
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
             // Every mark in one pass rather than a full-page layer per
@@ -146,6 +148,10 @@ internal fun PageTranslationOverlay(
                     // highlight would have covered - so the panel sits exactly
                     // where the mark would have been instead of inside it.
                     bounds = passage.bounds.asLine(),
+                    // What is left of the page to the right of it, so a
+                    // translation longer than what it replaces has somewhere to
+                    // go without running off the edge.
+                    available = maxWidth,
                     // Measured from the shortest of the passage's lines, which is
                     // one line - not the block they add up to. See below.
                     glyphHeight = passage.quads.minOf { it.height },
@@ -209,6 +215,7 @@ private fun PassageTranslation.panel(): PanelContent? = when (this) {
 @Composable
 private fun TranslationPanel(
     bounds: TextQuad,
+    available: Dp,
     glyphHeight: Float,
     text: String,
     detail: String?,
@@ -242,7 +249,18 @@ private fun TranslationPanel(
     Column(
         modifier = Modifier
             .offset(x = left - Bleed, y = top - Bleed)
-            .width(width + Bleed * 2)
+            // At least as wide as what it replaces, and free to be wider.
+            //
+            // A word is the case that needs this: its panel is only as wide as
+            // the word underneath it, and a translation is very often longer
+            // than the word it stands for - so held to that width it wrapped,
+            // and one word became two lines sitting over the line below. Bounded
+            // by what is left of the page so it grows into the margin rather
+            // than off the edge of it.
+            .widthIn(
+                min = width + Bleed * 2,
+                max = (available - left + Bleed).coerceAtLeast(width + Bleed * 2)
+            )
             .clip(RoundedCornerShape(PanelRadius))
             // The page's own colour first, because what is underneath is the
             // original and it has to stop showing through. The mark goes over
@@ -281,16 +299,17 @@ private fun TranslationPanel(
 /**
  * The size the page's type was set at, worked back from the boxes it reports.
  *
- * What a PDF gives per glyph is roughly the cap height, which measurement
- * against real files puts near 0.58 of the size the type was set at - the same
- * figure the block detection is built on, see `BLOCK_GAP_RATIO`. So the type is
- * a little under twice the box.
+ * There is no honest way to derive this. What a renderer calls a glyph's bounds
+ * differs between them - some give the ink, some the em box, some the whole line
+ * - and the file itself is not asked. So this is calibrated against real pages
+ * rather than reasoned out, and it is the one number here to reach for when a
+ * translation comes out the wrong size beside the words it covers.
  *
- * Getting this wrong is what made a translation come out at less than half the
- * size of the words it was covering: the box was being read as though it were
- * the whole line, and then shrunk again on top of that.
+ * A little over parity. Under it the translation reads as a caption stuck on the
+ * page; far over it, which is where this landed on the first attempt, the words
+ * spill out of the line they belong to.
  */
-private const val TYPE_OF_GLYPHS = 1.72f
+private const val TYPE_OF_GLYPHS = 1.15f
 
 /**
  * What a translation is never set smaller or larger than, whatever the page it
