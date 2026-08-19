@@ -1,0 +1,94 @@
+package io.lukia.features.translate.infrastructure.openai
+
+import io.ktor.client.HttpClient
+import io.ktor.client.request.headers
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
+import io.ktor.http.isSuccess
+import io.lukia.core.domain.AppError
+import io.lukia.core.domain.AppErrorException
+import io.lukia.features.translate.domain.ModelWarmUp
+import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
+import io.lukia.features.translate.infrastructure.asTranslationFailure
+import io.lukia.features.translate.infrastructure.translationTimeouts
+import kotlinx.coroutines.CancellationException
+import kotlinx.serialization.json.Json
+
+/**
+ * The shortest thing that still counts as work.
+ *
+ * A server loads a model when it is asked to run one, and not before - there is
+ * no "please load this" in the API every local server implements. So this asks
+ * for a single token about nothing, and throws the token away: what is being
+ * waited for is the loading, not the answer.
+ */
+private const val WARM_UP_PROMPT = "Hi"
+
+/**
+ * Has a locally hosted model loaded before anybody needs it.
+ *
+ * The wait this removes is real and it is only the first one: a large model is
+ * read off disk into memory the first time it is asked to run, which can take
+ * minutes, and every request after that is fast. Paying it here means paying it
+ * on the settings screen, where a reader has just chosen a model and expects
+ * something to happen - rather than on the first sentence they tap three
+ * chapters into a book.
+ */
+class OpenAiModelWarmUp(
+    private val client: HttpClient,
+    private val settings: TranslationSettingsRepository,
+    private val json: Json = Json { ignoreUnknownKeys = true }
+) : ModelWarmUp {
+
+    override suspend fun warmUp() {
+        val configured = settings.settings.value
+
+        if (!configured.isEndpointAllowed) {
+            throw AppErrorException(
+                AppError.Unexpected(
+                    "Translating over plain HTTP is only allowed to your own network."
+                )
+            )
+        }
+
+        val response = try {
+            client.post("${configured.baseUrl.trimEnd('/')}/chat/completions") {
+                translationTimeouts(configured)
+
+                configured.apiKey?.takeIf { it.isNotBlank() }?.let { key ->
+                    headers { append("Authorization", "Bearer $key") }
+                }
+                contentType(ContentType.Application.Json)
+                setBody(
+                    ChatRequest(
+                        model = configured.model,
+                        maxTokens = 1,
+                        messages = listOf(ChatMessage.user(WARM_UP_PROMPT))
+                    )
+                )
+            }
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (failure: Throwable) {
+            throw failure.asTranslationFailure(configured)
+        }
+
+        if (response.status.isSuccess()) return
+
+        // Nearly always a name that does not match anything the server has, and
+        // the server says which far better than a guess from the status would.
+        val reported = runCatching {
+            json.decodeFromString<ChatError>(response.bodyAsText()).error?.message
+        }.getOrNull()
+
+        throw AppErrorException(
+            AppError.Unexpected(
+                reported ?: "${configured.model} could not be loaded. Check it is one of " +
+                    "the models this server offers."
+            )
+        )
+    }
+}

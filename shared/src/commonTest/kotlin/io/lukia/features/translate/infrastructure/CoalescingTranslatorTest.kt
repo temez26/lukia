@@ -3,6 +3,7 @@ package io.lukia.features.translate.infrastructure
 import io.lukia.features.translate.domain.TargetLanguage
 import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.domain.TranslationRequest
+import io.lukia.features.translate.domain.translate
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.test.runCurrent
@@ -24,7 +25,7 @@ class CoalescingTranslatorTest {
         val answer = CompletableDeferred<Translation>()
         var asked = 0
 
-        val translator = CoalescingTranslator {
+        val translator = CoalescingTranslator { _, _ ->
             asked++
             answer.await()
         }
@@ -45,9 +46,9 @@ class CoalescingTranslatorTest {
     fun differentWordsAreDifferentRequests() = runTest {
         val asked = mutableListOf<String>()
 
-        val translator = CoalescingTranslator {
-            asked += it.text
-            Translation("Translated ${it.text}")
+        val translator = CoalescingTranslator { request, _ ->
+            asked += request.text
+            Translation("Translated ${request.text}")
         }
 
         translator.translate(request())
@@ -65,7 +66,7 @@ class CoalescingTranslatorTest {
     fun askingAgainAfterAnAnswerIsInAsksAgain() = runTest {
         var asked = 0
 
-        val translator = CoalescingTranslator {
+        val translator = CoalescingTranslator { _, _ ->
             asked++
             Translation("Kutsukaa minua Ismaeliksi.")
         }
@@ -81,7 +82,7 @@ class CoalescingTranslatorTest {
     fun aFailureReachesEveryoneWaitingOnIt() = runTest {
         val answer = CompletableDeferred<Translation>()
 
-        val translator = CoalescingTranslator { answer.await() }
+        val translator = CoalescingTranslator { _, _ -> answer.await() }
 
         // Caught inside each waiter rather than at the join: a failing `async`
         // takes its parent down with it, which would end the test rather than
@@ -101,7 +102,7 @@ class CoalescingTranslatorTest {
     fun aFailedRequestCanBeAskedAgain() = runTest {
         var attempt = 0
 
-        val translator = CoalescingTranslator {
+        val translator = CoalescingTranslator { _, _ ->
             attempt++
             if (attempt == 1) throw RuntimeException("no network") else Translation("Second time.")
         }

@@ -32,6 +32,16 @@ internal enum class ReaderCommand {
 
     ToggleContents,
     ToggleSettings,
+
+    /** Translate everything on screen, once. */
+    TranslatePage,
+
+    /** Keep translating what comes into view, until asked to stop. */
+    ToggleContinuousTranslation,
+
+    /** Put every translation away, or bring them all back. */
+    ToggleTranslationsShown,
+
     Close
 }
 
@@ -70,6 +80,13 @@ internal fun readerCommandFor(event: KeyEvent): ReaderCommand? {
 
         Key.C -> ReaderCommand.ToggleContents
         Key.T -> ReaderCommand.ToggleSettings
+
+        // Beside each other under the same finger, because they are the same
+        // thing asked once and asked continuously.
+        Key.R -> ReaderCommand.TranslatePage
+        Key.E -> ReaderCommand.ToggleContinuousTranslation
+        Key.H -> ReaderCommand.ToggleTranslationsShown
+
         Key.Escape -> ReaderCommand.Close
 
         else -> null

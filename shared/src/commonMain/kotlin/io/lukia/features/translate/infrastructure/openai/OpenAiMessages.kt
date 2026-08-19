@@ -26,7 +26,13 @@ internal data class ChatRequest(
      * locally hosted ones. Unset fields are not encoded, so leaving this out is
      * how the request stops asking.
      */
-    @SerialName("response_format") val responseFormat: JsonObject? = null
+    @SerialName("response_format") val responseFormat: JsonObject? = null,
+    /**
+     * Always true in practice: a translation is asked for a piece at a time so
+     * the reader watches it appear, and so that a model taking its time keeps
+     * saying so rather than going silent and being given up on.
+     */
+    val stream: Boolean = false
 )
 
 @Serializable
@@ -40,21 +46,32 @@ internal data class ChatMessage(
     }
 }
 
+/**
+ * One piece of an answer.
+ *
+ * There is no shape here for an answer that arrives all at once, because none
+ * is ever asked for: every request streams, so the text arrives on `delta` a
+ * chunk at a time and the reason the model stopped comes on the last of them.
+ * Everything else in a chunk - the id, the model, the usage some servers append
+ * - says nothing this needs.
+ */
 @Serializable
-internal data class ChatResponse(
-    val choices: List<Choice> = emptyList()
+internal data class ChatChunk(
+    val choices: List<StreamChoice> = emptyList()
 ) {
-    val text: String? get() = choices.firstOrNull()?.message?.content
+    val text: String? get() = choices.firstOrNull()?.delta?.content
 
-    /** Why the model stopped, when the server bothered to say. */
     val finishReason: String? get() = choices.firstOrNull()?.finishReason
 }
 
 @Serializable
-internal data class Choice(
-    val message: ChatMessage? = null,
+internal data class StreamChoice(
+    val delta: ChatDelta? = null,
     @SerialName("finish_reason") val finishReason: String? = null
 )
+
+@Serializable
+internal data class ChatDelta(val content: String? = null)
 
 /** What comes back when the request itself was not accepted. */
 @Serializable

@@ -1,6 +1,7 @@
 package io.lukia.features.translate.presentation
 
 import io.lukia.core.domain.AppError
+import io.lukia.features.translate.domain.PassageUnit
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.Translation
 
@@ -15,7 +16,14 @@ import io.lukia.features.translate.domain.Translation
  */
 sealed interface PassageTranslation {
 
-    data object Loading : PassageTranslation
+    /**
+     * [partial] is the translation as far as it has been written, for a
+     * provider that streams - which every one of them now does. It is what
+     * makes a slow model look like a sentence being written rather than like a
+     * page that has stopped responding, and it is null only for the moment
+     * between the tap and the first words coming back.
+     */
+    data class Loading(val partial: String? = null) : PassageTranslation
 
     data class Ready(
         val translation: Translation,
@@ -31,10 +39,15 @@ sealed interface PassageTranslation {
  * translating it failed, or because the reader asked for it back.
  */
 val PassageTranslation?.shownText: String?
-    get() = (this as? PassageTranslation.Ready)
-        ?.takeIf { !it.showingOriginal }
-        ?.translation
-        ?.text
+    get() = when (this) {
+        // Half a sentence in place of the original is the point: the reader
+        // watches it being replaced, rather than watching nothing.
+        is PassageTranslation.Loading -> partial
+
+        is PassageTranslation.Ready -> translation.text.takeIf { !showingOriginal }
+
+        else -> null
+    }
 
 /**
  * Whether this passage should be marked on the page at all. A passage nobody
@@ -56,5 +69,11 @@ data class PassageSelection(
     val passage: String,
     val chapterTitle: String? = null,
     /** The paragraph or page the sentence sits in. */
-    val surroundingText: String? = null
+    val surroundingText: String? = null,
+    /**
+     * How much of the book this is, which is what decides who is asked about it:
+     * a single word can go to a dictionary and everything larger cannot. See
+     * [io.lukia.features.translate.domain.WordLookup].
+     */
+    val unit: PassageUnit = PassageUnit.Sentence
 )

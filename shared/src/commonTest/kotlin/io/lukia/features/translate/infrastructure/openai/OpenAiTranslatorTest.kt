@@ -4,6 +4,8 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
 import io.ktor.client.engine.mock.respond
+import io.ktor.client.plugins.HttpRequestTimeoutException
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.HttpResponseData
@@ -21,6 +23,7 @@ import io.lukia.features.translate.domain.TranslationContext
 import io.lukia.features.translate.domain.TranslationProvider
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.TranslationSettings
+import io.lukia.features.translate.domain.translate
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
@@ -58,6 +61,78 @@ class OpenAiTranslatorTest {
 
         assertEquals("Kutsukaa minua Ismaeliksi.", translation.text)
         assertNull(translation.note, "an empty note is not a note")
+    }
+
+    /**
+     * Streaming is the whole reason a slow model no longer looks like a broken
+     * one, so the request has to actually ask for it.
+     */
+    @Test
+    fun theAnswerIsAskedForAsAStream() = runTest {
+        var body: JsonObject? = null
+        val translator = translator(answers { body = it.jsonBody(); ok() })
+
+        translator.translate(request())
+
+        assertEquals(true, body?.get("stream")?.jsonPrimitive?.content?.toBoolean())
+    }
+
+    /**
+     * What the reader watches: the sentence filling in, never a JSON fragment
+     * and never anything the finished translation will contradict.
+     */
+    @Test
+    fun theSentenceIsReportedAsItArrives() = runTest {
+        val translator = translator(answers { ok("Kutsukaa minua Ismaeliksi.") })
+        val seen = mutableListOf<String>()
+
+        val translation = translator.translate(request()) { seen += it }
+
+        assertTrue(seen.isNotEmpty(), "nothing was reported while the answer arrived")
+        assertEquals("Kutsukaa minua Ismaeliksi.", seen.last())
+        assertTrue(
+            seen.all { translation.text.startsWith(it) },
+            "something was shown that the finished translation contradicts: $seen"
+        )
+    }
+
+    /** Nothing is worth showing until the model has begun the sentence itself. */
+    @Test
+    fun aModelStillIntroducingItselfReportsNothing() = runTest {
+        val translator = translator(
+            answers { content("Sure! Here you go:") },
+            provider = TranslationProvider.Local,
+            baseUrl = "http://localhost:1234/v1",
+            apiKey = null
+        )
+        val seen = mutableListOf<String>()
+
+        runCatching { translator.translate(request()) { seen += it } }
+
+        assertTrue(seen.isEmpty(), "prose was shown in place of the sentence: $seen")
+    }
+
+    /**
+     * The failure this whole change is about. A model still loading is silent
+     * for minutes, and telling somebody their server is not running while it is
+     * busy loading is how they end up restarting the thing that was working.
+     */
+    @Test
+    fun aModelTakingTooLongIsNotReportedAsAServerThatIsNotThere() = runTest {
+        val translator = translator(
+            MockEngine { request -> throw HttpRequestTimeoutException(request) },
+            provider = TranslationProvider.Local,
+            baseUrl = "http://localhost:1234/v1",
+            apiKey = null,
+            model = "qwen2.5-7b-instruct"
+        )
+
+        val error = translator.failureFor(request()) as AppError.Unexpected
+        val cause = error.cause.orEmpty()
+
+        assertTrue(cause.contains("qwen2.5-7b-instruct"), cause)
+        assertTrue(cause.contains("still loading"), cause)
+        assertTrue(!cause.contains("server is running"), cause)
     }
 
     @Test
@@ -352,11 +427,7 @@ class OpenAiTranslatorTest {
     @Test
     fun anAnswerCutShortSaysWhyRatherThanFailingToParse() = runTest {
         val translator = translator(
-            answers {
-                respondJson(
-                    """{"choices": [{"finish_reason": "length", "message": {"role": "assistant", "content": "{\"translation\": \"Kut"}}]}"""
-                )
-            }
+            answers { content("""{"translation": "Kut""", finishReason = "length") }
         )
 
         val error = translator.failureFor(request()) as AppError.Unexpected
@@ -375,28 +446,46 @@ class OpenAiTranslatorTest {
         )
     )
 
-    private fun MockRequestHandleScope.content(text: String): HttpResponseData = respondJson(
-        json.encodeToString(
-            buildJsonObject {
-                put(
-                    "choices",
-                    buildJsonArray {
-                        add(
-                            buildJsonObject {
-                                put("finish_reason", "stop")
-                                put(
-                                    "message",
-                                    buildJsonObject {
-                                        put("role", "assistant")
-                                        put("content", text)
-                                    }
-                                )
-                            }
-                        )
-                    }
-                )
-            }
-        )
+    /**
+     * An answer as a server really sends one: several chunks of text and a last
+     * chunk carrying only the reason it stopped.
+     *
+     * Split into pieces on purpose - an answer arriving whole in one chunk would
+     * pass without exercising any of the joining, which is the part of reading a
+     * stream that can actually be wrong.
+     */
+    private fun MockRequestHandleScope.content(
+        text: String,
+        finishReason: String = "stop"
+    ): HttpResponseData = respondStream(
+        text.inThirds().map { contentChunk(it) } + finished(finishReason)
+    )
+
+    private fun contentChunk(text: String): String = json.encodeToString(
+        buildJsonObject {
+            put(
+                "choices",
+                buildJsonArray {
+                    add(buildJsonObject { put("delta", buildJsonObject { put("content", text) }) })
+                }
+            )
+        }
+    )
+
+    private fun finished(reason: String): String = json.encodeToString(
+        buildJsonObject {
+            put(
+                "choices",
+                buildJsonArray {
+                    add(
+                        buildJsonObject {
+                            put("delta", buildJsonObject { })
+                            put("finish_reason", reason)
+                        }
+                    )
+                }
+            )
+        }
     )
 
     private fun translator(
@@ -421,6 +510,8 @@ class OpenAiTranslatorTest {
         val client = HttpClient(engine) {
             expectSuccess = false
             install(ContentNegotiation) { json(json) }
+            // As the app builds it: every request sets its own, from settings.
+            install(HttpTimeout)
         }
 
         return OpenAiTranslator(client, settings, json)
@@ -446,6 +537,18 @@ class OpenAiTranslatorTest {
 private fun answers(
     handle: MockRequestHandleScope.(HttpRequestData) -> HttpResponseData
 ) = MockEngine { request -> handle(request) }
+
+/**
+ * A streamed answer, in the shape every OpenAI-compatible server sends one: a
+ * `data:` line per chunk, a blank line between them, and `[DONE]` to close.
+ */
+private fun MockRequestHandleScope.respondStream(chunks: List<String>) = respond(
+    content = chunks.joinToString("") { "data: $it\n\n" } + "data: [DONE]\n\n",
+    headers = headersOf("Content-Type", ContentType.Text.EventStream.toString())
+)
+
+/** Three pieces, so joining them is actually exercised. */
+private fun String.inThirds(): List<String> = chunked((length + 2) / 3)
 
 private fun MockRequestHandleScope.respondJson(
     body: String,

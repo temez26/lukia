@@ -23,7 +23,14 @@ internal data class MessagesRequest(
     @SerialName("max_tokens") val maxTokens: Int,
     val system: String,
     val messages: List<Message>,
-    @SerialName("output_config") val outputConfig: OutputConfig
+    @SerialName("output_config") val outputConfig: OutputConfig,
+    /**
+     * Always true in practice, for the same reason the answer is worth watching
+     * arrive: a model that thinks before it writes says nothing for a while, and
+     * a stream makes that silence visible rather than indistinguishable from a
+     * request that has stalled.
+     */
+    val stream: Boolean = false
 )
 
 @Serializable
@@ -62,36 +69,44 @@ internal data class OutputConfig(
     val format: JsonObject
 )
 
+/**
+ * One event out of a streamed answer.
+ *
+ * The stream carries more kinds of event than this reads - a message opening
+ * and closing, a content block opening and closing, a ping to keep the
+ * connection warm - and all of them arrive as this shape with their unread
+ * fields absent. What is read is the two that carry anything: a delta with a
+ * piece of the answer on it, and the delta at the end that says why the model
+ * stopped.
+ */
 @Serializable
-internal data class MessagesResponse(
-    val content: List<ContentBlock> = emptyList(),
-    @SerialName("stop_reason") val stopReason: String? = null,
-    @SerialName("stop_details") val stopDetails: StopDetails? = null
+internal data class MessagesEvent(
+    val type: String? = null,
+    val delta: EventDelta? = null,
+    val error: ErrorBody? = null
+)
+
+@Serializable
+internal data class EventDelta(
+    val type: String? = null,
+    val text: String? = null,
+    @SerialName("stop_reason") val stopReason: String? = null
 ) {
 
     /**
-     * The answer, which is the first block of text.
+     * The answer, as opposed to the model thinking about it.
      *
-     * Found by type rather than taken from the front: thinking is on by default
-     * on the current models, and its block comes first when it is. Reading
-     * `content[0]` would get an empty string on exactly the models this app
-     * defaults to.
+     * Thinking is on by default on the models this offers, and it streams too -
+     * as deltas of its own type. Reading by type rather than by "whatever has
+     * text on it" is what keeps the model's reasoning out of the book if a
+     * future event ever carries both under one name.
      */
-    val text: String?
-        get() = content.firstOrNull { it.type == "text" }?.text
+    val answerText: String? get() = text?.takeIf { type == TEXT_DELTA }
+
+    private companion object {
+        const val TEXT_DELTA = "text_delta"
+    }
 }
-
-@Serializable
-internal data class ContentBlock(
-    val type: String,
-    val text: String? = null
-)
-
-@Serializable
-internal data class StopDetails(
-    val category: String? = null,
-    val explanation: String? = null
-)
 
 /** What comes back when the request itself was not accepted. */
 @Serializable
