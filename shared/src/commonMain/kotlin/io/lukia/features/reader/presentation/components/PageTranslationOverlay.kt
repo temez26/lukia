@@ -110,6 +110,12 @@ internal fun PageTranslationOverlay(
             // perfectly readable underneath it.
             .drawBehind {
                 marked.forEach { passage ->
+                    // A passage with something to put on the page brings its own
+                    // highlight with it - see TranslationPanel. Drawing one here
+                    // as well would leave the wider of the two showing round the
+                    // edges of the narrower.
+                    if (passage.state.panel() != null) return@forEach
+
                     val style = passage.state.markStyle() ?: return@forEach
 
                     drawPassageHighlight(
@@ -136,13 +142,19 @@ internal fun PageTranslationOverlay(
                 val shown = panel ?: return@AnimatedVisibility
 
                 TranslationPanel(
-                    bounds = passage.bounds,
-                    // The shortest of the passage's lines, which is a line - not
-                    // the block they add up to. See TranslationPanel.
-                    lineHeight = passage.quads.minOf { it.height },
+                    // The line rather than the letters, and the same line the
+                    // highlight would have covered - so the panel sits exactly
+                    // where the mark would have been instead of inside it.
+                    bounds = passage.bounds.asLine(),
+                    // Measured from the shortest of the passage's lines, which is
+                    // one line - not the block they add up to. See below.
+                    glyphHeight = passage.quads.minOf { it.height },
                     text = shown.text,
                     detail = shown.detail,
                     textColor = if (shown.failed) colors.error else colors.onSurface,
+                    tint = markColors.of(
+                        passage.state.markStyle() ?: PassageMarkStyle.Translated
+                    ),
                     scale = scale,
                     pageColor = pageColor
                 )
@@ -197,10 +209,11 @@ private fun PassageTranslation.panel(): PanelContent? = when (this) {
 @Composable
 private fun TranslationPanel(
     bounds: TextQuad,
-    lineHeight: Float,
+    glyphHeight: Float,
     text: String,
     detail: String?,
     textColor: Color,
+    tint: Color,
     scale: Float,
     pageColor: Color
 ) {
@@ -210,25 +223,34 @@ private fun TranslationPanel(
     val top = with(density) { (bounds.top * scale).toDp() }
     val width = with(density) { (bounds.width * scale).toDp() }
 
-    // Sized from one line of the original, never from the block the sentence
-    // covers. A sentence running down fifteen lines has bounds fifteen lines
-    // tall, and type set to that is a single word filling the page.
+    // Set at the size the page is set at, worked back from the letters - see
+    // TYPE_OF_GLYPHS. Measured from one line of the original, never from the
+    // block a sentence covers: a sentence running down fifteen lines has bounds
+    // fifteen lines tall, and type set to that is a single word filling the page.
     //
-    // Clamped as well, because a page can be laid out at any size at all: a
-    // heading set in 40pt does not want its translation at 40pt, and a footnote
-    // at 5pt wants something somebody can actually read.
+    // Clamped at both ends, because a page can be laid out at any size at all: a
+    // display line set enormously does not want its translation set enormously
+    // too, and a footnote at five points wants something somebody can read.
     val textSize = with(density) {
-        (lineHeight * scale * TEXT_FILL).toSp().value.coerceIn(MIN_TEXT_SP, MAX_TEXT_SP).sp
+        (glyphHeight * TYPE_OF_GLYPHS * scale)
+            .toSp()
+            .value
+            .coerceIn(MIN_TEXT_SP, MAX_TEXT_SP)
+            .sp
     }
 
     Column(
         modifier = Modifier
             .offset(x = left - Bleed, y = top - Bleed)
             .width(width + Bleed * 2)
-            .clip(RoundedCornerShape(3.dp))
-            // The page's own colour, so the panel reads as part of the page
-            // rather than as a note stuck on top of it.
+            .clip(RoundedCornerShape(PanelRadius))
+            // The page's own colour first, because what is underneath is the
+            // original and it has to stop showing through. The mark goes over
+            // that rather than behind the whole panel: the panel is the
+            // highlight here, which is what keeps the two from disagreeing about
+            // where the passage is.
             .background(pageColor)
+            .background(tint.copy(alpha = PANEL_TINT))
             .padding(PanelPadding)
     ) {
         Text(
@@ -257,20 +279,32 @@ private fun TranslationPanel(
 }
 
 /**
- * How much of a line's height the translation's type fills.
+ * The size the page's type was set at, worked back from the boxes it reports.
  *
- * A quad is the whole line box, ascender to descender, and type set at that
- * size would be visibly larger than the page's own. This is roughly where a
- * translated line matches the original it is covering.
+ * What a PDF gives per glyph is roughly the cap height, which measurement
+ * against real files puts near 0.58 of the size the type was set at - the same
+ * figure the block detection is built on, see `BLOCK_GAP_RATIO`. So the type is
+ * a little under twice the box.
+ *
+ * Getting this wrong is what made a translation come out at less than half the
+ * size of the words it was covering: the box was being read as though it were
+ * the whole line, and then shrunk again on top of that.
  */
-private const val TEXT_FILL = 0.78f
+private const val TYPE_OF_GLYPHS = 1.72f
 
 /**
  * What a translation is never set smaller or larger than, whatever the page it
- * is covering does. The point of the panel is that somebody can read it.
+ * is covering does. Wide enough now to leave a heading at a heading's size,
+ * which the old ceiling did not.
  */
-private const val MIN_TEXT_SP = 9f
-private const val MAX_TEXT_SP = 22f
+private const val MIN_TEXT_SP = 10f
+private const val MAX_TEXT_SP = 44f
+
+/** How much of the mark's colour a panel carries, being the highlight itself. */
+private const val PANEL_TINT = 0.16f
+
+/** Round enough to read as the same mark the set text gets. */
+private val PanelRadius: Dp = 6.dp
 
 /**
  * How long a panel takes to arrive over the words it covers. Short enough that
@@ -304,13 +338,25 @@ private data class MarkedPassage(
 private const val LINE_ABOVE_GLYPHS = 0.26f
 private const val LINE_BELOW_GLYPHS = 0.34f
 
-private fun TextQuad.asLine(scale: Float): Rect {
-    val height = this.height * scale
+/**
+ * The line these letters were set on, in the page's own units.
+ *
+ * One definition, used by the mark and by the panel alike - they cover the same
+ * passage and any disagreement between them shows as one sticking out from
+ * behind the other.
+ */
+private fun TextQuad.asLine(): TextQuad = TextQuad(
+    left = left,
+    top = top - height * LINE_ABOVE_GLYPHS,
+    right = right,
+    bottom = bottom + height * LINE_BELOW_GLYPHS
+)
 
-    return Rect(
-        left = left * scale,
-        top = top * scale - height * LINE_ABOVE_GLYPHS,
-        right = right * scale,
-        bottom = bottom * scale + height * LINE_BELOW_GLYPHS
+private fun TextQuad.asLine(scale: Float): Rect = asLine().let { line ->
+    Rect(
+        left = line.left * scale,
+        top = line.top * scale,
+        right = line.right * scale,
+        bottom = line.bottom * scale
     )
 }
