@@ -606,15 +606,6 @@ fun RefreshGlyph(
  */
 @Composable
 fun SortGlyph(
- * The mark the reader already knows: two lines of a passage sitting on the same
- * soft highlight that a translated passage sits on in the book.
- *
- * Deliberately not a letter from one alphabet beside a letter from another, which
- * is the usual translate icon and says "language" rather than "this passage".
- * This says what the button does to what is on screen.
- */
-@Composable
-fun TranslateGlyph(
     tint: Color,
     modifier: Modifier = Modifier
 ) {
@@ -651,6 +642,21 @@ fun TranslateGlyph(
         drawPath(path = down, color = tint, style = stroke)
     }
 }
+
+/**
+ * The mark the reader already knows: two lines of a passage sitting on the same
+ * soft highlight that a translated passage sits on in the book.
+ *
+ * Deliberately not a letter from one alphabet beside a letter from another, which
+ * is the usual translate icon and says "language" rather than "this passage".
+ * This says what the button does to what is on screen.
+ */
+@Composable
+fun TranslateGlyph(
+    tint: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
         drawHighlight(
             tint = tint,
             top = size.height * 0.22f,
