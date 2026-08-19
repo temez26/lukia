@@ -4,7 +4,9 @@ import androidx.compose.ui.text.font.FontStyle
 import io.lukia.features.reader.domain.Emphasis
 import io.lukia.features.reader.domain.TextRun
 import io.lukia.features.translate.domain.Sentence
+import io.lukia.features.translate.domain.Word
 import io.lukia.features.translate.domain.splitIntoSentences
+import io.lukia.features.translate.domain.words
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -149,6 +151,65 @@ class ParagraphTextTest {
         assertNull(drawn.sentenceAt(999))
     }
 
+
+    /**
+     * A single word is replaced where it stands, leaving the sentence around it
+     * exactly as the book set it - which is the whole difference between looking
+     * a word up and translating the line it is in.
+     */
+    @Test
+    fun oneTranslatedWordTakesThePlaceOfThatWordAlone() {
+        val runs = listOf(run("Call me Ishmael."))
+
+        val drawn = paragraph(runs, { null }) { _, word ->
+            "kutsukaa".takeIf { word.text == "Call" }
+        }
+
+        assertEquals("kutsukaa me Ishmael.", drawn.text.text)
+    }
+
+    /** Where each word ended up, so a long press finds the one under it. */
+    @Test
+    fun everyWordIsFoundAtWhereItWasDrawn() {
+        val runs = listOf(run("Call me Ishmael."))
+
+        val drawn = paragraph(runs, { null }) { _, word ->
+            "kutsukaa".takeIf { word.text == "Call" }
+        }
+
+        assertEquals(0, drawn.wordAt(0)?.span?.index)
+        // "me" now begins nine characters in rather than five.
+        assertEquals(1, drawn.wordAt(drawn.text.text.indexOf("me"))?.span?.index)
+        assertEquals(2, drawn.wordAt(drawn.text.text.indexOf("Ishmael"))?.span?.index)
+    }
+
+    /**
+     * A sentence translated whole has no words of its own left on the page, so
+     * none are offered - which is what stops a long press inside a translation
+     * from asking about a word of the translation.
+     */
+    @Test
+    fun aSentenceTranslatedWholeOffersNoWordsInside() {
+        val runs = listOf(run("Call me Ishmael. Some years ago."))
+
+        val drawn = paragraph(runs) { sentence ->
+            "Kutsukaa minua Ismaeliksi.".takeIf { sentence.index == 0 }
+        }
+
+        assertNull(drawn.wordAt(2), "a word of the translation was offered")
+        // The sentence beside it is untouched, so its words are still there.
+        assertEquals(1, drawn.wordAt(drawn.text.text.indexOf("Some"))?.sentenceIndex)
+    }
+
+    /** The gap between two words belongs to neither of them. */
+    @Test
+    fun theSpaceBetweenTwoWordsIsNotEitherOfThem() {
+        val runs = listOf(run("Call me Ishmael."))
+        val drawn = paragraph(runs) { null }
+
+        assertNull(drawn.wordAt("Call".length))
+    }
+
     @Test
     fun aParagraphWithNothingToReadDrawsNothing() {
         val drawn = paragraph(listOf(run("   "))) { null }
@@ -160,10 +221,22 @@ class ParagraphTextTest {
     private fun paragraph(
         runs: List<TextRun>,
         translationOf: (Sentence) -> String?
+    ): ParagraphText = paragraph(runs, translationOf) { _, _ -> null }
+
+    private fun paragraph(
+        runs: List<TextRun>,
+        translationOf: (Sentence) -> String?,
+        wordTranslationOf: (Sentence, Word) -> String?
     ): ParagraphText {
         val sentences = splitIntoSentences(runs.plain())
 
-        return buildParagraphText(runs = runs, sentences = sentences, translationOf = translationOf)
+        return buildParagraphText(
+            runs = runs,
+            sentences = sentences,
+            words = sentences.words()
+        ) { sentence, word ->
+            if (word == null) translationOf(sentence) else wordTranslationOf(sentence, word)
+        }
     }
 
     private fun run(text: String, vararg emphasis: Emphasis) =

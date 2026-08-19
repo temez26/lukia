@@ -22,6 +22,8 @@ import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.PageSentence
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.pageSentences
+import io.lukia.features.translate.domain.BulkTranslation
+import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.asTranslationContext
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
@@ -31,7 +33,11 @@ import io.lukia.features.translate.presentation.TranslationSession
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
@@ -104,6 +110,91 @@ class ReaderViewModel(
 
     private val _outline = MutableStateFlow<ReaderOutline>(ReaderOutline.Loading)
     val outline: StateFlow<ReaderOutline> = _outline.asStateFlow()
+
+    private val _translateOnScreen = MutableStateFlow(TranslateOnScreen.Idle)
+
+    /**
+     * Whether the reader has asked to be offered translating more of the book
+     * than they pointed at.
+     */
+    val bulkTranslation: StateFlow<BulkTranslation> = translationSettings.settings
+        .map { it.bulkTranslation }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = translationSettings.settings.value.bulkTranslation
+        )
+
+    /**
+     * What is standing, with anything the reader has since turned off taken out
+     * of it.
+     *
+     * Masked here rather than guarded at every place that could set it, so that
+     * turning "keep translating" off in Settings stops it at once - including
+     * while it is running, with a book open, halfway down a chapter. A setting
+     * that only took effect the next time it was switched on would leave the
+     * expensive one running after the reader had told it to stop.
+     */
+    val translateOnScreen: StateFlow<TranslateOnScreen> =
+        combine(_translateOnScreen, bulkTranslation) { standing, offered ->
+            if (offered.asYouRead) standing else standing.copy(continuous = false)
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = TranslateOnScreen.Idle
+        )
+
+    /**
+     * Whether the translations in this book are the words on the page.
+     *
+     * Read off the passages themselves rather than kept as a flag beside them, so
+     * there is only ever one answer to the question: a reader who taps a single
+     * sentence back to the original has hidden one of them, and the control that
+     * hides all of them says so without being told.
+     */
+    val shownTranslations: StateFlow<ShownTranslations> = translationSession.passages
+        .map { passages ->
+            val answered = passages.values.filterIsInstance<PassageTranslation.Ready>()
+
+            ShownTranslations(
+                any = answered.isNotEmpty(),
+                visible = answered.any { !it.showingOriginal }
+            )
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = ShownTranslations.None
+        )
+
+    /**
+     * Whether there is anything set up to translate with.
+     *
+     * The reader needs this to decide whether to offer the controls at all: a
+     * button whose only possible outcome is "nothing is set up to translate
+     * with" is worse than no button, and most of a reading app's users never
+     * configure one.
+     */
+    /**
+     * What a tap and a long press on the book ask for, straight from the
+     * settings - so changing one takes effect on the very next tap rather than
+     * the next book.
+     */
+    val translationGestures: StateFlow<TranslationGestures> = translationSettings.settings
+        .map { it.gestures }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = translationSettings.settings.value.gestures
+        )
+
+    val translationConfigured: StateFlow<Boolean> = translationSettings.settings
+        .map { it.isConfigured }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = translationSettings.settings.value.isConfigured
+        )
 
     fun updateSettings(settings: ReaderSettings) {
         settingsRepository.update(settings)
@@ -231,29 +322,85 @@ class ReaderViewModel(
             pageSentences.remove(index)?.also { pageSentences[index] = it }
         }
 
+    /** A passage the reader pointed at. */
+    fun onPassageSelected(selection: PassageSelection) {
+        val document = _uiState.value.dataOrNull ?: return
+
+        translationSession.onPassageTapped(selection.anchor) { document.requestFor(selection) }
+    }
+
     /**
-     * A sentence the reader pointed at.
+     * Every passage the reader can see, translated in one go.
      *
+     * Asked for rather than tapped, so a sentence they have already flipped back
+     * to the original stays as they left it and a failure is not retried behind
+     * their back - see
+     * [io.lukia.features.translate.presentation.TranslationSession.onPassageRequested].
+     */
+    fun onPassagesRequested(selections: List<PassageSelection>) {
+        val document = _uiState.value.dataOrNull ?: return
+
+        selections.forEach { selection ->
+            translationSession.onPassageRequested(selection.anchor) {
+                document.requestFor(selection)
+            }
+        }
+    }
+
+    /**
+     * Asks for everything on screen once.
+     *
+     * A number that goes up rather than an event, because what is on screen is
+     * only known where the text is laid out. Every block of it watches this and
+     * answers for itself - see [TranslateOnScreen].
+     */
+    fun onTranslateOnScreen() {
+        if (!bulkTranslation.value.onScreen) return
+
+        _translateOnScreen.value = _translateOnScreen.value.requested()
+    }
+
+    /**
+     * Shows or hides every translation in the book at once.
+     *
+     * Hiding is how somebody reads a stretch they have already worked through in
+     * the book's own words, without giving up the answers - they are still there,
+     * still paid for, one press away.
+     */
+    fun setTranslationsVisible(visible: Boolean) {
+        translationSession.showTranslations(visible)
+    }
+
+    /**
+     * Whether text arriving in view is translated as it arrives.
+     *
+     * Not stored with the reader's other settings, and deliberately: this one
+     * spends money for as long as it is on, and a setting that survived closing
+     * the book would go on spending it in the next one without being asked for
+     * again.
+     */
+    fun setContinuousTranslation(continuous: Boolean) {
+        if (continuous && !bulkTranslation.value.asYouRead) return
+
+        _translateOnScreen.value = _translateOnScreen.value.copy(continuous = continuous)
+    }
+
+    /**
      * The book is read here rather than at the tap because this is where it is
      * known: the screen has the words and where they sit, and only the open
      * document can say which book they came out of and what it is about. That
      * is the whole of how a title and a genre reach a translator.
      */
-    fun onPassageSelected(selection: PassageSelection) {
-        val document = _uiState.value.dataOrNull ?: return
-
-        translationSession.onPassageTapped(selection.anchor) {
-            TranslationRequest(
-                text = selection.passage,
-                targetLanguage = translationSettings.settings.value.targetLanguage,
-                context = document.info.metadata.asTranslationContext(
-                    bookTitle = document.info.displayTitle(),
-                    chapterTitle = selection.chapterTitle ?: chapterOf(selection.anchor),
-                    surroundingText = selection.surroundingText
-                )
-            )
-        }
-    }
+    private fun ReaderDocument.requestFor(selection: PassageSelection) = TranslationRequest(
+        text = selection.passage,
+        targetLanguage = translationSettings.settings.value.targetLanguage,
+        context = info.metadata.asTranslationContext(
+            bookTitle = info.displayTitle(),
+            chapterTitle = selection.chapterTitle ?: chapterOf(selection.anchor),
+            surroundingText = selection.surroundingText
+        ),
+        unit = selection.unit
+    )
 
     /**
      * What a page sits under, for a document whose sentences carry no chapter of
@@ -297,6 +444,9 @@ class ReaderViewModel(
         // The anchors point into the document being thrown away, and the one
         // opened in its place may not have a sentence where each of them says.
         translationSession.clear()
+        // A standing order to translate what is on screen belongs to the book
+        // that was open, not to whatever opens in its place.
+        _translateOnScreen.value = TranslateOnScreen.Idle
         pageSentences.clear()
         _uiState.value = UiState.Loading
         _outline.value = ReaderOutline.Loading

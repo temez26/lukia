@@ -42,6 +42,7 @@ private fun SettingsPanelBody(viewModel: SettingsViewModel = koinViewModel()) {
     val translation by viewModel.translationSettings.collectAsState()
     val connectionTest by viewModel.connectionTest.collectAsState()
     val availableModels by viewModel.availableModels.collectAsState()
+    val modelReadiness by viewModel.modelReadiness.collectAsState()
     val dimens = LocalLukiaDimens.current
 
     SettingsBody(
@@ -49,14 +50,24 @@ private fun SettingsPanelBody(viewModel: SettingsViewModel = koinViewModel()) {
         translation = translation,
         connectionTest = connectionTest,
         availableModels = availableModels,
+        modelReadiness = modelReadiness,
         onThemeChange = viewModel::setTheme,
         onTargetLanguageChange = viewModel::setTargetLanguage,
         onProviderChange = viewModel::setProvider,
         onModelChange = viewModel::setModel,
+        onModelChoose = viewModel::chooseModel,
         onApiKeyChange = viewModel::setApiKey,
         onBaseUrlChange = viewModel::onBaseUrlEdited,
+        onTimeoutChange = viewModel::setTimeoutSeconds,
+        onWordLookupChange = viewModel::setWordLookup,
+        onGoogleApiKeyChange = viewModel::setGoogleApiKey,
+        onTapGestureChange = viewModel::setTapGesture,
+        onLongPressGestureChange = viewModel::setLongPressGesture,
+        onTranslateOnScreenChange = viewModel::setTranslateOnScreen,
+        onTranslateAsYouReadChange = viewModel::setTranslateAsYouRead,
         onTestConnection = viewModel::testConnection,
         onLoadModels = viewModel::loadAvailableModels,
+        onLoadChosenModel = viewModel::loadChosenModel,
         modifier = Modifier.fillMaxWidth(),
         topClearance = OverlayPanelTopClearance,
         bottomClearance = dimens.sectionSpacing,

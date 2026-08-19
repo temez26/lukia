@@ -9,10 +9,12 @@ import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.Translator
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -42,7 +44,7 @@ class TranslationSessionTest {
         session.tap(anchor)
         runCurrent()
 
-        assertEquals(PassageTranslation.Loading, session.passages.value[anchor])
+        assertEquals(PassageTranslation.Loading(), session.passages.value[anchor])
 
         answer.complete(Translation("Kutsukaa minua Ismaeliksi."))
         runCurrent()
@@ -106,7 +108,7 @@ class TranslationSessionTest {
         runCurrent()
 
         assertEquals(1, asked)
-        assertEquals(PassageTranslation.Loading, session.passages.value[anchor])
+        assertEquals(PassageTranslation.Loading(), session.passages.value[anchor])
 
         answer.complete(Translation("Done."))
     }
@@ -249,9 +251,166 @@ class TranslationSessionTest {
         assertEquals(1, built)
     }
 
+    /**
+     * What the reader sees while a model is writing: the sentence filling in,
+     * rather than the original sitting there looking untouched.
+     */
+    @Test
+    fun aSentenceStillArrivingIsShownAsFarAsItHasGot() = runTest {
+        val session = TranslationSession(
+            TranslatePassageUseCase(
+                Translator { _, onPartial ->
+                    onPartial("Kutsukaa")
+                    onPartial("Kutsukaa minua")
+                    Translation("Kutsukaa minua Ismaeliksi.")
+                }
+            ),
+            this
+        )
+
+        session.tap(anchor)
+        runCurrent()
+
+        assertEquals(
+            PassageTranslation.Ready(Translation("Kutsukaa minua Ismaeliksi.")),
+            session.passages.value[anchor]
+        )
+    }
+
+    /**
+     * A piece still in flight must not land on top of the finished answer -
+     * which is the one way a streamed translation could end up permanently
+     * showing half of itself.
+     */
+    @Test
+    fun theLastThingShownIsTheWholeTranslation() = runTest {
+        val session = TranslationSession(
+            TranslatePassageUseCase(
+                Translator { _, onPartial ->
+                    repeat(20) { onPartial("Kutsukaa".take(it + 1)) }
+                    Translation("Kutsukaa minua Ismaeliksi.")
+                }
+            ),
+            this
+        )
+
+        session.tap(anchor)
+        advanceUntilIdle()
+
+        assertEquals(
+            "Kutsukaa minua Ismaeliksi.",
+            (session.passages.value[anchor] as PassageTranslation.Ready).translation.text
+        )
+    }
+
+
+    /**
+     * Translating a whole page must not undo what the reader has already done to
+     * it: a sentence they flipped back to the original stays as they left it,
+     * and one that failed is not retried behind their back forty times over.
+     */
+    @Test
+    fun askingForAPassageLeavesOneAlreadyAnsweredExactlyAsItWas() = runTest {
+        var asked = 0
+        val session = session { asked++; Translation("Kutsukaa minua Ismaeliksi.") }
+
+        session.tap(anchor)
+        runCurrent()
+        session.tap(anchor)
+
+        val flipped = session.ready(anchor)
+        assertTrue(flipped.showingOriginal, "the sentence was not flipped back")
+
+        session.onPassageRequested(anchor) { request("Call me Ishmael.") }
+        runCurrent()
+
+        assertEquals(1, asked, "a passage already answered was asked about again")
+        assertTrue(session.ready(anchor).showingOriginal, "the reader's own choice was undone")
+    }
+
+    @Test
+    fun askingForAPassageNobodyHasTouchedTranslatesIt() = runTest {
+        val session = session { Translation("Kutsukaa minua Ismaeliksi.") }
+
+        session.onPassageRequested(anchor) { request("Call me Ishmael.") }
+        runCurrent()
+
+        assertEquals("Kutsukaa minua Ismaeliksi.", session.ready(anchor).translation.text)
+    }
+
+
+    /**
+     * Putting the translations away is how somebody reads a stretch they have
+     * already worked through in the book's own words. The answers stay - they
+     * are still paid for, and still one press from being back.
+     */
+    @Test
+    fun hidingTheTranslationsPutsEveryOneOfThemBackToTheBooksWords() = runTest {
+        val session = session { Translation("Kutsukaa minua Ismaeliksi.") }
+
+        session.tap(anchor(0))
+        session.tap(anchor(1))
+        runCurrent()
+
+        session.showTranslations(false)
+
+        assertTrue(session.ready(anchor(0)).showingOriginal)
+        assertTrue(session.ready(anchor(1)).showingOriginal)
+        assertEquals("Kutsukaa minua Ismaeliksi.", session.ready(anchor(0)).translation.text)
+    }
+
+    @Test
+    fun showingThemAgainBringsBackEveryOneOfThem() = runTest {
+        val session = session { Translation("Kutsukaa minua Ismaeliksi.") }
+
+        session.tap(anchor(0))
+        session.tap(anchor(1))
+        runCurrent()
+        session.showTranslations(false)
+
+        session.showTranslations(true)
+
+        assertFalse(session.ready(anchor(0)).showingOriginal)
+        assertFalse(session.ready(anchor(1)).showingOriginal)
+    }
+
+    /**
+     * A passage still arriving has nothing to show or to hide, and one that
+     * failed has nothing either - neither is a translation yet.
+     */
+    @Test
+    fun hidingLeavesAPassageThatIsStillArrivingAlone() = runTest {
+        val answer = CompletableDeferred<Translation>()
+        val session = session { answer.await() }
+
+        session.tap(anchor)
+        runCurrent()
+
+        session.showTranslations(false)
+
+        assertIs<PassageTranslation.Loading>(session.passages.value[anchor])
+
+        // Let it land, so the test does not end with a request still in flight.
+        answer.complete(Translation("Kutsukaa minua Ismaeliksi."))
+        runCurrent()
+    }
+
+    /** Nothing translated, nothing to change - and nothing reported as changed. */
+    @Test
+    fun hidingWithNothingTranslatedChangesNothing() = runTest {
+        val session = session { Translation("Kutsukaa minua Ismaeliksi.") }
+
+        session.showTranslations(false)
+
+        assertTrue(session.passages.value.isEmpty())
+    }
+
     private fun TestScope.session(
         translate: suspend (TranslationRequest) -> Translation
-    ) = TranslationSession(TranslatePassageUseCase(Translator { translate(it) }), this)
+    ) = TranslationSession(
+        TranslatePassageUseCase(Translator { request, _ -> translate(request) }),
+        this
+    )
 
     private fun anchor(sentenceIndex: Int) =
         TextAnchor.Section(sectionIndex = 0, blockIndex = 0, sentenceIndex = sentenceIndex)

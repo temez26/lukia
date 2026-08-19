@@ -5,10 +5,14 @@ import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.TranslationRequest
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 
 /**
  * How many translated passages one open book keeps.
@@ -23,6 +27,20 @@ import kotlinx.coroutines.launch
  * the answer is in the stored cache, so asking costs nothing.
  */
 private const val MAX_KEPT_PASSAGES = 400
+
+/**
+ * How many passages are being asked about at once.
+ *
+ * One tap has never needed this. Translating everything on screen does: a page
+ * is thirty or forty sentences, and thirty simultaneous requests is a rate
+ * limit on a hosted service and a queue nobody can get in front of on a local
+ * one - where the reader is still waiting on whichever sentence they actually
+ * pointed at.
+ *
+ * Four is enough to keep a page filling in steadily and few enough that a
+ * single tap still gets through it quickly.
+ */
+private const val MAX_AT_ONCE = 4
 
 /**
  * Every passage translated while one book is open, and what a tap on each of
@@ -57,6 +75,9 @@ class TranslationSession(
      */
     private val kept = LinkedHashMap<TextAnchor, PassageTranslation>()
 
+    /** What keeps a whole page's worth of taps from arriving as a whole page of requests. */
+    private val inFlight = Semaphore(MAX_AT_ONCE)
+
     private val _passages = MutableStateFlow<Map<TextAnchor, PassageTranslation>>(emptyMap())
     val passages: StateFlow<Map<TextAnchor, PassageTranslation>> = _passages.asStateFlow()
 
@@ -65,11 +86,26 @@ class TranslationSession(
      * the sentence came out of - and is passed by name so that a tap which
      * merely flips an already-translated passage never builds one.
      */
+    /**
+     * Translates a passage nobody has asked about yet, and leaves every other
+     * one exactly as it is.
+     *
+     * This is what "translate everything on screen" is made of, which is why it
+     * is not [onPassageTapped]: a page holding a sentence the reader has flipped
+     * back to the original must not have it flipped forward again, and one
+     * holding a failure must not retry it silently forty times over.
+     */
+    fun onPassageRequested(anchor: TextAnchor, request: () -> TranslationRequest) {
+        if (kept.containsKey(anchor)) return
+
+        fetch(anchor, request())
+    }
+
     fun onPassageTapped(anchor: TextAnchor, request: () -> TranslationRequest) {
         when (val current = kept[anchor]) {
             // Tapping again while it is still coming back is not a second
             // request. It is somebody wondering whether the first one landed.
-            PassageTranslation.Loading -> Unit
+            is PassageTranslation.Loading -> Unit
 
             is PassageTranslation.Ready -> put(
                 anchor,
@@ -83,16 +119,64 @@ class TranslationSession(
     }
 
     private fun fetch(anchor: TextAnchor, request: TranslationRequest) {
-        put(anchor, PassageTranslation.Loading)
+        put(anchor, PassageTranslation.Loading())
 
         scope.launch {
-            val state = translate(request).fold(
+            // The translation arrives on whatever thread the connection is read
+            // on, and [kept] belongs to this one. So the pieces are handed over
+            // through a value that can be written from anywhere, and turned back
+            // into state here - which is what keeps a streamed answer from
+            // touching the map from under the taps.
+            val arriving = MutableStateFlow<String?>(null)
+
+            val showing = launch {
+                arriving.filterNotNull().collect { put(anchor, PassageTranslation.Loading(it)) }
+            }
+
+            val state = inFlight.withPermit {
+                translate(request) { arriving.value = it }
+            }.fold(
                 onSuccess = { PassageTranslation.Ready(it) },
                 onFailure = { PassageTranslation.Failed(it.toAppError()) }
             )
 
+            // Stopped before the finished translation is put, so a last piece
+            // still in the flow cannot land on top of the whole answer.
+            showing.cancelAndJoin()
+
             put(anchor, state)
         }
+    }
+
+    /**
+     * Shows every translation at once, or puts every one of them back to the
+     * book's own words.
+     *
+     * A real change to each passage rather than a filter laid over them, because
+     * a filter would be a second opinion about what is on screen: a tap while it
+     * was on would flip a sentence underneath it and the reader would not find
+     * out until they turned the filter off. What this does instead is what the
+     * reader would have done by tapping every marked passage in turn.
+     *
+     * Only the ones that have an answer. A passage still arriving is left to
+     * arrive, and one that failed is left failed - neither has anything to show
+     * or to hide.
+     */
+    fun showTranslations(showing: Boolean) {
+        var changed = false
+
+        kept.entries.forEach { entry ->
+            val state = entry.value
+
+            if (state is PassageTranslation.Ready && state.showingOriginal == showing) {
+                entry.setValue(state.copy(showingOriginal = !showing))
+                changed = true
+            }
+        }
+
+        // Rewritten in place, so nothing has moved and the order these were last
+        // touched in - which is what decides who is forgotten first - still holds.
+        if (changed) _passages.value = kept.toMap()
     }
 
     /**

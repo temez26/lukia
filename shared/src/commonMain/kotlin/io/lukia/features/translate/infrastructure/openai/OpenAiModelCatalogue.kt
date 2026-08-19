@@ -9,6 +9,8 @@ import io.lukia.core.domain.AppError
 import io.lukia.core.domain.AppErrorException
 import io.lukia.features.translate.domain.ModelCatalogue
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
+import io.lukia.features.translate.infrastructure.asTranslationFailure
+import io.lukia.features.translate.infrastructure.translationTimeouts
 import kotlinx.coroutines.CancellationException
 
 /**
@@ -38,6 +40,8 @@ class OpenAiModelCatalogue(
 
         val response = try {
             client.get("${configured.baseUrl.trimEnd('/')}/models") {
+                translationTimeouts(configured)
+
                 configured.apiKey?.takeIf { it.isNotBlank() }?.let { key ->
                     headers { append("Authorization", "Bearer $key") }
                 }
@@ -45,12 +49,7 @@ class OpenAiModelCatalogue(
         } catch (cancellation: CancellationException) {
             throw cancellation
         } catch (failure: Throwable) {
-            throw AppErrorException(
-                AppError.Unexpected(
-                    "Could not reach ${configured.baseUrl}. Check the server is running and " +
-                        "that the address is reachable from this device."
-                )
-            )
+            throw failure.asTranslationFailure(configured)
         }
 
         if (!response.status.isSuccess()) {

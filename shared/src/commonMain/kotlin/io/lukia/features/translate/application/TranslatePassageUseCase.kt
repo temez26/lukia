@@ -29,7 +29,16 @@ class TranslatePassageUseCase(
     private val translator: Translator
 ) {
 
-    suspend operator fun invoke(request: TranslationRequest): Result<Translation> {
+    /**
+     * [onPartial] is passed straight through to whatever is translating, and is
+     * the caller's business rather than this one's: nothing here can improve on
+     * a piece of a sentence, and the guards that matter - a passage too long, an
+     * answer that came back blank - are about the whole of it.
+     */
+    suspend operator fun invoke(
+        request: TranslationRequest,
+        onPartial: (String) -> Unit = {}
+    ): Result<Translation> {
         val passage = request.text.trim()
 
         if (passage.isEmpty()) {
@@ -40,8 +49,9 @@ class TranslatePassageUseCase(
             return AppError.Unexpected("That passage is too long to translate.").asFailure()
         }
 
-        val translation = runCatchingApp { translator.translate(request.copy(text = passage)) }
-            .getOrElse { return Result.failure(it) }
+        val translation =
+            runCatchingApp { translator.translate(request.copy(text = passage), onPartial) }
+                .getOrElse { return Result.failure(it) }
 
         // A provider that answered with nothing has failed without saying so.
         // Left as a success it would show as a sentence replaced by a blank

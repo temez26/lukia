@@ -243,6 +243,65 @@ class PageSentencesTest {
         assertEquals(listOf(0, 1, 2), pageSentences(glyphs).map { it.index })
     }
 
+
+    /**
+     * A word on a page has a place of its own, which is the whole of what lets
+     * somebody point at one. It cannot be found from the sentence's text after
+     * the fact: a PDF records glyphs and where they landed, and this is the only
+     * moment the two are still together.
+     */
+    @Test
+    fun aSentenceKnowsTheWordsItIsMadeOf() {
+        val sentence = pageSentences(line("Call me Ishmael.", top = 0f)).single()
+
+        assertEquals(listOf("Call", "me", "Ishmael"), sentence.words.map { it.text })
+        assertEquals(listOf(0, 1, 2), sentence.words.map { it.index })
+    }
+
+    @Test
+    fun aWordCoversTheGlyphsItWasSetFrom() {
+        val sentence = pageSentences(line("Call me Ishmael.", top = 0f)).single()
+
+        val call = sentence.words.first()
+        val ishmael = sentence.words.last()
+
+        // "Call" is the first four glyphs; "Ishmael" starts at the ninth.
+        assertEquals(0f, call.bounds.left)
+        assertEquals(glyphWidth * 4, call.bounds.right)
+        assertEquals(glyphWidth * 8, ishmael.bounds.left)
+    }
+
+    /** Which is what a tap on a page is answered with. */
+    @Test
+    fun theWordAtAPointIsTheOneCoveringIt() {
+        val sentence = pageSentences(line("Call me Ishmael.", top = 0f)).single()
+
+        assertEquals("me", sentence.wordAt(x = glyphWidth * 5.5f, y = glyphHeight / 2)?.text)
+        assertEquals("Call", sentence.wordAt(x = glyphWidth * 1.5f, y = glyphHeight / 2)?.text)
+    }
+
+    /**
+     * The space between two words belongs to neither, which is what makes a
+     * gesture set to the word do nothing there rather than take the sentence.
+     */
+    @Test
+    fun thereIsNoWordInTheSpaceBetweenTwoOfThem() {
+        val sentence = pageSentences(line("Call me", top = 0f)).single()
+
+        assertNull(sentence.wordAt(x = glyphWidth * 4.5f, y = glyphHeight / 2))
+    }
+
+    /** A word broken across a line covers a ribbon on each, exactly as a sentence does. */
+    @Test
+    fun aWordRunningOverALineBreakCoversBothOfThem() {
+        val glyphs = word("exam-", startX = 0f, top = 0f) + word("ple here.", startX = 0f, top = 14f)
+
+        val broken = pageSentences(glyphs).single().words.first()
+
+        assertEquals("exam-ple", broken.text)
+        assertEquals(2, broken.quads.size, "a word over two lines was drawn as one box")
+    }
+
     private fun line(text: String, top: Float) = word(text, startX = 0f, top = top)
 
     private fun word(text: String, startX: Float, top: Float) =

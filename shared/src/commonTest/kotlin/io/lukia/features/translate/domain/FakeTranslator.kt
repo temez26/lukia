@@ -11,7 +11,10 @@ package io.lukia.features.translate.domain
  */
 class FakeTranslator : Translator {
 
-    override suspend fun translate(request: TranslationRequest): Translation = Translation(
+    override suspend fun translate(
+        request: TranslationRequest,
+        onPartial: (String) -> Unit
+    ): Translation = Translation(
         text = "[${request.targetLanguage.englishName}] ${request.text}",
         note = request.context.describe()
     )

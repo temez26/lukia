@@ -22,7 +22,10 @@ class ConfiguredTranslator(
     private val openAiCompatible: Translator
 ) : Translator {
 
-    override suspend fun translate(request: TranslationRequest): Translation {
+    override suspend fun translate(
+        request: TranslationRequest,
+        onPartial: (String) -> Unit
+    ): Translation {
         val translator = when (provider()) {
             TranslationProvider.Anthropic -> anthropic
             // OpenAI and a model on the reader's own machine are the same
@@ -30,6 +33,6 @@ class ConfiguredTranslator(
             TranslationProvider.OpenAi, TranslationProvider.Local -> openAiCompatible
         }
 
-        return translator.translate(request)
+        return translator.translate(request, onPartial)
     }
 }

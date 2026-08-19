@@ -14,10 +14,36 @@ import io.lukia.features.reader.domain.TextQuad
 data class PageSentence(
     val index: Int,
     val text: String,
-    val quads: List<TextQuad>
+    val quads: List<TextQuad>,
+    /**
+     * The words it is made of, each with the part of the page it covers.
+     *
+     * Worked out here rather than left to whoever draws the page, because a word
+     * on a page is not a thing that can be found from the sentence's text: what a
+     * PDF records is glyphs and where they landed, and the only place the two are
+     * still together is where the sentence itself was inferred. By the time this
+     * has been reduced to a string and some rectangles, which rectangle covers
+     * the fourth word is no longer answerable.
+     */
+    val words: List<PageWord> = emptyList()
 ) {
 
     /** The whole sentence's extent, for hit-testing and for placing a caption. */
+    val bounds: TextQuad get() = quads.union()
+
+    /** The word at a point inside this sentence, or null between two of them. */
+    fun wordAt(x: Float, y: Float): PageWord? =
+        words.firstOrNull { word -> word.quads.any { it.contains(x, y) } }
+}
+
+/** One word of a laid-out page: what it says, and the rectangles it covers. */
+data class PageWord(
+    /** Its place in the sentence, which is how it is addressed - see [Word]. */
+    val index: Int,
+    val text: String,
+    val quads: List<TextQuad>
+) {
+
     val bounds: TextQuad get() = quads.union()
 }
 
@@ -81,20 +107,20 @@ private fun List<List<PageGlyph>>.sentences(from: Int): List<PageSentence> {
     }
 
     return splitIntoSentences(text.toString()).mapNotNull { sentence ->
-        val placed = (sentence.start until sentence.end).mapNotNull { owners.getOrNull(it) }
+        val placed = owners.between(sentence.start, sentence.end)
         if (placed.isEmpty()) return@mapNotNull null
 
         PageSentence(
             index = from + sentence.index,
             text = sentence.text,
-            // One rectangle per line: a sentence running from halfway down one
-            // line to halfway along the next covers two ribbons of the page, not
-            // the block between their far corners.
-            quads = placed
-                .groupBy { it.line }
-                .entries
-                .sortedBy { (line, _) -> line }
-                .map { (_, onLine) -> onLine.map { placed -> placed.glyph.bounds }.union() }
+            quads = placed.intoQuads(),
+            // The same offsets, cut finer. A word that breaks across a line is
+            // two ribbons for the same reason a sentence is.
+            words = sentence.words().mapNotNull { word ->
+                owners.between(word.start, word.end)
+                    .takeIf { it.isNotEmpty() }
+                    ?.let { PageWord(index = word.index, text = word.text, quads = it.intoQuads()) }
+            }
         )
     }
 }
@@ -147,6 +173,23 @@ private fun List<PageGlyph>.followsOn(previous: List<PageGlyph>): Boolean {
 
     return gap <= height * BLOCK_GAP_RATIO
 }
+
+/** The glyphs that produced the characters between two offsets of the block's text. */
+private fun List<PlacedGlyph?>.between(from: Int, to: Int): List<PlacedGlyph> =
+    (from until to).mapNotNull { getOrNull(it) }
+
+/**
+ * One rectangle per line these glyphs were set on.
+ *
+ * A passage running from halfway along one line to halfway along the next covers
+ * two ribbons of the page, not the block between their far corners - which is
+ * what a single bounding box would give, and would put a mark over two half
+ * lines it has nothing to do with.
+ */
+private fun List<PlacedGlyph>.intoQuads(): List<TextQuad> = groupBy { it.line }
+    .entries
+    .sortedBy { (line, _) -> line }
+    .map { (_, onLine) -> onLine.map { placed -> placed.glyph.bounds }.union() }
 
 /** The sentence at a point on the page, or null where there are no words. */
 fun List<PageSentence>.sentenceAt(x: Float, y: Float): PageSentence? =

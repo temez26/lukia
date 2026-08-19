@@ -29,7 +29,17 @@ class CoalescingTranslator(
     private val guard = Mutex()
     private val inFlight = mutableMapOf<TranslationRequest, CompletableDeferred<Translation>>()
 
-    override suspend fun translate(request: TranslationRequest): Translation {
+    /**
+     * [onPartial] belongs to whoever opened the connection. Somebody who joined
+     * a request already in flight waits for the finished answer rather than
+     * being shown the middle of one they did not start - which is the honest
+     * thing to show for a sentence that was already halfway translated before
+     * they asked about it.
+     */
+    override suspend fun translate(
+        request: TranslationRequest,
+        onPartial: (String) -> Unit
+    ): Translation {
         val answer = CompletableDeferred<Translation>()
 
         // The request is the identity: the same words, wanted in the same
@@ -40,7 +50,7 @@ class CoalescingTranslator(
         if (joined !== answer) return joined.await()
 
         try {
-            return translator.translate(request).also { answer.complete(it) }
+            return translator.translate(request, onPartial).also { answer.complete(it) }
         } catch (failure: Throwable) {
             // Everyone waiting on this fails with it, including on cancellation
             // - a follower left waiting on an answer nobody is fetching any more

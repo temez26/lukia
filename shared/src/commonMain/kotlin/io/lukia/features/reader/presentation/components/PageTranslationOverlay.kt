@@ -6,11 +6,13 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -19,9 +21,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -72,32 +74,63 @@ internal fun PageTranslationOverlay(
     // without looking at its sentences.
     if (translations.isEmpty) return
 
+    // Sentences and single words together, because what is done with either is
+    // the same: mark where it is, and cover it once there is something to put in
+    // its place. A word is only ever on the page while its sentence has not been
+    // translated over the top of it.
     val marked = remember(sentences, translations) {
-        sentences.mapNotNull { sentence ->
-            translations[sentence.index]?.let { sentence to it }
+        sentences.flatMap { sentence ->
+            val whole = translations[sentence.index]
+
+            if (whole != null) {
+                listOf(MarkedPassage(sentence.quads, sentence.bounds, whole))
+            } else {
+                sentence.words.mapNotNull { word ->
+                    translations.words(sentence.index)[word.index]?.let {
+                        MarkedPassage(word.quads, word.bounds, it)
+                    }
+                }
+            }
         }
     }
 
-    Box(
+    val markColors = passageMarkColors()
+
+    // Read where it is drawn rather than here: read during composition it would
+    // recompose the page on every frame of the sweep.
+    val sweep = passageSweep(marked.any { it.state is PassageTranslation.Loading })
+
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
             // Every mark in one pass rather than a full-page layer per
-            // sentence: they all draw into the same page, and the tint says
-            // which of the three things is happening to each of them.
+            // sentence: they all draw into the same page.
+            //
+            // The same soft highlight the set text is marked with, so moving
+            // between a PDF and an EPUB is not moving between two different
+            // readers. Faint enough to leave somebody else's typesetting
+            // perfectly readable underneath it.
             .drawBehind {
-                marked.forEach { (sentence, state) ->
-                    val tint = when (state) {
-                        PassageTranslation.Loading -> colors.onSurface.copy(alpha = PENDING_TINT)
-                        is PassageTranslation.Failed -> colors.error.copy(alpha = FAILED_TINT)
-                        is PassageTranslation.Ready -> colors.primary.copy(alpha = TRANSLATED_TINT)
-                    }
+                marked.forEach { passage ->
+                    // A passage with something to put on the page brings its own
+                    // highlight with it - see TranslationPanel. Drawing one here
+                    // as well would leave the wider of the two showing round the
+                    // edges of the narrower.
+                    if (passage.state.panel() != null) return@forEach
 
-                    sentence.quads.forEach { quad -> drawQuad(quad, scale, tint) }
+                    val style = passage.state.markStyle() ?: return@forEach
+
+                    drawPassageHighlight(
+                        lines = passage.quads.map { it.asLine(scale) },
+                        style = style,
+                        colors = markColors,
+                        sweep = sweep.value
+                    )
                 }
             }
     ) {
-        marked.forEach { (sentence, state) ->
-            val panel = state.panel()
+        marked.forEach { passage ->
+            val panel = passage.state.panel()
 
             // Nothing is drawn over a sentence still being translated: the
             // reader can still read the original underneath while they wait.
@@ -111,13 +144,23 @@ internal fun PageTranslationOverlay(
                 val shown = panel ?: return@AnimatedVisibility
 
                 TranslationPanel(
-                    bounds = sentence.bounds,
-                    // The shortest of the sentence's lines, which is a line -
-                    // not the block they add up to. See TranslationPanel.
-                    lineHeight = sentence.quads.minOf { it.height },
+                    // The line rather than the letters, and the same line the
+                    // highlight would have covered - so the panel sits exactly
+                    // where the mark would have been instead of inside it.
+                    bounds = passage.bounds.asLine(),
+                    // What is left of the page to the right of it, so a
+                    // translation longer than what it replaces has somewhere to
+                    // go without running off the edge.
+                    available = maxWidth,
+                    // Measured from the shortest of the passage's lines, which is
+                    // one line - not the block they add up to. See below.
+                    glyphHeight = passage.quads.minOf { it.height },
                     text = shown.text,
                     detail = shown.detail,
                     textColor = if (shown.failed) colors.error else colors.onSurface,
+                    tint = markColors.of(
+                        passage.state.markStyle() ?: PassageMarkStyle.Translated
+                    ),
                     scale = scale,
                     pageColor = pageColor
                 )
@@ -142,7 +185,12 @@ private data class PanelContent(
  * one still in flight look exactly alike.
  */
 private fun PassageTranslation.panel(): PanelContent? = when (this) {
-    PassageTranslation.Loading -> null
+    // A partly written sentence goes over the page as it arrives, the same as a
+    // finished one. Until the first words come back there is nothing to cover
+    // the original with, and the tint alone says a translation is on its way.
+    is PassageTranslation.Loading -> partial?.let {
+        PanelContent(text = it, detail = null, failed = false)
+    }
 
     is PassageTranslation.Failed -> PanelContent(
         text = error.displayShortMessage(),
@@ -167,10 +215,12 @@ private fun PassageTranslation.panel(): PanelContent? = when (this) {
 @Composable
 private fun TranslationPanel(
     bounds: TextQuad,
-    lineHeight: Float,
+    available: Dp,
+    glyphHeight: Float,
     text: String,
     detail: String?,
     textColor: Color,
+    tint: Color,
     scale: Float,
     pageColor: Color
 ) {
@@ -180,25 +230,45 @@ private fun TranslationPanel(
     val top = with(density) { (bounds.top * scale).toDp() }
     val width = with(density) { (bounds.width * scale).toDp() }
 
-    // Sized from one line of the original, never from the block the sentence
-    // covers. A sentence running down fifteen lines has bounds fifteen lines
-    // tall, and type set to that is a single word filling the page.
+    // Set at the size the page is set at, worked back from the letters - see
+    // TYPE_OF_GLYPHS. Measured from one line of the original, never from the
+    // block a sentence covers: a sentence running down fifteen lines has bounds
+    // fifteen lines tall, and type set to that is a single word filling the page.
     //
-    // Clamped as well, because a page can be laid out at any size at all: a
-    // heading set in 40pt does not want its translation at 40pt, and a footnote
-    // at 5pt wants something somebody can actually read.
+    // Clamped at both ends, because a page can be laid out at any size at all: a
+    // display line set enormously does not want its translation set enormously
+    // too, and a footnote at five points wants something somebody can read.
     val textSize = with(density) {
-        (lineHeight * scale * TEXT_FILL).toSp().value.coerceIn(MIN_TEXT_SP, MAX_TEXT_SP).sp
+        (glyphHeight * TYPE_OF_GLYPHS * scale)
+            .toSp()
+            .value
+            .coerceIn(MIN_TEXT_SP, MAX_TEXT_SP)
+            .sp
     }
 
     Column(
         modifier = Modifier
             .offset(x = left - Bleed, y = top - Bleed)
-            .width(width + Bleed * 2)
-            .clip(RoundedCornerShape(3.dp))
-            // The page's own colour, so the panel reads as part of the page
-            // rather than as a note stuck on top of it.
+            // At least as wide as what it replaces, and free to be wider.
+            //
+            // A word is the case that needs this: its panel is only as wide as
+            // the word underneath it, and a translation is very often longer
+            // than the word it stands for - so held to that width it wrapped,
+            // and one word became two lines sitting over the line below. Bounded
+            // by what is left of the page so it grows into the margin rather
+            // than off the edge of it.
+            .widthIn(
+                min = width + Bleed * 2,
+                max = (available - left + Bleed).coerceAtLeast(width + Bleed * 2)
+            )
+            .clip(RoundedCornerShape(PanelRadius))
+            // The page's own colour first, because what is underneath is the
+            // original and it has to stop showing through. The mark goes over
+            // that rather than behind the whole panel: the panel is the
+            // highlight here, which is what keeps the two from disagreeing about
+            // where the passage is.
             .background(pageColor)
+            .background(tint.copy(alpha = PANEL_TINT))
             .padding(PanelPadding)
     ) {
         Text(
@@ -227,28 +297,33 @@ private fun TranslationPanel(
 }
 
 /**
- * How much of a line's height the translation's type fills.
+ * The size the page's type was set at, worked back from the boxes it reports.
  *
- * A quad is the whole line box, ascender to descender, and type set at that
- * size would be visibly larger than the page's own. This is roughly where a
- * translated line matches the original it is covering.
+ * There is no honest way to derive this. What a renderer calls a glyph's bounds
+ * differs between them - some give the ink, some the em box, some the whole line
+ * - and the file itself is not asked. So this is calibrated against real pages
+ * rather than reasoned out, and it is the one number here to reach for when a
+ * translation comes out the wrong size beside the words it covers.
+ *
+ * A little over parity. Under it the translation reads as a caption stuck on the
+ * page; far over it, which is where this landed on the first attempt, the words
+ * spill out of the line they belong to.
  */
-private const val TEXT_FILL = 0.78f
+private const val TYPE_OF_GLYPHS = 1.15f
 
 /**
  * What a translation is never set smaller or larger than, whatever the page it
- * is covering does. The point of the panel is that somebody can read it.
+ * is covering does. Wide enough now to leave a heading at a heading's size,
+ * which the old ceiling did not.
  */
-private const val MIN_TEXT_SP = 9f
-private const val MAX_TEXT_SP = 22f
+private const val MIN_TEXT_SP = 10f
+private const val MAX_TEXT_SP = 44f
 
-/**
- * How faint each mark is. A sentence being worked on has to be findable again
- * without the page turning into a highlighter drawing.
- */
-private const val PENDING_TINT = 0.10f
-private const val TRANSLATED_TINT = 0.14f
-private const val FAILED_TINT = 0.16f
+/** How much of the mark's colour a panel carries, being the highlight itself. */
+private const val PANEL_TINT = 0.16f
+
+/** Round enough to read as the same mark the set text gets. */
+private val PanelRadius: Dp = 6.dp
 
 /**
  * How long a panel takes to arrive over the words it covers. Short enough that
@@ -257,16 +332,50 @@ private const val FAILED_TINT = 0.16f
  */
 private const val PANEL_FADE_MILLIS = 160
 
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawQuad(
-    quad: TextQuad,
-    scale: Float,
-    color: Color
-) {
-    val bleed = Bleed.toPx()
+/**
+ * One passage of a page the reader has asked about - a sentence, or a single
+ * word inside one - and what has become of it.
+ *
+ * The two are the same thing to draw: some rectangles to mark, and somewhere to
+ * put the answer once it arrives. Keeping them apart here would be two copies of
+ * the same loop that differed only in where the rectangles came from.
+ */
+private data class MarkedPassage(
+    val quads: List<TextQuad>,
+    val bounds: TextQuad,
+    val state: PassageTranslation
+)
 
-    drawRect(
-        color = color,
-        topLeft = Offset(quad.left * scale - bleed, quad.top * scale - bleed),
-        size = Size(quad.width * scale + bleed * 2, quad.height * scale + bleed * 2)
+/**
+ * How much taller than its letters a line is, as a fraction of their height.
+ *
+ * A glyph box a PDF reports is roughly the cap height, which measurement against
+ * real files puts near 0.58 of the size the type was set at - so the line around
+ * it is close to twice as tall. Split unevenly: there is more room under a
+ * baseline than over a capital.
+ */
+private const val LINE_ABOVE_GLYPHS = 0.26f
+private const val LINE_BELOW_GLYPHS = 0.34f
+
+/**
+ * The line these letters were set on, in the page's own units.
+ *
+ * One definition, used by the mark and by the panel alike - they cover the same
+ * passage and any disagreement between them shows as one sticking out from
+ * behind the other.
+ */
+private fun TextQuad.asLine(): TextQuad = TextQuad(
+    left = left,
+    top = top - height * LINE_ABOVE_GLYPHS,
+    right = right,
+    bottom = bottom + height * LINE_BELOW_GLYPHS
+)
+
+private fun TextQuad.asLine(scale: Float): Rect = asLine().let { line ->
+    Rect(
+        left = line.left * scale,
+        top = line.top * scale,
+        right = line.right * scale,
+        bottom = line.bottom * scale
     )
 }

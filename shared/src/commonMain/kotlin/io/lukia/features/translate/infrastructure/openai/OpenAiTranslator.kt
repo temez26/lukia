@@ -1,9 +1,9 @@
 package io.lukia.features.translate.infrastructure.openai
 
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
+import io.ktor.client.request.accept
 import io.ktor.client.request.headers
-import io.ktor.client.request.post
+import io.ktor.client.request.preparePost
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
@@ -18,9 +18,13 @@ import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.TranslationSettings
 import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.domain.Translator
+import io.lukia.features.translate.infrastructure.StreamedAnswer
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
+import io.lukia.features.translate.infrastructure.asTranslationFailure
 import io.lukia.features.translate.infrastructure.buildTranslationPrompt
+import io.lukia.features.translate.infrastructure.forEachEventPayload
 import io.lukia.features.translate.infrastructure.readTranslatedPassage
+import io.lukia.features.translate.infrastructure.translationTimeouts
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
 
@@ -51,6 +55,13 @@ private val SHAPE_INSTRUCTION = """
  * simply ignore the request to, so for those the shape is asked for in the
  * prompt and the answer is read forgivingly. Pretending otherwise would mean
  * every local setup failing on its first sentence.
+ *
+ * The answer is streamed, which matters most for exactly those local setups: a
+ * model on somebody's own machine writes at the speed of their hardware, and
+ * asking for the reply piece by piece is what turns that wait into a sentence
+ * appearing rather than a blank space that may or may not be broken. It is also
+ * what keeps a slow model from being mistaken for a stopped one - see
+ * [translationTimeouts].
  */
 class OpenAiTranslator(
     private val client: HttpClient,
@@ -58,7 +69,10 @@ class OpenAiTranslator(
     private val json: Json = Json { ignoreUnknownKeys = true }
 ) : Translator {
 
-    override suspend fun translate(request: TranslationRequest): Translation {
+    override suspend fun translate(
+        request: TranslationRequest,
+        onPartial: (String) -> Unit
+    ): Translation {
         val configured = settings.settings.value
         val provider = configured.provider
 
@@ -79,18 +93,26 @@ class OpenAiTranslator(
 
         val enforcesSchema = provider == TranslationProvider.OpenAi
         val prompt = buildTranslationPrompt(request)
+        val answer = StreamedAnswer(onPartial)
 
-        val response = try {
-            client.post("${configured.baseUrl.trimEnd('/')}/chat/completions") {
+        // Why the model stopped, from whichever chunk carried it.
+        var finishReason: String? = null
+
+        try {
+            client.preparePost("${configured.baseUrl.trimEnd('/')}/chat/completions") {
+                translationTimeouts(configured)
+
                 configured.apiKey?.takeIf { it.isNotBlank() }?.let { key ->
                     headers { append("Authorization", "Bearer $key") }
                 }
+                accept(ContentType.Text.EventStream)
                 contentType(ContentType.Application.Json)
                 setBody(
                     ChatRequest(
                         model = configured.model,
                         maxTokens = MAX_TOKENS,
                         responseFormat = TranslationResponseFormat.takeIf { enforcesSchema },
+                        stream = true,
                         messages = listOf(
                             ChatMessage.system(
                                 if (enforcesSchema) prompt.system else prompt.system.withShape()
@@ -99,31 +121,43 @@ class OpenAiTranslator(
                         )
                     )
                 )
+            }.execute { response ->
+                if (!response.status.isSuccess()) throw response.asAppError(configured)
+
+                response.forEachEventPayload { payload ->
+                    // A chunk this build cannot read is a chunk carrying
+                    // something new, not a failed translation: servers append
+                    // fields, and one unreadable piece of the answer is not
+                    // worth throwing the rest of it away for.
+                    val chunk = runCatching { json.decodeFromString<ChatChunk>(payload) }
+                        .getOrNull() ?: return@forEachEventPayload
+
+                    chunk.finishReason?.let { finishReason = it }
+                    chunk.text?.let(answer::append)
+                }
             }
         } catch (cancellation: CancellationException) {
             throw cancellation
+        } catch (failure: AppErrorException) {
+            // Already in words the reader can act on. Only a transport failure
+            // needs the reading below.
+            throw failure
         } catch (failure: Throwable) {
             // A server that is not running is the single most common state of a
-            // local one, and "connection refused" is not an answer somebody can
-            // act on without being told where the app was looking.
-            throw AppErrorException(AppError.Unexpected(configured.unreachable()))
+            // local one, and neither "connection refused" nor a timeout is an
+            // answer somebody can act on without being told which it was.
+            throw failure.asTranslationFailure(configured)
         }
-
-        if (!response.status.isSuccess()) throw response.asAppError(configured)
-
-        val answer = response.body<ChatResponse>()
 
         // A model cut off mid-answer produces JSON that will not parse, and the
         // reason is worth giving rather than leaving as a parse failure.
-        if (answer.finishReason == "length") {
+        if (finishReason == "length") {
             throw AppErrorException(
                 AppError.Unexpected("The translation was cut short. Try a shorter passage.")
             )
         }
 
-        val text = answer.text ?: throw AppErrorException(AppError.TranslationFailed)
-
-        return readTranslatedPassage(text, json)
+        return readTranslatedPassage(answer.text, json)
     }
 
     /**
@@ -133,14 +167,6 @@ class OpenAiTranslator(
      * server needs to be asked.
      */
     private fun String.withShape(): String = this + "\n\n" + SHAPE_INSTRUCTION
-
-    private fun TranslationSettings.unreachable(): String = when (provider) {
-        TranslationProvider.Local ->
-            "Could not reach $baseUrl. Check the server is running and that the " +
-                "address is reachable from this device."
-
-        else -> "Could not reach the translation service. Check your connection."
-    }
 
     private suspend fun HttpResponse.asAppError(
         configured: TranslationSettings
