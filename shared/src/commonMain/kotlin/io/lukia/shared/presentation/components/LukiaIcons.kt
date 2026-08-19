@@ -594,3 +594,50 @@ fun RefreshGlyph(
         drawPath(path = arrow, color = tint)
     }
 }
+
+/**
+ * Two arrows pointing opposite ways, marking the control that decides the order
+ * a list is in.
+ *
+ * A pair rather than a single arrow: one arrow says "this way", which is a claim
+ * about a particular ordering, while the control it labels is about ordering in
+ * general.
+ */
+@Composable
+fun SortGlyph(
+    tint: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val stroke = Stroke(
+            width = 1.6.dp.toPx(),
+            cap = StrokeCap.Round,
+            join = StrokeJoin.Round
+        )
+
+        val top = size.height * 0.18f
+        val bottom = size.height * 0.82f
+        val head = size.width * 0.16f
+
+        // Up on the left, down on the right, which is how the pair is set
+        // everywhere it appears in a toolbar.
+        val up = Path().apply {
+            moveTo(size.width * 0.30f, bottom)
+            lineTo(size.width * 0.30f, top)
+            moveTo(size.width * 0.30f - head, top + head)
+            lineTo(size.width * 0.30f, top)
+            lineTo(size.width * 0.30f + head, top + head)
+        }
+
+        val down = Path().apply {
+            moveTo(size.width * 0.70f, top)
+            lineTo(size.width * 0.70f, bottom)
+            moveTo(size.width * 0.70f - head, bottom - head)
+            lineTo(size.width * 0.70f, bottom)
+            lineTo(size.width * 0.70f + head, bottom - head)
+        }
+
+        drawPath(path = up, color = tint, style = stroke)
+        drawPath(path = down, color = tint, style = stroke)
+    }
+}

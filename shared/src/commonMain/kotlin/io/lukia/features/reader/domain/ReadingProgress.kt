@@ -9,7 +9,16 @@ package io.lukia.features.reader.domain
  */
 data class ReadingProgress(
     val pageIndex: Int,
-    val pageCount: Int
+    val pageCount: Int,
+    /**
+     * Which of two books was read more recently, as a count of writes rather
+     * than a time - see `ReadingPosition.sq` for why it is not a clock.
+     *
+     * Stamped by the store, so whatever a caller puts here on the way in is
+     * ignored; it is only ever worth reading. Zero for a position stored before
+     * the app began recording this at all.
+     */
+    val readAt: Long = 0L
 ) {
     /**
      * How far through, from 0 to 1, or null for a document with no length to
@@ -38,6 +47,16 @@ data class ReadingProgress(
      */
     val percent: Int?
         get() = fraction?.let { (it * 100).toInt().coerceIn(1, 100) }
+
+    /**
+     * True once the reader has reached the last page.
+     *
+     * Here rather than on either screen that asks, so that a book called
+     * finished on its detail screen is the same book the library files under
+     * Finished.
+     */
+    val isFinished: Boolean
+        get() = percent == 100
 }
 
 /**
@@ -61,6 +80,7 @@ interface ReadingProgressRepository {
      */
     suspend fun allProgress(): Map<String, ReadingProgress>
 
+    /** Stamps [ReadingProgress.readAt], so the saved position is the newest there is. */
     suspend fun save(location: String, progress: ReadingProgress)
 
     /**

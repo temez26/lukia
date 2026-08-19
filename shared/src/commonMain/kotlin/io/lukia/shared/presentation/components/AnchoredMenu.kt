@@ -26,6 +26,7 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -117,6 +118,12 @@ fun AnchoredMenu(
  *
  * [icon] is handed both the tint and an already-sized modifier, so the glyphs
  * down a menu are the same size without every caller having to say so.
+ *
+ * [selected] is for a menu that is a list of choices rather than a list of
+ * actions - which format to show, which order to sort in. The tick sits at the
+ * end of the row, in the accent colour, which is where iOS puts the mark on a
+ * chosen menu item; the row is also announced as the chosen one rather than as
+ * a button that happens to be ticked.
  */
 @Composable
 fun MenuRow(
@@ -124,6 +131,7 @@ fun MenuRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     tint: Color = MaterialTheme.colorScheme.onSurface,
+    selected: Boolean = false,
     icon: (@Composable (Color, Modifier) -> Unit)? = null
 ) {
     val metrics = LocalLukiaMetrics.current
@@ -146,7 +154,10 @@ fun MenuRow(
             )
             .heightIn(min = metrics.rowHeight)
             .padding(horizontal = MenuInset, vertical = Space.sm)
-            .semantics { contentDescription = label }
+            .semantics {
+                contentDescription = label
+                this.selected = selected
+            }
     ) {
         if (icon != null) {
             icon(tint, Modifier.size(metrics.iconSmall))
@@ -159,6 +170,17 @@ fun MenuRow(
             color = tint,
             maxLines = 1
         )
+
+        if (selected) {
+            // The column is pinned to its widest row, so the weight pushes the
+            // tick to the end of the menu rather than to the end of the label.
+            Spacer(modifier = Modifier.weight(1f).width(Space.lg))
+
+            CheckGlyph(
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(metrics.iconSmall)
+            )
+        }
     }
 }
 

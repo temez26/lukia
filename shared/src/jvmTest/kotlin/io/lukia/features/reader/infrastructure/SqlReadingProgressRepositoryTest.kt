@@ -7,6 +7,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class SqlReadingProgressRepositoryTest {
 
@@ -27,10 +28,10 @@ class SqlReadingProgressRepositoryTest {
     fun aPositionComesBackWhereItWasLeft() = runTest {
         repository.save("/books/one.pdf", ReadingProgress(pageIndex = 41, pageCount = 300))
 
-        assertEquals(
-            ReadingProgress(pageIndex = 41, pageCount = 300),
-            repository.progressFor("/books/one.pdf")
-        )
+        val stored = repository.progressFor("/books/one.pdf")
+
+        assertEquals(41, stored?.pageIndex)
+        assertEquals(300, stored?.pageCount)
     }
 
     @Test
@@ -57,6 +58,36 @@ class SqlReadingProgressRepositoryTest {
         repository.forget("/books/one.pdf")
 
         assertNull(repository.progressFor("/books/one.pdf"))
+    }
+
+    /**
+     * The library can be ordered by what was read last, so a position has to
+     * know where it stands against the others. A count rather than a clock -
+     * see `ReadingPosition.sq` - so this asserts on the order it puts books in
+     * rather than on the numbers themselves.
+     */
+    @Test
+    fun theBookReadMostRecentlyStandsAboveTheRest() = runTest {
+        repository.save("/books/one.pdf", ReadingProgress(pageIndex = 1, pageCount = 100))
+        repository.save("/books/two.pdf", ReadingProgress(pageIndex = 1, pageCount = 100))
+
+        val afterTwo = repository.allProgress()
+        assertTrue(afterTwo.getValue("/books/two.pdf").readAt > afterTwo.getValue("/books/one.pdf").readAt)
+
+        // Reading on in the first book puts it back on top, rather than leaving
+        // it where it was when it was first opened.
+        repository.save("/books/one.pdf", ReadingProgress(pageIndex = 2, pageCount = 100))
+
+        val afterMore = repository.allProgress()
+        assertTrue(afterMore.getValue("/books/one.pdf").readAt > afterMore.getValue("/books/two.pdf").readAt)
+    }
+
+    /** The store stamps it, so whatever a caller passes in is ignored. */
+    @Test
+    fun aCallerCannotChooseWhereItsBookStands() = runTest {
+        repository.save("/books/one.pdf", ReadingProgress(pageIndex = 1, pageCount = 100, readAt = 9_999L))
+
+        assertEquals(1L, repository.progressFor("/books/one.pdf")?.readAt)
     }
 
     /**

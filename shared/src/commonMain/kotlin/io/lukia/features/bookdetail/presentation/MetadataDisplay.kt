@@ -3,6 +3,7 @@ package io.lukia.features.bookdetail.presentation
 import io.lukia.core.domain.BookMetadata
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.presentation.displayTitle
+import io.lukia.core.presentation.languageName
 import io.lukia.features.bookdetail.application.BookDetails
 import io.lukia.features.reader.domain.ReadingUnit
 
@@ -49,70 +50,13 @@ fun BookMetadata.publishedYear(): String? {
 private val YearPrefix = Regex("""^(1\d{3}|20\d{2}|21\d{2})\b""")
 
 /**
- * A language tag as a language.
+ * The language the document declares, as a language rather than as a tag.
  *
- * Only the primary subtag is looked at, so `en-GB` and `en-US` both read as
- * English - the region is a distinction for a spell checker rather than for
- * someone deciding whether they can read a book. A tag not in this list is shown
- * as it was written, upper-cased, which is still more use than hiding the row.
+ * The table it reads from is shared with the library's language filter - see
+ * [languageName] - so a book shown as Norwegian here is filed under Norwegian
+ * there.
  */
-fun BookMetadata.languageName(): String? {
-    val tag = language?.trim()?.takeIf { it.isNotBlank() } ?: return null
-    val primary = tag.substringBefore('-').substringBefore('_').lowercase()
-
-    return LanguageNames[primary] ?: tag.uppercase()
-}
-
-/**
- * The languages a reading app actually meets, by ISO 639-1 code.
- *
- * Deliberately not the full set of some two hundred: the rest fall back to their
- * tag, which is what a book in Aymara would have shown anyway had it been listed
- * and mistranslated.
- */
-private val LanguageNames = mapOf(
-    "ar" to "Arabic",
-    "bg" to "Bulgarian",
-    "ca" to "Catalan",
-    "cs" to "Czech",
-    "da" to "Danish",
-    "de" to "German",
-    "el" to "Greek",
-    "en" to "English",
-    "es" to "Spanish",
-    "et" to "Estonian",
-    "fa" to "Persian",
-    "fi" to "Finnish",
-    "fr" to "French",
-    "he" to "Hebrew",
-    "hi" to "Hindi",
-    "hr" to "Croatian",
-    "hu" to "Hungarian",
-    "id" to "Indonesian",
-    "is" to "Icelandic",
-    "it" to "Italian",
-    "ja" to "Japanese",
-    "ko" to "Korean",
-    "lt" to "Lithuanian",
-    "lv" to "Latvian",
-    "nb" to "Norwegian",
-    "nl" to "Dutch",
-    "nn" to "Norwegian",
-    "no" to "Norwegian",
-    "pl" to "Polish",
-    "pt" to "Portuguese",
-    "ro" to "Romanian",
-    "ru" to "Russian",
-    "sk" to "Slovak",
-    "sl" to "Slovenian",
-    "sr" to "Serbian",
-    "sv" to "Swedish",
-    "th" to "Thai",
-    "tr" to "Turkish",
-    "uk" to "Ukrainian",
-    "vi" to "Vietnamese",
-    "zh" to "Chinese"
-)
+fun BookMetadata.languageName(): String? = languageName(language)
 
 /**
  * How long the book is, once that is known.

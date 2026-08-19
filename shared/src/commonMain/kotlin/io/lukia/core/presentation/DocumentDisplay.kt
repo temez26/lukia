@@ -14,7 +14,13 @@ fun DocumentInfo.displayTitle(): String {
     }
 }
 
-fun DocumentInfo.displayType(): String = when (type) {
+fun DocumentInfo.displayType(): String = type.displayName()
+
+/**
+ * What to call a format where there is no document to hand - a filter offering
+ * the formats a library holds, rather than a card describing one book.
+ */
+fun DocumentType.displayName(): String = when (this) {
     DocumentType.PDF -> "PDF"
     DocumentType.EPUB -> "EPUB"
     DocumentType.DOCX -> "Word"

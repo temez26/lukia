@@ -9,6 +9,14 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
+// See `compose-stability.conf`: value types the compiler cannot prove immutable,
+// so that a grid of book covers can skip the cards that have not changed.
+composeCompiler {
+    stabilityConfigurationFiles.add(
+        rootProject.layout.projectDirectory.file("compose-stability.conf")
+    )
+}
+
 sqldelight {
     databases {
         create("LukiaDatabase") {

@@ -2,6 +2,10 @@ package io.lukia.features.library.presentation.screens
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -20,6 +24,10 @@ import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.PickedDocument
 import io.lukia.core.presentation.UiState
+import io.lukia.features.library.presentation.LibraryQuery
+import io.lukia.features.library.presentation.asLibrary
+import io.lukia.features.library.presentation.facets
+import io.lukia.features.library.presentation.matching
 import io.lukia.shared.presentation.theme.LukiaTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -64,6 +72,15 @@ class LibraryContentTest {
         onDocumentDetails: (DocumentInfo) -> Unit = {}
     ) {
         setContent {
+            // The query is the ViewModel's in the app, so the test plays that
+            // part: it holds what the controls ask for and narrows the library
+            // through the same functions the ViewModel narrows it with. Anything
+            // less would be asserting that a chip changes a variable rather than
+            // that it changes what is on screen.
+            var query by remember { mutableStateOf(LibraryQuery()) }
+            val books = remember(documents) { documents.asLibrary(emptyMap()) }
+            val facets = remember(books) { books.facets() }
+
             // Sized explicitly: the layout branches on the window's width class,
             // and a test that let the harness pick the window would be asserting
             // on whichever branch that happened to land in.
@@ -71,6 +88,10 @@ class LibraryContentTest {
                 LukiaTheme(darkTheme = false) {
                     LibraryContent(
                         uiState = UiState.Success(documents),
+                        books = books.matching(query),
+                        facets = facets,
+                        query = query,
+                        onQueryChange = { query = it },
                         onImport = {},
                         onImportFolder = {},
                         onDocumentClick = {},
@@ -91,8 +112,15 @@ class LibraryContentTest {
         onNodeWithText(title).performTouchInput { longClick() }
     }
 
-    private fun ComposeUiTest.selectFilter(label: String) {
+    /** Presses a chip or a menu row by the words on it. */
+    private fun ComposeUiTest.press(label: String) {
         onNode(hasText(label) and hasClickAction()).performClick()
+    }
+
+    /** Opens the format chip's menu and chooses [format] from it. */
+    private fun ComposeUiTest.selectFormat(format: String) {
+        press("Format")
+        press(format)
     }
 
     @Test
@@ -110,19 +138,33 @@ class LibraryContentTest {
     fun theImportSlotIsNotOfferedUnderAFilter() = runComposeUiTest {
         setLibrary()
 
-        selectFilter("Favourites")
+        press("Favourites")
 
         onNodeWithText("Add Books").assertDoesNotExist()
     }
 
+    /** The formats a library holds are chosen from the chip's own menu. */
     @Test
-    fun theImportSlotComesBackOnReturningToAll() = runComposeUiTest {
+    fun aFormatChosenFromTheMenuNarrowsTheGrid() = runComposeUiTest {
         setLibrary()
 
-        selectFilter("EPUB")
+        selectFormat("EPUB")
+
+        onNodeWithText("The Hobbit").assertIsDisplayed()
+        onNodeWithText("Moby Dick").assertDoesNotExist()
+    }
+
+    @Test
+    fun theImportSlotComesBackOnceTheFormatIsCleared() = runComposeUiTest {
+        setLibrary()
+
+        selectFormat("EPUB")
         onNodeWithText("Add Books").assertDoesNotExist()
 
-        selectFilter("All")
+        // The chip now wears the chosen format's name, so that is what opens it.
+        press("EPUB")
+        press("All formats")
+
         onNodeWithText("Add Books").assertIsDisplayed()
     }
 
@@ -133,7 +175,7 @@ class LibraryContentTest {
 
         onNodeWithText("Search 2 books").assertIsDisplayed()
 
-        selectFilter("Favourites")
+        press("Favourites")
 
         onNodeWithText("Search 1 book").assertIsDisplayed()
     }

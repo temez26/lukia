@@ -8,6 +8,7 @@ import io.lukia.core.domain.PickedFolder
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.core.domain.toAppError
 import io.lukia.core.presentation.UiState
+import io.lukia.core.presentation.dataOrNull
 import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.library.application.GetLibraryDocumentsUseCase
 import io.lukia.features.library.application.ImportDocumentsUseCase
@@ -18,11 +19,18 @@ import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.features.reader.domain.ReadingProgressRepository
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class LibraryViewModel(
     private val getLibraryDocumentsUseCase: GetLibraryDocumentsUseCase,
@@ -31,7 +39,12 @@ class LibraryViewModel(
     private val setFavoriteUseCase: SetFavoriteUseCase,
     private val refreshDocumentUseCase: RefreshDocumentUseCase,
     private val removeDocumentUseCase: RemoveDocumentUseCase,
-    private val readingProgressRepository: ReadingProgressRepository
+    private val readingProgressRepository: ReadingProgressRepository,
+    /**
+     * Where the library is narrowed, ordered and measured. Off the main thread
+     * in production, and injectable so tests can run it deterministically.
+     */
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState<List<DocumentInfo>>>(UiState.Loading)
@@ -79,8 +92,66 @@ class LibraryViewModel(
     private val _importProgress = MutableStateFlow<ImportProgress?>(null)
     val importProgress: StateFlow<ImportProgress?> = _importProgress.asStateFlow()
 
+    /**
+     * What the reader has asked of their library - the shelf, the filters, the
+     * search and the order.
+     *
+     * Held here rather than in the screen so that narrowing the library is not
+     * work done on the thread that draws it, and so that leaving for a book and
+     * coming back finds the shelf as it was left.
+     */
+    private val _query = MutableStateFlow(LibraryQuery())
+    val query: StateFlow<LibraryQuery> = _query.asStateFlow()
+
+    /**
+     * The whole library with its reading positions joined on and its search and
+     * sort keys worked out - see [LibraryBook].
+     *
+     * Off the main thread and computed once per load rather than once per
+     * keystroke, which is the whole point of it existing.
+     */
+    private val library: StateFlow<List<LibraryBook>> =
+        combine(_uiState, _readingProgress) { state, progress ->
+            withContext(dispatcher) { state.dataOrNull.orEmpty().asLibrary(progress) }
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    /** What this library can usefully be narrowed by, for the header's controls. */
+    val facets: StateFlow<LibraryFacets> = library
+        .map { books -> withContext(dispatcher) { books.facets() } }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, LibraryFacets.Empty)
+
+    /**
+     * The books the grid draws: everything [query] asks for, in the order it
+     * asks for.
+     *
+     * Every part of working this out - the filtering, the sorting, and the pass
+     * that builds [library] behind it - is done on [dispatcher] and handed back
+     * finished. The screen collects a list, so changing a filter costs it a
+     * recomposition rather than a search through the whole library on the frame
+     * the reader is watching.
+     *
+     * The work is moved with `withContext` inside each transform rather than
+     * with `flowOn`, which would put a channel between the ViewModel and the
+     * screen: the computing is what has to leave the main thread, not the
+     * handing over of the answer.
+     */
+    val books: StateFlow<List<LibraryBook>> = combine(library, _query) { books, query ->
+        withContext(dispatcher) { books.matching(query) }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
     init {
         loadDocuments()
+
+        // A filter can lose its ground under the reader - the last favourite
+        // un-favourited, the last EPUB deleted - and a query still asking for it
+        // would empty the grid for a reason nothing on screen explains.
+        viewModelScope.launch {
+            facets.collect { facets -> _query.update { it.limitedTo(facets) } }
+        }
+    }
+
+    fun updateQuery(query: LibraryQuery) {
+        _query.value = query
     }
 
     /**

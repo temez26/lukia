@@ -58,7 +58,7 @@ internal sealed interface CoverArt {
 }
 
 /**
- * Decodes a cover, off the main thread.
+ * Decodes a cover, off the main thread and only once.
  *
  * Covers are stored as they were extracted - a PDF's first page rendered at 96
  * DPI is around 800x1100 - and decoding one costs several megabytes and a
@@ -66,10 +66,10 @@ internal sealed interface CoverArt {
  * card scrolled into view stalled the frame it appeared on, so a fast scroll
  * through a large library stuttered on all three platforms.
  *
- * The bitmap is not cached beyond the composition that asked for it: a screen's
- * worth of decoded covers is already tens of megabytes, and holding a whole
- * library's worth would trade a stutter for an eventual crash. Re-decoding on
- * scroll-back costs nothing visible now that it happens off the main thread.
+ * What comes back is kept in [CoverArtCache], shrunk to the size it is actually
+ * drawn at and held to a fixed budget. That is what makes scrolling back up a
+ * long shelf free rather than a second decode of everything on the way, without
+ * a library of any size costing more memory than a library of twenty books.
  */
 @Composable
 internal fun rememberCoverArt(coverImage: CoverImage?): CoverArt {
@@ -83,11 +83,14 @@ internal fun rememberCoverArt(coverImage: CoverImage?): CoverArt {
             CoverArt.Absent
         } else {
             withContext(Dispatchers.Default) {
-                runCatching { coverImage.bytes.decodeToImageBitmap() }
-                    .fold(
-                        onSuccess = { CoverArt.Artwork(it) },
-                        onFailure = { CoverArt.Absent }
-                    )
+                CoverArtCache.artworkFor(coverImage) { cover ->
+                    // A cover that will not decode is a cover the book does not
+                    // have, from the reader's side - so it is not an error to
+                    // report, and not something to try again on every scroll.
+                    runCatching { cover.bytes.decodeToImageBitmap() }.getOrNull()
+                }
+                    ?.let { CoverArt.Artwork(it) }
+                    ?: CoverArt.Absent
             }
         }
     }

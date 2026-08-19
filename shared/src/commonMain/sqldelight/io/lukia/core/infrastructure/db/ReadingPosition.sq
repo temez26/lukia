@@ -11,10 +11,17 @@
 -- reason to be locked to - a position can be stored for a book the library was
 -- never told about. Removing a book clears its position all the same; that is
 -- `RemoveDocumentUseCase`'s doing rather than the schema's.
+--
+-- `readAt` orders the shelf by what was read last. It counts writes rather than
+-- telling the time - one past the highest in the table - for the same reason
+-- `translation_cache.usedAt` does: a device clock can be changed and can go
+-- backwards, and what this has to answer is only ever "which of these two came
+-- later".
 CREATE TABLE reading_position (
     location TEXT NOT NULL PRIMARY KEY,
     pageIndex INTEGER NOT NULL,
-    pageCount INTEGER NOT NULL
+    pageCount INTEGER NOT NULL,
+    readAt INTEGER NOT NULL DEFAULT 0
 );
 
 selectByLocation:
@@ -24,17 +31,21 @@ SELECT * FROM reading_position WHERE location = ?;
 --
 -- One statement rather than one per book: the grid shows how far through each
 -- book its reader is, and asking that book by book would be a query per cell on
--- a shelf that may hold hundreds. The whole table is three columns of numbers,
--- so reading all of it costs less than reading one cover.
+-- a shelf that may hold hundreds. The whole table is a handful of numbers per
+-- book, so reading all of it costs less than reading one cover.
 selectAll:
 SELECT * FROM reading_position;
 
 -- Replace rather than update: the row holds nothing that is not being written,
 -- so there is nothing to preserve. `INSERT OR REPLACE` is as old as SQLite,
 -- unlike the upsert this would otherwise be - see `Document.sq`.
+--
+-- The subselect runs before the conflicting row is replaced, so a book being
+-- written again still comes out above every other book rather than keeping the
+-- place it had.
 put:
-INSERT OR REPLACE INTO reading_position(location, pageIndex, pageCount)
-VALUES (?, ?, ?);
+INSERT OR REPLACE INTO reading_position(location, pageIndex, pageCount, readAt)
+VALUES (?, ?, ?, (SELECT COALESCE(MAX(readAt), 0) + 1 FROM reading_position));
 
 deleteByLocation:
 DELETE FROM reading_position WHERE location = ?;
