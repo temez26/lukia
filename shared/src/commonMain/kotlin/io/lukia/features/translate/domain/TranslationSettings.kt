@@ -34,7 +34,12 @@ data class TranslationSettings(
      * offering it as a translator everywhere else.
      */
     private val googleKey: String? = null,
-    val gestures: TranslationGestures = TranslationGestures.Default
+    val gestures: TranslationGestures = TranslationGestures.Default,
+    /**
+     * Whether the reader has asked for the two ways of translating more of the
+     * book than they pointed at. Off until they do - see [BulkTranslation].
+     */
+    val bulkTranslation: BulkTranslation = BulkTranslation.Default
 ) {
 
     /** What the current provider is asked for, or what it offers by default. */
@@ -124,6 +129,9 @@ data class TranslationSettings(
     fun withGestures(gestures: TranslationGestures): TranslationSettings =
         copy(gestures = gestures)
 
+    fun withBulkTranslation(bulk: BulkTranslation): TranslationSettings =
+        copy(bulkTranslation = bulk)
+
     /** What is stored for a provider that is not the one currently chosen. */
     fun modelFor(provider: TranslationProvider): String =
         models.entryFor(provider) ?: provider.defaultModel
@@ -162,7 +170,8 @@ data class TranslationSettings(
             timeouts: Map<TranslationProvider, Int> = emptyMap(),
             wordLookup: WordLookup = WordLookup.Default,
             googleKey: String? = null,
-            gestures: TranslationGestures = TranslationGestures.Default
+            gestures: TranslationGestures = TranslationGestures.Default,
+            bulkTranslation: BulkTranslation = BulkTranslation.Default
         ) = TranslationSettings(
             targetLanguage = targetLanguage,
             provider = provider,
@@ -172,7 +181,8 @@ data class TranslationSettings(
             timeouts = timeouts,
             wordLookup = wordLookup,
             googleKey = googleKey,
-            gestures = gestures
+            gestures = gestures,
+            bulkTranslation = bulkTranslation
         )
     }
 

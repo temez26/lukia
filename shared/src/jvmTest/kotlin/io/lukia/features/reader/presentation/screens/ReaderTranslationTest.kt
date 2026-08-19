@@ -30,6 +30,7 @@ import io.lukia.features.reader.domain.TextBlock
 import io.lukia.features.reader.domain.TextRun
 import io.lukia.features.reader.domain.TextSection
 import io.lukia.features.reader.presentation.TranslateOnScreen
+import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.PassageUnit
 import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.domain.TextAnchor
@@ -546,6 +547,42 @@ class ReaderTranslationTest {
         )
     }
 
+
+    /**
+     * A control for something the reader has not asked to be offered is not in
+     * the bar at all. These two spend a screenful at a time - see
+     * BulkTranslation - and a button that can do that is a button somebody
+     * presses to find out what it does.
+     */
+    @Test
+    fun theExpensiveControlsAreNotThereUntilTheyAreAskedFor() = runComposeUiTest {
+        setReader(translationConfigured = true)
+
+        assertEquals(
+            0,
+            onAllNodes(hasContentDescription("Translate what is on screen"))
+                .fetchSemanticsNodes()
+                .size
+        )
+    }
+
+    @Test
+    fun aControlAskedForIsInTheBar() = runComposeUiTest {
+        setReader(
+            translationConfigured = true,
+            bulkTranslation = BulkTranslation(onScreen = true, asYouRead = false)
+        )
+
+        onNodeWithContentDescription("Translate what is on screen").assertExists()
+        // And only the one that was asked for.
+        assertEquals(
+            0,
+            onAllNodes(hasContentDescription("Keep translating as you read"))
+                .fetchSemanticsNodes()
+                .size
+        )
+    }
+
     /**
      * A tap lands where it is aimed. The node is the whole paragraph, so its
      * centre is whichever sentence happens to fall in the middle of it - the
@@ -564,7 +601,9 @@ class ReaderTranslationTest {
         onPassageSelected: (PassageSelection) -> Unit = {},
         onPassagesRequested: (List<PassageSelection>) -> Unit = {},
         translateOnScreen: () -> TranslateOnScreen = { TranslateOnScreen.Idle },
-        gestures: TranslationGestures = TranslationGestures.Default
+        gestures: TranslationGestures = TranslationGestures.Default,
+        translationConfigured: Boolean = false,
+        bulkTranslation: BulkTranslation = BulkTranslation.Default
     ) {
         setContent {
             LukiaTheme {
@@ -575,6 +614,8 @@ class ReaderTranslationTest {
                     translations = translations(),
                     translateOnScreen = translateOnScreen(),
                     gestures = gestures,
+                    translationConfigured = translationConfigured,
+                    bulkTranslation = bulkTranslation,
                     onBack = {},
                     onRetry = {},
                     onSettingsChange = {},

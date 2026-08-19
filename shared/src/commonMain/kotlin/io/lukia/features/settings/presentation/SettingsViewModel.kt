@@ -9,6 +9,7 @@ import io.lukia.features.settings.domain.AppSettings
 import io.lukia.features.settings.domain.AppTheme
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.features.translate.application.TranslatePassageUseCase
+import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.ModelCatalogue
 import io.lukia.features.translate.domain.ModelWarmUp
 import io.lukia.features.translate.domain.PassageUnit
@@ -190,6 +191,21 @@ class SettingsViewModel(
     fun setTapGesture(unit: PassageUnit?) = setGestures { copy(tap = unit) }
 
     fun setLongPressGesture(unit: PassageUnit?) = setGestures { copy(longPress = unit) }
+
+    /**
+     * Whether the reader is offered translating a screenful at a time, and
+     * whether it keeps going as they scroll. See [BulkTranslation] for why these
+     * are off until asked for.
+     */
+    fun setTranslateOnScreen(enabled: Boolean) = setBulk { copy(onScreen = enabled) }
+
+    fun setTranslateAsYouRead(enabled: Boolean) = setBulk { copy(asYouRead = enabled) }
+
+    private fun setBulk(change: BulkTranslation.() -> BulkTranslation) {
+        val current = translation.settings.value
+
+        translation.update(current.withBulkTranslation(current.bulkTranslation.change()))
+    }
 
     private fun setGestures(change: TranslationGestures.() -> TranslationGestures) {
         val current = translation.settings.value

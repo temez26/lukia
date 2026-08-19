@@ -13,6 +13,8 @@ import io.lukia.features.translate.domain.WordLookup
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import kotlin.test.assertNull
 
 /**
@@ -71,6 +73,38 @@ class SettingsViewModelGesturesTest {
 
         assertEquals(PassageUnit.Word, translation.settings.value.gestures.tap)
         assertEquals(PassageUnit.Paragraph, translation.settings.value.gestures.longPress)
+    }
+
+
+    /**
+     * The two expensive ones are off until asked for, and asking for one does
+     * not ask for the other - they cost very different amounts.
+     */
+    @Test
+    fun theExpensiveWaysOfTranslatingAreOffUntilAskedFor() {
+        val store = FakeSettingsStore()
+        val translation = TranslationSettingsRepository(store, FakeSecretStore())
+
+        assertFalse(translation.settings.value.bulkTranslation.any)
+
+        viewModel(store, translation).setTranslateOnScreen(true)
+
+        assertTrue(translation.settings.value.bulkTranslation.onScreen)
+        assertFalse(translation.settings.value.bulkTranslation.asYouRead)
+    }
+
+    @Test
+    fun whatIsAskedForIsThereTheNextTimeTheAppOpens() {
+        val store = FakeSettingsStore()
+        val secrets = FakeSecretStore()
+
+        viewModel(store, TranslationSettingsRepository(store, secrets))
+            .setTranslateAsYouRead(true)
+
+        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+
+        assertTrue(reopened.bulkTranslation.asYouRead)
+        assertFalse(reopened.bulkTranslation.onScreen)
     }
 
     @Test

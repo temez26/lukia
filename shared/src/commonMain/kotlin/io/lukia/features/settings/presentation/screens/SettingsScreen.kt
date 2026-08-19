@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,15 +17,18 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -89,6 +93,8 @@ fun SettingsScreen(
         onGoogleApiKeyChange = viewModel::setGoogleApiKey,
         onTapGestureChange = viewModel::setTapGesture,
         onLongPressGestureChange = viewModel::setLongPressGesture,
+        onTranslateOnScreenChange = viewModel::setTranslateOnScreen,
+        onTranslateAsYouReadChange = viewModel::setTranslateAsYouRead,
         onTestConnection = viewModel::testConnection,
         onLoadModels = viewModel::loadAvailableModels,
         onLoadChosenModel = viewModel::loadChosenModel,
@@ -123,6 +129,8 @@ fun SettingsContent(
     onGoogleApiKeyChange: (String) -> Unit = {},
     onTapGestureChange: (PassageUnit?) -> Unit = {},
     onLongPressGestureChange: (PassageUnit?) -> Unit = {},
+    onTranslateOnScreenChange: (Boolean) -> Unit = {},
+    onTranslateAsYouReadChange: (Boolean) -> Unit = {},
     onTestConnection: () -> Unit,
     onLoadModels: () -> Unit = {},
     onLoadChosenModel: () -> Unit = {},
@@ -162,6 +170,8 @@ fun SettingsContent(
                 onGoogleApiKeyChange = onGoogleApiKeyChange,
                 onTapGestureChange = onTapGestureChange,
                 onLongPressGestureChange = onLongPressGestureChange,
+                onTranslateOnScreenChange = onTranslateOnScreenChange,
+                onTranslateAsYouReadChange = onTranslateAsYouReadChange,
                 onTestConnection = onTestConnection,
                 onLoadModels = onLoadModels,
                 onLoadChosenModel = onLoadChosenModel,
@@ -211,6 +221,8 @@ internal fun SettingsBody(
     onGoogleApiKeyChange: (String) -> Unit,
     onTapGestureChange: (PassageUnit?) -> Unit,
     onLongPressGestureChange: (PassageUnit?) -> Unit,
+    onTranslateOnScreenChange: (Boolean) -> Unit,
+    onTranslateAsYouReadChange: (Boolean) -> Unit,
     onTestConnection: () -> Unit,
     onLoadModels: () -> Unit,
     onLoadChosenModel: () -> Unit,
@@ -238,185 +250,346 @@ internal fun SettingsBody(
                 .fillMaxWidth()
                 .padding(horizontal = dimens.screenPadding)
         ) {
+
+            var area by rememberSaveable { mutableStateOf<SettingsArea?>(null) }
+
             Text(
-                text = "Settings",
+                text = area?.title ?: "Settings",
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
 
-            SettingsSection(
-                title = "Appearance",
-                // Named for what it does rather than what it is called, since
-                // "System" is the only option whose meaning is not obvious from
-                // the word alone.
-                footnote = "System follows your device’s light and dark setting.",
-                groupColor = groupColor,
-                modifier = Modifier.padding(top = dimens.sectionSpacing)
-            ) {
-                SegmentedControl(
-                    options = AppTheme.entries,
-                    selected = settings.theme,
-                    label = { it.name },
-                    onSelect = onThemeChange
+            // Inside an area, the way back up. The screen's own back button
+            // leaves settings altogether, and an area is not somewhere the
+            // reader should have to leave the screen to get out of.
+            if (area != null) {
+                LukiaButton(
+                    label = "All settings",
+                    onClick = { area = null },
+                    variant = ButtonVariant.Secondary,
+                    modifier = Modifier.padding(top = Space.md)
                 )
             }
 
-            SettingsSection(
-                title = "Translation service",
-                footnote = translation.provider.footnote(),
-                groupColor = groupColor,
-                modifier = Modifier.padding(top = dimens.sectionSpacing)
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
-                    SegmentedControl(
-                        options = TranslationProvider.entries,
-                        selected = translation.provider,
-                        label = { it.label },
-                        onSelect = onProviderChange
-                    )
+            // The list of areas, or the one the reader opened. Held here rather
+            // than routed to, so the panel this same body is drawn in - a popup
+            // with no navigation of its own - works exactly as the screen does.
+            when (area) {
+                null -> SettingsAreas(
+                    groupColor = groupColor,
+                    modifier = Modifier.padding(top = dimens.sectionSpacing),
+                    onOpen = { area = it }
+                )
 
-                    if (translation.provider.hasConfigurableEndpoint) {
-                        LabelledField(label = "Address") {
-                            SettingsTextField(
-                                value = translation.baseUrl,
-                                onValueChange = onBaseUrlChange,
-                                placeholder = translation.provider.defaultBaseUrl
+                SettingsArea.Appearance -> {
+                SettingsSection(
+                    title = "Appearance",
+                    // Named for what it does rather than what it is called, since
+                    // "System" is the only option whose meaning is not obvious from
+                    // the word alone.
+                    footnote = "System follows your device’s light and dark setting.",
+                    groupColor = groupColor,
+                    modifier = Modifier.padding(top = dimens.sectionSpacing)
+                ) {
+                    SegmentedControl(
+                        options = AppTheme.entries,
+                        selected = settings.theme,
+                        label = { it.name },
+                        onSelect = onThemeChange
+                    )
+                }
+                }
+
+                SettingsArea.Reading -> {
+                SettingsSection(
+                    title = "Pointing at the book",
+                    footnote = "Each does one thing, always. Doing it again on the same " +
+                        "passage puts the book\u2019s own words back.",
+                    groupColor = groupColor,
+                    modifier = Modifier.padding(top = dimens.sectionSpacing)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
+                        LabelledField(label = "Tap") {
+                            GestureControl(
+                                selected = translation.gestures.tap,
+                                onSelect = onTapGestureChange
+                            )
+                        }
+
+                        LabelledField(label = "Press and hold") {
+                            GestureControl(
+                                selected = translation.gestures.longPress,
+                                onSelect = onLongPressGestureChange
                             )
                         }
                     }
-
-                    LabelledField(
-                        label = if (translation.provider.requiresKey) "API key" else "API key (optional)"
-                    ) {
-                        SettingsTextField(
-                            value = translation.apiKey.orEmpty(),
-                            onValueChange = onApiKeyChange,
-                            placeholder = if (translation.provider.requiresKey) "Required" else "None",
-                            secret = true
-                        )
-                    }
-
-                    LabelledField(label = "Model") {
-                        SettingsTextField(
-                            value = translation.model,
-                            onValueChange = onModelChange,
-                            placeholder = translation.provider.defaultModel
-                        )
-                    }
-
-                    if (translation.provider.hasConfigurableEndpoint) {
-                        ServerModels(
-                            state = availableModels,
-                            selected = translation.model,
-                            onSelect = onModelChoose,
-                            onLoad = onLoadModels
-                        )
-
-                        ModelReadinessRow(
-                            state = modelReadiness,
-                            model = translation.model,
-                            onLoad = onLoadChosenModel
-                        )
-                    } else if (translation.provider.suggestedModels.isNotEmpty()) {
-                        ChoiceList(
-                            options = translation.provider.suggestedModels,
-                            selected = translation.model,
-                            label = { it },
-                            onSelect = onModelChoose
-                        )
-                    }
-
-                    TimeoutField(
-                        provider = translation.provider,
-                        seconds = translation.timeoutSeconds,
-                        onChange = onTimeoutChange
-                    )
-
-                    ConnectionTestRow(
-                        state = connectionTest,
-                        enabled = translation.isConfigured,
-                        onTest = onTestConnection
-                    )
                 }
-            }
 
-            SettingsSection(
-                title = "Looking up a word",
-                footnote = translation.wordLookup.footnote,
-                groupColor = groupColor,
-                modifier = Modifier.padding(top = dimens.sectionSpacing)
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
-                    SegmentedControl(
-                        options = WordLookup.entries,
-                        selected = translation.wordLookup,
-                        label = { it.label },
-                        onSelect = onWordLookupChange
-                    )
+                SettingsSection(
+                    title = "Translating ahead",
+                    footnote = "Both are new, and both are slow and expensive: they " +
+                        "translate a screenful at a time rather than the passage you " +
+                        "pointed at. Off until you ask for them, and hidden from the " +
+                        "reader entirely while they are.",
+                    groupColor = groupColor,
+                    modifier = Modifier.padding(top = dimens.sectionSpacing)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
+                        BetaToggle(
+                            label = "Translate what is on screen",
+                            detail = "Adds a button that translates every sentence you " +
+                                "can see, once.",
+                            checked = translation.bulkTranslation.onScreen,
+                            onChange = onTranslateOnScreenChange
+                        )
 
-                    // Only where it does anything. Google is the one choice here
-                    // with something to configure, and a key field under a
-                    // dictionary that has never heard of one is a field that
-                    // asks a question with no answer.
-                    if (translation.wordLookup == WordLookup.Google) {
-                        LabelledField(label = "Cloud Translation key (optional)") {
+                        BetaToggle(
+                            label = "Keep translating as you read",
+                            detail = "Adds a button that goes on translating whatever " +
+                                "scrolls into view until you turn it off. This is the " +
+                                "expensive one.",
+                            checked = translation.bulkTranslation.asYouRead,
+                            onChange = onTranslateAsYouReadChange
+                        )
+                    }
+                }
+                }
+
+                SettingsArea.Translating -> {
+                SettingsSection(
+                    title = "Translation service",
+                    footnote = translation.provider.footnote(),
+                    groupColor = groupColor,
+                    modifier = Modifier.padding(top = dimens.sectionSpacing)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
+                        SegmentedControl(
+                            options = TranslationProvider.entries,
+                            selected = translation.provider,
+                            label = { it.label },
+                            onSelect = onProviderChange
+                        )
+
+                        if (translation.provider.hasConfigurableEndpoint) {
+                            LabelledField(label = "Address") {
+                                SettingsTextField(
+                                    value = translation.baseUrl,
+                                    onValueChange = onBaseUrlChange,
+                                    placeholder = translation.provider.defaultBaseUrl
+                                )
+                            }
+                        }
+
+                        LabelledField(
+                            label = if (translation.provider.requiresKey) "API key" else "API key (optional)"
+                        ) {
                             SettingsTextField(
-                                value = translation.googleApiKey.orEmpty(),
-                                onValueChange = onGoogleApiKeyChange,
-                                placeholder = "Public endpoint",
+                                value = translation.apiKey.orEmpty(),
+                                onValueChange = onApiKeyChange,
+                                placeholder = if (translation.provider.requiresKey) "Required" else "None",
                                 secret = true
                             )
                         }
-                    }
-                }
-            }
 
-            SettingsSection(
-                title = "Pointing at the book",
-                footnote = "Each does one thing, always. Doing it again on the same " +
-                    "passage puts the book\u2019s own words back.",
-                groupColor = groupColor,
-                modifier = Modifier.padding(top = dimens.sectionSpacing)
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
-                    LabelledField(label = "Tap") {
-                        GestureControl(
-                            selected = translation.gestures.tap,
-                            onSelect = onTapGestureChange
+                        LabelledField(label = "Model") {
+                            SettingsTextField(
+                                value = translation.model,
+                                onValueChange = onModelChange,
+                                placeholder = translation.provider.defaultModel
+                            )
+                        }
+
+                        if (translation.provider.hasConfigurableEndpoint) {
+                            ServerModels(
+                                state = availableModels,
+                                selected = translation.model,
+                                onSelect = onModelChoose,
+                                onLoad = onLoadModels
+                            )
+
+                            ModelReadinessRow(
+                                state = modelReadiness,
+                                model = translation.model,
+                                onLoad = onLoadChosenModel
+                            )
+                        } else if (translation.provider.suggestedModels.isNotEmpty()) {
+                            ChoiceList(
+                                options = translation.provider.suggestedModels,
+                                selected = translation.model,
+                                label = { it },
+                                onSelect = onModelChoose
+                            )
+                        }
+
+                        TimeoutField(
+                            provider = translation.provider,
+                            seconds = translation.timeoutSeconds,
+                            onChange = onTimeoutChange
+                        )
+
+                        ConnectionTestRow(
+                            state = connectionTest,
+                            enabled = translation.isConfigured,
+                            onTest = onTestConnection
                         )
                     }
+                }
 
-                    LabelledField(label = "Press and hold") {
-                        GestureControl(
-                            selected = translation.gestures.longPress,
-                            onSelect = onLongPressGestureChange
+                SettingsSection(
+                    title = "Looking up a word",
+                    footnote = translation.wordLookup.footnote,
+                    groupColor = groupColor,
+                    modifier = Modifier.padding(top = dimens.sectionSpacing)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
+                        SegmentedControl(
+                            options = WordLookup.entries,
+                            selected = translation.wordLookup,
+                            label = { it.label },
+                            onSelect = onWordLookupChange
                         )
+
+                        // Only where it does anything. Google is the one choice here
+                        // with something to configure, and a key field under a
+                        // dictionary that has never heard of one is a field that
+                        // asks a question with no answer.
+                        if (translation.wordLookup == WordLookup.Google) {
+                            LabelledField(label = "Cloud Translation key (optional)") {
+                                SettingsTextField(
+                                    value = translation.googleApiKey.orEmpty(),
+                                    onValueChange = onGoogleApiKeyChange,
+                                    placeholder = "Public endpoint",
+                                    secret = true
+                                )
+                            }
+                        }
                     }
                 }
-            }
 
-            SettingsSection(
-                title = "Translate into",
-                footnote = "Tap a sentence while reading to translate it, and " +
-                    "tap it again for the original.",
-                groupColor = groupColor,
-                padding = Space.xs,
-                modifier = Modifier.padding(top = dimens.sectionSpacing)
-            ) {
-                ChoiceList(
-                    options = TargetLanguage.entries,
-                    selected = translation.targetLanguage,
-                    label = { it.endonym },
-                    // The English name too, so somebody who cannot yet read the
-                    // language they are learning can still find it in the list.
-                    detail = { it.englishName.takeIf { name -> name != it.endonym } },
-                    onSelect = onTargetLanguageChange
-                )
+                SettingsSection(
+                    title = "Translate into",
+                    footnote = "Tap a sentence while reading to translate it, and " +
+                        "tap it again for the original.",
+                    groupColor = groupColor,
+                    padding = Space.xs,
+                    modifier = Modifier.padding(top = dimens.sectionSpacing)
+                ) {
+                    ChoiceList(
+                        options = TargetLanguage.entries,
+                        selected = translation.targetLanguage,
+                        label = { it.endonym },
+                        // The English name too, so somebody who cannot yet read the
+                        // language they are learning can still find it in the list.
+                        detail = { it.englishName.takeIf { name -> name != it.endonym } },
+                        onSelect = onTargetLanguageChange
+                    )
+                }
+                }
             }
         }
 
         Spacer(modifier = Modifier.height(bottomClearance))
     }
+}
+
+
+/**
+ * The parts of the app somebody comes to Settings to change.
+ *
+ * Three rather than the eight sections behind them, because a settings page is
+ * read by somebody who already knows what they want to change and is looking for
+ * where it lives. Eight equally-weighted boxes in a column is a list to search;
+ * three named places is a question with an answer.
+ */
+enum class SettingsArea(val title: String, val summary: String) {
+
+    Appearance(
+        title = "Appearance",
+        summary = "Light, dark, or whatever the system is doing"
+    ),
+
+    Reading(
+        title = "Reading",
+        summary = "What a tap and a press do, and what the reader offers to translate"
+    ),
+
+    Translating(
+        title = "Translating",
+        summary = "Who does the translating, what they are asked for, and into what"
+    )
+}
+
+/** The way in: one row per area, saying what is inside it. */
+@Composable
+private fun SettingsAreas(
+    groupColor: Color,
+    onOpen: (SettingsArea) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    SettingsSection(title = null, groupColor = groupColor, padding = Space.xs, modifier = modifier) {
+        ChoiceList(
+            options = SettingsArea.entries,
+            selected = null,
+            label = { it.title },
+            detail = { it.summary },
+            onSelect = onOpen
+        )
+    }
+}
+
+/**
+ * A switch for something that is not finished, and says so.
+ *
+ * The label carries the word rather than the section, because these sit beside
+ * each other and a reader turning one on is being told about that one. What the
+ * beta actually means - slow, and it spends money a screenful at a time - is in
+ * the detail underneath, where somebody deciding will read it.
+ */
+@Composable
+private fun BetaToggle(
+    label: String,
+    detail: String,
+    checked: Boolean,
+    onChange: (Boolean) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                BetaBadge(modifier = Modifier.padding(start = Space.sm))
+            }
+
+            Switch(checked = checked, onCheckedChange = onChange)
+        }
+
+        Text(
+            text = detail,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun BetaBadge(modifier: Modifier = Modifier) {
+    Text(
+        text = "BETA",
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = modifier
+            .clip(MaterialTheme.shapes.extraSmall)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(horizontal = Space.xs, vertical = 1.dp)
+    )
 }
 
 /**
@@ -652,7 +825,8 @@ private fun TranslationProvider.footnote(): String = when (this) {
  */
 @Composable
 private fun SettingsSection(
-    title: String,
+    /** Null for a group that needs no name, where the screen's own heading says it. */
+    title: String?,
     groupColor: Color,
     modifier: Modifier = Modifier,
     footnote: String? = null,
@@ -661,7 +835,7 @@ private fun SettingsSection(
     content: @Composable () -> Unit
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        SectionLabel(
+        if (title != null) SectionLabel(
             text = title,
             modifier = Modifier.padding(start = Space.xs, bottom = Space.sm)
         )

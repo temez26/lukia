@@ -1,6 +1,7 @@
 package io.lukia.features.translate.infrastructure
 
 import io.lukia.core.domain.SecretStore
+import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.core.domain.SettingsStore
 import io.lukia.core.infrastructure.readEnum
 import io.lukia.features.translate.domain.PassageUnit
@@ -60,7 +61,11 @@ class TranslationSettingsRepository(
             timeouts = readTimeouts(),
             wordLookup = store.readEnum(KEY_WORD_LOOKUP, WordLookup.entries, defaults.wordLookup),
             googleKey = secrets.getSecret(KEY_GOOGLE_KEY)?.takeIf { it.isNotBlank() },
-            gestures = readGestures(defaults.gestures)
+            gestures = readGestures(defaults.gestures),
+            bulkTranslation = BulkTranslation(
+                onScreen = store.readFlag(KEY_TRANSLATE_ON_SCREEN),
+                asYouRead = store.readFlag(KEY_TRANSLATE_AS_YOU_READ)
+            )
         )
     }
 
@@ -76,6 +81,9 @@ class TranslationSettingsRepository(
         store.putString(KEY_WORD_LOOKUP, settings.wordLookup.name)
         secrets.putSecret(KEY_GOOGLE_KEY, settings.storedGoogleKey())
         writeGestures(settings.gestures)
+
+        store.putString(KEY_TRANSLATE_ON_SCREEN, settings.bulkTranslation.onScreen.toString())
+        store.putString(KEY_TRANSLATE_AS_YOU_READ, settings.bulkTranslation.asYouRead.toString())
     }
 
     /**
@@ -136,6 +144,10 @@ class TranslationSettingsRepository(
         store.putString(KEY_LONG_PRESS, gestures.longPress?.name.orEmpty())
     }
 
+    /** Off unless it says otherwise, which is what makes these off on a fresh install. */
+    private fun SettingsStore.readFlag(key: String): Boolean =
+        getString(key)?.equals("true", ignoreCase = true) == true
+
     private fun readPerProvider(prefix: String): Map<TranslationProvider, String> =
         TranslationProvider.entries.mapNotNull { provider ->
             store.getString("$prefix.${provider.name}")
@@ -165,5 +177,7 @@ class TranslationSettingsRepository(
         const val KEY_GOOGLE_KEY = "translation.googleApiKey"
         const val KEY_TAP = "translation.gesture.tap"
         const val KEY_LONG_PRESS = "translation.gesture.longPress"
+        const val KEY_TRANSLATE_ON_SCREEN = "translation.bulk.onScreen"
+        const val KEY_TRANSLATE_AS_YOU_READ = "translation.bulk.asYouRead"
     }
 }

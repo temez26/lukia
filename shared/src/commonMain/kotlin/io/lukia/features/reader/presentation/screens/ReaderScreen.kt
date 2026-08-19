@@ -86,6 +86,7 @@ import io.lukia.features.reader.presentation.components.TextSectionView
 import io.lukia.features.translate.domain.PageSentence
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.sentenceAt
+import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.PassageUnit
 import io.lukia.features.translate.domain.Sentence
 import io.lukia.features.translate.domain.TranslationGestures
@@ -153,6 +154,7 @@ fun ReaderScreen(
     val translationConfigured by viewModel.translationConfigured.collectAsState()
     val shownTranslations by viewModel.shownTranslations.collectAsState()
     val gestures by viewModel.translationGestures.collectAsState()
+    val bulkTranslation by viewModel.bulkTranslation.collectAsState()
 
     ReaderContent(
         uiState = uiState,
@@ -164,6 +166,7 @@ fun ReaderScreen(
         translationConfigured = translationConfigured,
         shownTranslations = shownTranslations,
         gestures = gestures,
+        bulkTranslation = bulkTranslation,
         onBack = onBack,
         onRetry = viewModel::retry,
         onSettingsChange = viewModel::updateSettings,
@@ -199,6 +202,8 @@ fun ReaderContent(
     shownTranslations: ShownTranslations = ShownTranslations.None,
     /** What a tap and a long press on the book ask for. */
     gestures: TranslationGestures = TranslationGestures.Default,
+    /** Which of the two ways of translating more than one passage are offered at all. */
+    bulkTranslation: BulkTranslation = BulkTranslation.Default,
     onBack: () -> Unit,
     onRetry: () -> Unit,
     onSettingsChange: (ReaderSettings) -> Unit,
@@ -295,9 +300,14 @@ fun ReaderContent(
                 contentsExpanded = false
                 settingsExpanded = !settingsExpanded
             },
-            onTranslateOnScreen = onTranslateOnScreen,
+            // A shortcut for something the reader has not asked to be offered
+            // does nothing, exactly as its button does not appear. Off is off
+            // wherever it is reached from.
+            onTranslateOnScreen = { if (bulkTranslation.onScreen) onTranslateOnScreen() },
             onToggleContinuousTranslation = {
-                onContinuousTranslationChange(!translateOnScreen.continuous)
+                if (bulkTranslation.asYouRead) {
+                    onContinuousTranslationChange(!translateOnScreen.continuous)
+                }
             },
             onToggleTranslationsShown = {
                 if (shownTranslations.any) onTranslationsVisibleChange(!shownTranslations.visible)
@@ -457,6 +467,7 @@ fun ReaderContent(
                                     TranslationControls(
                                         continuous = translateOnScreen.continuous,
                                         shown = shownTranslations,
+                                        offered = bulkTranslation,
                                         onTranslateOnScreen = onTranslateOnScreen,
                                         onContinuousChange = onContinuousTranslationChange,
                                         onVisibleChange = onTranslationsVisibleChange
@@ -537,41 +548,50 @@ fun ReaderContent(
 private fun TranslationControls(
     continuous: Boolean,
     shown: ShownTranslations,
+    offered: BulkTranslation,
     onTranslateOnScreen: () -> Unit,
     onContinuousChange: (Boolean) -> Unit,
     onVisibleChange: (Boolean) -> Unit
 ) {
-    ShortcutTooltip(description = "Translate what is on screen", shortcut = "R") {
-        LukiaIconButton(
-            label = "Translate what is on screen",
-            onClick = onTranslateOnScreen
-        ) { tint, glyph ->
-            TranslateGlyph(tint = tint, modifier = glyph)
+    // Not there at all until the reader has asked for them in Settings. These
+    // two are the ones that spend a screenful at a time - see BulkTranslation -
+    // and a button that can do that sitting in the bar of a reading app is a
+    // button somebody presses to find out what it does.
+    if (offered.onScreen) {
+        ShortcutTooltip(description = "Translate what is on screen", shortcut = "R") {
+            LukiaIconButton(
+                label = "Translate what is on screen",
+                onClick = onTranslateOnScreen
+            ) { tint, glyph ->
+                TranslateGlyph(tint = tint, modifier = glyph)
+            }
         }
     }
 
-    ShortcutTooltip(
-        description = if (continuous) {
-            "Stop translating as you read"
-        } else {
-            "Keep translating as you read"
-        },
-        shortcut = "E"
-    ) {
-        LukiaIconButton(
-            label = if (continuous) {
+    if (offered.asYouRead) {
+        ShortcutTooltip(
+            description = if (continuous) {
                 "Stop translating as you read"
             } else {
                 "Keep translating as you read"
             },
-            onClick = { onContinuousChange(!continuous) },
-            tint = if (continuous) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
+            shortcut = "E"
+        ) {
+            LukiaIconButton(
+                label = if (continuous) {
+                    "Stop translating as you read"
+                } else {
+                    "Keep translating as you read"
+                },
+                onClick = { onContinuousChange(!continuous) },
+                tint = if (continuous) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                }
+            ) { tint, glyph ->
+                TranslateOnwardsGlyph(tint = tint, modifier = glyph)
             }
-        ) { tint, glyph ->
-            TranslateOnwardsGlyph(tint = tint, modifier = glyph)
         }
     }
 

@@ -22,6 +22,7 @@ import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.PageSentence
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.pageSentences
+import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.asTranslationContext
@@ -33,6 +34,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -110,7 +112,37 @@ class ReaderViewModel(
     val outline: StateFlow<ReaderOutline> = _outline.asStateFlow()
 
     private val _translateOnScreen = MutableStateFlow(TranslateOnScreen.Idle)
-    val translateOnScreen: StateFlow<TranslateOnScreen> = _translateOnScreen.asStateFlow()
+
+    /**
+     * Whether the reader has asked to be offered translating more of the book
+     * than they pointed at.
+     */
+    val bulkTranslation: StateFlow<BulkTranslation> = translationSettings.settings
+        .map { it.bulkTranslation }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = translationSettings.settings.value.bulkTranslation
+        )
+
+    /**
+     * What is standing, with anything the reader has since turned off taken out
+     * of it.
+     *
+     * Masked here rather than guarded at every place that could set it, so that
+     * turning "keep translating" off in Settings stops it at once - including
+     * while it is running, with a book open, halfway down a chapter. A setting
+     * that only took effect the next time it was switched on would leave the
+     * expensive one running after the reader had told it to stop.
+     */
+    val translateOnScreen: StateFlow<TranslateOnScreen> =
+        combine(_translateOnScreen, bulkTranslation) { standing, offered ->
+            if (offered.asYouRead) standing else standing.copy(continuous = false)
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = TranslateOnScreen.Idle
+        )
 
     /**
      * Whether the translations in this book are the words on the page.
@@ -323,6 +355,8 @@ class ReaderViewModel(
      * answers for itself - see [TranslateOnScreen].
      */
     fun onTranslateOnScreen() {
+        if (!bulkTranslation.value.onScreen) return
+
         _translateOnScreen.value = _translateOnScreen.value.requested()
     }
 
@@ -346,6 +380,8 @@ class ReaderViewModel(
      * again.
      */
     fun setContinuousTranslation(continuous: Boolean) {
+        if (continuous && !bulkTranslation.value.asYouRead) return
+
         _translateOnScreen.value = _translateOnScreen.value.copy(continuous = continuous)
     }
 
