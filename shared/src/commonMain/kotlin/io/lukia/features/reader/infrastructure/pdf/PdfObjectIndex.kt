@@ -16,16 +16,12 @@ import io.lukia.core.infrastructure.archive.inflateZlib
  */
 internal class PdfObjectIndex(private val source: PdfByteSource) {
 
-    /** Object number to where its header sits in the file. */
-    private val offsets = HashMap<Int, Long>()
+    private val scan = scanPdfObjects(source)
 
     /** Objects that live inside object streams, parsed when those are expanded. */
     private val streamObjects = HashMap<Int, PdfValue>()
 
     private val parsed = HashMap<Int, PdfValue?>()
-    private val objectStreamNumbers = mutableListOf<Int>()
-    private val trailerOffsets = mutableListOf<Long>()
-    private val crossReferenceStreamOffsets = mutableListOf<Long>()
 
     private var expandedObjectStreams = false
 
@@ -51,10 +47,6 @@ internal class PdfObjectIndex(private val source: PdfByteSource) {
      */
     val isEncrypted: Boolean by lazy {
         currentTrailer()?.get("Encrypt") != null
-    }
-
-    init {
-        scan()
     }
 
     /** The document catalog, which everything else hangs from. */
@@ -107,8 +99,8 @@ internal class PdfObjectIndex(private val source: PdfByteSource) {
      * compressed.
      */
     private fun trailerDictionaries(): Sequence<PdfValue.Dictionary> =
-        trailerOffsets.asReversed().asSequence().mapNotNull { readTrailerDictionary(it) } +
-            crossReferenceStreamOffsets.asReversed().asSequence()
+        scan.trailerOffsets.asReversed().asSequence().mapNotNull { readTrailerDictionary(it) } +
+            scan.crossReferenceStreamOffsets.asReversed().asSequence()
                 .mapNotNull { objectAt(it).asDictionary }
 
     /** Follows indirect references until something concrete comes back. */
@@ -162,14 +154,14 @@ internal class PdfObjectIndex(private val source: PdfByteSource) {
     }
 
     private fun readObject(number: Int): PdfValue? {
-        offsets[number]?.let { offset ->
+        scan.offsets[number]?.let { offset ->
             objectAt(offset)?.let { return it }
         }
 
         // Not in the file directly, so it is packed inside an object stream.
         if (!expandedObjectStreams) {
             expandObjectStreams()
-            offsets[number]?.let { offset -> objectAt(offset)?.let { return it } }
+            scan.offsets[number]?.let { offset -> objectAt(offset)?.let { return it } }
         }
 
         return streamObjects[number]
@@ -214,10 +206,10 @@ internal class PdfObjectIndex(private val source: PdfByteSource) {
     private fun expandObjectStreams() {
         expandedObjectStreams = true
 
-        objectStreamNumbers.forEach { number ->
+        scan.objectStreamNumbers.forEach { number ->
             if (streamObjects.size >= MAX_STREAM_OBJECTS) return
 
-            val stream = offsets[number]?.let { objectAt(it) } as? PdfValue.Stream ?: return@forEach
+            val stream = scan.offsets[number]?.let { objectAt(it) } as? PdfValue.Stream ?: return@forEach
             expandObjectStream(stream)
         }
     }
@@ -270,7 +262,7 @@ internal class PdfObjectIndex(private val source: PdfByteSource) {
             if (dictionary?.get("Type").asName == type) return dictionary
         }
 
-        offsets.keys.sorted().forEach { number ->
+        scan.offsets.keys.sorted().forEach { number ->
             val dictionary = objectNumbered(number).asDictionary
             if (dictionary?.get("Type").asName == type) return dictionary
         }
@@ -278,111 +270,7 @@ internal class PdfObjectIndex(private val source: PdfByteSource) {
         return null
     }
 
-    /**
-     * One pass over the file, collecting where every object starts and where the
-     * few landmarks the reader needs sit. Read in windows so that a large book
-     * is never held in memory at once.
-     */
-    private fun scan() {
-        val objectMarker = "obj".encodeToByteArray()
-        val trailerMarker = "trailer".encodeToByteArray()
-        val objectStreamMarker = "/ObjStm".encodeToByteArray()
-        val crossReferenceMarker = "/XRef".encodeToByteArray()
-
-        val objectStreamHits = mutableListOf<Long>()
-        var windowStart = 0L
-
-        while (windowStart < source.size) {
-            val bytes = source.read(windowStart, SCAN_WINDOW)
-            if (bytes.isEmpty()) break
-
-            bytes.forEachSequence(objectMarker) { index ->
-                readObjectHeaderStart(bytes, index)?.let { (number, headerStart) ->
-                    val offset = windowStart + headerStart
-                    // Later wins: an updated file appends replacement objects.
-                    if (offsets[number]?.let { offset > it } != false) {
-                        offsets[number] = offset
-                    }
-                }
-            }
-
-            bytes.forEachSequence(trailerMarker) { index ->
-                trailerOffsets += windowStart + index + trailerMarker.size
-            }
-
-            bytes.forEachSequence(objectStreamMarker) { index ->
-                objectStreamHits += windowStart + index
-            }
-
-            bytes.forEachSequence(crossReferenceMarker) { index ->
-                crossReferenceStreamOffsets += windowStart + index
-            }
-
-            if (bytes.size < SCAN_WINDOW) break
-
-            // Overlapped so a header split across two windows is still seen
-            // whole by one of them.
-            windowStart += SCAN_WINDOW - SCAN_OVERLAP
-        }
-
-        // A `/ObjStm` sits inside the object that declares it, so the stream's
-        // own number is that of the nearest header before it.
-        val sortedOffsets = offsets.entries.sortedBy { it.value }
-        objectStreamHits.forEach { hit ->
-            val owner = sortedOffsets.lastOrNull { it.value < hit }
-            if (owner != null) objectStreamNumbers += owner.key
-        }
-
-        // The same is true of a cross-reference stream's dictionary.
-        val crossReferenceObjects = crossReferenceStreamOffsets.mapNotNull { hit ->
-            sortedOffsets.lastOrNull { it.value < hit }?.value
-        }
-        crossReferenceStreamOffsets.clear()
-        crossReferenceStreamOffsets += crossReferenceObjects
-    }
-
-    /**
-     * Walks back from an `obj` keyword over the generation and object numbers
-     * that precede it, returning the object's number and where its header
-     * begins. Null when what precedes is not an object header at all - the
-     * letters also occur inside `endobj` and in ordinary words.
-     */
-    private fun readObjectHeaderStart(bytes: ByteArray, objIndex: Int): Pair<Int, Int>? {
-        var index = objIndex - 1
-
-        // `endobj` ends in the same three letters.
-        if (index >= 2 &&
-            bytes[index] == 'd'.code.toByte() &&
-            bytes[index - 1] == 'n'.code.toByte() &&
-            bytes[index - 2] == 'e'.code.toByte()
-        ) {
-            return null
-        }
-
-        if (index < 0 || !isWhitespace(bytes[index])) return null
-        while (index >= 0 && isWhitespace(bytes[index])) index--
-
-        val generationEnd = index
-        while (index >= 0 && bytes[index] in DIGIT_RANGE) index--
-        if (index == generationEnd) return null
-
-        if (index < 0 || !isWhitespace(bytes[index])) return null
-        while (index >= 0 && isWhitespace(bytes[index])) index--
-
-        val numberEnd = index
-        while (index >= 0 && bytes[index] in DIGIT_RANGE) index--
-        if (index == numberEnd) return null
-
-        val number = bytes.decodeToString(index + 1, numberEnd + 1).toIntOrNull() ?: return null
-
-        return number to (index + 1)
-    }
-
     private companion object {
-        val DIGIT_RANGE = 0x30.toByte()..0x39.toByte()
-
-        const val SCAN_WINDOW = 1 shl 20
-        const val SCAN_OVERLAP = 64
         const val INITIAL_WINDOW = 4096
         const val WINDOW_GROWTH = 8
         const val MAX_WINDOW = 1 shl 22
@@ -391,29 +279,5 @@ internal class PdfObjectIndex(private val source: PdfByteSource) {
         const val MAX_STREAM_BYTES = 1 shl 24
         const val MAX_DECODED_BYTES = 1 shl 25
         const val MAX_STREAM_OBJECTS = 100_000
-    }
-}
-
-/** Index of the first occurrence of [sequence] at or after [from], or null. */
-internal fun ByteArray.indexOfSequence(sequence: ByteArray, from: Int): Int? {
-    if (sequence.isEmpty() || sequence.size > size) return null
-
-    outer@ for (start in from..size - sequence.size) {
-        for (index in sequence.indices) {
-            if (this[start + index] != sequence[index]) continue@outer
-        }
-        return start
-    }
-
-    return null
-}
-
-private inline fun ByteArray.forEachSequence(sequence: ByteArray, action: (Int) -> Unit) {
-    var from = 0
-
-    while (true) {
-        val index = indexOfSequence(sequence, from) ?: return
-        action(index)
-        from = index + 1
     }
 }
