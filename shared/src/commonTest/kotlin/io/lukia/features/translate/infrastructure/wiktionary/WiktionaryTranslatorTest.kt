@@ -77,6 +77,75 @@ class WiktionaryTranslatorTest {
         assertTrue(translator.translate(request()).note.orEmpty().contains("valaskala"))
     }
 
+
+    /**
+     * The page that prompted all of this. An entry opens with its headword and
+     * inflections, and lists its derived terms after the senses - and taking the
+     * first few lines put `support (monikko supports)` on the page in place of
+     * the sentence, with the actual word left as a footnote under it.
+     */
+    @Test
+    fun theHeadwordAndItsInflectionsAreNotASense() = runTest {
+        val translator = translator(answers { respondJson(SUPPORT_ENTRY) })
+
+        val translation = translator.translate(request(text = "support"))
+
+        assertEquals("kannatus", translation.text)
+    }
+
+    @Test
+    fun theTermsBuiltOnAWordAreNotSensesOfIt() = runTest {
+        val translator = translator(answers { respondJson(SUPPORT_ENTRY) })
+
+        val note = translator.translate(request(text = "support")).note.orEmpty()
+
+        assertTrue(!note.contains("support in decline"), note)
+    }
+
+    /**
+     * A word spelled the same way in three languages has three sections, and one
+     * sense from each is not an answer to anything.
+     */
+    @Test
+    fun theSensesStopAtTheNextHeading() = runTest {
+        val translator = translator(answers { respondJson(SUPPORT_ENTRY) })
+
+        val translation = translator.translate(request(text = "support"))
+
+        assertTrue(!translation.note.orEmpty().contains("soutien"), translation.note.orEmpty())
+    }
+
+    /** A longer word starting the same way is a different word, not scaffolding. */
+    @Test
+    fun aLongerWordBeginningTheSameWayIsStillASense() = runTest {
+        val entry = """{"query": {"pages": [{"title": "set", "extract":
+            "== Englanti ==
+=== Verbi ===
+set
+settled asia
+"}]}}"""
+        val translator = translator(answers { respondJson(entry) })
+
+        assertEquals("settled asia", translator.translate(request(text = "set")).text)
+    }
+
+    /**
+     * An entry that is nothing but its own headword - a loanword, a name - is a
+     * poor answer and a better one than telling the reader there is no entry
+     * when the page is right in front of them.
+     */
+    @Test
+    fun anEntryThatIsOnlyItsHeadwordIsStillAnAnswer() = runTest {
+        val entry = """{"query": {"pages": [{"title": "sauna", "extract":
+            "== Suomi ==
+=== Substantiivi ===
+sauna
+"}]}}"""
+        val translator = translator(answers { respondJson(entry) })
+
+        assertEquals("sauna", translator.translate(request(text = "sauna")).text)
+    }
+
     /**
      * The smaller Wiktionaries are thin, and a word missing from one is an
      * answer rather than a failure - which is the whole reason there is a
@@ -166,6 +235,25 @@ class WiktionaryTranslatorTest {
         const val ENGLISH_ENTRY = """
             {"query": {"pages": [{"title": "whale", "extract":
             "== English ==\n=== Noun ===\na large marine mammal\n"}]}}
+        """
+
+        /**
+         * A real entry's shape: the headword and its inflections, then the
+         * senses, then the terms built on it, then another language entirely.
+         */
+        const val SUPPORT_ENTRY = """
+            {"query": {"pages": [{"title": "support", "extract":
+            "== Englanti ==
+=== Substantiivi ===
+support (monikko supports)
+kannatus
+tuki
+
+            ==== Johdokset ====
+support in decline
+== Ranska ==
+soutien
+"}]}}
         """
 
         /** A wiki says "there is no such page" rather than failing to answer. */
