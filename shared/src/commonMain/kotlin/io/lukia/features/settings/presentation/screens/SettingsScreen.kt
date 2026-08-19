@@ -251,36 +251,27 @@ internal fun SettingsBody(
                 .padding(horizontal = dimens.screenPadding)
         ) {
 
-            var area by rememberSaveable { mutableStateOf<SettingsArea?>(null) }
+            // Open on the first one rather than on a menu of them. Settings is
+            // three groups, not a place to navigate around: the same control the
+            // library narrows itself with switches between them, in place, with
+            // nothing to go back out of.
+            var area by rememberSaveable { mutableStateOf(SettingsArea.Default) }
 
             Text(
-                text = area?.title ?: "Settings",
+                text = "Settings",
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
 
-            // Inside an area, the way back up. The screen's own back button
-            // leaves settings altogether, and an area is not somewhere the
-            // reader should have to leave the screen to get out of.
-            if (area != null) {
-                LukiaButton(
-                    label = "All settings",
-                    onClick = { area = null },
-                    variant = ButtonVariant.Secondary,
-                    modifier = Modifier.padding(top = Space.md)
-                )
-            }
+            SegmentedControl(
+                options = SettingsArea.entries,
+                selected = area,
+                label = { it.title },
+                onSelect = { area = it },
+                modifier = Modifier.padding(top = Space.lg)
+            )
 
-            // The list of areas, or the one the reader opened. Held here rather
-            // than routed to, so the panel this same body is drawn in - a popup
-            // with no navigation of its own - works exactly as the screen does.
             when (area) {
-                null -> SettingsAreas(
-                    groupColor = groupColor,
-                    modifier = Modifier.padding(top = dimens.sectionSpacing),
-                    onOpen = { area = it }
-                )
-
                 SettingsArea.Appearance -> {
                 SettingsSection(
                     title = "Appearance",
@@ -498,42 +489,26 @@ internal fun SettingsBody(
  *
  * Three rather than the eight sections behind them, because a settings page is
  * read by somebody who already knows what they want to change and is looking for
- * where it lives. Eight equally-weighted boxes in a column is a list to search;
- * three named places is a question with an answer.
+ * where it lives. Eight equally-weighted boxes in one column is a list to
+ * search; three segments across the top is a question with an answer.
  */
-enum class SettingsArea(val title: String, val summary: String) {
+enum class SettingsArea(val title: String) {
 
-    Appearance(
-        title = "Appearance",
-        summary = "Light, dark, or whatever the system is doing"
-    ),
+    Appearance("Appearance"),
 
-    Reading(
-        title = "Reading",
-        summary = "What a tap and a press do, and what the reader offers to translate"
-    ),
+    /** What a tap and a press do, and what the reader offers to translate. */
+    Reading("Reading"),
 
-    Translating(
-        title = "Translating",
-        summary = "Who does the translating, what they are asked for, and into what"
-    )
-}
+    /** Who does the translating, what they are asked for, and into what. */
+    Translating("Translating");
 
-/** The way in: one row per area, saying what is inside it. */
-@Composable
-private fun SettingsAreas(
-    groupColor: Color,
-    onOpen: (SettingsArea) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    SettingsSection(title = null, groupColor = groupColor, padding = Space.xs, modifier = modifier) {
-        ChoiceList(
-            options = SettingsArea.entries,
-            selected = null,
-            label = { it.title },
-            detail = { it.summary },
-            onSelect = onOpen
-        )
+    companion object {
+
+        /**
+         * What Settings opens on. The one with the fewest ways to go wrong and
+         * the one most people came for, which is also why it is first.
+         */
+        val Default = Appearance
     }
 }
 
@@ -825,8 +800,7 @@ private fun TranslationProvider.footnote(): String = when (this) {
  */
 @Composable
 private fun SettingsSection(
-    /** Null for a group that needs no name, where the screen's own heading says it. */
-    title: String?,
+    title: String,
     groupColor: Color,
     modifier: Modifier = Modifier,
     footnote: String? = null,
@@ -835,7 +809,7 @@ private fun SettingsSection(
     content: @Composable () -> Unit
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        if (title != null) SectionLabel(
+        SectionLabel(
             text = title,
             modifier = Modifier.padding(start = Space.xs, bottom = Space.sm)
         )
