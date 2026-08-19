@@ -1,5 +1,10 @@
 package io.lukia.features.settings.presentation.screens
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -237,10 +243,11 @@ internal fun SettingsBody(
     groupColor: Color = MaterialTheme.colorScheme.surface
 ) {
     val dimens = LocalLukiaDimens.current
+    val scroll = rememberScrollState()
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.verticalScroll(rememberScrollState())
+        modifier = modifier.verticalScroll(scroll)
     ) {
         Spacer(modifier = Modifier.height(topClearance))
 
@@ -271,210 +278,230 @@ internal fun SettingsBody(
                 modifier = Modifier.padding(top = Space.lg)
             )
 
-            when (area) {
-                SettingsArea.Appearance -> {
-                SettingsSection(
-                    title = "Appearance",
-                    // Named for what it does rather than what it is called, since
-                    // "System" is the only option whose meaning is not obvious from
-                    // the word alone.
-                    footnote = "System follows your device’s light and dark setting.",
-                    groupColor = groupColor,
-                    modifier = Modifier.padding(top = dimens.sectionSpacing)
-                ) {
-                    SegmentedControl(
-                        options = AppTheme.entries,
-                        selected = settings.theme,
-                        label = { it.name },
-                        onSelect = onThemeChange
-                    )
-                }
-                }
+            // Back to the top of whatever was opened. Switching from a long
+            // group to a short one while scrolled down otherwise lands the
+            // reader at the bottom of something they have not seen the top of.
+            LaunchedEffect(area) { scroll.animateScrollTo(0) }
 
-                SettingsArea.Reading -> {
-                SettingsSection(
-                    title = "Pointing at the book",
-                    footnote = "Each does one thing, always. Doing it again on the same " +
-                        "passage puts the book\u2019s own words back.",
-                    groupColor = groupColor,
-                    modifier = Modifier.padding(top = dimens.sectionSpacing)
-                ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
-                        LabelledField(label = "Tap") {
-                            GestureControl(
-                                selected = translation.gestures.tap,
-                                onSelect = onTapGestureChange
-                            )
-                        }
-
-                        LabelledField(label = "Press and hold") {
-                            GestureControl(
-                                selected = translation.gestures.longPress,
-                                onSelect = onLongPressGestureChange
-                            )
-                        }
-                    }
-                }
-
-                SettingsSection(
-                    title = "Translating ahead",
-                    footnote = "Both are new, and both are slow and expensive: they " +
-                        "translate a screenful at a time rather than the passage you " +
-                        "pointed at. Off until you ask for them, and hidden from the " +
-                        "reader entirely while they are.",
-                    groupColor = groupColor,
-                    modifier = Modifier.padding(top = dimens.sectionSpacing)
-                ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
-                        BetaToggle(
-                            label = "Translate what is on screen",
-                            detail = "Adds a button that translates every sentence you " +
-                                "can see, once.",
-                            checked = translation.bulkTranslation.onScreen,
-                            onChange = onTranslateOnScreenChange
-                        )
-
-                        BetaToggle(
-                            label = "Keep translating as you read",
-                            detail = "Adds a button that goes on translating whatever " +
-                                "scrolls into view until you turn it off. This is the " +
-                                "expensive one.",
-                            checked = translation.bulkTranslation.asYouRead,
-                            onChange = onTranslateAsYouReadChange
-                        )
-                    }
-                }
-                }
-
-                SettingsArea.Translating -> {
-                SettingsSection(
-                    title = "Translation service",
-                    footnote = translation.provider.footnote(),
-                    groupColor = groupColor,
-                    modifier = Modifier.padding(top = dimens.sectionSpacing)
-                ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
-                        SegmentedControl(
-                            options = TranslationProvider.entries,
-                            selected = translation.provider,
-                            label = { it.label },
-                            onSelect = onProviderChange
-                        )
-
-                        if (translation.provider.hasConfigurableEndpoint) {
-                            LabelledField(label = "Address") {
-                                SettingsTextField(
-                                    value = translation.baseUrl,
-                                    onValueChange = onBaseUrlChange,
-                                    placeholder = translation.provider.defaultBaseUrl
+            // One group fades into the next while the page eases between their
+            // heights. Switched without either, the page jumps from the height
+            // of one group to the height of another - which reads as the screen
+            // being rebuilt rather than as a control being used, and is worse
+            // the further apart the two groups are in length.
+            Crossfade(
+                targetState = area,
+                animationSpec = tween(AreaFadeMillis, easing = LinearOutSlowInEasing),
+                modifier = Modifier.animateContentSize(
+                    animationSpec = tween(AreaSettleMillis, easing = FastOutSlowInEasing)
+                )
+            ) { shown ->
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    when (shown) {
+                        SettingsArea.Appearance -> {
+                            SettingsSection(
+                                title = "Appearance",
+                                // Named for what it does rather than what it is called, since
+                                // "System" is the only option whose meaning is not obvious from
+                                // the word alone.
+                                footnote = "System follows your device’s light and dark setting.",
+                                groupColor = groupColor,
+                                modifier = Modifier.padding(top = dimens.sectionSpacing)
+                            ) {
+                                SegmentedControl(
+                                    options = AppTheme.entries,
+                                    selected = settings.theme,
+                                    label = { it.name },
+                                    onSelect = onThemeChange
                                 )
                             }
                         }
 
-                        LabelledField(
-                            label = if (translation.provider.requiresKey) "API key" else "API key (optional)"
-                        ) {
-                            SettingsTextField(
-                                value = translation.apiKey.orEmpty(),
-                                onValueChange = onApiKeyChange,
-                                placeholder = if (translation.provider.requiresKey) "Required" else "None",
-                                secret = true
-                            )
+                        SettingsArea.Reading -> {
+                            SettingsSection(
+                                title = "Pointing at the book",
+                                footnote = "Each does one thing, always. Doing it again on the same " +
+                                    "passage puts the book\u2019s own words back.",
+                                groupColor = groupColor,
+                                modifier = Modifier.padding(top = dimens.sectionSpacing)
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
+                                    LabelledField(label = "Tap") {
+                                        GestureControl(
+                                            selected = translation.gestures.tap,
+                                            onSelect = onTapGestureChange
+                                        )
+                                    }
+
+                                    LabelledField(label = "Press and hold") {
+                                        GestureControl(
+                                            selected = translation.gestures.longPress,
+                                            onSelect = onLongPressGestureChange
+                                        )
+                                    }
+                                }
+                            }
+
+                            SettingsSection(
+                                title = "Translating ahead",
+                                footnote = "Both are new, and both are slow and expensive: they " +
+                                    "translate a screenful at a time rather than the passage you " +
+                                    "pointed at. Off until you ask for them, and hidden from the " +
+                                    "reader entirely while they are.",
+                                groupColor = groupColor,
+                                modifier = Modifier.padding(top = dimens.sectionSpacing)
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
+                                    BetaToggle(
+                                        label = "Translate what is on screen",
+                                        detail = "Adds a button that translates every sentence you " +
+                                            "can see, once.",
+                                        checked = translation.bulkTranslation.onScreen,
+                                        onChange = onTranslateOnScreenChange
+                                    )
+
+                                    BetaToggle(
+                                        label = "Keep translating as you read",
+                                        detail = "Adds a button that goes on translating whatever " +
+                                            "scrolls into view until you turn it off. This is the " +
+                                            "expensive one.",
+                                        checked = translation.bulkTranslation.asYouRead,
+                                        onChange = onTranslateAsYouReadChange
+                                    )
+                                }
+                            }
                         }
 
-                        LabelledField(label = "Model") {
-                            SettingsTextField(
-                                value = translation.model,
-                                onValueChange = onModelChange,
-                                placeholder = translation.provider.defaultModel
-                            )
-                        }
+                        SettingsArea.Translating -> {
+                            SettingsSection(
+                                title = "Translation service",
+                                footnote = translation.provider.footnote(),
+                                groupColor = groupColor,
+                                modifier = Modifier.padding(top = dimens.sectionSpacing)
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
+                                    SegmentedControl(
+                                        options = TranslationProvider.entries,
+                                        selected = translation.provider,
+                                        label = { it.label },
+                                        onSelect = onProviderChange
+                                    )
 
-                        if (translation.provider.hasConfigurableEndpoint) {
-                            ServerModels(
-                                state = availableModels,
-                                selected = translation.model,
-                                onSelect = onModelChoose,
-                                onLoad = onLoadModels
-                            )
+                                    if (translation.provider.hasConfigurableEndpoint) {
+                                        LabelledField(label = "Address") {
+                                            SettingsTextField(
+                                                value = translation.baseUrl,
+                                                onValueChange = onBaseUrlChange,
+                                                placeholder = translation.provider.defaultBaseUrl
+                                            )
+                                        }
+                                    }
 
-                            ModelReadinessRow(
-                                state = modelReadiness,
-                                model = translation.model,
-                                onLoad = onLoadChosenModel
-                            )
-                        } else if (translation.provider.suggestedModels.isNotEmpty()) {
-                            ChoiceList(
-                                options = translation.provider.suggestedModels,
-                                selected = translation.model,
-                                label = { it },
-                                onSelect = onModelChoose
-                            )
-                        }
+                                    LabelledField(
+                                        label = if (translation.provider.requiresKey) "API key" else "API key (optional)"
+                                    ) {
+                                        SettingsTextField(
+                                            value = translation.apiKey.orEmpty(),
+                                            onValueChange = onApiKeyChange,
+                                            placeholder = if (translation.provider.requiresKey) "Required" else "None",
+                                            secret = true
+                                        )
+                                    }
 
-                        TimeoutField(
-                            provider = translation.provider,
-                            seconds = translation.timeoutSeconds,
-                            onChange = onTimeoutChange
-                        )
+                                    LabelledField(label = "Model") {
+                                        SettingsTextField(
+                                            value = translation.model,
+                                            onValueChange = onModelChange,
+                                            placeholder = translation.provider.defaultModel
+                                        )
+                                    }
 
-                        ConnectionTestRow(
-                            state = connectionTest,
-                            enabled = translation.isConfigured,
-                            onTest = onTestConnection
-                        )
-                    }
-                }
+                                    if (translation.provider.hasConfigurableEndpoint) {
+                                        ServerModels(
+                                            state = availableModels,
+                                            selected = translation.model,
+                                            onSelect = onModelChoose,
+                                            onLoad = onLoadModels
+                                        )
 
-                SettingsSection(
-                    title = "Looking up a word",
-                    footnote = translation.wordLookup.footnote,
-                    groupColor = groupColor,
-                    modifier = Modifier.padding(top = dimens.sectionSpacing)
-                ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
-                        SegmentedControl(
-                            options = WordLookup.entries,
-                            selected = translation.wordLookup,
-                            label = { it.label },
-                            onSelect = onWordLookupChange
-                        )
+                                        ModelReadinessRow(
+                                            state = modelReadiness,
+                                            model = translation.model,
+                                            onLoad = onLoadChosenModel
+                                        )
+                                    } else if (translation.provider.suggestedModels.isNotEmpty()) {
+                                        ChoiceList(
+                                            options = translation.provider.suggestedModels,
+                                            selected = translation.model,
+                                            label = { it },
+                                            onSelect = onModelChoose
+                                        )
+                                    }
 
-                        // Only where it does anything. Google is the one choice here
-                        // with something to configure, and a key field under a
-                        // dictionary that has never heard of one is a field that
-                        // asks a question with no answer.
-                        if (translation.wordLookup == WordLookup.Google) {
-                            LabelledField(label = "Cloud Translation key (optional)") {
-                                SettingsTextField(
-                                    value = translation.googleApiKey.orEmpty(),
-                                    onValueChange = onGoogleApiKeyChange,
-                                    placeholder = "Public endpoint",
-                                    secret = true
+                                    TimeoutField(
+                                        provider = translation.provider,
+                                        seconds = translation.timeoutSeconds,
+                                        onChange = onTimeoutChange
+                                    )
+
+                                    ConnectionTestRow(
+                                        state = connectionTest,
+                                        enabled = translation.isConfigured,
+                                        onTest = onTestConnection
+                                    )
+                                }
+                            }
+
+                            SettingsSection(
+                                title = "Looking up a word",
+                                footnote = translation.wordLookup.footnote,
+                                groupColor = groupColor,
+                                modifier = Modifier.padding(top = dimens.sectionSpacing)
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
+                                    SegmentedControl(
+                                        options = WordLookup.entries,
+                                        selected = translation.wordLookup,
+                                        label = { it.label },
+                                        onSelect = onWordLookupChange
+                                    )
+
+                                    // Only where it does anything. Google is the one choice here
+                                    // with something to configure, and a key field under a
+                                    // dictionary that has never heard of one is a field that
+                                    // asks a question with no answer.
+                                    if (translation.wordLookup == WordLookup.Google) {
+                                        LabelledField(label = "Cloud Translation key (optional)") {
+                                            SettingsTextField(
+                                                value = translation.googleApiKey.orEmpty(),
+                                                onValueChange = onGoogleApiKeyChange,
+                                                placeholder = "Public endpoint",
+                                                secret = true
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            SettingsSection(
+                                title = "Translate into",
+                                footnote = "Tap a sentence while reading to translate it, and " +
+                                    "tap it again for the original.",
+                                groupColor = groupColor,
+                                padding = Space.xs,
+                                modifier = Modifier.padding(top = dimens.sectionSpacing)
+                            ) {
+                                ChoiceList(
+                                    options = TargetLanguage.entries,
+                                    selected = translation.targetLanguage,
+                                    label = { it.endonym },
+                                    // The English name too, so somebody who cannot yet read the
+                                    // language they are learning can still find it in the list.
+                                    detail = { it.englishName.takeIf { name -> name != it.endonym } },
+                                    onSelect = onTargetLanguageChange
                                 )
                             }
                         }
                     }
-                }
-
-                SettingsSection(
-                    title = "Translate into",
-                    footnote = "Tap a sentence while reading to translate it, and " +
-                        "tap it again for the original.",
-                    groupColor = groupColor,
-                    padding = Space.xs,
-                    modifier = Modifier.padding(top = dimens.sectionSpacing)
-                ) {
-                    ChoiceList(
-                        options = TargetLanguage.entries,
-                        selected = translation.targetLanguage,
-                        label = { it.endonym },
-                        // The English name too, so somebody who cannot yet read the
-                        // language they are learning can still find it in the list.
-                        detail = { it.englishName.takeIf { name -> name != it.endonym } },
-                        onSelect = onTargetLanguageChange
-                    )
-                }
                 }
             }
         }
@@ -483,6 +510,16 @@ internal fun SettingsBody(
     }
 }
 
+
+/**
+ * How long one group takes to give way to the next, and how long the page takes
+ * to reach the new height.
+ *
+ * The words go first and the height follows, which is the order that reads as
+ * one movement rather than as two things happening to the same screen.
+ */
+private const val AreaFadeMillis = 140
+private const val AreaSettleMillis = 220
 
 /**
  * The parts of the app somebody comes to Settings to change.
