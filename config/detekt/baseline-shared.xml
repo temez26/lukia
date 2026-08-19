@@ -35,8 +35,6 @@
     <ID>FunctionOnlyReturningConstant:MinimalPdf.kt$MinimalPdf$private fun emptyContentStream(): String</ID>
     <ID>LambdaParameterInRestartableEffect:ReaderPageList.kt$renderPage</ID>
     <ID>LambdaParameterInRestartableEffect:ReaderPageList.kt$sentencesOnPage</ID>
-    <ID>LargeClass:ReaderContentTest.kt$ReaderContentTest</ID>
-    <ID>LargeClass:ReaderTranslationTest.kt$ReaderTranslationTest</ID>
     <ID>LongMethod:BookCard.kt$@OptIn(ExperimentalFoundationApi::class) @Composable internal fun BookCard( document: DocumentInfo, /** How far through, 0 to 1. Null for a book that has never been opened. */ progress: Float?, menuExpanded: Boolean, onClick: () -&gt; Unit, onMenuRequest: () -&gt; Unit, onMenuDismiss: () -&gt; Unit, onToggleFavorite: () -&gt; Unit, onRefresh: () -&gt; Unit, onDelete: () -&gt; Unit, onShowDetails: () -&gt; Unit, reveal: LaunchReveal, revealIndex: Int, modifier: Modifier = Modifier, )</ID>
     <ID>LongMethod:BookDetailBody.kt$@Composable internal fun BookDetailBody( details: BookDetails, onRead: () -&gt; Unit, onLongPress: () -&gt; Unit, modifier: Modifier = Modifier, topClearance: Dp = TopChromeClearance, bottomClearance: Dp = DetailBottomClearance, coverWidth: Dp = Dp.Unspecified, /** * What the grouped details sit in. It has to contrast with whatever is behind * this body, and that differs: the screen lays it on the window background, * the panel on a raised surface, and one colour cannot be a step away from * both - in the dark theme especially, where the background is true black. */ infoCardColor: Color = MaterialTheme.colorScheme.surface, )</ID>
     <ID>LongMethod:BookDetailScreen.kt$@Composable fun BookDetailContent( uiState: UiState&lt;BookDetails&gt;, onBack: () -&gt; Unit, onRead: () -&gt; Unit, onRetry: () -&gt; Unit, onToggleFavorite: () -&gt; Unit, onRefresh: () -&gt; Unit, onDelete: () -&gt; Unit, /** * Defaulted so this screen still composes without a ViewModel behind it, * which is how it is tested and previewed. */ snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }, )</ID>
@@ -171,6 +169,10 @@
     <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$32</ID>
     <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$42</ID>
     <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$8</ID>
+    <ID>MayBeConst:ReaderTranslationTestFixture.kt$/** * The book these tests read, and the reader showing it. * * Shared so that every question about translating reaches the same three * paragraphs. The sample sentences are chosen for their shape: one short, one * long, and one paragraph that opens with a sentence of two words. */ internal val opening = "Call me Ishmael."</ID>
+    <ID>MayBeConst:ReaderTranslationTestFixture.kt$internal val afterword = "No. This paragraph opens with a very short sentence indeed, and then runs on."</ID>
+    <ID>MayBeConst:ReaderTranslationTestFixture.kt$internal val second = "Some years ago I went to sea."</ID>
+    <ID>MayBeConst:ReaderTranslationTestFixture.kt$internal val translated = "Kutsukaa minua Ismaeliksi."</ID>
     <ID>ModifierMissing:BookActionsMenu.kt$BookActionsMenu</ID>
     <ID>ModifierMissing:BookDetailScreen.kt$BookDetailContent</ID>
     <ID>ModifierMissing:LibraryScreen.kt$LibraryContent</ID>
@@ -231,13 +233,15 @@
     <ID>TooGenericExceptionThrown:TranslatePassageUseCaseTest.kt$TranslatePassageUseCaseTest$throw RuntimeException("no network")</ID>
     <ID>TooGenericExceptionThrown:TranslationSessionTest.kt$TranslationSessionTest$throw RuntimeException("no network")</ID>
     <ID>UnusedImports:AndroidDocumentAnalyzerTest.kt$import io.lukia.features.import.infrastructure.AndroidDocumentAnalyzer</ID>
+    <ID>UnusedImports:AnthropicFailureTest.kt$import io.lukia.features.translate.domain.translate</ID>
     <ID>UnusedImports:IOSDocumentAnalyzerTest.kt$import io.lukia.features.import.infrastructure.IOSDocumentAnalyzer</ID>
+    <ID>UnusedImports:OpenAiFailureTest.kt$import io.lukia.features.translate.domain.translate</ID>
     <ID>UnusedParameter:CoverArtCacheTest.kt$CoverArtCacheTest$cover: CoverImage</ID>
     <ID>UseCheckOrError:AndroidDocumentWorkspace.kt$AndroidDocumentWorkspace$throw IllegalStateException("Could not store a copy of $source")</ID>
     <ID>UseCheckOrError:BookDetailViewModelTest.kt$BookDetailViewModelTest.ThrowingLibraryRepository$throw IllegalStateException( "detail read blew up", )</ID>
-    <ID>UseCheckOrError:LibraryViewModelTest.kt$LibraryViewModelTest.ThrowingDocumentAnalyzer$throw IllegalStateException("analysis blew up")</ID>
-    <ID>UseCheckOrError:LibraryViewModelTest.kt$LibraryViewModelTest.ThrowingLibraryRepository$throw IllegalStateException("library read blew up")</ID>
-    <ID>UseCheckOrError:LibraryViewModelTest.kt$LibraryViewModelTest.ThrowingProgressRepository$throw IllegalStateException( "position store blew up", )</ID>
+    <ID>UseCheckOrError:LibraryTestFixture.kt$ThrowingDocumentAnalyzer$throw IllegalStateException("analysis blew up")</ID>
+    <ID>UseCheckOrError:LibraryTestFixture.kt$ThrowingLibraryRepository$throw IllegalStateException("library read blew up")</ID>
+    <ID>UseCheckOrError:LibraryTestFixture.kt$ThrowingProgressRepository$throw IllegalStateException( "position store blew up", )</ID>
     <ID>UseRequire:AndroidDocumentAnalyzer.kt$AndroidDocumentAnalyzer$throw IllegalArgumentException( "File does not exist: ${document.location}", )</ID>
     <ID>UseRequire:DesktopDocumentAnalyzer.kt$DesktopDocumentAnalyzer$throw IllegalArgumentException( "File does not exist: ${document.location}", )</ID>
     <ID>UseRequire:DesktopDocumentAnalyzer.kt$DesktopDocumentAnalyzer$throw IllegalArgumentException( "Path is not a file: ${document.location}", )</ID>

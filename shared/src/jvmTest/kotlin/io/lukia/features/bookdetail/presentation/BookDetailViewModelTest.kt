@@ -1,5 +1,6 @@
 package io.lukia.features.bookdetail.presentation
 
+import io.lukia.MainDispatcherTest
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
@@ -16,29 +17,12 @@ import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.reader.domain.FakeReadingProgressRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
-class BookDetailViewModelTest {
-
-    @BeforeTest
-    fun setUp() {
-        Dispatchers.setMain(UnconfinedTestDispatcher())
-    }
-
-    @AfterTest
-    fun tearDown() {
-        Dispatchers.resetMain()
-    }
+class BookDetailViewModelTest : MainDispatcherTest() {
 
     @Test
     fun loadsMatchingDocumentOnInit() = runTest {

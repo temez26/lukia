@@ -1,15 +1,10 @@
-# Kotlin files that already exceeded the 400-line limit when it was introduced.
-# They are reported as warnings, not failures. Split one and delete its line;
-# never add a new line here for code you are writing now.
+# Kotlin files allowed to exceed the 400-line limit, one path per line. They are
+# reported as warnings rather than failures.
 #
-# Regenerate the measurements with:
+# This list is empty, and the intention is that it stays that way: it existed to
+# carry the files that predated the rule, and every one of them has since been
+# split. Add a path here only to carry an existing file through a change that is
+# not about its length - never for code being written now.
+#
+# Find what would go here with:
 #   git ls-files '*.kt' | xargs wc -l | awk '$1 > 400 && $2 != "total" { print $2 }'
-
-shared/src/commonTest/kotlin/io/lukia/features/translate/infrastructure/anthropic/AnthropicTranslatorTest.kt
-shared/src/commonTest/kotlin/io/lukia/features/translate/infrastructure/openai/OpenAiTranslatorTest.kt
-shared/src/commonTest/kotlin/io/lukia/features/translate/presentation/TranslationSessionTest.kt
-shared/src/jvmTest/kotlin/io/lukia/features/library/presentation/LibraryViewModelTest.kt
-shared/src/jvmTest/kotlin/io/lukia/features/reader/presentation/ReaderViewModelTest.kt
-shared/src/jvmTest/kotlin/io/lukia/features/reader/presentation/screens/ReaderContentTest.kt
-shared/src/jvmTest/kotlin/io/lukia/features/reader/presentation/screens/ReaderPageTranslationTest.kt
-shared/src/jvmTest/kotlin/io/lukia/features/reader/presentation/screens/ReaderTranslationTest.kt

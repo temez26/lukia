@@ -41,10 +41,10 @@ its grammar. Splitting it is not cosmetic — it is the point at which the piece
 
 `checkFileLength` warns from 350 lines and fails the build at 400.
 
-Files that were already over the limit when the rule was introduced are listed in
-[`config/file-length/baseline.txt`](config/file-length/baseline.txt). They report as
-warnings instead of failures. **Split one and delete its line; never add a line for code
-you are writing now.**
+[`config/file-length/baseline.txt`](config/file-length/baseline.txt) lists paths allowed
+to exceed it, which report as warnings instead of failures. **It is empty, and the
+intention is that it stays that way** — it carried the files that predated the rule, and
+every one of them has since been split.
 
 Other size limits, enforced by detekt:
 
@@ -178,14 +178,12 @@ without one is a rule violation wearing a hat.
 
 ## Baselines
 
-Existing violations are recorded so the checks can be strict about new code without
-requiring the whole codebase to be fixed first:
+[`config/detekt/baseline-shared.xml`](config/detekt/baseline-shared.xml) records the
+detekt findings that predate these rules, so the checks can be strict about new code
+without the whole codebase having to be fixed first. Regenerate it with
+`./gradlew detektBaseline`.
 
-- [`config/detekt/baseline-shared.xml`](config/detekt/baseline-shared.xml) — detekt findings
-  that predate the rules. Regenerate with `./gradlew detektBaseline`.
-- [`config/file-length/baseline.txt`](config/file-length/baseline.txt) — files that were
-  already over 400 lines.
+It shrinks over time and does not grow. When a change makes a baselined finding clean,
+regenerate the baseline in the same pull request.
 
-Both shrink over time and neither grows. When a change makes a baselined file clean, drop
-its entry in the same pull request — `checkFileLength` warns about entries it no longer
-needs.
+The file length baseline beside it is already empty — see [Size](#size).
