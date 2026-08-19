@@ -31,74 +31,68 @@ import kotlin.test.assertTrue
 /**
  * The dictionary, which gives the senses a word has rather than choosing one.
  *
- * What is worth proving is the reading of the entry: it comes back grouped by
- * which language the word belongs to and then by part of speech, with the
- * definitions themselves as fragments of HTML - none of which belongs in the
- * middle of a paragraph of a book.
+ * The case that matters most is which wiki is asked. An earlier version reached
+ * for Wikimedia's REST definition endpoint, which exists only on the English
+ * Wiktionary - so every other wiki answered a 404 and every lookup fell through
+ * to English, whatever language the reader had chosen.
  */
 class WiktionaryTranslatorTest {
 
     private val json = Json { ignoreUnknownKeys = true }
 
-    @Test
-    fun theFirstSenseIsWhatStandsInThePage() = runTest {
-        val translator = translator(answers { respondJson(ENTRY) })
-
-        assertEquals("a large marine mammal", translator.translate(request()).text)
-    }
-
-    /** The rest go where a translator's remark goes: under the paragraph. */
-    @Test
-    fun theOtherSensesAreKeptAsARemark() = runTest {
-        val translator = translator(answers { respondJson(ENTRY) })
-
-        val note = translator.translate(request()).note.orEmpty()
-
-        assertTrue(note.contains("to hunt whales"), note)
-    }
-
-    /**
-     * The definitions arrive as HTML - a definition is mostly links to the words
-     * in it - and a link spliced into a book is a thing to tap that leads
-     * nowhere.
-     */
-    @Test
-    fun theMarkupAroundASenseIsTakenOut() = runTest {
-        val translator = translator(answers { respondJson(ENTRY) })
-
-        val text = translator.translate(request()).text
-
-        assertTrue(!text.contains("<"), text)
-        assertTrue(!text.contains("href"), text)
-    }
-
-    /** The reader's own language first, so the senses come back in it. */
+    /** The whole point: a Finnish reader is asking the Finnish Wiktionary. */
     @Test
     fun theReadersOwnWiktionaryIsAskedFirst() = runTest {
         var sent: HttpRequestData? = null
-        val translator = translator(answers { sent = it; respondJson(ENTRY) })
+        val translator = translator(answers { sent = it; respondJson(FINNISH_ENTRY) })
 
         translator.translate(request())
 
-        assertTrue(sent?.url.toString().startsWith("https://fi.wiktionary.org/"), "$sent")
+        assertEquals("fi.wiktionary.org", sent?.url?.host)
+    }
+
+    @Test
+    fun theSenseComesBackInTheReadersOwnLanguage() = runTest {
+        val translator = translator(answers { respondJson(FINNISH_ENTRY) })
+
+        assertEquals("valas", translator.translate(request()).text)
+    }
+
+    /** The headings are the scaffolding, not the meaning. */
+    @Test
+    fun theHeadingsOfAnEntryAreNotSenses() = runTest {
+        val translator = translator(answers { respondJson(FINNISH_ENTRY) })
+
+        val translation = translator.translate(request())
+
+        assertTrue(!translation.text.contains("="), translation.text)
+        assertTrue(!translation.text.contains("Substantiivi"), translation.text)
+    }
+
+    /** The rest of them go under the paragraph, as a translator's remark does. */
+    @Test
+    fun theOtherSensesAreKeptAsARemark() = runTest {
+        val translator = translator(answers { respondJson(FINNISH_ENTRY) })
+
+        assertTrue(translator.translate(request()).note.orEmpty().contains("valaskala"))
     }
 
     /**
-     * The smaller Wiktionaries are thin, and a word missing from one is a 404
-     * rather than a failure - which is the whole reason there is a second to
-     * try.
+     * The smaller Wiktionaries are thin, and a word missing from one is an
+     * answer rather than a failure - which is the whole reason there is a
+     * second to try.
      */
     @Test
-    fun theEnglishWiktionaryIsAskedWhenTheReadersOwnHasNoEntry() = runTest {
+    fun theEnglishWiktionaryIsAskedWhenTheReadersOwnHasNoPage() = runTest {
         val asked = mutableListOf<String>()
         val translator = translator(
             answers { request ->
                 asked += request.url.host
 
                 if (request.url.host.startsWith("fi")) {
-                    respondJson("", HttpStatusCode.NotFound)
+                    respondJson(MISSING_PAGE)
                 } else {
-                    respondJson(ENTRY)
+                    respondJson(ENGLISH_ENTRY)
                 }
             }
         )
@@ -107,18 +101,35 @@ class WiktionaryTranslatorTest {
         assertEquals(listOf("fi.wiktionary.org", "en.wiktionary.org"), asked)
     }
 
+    /** An English reader has only one wiki to ask, and it is not asked twice. */
+    @Test
+    fun anEnglishReaderIsNotAskedTheSameWikiTwice() = runTest {
+        val asked = mutableListOf<String>()
+        val translator = translator(
+            answers { request -> asked += request.url.host; respondJson(MISSING_PAGE) },
+            language = TargetLanguage.English
+        )
+
+        translator.failure(request(language = TargetLanguage.English))
+
+        assertEquals(listOf("en.wiktionary.org"), asked)
+    }
+
     @Test
     fun aWordInNoDictionaryAtAllSaysSo() = runTest {
-        val translator = translator(answers { respondJson("", HttpStatusCode.NotFound) })
+        val translator = translator(answers { respondJson(MISSING_PAGE) })
 
         val error = translator.failure() as AppError.Unexpected
 
         assertTrue(error.cause.orEmpty().contains("No dictionary entry"), error.cause.orEmpty())
     }
 
-    private fun translator(engine: MockEngine): WiktionaryTranslator {
+    private fun translator(
+        engine: MockEngine,
+        language: TargetLanguage = TargetLanguage.Finnish
+    ): WiktionaryTranslator {
         val settings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()).apply {
-            update(TranslationSettings(targetLanguage = TargetLanguage.Finnish))
+            update(TranslationSettings(targetLanguage = language))
         }
 
         val client = HttpClient(engine) {
@@ -130,39 +141,35 @@ class WiktionaryTranslatorTest {
         return WiktionaryTranslator(client, settings, json)
     }
 
-    private fun request(text: String = "whale") = TranslationRequest(
-        text = text,
-        targetLanguage = TargetLanguage.Finnish,
-        unit = PassageUnit.Word
-    )
+    private fun request(
+        text: String = "whale",
+        language: TargetLanguage = TargetLanguage.Finnish
+    ) = TranslationRequest(text = text, targetLanguage = language, unit = PassageUnit.Word)
 
-    private suspend fun WiktionaryTranslator.failure(): AppError =
-        runCatching { translate(request()) }.exceptionOrNull()?.toAppError()
-            ?: error("expected a failure")
+    private suspend fun WiktionaryTranslator.failure(
+        request: TranslationRequest = request()
+    ): AppError = runCatching { translate(request) }.exceptionOrNull()?.toAppError()
+        ?: error("expected a failure")
 
     private companion object {
 
         /**
-         * An entry as the service really sends one: keyed by the language the
-         * word belongs to, then grouped by part of speech, with each definition
-         * a fragment of HTML.
+         * A page as the query API really hands one over: the whole entry as one
+         * run of text, with its headings still wrapped in equals signs and its
+         * senses on the lines between them.
          */
-        const val ENTRY = """
-            {
-              "en": [
-                {
-                  "partOfSpeech": "Noun",
-                  "definitions": [
-                    {"definition": "a large <a href=\"/wiki/marine\">marine</a> mammal"}
-                  ]
-                },
-                {
-                  "partOfSpeech": "Verb",
-                  "definitions": [{"definition": "to hunt whales"}]
-                }
-              ]
-            }
+        const val FINNISH_ENTRY = """
+            {"query": {"pages": [{"title": "whale", "extract":
+            "== Englanti ==\n=== Substantiivi ===\nvalas\nvalaskala\n"}]}}
         """
+
+        const val ENGLISH_ENTRY = """
+            {"query": {"pages": [{"title": "whale", "extract":
+            "== English ==\n=== Noun ===\na large marine mammal\n"}]}}
+        """
+
+        /** A wiki says "there is no such page" rather than failing to answer. */
+        const val MISSING_PAGE = """{"query": {"pages": [{"title": "whale", "missing": true}]}}"""
     }
 }
 
