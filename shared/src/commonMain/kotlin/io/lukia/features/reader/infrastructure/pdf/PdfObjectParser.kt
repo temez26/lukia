@@ -128,7 +128,6 @@ internal class PdfObjectParser(
         return PdfValue.Name(name.toString())
     }
 
-
     /**
      * A number, a reference, or one of the three keywords. References are only
      * recognisable by looking past two integers for an `R`, so the position is

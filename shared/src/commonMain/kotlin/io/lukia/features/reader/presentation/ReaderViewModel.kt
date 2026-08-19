@@ -29,44 +29,12 @@ import io.lukia.features.translate.domain.pageSentences
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import io.lukia.features.translate.presentation.PassageSelection
 import io.lukia.features.translate.presentation.PassageTranslation
-import io.lukia.features.translate.presentation.TranslationSession
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-
-/**
- * How much drawn page is kept in memory, counted in pixels rather than pages.
- *
- * A page is four bytes per pixel, and a page's size varies enormously - a phone
- * page is a few megabytes where a zoomed desktop page is twenty. Counting pages
- * would mean choosing a number safe for the largest, which then holds far too
- * little on the smallest. This budget adapts: roughly a dozen pages on a phone,
- * three on a zoomed-in desktop, and about 64 MB either way.
- */
-private const val MAX_CACHED_PIXELS = 16_000_000
-
-/** Kept regardless of the budget, so the page being read is never evicted. */
-private const val MIN_CACHED_PAGES = 3
-
-/**
- * How many pages' worth of parsed sentences are kept.
- *
- * Counted in pages rather than in bytes, unlike the drawn ones: what this holds
- * is text and rectangles, whose size follows how much is written on a page
- * rather than how large the page is drawn. Comfortably more than fits on any
- * screen, so a reader moving back and forth over a spread never waits for the
- * same page to be parsed twice.
- */
-private const val MAX_CACHED_PAGE_SENTENCES = 24
 
 class ReaderViewModel(
     private val location: String,
@@ -78,13 +46,17 @@ class ReaderViewModel(
 ) : ViewModel() {
 
     /**
-     * Every sentence translated while this book is open. Tied to the ViewModel
-     * rather than to the screen so that flipping between a translation and the
-     * original survives the reader turning the device round.
+     * Everything about translating what is on the page. Held here so the reader
+     * screen sees one object, but implemented apart - see [ReaderTranslations].
      */
-    private val translationSession = TranslationSession(translatePassage, viewModelScope)
+    private val translation = ReaderTranslations(translatePassage, translationSettings, viewModelScope)
 
-    val translations: StateFlow<Map<TextAnchor, PassageTranslation>> = translationSession.passages
+    val translations: StateFlow<Map<TextAnchor, PassageTranslation>> = translation.passages
+    val bulkTranslation: StateFlow<BulkTranslation> = translation.bulkTranslation
+    val translateOnScreen: StateFlow<TranslateOnScreen> = translation.onScreen
+    val shownTranslations: StateFlow<ShownTranslations> = translation.shown
+    val translationGestures: StateFlow<TranslationGestures> = translation.gestures
+    val translationConfigured: StateFlow<Boolean> = translation.configured
 
     private val _uiState = MutableStateFlow<UiState<ReaderDocument>>(UiState.Loading)
     val uiState: StateFlow<UiState<ReaderDocument>> = _uiState.asStateFlow()
@@ -111,104 +83,11 @@ class ReaderViewModel(
     private val _outline = MutableStateFlow<ReaderOutline>(ReaderOutline.Loading)
     val outline: StateFlow<ReaderOutline> = _outline.asStateFlow()
 
-    private val _translateOnScreen = MutableStateFlow(TranslateOnScreen.Idle)
-
-    /**
-     * Whether the reader has asked to be offered translating more of the book
-     * than they pointed at.
-     */
-    val bulkTranslation: StateFlow<BulkTranslation> = translationSettings.settings
-        .map { it.bulkTranslation }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Eagerly,
-            initialValue = translationSettings.settings.value.bulkTranslation,
-        )
-
-    /**
-     * What is standing, with anything the reader has since turned off taken out
-     * of it.
-     *
-     * Masked here rather than guarded at every place that could set it, so that
-     * turning "keep translating" off in Settings stops it at once - including
-     * while it is running, with a book open, halfway down a chapter. A setting
-     * that only took effect the next time it was switched on would leave the
-     * expensive one running after the reader had told it to stop.
-     */
-    val translateOnScreen: StateFlow<TranslateOnScreen> =
-        combine(_translateOnScreen, bulkTranslation) { standing, offered ->
-            if (offered.asYouRead) standing else standing.copy(continuous = false)
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Eagerly,
-            initialValue = TranslateOnScreen.Idle,
-        )
-
-    /**
-     * Whether the translations in this book are the words on the page.
-     *
-     * Read off the passages themselves rather than kept as a flag beside them, so
-     * there is only ever one answer to the question: a reader who taps a single
-     * sentence back to the original has hidden one of them, and the control that
-     * hides all of them says so without being told.
-     */
-    val shownTranslations: StateFlow<ShownTranslations> = translationSession.passages
-        .map { passages ->
-            val answered = passages.values.filterIsInstance<PassageTranslation.Ready>()
-
-            ShownTranslations(
-                any = answered.isNotEmpty(),
-                visible = answered.any { !it.showingOriginal },
-            )
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Eagerly,
-            initialValue = ShownTranslations.None,
-        )
-
-    /**
-     * Whether there is anything set up to translate with.
-     *
-     * The reader needs this to decide whether to offer the controls at all: a
-     * button whose only possible outcome is "nothing is set up to translate
-     * with" is worse than no button, and most of a reading app's users never
-     * configure one.
-     */
-
-    /**
-     * What a tap and a long press on the book ask for, straight from the
-     * settings - so changing one takes effect on the very next tap rather than
-     * the next book.
-     */
-    val translationGestures: StateFlow<TranslationGestures> = translationSettings.settings
-        .map { it.gestures }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Eagerly,
-            initialValue = translationSettings.settings.value.gestures,
-        )
-
-    val translationConfigured: StateFlow<Boolean> = translationSettings.settings
-        .map { it.isConfigured }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Eagerly,
-            initialValue = translationSettings.settings.value.isConfigured,
-        )
-
     fun updateSettings(settings: ReaderSettings) {
         settingsRepository.update(settings)
     }
 
-    /**
-     * Least-recently-used, keyed by page index. Every entry is drawn at
-     * [cachedWidthPx]; when the window changes width the whole cache is stale at
-     * once, so it is dropped rather than tracked per page.
-     */
-    private val renderedPages = LinkedHashMap<Int, ImageBitmap>()
-    private val cacheLock = Mutex()
-    private var cachedWidthPx = 0
+    private val renderedPages = RenderedPageCache()
 
     init {
         open()
@@ -273,22 +152,7 @@ class ReaderViewModel(
         }
     }
 
-    /**
-     * The sentences of the pages most recently looked at.
-     *
-     * Reading a page's text means parsing it out of the file, which is far too
-     * much to do again every time somebody taps the same page twice - and a
-     * reader working through a page taps it several times.
-     *
-     * Least-recently-used, like the drawn pages, and for the same reason rather
-     * than the same weight: one page of sentences is small, but it is a rectangle
-     * per line of every sentence on it, and a long document read end to end is
-     * hundreds of pages of them held for a reader who is no longer anywhere near
-     * any of it. [MAX_CACHED_PAGE_SENTENCES] is far more than is on screen at
-     * once, so nothing being read is ever parsed twice.
-     */
-    private val pageSentences = LinkedHashMap<Int, List<PageSentence>>()
-    private val sentenceLock = Mutex()
+    private val pageSentences = PageSentenceCache()
 
     /**
      * What is written on page [index], or an empty list when nothing is - a
@@ -300,34 +164,17 @@ class ReaderViewModel(
     suspend fun sentencesOn(index: Int): List<PageSentence> {
         val pages = (_uiState.value.dataOrNull?.content as? PagedContent)?.pages ?: return emptyList()
 
-        rememberedSentences(index)?.let { return it }
-
-        val glyphs = runCatchingApp { pages.pageText(index) }.getOrNull()
-        val sentences = glyphs?.let { pageSentences(it) }.orEmpty()
-
-        return sentenceLock.withLock {
-            pageSentences.getOrPut(index) { sentences }.also {
-                while (pageSentences.size > MAX_CACHED_PAGE_SENTENCES) {
-                    pageSentences.remove(pageSentences.keys.first())
-                }
-            }
+        return pageSentences.sentencesOn(index) {
+            val glyphs = runCatchingApp { pages.pageText(index) }.getOrNull()
+            glyphs?.let { pageSentences(it) }.orEmpty()
         }
     }
-
-    /**
-     * Removed and re-inserted so that reading a page moves it to the end, which
-     * is what makes eviction least-recently-used rather than oldest-first.
-     */
-    private suspend fun rememberedSentences(index: Int): List<PageSentence>? =
-        sentenceLock.withLock {
-            pageSentences.remove(index)?.also { pageSentences[index] = it }
-        }
 
     /** A passage the reader pointed at. */
     fun onPassageSelected(selection: PassageSelection) {
         val document = _uiState.value.dataOrNull ?: return
 
-        translationSession.onPassageTapped(selection.anchor) { document.requestFor(selection) }
+        translation.onPassageTapped(selection.anchor) { document.requestFor(selection) }
     }
 
     /**
@@ -342,48 +189,22 @@ class ReaderViewModel(
         val document = _uiState.value.dataOrNull ?: return
 
         selections.forEach { selection ->
-            translationSession.onPassageRequested(selection.anchor) {
+            translation.onPassageRequested(selection.anchor) {
                 document.requestFor(selection)
             }
         }
     }
 
-    /**
-     * Asks for everything on screen once.
-     *
-     * A number that goes up rather than an event, because what is on screen is
-     * only known where the text is laid out. Every block of it watches this and
-     * answers for itself - see [TranslateOnScreen].
-     */
     fun onTranslateOnScreen() {
-        if (!bulkTranslation.value.onScreen) return
-
-        _translateOnScreen.value = _translateOnScreen.value.requested()
+        translation.requestOnScreen()
     }
 
-    /**
-     * Shows or hides every translation in the book at once.
-     *
-     * Hiding is how somebody reads a stretch they have already worked through in
-     * the book's own words, without giving up the answers - they are still there,
-     * still paid for, one press away.
-     */
     fun setTranslationsVisible(visible: Boolean) {
-        translationSession.showTranslations(visible)
+        translation.showTranslations(visible)
     }
 
-    /**
-     * Whether text arriving in view is translated as it arrives.
-     *
-     * Not stored with the reader's other settings, and deliberately: this one
-     * spends money for as long as it is on, and a setting that survived closing
-     * the book would go on spending it in the next one without being asked for
-     * again.
-     */
     fun setContinuousTranslation(continuous: Boolean) {
-        if (continuous && !bulkTranslation.value.asYouRead) return
-
-        _translateOnScreen.value = _translateOnScreen.value.copy(continuous = continuous)
+        translation.setContinuous(continuous)
     }
 
     /**
@@ -394,7 +215,7 @@ class ReaderViewModel(
      */
     private fun ReaderDocument.requestFor(selection: PassageSelection) = TranslationRequest(
         text = selection.passage,
-        targetLanguage = translationSettings.settings.value.targetLanguage,
+        targetLanguage = translation.targetLanguage,
         context = info.metadata.asTranslationContext(
             bookTitle = info.displayTitle(),
             chapterTitle = selection.chapterTitle ?: chapterOf(selection.anchor),
@@ -442,12 +263,7 @@ class ReaderViewModel(
 
     fun retry() {
         closeDocument()
-        // The anchors point into the document being thrown away, and the one
-        // opened in its place may not have a sentence where each of them says.
-        translationSession.clear()
-        // A standing order to translate what is on screen belongs to the book
-        // that was open, not to whatever opens in its place.
-        _translateOnScreen.value = TranslateOnScreen.Idle
+        translation.clear()
         pageSentences.clear()
         _uiState.value = UiState.Loading
         _outline.value = ReaderOutline.Loading
@@ -471,42 +287,10 @@ class ReaderViewModel(
 
         val targetWidthPx = renderWidthFor(widthPx)
 
-        cached(index, targetWidthPx)?.let { return it }
-
-        val rendered = pages.renderPage(index, targetWidthPx) ?: return null
-        store(index, targetWidthPx, rendered)
-
-        return rendered
-    }
-
-    private suspend fun cached(index: Int, widthPx: Int): ImageBitmap? = cacheLock.withLock {
-        if (cachedWidthPx != widthPx) {
-            renderedPages.clear()
-            cachedWidthPx = widthPx
-            return@withLock null
-        }
-
-        // Removing and re-inserting moves the entry to the end of the map, which
-        // is what makes eviction least-recently-used rather than oldest-first.
-        renderedPages.remove(index)?.also { renderedPages[index] = it }
-    }
-
-    private suspend fun store(index: Int, widthPx: Int, page: ImageBitmap) = cacheLock.withLock {
-        // The window resized while this page was rendering, so it is already the
-        // wrong size for the cache it would land in.
-        if (cachedWidthPx != widthPx) return@withLock
-
-        renderedPages[index] = page
-
-        // Least-recently-used out first, until the budget is met - but never
-        // below the handful around the page being read.
-        while (renderedPages.size > MIN_CACHED_PAGES && cachedPixels() > MAX_CACHED_PIXELS) {
-            renderedPages.remove(renderedPages.keys.first())
+        return renderedPages.page(index, targetWidthPx) {
+            pages.renderPage(index, targetWidthPx)
         }
     }
-
-    private fun cachedPixels(): Long =
-        renderedPages.values.sumOf { it.width.toLong() * it.height.toLong() }
 
     /**
      * The open document holds a file handle on the working copy, so leaving the
@@ -519,6 +303,5 @@ class ReaderViewModel(
     private fun closeDocument() {
         _uiState.value.dataOrNull?.close()
         renderedPages.clear()
-        cachedWidthPx = 0
     }
 }
