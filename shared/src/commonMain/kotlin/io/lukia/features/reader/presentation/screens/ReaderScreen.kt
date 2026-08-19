@@ -1102,33 +1102,44 @@ private fun DocumentPage(
             // document is silence.
             .semantics { contentDescription = "Page ${index + 1} of $pageCount" }
             .pointerInput(index) {
-                // A page of a PDF answers the same two gestures as set text,
-                // with one thing it cannot do: a word and a paragraph are not
-                // things a page has. What a PDF records is glyphs and where they
-                // landed, and the sentences here are inferred back out of that -
-                // there is no paragraph in the file to point at, and no word with
-                // a place of its own to cover. So a gesture that is on selects
-                // the sentence whatever it is set to, and only off is off.
+                // A page of a PDF answers the same gestures as set text, down to
+                // the word: the words are inferred back out of the glyphs along
+                // with the sentences, so each of them has a piece of the page of
+                // its own to be pointed at and drawn over.
+                //
+                // The paragraph is the one unit a page cannot offer. A PDF
+                // records no paragraphs at all - what this reads as a block is a
+                // guess from the space left between lines, and it is not
+                // something an anchor into the page can name - so a gesture set
+                // to the paragraph takes the sentence instead.
                 fun select(position: Offset, unit: PassageUnit?) {
                     if (unit == null) return
 
                     // Back out of the drawn page into the file's own space,
                     // which is where the sentences know they are.
-                    val sentence = currentSentences.sentenceAt(
-                        x = position.x / currentScale,
-                        y = position.y / currentScale
-                    ) ?: return
+                    val x = position.x / currentScale
+                    val y = position.y / currentScale
+
+                    val sentence = currentSentences.sentenceAt(x, y) ?: return
+                    val word = if (unit == PassageUnit.Word) sentence.wordAt(x, y) else null
+
+                    // A gesture set to the word that landed between two of them
+                    // asks about nothing, exactly as it does in set text: the
+                    // punctuation between two words belongs to neither.
+                    if (unit == PassageUnit.Word && word == null) return
 
                     currentOnSelected(
                         PassageSelection(
                             anchor = TextAnchor.Page(
                                 pageIndex = index,
-                                sentenceIndex = sentence.index
+                                sentenceIndex = sentence.index,
+                                wordIndex = word?.index
                             ),
-                            passage = sentence.text,
+                            passage = word?.text ?: sentence.text,
                             // A page has no chapter of its own to name, and the
-                            // rest of the page is the context around a sentence.
-                            surroundingText = currentPageText
+                            // rest of the page is the context around a passage.
+                            surroundingText = currentPageText,
+                            unit = if (word == null) PassageUnit.Sentence else PassageUnit.Word
                         )
                     )
                 }

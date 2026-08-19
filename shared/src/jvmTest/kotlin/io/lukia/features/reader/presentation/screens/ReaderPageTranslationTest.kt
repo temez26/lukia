@@ -29,6 +29,9 @@ import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.TextQuad
 import io.lukia.features.translate.domain.PageSentence
+import io.lukia.features.translate.domain.PageWord
+import io.lukia.features.translate.domain.PassageUnit
+import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.presentation.PassageSelection
@@ -58,6 +61,40 @@ class ReaderPageTranslationTest {
         index = 0,
         text = opening,
         quads = listOf(TextQuad(left = 0f, top = 0f, right = 800f, bottom = 300f))
+    )
+
+    /**
+     * The same sentence with its words placed, as a real page gives them.
+     *
+     * The second word covers the middle of the page, which is where a tap on the
+     * page node lands - so a tap that reaches the words at all reaches that one,
+     * and a tap that only reaches the sentence is visibly a different answer.
+     */
+    private val pageOfWords = PageSentence(
+        index = 0,
+        text = opening,
+        quads = listOf(TextQuad(left = 0f, top = 0f, right = 800f, bottom = 300f)),
+        words = listOf(
+            PageWord(
+                index = 0,
+                text = "Call",
+                quads = listOf(TextQuad(left = 0f, top = 0f, right = 200f, bottom = 300f))
+            ),
+            PageWord(
+                index = 1,
+                text = "Ishmael",
+                quads = listOf(TextQuad(left = 220f, top = 0f, right = 800f, bottom = 300f))
+            )
+        )
+    )
+
+    /** The same page with nothing under the middle of it, which is where a tap lands. */
+    private val pageWithAGapInTheMiddle = pageOfWords.copy(
+        words = pageOfWords.words.map { word ->
+            word.copy(
+                quads = listOf(TextQuad(left = 0f, top = 0f, right = 20f, bottom = 20f))
+            )
+        }
     )
 
     /** A word in the very corner, so the middle of the page is not on it. */
@@ -266,6 +303,105 @@ class ReaderPageTranslationTest {
         )
     }
 
+    /**
+     * The complaint this was written for: a page set to translate a word was
+     * translating the whole sentence, because the words of a page had no places
+     * of their own to be pointed at.
+     */
+    @Test
+    fun aTapSetToTheWordAsksAboutTheWordOnAPageToo() = runComposeUiTest {
+        var selected: PassageSelection? = null
+
+        setReader(
+            sentences = listOf(pageOfWords),
+            onPassageSelected = { selected = it },
+            gestures = TranslationGestures(tap = PassageUnit.Word, longPress = null)
+        )
+        tapPageTwo()
+
+        val selection = assertNotNull(selected, "nothing was selected")
+        assertEquals("Ishmael", selection.passage)
+        assertEquals(PassageUnit.Word, selection.unit)
+        assertEquals(TextAnchor.Page(1, sentenceIndex = 0, wordIndex = 1), selection.anchor)
+    }
+
+
+    /**
+     * The space between two words belongs to neither, so a gesture set to the
+     * word does nothing there rather than quietly taking the sentence around it
+     * - which is the behaviour the setting exists to give.
+     */
+    @Test
+    fun aTapSetToTheWordBetweenTwoOfThemAsksForNothing() = runComposeUiTest {
+        var selected: PassageSelection? = null
+
+        setReader(
+            sentences = listOf(pageWithAGapInTheMiddle),
+            onPassageSelected = { selected = it },
+            gestures = TranslationGestures(tap = PassageUnit.Word, longPress = null)
+        )
+        tapPageTwo()
+
+        assertNull(selected, "a tap between two words took the sentence around them")
+    }
+
+    /** And the sentence when that is what it is set to, on the same page. */
+    @Test
+    fun aTapSetToTheSentenceStillAsksAboutTheSentence() = runComposeUiTest {
+        var selected: PassageSelection? = null
+
+        setReader(
+            sentences = listOf(pageOfWords),
+            onPassageSelected = { selected = it },
+            gestures = TranslationGestures(tap = PassageUnit.Sentence, longPress = null)
+        )
+        tapPageTwo()
+
+        val selection = assertNotNull(selected, "nothing was selected")
+        assertEquals(opening, selection.passage)
+        assertEquals(TextAnchor.Page(1, sentenceIndex = 0), selection.anchor)
+    }
+
+    /**
+     * A page records no paragraphs - what this reads as a block is inferred from
+     * the space between lines, and is not something an anchor into a page can
+     * name - so the sentence is what a paragraph gesture gets here.
+     */
+    @Test
+    fun aTapSetToTheParagraphTakesTheSentenceOnAPage() = runComposeUiTest {
+        var selected: PassageSelection? = null
+
+        setReader(
+            sentences = listOf(pageOfWords),
+            onPassageSelected = { selected = it },
+            gestures = TranslationGestures(tap = PassageUnit.Paragraph, longPress = null)
+        )
+        tapPageTwo()
+
+        assertEquals(PassageUnit.Sentence, assertNotNull(selected).unit)
+    }
+
+    /** A translated word stands over its own words, not over the sentence around them. */
+    @Test
+    fun aTranslatedWordIsDrawnOverThatWordOnly() = runComposeUiTest {
+        setReader(
+            sentences = listOf(pageOfWords),
+            translations = {
+                mapOf(
+                    TextAnchor.Page(1, sentenceIndex = 0, wordIndex = 1) to
+                        PassageTranslation.Ready(Translation("Ismaeliksi"))
+                )
+            }
+        )
+
+        onNodeWithText("Ismaeliksi", substring = true).assertExists()
+        // The sentence itself is untouched, so nothing covers the rest of it.
+        assertEquals(
+            0,
+            onAllNodes(hasText(translated, substring = true)).fetchSemanticsNodes().size
+        )
+    }
+
     private fun ComposeUiTest.tapPageTwo() =
         onNodeWithContentDescription("Page 2 of 2").performTouchInput { click() }
 
@@ -277,7 +413,8 @@ class ReaderPageTranslationTest {
     private fun ComposeUiTest.setReader(
         sentences: List<PageSentence>,
         translations: () -> Map<TextAnchor, PassageTranslation> = { emptyMap() },
-        onPassageSelected: (PassageSelection) -> Unit = {}
+        onPassageSelected: (PassageSelection) -> Unit = {},
+        gestures: TranslationGestures = TranslationGestures.Default
     ) {
         setContent {
             LukiaTheme {
@@ -290,6 +427,7 @@ class ReaderPageTranslationTest {
                     onRetry = {},
                     onSettingsChange = {},
                     onPassageSelected = onPassageSelected,
+                    gestures = gestures,
                     sentencesOnPage = { sentences },
                     renderPage = { _, _ -> null }
                 )

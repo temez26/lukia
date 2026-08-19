@@ -72,9 +72,23 @@ internal fun PageTranslationOverlay(
     // without looking at its sentences.
     if (translations.isEmpty) return
 
+    // Sentences and single words together, because what is done with either is
+    // the same: mark where it is, and cover it once there is something to put in
+    // its place. A word is only ever on the page while its sentence has not been
+    // translated over the top of it.
     val marked = remember(sentences, translations) {
-        sentences.mapNotNull { sentence ->
-            translations[sentence.index]?.let { sentence to it }
+        sentences.flatMap { sentence ->
+            val whole = translations[sentence.index]
+
+            if (whole != null) {
+                listOf(MarkedPassage(sentence.quads, sentence.bounds, whole))
+            } else {
+                sentence.words.mapNotNull { word ->
+                    translations.words(sentence.index)[word.index]?.let {
+                        MarkedPassage(word.quads, word.bounds, it)
+                    }
+                }
+            }
         }
     }
 
@@ -82,7 +96,7 @@ internal fun PageTranslationOverlay(
 
     // Read where it is drawn rather than here: read during composition it would
     // recompose the page on every frame of the sweep.
-    val sweep = passageSweep(marked.any { (_, state) -> state is PassageTranslation.Loading })
+    val sweep = passageSweep(marked.any { it.state is PassageTranslation.Loading })
 
     Box(
         modifier = modifier
@@ -95,15 +109,20 @@ internal fun PageTranslationOverlay(
             // readers. Faint enough to leave somebody else's typesetting
             // perfectly readable underneath it.
             .drawBehind {
-                marked.forEach { (sentence, state) ->
-                    val style = state.markStyle() ?: return@forEach
+                marked.forEach { passage ->
+                    val style = passage.state.markStyle() ?: return@forEach
 
-                    drawSentenceHighlight(sentence, scale, style, markColors, sweep.value)
+                    drawPassageHighlight(
+                        lines = passage.quads.map { it.asLine(scale) },
+                        style = style,
+                        colors = markColors,
+                        sweep = sweep.value
+                    )
                 }
             }
     ) {
-        marked.forEach { (sentence, state) ->
-            val panel = state.panel()
+        marked.forEach { passage ->
+            val panel = passage.state.panel()
 
             // Nothing is drawn over a sentence still being translated: the
             // reader can still read the original underneath while they wait.
@@ -117,10 +136,10 @@ internal fun PageTranslationOverlay(
                 val shown = panel ?: return@AnimatedVisibility
 
                 TranslationPanel(
-                    bounds = sentence.bounds,
-                    // The shortest of the sentence's lines, which is a line -
-                    // not the block they add up to. See TranslationPanel.
-                    lineHeight = sentence.quads.minOf { it.height },
+                    bounds = passage.bounds,
+                    // The shortest of the passage's lines, which is a line - not
+                    // the block they add up to. See TranslationPanel.
+                    lineHeight = passage.quads.minOf { it.height },
                     text = shown.text,
                     detail = shown.detail,
                     textColor = if (shown.failed) colors.error else colors.onSurface,
@@ -261,31 +280,18 @@ private const val MAX_TEXT_SP = 22f
 private const val PANEL_FADE_MILLIS = 160
 
 /**
- * The highlight behind one sentence of a page, line by line.
+ * One passage of a page the reader has asked about - a sentence, or a single
+ * word inside one - and what has become of it.
  *
- * The sentence's own quads rather than its bounding box: a sentence beginning
- * halfway along one line and ending halfway along another covers two ribbons of
- * the page, not the block between their far corners.
- *
- * Each quad is grown before it is drawn, because what a PDF reports is the
- * letters and not the line they were set on - a box around cap height with
- * nothing above the capitals and nothing below the descenders. Drawn as it comes,
- * the highlight would sit inside the type instead of behind it.
+ * The two are the same thing to draw: some rectangles to mark, and somewhere to
+ * put the answer once it arrives. Keeping them apart here would be two copies of
+ * the same loop that differed only in where the rectangles came from.
  */
-private fun DrawScope.drawSentenceHighlight(
-    sentence: PageSentence,
-    scale: Float,
-    style: PassageMarkStyle,
-    colors: PassageMarkColors,
-    sweep: Float
-) {
-    drawPassageHighlight(
-        lines = sentence.quads.map { it.asLine(scale) },
-        style = style,
-        colors = colors,
-        sweep = sweep
-    )
-}
+private data class MarkedPassage(
+    val quads: List<TextQuad>,
+    val bounds: TextQuad,
+    val state: PassageTranslation
+)
 
 /**
  * How much taller than its letters a line is, as a fraction of their height.
