@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.widthIn
@@ -291,9 +292,14 @@ internal fun SettingsBody(
             Crossfade(
                 targetState = area,
                 animationSpec = tween(AreaFadeMillis, easing = LinearOutSlowInEasing),
-                modifier = Modifier.animateContentSize(
-                    animationSpec = tween(AreaSettleMillis, easing = FastOutSlowInEasing)
-                )
+                modifier = Modifier
+                    .animateContentSize(
+                        animationSpec = tween(AreaSettleMillis, easing = FastOutSlowInEasing)
+                    )
+                    // Applied inside the animation, so what eases between the
+                    // groups is already the held height rather than the height
+                    // of whichever group happens to be shortest.
+                    .heightIn(min = MinAreaHeight)
             ) { shown ->
                 Column(modifier = Modifier.fillMaxWidth()) {
                     when (shown) {
@@ -510,6 +516,17 @@ internal fun SettingsBody(
     }
 }
 
+
+/**
+ * The least room a group is given, however little it has to put in it.
+ *
+ * Appearance is one control and Translating is a dozen, and a page that shrank
+ * to fit whichever was open made switching between them feel like opening and
+ * closing something rather than moving along a row. Held at about the height of
+ * a phone's content area, the shortest group still fills the view and the
+ * longest is the only one that scrolls.
+ */
+private val MinAreaHeight: Dp = 400.dp
 
 /**
  * How long one group takes to give way to the next, and how long the page takes
