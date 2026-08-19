@@ -345,10 +345,13 @@ class ReaderViewModelTest {
 
         viewModel.onPageSettled(pageIndex = 7)
 
-        assertEquals(
-            ReadingProgress(pageIndex = 7, pageCount = 20),
-            progress.progressFor(document.document.location)
-        )
+        // Field by field rather than as a whole value: the store also stamps
+        // where the book stands against the others, which is its business
+        // rather than the reader's.
+        val stored = progress.progressFor(document.document.location)
+
+        assertEquals(7, stored?.pageIndex)
+        assertEquals(20, stored?.pageCount)
     }
 
     /**

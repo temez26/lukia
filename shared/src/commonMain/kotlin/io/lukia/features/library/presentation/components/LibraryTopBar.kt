@@ -1,13 +1,7 @@
 package io.lukia.features.library.presentation.components
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,12 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -30,20 +21,15 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.lukia.features.library.presentation.ImportProgress
-import io.lukia.features.library.presentation.LibraryFilter
 import io.lukia.shared.presentation.components.AnchoredMenu
 import io.lukia.shared.presentation.components.EllipsisGlyph
 import io.lukia.shared.presentation.components.FolderGlyph
 import io.lukia.shared.presentation.components.GearGlyph
 import io.lukia.shared.presentation.components.IconButtonVariant
-import io.lukia.shared.presentation.components.LaunchReveal
 import io.lukia.shared.presentation.components.LukiaIconButton
 import io.lukia.shared.presentation.components.MenuRow
 import io.lukia.shared.presentation.components.MenuSeparator
 import io.lukia.shared.presentation.components.PlusGlyph
-import io.lukia.shared.presentation.components.SegmentedControl
-import io.lukia.shared.presentation.components.launchReveal
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.Space
@@ -51,12 +37,6 @@ import io.lukia.shared.presentation.theme.isWideWindow
 
 /** Breathing room above and below the bar's contents. */
 private val NavBarVerticalPadding: Dp = Space.sm
-
-/** Width the filter takes when it is not filling the screen, with every segment. */
-private val ToolbarFilterWidth: Dp = 320.dp
-
-/** Segments [ToolbarFilterWidth] is sized for; fewer take proportionally less. */
-private const val MaxFilterSegments = 4
 
 /**
  * Enough for a title and no more. A search field is for a word or two, and one
@@ -310,106 +290,5 @@ private fun LibraryMenu(
                 onSettings()
             }
         )
-    }
-}
-
-/**
- * What the library is narrowed to - inside the grid, so it scrolls away rather
- * than taking a permanent row.
- *
- * This is where a large title would go, and it is deliberately not one. A screen
- * that shows books does not need a word telling the reader they are books; the
- * row is worth more as controls. [filters] arrives already reduced to the ones
- * this library can actually offer, and an empty-handed control - one segment, or
- * none - is left off rather than shown with nothing to choose.
- *
- * How many books there are is not here either: it is in the search field, which
- * is the one place the number answers a question the reader is actually asking.
- */
-@Composable
-internal fun LibraryHeader(
-    filters: List<LibraryFilter>,
-    selectedFilter: LibraryFilter,
-    onFilterChange: (LibraryFilter) -> Unit,
-    isImporting: Boolean,
-    importProgress: ImportProgress?,
-    reveal: LaunchReveal,
-    modifier: Modifier = Modifier
-) {
-    val compact = !isWideWindow
-
-    Column(modifier = modifier.padding(bottom = Space.md)) {
-        if (filters.size > 1) {
-            SegmentedControl(
-                options = filters,
-                selected = selectedFilter,
-                label = { it.label },
-                onSelect = onFilterChange,
-                modifier = Modifier
-                    .then(
-                        // Filling is what a phone wants and what a desktop window
-                        // must not do: stretched across one, the control is mostly
-                        // the gaps between its labels.
-                        if (compact) {
-                            Modifier.fillMaxWidth()
-                        } else {
-                            Modifier.width(ToolbarFilterWidth * filters.size / MaxFilterSegments)
-                        }
-                    )
-                    .launchReveal(reveal, index = 0)
-            )
-        }
-
-        ImportingNotice(
-            visible = isImporting,
-            progress = importProgress,
-            modifier = Modifier.launchReveal(reveal, index = 1)
-        )
-    }
-}
-
-/**
- * That an import is running, for a library that already has books in it.
- *
- * It reports itself here rather than replacing the grid, so the books already on
- * screen stay readable while the rest arrive. Present only while it is true -
- * there is nothing to say about an import that is not happening - and expanded
- * into place rather than appearing, so the grid is nudged down rather than jumping.
- */
-@Composable
-private fun ImportingNotice(
-    visible: Boolean,
-    progress: ImportProgress?,
-    modifier: Modifier = Modifier
-) {
-    AnimatedVisibility(
-        visible = visible,
-        enter = expandVertically(LukiaMotion.standard()) + fadeIn(LukiaMotion.standard()),
-        exit = shrinkVertically(LukiaMotion.exit()) + fadeOut(LukiaMotion.exit()),
-        modifier = modifier
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(top = Space.md)
-        ) {
-            CircularProgressIndicator(
-                strokeWidth = 2.dp,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(12.dp)
-            )
-
-            Spacer(modifier = Modifier.width(Space.md))
-
-            Text(
-                // A folder can hold hundreds of books, each one opened and its
-                // cover rendered. Without the count, a long import is a spinner
-                // that gives no way to tell working from stuck.
-                text = progress
-                    ?.let { "Importing ${it.completed} of ${it.total}…" }
-                    ?: "Importing…",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
     }
 }

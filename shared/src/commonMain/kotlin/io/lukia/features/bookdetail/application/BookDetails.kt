@@ -26,7 +26,7 @@ data class BookDetails(
 
     /** True once the reader has reached the last page. */
     val isFinished: Boolean
-        get() = percentRead == 100
+        get() = progress?.isFinished == true
 
     /** True for a book that has been opened but not finished. */
     val isInProgress: Boolean

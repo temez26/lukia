@@ -20,7 +20,8 @@ class SqlReadingProgressRepository(
             positions.selectByLocation(location).executeAsOneOrNull()?.let {
                 ReadingProgress(
                     pageIndex = it.pageIndex.toInt(),
-                    pageCount = it.pageCount.toInt()
+                    pageCount = it.pageCount.toInt(),
+                    readAt = it.readAt
                 )
             }
         }
@@ -30,11 +31,17 @@ class SqlReadingProgressRepository(
             positions.selectAll().executeAsList().associate { row ->
                 row.location to ReadingProgress(
                     pageIndex = row.pageIndex.toInt(),
-                    pageCount = row.pageCount.toInt()
+                    pageCount = row.pageCount.toInt(),
+                    readAt = row.readAt
                 )
             }
         }
 
+    /**
+     * `readAt` is the statement's own doing rather than the caller's - see the
+     * note on it in `ReadingPosition.sq` - so [ReadingProgress.readAt] is not
+     * passed on here.
+     */
     override suspend fun save(location: String, progress: ReadingProgress) =
         withContext(dispatcher) {
             positions.put(
