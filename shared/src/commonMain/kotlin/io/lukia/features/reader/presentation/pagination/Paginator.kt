@@ -1,0 +1,168 @@
+package io.lukia.features.reader.presentation.pagination
+
+import io.lukia.features.reader.domain.TextBlock
+import io.lukia.features.reader.domain.TextSection
+
+/**
+ * Lays a reflowable book out as pages that each fit the window.
+ *
+ * The rule is the one a printed book follows: fill the page with whole blocks
+ * for as long as the next one fits, start a new page when it does not, and open
+ * every chapter on a page of its own. A block too tall for any page - which is
+ * a book's doing rather than the reader's - is cut at a line, and its second
+ * half opens the next page still knowing which block of which chapter it is.
+ *
+ * [pageHeightPx] is the room a page has for text, inside whatever margin the
+ * sheet is drawn with. Nothing here knows about the sheet, the margins or the
+ * chrome above them; it is handed the space and fills it.
+ */
+internal fun paginate(
+    sections: List<TextSection>,
+    sizes: BlockSizes,
+    pageHeightPx: Int,
+): PaginatedBook {
+    if (sections.isEmpty() || pageHeightPx <= 0) return PaginatedBook.Empty
+
+    val builder = PageBuilder(sizes, pageHeightPx)
+
+    sections.forEachIndexed { sectionIndex, section ->
+        // A chapter opens a page. A section with no name of its own is not a
+        // chapter but the rest of one - the reader divides an over-long file
+        // into several - and running straight on is what makes it read as one
+        // chapter rather than as a page break in the middle of a sentence.
+        builder.startSection(sectionIndex, newPage = section.title != null)
+
+        section.blocks.forEachIndexed { blockIndex, block ->
+            builder.add(blockIndex, block)
+        }
+    }
+
+    return builder.build()
+}
+
+/**
+ * Fills one page at a time, and remembers where each section began.
+ *
+ * A class rather than a fold because filling a page is a small state machine -
+ * what is on the page, how much room is left, which section is being read - and
+ * the one thing it must never do is lose track of where a block came from.
+ */
+private class PageBuilder(
+    private val sizes: BlockSizes,
+    private val pageHeightPx: Int,
+) {
+
+    private val pages = mutableListOf<TextPage>()
+    private val sectionPages = mutableListOf<Int>()
+
+    private var current = mutableListOf<PageBlock>()
+    private var usedPx = 0
+    private var sectionIndex = 0
+
+    fun startSection(index: Int, newPage: Boolean) {
+        sectionIndex = index
+
+        if (newPage) flush()
+
+        // Where this section starts is where the page it is on starts, whether
+        // that page was opened for it or was already being filled.
+        sectionPages += pages.size
+    }
+
+    fun add(blockIndex: Int, block: TextBlock) {
+        // The whole block's text, kept because a slice of it has to be able to
+        // say which of the block's sentences it holds - and a slice can only
+        // count its own.
+        val text = blockText(block)
+
+        var remaining: TextBlock = block
+        var consumed = 0
+
+        while (true) {
+            // A block that would fit a page of its own, but not what is left of
+            // this one, ends the page here - which is what keeps a paragraph in
+            // one piece wherever one can be.
+            if (!fits(remaining) && sizes.height(remaining) <= pageHeightPx) flush()
+
+            val cut = cutToFill(remaining)
+
+            if (cut == null) {
+                // Either it fits, or there is nothing in it to divide - a plate,
+                // or a line of code longer than the screen. The second kind gets
+                // a page to itself and is drawn scaled down to it.
+                if (!fits(remaining)) flush()
+
+                place(blockIndex, remaining, text, consumed, sizes.height(remaining))
+                return
+            }
+
+            val (head, tail, length) = cut
+
+            place(blockIndex, head, text, consumed, sizes.height(head))
+            flush()
+
+            remaining = tail
+            consumed += length
+        }
+    }
+
+    fun build(): PaginatedBook {
+        flush()
+
+        return PaginatedBook(pages = pages.toList(), sectionPages = sectionPages.toList())
+    }
+
+    /** Whether what is left of the page can hold [block] whole. */
+    private fun fits(block: TextBlock): Boolean = sizes.height(block) <= availablePx()
+
+    /**
+     * [block] cut to fill what is left of the page - the head that fits, the
+     * tail that does not, and how many characters the head took.
+     *
+     * Null when the block should go on as it is: because it fits, or because
+     * there is nothing inside it to cut between. The room left on the page is
+     * filled rather than wasted, because a block this size is a run of text with
+     * no end in sight and starting it on a fresh page would not make it fit
+     * either.
+     */
+    private fun cutToFill(block: TextBlock): Triple<TextBlock, TextBlock, Int>? {
+        val available = availablePx()
+
+        if (available <= 0 || sizes.height(block) <= available) return null
+
+        val (head, tail) = block.cutAt(sizes.fittingLength(block, available)) ?: return null
+
+        return Triple(head, tail, blockText(head).length)
+    }
+
+    private fun place(
+        blockIndex: Int,
+        block: TextBlock,
+        text: String,
+        consumed: Int,
+        heightPx: Int,
+    ) {
+        if (current.isNotEmpty()) usedPx += sizes.spacingPx
+
+        current += PageBlock(
+            sectionIndex = sectionIndex,
+            blockIndex = blockIndex,
+            block = block,
+            sentenceOffset = if (consumed == 0) 0 else sentencesBefore(text, consumed),
+            continued = consumed > 0,
+        )
+
+        usedPx += heightPx
+    }
+
+    private fun availablePx(): Int =
+        pageHeightPx - usedPx - if (current.isEmpty()) 0 else sizes.spacingPx
+
+    private fun flush() {
+        if (current.isEmpty()) return
+
+        pages += TextPage(current.toList())
+        current = mutableListOf()
+        usedPx = 0
+    }
+}

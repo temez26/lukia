@@ -147,6 +147,25 @@ class SentenceTranslations(
 
     val isEmpty: Boolean get() = block == null && sentences.isEmpty() && words.isEmpty()
 
+    /**
+     * The same states, seen from a slice of the block that starts [offset]
+     * sentences into it.
+     *
+     * A paragraph too long for one page is drawn in pieces, and each piece
+     * splits its own text into sentences numbered from zero - while the book,
+     * and everything translated in it, counts them from the start of the
+     * paragraph. This is the one place the two numberings meet.
+     */
+    fun from(offset: Int): SentenceTranslations {
+        if (offset == 0 || isEmpty) return this
+
+        return SentenceTranslations(
+            sentences = sentences.shiftedBy(offset),
+            words = words.shiftedBy(offset),
+            block = block,
+        )
+    }
+
     override fun equals(other: Any?): Boolean =
         other is SentenceTranslations &&
             block == other.block &&
@@ -160,6 +179,10 @@ class SentenceTranslations(
         val None = SentenceTranslations(emptyMap())
     }
 }
+
+private fun <T> Map<Int, T>.shiftedBy(offset: Int): Map<Int, T> =
+    mapNotNull { (index, value) -> (index - offset).takeIf { it >= 0 }?.let { it to value } }
+        .toMap()
 
 /**
  * What has become of single words inside one sentence.

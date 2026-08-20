@@ -36,7 +36,7 @@ class ReaderViewModelTest : ReaderViewModelTestCase() {
         val opened = viewModel.settled().dataOrNull
 
         assertNotNull(opened)
-        assertEquals(5, opened.content.unitCount)
+        assertEquals(5, opened.content.partCount)
     }
 
     /** Reading has to happen against the copy, never the imported file. */
@@ -134,7 +134,7 @@ class ReaderViewModelTest : ReaderViewModelTestCase() {
         repository.addDocument(document)
         viewModel.retry()
 
-        assertEquals(2, viewModel.settled().dataOrNull?.content?.unitCount)
+        assertEquals(2, viewModel.settled().dataOrNull?.content?.partCount)
     }
 
     @Test

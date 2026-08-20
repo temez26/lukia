@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import io.lukia.features.reader.domain.OutlineEntry
 import io.lukia.features.reader.domain.ReaderOutline
-import io.lukia.features.reader.domain.ReadingUnit
 import io.lukia.features.reader.presentation.chapterRows
 import io.lukia.features.reader.presentation.collapsibleIndices
 import io.lukia.features.reader.presentation.currentEntryIndex
@@ -47,7 +46,6 @@ import io.lukia.shared.presentation.theme.Space
 internal fun Chapters(
     outline: ReaderOutline,
     currentPage: Int,
-    unit: ReadingUnit,
     inset: Dp,
     listMaxHeight: Dp,
     onGoToPage: (pageIndex: Int) -> Unit,
@@ -80,7 +78,6 @@ internal fun Chapters(
             entries = entries,
             collapsed = collapsed,
             currentPage = currentPage,
-            unit = unit,
             inset = inset,
             listMaxHeight = listMaxHeight,
             onToggle = { index ->
@@ -96,7 +93,6 @@ private fun ChapterList(
     entries: List<OutlineEntry>,
     collapsed: Set<Int>,
     currentPage: Int,
-    unit: ReadingUnit,
     inset: Dp,
     listMaxHeight: Dp,
     onToggle: (index: Int) -> Unit,
@@ -134,7 +130,6 @@ private fun ChapterList(
         items(items = rows, key = { it.index }) { row ->
             ChapterRowItem(
                 row = row,
-                unit = unit,
                 inset = inset,
                 isCurrent = row.index == currentRow?.index,
                 onToggle = { onToggle(row.index) },

@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import io.lukia.core.presentation.displayTitle
 import io.lukia.features.reader.domain.ReaderDocument
+import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.presentation.components.PageIndicatorButton
 import io.lukia.features.reader.presentation.components.ReaderToolbar
 import io.lukia.features.reader.presentation.components.TextSettingsGlyph
@@ -29,6 +30,10 @@ import io.lukia.shared.presentation.theme.topChromeOut
 internal fun ReaderTopChrome(
     chrome: ReaderChromeState,
     document: ReaderDocument?,
+    /** How long the book is in pages, which for a reflowable one is what it was laid out into. */
+    pageCount: Int,
+    /** The chapters, already pointing at pages, so the bar can name the one in view. */
+    outline: ReaderOutline,
     listState: LazyListState,
     translation: ReaderTranslationUi,
     onBack: () -> Unit,
@@ -61,11 +66,11 @@ internal fun ReaderTopChrome(
                 ),
             centerControl = {
                 // Only once there is a book to be somewhere in.
-                if (document != null) {
+                if (document != null && pageCount > 0) {
                     PageIndicatorButton(
                         listState = listState,
-                        unitCount = document.content.unitCount,
-                        unit = document.content.unit,
+                        pageCount = pageCount,
+                        chapters = (outline as? ReaderOutline.Chapters)?.entries.orEmpty(),
                         onClick = chrome::toggleContents,
                     )
                 }

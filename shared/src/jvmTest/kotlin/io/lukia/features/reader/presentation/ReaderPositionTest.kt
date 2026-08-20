@@ -24,7 +24,7 @@ class ReaderPositionTest : ReaderViewModelTestCase() {
         val viewModel = createViewModel(pdfInLibrary(pageCount = 20))
         viewModel.settled()
 
-        assertEquals(0, viewModel.initialPage.first { it != null })
+        assertEquals(0, viewModel.initialPosition.first { it != null }?.pageIndex)
     }
 
     @Test
@@ -38,7 +38,7 @@ class ReaderPositionTest : ReaderViewModelTestCase() {
         val viewModel = createViewModel(document)
         viewModel.settled()
 
-        assertEquals(11, viewModel.initialPage.first { it != null })
+        assertEquals(11, viewModel.initialPosition.first { it != null }?.pageIndex)
     }
 
     @Test
@@ -47,7 +47,7 @@ class ReaderPositionTest : ReaderViewModelTestCase() {
         val viewModel = createViewModel(document)
         viewModel.settled()
 
-        viewModel.onPageSettled(pageIndex = 7)
+        viewModel.onPageSettled(pageIndex = 7, pageCount = 20)
 
         // Field by field rather than as a whole value: the store also stamps
         // where the book stands against the others, which is its business
@@ -73,7 +73,7 @@ class ReaderPositionTest : ReaderViewModelTestCase() {
         val viewModel = createViewModel(document)
         viewModel.settled()
 
-        assertEquals(4, viewModel.initialPage.first { it != null })
+        assertEquals(4, viewModel.initialPosition.first { it != null }?.pageIndex)
     }
 
     /** Nothing is stored for a book that never opened - there is no page to store. */
@@ -93,7 +93,7 @@ class ReaderPositionTest : ReaderViewModelTestCase() {
         ).also { track(it) }
         viewModel.settled()
 
-        viewModel.onPageSettled(pageIndex = 3)
+        viewModel.onPageSettled(pageIndex = 3, pageCount = 20)
 
         assertNull(progress.progressFor("/library/missing.pdf"))
     }

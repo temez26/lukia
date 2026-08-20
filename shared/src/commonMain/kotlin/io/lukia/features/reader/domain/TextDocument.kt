@@ -71,15 +71,17 @@ sealed interface TextBlock {
 }
 
 /**
- * One item of a reflowable book, as the reader lists it: a chapter, or a slice
- * of one long unbroken document.
+ * One division of a reflowable book: a chapter, or a slice of one long unbroken
+ * document.
  *
- * Sections are what a reflowable book has instead of pages, and the reader
- * addresses them exactly as it addresses a PDF's pages - the scrubber, the
- * remembered position and the table of contents all index into this list. That
- * is why a book is split into them at all: a single item holding a whole novel
- * would be laid out in full every time it was drawn, and neither scrolling nor
- * the position of the scrollbar would mean anything.
+ * What the book states about itself, not what the reader shows. The reader shows
+ * pages, and a page is cut from this run of blocks to fit the window it is being
+ * read in - so a section may be a page, or twenty, or share one with the section
+ * after it. Nothing outside the layout addresses a book by section: the
+ * scrubber, the remembered position and the table of contents all count pages.
+ *
+ * A section is still where a chapter begins, which is why pages are never cut
+ * across one that names itself - a chapter opens a page of its own.
  *
  * [title] is what the section is called where it names itself, which is what
  * lets a book with no table of contents of its own still offer one.

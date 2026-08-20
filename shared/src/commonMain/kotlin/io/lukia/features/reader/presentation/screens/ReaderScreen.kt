@@ -5,7 +5,6 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -14,10 +13,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -32,14 +30,15 @@ import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
+import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.features.reader.domain.ReflowableContent
 import io.lukia.features.reader.presentation.ReaderCommand
 import io.lukia.features.reader.presentation.ReaderViewModel
 import io.lukia.features.reader.presentation.ShownTranslations
 import io.lukia.features.reader.presentation.TranslateOnScreen
-import io.lukia.features.reader.presentation.components.ReaderContentsPanel
-import io.lukia.features.reader.presentation.components.ReaderSettingsPanel
 import io.lukia.features.reader.presentation.components.readerToolbarHeight
+import io.lukia.features.reader.presentation.pagination.PaginatedBook
+import io.lukia.features.reader.presentation.pagination.onPages
 import io.lukia.features.reader.presentation.readerCommandFor
 import io.lukia.features.reader.presentation.theme.ReaderTheming
 import io.lukia.features.reader.presentation.theme.readerPageStyle
@@ -51,13 +50,8 @@ import io.lukia.features.translate.presentation.PassageSelection
 import io.lukia.features.translate.presentation.PassageTranslation
 import io.lukia.features.translate.presentation.ReaderTranslations
 import io.lukia.shared.presentation.components.UiStateContent
-import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.isWideWindow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -72,7 +66,7 @@ internal val ChromeVerticalPadding: Dp = Space.md
 @Composable
 internal fun chromeHeight(): Dp = readerToolbarHeight() + ChromeVerticalPadding * 2
 
-/** The margin a section's text is set inside its sheet. */
+/** The margin a page's text is set inside its sheet. */
 internal val SheetPadding: Dp = 20.dp
 
 @Composable
@@ -84,7 +78,7 @@ fun ReaderScreen(
     val uiState by viewModel.uiState.collectAsState()
     val settings by viewModel.settings.collectAsState()
     val outline by viewModel.outline.collectAsState()
-    val initialPage by viewModel.initialPage.collectAsState()
+    val initialPosition by viewModel.initialPosition.collectAsState()
     val translations by viewModel.translations.collectAsState()
     val translateOnScreen by viewModel.translateOnScreen.collectAsState()
     val translationConfigured by viewModel.translationConfigured.collectAsState()
@@ -96,7 +90,7 @@ fun ReaderScreen(
         uiState = uiState,
         settings = settings,
         outline = outline,
-        initialPage = initialPage,
+        initialPosition = initialPosition,
         translations = translations,
         translateOnScreen = translateOnScreen,
         translationConfigured = translationConfigured,
@@ -126,8 +120,16 @@ fun ReaderContent(
     uiState: UiState<ReaderDocument>,
     settings: ReaderSettings,
     outline: ReaderOutline,
-    /** Where to open, once it is known; null while the stored position is being read. */
-    initialPage: Int? = null,
+    /**
+     * Where the book was left off and how long it was then, or null while the
+     * stored position is still being read.
+     *
+     * Both halves, because a reflowable book's length is a fact about the window
+     * it was read in: the same book on a phone and on a monitor is a different
+     * number of pages, so a stored page number only means anything alongside the
+     * count it was one of.
+     */
+    initialPosition: ReadingProgress? = null,
     /** What has become of each sentence somebody has asked about, by where it is. */
     translations: Map<TextAnchor, PassageTranslation> = emptyMap(),
     /** Whether what the reader can see should be translated without being tapped. */
@@ -143,7 +145,7 @@ fun ReaderContent(
     onBack: () -> Unit,
     onRetry: () -> Unit,
     onSettingsChange: (ReaderSettings) -> Unit,
-    onPageSettled: (pageIndex: Int) -> Unit = {},
+    onPageSettled: (pageIndex: Int, pageCount: Int) -> Unit = { _, _ -> },
     onPassageSelected: (PassageSelection) -> Unit = {},
     onPassagesRequested: (List<PassageSelection>) -> Unit = {},
     onTranslateOnScreen: () -> Unit = {},
@@ -153,12 +155,9 @@ fun ReaderContent(
     sentencesOnPage: suspend (index: Int) -> List<PageSentence> = { emptyList() },
     renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?,
 ) {
-    val dimens = LocalLukiaDimens.current
-    val scope = rememberCoroutineScope()
     val chrome = rememberReaderChromeState()
 
     val compact = !isWideWindow
-    val chromeHeight = chromeHeight()
 
     val translationUi = ReaderTranslationUi(
         configured = translationConfigured,
@@ -185,45 +184,37 @@ fun ReaderContent(
         // being replaced, and so the toolbar can read the page number from it.
         val listState = rememberLazyListState()
 
-        // Reading puts the chrome away on a phone, where the bar is a tenth of
-        // the screen and every scroll is a deliberate swipe. A wide window keeps
-        // it: there the bar costs almost nothing, and a mouse wheel is not a
-        // statement of intent - chrome that vanished on every notch of it would
-        // be gone whenever the reader looked for it. It still goes away on a
-        // click, which is a decision rather than a side effect.
-        LaunchedEffect(listState, compact) {
-            if (!compact) return@LaunchedEffect
+        HideChromeWhileScrolling(listState = listState, compact = compact, chrome = chrome)
 
-            snapshotFlow { listState.isScrollInProgress }
-                .filter { it }
-                .collect { chrome.hideChrome() }
+        // How long the open book is in pages. A PDF says so itself; a reflowable
+        // one is only as long as the window it has been laid out for, which is
+        // settled by the page list and reported back here.
+        var paginated by remember(document) { mutableStateOf(PaginatedBook.Empty) }
+
+        val pageCount = when (document?.content) {
+            is PagedContent -> document.content.partCount
+            is ReflowableContent -> paginated.pageCount
+            null -> 0
         }
 
-        // Opening where the book was left off. Done as a scroll rather than as
-        // the list's starting index because the stored page arrives after the
-        // list does - the file has to be opened before its length is known, and
-        // a page past the end is not a place to start. Nothing has been drawn
-        // yet at this point, so there is no jump to see.
-        LaunchedEffect(listState, initialPage) {
-            if (initialPage != null && initialPage > 0) listState.scrollToItem(initialPage)
+        // The contents panel points at sections; the reader turns pages. For a
+        // reflowable book the two are only related through the layout, so the
+        // entries are moved onto it here rather than every row working it out.
+        val pagedOutline = remember(outline, paginated) {
+            outline.onPages(paginated, reflowable = document?.content is ReflowableContent)
         }
 
-        // Where the reader came to rest, once per stop rather than per page
-        // passed. A fling crosses pages nobody read; the one they stopped on is
-        // the one worth remembering.
-        LaunchedEffect(listState, document) {
-            if (document == null) return@LaunchedEffect
-
-            snapshotFlow { listState.isScrollInProgress to listState.firstVisibleItemIndex }
-                .filter { (scrolling, _) -> !scrolling }
-                .map { (_, page) -> page }
-                .distinctUntilChanged()
-                .collect(onPageSettled)
-        }
+        KeepReadingPosition(
+            listState = listState,
+            document = document,
+            initialPosition = initialPosition,
+            pageCount = pageCount,
+            onPageSettled = onPageSettled,
+        )
 
         val commands = readerCommands(
             listState = listState,
-            unitCount = document?.content?.unitCount ?: 0,
+            pageCount = pageCount,
             // The keys that widen a PDF's page are the keys that enlarge an
             // EPUB's type: both are "make this easier to read", and which
             // setting that means depends on which kind of book is open.
@@ -317,7 +308,7 @@ fun ReaderContent(
                             renderPage = renderPage,
                         )
 
-                        is ReflowableContent -> SectionList(
+                        is ReflowableContent -> TextPageList(
                             sections = content.sections,
                             listState = listState,
                             settings = settings,
@@ -327,8 +318,10 @@ fun ReaderContent(
                             onSettingsChange = onSettingsChange,
                             onPassageSelected = onPassageSelected,
                             onPassagesRequested = onPassagesRequested,
+                            onPagesChange = { paginated = it },
                             translateOnScreen = translateOnScreen,
                             gestures = gestures,
+                            openAt = initialPosition?.fraction,
                         )
                     }
                 }
@@ -336,7 +329,7 @@ fun ReaderContent(
                 // Catches the press that closes an open panel, which is a
                 // non-focusable popup and cannot see it.
                 //
-                // Covers the page and not the chrome, so that reaching straight
+                // Under the chrome and over the page, so that reaching straight
                 // from one panel to the other is one press rather than two.
                 // Deliberately not dimmed: the point of these panels is watching
                 // the page change as they are used.
@@ -347,44 +340,22 @@ fun ReaderContent(
                 ReaderTopChrome(
                     chrome = chrome,
                     document = document,
+                    pageCount = pageCount,
+                    outline = pagedOutline,
                     listState = listState,
                     translation = translationUi,
                     onBack = onBack,
                     modifier = Modifier.align(Alignment.TopCenter),
                 )
 
-                // The panels are laid out in the reader's own window rather than
-                // in popups of their own. A popup is a separate, non-focusable
-                // window: keyboards and switch controls cannot reach into one,
-                // and making it focusable instead means it swallows the press
-                // that should have opened the other panel. In-window, both work.
-                if (document != null) {
-                    ReaderContentsPanel(
-                        expanded = chrome.contentsExpanded,
-                        listState = listState,
-                        unitCount = document.content.unitCount,
-                        unit = document.content.unit,
-                        outline = outline,
-                        onGoToPage = { pageIndex ->
-                            scope.launch { listState.scrollToItem(pageIndex) }
-                        },
-                        onDismissRequest = chrome::closePanels,
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .padding(top = chromeHeight),
-                    )
-                }
-
-                ReaderSettingsPanel(
-                    expanded = chrome.settingsExpanded,
+                ReaderPanels(
+                    chrome = chrome,
+                    document = document,
+                    pageCount = pageCount,
+                    outline = pagedOutline,
+                    listState = listState,
                     settings = settings,
-                    // A PDF's type was set when the file was made.
-                    typographyEnabled = document?.content is ReflowableContent,
                     onSettingsChange = onSettingsChange,
-                    onDismissRequest = chrome::closePanels,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(top = chromeHeight, end = dimens.screenPadding),
                 )
             }
         }

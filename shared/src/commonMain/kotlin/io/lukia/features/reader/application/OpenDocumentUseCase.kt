@@ -43,11 +43,11 @@ class OpenDocumentUseCase(
 
             // A document that opened but has nothing in it would otherwise show
             // as an empty reader, which reads as the app having lost the book.
-            if (content.unitCount == 0) {
+            if (content.partCount == 0) {
                 content.close()
 
                 return@withContext AppError
-                    .Unexpected("This document has no ${content.unit.plural}.")
+                    .Unexpected("This document has nothing to read.")
                     .asFailure()
             }
 

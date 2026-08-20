@@ -3,6 +3,7 @@ package io.lukia.features.reader.presentation.screens
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -22,8 +23,11 @@ class ReaderContentsPanelTest {
         openContents(pageCount = 348)
 
         onNodeWithText("Chapters").assertExists()
-        onNodeWithText("Introduction").assertExists()
         onNodeWithText("The Middle").assertExists()
+
+        // Twice: the chapter the reader is in is named in the bar as well as
+        // listed in the panel, which is what the bar is now for.
+        assertEquals(2, onAllNodesWithText("Introduction").fetchSemanticsNodes().size)
     }
 
     /** Tapping a chapter is the whole point: it has to move the book. */

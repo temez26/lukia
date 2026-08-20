@@ -20,6 +20,7 @@ import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
+import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.shared.presentation.theme.LukiaTheme
 
 /**
@@ -34,10 +35,10 @@ internal fun ComposeUiTest.setReader(
     pageCount: Int,
     outline: ReaderOutline = ReaderOutline.Chapters(emptyList()),
     settings: ReaderSettings = ReaderSettings(),
-    initialPage: Int? = null,
+    initialPosition: ReadingProgress? = null,
     onBack: () -> Unit = {},
     onSettingsChange: (ReaderSettings) -> Unit = {},
-    onPageSettled: (Int) -> Unit = {},
+    onPageSettled: (Int, Int) -> Unit = { _, _ -> },
 ) {
     setContent {
         LukiaTheme {
@@ -45,7 +46,7 @@ internal fun ComposeUiTest.setReader(
                 uiState = UiState.Success(readerDocument(pageCount)),
                 settings = settings,
                 outline = outline,
-                initialPage = initialPage,
+                initialPosition = initialPosition,
                 onBack = onBack,
                 onRetry = {},
                 onSettingsChange = onSettingsChange,
@@ -58,9 +59,16 @@ internal fun ComposeUiTest.setReader(
     }
 }
 
-/** The indicator is the pressable one; the page behind says the same thing. */
+/**
+ * The indicator is the pressable one; the page behind says the same thing.
+ *
+ * Matched on the page rather than the whole label, because the indicator names
+ * the chapter in view ahead of the numbers wherever the book has chapters.
+ */
 internal fun ComposeUiTest.openContents(pageCount: Int) {
-    onNode(hasContentDescription("Page 1 of $pageCount") and hasClickAction()).performClick()
+    onNode(
+        hasContentDescription("Page 1 of $pageCount", substring = true) and hasClickAction(),
+    ).performClick()
 }
 
 internal val chapters = ReaderOutline.Chapters(

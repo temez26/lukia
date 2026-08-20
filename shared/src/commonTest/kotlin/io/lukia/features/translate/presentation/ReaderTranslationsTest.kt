@@ -7,6 +7,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -176,5 +177,62 @@ class ReaderTranslationsTest {
         assertTrue(translations.page(0).isEmpty)
         assertTrue(translations.section(0).block(0).isEmpty)
         assertEquals(SentenceTranslations.None, translations.page(0))
+    }
+
+    /**
+     * A paragraph too long for one page is drawn in pieces, and each piece
+     * numbers its own sentences from zero - while the book counts them from the
+     * start of the paragraph.
+     */
+    @Test
+    fun aSliceOfABlockSeesItsOwnSentencesNumberedFromZero() {
+        val translations = ReaderTranslations.of(
+            mapOf(
+                TextAnchor.Section(sectionIndex = 0, blockIndex = 0, sentenceIndex = 4) to ready,
+            ),
+        )
+
+        val slice = translations.section(0).block(0).from(offset = 3)
+
+        assertNotNull(slice[1])
+        assertNull(slice[4])
+    }
+
+    /** Sentences left behind on an earlier page are not on this one to mark. */
+    @Test
+    fun sentencesBeforeTheSliceAreNotInIt() {
+        val translations = ReaderTranslations.of(
+            mapOf(
+                TextAnchor.Section(sectionIndex = 0, blockIndex = 0, sentenceIndex = 1) to ready,
+            ),
+        )
+
+        assertTrue(translations.section(0).block(0).from(offset = 3).isEmpty)
+    }
+
+    /** The first piece of a block is the block: nothing came before it. */
+    @Test
+    fun aSliceThatStartsAtTheBeginningIsTheBlockItself() {
+        val translations = ReaderTranslations.of(
+            mapOf(
+                TextAnchor.Section(sectionIndex = 0, blockIndex = 0, sentenceIndex = 2) to ready,
+            ),
+        )
+
+        val block = translations.section(0).block(0)
+
+        assertEquals(block, block.from(offset = 0))
+    }
+
+    /** A paragraph translated whole stands in for all of it, on every page of it. */
+    @Test
+    fun aWholeBlockTranslationBelongsToEveryPieceOfIt() {
+        val translations = ReaderTranslations.of(
+            mapOf(
+                TextAnchor.Section(sectionIndex = 0, blockIndex = 0, sentenceIndex = null) to ready,
+            ),
+        )
+
+        assertEquals(ready, translations.section(0).block(0).from(offset = 5).block)
     }
 }

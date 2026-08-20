@@ -6,6 +6,12 @@ package io.lukia.features.reader.domain
  * [pageCount] travels with [pageIndex] rather than being looked up from the
  * document, so that a library can say how far through a book its reader is
  * without opening the file to find out how long it is.
+ *
+ * For a fixed-layout document the two are pages the file itself has. For a
+ * reflowable one they are pages the reader set, in the window and at the type
+ * size it was last read at - so the pair means something together and neither
+ * half means much alone. That is why they are stored and replaced together, and
+ * why every reading of them here is a ratio rather than a count.
  */
 data class ReadingProgress(
     val pageIndex: Int,
@@ -47,6 +53,17 @@ data class ReadingProgress(
      */
     val percent: Int?
         get() = fraction?.let { (it * 100).toInt().coerceIn(1, 100) }
+
+    /**
+     * The page the reader is on as they would be told it, counting from one.
+     *
+     * Clamped to the book for the same reason [fraction] is: a document can be
+     * replaced by a shorter one under the same name, and a reflowable book set
+     * larger since it was last read is shorter than the position stored against
+     * it - neither is a reason to say "page 400 of 380".
+     */
+    val pageNumber: Int?
+        get() = if (pageCount <= 0) null else (pageIndex + 1).coerceIn(1, pageCount)
 
     /**
      * True once the reader has reached the last page.

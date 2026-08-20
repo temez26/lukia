@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -28,26 +29,27 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.reader.domain.TextBlock
 import io.lukia.features.reader.presentation.TranslateOnScreen
+import io.lukia.features.reader.presentation.theme.CodePaddingHorizontal
+import io.lukia.features.reader.presentation.theme.CodePaddingVertical
+import io.lukia.features.reader.presentation.theme.HeadingTopPadding
+import io.lukia.features.reader.presentation.theme.IndentWidth
+import io.lukia.features.reader.presentation.theme.MarkerWidth
+import io.lukia.features.reader.presentation.theme.QuoteRuleWidth
+import io.lukia.features.reader.presentation.theme.SeparatorPadding
+import io.lukia.features.reader.presentation.theme.codeStyle
+import io.lukia.features.reader.presentation.theme.headingStyle
 import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.presentation.SentenceTranslations
 import io.lukia.shared.presentation.components.LukiaDivider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-/** What a quotation and a list item are set in from the edge of the text. */
-private val IndentWidth: Dp = 20.dp
-
-/** Room for the widest marker a list is likely to have, so the text lines up. */
-private val MarkerWidth: Dp = 28.dp
-
 // The blocks that are not prose: headings, list items, quotes, code, figures
-// and the breaks between sections.
+// and the breaks between scenes.
 
 @Composable
 internal fun HeadingBlock(
@@ -59,22 +61,9 @@ internal fun HeadingBlock(
     gestures: TranslationGestures,
     resizingType: Boolean,
 ) {
-    val scale = when (block.level) {
-        1 -> 1.6f
-        2 -> 1.35f
-        3 -> 1.18f
-        else -> 1.05f
-    }
-
     ProseText(
         runs = block.text,
-        style = style.copy(
-            fontSize = style.fontSize * scale,
-            // Headings are set tighter than prose: the leading that makes a
-            // paragraph readable makes a two-line title look like two titles.
-            lineHeight = style.fontSize * scale * 1.25f,
-            fontWeight = FontWeight.SemiBold,
-        ),
+        style = headingStyle(style, block.level),
         translations = translations,
         actions = actions,
         translateOnScreen = translateOnScreen,
@@ -82,9 +71,7 @@ internal fun HeadingBlock(
         resizingType = resizingType,
         modifier = Modifier
             .fillMaxWidth()
-            // Bound to what it introduces rather than floating between two
-            // blocks, so a heading sits with the text below it.
-            .padding(top = 8.dp)
+            .padding(top = HeadingTopPadding)
             .semantics { heading() },
     )
 }
@@ -142,7 +129,7 @@ internal fun QuoteBlock(
         Box(
             modifier = Modifier
                 .padding(end = IndentWidth)
-                .width(3.dp)
+                .width(QuoteRuleWidth)
                 .fillMaxHeight()
                 .clip(RoundedCornerShape(2.dp))
                 .background(MaterialTheme.colorScheme.outlineVariant),
@@ -173,15 +160,14 @@ internal fun CodeBlock(block: TextBlock.Code, style: TextStyle) {
             .clip(MaterialTheme.shapes.small)
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .horizontalScroll(rememberScrollState())
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .padding(
+                horizontal = CodePaddingHorizontal,
+                vertical = CodePaddingVertical,
+            ),
     ) {
         Text(
             text = block.text,
-            style = style.copy(
-                fontFamily = FontFamily.Monospace,
-                fontSize = style.fontSize * 0.88f,
-                lineHeight = style.fontSize * 1.3f,
-            ),
+            style = codeStyle(style),
             softWrap = false,
         )
     }
@@ -192,14 +178,18 @@ internal fun CodeBlock(block: TextBlock.Code, style: TextStyle) {
  *
  * A book can carry hundreds of these, and decoding them all when it opens would
  * cost more memory than every word in it. Held as bytes until here, and dropped
- * again by Compose when the section scrolls far enough away to be discarded.
+ * again by Compose when the page scrolls far enough away to be discarded.
  *
  * A figure that cannot be decoded draws nothing rather than a broken-image mark:
  * the book is still perfectly readable without it, and a row of error icons down
  * a chapter is worse than a chapter with a gap.
+ *
+ * [maxHeight] is how tall it may be drawn, which on a paginated book is the page
+ * it was put on. A plate taller than the page is scaled down to fit rather than
+ * running off the bottom of it, so an illustration is always seen whole.
  */
 @Composable
-internal fun FigureBlock(block: TextBlock.Figure) {
+internal fun FigureBlock(block: TextBlock.Figure, maxHeight: Dp = Dp.Unspecified) {
     val image by produceState<ImageBitmap?>(initialValue = null, block) {
         value = withContext(Dispatchers.Default) {
             runCatching { block.bytes.decodeToImageBitmap() }.getOrNull()
@@ -210,8 +200,22 @@ internal fun FigureBlock(block: TextBlock.Figure) {
         Image(
             bitmap = bitmap,
             contentDescription = block.description?.takeIf { it.isNotBlank() },
-            contentScale = ContentScale.FillWidth,
-            modifier = Modifier.fillMaxWidth(),
+            // Fit rather than FillWidth wherever the height is bounded: an image
+            // wider than it is tall must give way on both measures at once.
+            contentScale = if (maxHeight == Dp.Unspecified) {
+                ContentScale.FillWidth
+            } else {
+                ContentScale.Fit
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(
+                    if (maxHeight == Dp.Unspecified) {
+                        Modifier
+                    } else {
+                        Modifier.heightIn(max = maxHeight)
+                    },
+                ),
         )
     }
 }
@@ -223,7 +227,7 @@ internal fun SeparatorBlock() {
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp),
+            .padding(vertical = SeparatorPadding),
     ) {
         LukiaDivider(modifier = Modifier.fillMaxWidth(0.3f))
     }

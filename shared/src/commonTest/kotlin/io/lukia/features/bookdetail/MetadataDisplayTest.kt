@@ -146,17 +146,17 @@ class MetadataDisplayTest {
     }
 
     /**
-     * Calling a reflowable book's sections pages would promise a correspondence
-     * to a printed book that reflowed text does not have.
+     * A reflowable book is measured in pages too - the reader's own, set at the
+     * size it was last read at, which is what the stored position counted.
      */
     @Test
-    fun aReflowableBookIsMeasuredInSections() {
+    fun aReflowableBookIsMeasuredInThePagesItWasReadIn() {
         val details = BookDetails(
             document = book(),
             progress = ReadingProgress(pageIndex = 0, pageCount = 24),
         )
 
-        assertEquals("24 sections", details.lengthLabel())
+        assertEquals("24 pages", details.lengthLabel())
     }
 
     @Test
@@ -179,15 +179,47 @@ class MetadataDisplayTest {
         assertEquals("Start reading", details.readActionLabel())
     }
 
+    /**
+     * The page rather than a percentage: the percentage is already on the cover
+     * beside this, and the page is what the reader will be shown the moment they
+     * open the book.
+     */
     @Test
-    fun aBookPartWayThroughReportsHowFar() {
+    fun aBookPartWayThroughReportsThePageItWasLeftOn() {
         val details = BookDetails(
             document = book(),
             progress = ReadingProgress(pageIndex = 41, pageCount = 100),
         )
 
-        assertEquals("42% read", details.progressLabel())
+        assertEquals("Page 42 of 100", details.progressLabel())
         assertEquals("Continue reading", details.readActionLabel())
+    }
+
+    /**
+     * A reflowable book set larger since it was last read is shorter than the
+     * position stored against it, and "page 400 of 380" is not a place.
+     */
+    @Test
+    fun aPositionPastTheEndOfTheBookIsReportedAsItsLastPage() {
+        val details = BookDetails(
+            document = book(),
+            progress = ReadingProgress(pageIndex = 400, pageCount = 380),
+        )
+
+        assertEquals("Finished", details.progressLabel())
+        assertEquals(380, details.progress?.pageNumber)
+    }
+
+    /** A book whose length is not known yet has no page to report. */
+    @Test
+    fun aPositionWithNoLengthBehindItReportsNothing() {
+        val details = BookDetails(
+            document = book(),
+            progress = ReadingProgress(pageIndex = 0, pageCount = 0),
+        )
+
+        assertEquals("Not started", details.progressLabel())
+        assertNull(details.lengthLabel())
     }
 
     @Test
