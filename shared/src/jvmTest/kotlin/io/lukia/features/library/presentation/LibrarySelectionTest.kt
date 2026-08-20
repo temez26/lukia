@@ -198,4 +198,45 @@ class LibrarySelectionTest : MainDispatcherTest() {
         assertTrue(viewModel.selection.value.active)
         assertEquals(null, viewModel.message.value)
     }
+
+    /**
+     * The upkeep actions end by ticking what they found and leaving the reader
+     * looking at it, rather than at a report about it.
+     */
+    @Test
+    fun findingMissingFilesTicksThemOnTheShelf() = runTest {
+        val gone = one.copy(exists = false)
+        val viewModel = createViewModel(shelf(gone, two))
+
+        viewModel.selectMissing()
+
+        assertTrue(viewModel.selection.value.active)
+        assertEquals(setOf(gone.document.location), viewModel.selection.value.locations)
+    }
+
+    @Test
+    fun findingDuplicatesTicksEveryCopyButTheFirst() = runTest {
+        val original = named(one, "Twice")
+        val copy = named(two, "Twice")
+        val viewModel = createViewModel(shelf(original, copy))
+
+        viewModel.selectDuplicates()
+
+        assertEquals(setOf(copy.document.location), viewModel.selection.value.locations)
+    }
+
+    /** And then the shelf is tidied by the delete that was already there. */
+    @Test
+    fun theDuplicatesCanBeDeletedLeavingOneOfEachBook() = runTest {
+        val repository = shelf(named(one, "Twice"), named(two, "Twice"), three)
+        val viewModel = createViewModel(repository)
+
+        viewModel.selectDuplicates()
+        viewModel.deleteSelected()
+
+        assertEquals(
+            listOf(one.document.location, three.document.location),
+            repository.documents.map { it.document.location },
+        )
+    }
 }

@@ -34,6 +34,7 @@ import io.lukia.features.library.presentation.ImportProgress
 import io.lukia.features.library.presentation.LibraryBook
 import io.lukia.features.library.presentation.LibraryFacets
 import io.lukia.features.library.presentation.LibraryQuery
+import io.lukia.features.library.presentation.LibrarySelectionUi
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.OpenMenu
 import io.lukia.features.library.presentation.components.LibraryNavBar
@@ -342,7 +343,7 @@ fun LibraryContent(
                     onMenuExpandedChange = { openMenu = if (it) OpenMenu.Bar else null },
                     onImport = onImport,
                     onImportFolder = onImportFolder,
-                    onSelectBooks = selection.onStart,
+                    selection = selection,
                     onSettings = onSettings,
                     modifier = Modifier.align(Alignment.TopCenter),
                 )

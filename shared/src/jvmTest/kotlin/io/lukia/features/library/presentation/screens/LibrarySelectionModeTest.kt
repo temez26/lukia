@@ -27,6 +27,8 @@ import io.lukia.core.presentation.UiState
 import io.lukia.features.library.presentation.BulkAction
 import io.lukia.features.library.presentation.LibraryQuery
 import io.lukia.features.library.presentation.LibrarySelection
+import io.lukia.features.library.presentation.LibrarySelectionUi
+import io.lukia.features.library.presentation.LibraryUpkeep
 import io.lukia.features.library.presentation.asLibrary
 import io.lukia.features.library.presentation.facets
 import io.lukia.features.library.presentation.matching
@@ -75,6 +77,7 @@ class LibrarySelectionModeTest {
     private fun ComposeUiTest.setLibrary(
         initial: LibrarySelection = LibrarySelection.None,
         running: BulkAction? = null,
+        upkeep: LibraryUpkeep = LibraryUpkeep.None,
         onDelete: () -> Unit = {},
     ) {
         setContent {
@@ -121,6 +124,13 @@ class LibrarySelectionModeTest {
                                 )
                             },
                             onDelete = onDelete,
+                            upkeep = upkeep,
+                            onSelectMissing = {
+                                selection = LibrarySelection(true, upkeep.missing)
+                            },
+                            onSelectDuplicates = {
+                                selection = LibrarySelection(true, upkeep.duplicates)
+                            },
                         ),
                     )
                 }
@@ -251,5 +261,46 @@ class LibrarySelectionModeTest {
         )
 
         onNodeWithText("Refreshing 1 of 3…").assertIsDisplayed()
+    }
+
+    /** A row that would find nothing is never there to be pressed and do nothing. */
+    @Test
+    fun aTidyShelfIsNotOfferedAnythingToTidy() = runComposeUiTest {
+        setLibrary()
+
+        onNodeWithContentDescription("Library actions").performClick()
+
+        assertEquals(0, onAllNodes(hasText("Missing Files", substring = true)).fetchSemanticsNodes().size)
+        assertEquals(0, onAllNodes(hasText("Duplicates", substring = true)).fetchSemanticsNodes().size)
+    }
+
+    /**
+     * The count is on the row rather than behind it, so the menu answers "is my
+     * library in a mess" without anything being pressed.
+     */
+    @Test
+    fun theMenuSaysHowMuchThereIsToTidy() = runComposeUiTest {
+        setLibrary(
+            upkeep = LibraryUpkeep(
+                missing = setOf("/a", "/b", "/c"),
+                duplicates = setOf("/d"),
+            ),
+        )
+
+        onNodeWithContentDescription("Library actions").performClick()
+
+        onNodeWithText("Missing Files (3)").assertIsDisplayed()
+        onNodeWithText("Duplicates (1)").assertIsDisplayed()
+    }
+
+    /** It ends at the books themselves, ticked, rather than at a report. */
+    @Test
+    fun tidyingLeavesTheReaderLookingAtWhatItFound() = runComposeUiTest {
+        setLibrary(upkeep = LibraryUpkeep(missing = setOf(library.first().document.location)))
+
+        onNodeWithContentDescription("Library actions").performClick()
+        press("Missing Files (1)")
+
+        onNodeWithText("1 selected").assertIsDisplayed()
     }
 }

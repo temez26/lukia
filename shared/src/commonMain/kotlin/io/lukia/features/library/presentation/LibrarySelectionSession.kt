@@ -40,8 +40,13 @@ class LibrarySelectionSession(
     private val _running = MutableStateFlow<BulkAction?>(null)
     val running: StateFlow<BulkAction?> = _running.asStateFlow()
 
-    fun start() {
-        _selection.value = LibrarySelection(active = true)
+    /**
+     * Starts picking books, optionally with some already ticked - which is how
+     * the shelf's upkeep hands over what it found, so the reader ends up looking
+     * at the books in question rather than at a report about them.
+     */
+    fun start(locations: Set<String> = emptySet()) {
+        _selection.value = LibrarySelection(active = true, locations = locations)
     }
 
     fun stop() {

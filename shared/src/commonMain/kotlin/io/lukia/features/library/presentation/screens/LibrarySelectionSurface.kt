@@ -3,7 +3,6 @@ package io.lukia.features.library.presentation.screens
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -11,41 +10,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import io.lukia.features.library.presentation.BulkAction
 import io.lukia.features.library.presentation.LibraryBook
-import io.lukia.features.library.presentation.LibrarySelection
+import io.lukia.features.library.presentation.LibrarySelectionUi
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.components.LibrarySelectionActions
 import io.lukia.features.library.presentation.components.LibrarySelectionBar
 import io.lukia.shared.presentation.components.ConfirmDialog
-
-/**
- * Everything the shelf's selection mode is and does, in one value.
- *
- * Ten parameters that always arrive together and are only ever read together,
- * gathered so that the screen's own signature stays about the screen - the same
- * bargain `ReaderTranslationUi` makes for the reader's translation controls.
- */
-@Stable
-class LibrarySelectionUi(
-    val selection: LibrarySelection = LibrarySelection.None,
-    /** What a bulk action is doing right now, or null when none is running. */
-    val running: BulkAction? = null,
-    val onStart: () -> Unit = {},
-    val onStop: () -> Unit = {},
-    val onToggle: (location: String) -> Unit = {},
-    val onToggleAll: () -> Unit = {},
-    val onRefresh: () -> Unit = {},
-    val onFavorite: () -> Unit = {},
-    val onResetProgress: () -> Unit = {},
-    val onDelete: () -> Unit = {},
-) {
-    val active: Boolean get() = selection.active
-
-    companion object {
-        val None = LibrarySelectionUi()
-    }
-}
 
 /**
  * The selection mode's state and the view model's answers to it, in one value.
@@ -58,11 +28,13 @@ class LibrarySelectionUi(
 internal fun rememberSelectionUi(viewModel: LibraryViewModel): LibrarySelectionUi {
     val selection by viewModel.selection.collectAsState()
     val running by viewModel.bulkAction.collectAsState()
+    val upkeep by viewModel.upkeep.collectAsState()
 
-    return remember(viewModel, selection, running) {
+    return remember(viewModel, selection, running, upkeep) {
         LibrarySelectionUi(
             selection = selection,
             running = running,
+            upkeep = upkeep,
             onStart = viewModel::startSelecting,
             onStop = viewModel::stopSelecting,
             onToggle = viewModel::toggleSelected,
@@ -71,6 +43,8 @@ internal fun rememberSelectionUi(viewModel: LibraryViewModel): LibrarySelectionU
             onFavorite = viewModel::setFavoriteOnSelected,
             onResetProgress = viewModel::resetProgressOnSelected,
             onDelete = viewModel::deleteSelected,
+            onSelectMissing = viewModel::selectMissing,
+            onSelectDuplicates = viewModel::selectDuplicates,
         )
     }
 }

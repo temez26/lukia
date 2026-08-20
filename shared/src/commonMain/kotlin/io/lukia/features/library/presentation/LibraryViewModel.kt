@@ -335,6 +335,27 @@ class LibraryViewModel(
 
     fun startSelecting() = selectionSession.start()
 
+    /**
+     * What is worth tidying on the shelf as it is currently narrowed, so that
+     * the menu can say how much there is before anyone presses anything.
+     */
+    val upkeep: StateFlow<LibraryUpkeep> = books
+        .map { it.upkeep() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LibraryUpkeep.None)
+
+    /**
+     * Ticks the books whose files have gone, and leaves the reader looking at
+     * them.
+     *
+     * Worked out from the shelf as it stands rather than read from [upkeep],
+     * which is shared only while the menu showing its counts is on screen - an
+     * action must act on the library, not on whether anybody was watching it.
+     */
+    fun selectMissing() = selectionSession.start(books.value.upkeep().missing)
+
+    /** Ticks every copy but the first of each book that is on the shelf twice. */
+    fun selectDuplicates() = selectionSession.start(books.value.upkeep().duplicates)
+
     fun stopSelecting() = selectionSession.stop()
 
     fun toggleSelected(location: String) = selectionSession.toggle(location)
