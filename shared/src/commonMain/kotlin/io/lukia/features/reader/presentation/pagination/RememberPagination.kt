@@ -8,6 +8,9 @@ import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
 import io.lukia.features.reader.domain.TextBlock
 import io.lukia.features.reader.domain.TextSection
 import kotlinx.coroutines.Dispatchers
@@ -39,7 +42,7 @@ internal fun rememberPagination(
     // Kept across re-layouts, because the shape of an illustration does not
     // depend on the type size and decoding a book's plates again on every pinch
     // would be the most expensive thing the reader does.
-    val figures = remember(sections) { FigureShapes() }
+    val figures = remember(sections, density) { FigureShapes(density) }
 
     val laid by produceState(
         initialValue = PaginatedBook.Empty,
@@ -73,26 +76,35 @@ internal fun rememberPagination(
  *
  * A figure is held as the bytes the book stores, and the only way to learn its
  * proportions is to decode it. That is done here rather than in the measurer so
- * that it is done once per book instead of once per layout - and the bitmap is
- * dropped again immediately, because it is the shape that is wanted and a book's
- * plates decoded all at once are more memory than every word in it.
+ * that it is done once per book instead of once per layout - and only the size
+ * is kept, because a book's plates decoded all at once are more memory than
+ * every word in it.
+ *
+ * The answer is the height the page will actually give it, which is not always
+ * the height of the measure: an illustration is drawn no larger than it is - see
+ * `FigureBlock` - so a small one takes a small amount of the page, and a
+ * measurement that assumed otherwise would leave a hole under every ornament.
  *
  * A plate that cannot be decoded is nothing tall, which is exactly what is drawn
  * for it: the reader shows no broken-image mark, so the page must not leave a
  * gap where one would have been.
  */
-private class FigureShapes {
+private class FigureShapes(private val density: Density) {
 
-    /** Height over width, by figure. Figures compare by identity - see TextBlock.Figure. */
-    private val aspects = mutableMapOf<TextBlock.Figure, Float>()
+    /** Its own size in pixels, by figure. Figures compare by identity - see TextBlock.Figure. */
+    private val sizes = mutableMapOf<TextBlock.Figure, IntSize>()
 
     fun heightOf(figure: TextBlock.Figure, widthPx: Int): Int {
-        val aspect = aspects.getOrPut(figure) {
+        val size = sizes.getOrPut(figure) {
             runCatching { figure.bytes.decodeToImageBitmap() }
-                .map { it.height.toFloat() / it.width.coerceAtLeast(1) }
-                .getOrDefault(0f)
+                .map { IntSize(it.width, it.height) }
+                .getOrDefault(IntSize.Zero)
         }
 
-        return (widthPx * aspect).toInt()
+        if (size.width <= 0) return 0
+
+        val asked = with(density) { size.width.dp.roundToPx() }
+
+        return minOf(widthPx, asked) * size.height / size.width
     }
 }

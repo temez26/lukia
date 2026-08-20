@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -184,6 +185,13 @@ internal fun CodeBlock(block: TextBlock.Code, style: TextStyle) {
  * the book is still perfectly readable without it, and a row of error icons down
  * a chapter is worse than a chapter with a gap.
  *
+ * Drawn no larger than the illustration actually is, and centred when that is
+ * narrower than the measure. Filling the width regardless is what a cover wants
+ * and what nothing else does: books carry ornaments, symbols and inline marks of
+ * a few dozen pixels, and stretched to the measure each of them becomes a
+ * full-width picture of a tiny image. The rule is the one a browser follows -
+ * its own size, shrunk to fit where there is not room for it.
+ *
  * [maxHeight] is how tall it may be drawn, which on a paginated book is the page
  * it was put on. A plate taller than the page is scaled down to fit rather than
  * running off the bottom of it, so an illustration is always seen whole.
@@ -197,28 +205,35 @@ internal fun FigureBlock(block: TextBlock.Figure, maxHeight: Dp = Dp.Unspecified
     }
 
     image?.let { bitmap ->
-        Image(
-            bitmap = bitmap,
-            contentDescription = block.description?.takeIf { it.isNotBlank() },
-            // Fit rather than FillWidth wherever the height is bounded: an image
-            // wider than it is tall must give way on both measures at once.
-            contentScale = if (maxHeight == Dp.Unspecified) {
-                ContentScale.FillWidth
-            } else {
-                ContentScale.Fit
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .then(
-                    if (maxHeight == Dp.Unspecified) {
-                        Modifier
-                    } else {
-                        Modifier.heightIn(max = maxHeight)
-                    },
-                ),
-        )
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
+            Image(
+                bitmap = bitmap,
+                contentDescription = block.description?.takeIf { it.isNotBlank() },
+                // Fit rather than FillWidth: an illustration bounded on both
+                // measures - by the page it is on as well as by the measure -
+                // has to give way on whichever it meets first.
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .widthIn(max = bitmap.intrinsicWidth())
+                    .fillMaxWidth()
+                    .then(
+                        if (maxHeight == Dp.Unspecified) {
+                            Modifier
+                        } else {
+                            Modifier.heightIn(max = maxHeight)
+                        },
+                    ),
+            )
+        }
     }
 }
+
+/**
+ * How wide an image asks to be drawn: one of its pixels to one of the reader's
+ * points, which is what a browser does with an image that states no size, and so
+ * what the books were laid out against.
+ */
+internal fun ImageBitmap.intrinsicWidth(): Dp = width.dp
 
 /** A scene break: a short rule rather than a line across the whole measure. */
 @Composable
