@@ -11,6 +11,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.domain.TextBlock
 import io.lukia.features.reader.domain.TextSection
 import kotlinx.coroutines.Dispatchers
@@ -35,6 +36,7 @@ internal fun rememberPagination(
     style: TextStyle,
     widthPx: Int,
     heightPx: Int,
+    figureSize: FigureSize,
 ): PaginatedBook {
     val measurer = rememberTextMeasurer()
     val density = LocalDensity.current
@@ -50,6 +52,7 @@ internal fun rememberPagination(
         style,
         widthPx,
         heightPx,
+        figureSize,
     ) {
         if (widthPx <= 0 || heightPx <= 0) return@produceState
 
@@ -61,7 +64,7 @@ internal fun rememberPagination(
                     style = style,
                     widthPx = widthPx,
                     density = density,
-                    figureHeight = figures::heightOf,
+                    figureHeight = { figure, width -> figures.heightOf(figure, width, figureSize) },
                 ),
                 pageHeightPx = heightPx,
             )
@@ -94,17 +97,23 @@ private class FigureShapes(private val density: Density) {
     /** Its own size in pixels, by figure. Figures compare by identity - see TextBlock.Figure. */
     private val sizes = mutableMapOf<TextBlock.Figure, IntSize>()
 
-    fun heightOf(figure: TextBlock.Figure, widthPx: Int): Int {
-        val size = sizes.getOrPut(figure) {
+    fun heightOf(figure: TextBlock.Figure, widthPx: Int, size: FigureSize): Int {
+        val shape = sizes.getOrPut(figure) {
             runCatching { figure.bytes.decodeToImageBitmap() }
                 .map { IntSize(it.width, it.height) }
                 .getOrDefault(IntSize.Zero)
         }
 
-        if (size.width <= 0) return 0
+        if (shape.width <= 0) return 0
 
-        val asked = with(density) { size.width.dp.roundToPx() }
+        // The same cap the drawing uses - a page cut against a full-width figure
+        // that is then drawn small would leave a hole under every ornament.
+        val asked = if (size.fillsMeasure) {
+            widthPx
+        } else {
+            with(density) { (shape.width.dp * size.scale).roundToPx() }
+        }
 
-        return minOf(widthPx, asked) * size.height / size.width
+        return minOf(widthPx, asked) * shape.height / shape.width
     }
 }

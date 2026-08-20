@@ -44,6 +44,34 @@ enum class ReadingWidth(val fraction: Float) {
         get() = fraction > 1f
 }
 
+private const val HALF_ITS_SIZE = 0.5f
+private const val ITS_OWN_SIZE = 1f
+private const val HALF_AS_LARGE_AGAIN = 1.5f
+
+/**
+ * How large an illustration may be drawn, against its own size.
+ *
+ * A reflowable book states no size for its pictures, so the reader draws each at
+ * the size it actually is and shrinks it where there is not room - which is what
+ * a browser does, and what the books were laid out against. That is right for
+ * most books and wrong for two kinds: one whose diagrams were saved small and
+ * are now hard to read, and one whose plates are meant to fill the page.
+ *
+ * [Fill] is the second of those - every illustration drawn to the measure,
+ * whatever its own size. It is not a scale at all, which is why it is a preset
+ * here rather than a number the reader types.
+ */
+enum class FigureSize(val scale: Float) {
+    Small(HALF_ITS_SIZE),
+    Normal(ITS_OWN_SIZE),
+    Large(HALF_AS_LARGE_AGAIN),
+    Fill(Float.POSITIVE_INFINITY),
+    ;
+
+    /** Whether an illustration is drawn to the measure however small it is. */
+    val fillsMeasure: Boolean get() = scale.isInfinite()
+}
+
 /**
  * Everything about how the reader presents a book, as opposed to what the book
  * says. One value, carried whole, so adding a setting later is a field here and
@@ -69,6 +97,12 @@ data class ReaderSettings(
      */
     val pageScale: Float = DEFAULT_PAGE_SCALE,
     val typeface: ReaderTypeface = ReaderTypeface.SansSerif,
+    /**
+     * How large illustrations are drawn. Reflowable books only: a PDF's pictures
+     * were placed on its pages when the file was made, and the reader has no
+     * more say over one of them than over where a line breaks.
+     */
+    val figureSize: FigureSize = FigureSize.Normal,
 ) {
 
     /** The preset this scale sits on, if it sits on one. */

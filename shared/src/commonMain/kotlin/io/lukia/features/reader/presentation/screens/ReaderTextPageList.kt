@@ -101,6 +101,7 @@ internal fun TextPageList(
             style = style,
             widthPx = with(density) { sheet.textWidth.roundToPx() },
             heightPx = with(density) { sheet.textHeight.roundToPx() },
+            figureSize = settings.figureSize,
         )
 
         FollowPlaceAcrossLayout(book = book, listState = listState, openAt = openAt)
@@ -143,6 +144,7 @@ internal fun TextPageList(
                             page = book.pages[index],
                             style = drawnStyle,
                             pageHeight = textHeight,
+                            figureSize = settings.figureSize,
                             translations = translations,
                             translateOnScreen = translateOnScreen,
                             gestures = gestures,

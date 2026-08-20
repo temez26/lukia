@@ -3,6 +3,7 @@ package io.lukia.features.reader.presentation.components
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
+import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.domain.TextBlock
 import io.lukia.features.reader.presentation.TranslateOnScreen
 import io.lukia.features.translate.domain.TranslationGestures
@@ -20,6 +21,8 @@ internal fun TextBlockView(
     resizingType: Boolean,
     /** How tall a figure may be drawn, which on a paginated book is its page. */
     maxHeight: Dp = Dp.Unspecified,
+    /** How large illustrations are drawn, which is the reader's own setting. */
+    figureSize: FigureSize = FigureSize.Normal,
 ) {
     when (block) {
         is TextBlock.Heading ->
@@ -43,7 +46,7 @@ internal fun TextBlockView(
         // Preformatted text is not prose. Splitting code at its full stops would
         // offer to translate `object.method()` as a sentence.
         is TextBlock.Code -> CodeBlock(block, style)
-        is TextBlock.Figure -> FigureBlock(block, maxHeight)
+        is TextBlock.Figure -> FigureBlock(block, maxHeight, figureSize)
         TextBlock.Separator -> SeparatorBlock()
     }
 }

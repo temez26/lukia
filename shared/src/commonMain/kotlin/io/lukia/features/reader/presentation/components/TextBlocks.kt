@@ -32,6 +32,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.domain.TextBlock
 import io.lukia.features.reader.presentation.TranslateOnScreen
 import io.lukia.features.reader.presentation.theme.CodePaddingHorizontal
@@ -192,12 +193,19 @@ internal fun CodeBlock(block: TextBlock.Code, style: TextStyle) {
  * full-width picture of a tiny image. The rule is the one a browser follows -
  * its own size, shrunk to fit where there is not room for it.
  *
+ * [size] is the reader's own say over that, for the books the rule does not
+ * suit: diagrams saved small, and plates meant to fill the page. See [FigureSize].
+ *
  * [maxHeight] is how tall it may be drawn, which on a paginated book is the page
  * it was put on. A plate taller than the page is scaled down to fit rather than
  * running off the bottom of it, so an illustration is always seen whole.
  */
 @Composable
-internal fun FigureBlock(block: TextBlock.Figure, maxHeight: Dp = Dp.Unspecified) {
+internal fun FigureBlock(
+    block: TextBlock.Figure,
+    maxHeight: Dp = Dp.Unspecified,
+    size: FigureSize = FigureSize.Normal,
+) {
     val image by produceState<ImageBitmap?>(initialValue = null, block) {
         value = withContext(Dispatchers.Default) {
             runCatching { block.bytes.decodeToImageBitmap() }.getOrNull()
@@ -214,7 +222,7 @@ internal fun FigureBlock(block: TextBlock.Figure, maxHeight: Dp = Dp.Unspecified
                 // has to give way on whichever it meets first.
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
-                    .widthIn(max = bitmap.intrinsicWidth())
+                    .widthIn(max = size.widthFor(bitmap.intrinsicWidth()))
                     .fillMaxWidth()
                     .then(
                         if (maxHeight == Dp.Unspecified) {
@@ -234,6 +242,15 @@ internal fun FigureBlock(block: TextBlock.Figure, maxHeight: Dp = Dp.Unspecified
  * what the books were laid out against.
  */
 internal fun ImageBitmap.intrinsicWidth(): Dp = width.dp
+
+/**
+ * How wide an illustration of [intrinsic] size may be drawn at this setting.
+ *
+ * [FigureSize.Fill] is unbounded rather than a large number: the measure is the
+ * only thing left to stop it, which is exactly what filling the width means.
+ */
+internal fun FigureSize.widthFor(intrinsic: Dp): Dp =
+    if (fillsMeasure) Dp.Infinity else intrinsic * scale
 
 /** A scene break: a short rule rather than a line across the whole measure. */
 @Composable

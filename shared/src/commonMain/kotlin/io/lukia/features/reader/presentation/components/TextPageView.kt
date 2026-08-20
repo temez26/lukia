@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
+import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.presentation.TranslateOnScreen
 import io.lukia.features.reader.presentation.pagination.PageBlock
 import io.lukia.features.reader.presentation.pagination.TextPage
@@ -39,6 +40,8 @@ internal fun TextPageView(
     modifier: Modifier = Modifier,
     /** How tall the page is, so a plate can be drawn no taller than one. */
     pageHeight: Dp = Dp.Unspecified,
+    /** How large illustrations are drawn, which is the reader's own setting. */
+    figureSize: FigureSize = FigureSize.Normal,
     translations: ReaderTranslations = ReaderTranslations.None,
     actionsFor: (PageBlock) -> BlockActions = { NoBlockActions },
     translateOnScreen: TranslateOnScreen = TranslateOnScreen.Idle,
@@ -70,6 +73,7 @@ internal fun TextPageView(
                 gestures = gestures,
                 resizingType = resizingType,
                 maxHeight = pageHeight,
+                figureSize = figureSize,
             )
         }
     }
