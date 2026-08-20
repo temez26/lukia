@@ -170,4 +170,30 @@ class HtmlBlocksTest {
             (blocks.single() as TextBlock.Paragraph).text.plainText(),
         )
     }
+
+    /**
+     * An id names a place in the chapter, and the place is the block that opens
+     * there - which is what a contents entry pointing into a file has to land on.
+     */
+    @Test
+    fun anIdBelongsToTheBlockThatOpensWhereItIsWritten() {
+        val content = htmlContent(
+            """<p>before</p><section id="two"><h1>Two</h1><p>after</p></section>""",
+        )
+
+        assertEquals(mapOf("two" to 1), content.anchors)
+    }
+
+    @Test
+    fun anIdWithNothingAfterItBelongsToTheLastBlockThereIs() {
+        val content = htmlContent("""<p>only</p><div id="end"></div>""")
+
+        assertEquals(mapOf("end" to 0), content.anchors)
+    }
+
+    /** The blocks alone: what a chapter reads as is what these tests are about. */
+    private fun htmlBlocks(
+        html: String,
+        image: (src: String) -> ByteArray? = { null },
+    ): List<TextBlock> = htmlContent(html, image).blocks
 }

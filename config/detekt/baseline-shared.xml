@@ -20,8 +20,8 @@
     <ID>CyclomaticComplexMethod:DocxMetadataReader.kt$internal fun extractDocxMetadata(docxBytes: ByteArray): BookMetadata?</ID>
     <ID>CyclomaticComplexMethod:DocxTextReader.kt$private fun docxBlocks(xml: String, image: (relationshipId: String) -&gt; ByteArray?): List&lt;TextBlock&gt;</ID>
     <ID>CyclomaticComplexMethod:EpubMetadata.kt$internal fun readEpubMetadata(packageXml: String): BookMetadata</ID>
+    <ID>CyclomaticComplexMethod:EpubNavigation.kt$internal fun navigationEntries(xml: String, sectionOf: (String) -&gt; Int?): List&lt;OutlineEntry&gt;</ID>
     <ID>CyclomaticComplexMethod:EpubPackage.kt$EpubPackage.Companion$fun open(epubBytes: ByteArray): EpubPackage?</ID>
-    <ID>CyclomaticComplexMethod:EpubTextReader.kt$private fun navigationEntries(xml: String, sectionOf: (String) -&gt; Int?): List&lt;OutlineEntry&gt;</ID>
     <ID>CyclomaticComplexMethod:IOSFolderScanner.kt$IOSFolderScanner$override suspend fun scan(folder: PickedFolder): List&lt;PickedDocument&gt;</ID>
     <ID>CyclomaticComplexMethod:MarkdownTextReader.kt$private fun markdownBlocks(source: String): List&lt;TextBlock&gt;</ID>
     <ID>CyclomaticComplexMethod:MarkdownTextReader.kt$private fun markdownRuns(source: String): List&lt;TextRun&gt;</ID>
@@ -80,9 +80,9 @@
     <ID>MagicNumber:AnthropicTranslator.kt$AnthropicTranslator$500</ID>
     <ID>MagicNumber:ArchivePaths.kt$16</ID>
     <ID>MagicNumber:ArchivePaths.kt$3</ID>
-    <ID>MagicNumber:DocumentDisplay.kt$10</ID>
-    <ID>MagicNumber:DocumentDisplay.kt$1024</ID>
     <ID>MagicNumber:DocumentDisplay.kt$1024.0</ID>
+    <ID>MagicNumber:DocumentDisplay.kt$1024</ID>
+    <ID>MagicNumber:DocumentDisplay.kt$10</ID>
     <ID>MagicNumber:DocxTextReader.kt$6</ID>
     <ID>MagicNumber:Inflate.kt$0xFF</ID>
     <ID>MagicNumber:Inflate.kt$31</ID>
@@ -132,9 +132,9 @@
     <ID>MagicNumber:TranslationCache.kt$60</ID>
     <ID>MagicNumber:TranslationEndpoint.kt$10</ID>
     <ID>MagicNumber:TranslationEndpoint.kt$127</ID>
-    <ID>MagicNumber:TranslationEndpoint.kt$16</ID>
     <ID>MagicNumber:TranslationEndpoint.kt$168</ID>
     <ID>MagicNumber:TranslationEndpoint.kt$169</ID>
+    <ID>MagicNumber:TranslationEndpoint.kt$16</ID>
     <ID>MagicNumber:TranslationEndpoint.kt$172</ID>
     <ID>MagicNumber:TranslationEndpoint.kt$192</ID>
     <ID>MagicNumber:TranslationEndpoint.kt$254</ID>
@@ -161,9 +161,9 @@
     <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$24</ID>
     <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$26</ID>
     <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$28</ID>
-    <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$3</ID>
     <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$30</ID>
     <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$32</ID>
+    <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$3</ID>
     <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$42</ID>
     <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$8</ID>
     <ID>MayBeConst:ReaderTranslationTestFixture.kt$/** * The book these tests read, and the reader showing it. * * Shared so that every question about translating reaches the same three * paragraphs. The sample sentences are chosen for their shape: one short, one * long, and one paragraph that opens with a sentence of two words. */ internal val opening = "Call me Ishmael."</ID>
@@ -182,9 +182,9 @@
     <ID>NestedBlockDepth:DocxMetadataReader.kt$internal fun extractDocxMetadata(docxBytes: ByteArray): BookMetadata?</ID>
     <ID>NestedBlockDepth:DocxTextReader.kt$private fun docxBlocks(xml: String, image: (relationshipId: String) -&gt; ByteArray?): List&lt;TextBlock&gt;</ID>
     <ID>NestedBlockDepth:EpubMetadata.kt$internal fun readEpubMetadata(packageXml: String): BookMetadata</ID>
+    <ID>NestedBlockDepth:EpubNavigation.kt$internal fun navigationEntries(xml: String, sectionOf: (String) -&gt; Int?): List&lt;OutlineEntry&gt;</ID>
+    <ID>NestedBlockDepth:EpubNavigation.kt$internal fun ncxEntries(xml: String, sectionOf: (String) -&gt; Int?): List&lt;OutlineEntry&gt;</ID>
     <ID>NestedBlockDepth:EpubPackage.kt$EpubPackage.Companion$fun open(epubBytes: ByteArray): EpubPackage?</ID>
-    <ID>NestedBlockDepth:EpubTextReader.kt$private fun navigationEntries(xml: String, sectionOf: (String) -&gt; Int?): List&lt;OutlineEntry&gt;</ID>
-    <ID>NestedBlockDepth:EpubTextReader.kt$private fun ncxEntries(xml: String, sectionOf: (String) -&gt; Int?): List&lt;OutlineEntry&gt;</ID>
     <ID>NestedBlockDepth:MarkdownTextReader.kt$private fun markdownRuns(source: String): List&lt;TextRun&gt;</ID>
     <ID>NestedBlockDepth:PdfCoverRenderer.android.kt$internal actual fun renderPdfCover(pdfBytes: ByteArray): ByteArray?</ID>
     <ID>OutdatedDocumentation:PdfObjectParser.kt$PdfObjectParser</ID>
@@ -198,7 +198,7 @@
     <ID>ParameterNaming:ReaderSectionList.kt$onPassageSelected</ID>
     <ID>ParameterNaming:ReaderSectionList.kt$onPassagesRequested</ID>
     <ID>ReturnCount:EpubPackage.kt$EpubPackage.Companion$fun open(epubBytes: ByteArray): EpubPackage?</ID>
-    <ID>ReturnCount:HtmlBlocks.kt$HtmlBlockBuilder$private fun open(event: XmlEvent.Open)</ID>
+    <ID>ReturnCount:HtmlBlockBuilder.kt$HtmlBlockBuilder$private fun open(event: XmlEvent.Open)</ID>
     <ID>ReturnCount:PdfFileScan.kt$private fun readObjectHeaderStart(bytes: ByteArray, objIndex: Int): Pair&lt;Int, Int&gt;?</ID>
     <ID>ReturnCount:PdfMetadataReader.kt$private fun String.isPlausibleTitle(): Boolean</ID>
     <ID>ReturnCount:PdfObjectIndex.kt$PdfObjectIndex$private fun objectAt(offset: Long): PdfValue?</ID>
