@@ -53,7 +53,11 @@ fun App() {
         AppTheme.Dark -> true
     }
 
-    LukiaTheme(darkTheme = darkTheme) {
+    LukiaTheme(
+        darkTheme = darkTheme,
+        palette = appSettings.palette,
+        accent = appSettings.accent,
+    ) {
         val navController = rememberNavController()
 
         NavHost(

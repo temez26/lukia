@@ -27,6 +27,12 @@ compose.desktop {
             packageName = "io.lukia"
             packageVersion = "1.0.0"
 
+            // jlink keeps only the modules it can prove are used, and nothing in the bytecode
+            // points at these: the SQLite JDBC driver reaches java.sql through DriverManager,
+            // and the others are loaded reflectively. Without them the installed app dies on
+            // launch with a JVM error, while `run` - which uses the full JDK - stays happy.
+            modules("java.instrument", "java.management", "java.sql", "jdk.unsupported")
+
             val icons = project.file("src/main/resources/icons")
             macOS { iconFile.set(icons.resolve("lukia.icns")) }
             windows { iconFile.set(icons.resolve("lukia.ico")) }

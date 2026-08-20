@@ -28,6 +28,7 @@ import io.lukia.features.library.presentation.LibraryQuery
 import io.lukia.features.library.presentation.asLibrary
 import io.lukia.features.library.presentation.facets
 import io.lukia.features.library.presentation.matching
+import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.shared.presentation.theme.LukiaTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -69,6 +70,7 @@ class LibraryContentTest {
     private fun ComposeUiTest.setLibrary(
         documents: List<DocumentInfo> = library,
         width: Dp = 1000.dp,
+        progress: Map<String, ReadingProgress> = emptyMap(),
         onDocumentDetails: (DocumentInfo) -> Unit = {},
     ) {
         setContent {
@@ -78,7 +80,7 @@ class LibraryContentTest {
             // less would be asserting that a chip changes a variable rather than
             // that it changes what is on screen.
             var query by remember { mutableStateOf(LibraryQuery()) }
-            val books = remember(documents) { documents.asLibrary(emptyMap()) }
+            val books = remember(documents, progress) { documents.asLibrary(progress) }
             val facets = remember(books) { books.facets() }
 
             // Sized explicitly: the layout branches on the window's width class,
@@ -211,6 +213,29 @@ class LibraryContentTest {
 
         assertEquals("Moby Dick.pdf", navigatedTo?.document?.fileName)
         onNodeWithText("Information").assertDoesNotExist()
+    }
+
+    /**
+     * A bar alone cannot say the difference between half read and nearly
+     * finished at the size a card draws it, so the card says the number too.
+     */
+    @Test
+    fun aStartedBookWearsHowFarThroughItIs() = runComposeUiTest {
+        setLibrary(
+            progress = mapOf(
+                "/library/Moby Dick.pdf" to ReadingProgress(pageIndex = 41, pageCount = 100),
+            ),
+        )
+
+        onNodeWithText("42%").assertIsDisplayed()
+    }
+
+    /** A shelf of unread books is a shelf, not a progress report. */
+    @Test
+    fun aBookNobodyHasOpenedWearsNothing() = runComposeUiTest {
+        setLibrary()
+
+        onNode(hasText("%", substring = true)).assertDoesNotExist()
     }
 
     /** Closing puts the reader back where they were, with nothing else changed. */

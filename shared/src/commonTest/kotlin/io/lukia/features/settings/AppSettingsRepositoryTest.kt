@@ -1,6 +1,8 @@
 package io.lukia.features.settings
 
 import io.lukia.core.domain.FakeSettingsStore
+import io.lukia.features.settings.domain.AppAccent
+import io.lukia.features.settings.domain.AppPalette
 import io.lukia.features.settings.domain.AppSettings
 import io.lukia.features.settings.domain.AppTheme
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
@@ -48,6 +50,43 @@ class AppSettingsRepositoryTest {
         assertEquals(afterFirst, store.writeCount)
     }
 
+    /** The app opens in its own colours until somebody says otherwise. */
+    @Test
+    fun defaultsToTheAppsOwnPaletteAndItsPalettesOwnAccent() {
+        val settings = AppSettingsRepository(FakeSettingsStore()).settings.value
+
+        assertEquals(AppPalette.Crisp, settings.palette)
+        assertEquals(AppAccent.Themed, settings.accent)
+    }
+
+    @Test
+    fun readsAStoredPaletteAndAccent() {
+        val store = FakeSettingsStore(
+            mapOf("app.palette" to "Slate", "app.accent" to "Rose"),
+        )
+
+        val settings = AppSettingsRepository(store).settings.value
+
+        assertEquals(AppPalette.Slate, settings.palette)
+        assertEquals(AppAccent.Rose, settings.accent)
+    }
+
+    @Test
+    fun aChosenPaletteAndAccentAreStillThereNextTime() {
+        val store = FakeSettingsStore()
+
+        AppSettingsRepository(store).update(
+            AppSettings(palette = AppPalette.Paper, accent = AppAccent.Green),
+        )
+
+        assertEquals("Paper", store.values["app.palette"])
+        assertEquals("Green", store.values["app.accent"])
+        // ...and read back by the next run, which is the point of writing them.
+        val reopened = AppSettingsRepository(store).settings.value
+        assertEquals(AppPalette.Paper, reopened.palette)
+        assertEquals(AppAccent.Green, reopened.accent)
+    }
+
     /**
      * A value written by an older build, or edited by hand into nonsense, falls
      * back to the default rather than throwing on the way to the first frame.
@@ -57,5 +96,17 @@ class AppSettingsRepositoryTest {
         val store = FakeSettingsStore(mapOf("app.theme" to "Solarized"))
 
         assertEquals(AppTheme.System, AppSettingsRepository(store).settings.value.theme)
+    }
+
+    @Test
+    fun anUnreadableStoredPaletteOrAccentFallsBackToTheDefault() {
+        val store = FakeSettingsStore(
+            mapOf("app.palette" to "Kindle", "app.accent" to "Chartreuse"),
+        )
+
+        val settings = AppSettingsRepository(store).settings.value
+
+        assertEquals(AppPalette.Crisp, settings.palette)
+        assertEquals(AppAccent.Themed, settings.accent)
     }
 }

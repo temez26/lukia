@@ -1,0 +1,20 @@
+-- Clears cover art too large to read back.
+--
+-- Android hands a query's results over through a CursorWindow of two megabytes,
+-- and a row that will not fit in one does not come back short: the read of the
+-- whole table throws, so a single oversized cover took the entire library off
+-- the screen and left a retry button where the books had been. Covers were
+-- stored exactly as they were rendered or found until this version - a PDF page
+-- at its own size, a publisher's artwork at 1600x2400 - and one image-heavy
+-- book was enough to pass that limit on its own.
+--
+-- The limit here is `MaxStoredCoverBytes`, which is what the import now holds
+-- new covers to. `length()` on a BLOB counts bytes, so this reads no artwork to
+-- decide.
+--
+-- Cleared rather than re-made: the cover would have to be rendered from the
+-- file again, and a migration runs at startup, on the main thread, for a library
+-- whose files may since have moved. Those books show the monogram the library
+-- draws for a book with no cover until they are refreshed or imported again,
+-- which now stores one that fits.
+UPDATE document SET coverImage = NULL WHERE length(coverImage) > 1000000;

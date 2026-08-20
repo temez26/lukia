@@ -120,7 +120,7 @@ internal fun LibraryGrid(
         ) { index, book ->
             BookCard(
                 document = book.document,
-                progress = book.progress?.fraction,
+                progress = book.progress,
                 menuExpanded = openMenu == OpenMenu.Book(book.location),
                 onClick = { onDocumentClick(book.document) },
                 onMenuRequest = { onOpenMenuChange(OpenMenu.Book(book.location)) },

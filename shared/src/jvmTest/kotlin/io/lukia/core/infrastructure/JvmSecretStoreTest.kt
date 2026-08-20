@@ -2,6 +2,7 @@ package io.lukia.core.infrastructure
 
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.attribute.PosixFileAttributeView
 import java.nio.file.attribute.PosixFilePermission
 import kotlin.test.AfterTest
 import kotlin.test.Test
@@ -59,16 +60,23 @@ class JvmSecretStoreTest {
      * The whole point of a separate file: another account on the same machine,
      * or a backup that sweeps up the app's directory, should not come away with
      * somebody's API key.
+     *
+     * Asserted where the permission bits exist, which is macOS and Linux.
+     * Windows has none to read - what keeps the file to its owner there is the
+     * ACL inherited from the user's own profile directory, which this file
+     * neither sets nor can portably be asked about, so the test says nothing
+     * about it rather than asserting something that is not this code's doing.
      */
     @Test
     fun theFileIsReadableOnlyByItsOwner() {
         JvmSecretStore(file).putSecret("key", "value")
 
-        val permissions = Files.getPosixFilePermissions(file.toPath())
+        val posix = Files.getFileAttributeView(file.toPath(), PosixFileAttributeView::class.java)
+            ?: return
 
         assertEquals(
             setOf(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE),
-            permissions,
+            posix.readAttributes().permissions(),
         )
     }
 

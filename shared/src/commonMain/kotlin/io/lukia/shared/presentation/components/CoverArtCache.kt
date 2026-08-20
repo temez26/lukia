@@ -16,12 +16,13 @@ import kotlinx.coroutines.sync.withLock
 /**
  * How large a cover is kept once decoded, along its longer edge.
  *
- * Covers are stored as they were found: a PDF's first page rendered at 96 DPI is
- * around 800x1100, and an EPUB can carry artwork several times that. A cell in
- * the grid is around 150dp - four hundred and something pixels on a phone - so
- * every one of those is a bitmap several times larger than anything that will be
- * drawn from it, and on a shelf of two hundred books that difference is the
- * difference between scrolling and stuttering.
+ * The import holds a stored cover to this same edge, so most artwork arrives
+ * here already this size. What this still catches is what was stored before it
+ * did - a library imported by an earlier version can hold a publisher's artwork
+ * at 1600x2400. A cell in the grid is around 150dp - four hundred and something
+ * pixels on a phone - so one of those is a bitmap several times larger than
+ * anything that will be drawn from it, and on a shelf of two hundred books that
+ * difference is the difference between scrolling and stuttering.
  *
  * Sized for the largest a cover is ever drawn, which is the detail screen rather
  * than the grid.

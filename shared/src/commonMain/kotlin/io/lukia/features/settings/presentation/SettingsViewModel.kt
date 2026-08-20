@@ -6,7 +6,6 @@ import io.lukia.core.domain.AppError
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.core.domain.toAppError
 import io.lukia.features.settings.domain.AppSettings
-import io.lukia.features.settings.domain.AppTheme
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.BulkTranslation
@@ -122,8 +121,16 @@ class SettingsViewModel(
 
     private var warming: Job? = null
 
-    fun setTheme(theme: AppTheme) {
-        repository.update(repository.settings.value.copy(theme = theme))
+    /**
+     * The app's whole appearance at once - how light it is, its palette and its
+     * accent - rather than a setter for each.
+     *
+     * They are chosen in one place, from a screen that already holds all three,
+     * and [AppSettingsRepository] writes nothing when nothing changed. A setter
+     * per field would be three ways to say the same sentence.
+     */
+    fun setAppearance(settings: AppSettings) {
+        repository.update(settings)
     }
 
     fun setTargetLanguage(language: TargetLanguage) {

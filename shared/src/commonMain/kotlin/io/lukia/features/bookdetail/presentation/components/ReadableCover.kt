@@ -7,6 +7,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
@@ -29,9 +30,10 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import io.lukia.core.domain.CoverImage
+import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.shared.presentation.components.BookCover
 import io.lukia.shared.presentation.components.OpenBookGlyph
-import io.lukia.shared.presentation.components.ReadingProgressBar
+import io.lukia.shared.presentation.components.ReadingProgressOverlay
 import io.lukia.shared.presentation.components.focusRing
 import io.lukia.shared.presentation.components.rememberHoverFraction
 import io.lukia.shared.presentation.theme.LukiaAlpha
@@ -71,8 +73,8 @@ private const val ReadControlFraction = 0.30f
 internal fun ReadableCover(
     coverImage: CoverImage?,
     title: String,
-    /** How far through, 0 to 1. Null for a book that has never been opened. */
-    progress: Float?,
+    /** How far through. Null for a book that has never been opened. */
+    progress: ReadingProgress?,
     enabled: Boolean,
     onRead: () -> Unit,
     onLongPress: () -> Unit,
@@ -135,30 +137,46 @@ internal fun ReadableCover(
                 .clip(shape),
         ) {
             if (enabled) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        // Only the mouse case dims; the touch case leaves the
-                        // artwork alone and lets the control's own backing carry it.
-                        .graphicsLayer { alpha = maxOf(hover, focusReveal) }
-                        .background(Color.Black.copy(alpha = ScrimAlpha)),
-                )
-
-                ReadControl(
+                ReadAffordance(
                     reveal = reveal,
+                    dim = maxOf(hover, focusReveal),
                     diameter = width * ReadControlFraction,
-                    modifier = Modifier.align(Alignment.Center),
                 )
             }
 
-            if (progress != null) {
-                ReadingProgressBar(
-                    fraction = progress,
-                    modifier = Modifier.align(Alignment.BottomStart),
-                )
+            progress?.fraction?.let { fraction ->
+                ReadingProgressOverlay(fraction = fraction, percent = progress.percent)
             }
         }
     }
+}
+
+/**
+ * What says the cover can be read from: the mark in the middle, and the dimming
+ * that lifts it off the artwork behind it.
+ *
+ * Only the mouse case dims - [dim] is zero under a finger - because a touch
+ * screen has no hover to reveal anything with, and a permanently dimmed cover
+ * would be a poor trade for an affordance a tap would have found anyway.
+ */
+@Composable
+private fun BoxScope.ReadAffordance(
+    reveal: Float,
+    dim: Float,
+    diameter: Dp,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .graphicsLayer { alpha = dim }
+            .background(Color.Black.copy(alpha = ScrimAlpha)),
+    )
+
+    ReadControl(
+        reveal = reveal,
+        diameter = diameter,
+        modifier = Modifier.align(Alignment.Center),
+    )
 }
 
 /**

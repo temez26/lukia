@@ -1,0 +1,186 @@
+package io.lukia.features.settings.presentation.screens
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import io.lukia.features.settings.domain.AppAccent
+import io.lukia.features.settings.domain.AppPalette
+import io.lukia.features.settings.domain.AppSettings
+import io.lukia.features.settings.domain.AppTheme
+import io.lukia.features.settings.presentation.components.ChoiceList
+import io.lukia.shared.presentation.components.CheckGlyph
+import io.lukia.shared.presentation.components.SegmentedControl
+import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import io.lukia.shared.presentation.theme.Space
+import io.lukia.shared.presentation.theme.accentSwatchColor
+
+private val SwatchSize: Dp = 30.dp
+
+/** Above this, a background counts as a light one. */
+private const val LightSurfaceLuminance = 0.5f
+
+/**
+ * Everything about what the app looks like: how light it is, what its surfaces
+ * are made of, and the one colour it highlights with.
+ *
+ * Three controls in the order somebody reaches for them - the light and dark
+ * switch is what most people came here for, the palette is a decision made once,
+ * and the accent only means anything once the other two are settled.
+ */
+@Composable
+internal fun AppearanceSettings(
+    settings: AppSettings,
+    onChange: (AppSettings) -> Unit,
+    groupColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    val dimens = LocalLukiaDimens.current
+
+    // Which way the swatches have to be read is a question about the colours on
+    // screen rather than about the setting: "System" at night and "Dark" look
+    // the same to a swatch, and only one of them is written down.
+    val darkTheme = MaterialTheme.colorScheme.background.luminance() < LightSurfaceLuminance
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        SettingsSection(
+            title = "Appearance",
+            // Named for what it does rather than what it is called, since
+            // "System" is the only option whose meaning is not obvious from the
+            // word alone.
+            footnote = "System follows your device’s light and dark setting.",
+            groupColor = groupColor,
+        ) {
+            SegmentedControl(
+                options = AppTheme.entries,
+                selected = settings.theme,
+                label = { it.name },
+                onSelect = { onChange(settings.copy(theme = it)) },
+            )
+        }
+
+        SettingsSection(
+            title = "Palette",
+            footnote = "What the app’s surfaces are made of. Light and dark both follow it.",
+            groupColor = groupColor,
+            modifier = Modifier.padding(top = dimens.sectionSpacing),
+        ) {
+            ChoiceList(
+                options = AppPalette.entries,
+                selected = settings.palette,
+                label = { it.title },
+                detail = { it.detail },
+                onSelect = { onChange(settings.copy(palette = it)) },
+            )
+        }
+
+        SettingsSection(
+            title = "Accent",
+            footnote = "Used for reading progress, chosen rows and anything that acts. " +
+                "Theme follows the palette.",
+            groupColor = groupColor,
+            modifier = Modifier.padding(top = dimens.sectionSpacing),
+        ) {
+            AccentSwatches(
+                selected = settings.accent,
+                palette = settings.palette,
+                darkTheme = darkTheme,
+                onSelect = { onChange(settings.copy(accent = it)) },
+            )
+        }
+    }
+}
+
+/**
+ * The accents, as the colours themselves rather than as a list of their names.
+ *
+ * A row of swatches because this is the one setting here whose options cannot be
+ * described in words better than they can be shown - "Rose" tells nobody whether
+ * they will like it against paper.
+ */
+@Composable
+private fun AccentSwatches(
+    selected: AppAccent,
+    palette: AppPalette,
+    darkTheme: Boolean,
+    onSelect: (AppAccent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(Space.lg),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        AppAccent.entries.forEach { accent ->
+            AccentSwatch(
+                color = accentSwatchColor(accent, darkTheme, palette),
+                label = accent.title,
+                selected = accent == selected,
+                onSelect = { onSelect(accent) },
+            )
+        }
+    }
+}
+
+/**
+ * One swatch. The tick is drawn over the colour rather than beside it, and in
+ * white, which is legible on every accent here - a ring around the chosen one
+ * disappears against a surface of a similar tone.
+ */
+@Composable
+private fun AccentSwatch(
+    color: Color,
+    label: String,
+    selected: Boolean,
+    onSelect: () -> Unit,
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(SwatchSize)
+            .clip(CircleShape)
+            .background(color)
+            // A hairline, so a swatch the same tone as the card it sits on is
+            // still a swatch rather than a hole.
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                shape = CircleShape,
+            )
+            .pointerHoverIcon(PointerIcon.Hand)
+            .selectable(
+                selected = selected,
+                role = Role.RadioButton,
+                onClick = onSelect,
+            )
+            .semantics { contentDescription = label },
+    ) {
+        if (selected) {
+            CheckGlyph(
+                tint = Color.White,
+                modifier = Modifier.size(SwatchSize * 0.5f),
+            )
+        }
+    }
+}
