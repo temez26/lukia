@@ -20,11 +20,13 @@ import io.lukia.core.presentation.displayName
 import io.lukia.core.presentation.languageName
 import io.lukia.features.library.presentation.LibraryFacet
 import io.lukia.features.library.presentation.LibraryFacets
+import io.lukia.features.library.presentation.LibraryLayout
 import io.lukia.features.library.presentation.LibraryQuery
 import io.lukia.features.library.presentation.LibrarySort
 import io.lukia.features.library.presentation.OpenMenu
 import io.lukia.shared.presentation.components.AnchoredMenu
 import io.lukia.shared.presentation.components.HeartGlyph
+import io.lukia.shared.presentation.components.LayoutGlyph
 import io.lukia.shared.presentation.components.LukiaChip
 import io.lukia.shared.presentation.components.MenuRow
 import io.lukia.shared.presentation.components.MenuSeparator
@@ -61,6 +63,8 @@ internal fun LibraryFilterBar(
     onQueryChange: (LibraryQuery) -> Unit,
     openMenu: OpenMenu?,
     onOpenMenuChange: (OpenMenu?) -> Unit,
+    layout: LibraryLayout,
+    onLayoutChange: (LibraryLayout) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -134,6 +138,13 @@ internal fun LibraryFilterBar(
         SortChip(
             sort = query.sort,
             onSortChange = { onQueryChange(query.copy(sort = it)) },
+            openMenu = openMenu,
+            onOpenMenuChange = onOpenMenuChange,
+        )
+
+        LayoutChip(
+            layout = layout,
+            onLayoutChange = onLayoutChange,
             openMenu = openMenu,
             onOpenMenuChange = onOpenMenuChange,
         )
@@ -275,6 +286,44 @@ private fun ChipMenu(
             ) {
                 content(dismiss)
             }
+        }
+    }
+}
+
+/**
+ * Covers or rows, chosen the way an order is chosen - beside it, and marked the
+ * same way.
+ *
+ * Never filled in, for the same reason [SortChip] is not: a shelf is always laid
+ * out somehow, so a layout is not a narrowing of it, and a chip permanently lit
+ * beside the filters that are actually on would say the opposite.
+ */
+@Composable
+private fun LayoutChip(
+    layout: LibraryLayout,
+    onLayoutChange: (LibraryLayout) -> Unit,
+    openMenu: OpenMenu?,
+    onOpenMenuChange: (OpenMenu?) -> Unit,
+) {
+    ChipMenu(
+        facet = LibraryFacet.Layout,
+        label = layout.label,
+        selected = false,
+        icon = { tint, glyph -> LayoutGlyph(tint = tint, list = layout == LibraryLayout.List, modifier = glyph) },
+        openMenu = openMenu,
+        onOpenMenuChange = onOpenMenuChange,
+    ) { dismiss ->
+        LibraryLayout.entries.forEachIndexed { index, option ->
+            if (index > 0) MenuSeparator()
+
+            MenuRow(
+                label = option.label,
+                selected = option == layout,
+                onClick = {
+                    dismiss()
+                    onLayoutChange(option)
+                },
+            )
         }
     }
 }

@@ -13,4 +13,18 @@ data class OutlineEntry(
     val pageIndex: Int,
     /** 0 for a top-level chapter, 1 for a section inside it, and so on. */
     val level: Int,
+    /**
+     * How far into that part the entry actually begins, for a document the
+     * reader lays out itself.
+     *
+     * A reflowable book names its chapters by file and its sections by an anchor
+     * inside one - so a chapter of forty sections is forty entries that all
+     * resolve to the same file. Without this they would all be the same
+     * destination, and a contents panel of forty rows that do the same thing is
+     * a panel that has parsed the book and then thrown the answer away.
+     *
+     * Zero, and ignored, for a document that carries its own pages: a PDF's
+     * outline points at a page, and there is nothing finer to say.
+     */
+    val blockIndex: Int = 0,
 )

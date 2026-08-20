@@ -34,6 +34,7 @@ import io.lukia.features.library.presentation.ImportProgress
 import io.lukia.features.library.presentation.LibraryBook
 import io.lukia.features.library.presentation.LibraryFacets
 import io.lukia.features.library.presentation.LibraryQuery
+import io.lukia.features.library.presentation.LibraryShelfUi
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.OpenMenu
 import io.lukia.features.library.presentation.components.LibraryNavBar
@@ -119,6 +120,7 @@ fun LibraryScreen(
             },
             onToggleFavorite = viewModel::toggleFavorite,
             onRefresh = viewModel::refreshDocument,
+            shelf = rememberShelfUi(viewModel),
             onDelete = viewModel::deleteDocument,
             onRetry = viewModel::refresh,
             isImporting = isImporting,
@@ -176,6 +178,8 @@ fun LibraryContent(
      * [books], which already carries each book's position.
      */
     readingProgress: Map<String, ReadingProgress> = emptyMap(),
+    /** How the shelf is laid out, what is picked off it, and what can be done to that. */
+    shelf: LibraryShelfUi = LibraryShelfUi.None,
 ) {
     val dimens = LocalLukiaDimens.current
     val reveal = rememberLaunchReveal()
@@ -313,6 +317,11 @@ fun LibraryContent(
                                 onImport = onImport,
                                 onImportFolder = onImportFolder,
                                 modifier = Modifier.fillMaxSize(),
+                                layout = shelf.layout,
+                                onLayoutChange = shelf.onLayoutChange,
+                                selection = shelf.selection,
+                                onStartSelecting = shelf.onStart,
+                                onToggle = shelf.onToggle,
                             )
                         }
                     }
@@ -320,18 +329,27 @@ fun LibraryContent(
             }
 
             // Above the grid it floats over, below the menus and their scrims.
-            LibraryNavBar(
-                collapsedProgress = collapsedProgress,
-                query = query.search,
-                onQueryChange = { onQueryChange(query.copy(search = it)) },
-                searchableCount = books.size,
-                menuExpanded = openMenu == OpenMenu.Bar,
-                onMenuExpandedChange = { openMenu = if (it) OpenMenu.Bar else null },
-                onImport = onImport,
-                onImportFolder = onImportFolder,
-                onSettings = onSettings,
-                modifier = Modifier.align(Alignment.TopCenter),
-            )
+            //
+            // One or the other, never both: searching and selecting are answers
+            // to different questions, and a shelf is only ever being asked one
+            // of them - see LibrarySelectionBar.
+            if (shelf.active) {
+                LibrarySelectionSurface(ui = shelf, books = books)
+            } else {
+                LibraryNavBar(
+                    collapsedProgress = collapsedProgress,
+                    query = query.search,
+                    onQueryChange = { onQueryChange(query.copy(search = it)) },
+                    searchableCount = books.size,
+                    menuExpanded = openMenu == OpenMenu.Bar,
+                    onMenuExpandedChange = { openMenu = if (it) OpenMenu.Bar else null },
+                    onImport = onImport,
+                    onImportFolder = onImportFolder,
+                    shelf = shelf,
+                    onSettings = onSettings,
+                    modifier = Modifier.align(Alignment.TopCenter),
+                )
+            }
 
             // Every menu on this screen is a non-focusable popup drawn above this
             // layer, so the press that dismisses one has to be caught here.

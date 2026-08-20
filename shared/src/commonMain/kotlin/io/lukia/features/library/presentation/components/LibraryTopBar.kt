@@ -21,7 +21,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.lukia.features.library.presentation.LibraryShelfUi
+import io.lukia.shared.presentation.components.AlertGlyph
 import io.lukia.shared.presentation.components.AnchoredMenu
+import io.lukia.shared.presentation.components.CheckGlyph
+import io.lukia.shared.presentation.components.CopyGlyph
 import io.lukia.shared.presentation.components.EllipsisGlyph
 import io.lukia.shared.presentation.components.FolderGlyph
 import io.lukia.shared.presentation.components.GearGlyph
@@ -97,6 +101,8 @@ internal fun LibraryNavBar(
     onMenuExpandedChange: (Boolean) -> Unit,
     onImport: () -> Unit,
     onImportFolder: () -> Unit,
+    /** How the shelf is worked with, which is what this bar's menu offers. */
+    shelf: LibraryShelfUi,
     onSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -168,6 +174,7 @@ internal fun LibraryNavBar(
                     onDismissRequest = { onMenuExpandedChange(false) },
                     onImport = onImport,
                     onImportFolder = onImportFolder,
+                    shelf = shelf,
                     onSettings = onSettings,
                 )
             }
@@ -268,6 +275,7 @@ private fun LibraryMenu(
     onDismissRequest: () -> Unit,
     onImport: () -> Unit,
     onImportFolder: () -> Unit,
+    shelf: LibraryShelfUi,
     onSettings: () -> Unit,
 ) {
     AnchoredMenu(
@@ -282,6 +290,21 @@ private fun LibraryMenu(
 
         MenuSeparator()
 
+        // Also here, and not only on a book: reaching a shelf-wide mode by
+        // holding down one particular book is a way in nobody finds by looking.
+        MenuRow(
+            label = "Select Books",
+            icon = { tint, glyph -> CheckGlyph(tint = tint, modifier = glyph) },
+            onClick = {
+                onDismissRequest()
+                shelf.onStart()
+            },
+        )
+
+        MenuSeparator()
+
+        UpkeepMenuRows(shelf = shelf, onDismissRequest = onDismissRequest)
+
         MenuRow(
             label = "Settings",
             icon = { tint, glyph -> GearGlyph(tint = tint, modifier = glyph) },
@@ -290,5 +313,47 @@ private fun LibraryMenu(
                 onSettings()
             },
         )
+    }
+}
+
+/**
+ * What is worth tidying on the shelf, offered only where there is any.
+ *
+ * The count is on the row rather than behind it, so the menu answers "is my
+ * library in a mess" without anything being pressed - and so a row that would
+ * find nothing is never there to be pressed and do nothing. Both lead to the
+ * books themselves, ticked and waiting to be looked at, rather than to a report.
+ */
+@Composable
+private fun UpkeepMenuRows(
+    shelf: LibraryShelfUi,
+    onDismissRequest: () -> Unit,
+) {
+    val upkeep = shelf.upkeep
+
+    if (upkeep.missing.isNotEmpty()) {
+        MenuRow(
+            label = "Missing Files (${upkeep.missing.size})",
+            icon = { tint, glyph -> AlertGlyph(tint = tint, modifier = glyph) },
+            onClick = {
+                onDismissRequest()
+                shelf.onSelectMissing()
+            },
+        )
+
+        MenuSeparator()
+    }
+
+    if (upkeep.duplicates.isNotEmpty()) {
+        MenuRow(
+            label = "Duplicates (${upkeep.duplicates.size})",
+            icon = { tint, glyph -> CopyGlyph(tint = tint, modifier = glyph) },
+            onClick = {
+                onDismissRequest()
+                shelf.onSelectDuplicates()
+            },
+        )
+
+        MenuSeparator()
     }
 }

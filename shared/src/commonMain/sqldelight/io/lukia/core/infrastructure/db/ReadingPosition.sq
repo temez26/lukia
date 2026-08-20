@@ -7,6 +7,12 @@
 -- `pageCount` is stored beside the page so that how far through a book someone
 -- is can be answered without opening it.
 --
+-- The pair means something together and neither half means much alone. For a
+-- PDF they are pages the file has. For a reflowable book they are pages the
+-- reader set, in the window and at the type size it was last read at - so they
+-- are written and replaced together, and a book re-read at a different size
+-- stores a different count for the same place in it.
+--
 -- Not a foreign key on `document`, which would tie this to a table it has no
 -- reason to be locked to - a position can be stored for a book the library was
 -- never told about. Removing a book clears its position all the same; that is

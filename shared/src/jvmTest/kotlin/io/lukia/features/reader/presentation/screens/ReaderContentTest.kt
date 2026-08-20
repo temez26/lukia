@@ -14,6 +14,7 @@ import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.runComposeUiTest
 import io.lukia.features.reader.domain.ReaderSettings
+import io.lukia.features.reader.domain.ReadingProgress
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -30,14 +31,14 @@ class ReaderContentTest {
     /** Coming back to a book means coming back to the page, not to the cover. */
     @Test
     fun theBookOpensWhereItWasLeftOff() = runComposeUiTest {
-        setReader(pageCount = 348, initialPage = 119)
+        setReader(pageCount = 348, initialPosition = ReadingProgress(pageIndex = 119, pageCount = 348))
 
         onNodeWithText("120 / 348").assertExists()
     }
 
     @Test
     fun aBookWithNoStoredPositionOpensAtTheStart() = runComposeUiTest {
-        setReader(pageCount = 348, initialPage = 0)
+        setReader(pageCount = 348, initialPosition = ReadingProgress(pageIndex = 0, pageCount = 348))
 
         onNodeWithText("1 / 348").assertExists()
     }
@@ -46,7 +47,7 @@ class ReaderContentTest {
     @Test
     fun theSettledPageIsReported() = runComposeUiTest {
         val settled = mutableListOf<Int>()
-        setReader(pageCount = 348, onPageSettled = { settled += it })
+        setReader(pageCount = 348, onPageSettled = { page, _ -> settled += page })
 
         onNode(hasScrollToIndexAction()).performScrollToIndex(11)
         waitForIdle()

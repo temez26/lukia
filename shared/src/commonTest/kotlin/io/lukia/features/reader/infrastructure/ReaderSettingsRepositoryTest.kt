@@ -1,11 +1,13 @@
 package io.lukia.features.reader.infrastructure
 
 import io.lukia.core.domain.FakeSettingsStore
+import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.domain.LineSpacing
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.domain.ReaderTypeface
 import io.lukia.features.reader.domain.ReadingWidth
+import io.lukia.features.reader.domain.TextAlignment
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -110,5 +112,50 @@ class ReaderSettingsRepositoryTest {
         repository.update(ReaderSettings(theme = ReaderTheme.Dark))
 
         assertEquals(writesAfterFirstChange, store.writeCount)
+    }
+
+    @Test
+    fun theChosenImageSizeIsReadBack() {
+        val store = FakeSettingsStore()
+
+        ReaderSettingsRepository(store).update(ReaderSettings(figureSize = FigureSize.Fill))
+
+        assertEquals(FigureSize.Fill, ReaderSettingsRepository(store).settings.value.figureSize)
+    }
+
+    /** One key that cannot be read back must not reset the rest of the reader. */
+    @Test
+    fun anImageSizeThatCannotBeReadBackFallsBackToItsDefault() {
+        val store = FakeSettingsStore()
+        ReaderSettingsRepository(store).update(ReaderSettings(typeface = ReaderTypeface.Serif))
+        store.putString("reader.figureSize", "Enormous")
+
+        val settings = ReaderSettingsRepository(store).settings.value
+
+        assertEquals(FigureSize.Normal, settings.figureSize)
+        assertEquals(ReaderTypeface.Serif, settings.typeface)
+    }
+
+    @Test
+    fun theChosenAlignmentIsReadBack() {
+        val store = FakeSettingsStore()
+
+        ReaderSettingsRepository(store).update(
+            ReaderSettings(alignment = TextAlignment.Justified),
+        )
+
+        assertEquals(
+            TextAlignment.Justified,
+            ReaderSettingsRepository(store).settings.value.alignment,
+        )
+    }
+
+    /** A ragged right edge is easier to read on a narrow column, so it leads. */
+    @Test
+    fun aBookOpensRagged() {
+        assertEquals(
+            TextAlignment.Ragged,
+            ReaderSettingsRepository(FakeSettingsStore()).settings.value.alignment,
+        )
     }
 }

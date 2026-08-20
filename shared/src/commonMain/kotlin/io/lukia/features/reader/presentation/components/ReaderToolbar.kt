@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -26,7 +27,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
-import io.lukia.features.reader.domain.ReadingUnit
+import io.lukia.features.reader.domain.OutlineEntry
+import io.lukia.features.reader.presentation.currentEntryIndex
 import io.lukia.shared.presentation.components.BackChevron
 import io.lukia.shared.presentation.components.DisclosureChevron
 import io.lukia.shared.presentation.components.GlassSurface
@@ -158,12 +160,21 @@ internal fun ReaderToolbar(
 @Composable
 internal fun PageIndicatorButton(
     listState: LazyListState,
-    unitCount: Int,
-    unit: ReadingUnit,
+    pageCount: Int,
+    /** The book's chapters, so the bar can say which one the page is in. */
+    chapters: List<OutlineEntry>,
     onClick: () -> Unit,
 ) {
     val current by remember(listState) {
         derivedStateOf { listState.firstVisibleItemIndex + 1 }
+    }
+
+    // Named as well as numbered: "page 42 of 380" says how far in, and the
+    // chapter says where. Read from the outline rather than carried on the page,
+    // because a chapter is a stretch of pages and only the entries know where
+    // one stretch ends and the next begins.
+    val chapter by remember(chapters) {
+        derivedStateOf { chapters.getOrNull(currentEntryIndex(chapters, current - 1))?.title }
     }
 
     val interactionSource = remember { MutableInteractionSource() }
@@ -194,14 +205,14 @@ internal fun PageIndicatorButton(
                 // Deliberately not a live region: this changes on every page, and
                 // announcing each one would talk over a reader scrolling through a
                 // long book. The pages themselves carry the position instead.
-                .semantics { contentDescription = "${unit.singular} $current of $unitCount" },
+                .semantics {
+                    contentDescription = listOfNotNull(
+                        chapter,
+                        "Page $current of $pageCount",
+                    ).joinToString(separator = ". ")
+                },
         ) {
-            Text(
-                text = "$current / $unitCount",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
+            PageIndicatorLabel(chapter = chapter, current = current, pageCount = pageCount)
 
             DisclosureChevron(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -211,4 +222,41 @@ internal fun PageIndicatorButton(
             )
         }
     }
+}
+
+/**
+ * What the indicator says: the chapter in view, then how far into the book it is.
+ *
+ * The chapter gives way first. It is the part that can run to a whole line of a
+ * title, and the part a reader can do without - the numbers are what the bar is
+ * for, and they never shrink.
+ */
+@Composable
+private fun RowScope.PageIndicatorLabel(chapter: String?, current: Int, pageCount: Int) {
+    if (chapter != null) {
+        Text(
+            text = chapter,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .weight(1f, fill = false)
+                .padding(end = Space.xs),
+        )
+
+        Text(
+            text = "\u00b7",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(end = Space.xs),
+        )
+    }
+
+    Text(
+        text = "$current / $pageCount",
+        style = MaterialTheme.typography.labelMedium,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.onSurface,
+    )
 }

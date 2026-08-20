@@ -9,6 +9,7 @@ import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.click
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.performTouchInput
 import io.lukia.core.domain.BookMetadata
 import io.lukia.core.domain.DocumentInfo
@@ -81,6 +82,17 @@ internal fun ComposeUiTest.setReader(
                 renderPage = { _, _ -> null },
             )
         }
+    }
+
+    // The book is laid out into pages before any of it is drawn, and that pass
+    // runs off the main thread - so there is a moment after the reader appears
+    // when it has no pages in it yet. Waited for by the page rather than by what
+    // is written on it, because half these tests open on a book whose words have
+    // already been replaced by their translations.
+    waitUntil {
+        onAllNodes(hasContentDescription("Page 1 of ", substring = true))
+            .fetchSemanticsNodes()
+            .isNotEmpty()
     }
 }
 

@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.library.presentation.ImportProgress
 import io.lukia.features.library.presentation.LibraryFacets
+import io.lukia.features.library.presentation.LibraryLayout
 import io.lukia.features.library.presentation.LibraryQuery
 import io.lukia.features.library.presentation.OpenMenu
 import io.lukia.shared.presentation.components.LaunchReveal
@@ -67,6 +68,8 @@ internal fun LibraryHeader(
     isImporting: Boolean,
     importProgress: ImportProgress?,
     reveal: LaunchReveal,
+    layout: LibraryLayout,
+    onLayoutChange: (LibraryLayout) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val compact = !isWideWindow
@@ -96,6 +99,8 @@ internal fun LibraryHeader(
         }
 
         LibraryFilterBar(
+            layout = layout,
+            onLayoutChange = onLayoutChange,
             query = query,
             facets = facets,
             onQueryChange = onQueryChange,

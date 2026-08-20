@@ -27,6 +27,25 @@ fun List<TextRun>.plainText(): String = joinToString(separator = "") { it.text }
 fun List<TextRun>.isBlank(): Boolean = all { it.text.isBlank() }
 
 /**
+ * How a book says one of its own paragraphs is set.
+ *
+ * The author's choice rather than the reader's, and about one paragraph rather
+ * than about the book: a dedication, an epigraph, a line of verse, the caption
+ * under a plate. The reader's own setting - see `TextAlignment` - decides
+ * everything a book says nothing about, which is nearly all of it.
+ *
+ * Named after what the markup says rather than after the writing direction,
+ * because that is what it means: a book that asks for `right` is asking for the
+ * right, whichever way it reads.
+ */
+enum class BlockAlignment {
+    Left,
+    Center,
+    Right,
+    Justify,
+}
+
+/**
  * One thing on the page of a reflowable book.
  *
  * A deliberately short list. Everything a book actually needs to read correctly
@@ -38,18 +57,40 @@ fun List<TextRun>.isBlank(): Boolean = all { it.text.isBlank() }
  */
 sealed interface TextBlock {
 
-    data class Heading(val text: List<TextRun>, val level: Int) : TextBlock
+    /**
+     * How the book asked for this block to be set, or null where it said
+     * nothing - which is when the reader's own setting decides. Only the blocks
+     * made of prose can carry one: a rule and a plate have no lines to align,
+     * and preformatted text is the one thing whose spacing is content.
+     */
+    val alignment: BlockAlignment? get() = null
 
-    data class Paragraph(val text: List<TextRun>) : TextBlock
+    data class Heading(
+        val text: List<TextRun>,
+        val level: Int,
+        override val alignment: BlockAlignment? = null,
+    ) : TextBlock
+
+    data class Paragraph(
+        val text: List<TextRun>,
+        override val alignment: BlockAlignment? = null,
+    ) : TextBlock
 
     /**
      * [marker] is the bullet or number as it should be shown, decided by whoever
      * parsed the list - the reader draws what it is given rather than counting,
      * since a list that starts at 4 is a thing books do.
      */
-    data class ListItem(val text: List<TextRun>, val marker: String) : TextBlock
+    data class ListItem(
+        val text: List<TextRun>,
+        val marker: String,
+        override val alignment: BlockAlignment? = null,
+    ) : TextBlock
 
-    data class Quote(val text: List<TextRun>) : TextBlock
+    data class Quote(
+        val text: List<TextRun>,
+        override val alignment: BlockAlignment? = null,
+    ) : TextBlock
 
     /** Preformatted: whitespace and line breaks are content, not layout. */
     data class Code(val text: String) : TextBlock
@@ -71,15 +112,17 @@ sealed interface TextBlock {
 }
 
 /**
- * One item of a reflowable book, as the reader lists it: a chapter, or a slice
- * of one long unbroken document.
+ * One division of a reflowable book: a chapter, or a slice of one long unbroken
+ * document.
  *
- * Sections are what a reflowable book has instead of pages, and the reader
- * addresses them exactly as it addresses a PDF's pages - the scrubber, the
- * remembered position and the table of contents all index into this list. That
- * is why a book is split into them at all: a single item holding a whole novel
- * would be laid out in full every time it was drawn, and neither scrolling nor
- * the position of the scrollbar would mean anything.
+ * What the book states about itself, not what the reader shows. The reader shows
+ * pages, and a page is cut from this run of blocks to fit the window it is being
+ * read in - so a section may be a page, or twenty, or share one with the section
+ * after it. Nothing outside the layout addresses a book by section: the
+ * scrubber, the remembered position and the table of contents all count pages.
+ *
+ * A section is still where a chapter begins, which is why pages are never cut
+ * across one that names itself - a chapter opens a page of its own.
  *
  * [title] is what the section is called where it names itself, which is what
  * lets a book with no table of contents of its own still offer one.

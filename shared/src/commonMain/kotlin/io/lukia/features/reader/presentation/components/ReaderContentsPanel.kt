@@ -27,7 +27,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.reader.domain.ReaderOutline
-import io.lukia.features.reader.domain.ReadingUnit
 import io.lukia.shared.presentation.components.DismissOnBack
 import io.lukia.shared.presentation.components.GlassSurface
 import io.lukia.shared.presentation.components.GlassTone
@@ -70,8 +69,7 @@ private val ScrubberHeight: Dp = 28.dp
 internal fun ReaderContentsPanel(
     expanded: Boolean,
     listState: LazyListState,
-    unitCount: Int,
-    unit: ReadingUnit,
+    pageCount: Int,
     outline: ReaderOutline,
     onGoToPage: (pageIndex: Int) -> Unit,
     onDismissRequest: () -> Unit,
@@ -105,8 +103,7 @@ internal fun ReaderContentsPanel(
         ) {
             PositionScrubber(
                 current = currentPage,
-                unitCount = unitCount,
-                unit = unit,
+                pageCount = pageCount,
                 inset = inset,
                 onGoTo = onGoToPage,
             )
@@ -120,7 +117,6 @@ internal fun ReaderContentsPanel(
             Chapters(
                 outline = outline,
                 currentPage = currentPage,
-                unit = unit,
                 inset = inset,
                 listMaxHeight = if (wide) WideListMaxHeight else CompactListMaxHeight,
                 onGoToPage = {
@@ -143,8 +139,7 @@ internal fun ReaderContentsPanel(
 @Composable
 private fun PositionScrubber(
     current: Int,
-    unitCount: Int,
-    unit: ReadingUnit,
+    pageCount: Int,
     inset: Dp,
     onGoTo: (index: Int) -> Unit,
 ) {
@@ -163,7 +158,7 @@ private fun PositionScrubber(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
-                text = "${unit.singular} $shown of $unitCount",
+                text = "Page $shown of $pageCount",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -171,16 +166,16 @@ private fun PositionScrubber(
             // How far in, which the page number alone does not say: page 120 is
             // a different place in a pamphlet than in a doorstop.
             Text(
-                text = "${percentThrough(shown, unitCount)}%",
+                text = "${percentThrough(shown, pageCount)}%",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
 
-        if (unitCount > 1) {
+        if (pageCount > 1) {
             Slider(
                 value = shown.toFloat(),
-                valueRange = 1f..unitCount.toFloat(),
+                valueRange = 1f..pageCount.toFloat(),
                 onValueChange = { dragged = it.roundToInt() },
                 onValueChangeFinished = { dragged?.let { position -> onGoTo(position - 1) } },
                 // Material's own track is a thick expressive bar in its default
@@ -196,13 +191,13 @@ private fun PositionScrubber(
                     .height(ScrubberHeight)
                     .semantics {
                         contentDescription =
-                            "Go to ${unit.singular.lowercase()}. " +
-                            "${unit.singular} $shown of $unitCount"
+                            "Go to page. " +
+                            "Page $shown of $pageCount"
                     },
             )
         }
     }
 }
 
-private fun percentThrough(position: Int, unitCount: Int): Int =
-    if (unitCount <= 1) 100 else (position * 100f / unitCount).roundToInt()
+private fun percentThrough(position: Int, pageCount: Int): Int =
+    if (pageCount <= 1) 100 else (position * 100f / pageCount).roundToInt()

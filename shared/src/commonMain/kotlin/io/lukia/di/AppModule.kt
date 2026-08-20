@@ -11,6 +11,7 @@ import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.domain.LibraryRepository
+import io.lukia.features.library.infrastructure.LibrarySettingsRepository
 import io.lukia.features.library.infrastructure.SqlLibraryRepository
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.reader.application.OpenDocumentUseCase
@@ -71,7 +72,7 @@ val commonModule = module {
     }
 
     viewModel {
-        LibraryViewModel(get(), get(), get(), get(), get(), get(), get())
+        LibraryViewModel(get(), get(), get(), get(), get(), get(), get(), get())
     }
 
     single {
@@ -102,6 +103,12 @@ val commonModule = module {
     // made while reading is already in place the next time a book is opened.
     single {
         ReaderSettingsRepository(get())
+    }
+
+    // Likewise: how the shelf is laid out is remembered between sessions, and
+    // read back by whichever screen asks first.
+    single {
+        LibrarySettingsRepository(get())
     }
 
     // Likewise a single: the app's theme is read at the root, so every screen

@@ -21,11 +21,13 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.domain.LineSpacing
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.domain.ReaderTypeface
 import io.lukia.features.reader.domain.ReadingWidth
+import io.lukia.features.reader.domain.TextAlignment
 import io.lukia.shared.presentation.components.DismissOnBack
 import io.lukia.shared.presentation.components.GlassSurface
 import io.lukia.shared.presentation.components.GlassTone
@@ -134,7 +136,7 @@ internal fun ReaderSettingsPanel(
             )
 
             SectionHeading(
-                label = "Text",
+                label = "Text and images",
                 wide = wide,
                 inset = inset,
                 enabled = typographyEnabled,
@@ -144,8 +146,8 @@ internal fun ReaderSettingsPanel(
             // whether by eye or by screen reader.
             if (!typographyEnabled) {
                 Text(
-                    text = "Text settings apply to reflowable books - this one " +
-                        "carries its own fixed layout.",
+                    text = "These apply to reflowable books - this one carries " +
+                        "its own fixed layout.",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(
@@ -186,6 +188,21 @@ internal fun ReaderSettingsPanel(
             }
 
             SettingGroup(
+                label = "Alignment",
+                wide = wide,
+                inset = inset,
+                enabled = typographyEnabled,
+            ) {
+                SegmentedControl(
+                    options = TextAlignment.entries,
+                    selected = settings.alignment,
+                    label = { it.name },
+                    enabled = typographyEnabled,
+                    onSelect = { onSettingsChange(settings.copy(alignment = it)) },
+                )
+            }
+
+            SettingGroup(
                 label = "Typeface",
                 wide = wide,
                 inset = inset,
@@ -197,6 +214,23 @@ internal fun ReaderSettingsPanel(
                     label = { if (it == ReaderTypeface.Serif) "Serif" else "Sans" },
                     enabled = typographyEnabled,
                     onSelect = { onSettingsChange(settings.copy(typeface = it)) },
+                )
+            }
+
+            // Last of the reflowable settings: it is the one somebody reaches
+            // for after the type is comfortable and a diagram still is not.
+            SettingGroup(
+                label = "Image size",
+                wide = wide,
+                inset = inset,
+                enabled = typographyEnabled,
+            ) {
+                SegmentedControl(
+                    options = FigureSize.entries,
+                    selected = settings.figureSize,
+                    label = { it.name },
+                    enabled = typographyEnabled,
+                    onSelect = { onSettingsChange(settings.copy(figureSize = it)) },
                 )
             }
 

@@ -47,7 +47,7 @@ import io.lukia.features.translate.presentation.shownText
  * at.
  *
  * The sentences, the words and the set text are all remembered against what they
- * are built from, because a section is hundreds of these and none of the
+ * are built from, because a book is thousands of these and none of the
  * splitting or the styling should happen again every time anything on the page
  * changes.
  *
@@ -130,7 +130,7 @@ internal fun ProseText(
 
     // Read at the moment of the tap rather than captured when the gesture was
     // set up, so the handler is not torn down and rebuilt every time anything
-    // in the section recomposes.
+    // on the page recomposes.
     val currentDrawn by rememberUpdatedState(drawn)
     val currentActions by rememberUpdatedState(actions)
 

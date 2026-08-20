@@ -5,7 +5,6 @@ import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.presentation.displayTitle
 import io.lukia.core.presentation.languageName
 import io.lukia.features.bookdetail.application.BookDetails
-import io.lukia.features.reader.domain.ReadingUnit
 
 /**
  * What to call the book.
@@ -66,33 +65,34 @@ fun BookMetadata.languageName(): String? = languageName(language)
  * how far through a book someone is without opening it. A book nobody has opened
  * therefore has no length to show, and showing nothing is the honest answer -
  * the alternative is opening every book in the library to fill in a row.
+ *
+ * Pages either way, and the same pages the reader itself counts. A PDF's were
+ * set when the file was made; a reflowable book's are set by the reader, so this
+ * is how long the book was in the window it was last read in rather than a
+ * property of the file - which is also why it changes when the type size does.
  */
 fun BookDetails.lengthLabel(): String? {
     val count = progress?.pageCount?.takeIf { it > 0 } ?: return null
 
-    // A PDF has pages; a reflowable book has sections, and calling those pages
-    // would promise a correspondence to a printed book that reflowed text does
-    // not have. The unit is not stored, so it is inferred from the format the
-    // same way the reader picks it.
-    val unit = if (document.type == io.lukia.core.domain.DocumentType.PDF) {
-        ReadingUnit.Page
-    } else {
-        ReadingUnit.Section
-    }
-
-    return if (count == 1) "1 ${unit.singular.lowercase()}" else "$count ${unit.plural}"
+    return if (count == 1) "1 page" else "$count pages"
 }
 
 /**
  * Where the reader is in the book, in a sentence.
  *
- * Three states rather than a percentage in every case. A book nobody has opened
- * has no position to report and saying "0%" would suggest it had been started
- * and abandoned; a book that has been finished is worth saying so about outright.
+ * Three states rather than a position in every case. A book nobody has opened
+ * has no position to report and saying "page 1" would suggest it had been
+ * started; a book that has been finished is worth saying so about outright.
+ *
+ * A book in progress is named by its page rather than by a percentage, because
+ * the percentage is already on the cover beside this - see
+ * `ReadingProgressOverlay` - and because the page is what the reader will be
+ * shown the moment they open the book. Two screens saying the same thing about
+ * the same book should say it the same way.
  */
 fun BookDetails.progressLabel(): String = when {
     isFinished -> "Finished"
-    percentRead != null -> "$percentRead% read"
+    progress?.pageNumber != null -> "Page ${progress.pageNumber} of ${progress.pageCount}"
     else -> "Not started"
 }
 

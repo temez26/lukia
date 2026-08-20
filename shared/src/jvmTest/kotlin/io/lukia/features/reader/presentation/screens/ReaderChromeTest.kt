@@ -203,11 +203,12 @@ class ReaderChromeTest {
     }
 
     /**
-     * A PDF's type was set when the file was made, so the text controls have
-     * nothing to act on. They are shown and disabled rather than hidden.
+     * A PDF's type and pictures were both placed when the file was made, so the
+     * controls for them have nothing to act on. They are shown and disabled
+     * rather than hidden.
      */
     @Test
-    fun textSettingsAreDisabledForAFixedLayoutDocument() = runComposeUiTest {
+    fun textAndImageSettingsAreDisabledForAFixedLayoutDocument() = runComposeUiTest {
         var changed: ReaderSettings? = null
         setReader(pageCount = 10, onSettingsChange = { changed = it })
 
@@ -216,9 +217,30 @@ class ReaderChromeTest {
         onNode(hasContentDescription("Increase text size") and hasClickAction())
             .assertIsNotEnabled()
         onNodeWithText(
-            "Text settings apply to reflowable books - this one " +
-                "carries its own fixed layout.",
+            "These apply to reflowable books - this one carries " +
+                "its own fixed layout.",
         ).assertExists()
         assertNull(changed)
+    }
+
+    /** How large the pictures are is a setting somebody has to be able to find. */
+    @Test
+    fun theSettingsPanelOffersAnImageSize() = runComposeUiTest {
+        setReader(pageCount = 10)
+
+        onNodeWithContentDescription("Reading settings").performClick()
+
+        onNodeWithText("Image size").assertExists()
+        onNodeWithText("Fill").assertExists()
+    }
+
+    @Test
+    fun theSettingsPanelOffersAnAlignment() = runComposeUiTest {
+        setReader(pageCount = 10)
+
+        onNodeWithContentDescription("Reading settings").performClick()
+
+        onNodeWithText("Alignment").assertExists()
+        onNodeWithText("Justified").assertExists()
     }
 }

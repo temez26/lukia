@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 @Composable
 internal fun readerCommands(
     listState: LazyListState,
-    unitCount: Int,
+    pageCount: Int,
     reflowable: Boolean,
     settings: ReaderSettings,
     onSettingsChange: (ReaderSettings) -> Unit,
@@ -38,11 +38,11 @@ internal fun readerCommands(
     val scope = rememberCoroutineScope()
 
     return { command ->
-        val lastPage = unitCount - 1
+        val lastPage = pageCount - 1
         val page = listState.firstVisibleItemIndex
 
         fun goTo(index: Int) {
-            if (unitCount > 0) {
+            if (pageCount > 0) {
                 scope.launch { listState.animateScrollToItem(index.coerceIn(0, lastPage)) }
             }
         }

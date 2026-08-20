@@ -2,11 +2,13 @@ package io.lukia.features.reader.infrastructure
 
 import io.lukia.core.domain.SettingsStore
 import io.lukia.core.infrastructure.readEnum
+import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.domain.LineSpacing
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.domain.ReaderTypeface
 import io.lukia.features.reader.domain.ReadingWidth
+import io.lukia.features.reader.domain.TextAlignment
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -49,6 +51,8 @@ class ReaderSettingsRepository(
             lineSpacing = store.readEnum(KEY_LINE_SPACING, LineSpacing.entries, defaults.lineSpacing),
             pageScale = readPageScale(defaults),
             typeface = store.readEnum(KEY_TYPEFACE, ReaderTypeface.entries, defaults.typeface),
+            figureSize = store.readEnum(KEY_FIGURE_SIZE, FigureSize.entries, defaults.figureSize),
+            alignment = store.readEnum(KEY_ALIGNMENT, TextAlignment.entries, defaults.alignment),
         )
     }
 
@@ -74,6 +78,8 @@ class ReaderSettingsRepository(
         store.putString(KEY_LINE_SPACING, settings.lineSpacing.name)
         store.putString(KEY_PAGE_SCALE, settings.pageScale.toString())
         store.putString(KEY_TYPEFACE, settings.typeface.name)
+        store.putString(KEY_FIGURE_SIZE, settings.figureSize.name)
+        store.putString(KEY_ALIGNMENT, settings.alignment.name)
     }
 
     private companion object {
@@ -85,5 +91,7 @@ class ReaderSettingsRepository(
         /** Superseded by [KEY_PAGE_SCALE]; still read so a saved choice survives. */
         const val KEY_READING_WIDTH = "reader.readingWidth"
         const val KEY_TYPEFACE = "reader.typeface"
+        const val KEY_FIGURE_SIZE = "reader.figureSize"
+        const val KEY_ALIGNMENT = "reader.alignment"
     }
 }

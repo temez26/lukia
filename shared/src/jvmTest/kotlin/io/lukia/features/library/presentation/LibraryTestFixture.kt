@@ -3,6 +3,7 @@ package io.lukia.features.library.presentation
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.FakeDocumentWorkspace
+import io.lukia.core.domain.FakeSettingsStore
 import io.lukia.core.domain.PickedDocument
 import io.lukia.core.domain.PickedFolder
 import io.lukia.core.domain.TestDocuments
@@ -17,6 +18,7 @@ import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.domain.LibraryRepository
+import io.lukia.features.library.infrastructure.LibrarySettingsRepository
 import io.lukia.features.reader.domain.FakeReadingProgressRepository
 import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.features.reader.domain.ReadingProgressRepository
@@ -91,6 +93,7 @@ internal fun createViewModel(
             FakeReadingProgressRepository(),
         ),
         readingProgressRepository = readingProgress,
+        librarySettingsRepository = LibrarySettingsRepository(FakeSettingsStore()),
         // The narrowing runs off the main thread in production; pinning it
         // here means what the grid would show can be read straight after the
         // call that changed it.

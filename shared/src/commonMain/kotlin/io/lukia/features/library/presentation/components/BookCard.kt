@@ -9,6 +9,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,11 +20,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.zIndex
@@ -65,6 +68,9 @@ import io.lukia.shared.presentation.theme.Space
  * which is what used to make a hovered card look as though its shadow had been
  * cut off square, more visibly the further it lifted.
  */
+/** Big enough to be a target on a phone, small enough not to sit on the artwork. */
+private val SelectionMarkSize: Dp = 24.dp
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun BookCard(
@@ -79,24 +85,37 @@ internal fun BookCard(
     onRefresh: () -> Unit,
     onDelete: () -> Unit,
     onShowDetails: () -> Unit,
+    onSelectBooks: () -> Unit,
     reveal: LaunchReveal,
     revealIndex: Int,
     modifier: Modifier = Modifier,
+    /** How this card takes part in selection, or null when nothing is being selected. */
+    selection: CardSelection? = null,
 ) {
     val title = document.displayTitle()
     val interactionSource = remember { MutableInteractionSource() }
     val hover = rememberHoverFraction(interactionSource)
     val coverShape = MaterialTheme.shapes.medium
+    val angle = jiggleAngle(active = selection != null, seed = revealIndex)
 
     Column(
-        modifier = modifier.bookCardGestures(
-            interactionSource = interactionSource,
-            hover = hover,
-            reveal = reveal,
-            revealIndex = revealIndex,
-            onClick = onClick,
-            onMenuRequest = onMenuRequest,
-        ),
+        modifier = modifier
+            .bookCardGestures(
+                interactionSource = interactionSource,
+                hover = hover,
+                reveal = reveal,
+                revealIndex = revealIndex,
+                // While the shelf is being selected from, a press is a tick
+                // rather than a way into the book, and the menu is not offered
+                // at all - the bar above is where the actions are now.
+                onClick = selection?.onToggle ?: onClick,
+                onMenuRequest = if (selection == null) onMenuRequest else selection.onToggle,
+            )
+            // Its own layer rather than folded into the one the gestures use.
+            // That one is shared by hover and press and is there on every card
+            // always; this exists only while a shelf is being selected from, and
+            // costs nothing the rest of the time.
+            .graphicsLayer { rotationZ = angle },
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             BookCover(
@@ -125,38 +144,90 @@ internal fun BookCard(
                 )
             }
 
-            FavoriteBadge(
-                visible = document.isFavorite,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(Space.sm),
-            )
-
-            MenuTrigger(
-                // Any hover at all, so the trigger is on its way in from the
-                // moment the pointer arrives rather than halfway through the
-                // card's own lift.
-                visible = hover > 0f,
-                onClick = onMenuRequest,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(Space.xs),
-            )
-
-            // Anchored here so the popup hangs off the cover's top-end corner
-            // rather than the caption below it.
-            BookActionsMenu(
-                expanded = menuExpanded,
-                isFavorite = document.isFavorite,
+            CoverOverlays(
+                document = document,
+                hover = hover,
+                menuExpanded = menuExpanded,
+                selection = selection,
+                onMenuRequest = onMenuRequest,
+                onMenuDismiss = onMenuDismiss,
                 onToggleFavorite = onToggleFavorite,
                 onRefresh = onRefresh,
                 onDelete = onDelete,
-                onDismissRequest = onMenuDismiss,
                 onShowDetails = onShowDetails,
+                onSelectBooks = onSelectBooks,
             )
         }
 
         BookCardCaption(document = document, title = title)
+    }
+}
+
+/**
+ * What is drawn over a cover: what the book already is, and what can be done to
+ * it from here.
+ *
+ * Apart from the card itself because these are its chrome rather than its
+ * shape - the card is a cover, a caption and how it answers a press, and this is
+ * everything the shelf has hung on it.
+ */
+@Composable
+private fun BoxScope.CoverOverlays(
+    document: DocumentInfo,
+    hover: Float,
+    menuExpanded: Boolean,
+    selection: CardSelection?,
+    onMenuRequest: () -> Unit,
+    onMenuDismiss: () -> Unit,
+    onToggleFavorite: () -> Unit,
+    onRefresh: () -> Unit,
+    onDelete: () -> Unit,
+    onShowDetails: () -> Unit,
+    onSelectBooks: () -> Unit,
+) {
+    FavoriteBadge(
+        visible = document.isFavorite,
+        modifier = Modifier
+            .align(Alignment.TopStart)
+            .padding(Space.sm),
+    )
+
+    if (selection == null) {
+        MenuTrigger(
+            // Any hover at all, so the trigger is on its way in from the
+            // moment the pointer arrives rather than halfway through the
+            // card's own lift.
+            visible = hover > 0f,
+            onClick = onMenuRequest,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(Space.xs),
+        )
+    } else {
+        // Where the menu trigger was: the corner a reader already looks
+        // to for what this card can do.
+        SelectionMark(
+            selected = selection.selected,
+            size = SelectionMarkSize,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(Space.sm),
+        )
+    }
+
+    // Anchored here so the popup hangs off the cover's top-end corner
+    // rather than the caption below it.
+    if (selection == null) {
+        BookActionsMenu(
+            expanded = menuExpanded,
+            isFavorite = document.isFavorite,
+            onToggleFavorite = onToggleFavorite,
+            onRefresh = onRefresh,
+            onDelete = onDelete,
+            onDismissRequest = onMenuDismiss,
+            onShowDetails = onShowDetails,
+            onSelectBooks = onSelectBooks,
+        )
     }
 }
 

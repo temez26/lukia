@@ -1,10 +1,12 @@
 package io.lukia.features.reader.infrastructure.text
 
+import io.lukia.features.reader.domain.BlockAlignment
 import io.lukia.features.reader.domain.Emphasis
 import io.lukia.features.reader.domain.TextBlock
 import io.lukia.features.reader.domain.plainText
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class HtmlBlocksTest {
@@ -169,5 +171,98 @@ class HtmlBlocksTest {
             "first line\nsecond line",
             (blocks.single() as TextBlock.Paragraph).text.plainText(),
         )
+    }
+
+    /**
+     * An id names a place in the chapter, and the place is the block that opens
+     * there - which is what a contents entry pointing into a file has to land on.
+     */
+    @Test
+    fun anIdBelongsToTheBlockThatOpensWhereItIsWritten() {
+        val content = htmlContent(
+            """<p>before</p><section id="two"><h1>Two</h1><p>after</p></section>""",
+        )
+
+        assertEquals(mapOf("two" to 1), content.anchors)
+    }
+
+    @Test
+    fun anIdWithNothingAfterItBelongsToTheLastBlockThereIs() {
+        val content = htmlContent("""<p>only</p><div id="end"></div>""")
+
+        assertEquals(mapOf("end" to 0), content.anchors)
+    }
+
+    /** The blocks alone: what a chapter reads as is what these tests are about. */
+    private fun htmlBlocks(
+        html: String,
+        image: (src: String) -> ByteArray? = { null },
+    ): List<TextBlock> = htmlContent(html, image).blocks
+
+    /**
+     * The `align` attribute is how books have set their dedications, captions
+     * and epigraphs for twenty years, and is by far the more common of the two.
+     */
+    @Test
+    fun aParagraphKeepsTheAlignmentTheBookAskedFor() {
+        val blocks = htmlBlocks(
+            """<p align="center">For my parents.</p><p align="right">- H. M.</p><p>Call me.</p>""",
+        )
+
+        assertEquals(
+            listOf(BlockAlignment.Center, BlockAlignment.Right, null),
+            blocks.map { it.alignment },
+        )
+    }
+
+    /** The modern spelling of the same thing. */
+    @Test
+    fun anInlineTextAlignIsReadTheSameWay() {
+        val blocks = htmlBlocks(
+            """<p style="margin:0; text-align: center; color:red">Centred.</p>""",
+        )
+
+        assertEquals(BlockAlignment.Center, blocks.single().alignment)
+    }
+
+    /**
+     * A paragraph in a centred division is centred without saying so itself,
+     * which is how books set their dedication pages.
+     */
+    @Test
+    fun alignmentIsInheritedFromWhatAParagraphSitsInside() {
+        val blocks = htmlBlocks(
+            """<div align="center"><p>First.</p><p>Second.</p></div><p>After.</p>""",
+        )
+
+        assertEquals(
+            listOf(BlockAlignment.Center, BlockAlignment.Center, null),
+            blocks.map { it.alignment },
+        )
+    }
+
+    /** What a paragraph says about itself beats what it sits inside. */
+    @Test
+    fun aParagraphsOwnAlignmentWinsOverTheOneItInherits() {
+        val blocks = htmlBlocks("""<div align="center"><p align="left">Its own.</p></div>""")
+
+        assertEquals(BlockAlignment.Left, blocks.single().alignment)
+    }
+
+    @Test
+    fun headingsAndQuotationsCarryItToo() {
+        val blocks = htmlBlocks(
+            """<h1 align="center">Part One</h1><blockquote align="right"><p>Quoted.</p></blockquote>""",
+        )
+
+        assertEquals(
+            listOf(BlockAlignment.Center, BlockAlignment.Right),
+            blocks.map { it.alignment },
+        )
+    }
+
+    @Test
+    fun anAlignmentNobodyRecognisesIsNoAlignmentAtAll() {
+        assertNull(htmlBlocks("""<p align="middle">Words.</p>""").single().alignment)
     }
 }

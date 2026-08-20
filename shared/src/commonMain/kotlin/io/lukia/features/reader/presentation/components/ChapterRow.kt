@@ -38,7 +38,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.lukia.features.reader.domain.ReadingUnit
 import io.lukia.features.reader.presentation.ChapterRow
 import io.lukia.shared.presentation.components.DisclosureChevron
 import io.lukia.shared.presentation.components.focusRing
@@ -79,7 +78,6 @@ private val CurrentMarkerWidth: Dp = 3.dp
 @Composable
 internal fun ChapterRowItem(
     row: ChapterRow,
-    unit: ReadingUnit,
     inset: Dp,
     isCurrent: Boolean,
     onToggle: () -> Unit,
@@ -140,7 +138,7 @@ internal fun ChapterRowItem(
             .padding(start = inset + LevelIndent * entry.level, end = inset)
             .semantics {
                 contentDescription =
-                    "${entry.title}, ${unit.singular.lowercase()} ${entry.pageIndex + 1}"
+                    "${entry.title}, page ${entry.pageIndex + 1}"
             },
     ) {
         if (row.hasChildren) {

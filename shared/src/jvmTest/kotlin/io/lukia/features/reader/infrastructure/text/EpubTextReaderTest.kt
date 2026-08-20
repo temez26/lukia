@@ -2,9 +2,6 @@ package io.lukia.features.reader.infrastructure.text
 
 import io.lukia.features.reader.domain.TextBlock
 import io.lukia.features.reader.domain.plainText
-import java.io.ByteArrayOutputStream
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -243,66 +240,139 @@ class EpubTextReaderTest {
         assertTrue(paragraph.text.any { it.emphasis.isNotEmpty() })
     }
 
-    private fun chapter(title: String, body: String): String =
-        "<html><body><h1>$title</h1><p>$body</p></body></html>"
-
     /**
-     * An EPUB with the indirection a real one has: a container naming a package
-     * document, and a package document in a sub-directory so that every href in
-     * the tests has somewhere to be resolved against.
+     * A book names its chapters by file and its sections by an anchor inside
+     * one. Resolved by file alone, every section of a chapter is the same
+     * destination - a contents panel of forty rows that all do the same thing.
      */
-    private fun epub(
-        manifest: String,
-        spine: String,
-        entries: Map<String, Any>,
-    ): ByteArray {
-        val container = """
-            <?xml version="1.0"?>
-            <container xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
-              <rootfiles>
-                <rootfile full-path="OEBPS/content.opf"
-                          media-type="application/oebps-package+xml"/>
-              </rootfiles>
-            </container>
+    @Test
+    fun sectionsInsideOneChapterKeepTheirOwnPlaces() {
+        val nav = """
+            <html xmlns:epub="http://www.idpf.org/2007/ops">
+              <body>
+                <nav epub:type="toc">
+                  <ol>
+                    <li><a href="one.xhtml">Chapter One</a>
+                      <ol>
+                        <li><a href="one.xhtml#middle">The Middle</a></li>
+                        <li><a href="one.xhtml#end">The End</a></li>
+                      </ol>
+                    </li>
+                  </ol>
+                </nav>
+              </body>
+            </html>
         """.trimIndent()
 
-        val opf = """
-            <?xml version="1.0"?>
-            <package xmlns="http://www.idpf.org/2007/opf" version="3.0">
-              <metadata/>
-              <manifest>
-            $manifest
-              </manifest>
-              <spine>
-            $spine
-              </spine>
-            </package>
+        val chapter = """
+            <html><body>
+              <h1>Chapter One</h1>
+              <p>Opening.</p>
+              <h2 id="middle">The Middle</h2>
+              <p>Middling.</p>
+              <h2 id="end">The End</h2>
+              <p>Closing.</p>
+            </body></html>
         """.trimIndent()
 
-        return zip(
-            mapOf(
-                "META-INF/container.xml" to container,
-                "OEBPS/content.opf" to opf,
-            ) + entries,
+        val content = readEpub(
+            epub(
+                manifest = """
+                    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml"
+                          properties="nav"/>
+                    <item id="c1" href="one.xhtml" media-type="application/xhtml+xml"/>
+                """.trimIndent(),
+                spine = """<itemref idref="c1"/>""",
+                entries = mapOf("OEBPS/nav.xhtml" to nav, "OEBPS/one.xhtml" to chapter),
+            ),
+        )
+
+        assertNotNull(content)
+
+        // All in the one section the spine states, but at the blocks they name.
+        assertEquals(
+            listOf(Triple("Chapter One", 0, 0), Triple("The Middle", 0, 2), Triple("The End", 0, 4)),
+            content.outline.orEmpty().map { Triple(it.title, it.pageIndex, it.blockIndex) },
         )
     }
 
-    private fun zip(entries: Map<String, Any>): ByteArray {
-        val output = ByteArrayOutputStream()
+    /** The same, for the older navigation an EPUB 2 carries. */
+    @Test
+    fun theNcxKeepsItsSectionsPlacesToo() {
+        val ncx = """
+            <ncx>
+              <navMap>
+                <navPoint>
+                  <navLabel><text>Chapter One</text></navLabel>
+                  <content src="one.xhtml"/>
+                  <navPoint>
+                    <navLabel><text>The End</text></navLabel>
+                    <content src="one.xhtml#end"/>
+                  </navPoint>
+                </navPoint>
+              </navMap>
+            </ncx>
+        """.trimIndent()
 
-        ZipOutputStream(output).use { stream ->
-            entries.forEach { (name, content) ->
-                stream.putNextEntry(ZipEntry(name))
-                stream.write(
-                    when (content) {
-                        is ByteArray -> content
-                        else -> content.toString().encodeToByteArray()
-                    },
-                )
-                stream.closeEntry()
-            }
-        }
+        val content = readEpub(
+            epub(
+                manifest = """
+                    <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
+                    <item id="c1" href="one.xhtml" media-type="application/xhtml+xml"/>
+                """.trimIndent(),
+                spine = """<itemref idref="c1"/>""",
+                entries = mapOf(
+                    "OEBPS/toc.ncx" to ncx,
+                    "OEBPS/one.xhtml" to
+                        "<html><body><h1>One</h1><p>a</p><h2 id=\"end\">The End</h2></body></html>",
+                ),
+            ),
+        )
 
-        return output.toByteArray()
+        assertNotNull(content)
+        assertEquals(listOf(0, 2), content.outline.orEmpty().map { it.blockIndex })
+    }
+
+    /**
+     * A section's blocks are numbered from its own start, so an anchor past the
+     * first section has to be moved onto the section that took it.
+     */
+    @Test
+    fun anAnchorInALaterSectionIsPlacedWithinThatSection() {
+        val prose = (1..500).joinToString("") { "<p>Paragraph $it.</p>" }
+        val nav = """
+            <html xmlns:epub="http://www.idpf.org/2007/ops">
+              <body>
+                <nav epub:type="toc"><ol>
+                  <li><a href="one.xhtml#second">Second</a></li>
+                </ol></nav>
+              </body>
+            </html>
+        """.trimIndent()
+
+        val content = readEpub(
+            epub(
+                manifest = """
+                    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml"
+                          properties="nav"/>
+                    <item id="c1" href="one.xhtml" media-type="application/xhtml+xml"/>
+                """.trimIndent(),
+                spine = """<itemref idref="c1"/>""",
+                entries = mapOf(
+                    "OEBPS/nav.xhtml" to nav,
+                    "OEBPS/one.xhtml" to
+                        "<html><body><h1>First</h1>$prose<h1 id=\"second\">Second</h1>$prose</body></html>",
+                ),
+            ),
+        )
+
+        assertNotNull(content)
+
+        val entry = content.outline.orEmpty().single()
+
+        // The anchor opens a section of its own, so it sits at its very start
+        // rather than at its offset in the file.
+        assertEquals(0, entry.blockIndex)
+        assertTrue(entry.pageIndex > 0, "the anchor should be in a later section")
     }
 }
