@@ -112,4 +112,47 @@ class PaginatedBookTest {
 
         assertEquals(listOf(3), paged.entries.map { it.pageIndex })
     }
+
+    /**
+     * The whole point of an outline carrying a block as well as a section: a
+     * book names its chapters by file and its sections by an anchor inside one,
+     * so several entries share a section and must not share a page.
+     */
+    @Test
+    fun sectionsOfOneChapterLandOnTheirOwnPages() {
+        val outline = ReaderOutline.Chapters(
+            listOf(
+                OutlineEntry(title = "Chapter", pageIndex = 0, level = 0, blockIndex = 0),
+                OutlineEntry(title = "Second part", pageIndex = 0, level = 1, blockIndex = 1),
+                OutlineEntry(title = "Third part", pageIndex = 0, level = 1, blockIndex = 2),
+            ),
+        )
+
+        val paged = outline.onPages(book, reflowable = true) as ReaderOutline.Chapters
+
+        assertEquals(listOf(0, 1, 2), paged.entries.map { it.pageIndex })
+    }
+
+    /**
+     * A page can hold the end of one section and the start of the next, because
+     * an unnamed continuation runs straight on. A block on such a page belongs
+     * to the page it is on, not to where its section began.
+     */
+    @Test
+    fun aBlockOnAPageSharedWithTheNextSectionIsFoundOnThatPage() {
+        val shared = pagesOf(
+            chapter("One", filler(60), filler(50)),
+            chapter(null, filler(10)),
+        )
+
+        // Page 1 holds the second block of section 0 and all of section 1.
+        assertEquals(listOf(listOf(0 to 0), listOf(0 to 1, 1 to 0)), shared.places())
+        assertEquals(1, shared.pageOf(sectionIndex = 0, blockIndex = 1))
+    }
+
+    /** A block past the end of its section falls back to where the section starts. */
+    @Test
+    fun aBlockThatIsNotThereLandsAtTheStartOfItsSection() {
+        assertEquals(book.pageOf(1), book.pageOf(sectionIndex = 1, blockIndex = 99))
+    }
 }

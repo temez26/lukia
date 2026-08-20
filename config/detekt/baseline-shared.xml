@@ -20,7 +20,7 @@
     <ID>CyclomaticComplexMethod:DocxMetadataReader.kt$internal fun extractDocxMetadata(docxBytes: ByteArray): BookMetadata?</ID>
     <ID>CyclomaticComplexMethod:DocxTextReader.kt$private fun docxBlocks(xml: String, image: (relationshipId: String) -&gt; ByteArray?): List&lt;TextBlock&gt;</ID>
     <ID>CyclomaticComplexMethod:EpubMetadata.kt$internal fun readEpubMetadata(packageXml: String): BookMetadata</ID>
-    <ID>CyclomaticComplexMethod:EpubNavigation.kt$internal fun navigationEntries(xml: String, sectionOf: (String) -&gt; Int?): List&lt;OutlineEntry&gt;</ID>
+    <ID>CyclomaticComplexMethod:EpubNavigation.kt$internal fun navigationEntries( xml: String, placeOf: (href: String) -&gt; OutlinePlace?, ): List&lt;OutlineEntry&gt;</ID>
     <ID>CyclomaticComplexMethod:EpubPackage.kt$EpubPackage.Companion$fun open(epubBytes: ByteArray): EpubPackage?</ID>
     <ID>CyclomaticComplexMethod:IOSFolderScanner.kt$IOSFolderScanner$override suspend fun scan(folder: PickedFolder): List&lt;PickedDocument&gt;</ID>
     <ID>CyclomaticComplexMethod:MarkdownTextReader.kt$private fun markdownBlocks(source: String): List&lt;TextBlock&gt;</ID>
@@ -180,8 +180,8 @@
     <ID>NestedBlockDepth:DocxMetadataReader.kt$internal fun extractDocxMetadata(docxBytes: ByteArray): BookMetadata?</ID>
     <ID>NestedBlockDepth:DocxTextReader.kt$private fun docxBlocks(xml: String, image: (relationshipId: String) -&gt; ByteArray?): List&lt;TextBlock&gt;</ID>
     <ID>NestedBlockDepth:EpubMetadata.kt$internal fun readEpubMetadata(packageXml: String): BookMetadata</ID>
-    <ID>NestedBlockDepth:EpubNavigation.kt$internal fun navigationEntries(xml: String, sectionOf: (String) -&gt; Int?): List&lt;OutlineEntry&gt;</ID>
-    <ID>NestedBlockDepth:EpubNavigation.kt$internal fun ncxEntries(xml: String, sectionOf: (String) -&gt; Int?): List&lt;OutlineEntry&gt;</ID>
+    <ID>NestedBlockDepth:EpubNavigation.kt$internal fun navigationEntries( xml: String, placeOf: (href: String) -&gt; OutlinePlace?, ): List&lt;OutlineEntry&gt;</ID>
+    <ID>NestedBlockDepth:EpubNavigation.kt$internal fun ncxEntries( xml: String, placeOf: (href: String) -&gt; OutlinePlace?, ): List&lt;OutlineEntry&gt;</ID>
     <ID>NestedBlockDepth:EpubPackage.kt$EpubPackage.Companion$fun open(epubBytes: ByteArray): EpubPackage?</ID>
     <ID>NestedBlockDepth:MarkdownTextReader.kt$private fun markdownRuns(source: String): List&lt;TextRun&gt;</ID>
     <ID>NestedBlockDepth:PdfCoverRenderer.android.kt$internal actual fun renderPdfCover(pdfBytes: ByteArray): ByteArray?</ID>

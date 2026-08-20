@@ -103,30 +103,31 @@ private fun topHeadingLevel(blocks: List<TextBlock>): Int? =
  * than a way to get around it, and a contents panel listing every sub-sub-heading
  * is one nobody can find a chapter in.
  *
- * Sub-headings point at the section that contains them rather than at themselves,
- * because a section is the smallest thing the reader can scroll to. Landing on
- * the chapter and reading a few paragraphs to the heading you wanted is a far
- * better outcome than not offering it at all.
+ * Sub-headings carry where in the section they sit as well as which section it
+ * is, so that the layout can send the reader to the page the heading is actually
+ * on rather than to the top of the chapter containing it.
  */
 private fun outlineOf(sections: List<TextSection>, topLevel: Int?): List<OutlineEntry> {
     if (topLevel == null) return emptyList()
 
     return sections.flatMapIndexed { index, section ->
-        section.blocks
-            .filterIsInstance<TextBlock.Heading>()
-            .filter { it.level in topLevel..topLevel + 1 }
-            .mapNotNull { heading ->
-                val title = heading.text.plainText().trim()
+        section.blocks.mapIndexedNotNull { blockIndex, block ->
+            val heading = block as? TextBlock.Heading
 
-                if (title.isEmpty()) {
-                    null
-                } else {
-                    OutlineEntry(
-                        title = title,
-                        pageIndex = index,
-                        level = heading.level - topLevel,
-                    )
-                }
+            if (heading == null || heading.level !in topLevel..topLevel + 1) return@mapIndexedNotNull null
+
+            val title = heading.text.plainText().trim()
+
+            if (title.isEmpty()) {
+                null
+            } else {
+                OutlineEntry(
+                    title = title,
+                    pageIndex = index,
+                    level = heading.level - topLevel,
+                    blockIndex = blockIndex,
+                )
             }
+        }
     }
 }

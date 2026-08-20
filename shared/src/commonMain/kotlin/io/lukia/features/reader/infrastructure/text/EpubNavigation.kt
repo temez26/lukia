@@ -12,7 +12,10 @@ import io.lukia.features.reader.domain.OutlineEntry
  * list - so only the one marked as the contents is read, or the one that says
  * nothing about itself, which older tools produce.
  */
-internal fun navigationEntries(xml: String, sectionOf: (String) -> Int?): List<OutlineEntry> {
+internal fun navigationEntries(
+    xml: String,
+    placeOf: (href: String) -> OutlinePlace?,
+): List<OutlineEntry> {
     val entries = mutableListOf<OutlineEntry>()
     val label = StringBuilder()
 
@@ -52,7 +55,7 @@ internal fun navigationEntries(xml: String, sectionOf: (String) -> Int?): List<O
                 event.name == "a" -> {
                     entries.addEntry(
                         title = label.toString(),
-                        section = href?.let(sectionOf),
+                        place = href?.let(placeOf),
                         level = listDepth - 1,
                     )
 
@@ -77,7 +80,10 @@ internal fun navigationEntries(xml: String, sectionOf: (String) -> Int?): List<O
  * The entry is emitted on the `content` element because that is the one that
  * says where the entry goes, and it always follows the label it belongs to.
  */
-internal fun ncxEntries(xml: String, sectionOf: (String) -> Int?): List<OutlineEntry> {
+internal fun ncxEntries(
+    xml: String,
+    placeOf: (href: String) -> OutlinePlace?,
+): List<OutlineEntry> {
     val entries = mutableListOf<OutlineEntry>()
     val label = StringBuilder()
 
@@ -96,7 +102,7 @@ internal fun ncxEntries(xml: String, sectionOf: (String) -> Int?): List<OutlineE
 
                 "content" -> entries.addEntry(
                     title = label.toString(),
-                    section = event.attributes["src"]?.let(sectionOf),
+                    place = event.attributes["src"]?.let(placeOf),
                     level = depth - 1,
                 )
             }
@@ -113,15 +119,25 @@ internal fun ncxEntries(xml: String, sectionOf: (String) -> Int?): List<OutlineE
     return entries
 }
 
+/** Where in the book one table-of-contents link leads. */
+internal data class OutlinePlace(val section: Int, val block: Int)
+
 /**
  * Adds an entry, unless it names nothing or points nowhere the reader can go -
  * a link into a chapter that held no text is a row that would do nothing when
  * pressed.
  */
-private fun MutableList<OutlineEntry>.addEntry(title: String, section: Int?, level: Int) {
+private fun MutableList<OutlineEntry>.addEntry(title: String, place: OutlinePlace?, level: Int) {
     val name = title.collapseWhitespace().trim()
 
-    if (name.isEmpty() || section == null) return
+    if (name.isEmpty() || place == null) return
 
-    add(OutlineEntry(title = name, pageIndex = section, level = level.coerceAtLeast(0)))
+    add(
+        OutlineEntry(
+            title = name,
+            pageIndex = place.section,
+            level = level.coerceAtLeast(0),
+            blockIndex = place.block,
+        ),
+    )
 }

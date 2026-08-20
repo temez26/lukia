@@ -67,15 +67,21 @@ internal class PaginatedBook(
         val first = sectionPages.getOrNull(sectionIndex) ?: return pages.lastIndex.coerceAtLeast(0)
 
         // Forward from where the section starts rather than a search of the
-        // book: a section is a handful of pages, and this is asked on every
-        // re-layout for the page the reader is looking at.
+        // book: a section is a handful of pages, and this is asked once per
+        // contents row and on every re-layout.
         for (index in first until pages.size) {
             val page = pages[index]
 
-            if (page.blocks.any { it.sectionIndex > sectionIndex }) break
+            // The block first, and only then whether the section has been left
+            // behind. A page can hold the end of one section and the start of
+            // the next - an unnamed continuation runs straight on - and asking
+            // about the next section first would step over a block that is on
+            // this very page.
             if (page.blocks.any { it.sectionIndex == sectionIndex && it.blockIndex >= blockIndex }) {
                 return index
             }
+
+            if (page.blocks.all { it.sectionIndex > sectionIndex }) break
         }
 
         return first

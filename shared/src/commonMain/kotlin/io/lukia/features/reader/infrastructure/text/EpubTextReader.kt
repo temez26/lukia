@@ -78,15 +78,16 @@ internal fun readEpub(epubBytes: ByteArray): ReflowableContent? {
 /** Where one file of the book ended up once it was laid out as sections. */
 private class FileSections(
     private val firstSection: Int,
-    private val anchorSections: Map<String, Int>,
+    private val anchorPlaces: Map<String, OutlinePlace>,
 ) {
 
     /**
-     * The section a link into this file leads to. An unknown anchor falls back
-     * to the top of the file rather than nowhere: a book whose contents point at
-     * ids it does not contain is still a book worth getting around.
+     * Where a link into this file leads. An unknown anchor falls back to the top
+     * of the file rather than nowhere: a book whose contents point at ids it
+     * does not contain is still a book worth getting around.
      */
-    fun sectionOf(fragment: String): Int = anchorSections[fragment] ?: firstSection
+    fun placeOf(fragment: String): OutlinePlace =
+        anchorPlaces[fragment] ?: OutlinePlace(section = firstSection, block = 0)
 }
 
 /** Lays [content] out as sections at the end of the book so far. */
@@ -103,8 +104,14 @@ private fun MutableList<TextSection>.append(content: HtmlContent): FileSections 
 
     return FileSections(
         firstSection = firstSection,
-        anchorSections = content.anchors.mapValues { (_, block) ->
-            firstSection + starts.indexOfLast { it <= block }
+        // A section's blocks are numbered from its own start, so an anchor's
+        // place in the file has to be moved onto the section that took it -
+        // otherwise every link past the first section would point beyond the
+        // end of the one it landed in.
+        anchorPlaces = content.anchors.mapValues { (_, block) ->
+            val start = starts.indexOfLast { it <= block }
+
+            OutlinePlace(section = firstSection + start, block = block - starts[start])
         },
     )
 }
@@ -147,12 +154,12 @@ private fun List<TextSection>.headingOutline(): List<OutlineEntry> =
  * malformed `nav` very often has a perfectly good NCX sitting beside it.
  */
 private fun EpubPackage.tableOfContents(files: Map<String, FileSections>): List<OutlineEntry> {
-    fun sectionOf(fromPath: String, href: String): Int? =
-        files[resolveFrom(fromPath, href)]?.sectionOf(href.fragment())
+    fun placeOf(fromPath: String, href: String): OutlinePlace? =
+        files[resolveFrom(fromPath, href)]?.placeOf(href.fragment())
 
     navigationPath?.let { path ->
         read(path)?.let(::decodeText)?.let { xml ->
-            val entries = navigationEntries(xml) { href -> sectionOf(path, href) }
+            val entries = navigationEntries(xml) { href -> placeOf(path, href) }
 
             if (entries.isNotEmpty()) return entries
         }
@@ -160,7 +167,7 @@ private fun EpubPackage.tableOfContents(files: Map<String, FileSections>): List<
 
     ncxPath?.let { path ->
         read(path)?.let(::decodeText)?.let { xml ->
-            return ncxEntries(xml) { href -> sectionOf(path, href) }
+            return ncxEntries(xml) { href -> placeOf(path, href) }
         }
     }
 
