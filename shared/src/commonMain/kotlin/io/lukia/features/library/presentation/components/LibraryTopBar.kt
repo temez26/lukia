@@ -21,7 +21,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.lukia.features.library.presentation.LibrarySelectionUi
+import io.lukia.features.library.presentation.LibraryShelfUi
 import io.lukia.shared.presentation.components.AlertGlyph
 import io.lukia.shared.presentation.components.AnchoredMenu
 import io.lukia.shared.presentation.components.CheckGlyph
@@ -101,8 +101,8 @@ internal fun LibraryNavBar(
     onMenuExpandedChange: (Boolean) -> Unit,
     onImport: () -> Unit,
     onImportFolder: () -> Unit,
-    /** How the shelf is selected from, which is what this bar's menu offers. */
-    selection: LibrarySelectionUi,
+    /** How the shelf is worked with, which is what this bar's menu offers. */
+    shelf: LibraryShelfUi,
     onSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -174,7 +174,7 @@ internal fun LibraryNavBar(
                     onDismissRequest = { onMenuExpandedChange(false) },
                     onImport = onImport,
                     onImportFolder = onImportFolder,
-                    selection = selection,
+                    shelf = shelf,
                     onSettings = onSettings,
                 )
             }
@@ -275,7 +275,7 @@ private fun LibraryMenu(
     onDismissRequest: () -> Unit,
     onImport: () -> Unit,
     onImportFolder: () -> Unit,
-    selection: LibrarySelectionUi,
+    shelf: LibraryShelfUi,
     onSettings: () -> Unit,
 ) {
     AnchoredMenu(
@@ -297,13 +297,13 @@ private fun LibraryMenu(
             icon = { tint, glyph -> CheckGlyph(tint = tint, modifier = glyph) },
             onClick = {
                 onDismissRequest()
-                selection.onStart()
+                shelf.onStart()
             },
         )
 
         MenuSeparator()
 
-        UpkeepMenuRows(selection = selection, onDismissRequest = onDismissRequest)
+        UpkeepMenuRows(shelf = shelf, onDismissRequest = onDismissRequest)
 
         MenuRow(
             label = "Settings",
@@ -326,10 +326,10 @@ private fun LibraryMenu(
  */
 @Composable
 private fun UpkeepMenuRows(
-    selection: LibrarySelectionUi,
+    shelf: LibraryShelfUi,
     onDismissRequest: () -> Unit,
 ) {
-    val upkeep = selection.upkeep
+    val upkeep = shelf.upkeep
 
     if (upkeep.missing.isNotEmpty()) {
         MenuRow(
@@ -337,7 +337,7 @@ private fun UpkeepMenuRows(
             icon = { tint, glyph -> AlertGlyph(tint = tint, modifier = glyph) },
             onClick = {
                 onDismissRequest()
-                selection.onSelectMissing()
+                shelf.onSelectMissing()
             },
         )
 
@@ -350,7 +350,7 @@ private fun UpkeepMenuRows(
             icon = { tint, glyph -> CopyGlyph(tint = tint, modifier = glyph) },
             onClick = {
                 onDismissRequest()
-                selection.onSelectDuplicates()
+                shelf.onSelectDuplicates()
             },
         )
 

@@ -20,14 +20,16 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.unit.dp
+import io.lukia.core.domain.BookMetadata
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.PickedDocument
 import io.lukia.core.presentation.UiState
 import io.lukia.features.library.presentation.BulkAction
+import io.lukia.features.library.presentation.LibraryLayout
 import io.lukia.features.library.presentation.LibraryQuery
 import io.lukia.features.library.presentation.LibrarySelection
-import io.lukia.features.library.presentation.LibrarySelectionUi
+import io.lukia.features.library.presentation.LibraryShelfUi
 import io.lukia.features.library.presentation.LibraryUpkeep
 import io.lukia.features.library.presentation.asLibrary
 import io.lukia.features.library.presentation.facets
@@ -45,7 +47,7 @@ import kotlin.test.assertTrue
 class LibrarySelectionModeTest {
 
     private val library = listOf(
-        book("Moby Dick", favorite = true),
+        book("Moby Dick", favorite = true, author = "Herman Melville"),
         book("The Hobbit", DocumentType.EPUB),
     )
 
@@ -53,6 +55,7 @@ class LibrarySelectionModeTest {
         title: String,
         type: DocumentType = DocumentType.PDF,
         favorite: Boolean = false,
+        author: String? = null,
     ): DocumentInfo {
         val extension = if (type == DocumentType.EPUB) "epub" else "pdf"
 
@@ -66,6 +69,7 @@ class LibrarySelectionModeTest {
             exists = true,
             sizeBytes = 1024L,
             isFavorite = favorite,
+            metadata = author?.let { BookMetadata(title = title, authors = listOf(it)) },
         )
     }
 
@@ -78,10 +82,12 @@ class LibrarySelectionModeTest {
         initial: LibrarySelection = LibrarySelection.None,
         running: BulkAction? = null,
         upkeep: LibraryUpkeep = LibraryUpkeep.None,
+        initialLayout: LibraryLayout = LibraryLayout.Grid,
         onDelete: () -> Unit = {},
     ) {
         setContent {
             var selection by remember { mutableStateOf(initial) }
+            var layout by remember { mutableStateOf(initialLayout) }
             val books = remember { library.asLibrary(emptyMap()) }
             val facets = remember(books) { books.facets() }
 
@@ -102,7 +108,7 @@ class LibrarySelectionModeTest {
                         onDelete = {},
                         onRetry = {},
                         isImporting = false,
-                        selection = LibrarySelectionUi(
+                        shelf = LibraryShelfUi(
                             selection = selection,
                             running = running,
                             onStart = { selection = LibrarySelection(active = true) },
@@ -131,6 +137,8 @@ class LibrarySelectionModeTest {
                             onSelectDuplicates = {
                                 selection = LibrarySelection(true, upkeep.duplicates)
                             },
+                            layout = layout,
+                            onLayoutChange = { layout = it },
                         ),
                     )
                 }
@@ -300,6 +308,35 @@ class LibrarySelectionModeTest {
 
         onNodeWithContentDescription("Library actions").performClick()
         press("Missing Files (1)")
+
+        onNodeWithText("1 selected").assertIsDisplayed()
+    }
+
+    /** The library that has outgrown its covers is read as rows instead. */
+    @Test
+    fun theShelfCanBeLaidOutAsAList() = runComposeUiTest {
+        setLibrary(initialLayout = LibraryLayout.List)
+
+        // The author is what a row has room for and a cover has not.
+        onNodeWithText("Herman Melville").assertIsDisplayed()
+    }
+
+    @Test
+    fun theLayoutIsChosenFromTheChipBesideTheOrder() = runComposeUiTest {
+        setLibrary()
+
+        press("Grid")
+        press("List")
+
+        onNodeWithText("Herman Melville").assertIsDisplayed()
+    }
+
+    /** Rows are picked the same way cards are, from the same mode. */
+    @Test
+    fun aListRowIsTickedByPressingIt() = runComposeUiTest {
+        setLibrary(initial = LibrarySelection(active = true), initialLayout = LibraryLayout.List)
+
+        onNodeWithText("Moby Dick").performClick()
 
         onNodeWithText("1 selected").assertIsDisplayed()
     }

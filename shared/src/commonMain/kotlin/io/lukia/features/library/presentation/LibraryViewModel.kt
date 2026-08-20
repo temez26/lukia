@@ -13,10 +13,10 @@ import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.library.application.GetLibraryDocumentsUseCase
 import io.lukia.features.library.application.ImportDocumentsUseCase
 import io.lukia.features.library.application.ImportFolderUseCase
-import io.lukia.features.library.application.ImportSummary
 import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
+import io.lukia.features.library.infrastructure.LibrarySettingsRepository
 import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.features.reader.domain.ReadingProgressRepository
 import kotlinx.coroutines.CoroutineDispatcher
@@ -34,12 +34,13 @@ import kotlinx.coroutines.withContext
 
 class LibraryViewModel(
     private val getLibraryDocumentsUseCase: GetLibraryDocumentsUseCase,
-    private val importDocumentsUseCase: ImportDocumentsUseCase,
-    private val importFolderUseCase: ImportFolderUseCase,
+    importDocumentsUseCase: ImportDocumentsUseCase,
+    importFolderUseCase: ImportFolderUseCase,
     private val setFavoriteUseCase: SetFavoriteUseCase,
     private val refreshDocumentUseCase: RefreshDocumentUseCase,
     private val removeDocumentUseCase: RemoveDocumentUseCase,
     private val readingProgressRepository: ReadingProgressRepository,
+    private val librarySettingsRepository: LibrarySettingsRepository,
     /**
      * Where the library is narrowed, ordered and measured. Off the main thread
      * in production, and injectable so tests can run it deterministically.
@@ -93,20 +94,22 @@ class LibraryViewModel(
      * [uiState]; this is the slow work that happens on top of a library that is
      * already on screen.
      */
-    private val _isImporting = MutableStateFlow(false)
-    val isImporting: StateFlow<Boolean> = _isImporting.asStateFlow()
 
     /**
-     * How far through the current import the library is, or null when there is
-     * no count to give - a single file, or an import that has not started.
-     *
-     * Separate from [isImporting] because a folder can hold hundreds of books
-     * and each one is opened and has its cover rendered: without a count, a scan
-     * of a large shelf is several minutes of a spinner that says nothing about
-     * whether it is working or stuck.
+     * Getting books in, and saying how it is going. Held apart - see
+     * [LibraryImportSession] - so that importing is a thing with its own state
+     * rather than four more fields on the shelf.
      */
-    private val _importProgress = MutableStateFlow<ImportProgress?>(null)
-    val importProgress: StateFlow<ImportProgress?> = _importProgress.asStateFlow()
+    private val importSession = LibraryImportSession(
+        importDocumentsUseCase = importDocumentsUseCase,
+        importFolderUseCase = importFolderUseCase,
+        scope = viewModelScope,
+        onImported = ::loadDocuments,
+        onMessage = { _message.value = it },
+    )
+
+    val isImporting: StateFlow<Boolean> = importSession.isImporting
+    val importProgress: StateFlow<ImportProgress?> = importSession.progress
 
     /**
      * What the reader has asked of their library - the shelf, the filters, the
@@ -166,6 +169,17 @@ class LibraryViewModel(
         }
     }
 
+    /**
+     * Exposed straight from the repository rather than copied here: it outlives
+     * the screen, and mirroring it would be one more thing that could disagree
+     * with what was stored.
+     */
+    val layout: StateFlow<LibraryLayout> = librarySettingsRepository.layout
+
+    fun setLayout(layout: LibraryLayout) {
+        librarySettingsRepository.setLayout(layout)
+    }
+
     fun updateQuery(query: LibraryQuery) {
         _query.value = query
     }
@@ -197,56 +211,10 @@ class LibraryViewModel(
         }
     }
 
-    fun importDocuments(pickedDocuments: List<PickedDocument>) {
-        if (pickedDocuments.isEmpty()) {
-            return
-        }
+    fun importDocuments(pickedDocuments: List<PickedDocument>) =
+        importSession.importDocuments(pickedDocuments)
 
-        runImport { importDocumentsUseCase(pickedDocuments, ::reportProgress) }
-    }
-
-    fun importFolder(pickedFolder: PickedFolder) {
-        runImport { importFolderUseCase(pickedFolder, ::reportProgress) }
-    }
-
-    /**
-     * Only counted for a batch worth counting. One file is done before a
-     * "1 of 1" could be read, and a number that appears and vanishes reads as a
-     * flicker rather than as progress.
-     */
-    private fun reportProgress(completed: Int, total: Int) {
-        _importProgress.value = if (total > 1) ImportProgress(completed, total) else null
-    }
-
-    /**
-     * The one place an import's outcome is handled: holds [isImporting] for the
-     * duration, reloads on success, and reports any failure - named or
-     * unforeseen - through the snackbar.
-     */
-    private fun runImport(block: suspend () -> Result<ImportSummary>) {
-        viewModelScope.launch {
-            _isImporting.value = true
-            _message.value = null
-
-            try {
-                // getOrThrow re-raises the use case's own failure so that it and
-                // an unanticipated throw are both narrowed in the same place.
-                runCatchingApp { block().getOrThrow() }
-                    .onFailure { _message.value = it.toAppError().displayShortMessage() }
-                    .onSuccess { summary ->
-                        // A partly imported batch is not a failure - the books
-                        // that did come in are usable - so it reports itself as
-                        // a notice rather than taking the screen over.
-                        _message.value = summary.notice()
-                        loadDocuments()
-                    }
-            } finally {
-                // In a finally so nothing can leave the library spinning.
-                _isImporting.value = false
-                _importProgress.value = null
-            }
-        }
-    }
+    fun importFolder(pickedFolder: PickedFolder) = importSession.importFolder(pickedFolder)
 
     /**
      * Deriving the new value from [document] keeps the toggle decision out of

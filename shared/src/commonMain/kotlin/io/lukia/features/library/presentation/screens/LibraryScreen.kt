@@ -34,7 +34,7 @@ import io.lukia.features.library.presentation.ImportProgress
 import io.lukia.features.library.presentation.LibraryBook
 import io.lukia.features.library.presentation.LibraryFacets
 import io.lukia.features.library.presentation.LibraryQuery
-import io.lukia.features.library.presentation.LibrarySelectionUi
+import io.lukia.features.library.presentation.LibraryShelfUi
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.OpenMenu
 import io.lukia.features.library.presentation.components.LibraryNavBar
@@ -120,7 +120,7 @@ fun LibraryScreen(
             },
             onToggleFavorite = viewModel::toggleFavorite,
             onRefresh = viewModel::refreshDocument,
-            selection = rememberSelectionUi(viewModel),
+            shelf = rememberShelfUi(viewModel),
             onDelete = viewModel::deleteDocument,
             onRetry = viewModel::refresh,
             isImporting = isImporting,
@@ -178,8 +178,8 @@ fun LibraryContent(
      * [books], which already carries each book's position.
      */
     readingProgress: Map<String, ReadingProgress> = emptyMap(),
-    /** Picking several books at once - what is ticked, and what can be done to it. */
-    selection: LibrarySelectionUi = LibrarySelectionUi.None,
+    /** How the shelf is laid out, what is picked off it, and what can be done to that. */
+    shelf: LibraryShelfUi = LibraryShelfUi.None,
 ) {
     val dimens = LocalLukiaDimens.current
     val reveal = rememberLaunchReveal()
@@ -317,9 +317,11 @@ fun LibraryContent(
                                 onImport = onImport,
                                 onImportFolder = onImportFolder,
                                 modifier = Modifier.fillMaxSize(),
-                                selection = selection.selection,
-                                onStartSelecting = selection.onStart,
-                                onToggle = selection.onToggle,
+                                layout = shelf.layout,
+                                onLayoutChange = shelf.onLayoutChange,
+                                selection = shelf.selection,
+                                onStartSelecting = shelf.onStart,
+                                onToggle = shelf.onToggle,
                             )
                         }
                     }
@@ -331,8 +333,8 @@ fun LibraryContent(
             // One or the other, never both: searching and selecting are answers
             // to different questions, and a shelf is only ever being asked one
             // of them - see LibrarySelectionBar.
-            if (selection.active) {
-                LibrarySelectionSurface(ui = selection, books = books)
+            if (shelf.active) {
+                LibrarySelectionSurface(ui = shelf, books = books)
             } else {
                 LibraryNavBar(
                     collapsedProgress = collapsedProgress,
@@ -343,7 +345,7 @@ fun LibraryContent(
                     onMenuExpandedChange = { openMenu = if (it) OpenMenu.Bar else null },
                     onImport = onImport,
                     onImportFolder = onImportFolder,
-                    selection = selection,
+                    shelf = shelf,
                     onSettings = onSettings,
                     modifier = Modifier.align(Alignment.TopCenter),
                 )

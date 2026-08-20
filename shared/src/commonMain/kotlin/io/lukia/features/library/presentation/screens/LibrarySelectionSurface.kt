@@ -11,7 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import io.lukia.features.library.presentation.LibraryBook
-import io.lukia.features.library.presentation.LibrarySelectionUi
+import io.lukia.features.library.presentation.LibraryShelfUi
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.components.LibrarySelectionActions
 import io.lukia.features.library.presentation.components.LibrarySelectionBar
@@ -25,13 +25,14 @@ import io.lukia.shared.presentation.components.ConfirmDialog
  * is what would make each of them recompose.
  */
 @Composable
-internal fun rememberSelectionUi(viewModel: LibraryViewModel): LibrarySelectionUi {
+internal fun rememberShelfUi(viewModel: LibraryViewModel): LibraryShelfUi {
     val selection by viewModel.selection.collectAsState()
     val running by viewModel.bulkAction.collectAsState()
     val upkeep by viewModel.upkeep.collectAsState()
+    val layout by viewModel.layout.collectAsState()
 
-    return remember(viewModel, selection, running, upkeep) {
-        LibrarySelectionUi(
+    return remember(viewModel, selection, running, upkeep, layout) {
+        LibraryShelfUi(
             selection = selection,
             running = running,
             upkeep = upkeep,
@@ -45,6 +46,8 @@ internal fun rememberSelectionUi(viewModel: LibraryViewModel): LibrarySelectionU
             onDelete = viewModel::deleteSelected,
             onSelectMissing = viewModel::selectMissing,
             onSelectDuplicates = viewModel::selectDuplicates,
+            layout = layout,
+            onLayoutChange = viewModel::setLayout,
         )
     }
 }
@@ -60,7 +63,7 @@ internal fun rememberSelectionUi(viewModel: LibraryViewModel): LibrarySelectionU
  */
 @Composable
 internal fun BoxScope.LibrarySelectionSurface(
-    ui: LibrarySelectionUi,
+    ui: LibraryShelfUi,
     books: List<LibraryBook>,
 ) {
     // Asked here rather than in the view model: whether a question is on screen

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
@@ -21,15 +22,18 @@ import io.lukia.core.domain.DocumentInfo
 import io.lukia.features.library.presentation.ImportProgress
 import io.lukia.features.library.presentation.LibraryBook
 import io.lukia.features.library.presentation.LibraryFacets
+import io.lukia.features.library.presentation.LibraryLayout
 import io.lukia.features.library.presentation.LibraryQuery
 import io.lukia.features.library.presentation.LibrarySelection
 import io.lukia.features.library.presentation.LibraryShelf
 import io.lukia.features.library.presentation.OpenMenu
 import io.lukia.features.library.presentation.components.BookCard
+import io.lukia.features.library.presentation.components.BookRow
 import io.lukia.features.library.presentation.components.CardSelection
 import io.lukia.features.library.presentation.components.ImportBookCard
 import io.lukia.features.library.presentation.components.LibraryHeader
 import io.lukia.features.library.presentation.components.libraryNavBarHeight
+import io.lukia.shared.presentation.components.BookActionsMenu
 import io.lukia.shared.presentation.components.EmptyState
 import io.lukia.shared.presentation.components.LaunchReveal
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
@@ -68,6 +72,8 @@ internal fun LibraryGrid(
     onImportFolder: () -> Unit,
     modifier: Modifier = Modifier,
     /** What is ticked, while the shelf is being selected from. */
+    layout: LibraryLayout = LibraryLayout.Grid,
+    onLayoutChange: (LibraryLayout) -> Unit = {},
     selection: LibrarySelection = LibrarySelection.None,
     onStartSelecting: () -> Unit = {},
     onToggle: (location: String) -> Unit = {},
@@ -75,7 +81,14 @@ internal fun LibraryGrid(
     val dimens = LocalLukiaDimens.current
 
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = dimens.bookCellMinWidth),
+        // One grid for both, differing only in how wide a cell is. A list is a
+        // grid one column across, and building it as a lazy column of its own
+        // would be a second copy of the header, the no-matches notice and the
+        // import slot, kept in step by hand.
+        columns = when (layout) {
+            LibraryLayout.Grid -> GridCells.Adaptive(minSize = dimens.bookCellMinWidth)
+            LibraryLayout.List -> GridCells.Fixed(1)
+        },
         state = gridState,
         modifier = modifier,
         contentPadding = PaddingValues(
@@ -99,6 +112,8 @@ internal fun LibraryGrid(
                 isImporting = isImporting,
                 importProgress = importProgress,
                 reveal = reveal,
+                layout = layout,
+                onLayoutChange = onLayoutChange,
             )
         }
 
@@ -124,21 +139,12 @@ internal fun LibraryGrid(
             // new one for each row that comes into view.
             contentType = { _, _ -> "book" },
         ) { index, book ->
-            BookCard(
-                document = book.document,
-                progress = book.progress,
-                menuExpanded = openMenu == OpenMenu.Book(book.location),
-                onClick = { onDocumentClick(book.document) },
-                onMenuRequest = { onOpenMenuChange(OpenMenu.Book(book.location)) },
-                onMenuDismiss = { onOpenMenuChange(null) },
-                onToggleFavorite = { onToggleFavorite(book.document) },
-                onRefresh = { onRefresh(book.document) },
-                onDelete = { onDelete(book.document) },
-                onShowDetails = { onDocumentDetails(book.document) },
-                onSelectBooks = onStartSelecting,
+            ShelfItem(
+                book = book,
+                layout = layout,
                 reveal = reveal,
                 revealIndex = index + GridRevealOffset,
-                modifier = Modifier.animateItem(),
+                menuExpanded = openMenu == OpenMenu.Book(book.location),
                 selection = if (selection.active) {
                     CardSelection(
                         selected = book.location in selection,
@@ -147,6 +153,15 @@ internal fun LibraryGrid(
                 } else {
                     null
                 },
+                onClick = { onDocumentClick(book.document) },
+                onMenuExpandedChange = { expanded ->
+                    onOpenMenuChange(OpenMenu.Book(book.location).takeIf { expanded })
+                },
+                onToggleFavorite = { onToggleFavorite(book.document) },
+                onRefresh = { onRefresh(book.document) },
+                onDelete = { onDelete(book.document) },
+                onShowDetails = { onDocumentDetails(book.document) },
+                onSelectBooks = onStartSelecting,
             )
         }
 
@@ -205,5 +220,72 @@ private fun NoMatchesNotice(query: LibraryQuery) {
                 else -> "No books match “$trimmed”."
             },
         )
+    }
+}
+
+/**
+ * One book on the shelf, drawn as whichever the shelf is laid out as.
+ *
+ * The two are the same book with the same actions, and differ only in how much
+ * room they take and how much they can therefore say - see [BookRow].
+ */
+@Composable
+private fun LazyGridItemScope.ShelfItem(
+    book: LibraryBook,
+    layout: LibraryLayout,
+    reveal: LaunchReveal,
+    revealIndex: Int,
+    menuExpanded: Boolean,
+    selection: CardSelection?,
+    onClick: () -> Unit,
+    onMenuExpandedChange: (Boolean) -> Unit,
+    onToggleFavorite: () -> Unit,
+    onRefresh: () -> Unit,
+    onDelete: () -> Unit,
+    onShowDetails: () -> Unit,
+    onSelectBooks: () -> Unit,
+) {
+    when (layout) {
+        LibraryLayout.Grid -> BookCard(
+            document = book.document,
+            progress = book.progress,
+            menuExpanded = menuExpanded,
+            onClick = onClick,
+            onMenuRequest = { onMenuExpandedChange(true) },
+            onMenuDismiss = { onMenuExpandedChange(false) },
+            onToggleFavorite = onToggleFavorite,
+            onRefresh = onRefresh,
+            onDelete = onDelete,
+            onShowDetails = onShowDetails,
+            onSelectBooks = onSelectBooks,
+            reveal = reveal,
+            revealIndex = revealIndex,
+            modifier = Modifier.animateItem(),
+            selection = selection,
+        )
+
+        LibraryLayout.List -> Box {
+            BookRow(
+                document = book.document,
+                progress = book.progress,
+                onClick = onClick,
+                onMenuRequest = { onMenuExpandedChange(true) },
+                modifier = Modifier.animateItem(),
+                selection = selection,
+            )
+
+            // Hung off the row itself so it opens where the finger was, the same
+            // way a card's does.
+            BookActionsMenu(
+                expanded = menuExpanded,
+                isFavorite = book.document.isFavorite,
+                onToggleFavorite = onToggleFavorite,
+                onRefresh = onRefresh,
+                onDelete = onDelete,
+                onDismissRequest = { onMenuExpandedChange(false) },
+                onShowDetails = onShowDetails,
+                onSelectBooks = onSelectBooks,
+            )
+        }
     }
 }

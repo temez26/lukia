@@ -3,14 +3,15 @@ package io.lukia.features.library.presentation
 import androidx.compose.runtime.Stable
 
 /**
- * Everything the shelf's selection mode is and does, in one value.
+ * How the shelf is being worked with: how it is laid out, what is picked off it,
+ * and everything that can be done to what is picked.
  *
- * Ten parameters that always arrive together and are only ever read together,
- * gathered so that the screen's own signature stays about the screen - the same
- * bargain `ReaderTranslationUi` makes for the reader's translation controls.
+ * A dozen parameters that always arrive together and are only ever read
+ * together, gathered so that the screen's own signature stays about the screen -
+ * the same bargain `ReaderTranslationUi` makes for the reader's controls.
  */
 @Stable
-class LibrarySelectionUi(
+class LibraryShelfUi(
     val selection: LibrarySelection = LibrarySelection.None,
     /** What a bulk action is doing right now, or null when none is running. */
     val running: BulkAction? = null,
@@ -28,10 +29,13 @@ class LibrarySelectionUi(
     val onSelectMissing: () -> Unit = {},
     /** Ticks every copy but the first of each book that is on the shelf twice. */
     val onSelectDuplicates: () -> Unit = {},
+    /** Covers or rows, which is remembered between sessions. */
+    val layout: LibraryLayout = LibraryLayout.Grid,
+    val onLayoutChange: (LibraryLayout) -> Unit = {},
 ) {
     val active: Boolean get() = selection.active
 
     companion object {
-        val None = LibrarySelectionUi()
+        val None = LibraryShelfUi()
     }
 }

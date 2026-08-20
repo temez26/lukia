@@ -31,4 +31,5 @@ internal enum class LibraryFacet {
     Author,
     Language,
     Sort,
+    Layout,
 }

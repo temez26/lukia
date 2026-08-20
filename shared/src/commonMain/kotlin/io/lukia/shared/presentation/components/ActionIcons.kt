@@ -3,6 +3,8 @@ package io.lukia.shared.presentation.components
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -58,46 +60,6 @@ fun TrashGlyph(
         drawPath(path = lidWithHandle, color = tint, style = stroke)
         drawPath(path = body, color = tint, style = stroke)
         drawPath(path = ticks, color = tint, style = stroke)
-    }
-}
-
-/**
- * Two sheets, one behind the other, for the same book on the shelf twice.
- *
- * The back sheet is drawn only as the two edges that clear the front one -
- * a whole rectangle behind another reads as a frame at this size, and the
- * corner peeking out is what says "there is a second one of these".
- */
-@Composable
-fun CopyGlyph(
-    tint: Color,
-    modifier: Modifier = Modifier,
-) {
-    Canvas(modifier = modifier) {
-        val w = size.width
-        val h = size.height
-        val stroke = Stroke(
-            width = 2.dp.toPx(),
-            cap = StrokeCap.Round,
-            join = StrokeJoin.Round,
-        )
-
-        val behind = Path().apply {
-            moveTo(w * 0.30f, h * 0.22f)
-            lineTo(w * 0.74f, h * 0.22f)
-            lineTo(w * 0.74f, h * 0.66f)
-        }
-
-        val front = Path().apply {
-            moveTo(w * 0.26f, h * 0.34f)
-            lineTo(w * 0.62f, h * 0.34f)
-            lineTo(w * 0.62f, h * 0.78f)
-            lineTo(w * 0.26f, h * 0.78f)
-            close()
-        }
-
-        drawPath(path = behind, color = tint, style = stroke)
-        drawPath(path = front, color = tint, style = stroke)
     }
 }
 
