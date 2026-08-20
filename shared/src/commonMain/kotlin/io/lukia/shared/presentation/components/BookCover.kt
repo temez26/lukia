@@ -20,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
@@ -39,6 +40,16 @@ import org.jetbrains.compose.resources.decodeToImageBitmap
 
 /** Standard trade-paperback proportions, used for every cover in the app. */
 const val BOOK_COVER_ASPECT_RATIO = 0.68f
+
+/**
+ * How small the artwork is resampled to before being blown back up behind
+ * itself. Small enough that nothing of the picture survives but its light, large
+ * enough that the light still moves across the card. See [CoverArtwork].
+ */
+private const val CoverBackdropEdge = 24
+
+/** How far the backdrop is held behind the cover in front of it. */
+private const val BackdropDim = 0.3f
 
 /** What a book has to show for itself. */
 @Immutable
@@ -60,11 +71,11 @@ internal sealed interface CoverArt {
 /**
  * Decodes a cover, off the main thread and only once.
  *
- * Covers are stored as they were extracted - a PDF's first page rendered at 96
- * DPI is around 800x1100 - and decoding one costs several megabytes and a
- * measurable pause. Doing that inside composition, as this once did, meant every
- * card scrolled into view stalled the frame it appeared on, so a fast scroll
- * through a large library stuttered on all three platforms.
+ * A stored cover is around 800 pixels along its longer edge, and artwork stored
+ * before covers were held to a size can be several times that - so decoding one
+ * costs megabytes and a measurable pause. Doing that inside composition, as this
+ * once did, meant every card scrolled into view stalled the frame it appeared
+ * on, so a fast scroll through a large library stuttered on all three platforms.
  *
  * What comes back is kept in [CoverArtCache], shrunk to the size it is actually
  * drawn at and held to a fixed budget. That is what makes scrolling back up a
@@ -126,6 +137,12 @@ internal fun bookCoverColor(seed: String): Color {
  * The tile is drawn first and the artwork fades in over it once decoded, so a
  * cover arriving is a settle rather than a pop - and a card that is scrolled past
  * before its artwork lands never flashes a monogram it was not going to keep.
+ *
+ * The artwork is fitted rather than cropped. Every shelf in the app draws its
+ * covers at one set of proportions, and books do not come at one set of
+ * proportions - so filling the tile means cutting the sides off a wide cover and
+ * the title off a tall one. Fitted, the whole cover is there, and what fills the
+ * space around it is the cover itself - see [CoverArtwork].
  */
 @Composable
 fun BookCover(
@@ -167,14 +184,7 @@ fun BookCover(
         contentAlignment = Alignment.Center,
     ) {
         when (art) {
-            is CoverArt.Artwork -> Image(
-                bitmap = art.bitmap,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .graphicsLayer { alpha = artworkAlpha },
-            )
+            is CoverArt.Artwork -> CoverArtwork(bitmap = art.bitmap, alpha = artworkAlpha)
 
             CoverArt.Absent -> Text(
                 text = title.trim().firstOrNull()?.uppercase() ?: "?",
@@ -190,5 +200,60 @@ fun BookCover(
             // Nothing but the tile, which is already drawn behind this.
             CoverArt.Pending -> Unit
         }
+    }
+}
+
+/**
+ * A cover, whole, on a backdrop made of itself.
+ *
+ * A fitted cover leaves space wherever its proportions differ from the shelf's,
+ * and a flat fill there reads as a coloured stripe above and below every book -
+ * a grid of them looks like bunting rather than like a shelf. Filling it with a
+ * blurred, dimmed blow-up of the same artwork is what makes the card read as one
+ * object, which is the trick Apple Books and every music app have used for
+ * years: the eye takes it as the cover's own light spilling out.
+ *
+ * The blur is the shrink. The backdrop is the artwork resampled down to a couple
+ * of dozen pixels and then drawn back up across the whole card - bilinear
+ * filtering turns that into a soft wash for nothing, and unlike a real blur it
+ * costs the same on every platform and every Android version. A `Modifier.blur`
+ * here would do nothing at all below Android 12.
+ *
+ * One layer for all three pieces, so the backdrop, its dimming and the cover
+ * fade in together as one thing.
+ */
+@Composable
+private fun CoverArtwork(bitmap: ImageBitmap, alpha: Float) {
+    val backdrop = remember(bitmap) { bitmap.scaledToFit(CoverBackdropEdge) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .graphicsLayer { this.alpha = alpha },
+    ) {
+        Image(
+            bitmap = backdrop,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            // Bilinear, which is what turns two dozen pixels blown up across a
+            // card into a wash rather than into squares.
+            filterQuality = FilterQuality.Low,
+            modifier = Modifier.fillMaxSize(),
+        )
+
+        // Held back from the cover in front of it, and by enough that a pale
+        // backdrop cannot be mistaken for part of the artwork.
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = BackdropDim)),
+        )
+
+        Image(
+            bitmap = bitmap,
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.fillMaxSize(),
+        )
     }
 }

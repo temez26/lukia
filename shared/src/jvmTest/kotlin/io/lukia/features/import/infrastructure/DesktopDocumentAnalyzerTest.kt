@@ -187,10 +187,12 @@ class DesktopDocumentAnalyzerTest {
 
             val coverBytes = assertNotNull(result.coverImage).bytes
             assertTrue(coverBytes.isNotEmpty())
-            assertEquals(0x89.toByte(), coverBytes[0])
-            assertEquals('P'.code.toByte(), coverBytes[1])
-            assertEquals('N'.code.toByte(), coverBytes[2])
-            assertEquals('G'.code.toByte(), coverBytes[3])
+            // JPEG rather than the PNG the renderer produced: a page rendered at
+            // 96 DPI is larger than a cover is stored at, so what reaches the
+            // library is the shrunk re-encoding of it.
+            assertEquals(0xFF.toByte(), coverBytes[0])
+            assertEquals(0xD8.toByte(), coverBytes[1])
+            assertEquals(0xFF.toByte(), coverBytes[2])
         } finally {
             file.deleteIfExists()
         }

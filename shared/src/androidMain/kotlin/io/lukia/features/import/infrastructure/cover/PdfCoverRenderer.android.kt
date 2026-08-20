@@ -1,6 +1,7 @@
 package io.lukia.features.import.infrastructure.cover
 
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
 import java.io.ByteArrayOutputStream
@@ -19,6 +20,14 @@ internal actual fun renderPdfCover(pdfBytes: ByteArray): ByteArray? {
                 } else {
                     renderer.openPage(0).use { page ->
                         val bitmap = Bitmap.createBitmap(page.width, page.height, Bitmap.Config.ARGB_8888)
+
+                        // PdfRenderer draws the page's ink and nothing else, so
+                        // whatever it does not cover keeps the bitmap's own
+                        // transparent background - which comes out black the
+                        // moment the cover is stored in a format without an
+                        // alpha channel. The paper has to be painted first.
+                        bitmap.eraseColor(Color.WHITE)
+
                         page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
 
                         ByteArrayOutputStream().use { output ->

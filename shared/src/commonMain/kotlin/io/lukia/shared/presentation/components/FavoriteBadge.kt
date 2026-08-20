@@ -22,6 +22,10 @@ import io.lukia.shared.presentation.theme.LukiaMotion
 /**
  * The filled heart shown over a favourited book's cover.
  *
+ * Ink rather than accent, and on the same frosted backing the percentage sits
+ * on, so the two marks a cover can wear read as one family. The accent belongs
+ * to the progress bar, which is the one mark on a cover that means a quantity.
+ *
  * Decorative: the state is already announced by the menu row that toggles it, so
  * the badge stays out of the accessibility tree.
  */
@@ -51,7 +55,7 @@ fun FavoriteBadge(
             contentAlignment = Alignment.Center,
         ) {
             HeartGlyph(
-                tint = MaterialTheme.colorScheme.primary,
+                tint = MaterialTheme.colorScheme.onSurface,
                 filled = true,
                 modifier = Modifier.size(size * 0.55f),
             )

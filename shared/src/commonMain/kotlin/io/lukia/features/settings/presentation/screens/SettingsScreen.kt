@@ -15,7 +15,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import io.lukia.features.settings.domain.AppSettings
-import io.lukia.features.settings.domain.AppTheme
 import io.lukia.features.settings.presentation.AvailableModels
 import io.lukia.features.settings.presentation.ConnectionTest
 import io.lukia.features.settings.presentation.ModelReadiness
@@ -49,7 +48,7 @@ fun SettingsScreen(
         connectionTest = connectionTest,
         availableModels = availableModels,
         modelReadiness = modelReadiness,
-        onThemeChange = viewModel::setTheme,
+        onAppearanceChange = viewModel::setAppearance,
         onTargetLanguageChange = viewModel::setTargetLanguage,
         onProviderChange = viewModel::setProvider,
         onModelChange = viewModel::setModel,
@@ -85,7 +84,7 @@ fun SettingsContent(
     connectionTest: ConnectionTest = ConnectionTest.Untried,
     availableModels: AvailableModels = AvailableModels.Unknown,
     modelReadiness: ModelReadiness = ModelReadiness.Cold,
-    onThemeChange: (AppTheme) -> Unit,
+    onAppearanceChange: (AppSettings) -> Unit,
     onTargetLanguageChange: (TargetLanguage) -> Unit,
     onProviderChange: (TranslationProvider) -> Unit,
     onModelChange: (String) -> Unit,
@@ -126,7 +125,7 @@ fun SettingsContent(
                 connectionTest = connectionTest,
                 availableModels = availableModels,
                 modelReadiness = modelReadiness,
-                onThemeChange = onThemeChange,
+                onAppearanceChange = onAppearanceChange,
                 onTargetLanguageChange = onTargetLanguageChange,
                 onProviderChange = onProviderChange,
                 onModelChange = onModelChange,

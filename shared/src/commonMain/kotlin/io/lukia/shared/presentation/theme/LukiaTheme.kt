@@ -11,6 +11,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.lukia.features.settings.domain.AppAccent
+import io.lukia.features.settings.domain.AppPalette
 
 /**
  * The app's corner radii, and the only place any of them is decided.
@@ -34,12 +36,20 @@ internal val LukiaShapes = Shapes(
     extraLarge = RoundedCornerShape(20.dp),
 )
 
+/**
+ * [palette] and [accent] default to what the app ships with, so a preview or a
+ * test composes the same colours a first run does without having to say so.
+ */
 @Composable
 fun LukiaTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    palette: AppPalette = AppPalette.Crisp,
+    accent: AppAccent = AppAccent.Themed,
     content: @Composable () -> Unit,
 ) {
-    val colorScheme = if (darkTheme) LukiaDarkColorScheme else LukiaLightColorScheme
+    val colorScheme = remember(darkTheme, palette, accent) {
+        colorSchemeFor(palette, darkTheme, accent)
+    }
     val glassStyle = remember { platformGlassStyle() }
 
     // Measured once at the root so every screen can lay itself out against the

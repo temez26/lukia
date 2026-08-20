@@ -101,7 +101,7 @@ internal fun BookDetailBody(
                 ReadableCover(
                     coverImage = document.coverImage,
                     title = title,
-                    progress = details.percentRead?.let { it / 100f },
+                    progress = details.progress,
                     enabled = document.exists,
                     onRead = onRead,
                     onLongPress = onLongPress,

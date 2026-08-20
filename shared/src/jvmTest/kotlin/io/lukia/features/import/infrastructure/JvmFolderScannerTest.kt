@@ -51,7 +51,14 @@ class JvmFolderScannerTest {
         )
     }
 
-    /** Dot directories hold a sync client's caches, never a reader's books. */
+    /**
+     * Dot directories hold a sync client's caches, never a reader's books.
+     *
+     * Named rather than flagged, because that is how such a directory usually
+     * arrives on Windows: nothing sets the DOS hidden attribute on a `.cache`
+     * copied off a Mac or written by a sync client, so a scanner that only asked
+     * `isHidden` walked straight into it there.
+     */
     @Test
     fun ignoresHiddenSubFolders() = runTest {
         val folder = createFolder("book.pdf")
@@ -61,6 +68,22 @@ class JvmFolderScannerTest {
         val documents = scanner.scan(folder.asPickedFolder())
 
         assertEquals(listOf("book.pdf"), documents.map { it.fileName })
+    }
+
+    /**
+     * ...but a reader who points the picker at a dot directory has said what
+     * they meant, and a scan that came back empty would look like a refusal
+     * nothing on screen explained.
+     */
+    @Test
+    fun scansTheChosenFolderEvenWhenItIsItselfHidden() = runTest {
+        val folder = createFolder()
+        val chosen = File(folder, ".books").apply { mkdir() }
+        File(chosen, "wizard.epub").writeText("test")
+
+        val documents = scanner.scan(chosen.asPickedFolder())
+
+        assertEquals(listOf("wizard.epub"), documents.map { it.fileName })
     }
 
     /**
