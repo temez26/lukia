@@ -69,9 +69,13 @@ internal fun readEpub(epubBytes: ByteArray): ReflowableContent? {
 
     if (sections.isEmpty()) return null
 
+    val contents = epub.tableOfContents(files).ifEmpty { sections.headingOutline() }
+
     return ReflowableContent(
         sections = sections,
-        outline = epub.tableOfContents(files).ifEmpty { sections.headingOutline() },
+        // Filled in from the chapters' own headings wherever the book listed
+        // none of its own - see [withSectionHeadings].
+        outline = contents.withSectionHeadings(sections),
     )
 }
 
