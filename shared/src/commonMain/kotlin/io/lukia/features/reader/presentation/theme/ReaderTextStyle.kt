@@ -5,10 +5,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReaderTypeface
+import io.lukia.features.reader.domain.TextAlignment
 
 /**
  * The size body text is set at before the reader's own scale is applied.
@@ -35,7 +37,13 @@ private val BaseTextSize: TextUnit = 17.sp
 internal fun readerTextStyle(settings: ReaderSettings): TextStyle {
     val color = MaterialTheme.colorScheme.onSurface
 
-    return remember(settings.textScale, settings.lineSpacing, settings.typeface, color) {
+    return remember(
+        settings.textScale,
+        settings.lineSpacing,
+        settings.typeface,
+        settings.alignment,
+        color,
+    ) {
         val size = BaseTextSize * settings.textScale
 
         TextStyle(
@@ -45,6 +53,12 @@ internal fun readerTextStyle(settings: ReaderSettings): TextStyle {
             fontFamily = when (settings.typeface) {
                 ReaderTypeface.Serif -> FontFamily.Serif
                 ReaderTypeface.SansSerif -> FontFamily.SansSerif
+            },
+            // Start rather than Left: a book set right-to-left is ragged on its
+            // left, and naming a side here would set it against its own writing.
+            textAlign = when (settings.alignment) {
+                TextAlignment.Justified -> TextAlign.Justify
+                TextAlignment.Ragged -> TextAlign.Start
             },
         )
     }

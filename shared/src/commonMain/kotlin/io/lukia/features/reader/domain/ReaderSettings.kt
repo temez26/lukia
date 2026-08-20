@@ -17,6 +17,23 @@ enum class ReaderTypeface {
     Serif,
 }
 
+/**
+ * How the lines of a paragraph meet its edges.
+ *
+ * [Justified] stretches the spaces in every line but the last so both edges of
+ * the column are straight, which is how a printed book is set. [Ragged] leaves
+ * the spaces even and the far edge uneven, which is easier to read on a narrow
+ * column - justifying forty characters opens rivers of white space down the
+ * page, and there is no hyphenation here to close them.
+ *
+ * Both follow the direction the text is written in rather than picking a side,
+ * so a book set right-to-left is ragged on its left.
+ */
+enum class TextAlignment {
+    Ragged,
+    Justified,
+}
+
 /** Leading presets, as a multiple of the text size. */
 enum class LineSpacing(val multiplier: Float) {
     Tight(1.2f),
@@ -97,6 +114,11 @@ data class ReaderSettings(
      */
     val pageScale: Float = DEFAULT_PAGE_SCALE,
     val typeface: ReaderTypeface = ReaderTypeface.SansSerif,
+    /**
+     * How paragraphs meet the edge of the column. Reflowable books only: a PDF's
+     * lines were broken and spaced when the file was made.
+     */
+    val alignment: TextAlignment = TextAlignment.Ragged,
     /**
      * How large illustrations are drawn. Reflowable books only: a PDF's pictures
      * were placed on its pages when the file was made, and the reader has no

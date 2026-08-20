@@ -3,6 +3,7 @@ package io.lukia.features.reader.presentation.theme
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -74,6 +75,10 @@ internal fun headingStyle(style: TextStyle, level: Int): TextStyle {
         fontSize = style.fontSize * scale,
         lineHeight = style.fontSize * scale * HEADING_LEADING,
         fontWeight = FontWeight.SemiBold,
+        // Never justified, whatever the prose is set to. A title is a handful of
+        // words on a line or two, and stretching them to both edges leaves gaps
+        // a sentence's worth wide.
+        textAlign = TextAlign.Start,
     )
 }
 
@@ -82,4 +87,7 @@ internal fun codeStyle(style: TextStyle): TextStyle = style.copy(
     fontFamily = FontFamily.Monospace,
     fontSize = style.fontSize * CODE_SCALE,
     lineHeight = style.fontSize * CODE_LEADING,
+    // Preformatted text is the one thing whose spacing is content: justifying it
+    // would move the columns of a table and the indents of a program.
+    textAlign = TextAlign.Start,
 )

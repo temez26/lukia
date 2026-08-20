@@ -27,6 +27,7 @@ import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.domain.ReaderTypeface
 import io.lukia.features.reader.domain.ReadingWidth
+import io.lukia.features.reader.domain.TextAlignment
 import io.lukia.shared.presentation.components.DismissOnBack
 import io.lukia.shared.presentation.components.GlassSurface
 import io.lukia.shared.presentation.components.GlassTone
@@ -183,6 +184,21 @@ internal fun ReaderSettingsPanel(
                     label = { it.name },
                     enabled = typographyEnabled,
                     onSelect = { onSettingsChange(settings.copy(lineSpacing = it)) },
+                )
+            }
+
+            SettingGroup(
+                label = "Alignment",
+                wide = wide,
+                inset = inset,
+                enabled = typographyEnabled,
+            ) {
+                SegmentedControl(
+                    options = TextAlignment.entries,
+                    selected = settings.alignment,
+                    label = { it.name },
+                    enabled = typographyEnabled,
+                    onSelect = { onSettingsChange(settings.copy(alignment = it)) },
                 )
             }
 

@@ -233,4 +233,14 @@ class ReaderChromeTest {
         onNodeWithText("Image size").assertExists()
         onNodeWithText("Fill").assertExists()
     }
+
+    @Test
+    fun theSettingsPanelOffersAnAlignment() = runComposeUiTest {
+        setReader(pageCount = 10)
+
+        onNodeWithContentDescription("Reading settings").performClick()
+
+        onNodeWithText("Alignment").assertExists()
+        onNodeWithText("Justified").assertExists()
+    }
 }

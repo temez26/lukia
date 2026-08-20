@@ -8,6 +8,7 @@ import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.domain.ReaderTypeface
 import io.lukia.features.reader.domain.ReadingWidth
+import io.lukia.features.reader.domain.TextAlignment
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -51,6 +52,7 @@ class ReaderSettingsRepository(
             pageScale = readPageScale(defaults),
             typeface = store.readEnum(KEY_TYPEFACE, ReaderTypeface.entries, defaults.typeface),
             figureSize = store.readEnum(KEY_FIGURE_SIZE, FigureSize.entries, defaults.figureSize),
+            alignment = store.readEnum(KEY_ALIGNMENT, TextAlignment.entries, defaults.alignment),
         )
     }
 
@@ -77,6 +79,7 @@ class ReaderSettingsRepository(
         store.putString(KEY_PAGE_SCALE, settings.pageScale.toString())
         store.putString(KEY_TYPEFACE, settings.typeface.name)
         store.putString(KEY_FIGURE_SIZE, settings.figureSize.name)
+        store.putString(KEY_ALIGNMENT, settings.alignment.name)
     }
 
     private companion object {
@@ -89,5 +92,6 @@ class ReaderSettingsRepository(
         const val KEY_READING_WIDTH = "reader.readingWidth"
         const val KEY_TYPEFACE = "reader.typeface"
         const val KEY_FIGURE_SIZE = "reader.figureSize"
+        const val KEY_ALIGNMENT = "reader.alignment"
     }
 }

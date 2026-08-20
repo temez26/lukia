@@ -7,6 +7,7 @@ import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.domain.ReaderTypeface
 import io.lukia.features.reader.domain.ReadingWidth
+import io.lukia.features.reader.domain.TextAlignment
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -133,5 +134,28 @@ class ReaderSettingsRepositoryTest {
 
         assertEquals(FigureSize.Normal, settings.figureSize)
         assertEquals(ReaderTypeface.Serif, settings.typeface)
+    }
+
+    @Test
+    fun theChosenAlignmentIsReadBack() {
+        val store = FakeSettingsStore()
+
+        ReaderSettingsRepository(store).update(
+            ReaderSettings(alignment = TextAlignment.Justified),
+        )
+
+        assertEquals(
+            TextAlignment.Justified,
+            ReaderSettingsRepository(store).settings.value.alignment,
+        )
+    }
+
+    /** A ragged right edge is easier to read on a narrow column, so it leads. */
+    @Test
+    fun aBookOpensRagged() {
+        assertEquals(
+            TextAlignment.Ragged,
+            ReaderSettingsRepository(FakeSettingsStore()).settings.value.alignment,
+        )
     }
 }
