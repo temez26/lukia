@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.shared.presentation.components.AnchoredMenu
+import io.lukia.shared.presentation.components.CheckGlyph
 import io.lukia.shared.presentation.components.EllipsisGlyph
 import io.lukia.shared.presentation.components.FolderGlyph
 import io.lukia.shared.presentation.components.GearGlyph
@@ -97,6 +98,7 @@ internal fun LibraryNavBar(
     onMenuExpandedChange: (Boolean) -> Unit,
     onImport: () -> Unit,
     onImportFolder: () -> Unit,
+    onSelectBooks: () -> Unit,
     onSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -168,6 +170,7 @@ internal fun LibraryNavBar(
                     onDismissRequest = { onMenuExpandedChange(false) },
                     onImport = onImport,
                     onImportFolder = onImportFolder,
+                    onSelectBooks = onSelectBooks,
                     onSettings = onSettings,
                 )
             }
@@ -268,6 +271,7 @@ private fun LibraryMenu(
     onDismissRequest: () -> Unit,
     onImport: () -> Unit,
     onImportFolder: () -> Unit,
+    onSelectBooks: () -> Unit,
     onSettings: () -> Unit,
 ) {
     AnchoredMenu(
@@ -278,6 +282,19 @@ private fun LibraryMenu(
             onDismissRequest = onDismissRequest,
             onImport = onImport,
             onImportFolder = onImportFolder,
+        )
+
+        MenuSeparator()
+
+        // Also here, and not only on a book: reaching a shelf-wide mode by
+        // holding down one particular book is a way in nobody finds by looking.
+        MenuRow(
+            label = "Select Books",
+            icon = { tint, glyph -> CheckGlyph(tint = tint, modifier = glyph) },
+            onClick = {
+                onDismissRequest()
+                onSelectBooks()
+            },
         )
 
         MenuSeparator()

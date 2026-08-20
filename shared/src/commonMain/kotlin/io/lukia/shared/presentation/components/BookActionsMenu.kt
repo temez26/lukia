@@ -12,8 +12,9 @@ import androidx.compose.runtime.Composable
  * menu, so an overlaid menu swallows it whole. This is also where the library's
  * own menu sits under its button, which is what makes the two read as one app.
  *
- * [onShowDetails] is left out where the book's details are already on screen,
- * which is why it is the one optional row.
+ * [onShowDetails] and [onSelectBooks] are left out where they have nowhere to
+ * go: the details when they are already on screen, and selecting when the menu
+ * was opened from somewhere that has no shelf to select from.
  *
  * Every row closes the menu before acting, so it is never left hanging over the
  * card it just changed.
@@ -27,6 +28,7 @@ fun BookActionsMenu(
     onDelete: () -> Unit,
     onDismissRequest: () -> Unit,
     onShowDetails: (() -> Unit)? = null,
+    onSelectBooks: (() -> Unit)? = null,
 ) {
     AnchoredMenu(
         expanded = expanded,
@@ -57,6 +59,23 @@ fun BookActionsMenu(
         )
 
         MenuSeparator()
+
+        // Above the actions rather than below them: this one changes what the
+        // shelf is for rather than doing anything to this book, and a row that
+        // sits among Refresh and Delete reads as a third thing done to the book
+        // it was opened from.
+        if (onSelectBooks != null) {
+            MenuRow(
+                label = "Select Books",
+                icon = { tint, glyph -> CheckGlyph(tint = tint, modifier = glyph) },
+                onClick = {
+                    onDismissRequest()
+                    onSelectBooks()
+                },
+            )
+
+            MenuSeparator()
+        }
 
         MenuRow(
             label = "Refresh Details",

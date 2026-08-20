@@ -47,6 +47,22 @@ class LibraryViewModel(
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ViewModel() {
 
+    /**
+     * Selecting several books at once. Held apart rather than added to this -
+     * see [LibrarySelectionSession] - so that a mode with its own state and its
+     * own actions is a thing rather than a scattering of fields.
+     */
+    private val selectionSession = LibrarySelectionSession(
+        setFavoriteUseCase = setFavoriteUseCase,
+        refreshDocumentUseCase = refreshDocumentUseCase,
+        removeDocumentUseCase = removeDocumentUseCase,
+        progressRepository = readingProgressRepository,
+        scope = viewModelScope,
+    )
+
+    val selection: StateFlow<LibrarySelection> = selectionSession.selection
+    val bulkAction: StateFlow<BulkAction?> = selectionSession.running
+
     private val _uiState = MutableStateFlow<UiState<List<DocumentInfo>>>(UiState.Loading)
     val uiState: StateFlow<UiState<List<DocumentInfo>>> = _uiState.asStateFlow()
 
@@ -315,6 +331,44 @@ class LibraryViewModel(
         _uiState.update { state ->
             if (state is UiState.Success) UiState.Success(transform(state.data)) else state
         }
+    }
+
+    fun startSelecting() = selectionSession.start()
+
+    fun stopSelecting() = selectionSession.stop()
+
+    fun toggleSelected(location: String) = selectionSession.toggle(location)
+
+    /**
+     * Ticks what the shelf is showing rather than the whole library: a reader
+     * who has narrowed to one author and pressed Select All has selected that
+     * author, and being handed everything they own instead would be the app
+     * answering a question nobody asked.
+     */
+    fun toggleAllSelected() = selectionSession.toggleAll(books.value.map { it.location })
+
+    fun refreshSelected() = selectionSession.refresh(::onBulkDone)
+
+    fun setFavoriteOnSelected() =
+        selectionSession.setFavorite(_uiState.value.dataOrNull.orEmpty(), ::onBulkDone)
+
+    fun resetProgressOnSelected() = selectionSession.resetProgress(::onBulkDone)
+
+    fun deleteSelected() = selectionSession.delete(::onBulkDone)
+
+    /**
+     * The library is read again rather than patched after a bulk action.
+     *
+     * The single-book actions patch the loaded list, because one row changing is
+     * not a reason to re-read the rest. A bulk action is the opposite case: it
+     * may have touched every book on the shelf, and working out which of forty
+     * patches to apply is more work - and more ways to be wrong - than reading
+     * the shelf once.
+     */
+    private fun onBulkDone(message: String) {
+        _message.value = message
+
+        loadDocuments()
     }
 
     fun clearMessage() {

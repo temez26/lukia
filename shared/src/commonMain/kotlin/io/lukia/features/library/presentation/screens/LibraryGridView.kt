@@ -22,9 +22,11 @@ import io.lukia.features.library.presentation.ImportProgress
 import io.lukia.features.library.presentation.LibraryBook
 import io.lukia.features.library.presentation.LibraryFacets
 import io.lukia.features.library.presentation.LibraryQuery
+import io.lukia.features.library.presentation.LibrarySelection
 import io.lukia.features.library.presentation.LibraryShelf
 import io.lukia.features.library.presentation.OpenMenu
 import io.lukia.features.library.presentation.components.BookCard
+import io.lukia.features.library.presentation.components.CardSelection
 import io.lukia.features.library.presentation.components.ImportBookCard
 import io.lukia.features.library.presentation.components.LibraryHeader
 import io.lukia.features.library.presentation.components.libraryNavBarHeight
@@ -65,6 +67,10 @@ internal fun LibraryGrid(
     onImport: () -> Unit,
     onImportFolder: () -> Unit,
     modifier: Modifier = Modifier,
+    /** What is ticked, while the shelf is being selected from. */
+    selection: LibrarySelection = LibrarySelection.None,
+    onStartSelecting: () -> Unit = {},
+    onToggle: (location: String) -> Unit = {},
 ) {
     val dimens = LocalLukiaDimens.current
 
@@ -129,9 +135,18 @@ internal fun LibraryGrid(
                 onRefresh = { onRefresh(book.document) },
                 onDelete = { onDelete(book.document) },
                 onShowDetails = { onDocumentDetails(book.document) },
+                onSelectBooks = onStartSelecting,
                 reveal = reveal,
                 revealIndex = index + GridRevealOffset,
                 modifier = Modifier.animateItem(),
+                selection = if (selection.active) {
+                    CardSelection(
+                        selected = book.location in selection,
+                        onToggle = { onToggle(book.location) },
+                    )
+                } else {
+                    null
+                },
             )
         }
 
