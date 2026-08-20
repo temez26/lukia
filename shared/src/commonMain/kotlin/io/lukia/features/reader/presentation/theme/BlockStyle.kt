@@ -75,10 +75,11 @@ internal fun headingStyle(style: TextStyle, level: Int): TextStyle {
         fontSize = style.fontSize * scale,
         lineHeight = style.fontSize * scale * HEADING_LEADING,
         fontWeight = FontWeight.SemiBold,
-        // Never justified, whatever the prose is set to. A title is a handful of
-        // words on a line or two, and stretching them to both edges leaves gaps
-        // a sentence's worth wide.
-        textAlign = TextAlign.Start,
+        // Never justified, whatever the prose is set to: a title is a handful
+        // of words on a line or two, and stretching them to both edges leaves
+        // gaps a sentence's worth wide. Anything else it has been given stands,
+        // so a book that centred its part titles keeps them centred.
+        textAlign = if (style.textAlign == TextAlign.Justify) TextAlign.Start else style.textAlign,
     )
 }
 

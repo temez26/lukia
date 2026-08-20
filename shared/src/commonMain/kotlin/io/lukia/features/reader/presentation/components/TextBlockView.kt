@@ -2,7 +2,9 @@ package io.lukia.features.reader.presentation.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import io.lukia.features.reader.domain.BlockAlignment
 import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.domain.TextBlock
 import io.lukia.features.reader.presentation.TranslateOnScreen
@@ -24,6 +26,12 @@ internal fun TextBlockView(
     /** How large illustrations are drawn, which is the reader's own setting. */
     figureSize: FigureSize = FigureSize.Normal,
 ) {
+    // What the book asked for wins over what the reader set, and only for the
+    // block that asked: a centred dedication is the author writing rather than a
+    // preference, and there is no reading of "centre this page" that means the
+    // one after it too.
+    val style = block.alignment?.let { style.copy(textAlign = it.textAlign()) } ?: style
+
     when (block) {
         is TextBlock.Heading ->
             HeadingBlock(block, style, translations, actions, translateOnScreen, gestures, resizingType)
@@ -49,4 +57,12 @@ internal fun TextBlockView(
         is TextBlock.Figure -> FigureBlock(block, maxHeight, figureSize)
         TextBlock.Separator -> SeparatorBlock()
     }
+}
+
+/** The book's word, as the text layer states it. */
+private fun BlockAlignment.textAlign(): TextAlign = when (this) {
+    BlockAlignment.Left -> TextAlign.Left
+    BlockAlignment.Center -> TextAlign.Center
+    BlockAlignment.Right -> TextAlign.Right
+    BlockAlignment.Justify -> TextAlign.Justify
 }

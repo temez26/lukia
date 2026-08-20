@@ -75,4 +75,15 @@ class ReaderTextStyleTest {
         assertEquals(ragged.lineHeight, justified.lineHeight)
         assertEquals(ragged.fontFamily, justified.fontFamily)
     }
+
+    /**
+     * A book that centred its part titles keeps them centred - the heading rule
+     * is that a title is never *justified*, not that it is always flush.
+     */
+    @Test
+    fun aHeadingTheBookCentredStaysCentred() {
+        val centred = styleFor(ReaderSettings()).copy(textAlign = TextAlign.Center)
+
+        assertEquals(TextAlign.Center, headingStyle(centred, level = 1).textAlign)
+    }
 }

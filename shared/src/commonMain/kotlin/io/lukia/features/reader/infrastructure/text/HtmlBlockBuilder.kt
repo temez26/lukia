@@ -1,6 +1,7 @@
 package io.lukia.features.reader.infrastructure.text
 
 import io.lukia.core.infrastructure.xml.XmlEvent
+import io.lukia.features.reader.domain.BlockAlignment
 import io.lukia.features.reader.domain.Emphasis
 import io.lukia.features.reader.domain.TextBlock
 import io.lukia.features.reader.domain.TextRun
@@ -21,7 +22,35 @@ private class OpenBlock(
     val headingLevel: Int = 0,
     /** Only meaningful for [BlockKind.ListItem]. */
     val marker: String = "",
+    /** What the book asked for, here or on something this sits inside. */
+    val alignment: BlockAlignment? = null,
 )
+
+/**
+ * How a book asks for a paragraph to be set, out of the two ways books say it.
+ *
+ * The `align` attribute is by far the more common in the wild - a shelf of
+ * twenty books uses it for hundreds of dedications, captions and epigraphs -
+ * and an inline `text-align` is the modern spelling of the same thing. What a
+ * stylesheet says is not read: that is a document of selectors and cascades
+ * rather than a property on the element, and honouring it properly means
+ * bringing a CSS engine to a book reader.
+ */
+private fun XmlEvent.Open.declaredAlignment(): BlockAlignment? {
+    val declared = attributes["align"]
+        ?: attributes["style"]
+            ?.substringAfter("text-align:", missingDelimiterValue = "")
+            ?.takeIf { it.isNotEmpty() }
+            ?.substringBefore(';')
+
+    return when (declared?.trim()?.lowercase()) {
+        "center", "centre" -> BlockAlignment.Center
+        "right" -> BlockAlignment.Right
+        "left" -> BlockAlignment.Left
+        "justify" -> BlockAlignment.Justify
+        else -> null
+    }
+}
 
 private class ListContext(val ordered: Boolean) {
     var nextNumber: Int = 1
@@ -148,22 +177,37 @@ internal class HtmlBlockBuilder(private val image: (src: String) -> ByteArray?) 
         if (name !in BlockElements) return
 
         flush()
-        openBlocks += blockFor(name)
+        openBlocks += blockFor(name, event.declaredAlignment())
     }
 
-    private fun blockFor(name: String): OpenBlock = when {
-        name.length == 2 && name[0] == 'h' && name[1] in '1'..'6' ->
-            OpenBlock(
+    /**
+     * [alignment] falls back to whatever this sits inside, because that is what
+     * the property does: a paragraph in a centred division is centred without
+     * saying so itself, which is how books set their dedications.
+     */
+    private fun blockFor(name: String, alignment: BlockAlignment?): OpenBlock {
+        val asked = alignment ?: openBlocks.lastOrNull()?.alignment
+
+        return when {
+            name.length == 2 && name[0] == 'h' && name[1] in '1'..'6' ->
+                OpenBlock(
+                    tag = name,
+                    kind = BlockKind.Heading,
+                    headingLevel = name[1].digitToInt(),
+                    alignment = asked,
+                )
+
+            name == "blockquote" -> OpenBlock(tag = name, kind = BlockKind.Quote, alignment = asked)
+
+            name == "li" -> OpenBlock(
                 tag = name,
-                kind = BlockKind.Heading,
-                headingLevel = name[1].digitToInt(),
+                kind = BlockKind.ListItem,
+                marker = nextMarker(),
+                alignment = asked,
             )
 
-        name == "blockquote" -> OpenBlock(tag = name, kind = BlockKind.Quote)
-
-        name == "li" -> OpenBlock(tag = name, kind = BlockKind.ListItem, marker = nextMarker())
-
-        else -> OpenBlock(tag = name, kind = BlockKind.Paragraph)
+            else -> OpenBlock(tag = name, kind = BlockKind.Paragraph, alignment = asked)
+        }
     }
 
     /**
@@ -276,23 +320,31 @@ internal class HtmlBlockBuilder(private val image: (src: String) -> ByteArray?) 
 
         val block = openBlocks.lastOrNull()
 
+        val asked = block?.alignment
+
         emit(
             when {
                 block == null -> TextBlock.Paragraph(text)
 
-                block.kind == BlockKind.Heading ->
-                    TextBlock.Heading(text = text, level = block.headingLevel)
+                block.kind == BlockKind.Heading -> TextBlock.Heading(
+                    text = text,
+                    level = block.headingLevel,
+                    alignment = asked,
+                )
 
-                block.kind == BlockKind.ListItem ->
-                    TextBlock.ListItem(text = text, marker = block.marker)
+                block.kind == BlockKind.ListItem -> TextBlock.ListItem(
+                    text = text,
+                    marker = block.marker,
+                    alignment = asked,
+                )
 
                 // A quotation's own paragraphs are pushed as paragraphs, so what
                 // makes them quoted is the blockquote further out rather than the
                 // element the text is directly inside.
                 block.kind == BlockKind.Quote || openBlocks.any { it.kind == BlockKind.Quote } ->
-                    TextBlock.Quote(text)
+                    TextBlock.Quote(text, alignment = asked)
 
-                else -> TextBlock.Paragraph(text)
+                else -> TextBlock.Paragraph(text, alignment = asked)
             },
         )
     }
