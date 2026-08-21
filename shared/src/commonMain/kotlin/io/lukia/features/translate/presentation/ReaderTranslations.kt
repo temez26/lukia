@@ -45,16 +45,18 @@ class ReaderTranslations private constructor(
             val sections = mutableMapOf<Int, MutableMap<Int, PassageBuilder>>()
 
             passages.forEach { (anchor, state) ->
-                val builder = when (anchor) {
+                when (anchor) {
                     is TextAnchor.Page ->
-                        pages.getOrPut(anchor.pageIndex, ::PassageBuilder)
+                        pages
+                            .getOrPut(anchor.pageIndex, ::PassageBuilder)
+                            .put(anchor.sentenceIndex, anchor.wordIndex, state, anchor.blockIndex)
 
                     is TextAnchor.Section ->
-                        sections.getOrPut(anchor.sectionIndex, ::mutableMapOf)
+                        sections
+                            .getOrPut(anchor.sectionIndex, ::mutableMapOf)
                             .getOrPut(anchor.blockIndex, ::PassageBuilder)
+                            .put(anchor.sentenceIndex, anchor.wordIndex, state)
                 }
-
-                builder.put(anchor.sentenceIndex, anchor.wordIndex, state)
             }
 
             return ReaderTranslations(
@@ -78,15 +80,28 @@ class ReaderTranslations private constructor(
 private class PassageBuilder {
 
     private var block: PassageTranslation? = null
+    private val paragraphs = mutableMapOf<Int, PassageTranslation>()
     private val sentences = mutableMapOf<Int, PassageTranslation>()
     private val words = mutableMapOf<Int, MutableMap<Int, PassageTranslation>>()
 
-    fun put(sentenceIndex: Int?, wordIndex: Int?, state: PassageTranslation) {
+    /**
+     * [blockIndex] is only ever given for a page, where one bucket holds every
+     * block on it. A section's blocks are buckets of their own, so a passage
+     * with no sentence named there is the bucket itself - see [TextAnchor].
+     */
+    fun put(
+        sentenceIndex: Int?,
+        wordIndex: Int?,
+        state: PassageTranslation,
+        blockIndex: Int? = null,
+    ) {
         when {
-            // No sentence named is the block itself - see TextAnchor.
-            sentenceIndex == null -> block = state
-            wordIndex == null -> sentences[sentenceIndex] = state
-            else -> words.getOrPut(sentenceIndex, ::mutableMapOf)[wordIndex] = state
+            sentenceIndex != null && wordIndex != null ->
+                words.getOrPut(sentenceIndex, ::mutableMapOf)[wordIndex] = state
+
+            sentenceIndex != null -> sentences[sentenceIndex] = state
+            blockIndex != null -> paragraphs[blockIndex] = state
+            else -> block = state
         }
     }
 
@@ -94,6 +109,7 @@ private class PassageBuilder {
         sentences = sentences.toMap(),
         words = words.mapValues { (_, byWord) -> WordTranslations(byWord.toMap()) },
         block = block,
+        paragraphs = paragraphs.toMap(),
     )
 }
 
@@ -136,6 +152,16 @@ class SentenceTranslations(
      * to have been translated.
      */
     val block: PassageTranslation? = null,
+    /**
+     * What has become of whole paragraphs of a *page*, by the block each of them
+     * is.
+     *
+     * A page is one of these for all of it, because its sentences are numbered
+     * across the whole page rather than within a block - so unlike a section,
+     * whose every block is a bucket of its own with a [block] slot to match,
+     * a page's paragraphs have to say which one they are.
+     */
+    private val paragraphs: Map<Int, PassageTranslation> = emptyMap(),
 ) {
 
     /** What has become of the whole sentence, as opposed to any word in it. */
@@ -145,7 +171,15 @@ class SentenceTranslations(
     fun words(sentenceIndex: Int): WordTranslations =
         words[sentenceIndex] ?: WordTranslations.None
 
-    val isEmpty: Boolean get() = block == null && sentences.isEmpty() && words.isEmpty()
+    /**
+     * What has become of one paragraph of a page. It takes precedence over the
+     * sentences inside it, exactly as [block] does: a paragraph translated whole
+     * has none of its own sentences left on the page.
+     */
+    fun paragraph(blockIndex: Int): PassageTranslation? = paragraphs[blockIndex]
+
+    val isEmpty: Boolean
+        get() = block == null && paragraphs.isEmpty() && sentences.isEmpty() && words.isEmpty()
 
     /**
      * The same states, seen from a slice of the block that starts [offset]
@@ -163,17 +197,20 @@ class SentenceTranslations(
             sentences = sentences.shiftedBy(offset),
             words = words.shiftedBy(offset),
             block = block,
+            paragraphs = paragraphs,
         )
     }
 
     override fun equals(other: Any?): Boolean =
         other is SentenceTranslations &&
             block == other.block &&
+            paragraphs == other.paragraphs &&
             sentences == other.sentences &&
             words == other.words
 
     override fun hashCode(): Int =
-        31 * (31 * sentences.hashCode() + words.hashCode()) + block.hashCode()
+        31 * (31 * (31 * sentences.hashCode() + words.hashCode()) + block.hashCode()) +
+            paragraphs.hashCode()
 
     companion object {
         val None = SentenceTranslations(emptyMap())

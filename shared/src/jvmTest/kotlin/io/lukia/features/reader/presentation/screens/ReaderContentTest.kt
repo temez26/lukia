@@ -2,6 +2,7 @@ package io.lukia.features.reader.presentation.screens
 
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollToIndexAction
 import androidx.compose.ui.test.hasText
@@ -11,6 +12,7 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performScrollToIndex
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.runComposeUiTest
 import io.lukia.features.reader.domain.ReaderSettings
@@ -165,7 +167,7 @@ class ReaderContentTest {
     fun aShortcutBringsTheChromeBack() = runComposeUiTest {
         setReader(pageCount = 348)
 
-        onNodeWithContentDescription("Page 2 of 348").performClick()
+        onNodeWithContentDescription("Page 2 of 348").performTouchInput { doubleClick() }
         waitForIdle()
         assertEquals(
             0,

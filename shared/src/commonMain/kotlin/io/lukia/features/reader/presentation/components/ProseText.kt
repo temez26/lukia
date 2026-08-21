@@ -5,7 +5,6 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
@@ -158,29 +157,31 @@ internal fun ProseText(
 
     val currentGestures by rememberUpdatedState(gestures)
 
-    val tappable = modifier.pointerInput(sentences, words) {
-        detectTapGestures(
+    // What the book wrote here, which is what a point in the drawn paragraph is
+    // answered against - see ProsePassages.
+    val passages = remember(sentences, words) { ProsePassages(sentences, words) }
+
+    val tappable = modifier.pointerInput(passages) {
+        detectReaderTaps(
+            // A tap set to nothing reaches nothing, which leaves it as one of
+            // the two taps that bring the chrome back - so a reader who turned
+            // tapping off can still reach the toolbar over their own text.
             onTap = { position ->
-                // A tap set to nothing is still a tap on the page, and a tap on
-                // the page has always put the chrome away and brought it back.
-                // Swallowing it would leave a reader who turned tapping off with
-                // no way to reach the toolbar over their own text.
-                if (currentGestures.tap == null) {
-                    currentActions.onElsewhere()
-                } else {
-                    ask(currentGestures.tap, position, layout, currentDrawn, sentences, words) {
-                        currentActions.act(it, paragraph)
-                    }
-                }
+                currentActions.act(
+                    passages.at(currentGestures.tap, position, layout, currentDrawn),
+                    paragraph,
+                )
             },
             // Nothing for a long press that asks for nothing: holding a finger
             // on the page has never meant anything else, so there is nothing for
             // it to fall through to.
             onLongPress = { position ->
-                ask(currentGestures.longPress, position, layout, currentDrawn, sentences, words) {
-                    currentActions.act(it, paragraph)
-                }
+                currentActions.act(
+                    passages.at(currentGestures.longPress, position, layout, currentDrawn),
+                    paragraph,
+                )
             },
+            onChrome = { currentActions.onElsewhere() },
         )
     }
 
@@ -243,16 +244,8 @@ internal fun ProseText(
     }
 }
 
-/**
- * What one gesture landed on, once it is known what that gesture asks for.
- *
- * [Nothing] is a gesture that reached no words - a tap in the gap between two
- * sentences, or past the end of the last line - which has always meant the page
- * rather than the text, and is how the chrome is put away and brought back.
- */
+/** What one gesture landed on, once it is known what that gesture asks for. */
 private sealed interface Pointed {
-
-    data object Nothing : Pointed
 
     data class AtWord(val sentence: Sentence, val word: Word) : Pointed
 
@@ -262,56 +255,77 @@ private sealed interface Pointed {
 }
 
 /**
- * Works out what the reader pointed at, for the unit the gesture is set to.
+ * What one paragraph of the book is made of, and how a point in it becomes a
+ * passage.
  *
- * A gesture that is turned off reaches nothing at all rather than falling back
- * to something narrower: off is off, and a long press that quietly translated a
- * sentence because the word under it could not be found would be exactly the
- * kind of thing this setting exists to stop.
- *
- * The one place a gesture does not get what it asked for is a word it cannot
- * find - the punctuation between two words belongs to neither - and there it
- * gets nothing, not the sentence around it.
+ * The sentences and words are the ones the *book* wrote; where each of them
+ * ended up in the paragraph as it is currently drawn is [ParagraphText]'s to
+ * answer, and the two are brought together only here.
  */
-private inline fun ask(
-    unit: PassageUnit?,
-    position: Offset,
-    layout: TextLayoutResult?,
-    drawn: ParagraphText,
-    sentences: List<Sentence>,
-    words: List<Word>,
-    act: (Pointed) -> Unit,
+private class ProsePassages(
+    private val sentences: List<Sentence>,
+    private val words: List<Word>,
 ) {
-    if (unit == null) return
 
-    val offset = layout?.getOffsetForPosition(position)
-    val sentence = offset?.let { drawn.sentenceAt(it) }?.let { sentences.getOrNull(it) }
+    /**
+     * What the reader pointed at, for the unit the gesture is set to - or null
+     * when the gesture reached nothing at all.
+     *
+     * A gesture that is turned off reaches nothing rather than falling back to
+     * something narrower: off is off, and a long press that quietly translated a
+     * sentence because the word under it could not be found would be exactly the
+     * kind of thing that setting exists to stop.
+     *
+     * The one place a gesture does not get what it asked for is a word it cannot
+     * find - the punctuation between two words belongs to neither - and there it
+     * gets nothing, not the sentence around it.
+     */
+    fun at(
+        unit: PassageUnit?,
+        position: Offset,
+        layout: TextLayoutResult?,
+        drawn: ParagraphText,
+    ): Pointed? {
+        if (unit == null) return null
 
-    // Nothing under the finger is the page, whatever the gesture was set to.
-    if (offset == null || sentence == null) {
-        act(Pointed.Nothing)
-        return
-    }
+        val offset = layout?.getOffsetForPosition(position) ?: return null
+        val pointed = drawn.sentenceAt(offset) ?: return null
 
-    when (unit) {
-        PassageUnit.Paragraph -> act(Pointed.AtParagraph)
+        // A paragraph translated whole has none of its own sentences left on the
+        // page - it is one span, filed under WHOLE_BLOCK - so a gesture inside it
+        // is a gesture on the paragraph, whatever unit it was set to. Without
+        // this, a tap meant to put the book's own words back looked up sentence
+        // -1, found nothing, and was read as a tap on the page.
+        if (pointed == WHOLE_BLOCK) return Pointed.AtParagraph
 
-        PassageUnit.Sentence -> act(Pointed.AtSentence(sentence))
+        val sentence = sentences.getOrNull(pointed) ?: return null
 
-        PassageUnit.Word -> drawn.wordAt(offset)
-            ?.let { words.at(it) }
-            ?.let { act(Pointed.AtWord(sentence, it)) }
+        return when (unit) {
+            PassageUnit.Paragraph -> Pointed.AtParagraph
+
+            PassageUnit.Sentence -> Pointed.AtSentence(sentence)
+
+            PassageUnit.Word -> drawn.wordAt(offset)
+                ?.let { words.at(it) }
+                ?.let { Pointed.AtWord(sentence, it) }
+        }
     }
 }
 
-/** Carries out what the reader asked of this block. */
-private fun BlockActions.act(pointed: Pointed, paragraph: String) {
+/**
+ * Carries out what the reader asked of this block, and says whether they asked
+ * anything - which is what decides whether the gesture was answered by the text
+ * or is one of the two that bring the chrome back.
+ */
+private fun BlockActions.act(pointed: Pointed?, paragraph: String): Boolean {
     when (pointed) {
-        Pointed.Nothing -> onElsewhere()
+        null -> return false
         Pointed.AtParagraph -> onParagraph(paragraph)
         is Pointed.AtSentence -> onSentence(pointed.sentence, paragraph)
         is Pointed.AtWord -> onWord(pointed.sentence, pointed.word, paragraph)
     }
+
+    return true
 }
 
 /** The word the book wrote at a place in the paragraph as it is currently drawn. */

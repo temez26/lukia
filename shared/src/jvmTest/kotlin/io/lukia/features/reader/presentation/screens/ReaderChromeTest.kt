@@ -1,7 +1,9 @@
 package io.lukia.features.reader.presentation.screens
 
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollToIndexAction
@@ -10,6 +12,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToIndex
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runComposeUiTest
 import io.lukia.core.presentation.UiState
 import io.lukia.features.reader.domain.ReaderOutline
@@ -20,6 +23,10 @@ import io.lukia.shared.presentation.theme.LukiaTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+
+/** Two taps in the same place, which is what the chrome answers to. */
+@OptIn(ExperimentalTestApi::class)
+private fun SemanticsNodeInteraction.doubleTap() = performTouchInput { doubleClick() }
 
 @OptIn(ExperimentalTestApi::class)
 class ReaderChromeTest {
@@ -109,22 +116,39 @@ class ReaderChromeTest {
         onNodeWithContentDescription("Page 2 of 348").assertExists()
     }
 
-    /** Reading wants the whole screen; a tap is how the chrome comes back. */
+/**
+     * Reading wants the whole screen; two taps are how the chrome goes and comes
+     * back. Two rather than one because a single tap belongs to the words: one
+     * that lands beside them, or on a translation the reader meant to put back,
+     * should not cost them the toolbar.
+     */
     @Test
-    fun tappingThePageHidesTheChromeAndTappingAgainRestoresIt() = runComposeUiTest {
+    fun doubleTappingThePageHidesTheChromeAndDoubleTappingAgainRestoresIt() =
+        runComposeUiTest {
+            setReader(pageCount = 348)
+
+            onNodeWithContentDescription("Close book").assertExists()
+
+            onNodeWithContentDescription("Page 2 of 348").doubleTap()
+            waitForIdle()
+            assertEquals(
+                0,
+                onAllNodes(hasContentDescription("Close book")).fetchSemanticsNodes().size,
+            )
+
+            onNodeWithContentDescription("Page 2 of 348").doubleTap()
+            waitForIdle()
+            onNodeWithContentDescription("Close book").assertExists()
+        }
+
+    /** The other half of the same rule: one tap leaves the toolbar where it is. */
+    @Test
+    fun aSingleTapOnThePageLeavesTheChromeAlone() = runComposeUiTest {
         setReader(pageCount = 348)
 
-        onNodeWithContentDescription("Close book").assertExists()
-
         onNodeWithContentDescription("Page 2 of 348").performClick()
         waitForIdle()
-        assertEquals(
-            0,
-            onAllNodes(hasContentDescription("Close book")).fetchSemanticsNodes().size,
-        )
 
-        onNodeWithContentDescription("Page 2 of 348").performClick()
-        waitForIdle()
         onNodeWithContentDescription("Close book").assertExists()
     }
 
@@ -134,7 +158,7 @@ class ReaderChromeTest {
         setReader(pageCount = 348, outline = chapters)
 
         openContents(pageCount = 348)
-        onNodeWithContentDescription("Page 2 of 348").performClick()
+        onNodeWithContentDescription("Page 2 of 348").doubleTap()
         waitForIdle()
 
         onNodeWithContentDescription("Close book").assertExists()

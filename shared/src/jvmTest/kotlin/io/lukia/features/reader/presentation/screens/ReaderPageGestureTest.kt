@@ -81,22 +81,54 @@ class ReaderPageGestureTest {
     }
 
     /**
-     * A page records no paragraphs - what this reads as a block is inferred from
-     * the space between lines, and is not something an anchor into a page can
-     * name - so the sentence is what a paragraph gesture gets here.
+     * And the paragraph. A PDF records none of its own - what this reads as a
+     * block is inferred from the space left between lines - but that inference
+     * is made anyway, and a page's block is a thing an anchor into it can name.
      */
     @Test
-    fun aTapSetToTheParagraphTakesTheSentenceOnAPage() = runComposeUiTest {
+    fun aTapSetToTheParagraphTakesTheParagraphOnAPage() = runComposeUiTest {
         var selected: PassageSelection? = null
 
         setPageReader(
-            sentences = listOf(pageOfWords),
+            sentences = listOf(pageOfWords, secondBlock),
             onPassageSelected = { selected = it },
             gestures = TranslationGestures(tap = PassageUnit.Paragraph, longPress = null),
         )
         tapPageTwo()
 
-        assertEquals(PassageUnit.Sentence, assertNotNull(selected).unit)
+        val selection = assertNotNull(selected, "nothing was selected")
+        assertEquals(PassageUnit.Paragraph, selection.unit)
+        assertEquals(opening, selection.passage, "the other block came with it")
+        assertEquals(
+            TextAnchor.Page(1, sentenceIndex = null, blockIndex = 0),
+            selection.anchor,
+        )
+    }
+
+    /**
+     * A paragraph already translated has none of its own sentences left on the
+     * page, so a gesture inside it addresses the paragraph whatever it was set
+     * to - which is what puts the page's own words back. Without this, tapping
+     * the answer asked about a sentence hidden underneath it.
+     */
+    @Test
+    fun aGestureInsideATranslatedParagraphAsksAboutTheParagraph() = runComposeUiTest {
+        var selected: PassageSelection? = null
+
+        setPageReader(
+            sentences = listOf(pageOfWords),
+            translations = {
+                mapOf(
+                    TextAnchor.Page(1, sentenceIndex = null, blockIndex = 0) to
+                        PassageTranslation.Ready(Translation(translated)),
+                )
+            },
+            onPassageSelected = { selected = it },
+            gestures = TranslationGestures(tap = PassageUnit.Sentence, longPress = null),
+        )
+        tapPageTwo()
+
+        assertEquals(PassageUnit.Paragraph, assertNotNull(selected).unit)
     }
 
     /** A translated word stands over its own words, not over the sentence around them. */

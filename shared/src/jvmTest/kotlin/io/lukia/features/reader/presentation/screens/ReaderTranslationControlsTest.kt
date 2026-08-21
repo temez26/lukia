@@ -28,7 +28,7 @@ class ReaderTranslationControlsTest {
         // proves the tap arrived at all.
         onNodeWithContentDescription("Reading settings").assertExists()
 
-        onNodeWithText(opening, substring = true).clickFirstWords()
+        onNodeWithText(opening, substring = true).doubleClickFirstWords()
         waitForIdle()
 
         assertEquals(

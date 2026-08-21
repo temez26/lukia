@@ -9,6 +9,7 @@ import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.click
+import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.performTouchInput
 import io.lukia.core.domain.BookMetadata
@@ -48,6 +49,10 @@ internal val afterword =
 
 internal fun SemanticsNodeInteraction.clickFirstWords() =
     performTouchInput { click(Offset(4f, 4f)) }
+
+/** Two taps in the same place, which is what the chrome answers to. */
+internal fun SemanticsNodeInteraction.doubleClickFirstWords() =
+    performTouchInput { doubleClick(Offset(4f, 4f)) }
 
 /**
  * The translations are read inside the composition rather than captured, so

@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.click
+import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performTouchInput
 import io.lukia.core.domain.BookMetadata
@@ -81,6 +82,14 @@ internal val pageWithAGapInTheMiddle = pageOfWords.copy(
     },
 )
 
+/** A second block of the same page, far enough down to be one. */
+internal val secondBlock = PageSentence(
+    index = 1,
+    text = "Some years ago.",
+    quads = listOf(TextQuad(left = 0f, top = 280f, right = 100f, bottom = 300f)),
+    blockIndex = 1,
+)
+
 /** A word in the very corner, so the middle of the page is not on it. */
 internal val cornerWord = PageSentence(
     index = 0,
@@ -95,6 +104,10 @@ internal val cornerWord = PageSentence(
 
 internal fun ComposeUiTest.tapPageTwo() =
     onNodeWithContentDescription("Page 2 of 2").performTouchInput { click() }
+
+/** Two taps in the same place, which is what the chrome answers to. */
+internal fun ComposeUiTest.doubleTapPageTwo() =
+    onNodeWithContentDescription("Page 2 of 2").performTouchInput { doubleClick() }
 
 /**
  * The translations are read inside the composition rather than captured, so

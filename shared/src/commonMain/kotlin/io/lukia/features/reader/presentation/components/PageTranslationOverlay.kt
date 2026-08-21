@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.reader.domain.TextQuad
 import io.lukia.features.translate.domain.PageSentence
+import io.lukia.features.translate.domain.union
 import io.lukia.features.translate.presentation.PassageTranslation
 import io.lukia.features.translate.presentation.SentenceTranslations
 
@@ -72,22 +73,22 @@ internal fun PageTranslationOverlay(
     // without looking at its sentences.
     if (translations.isEmpty) return
 
-    // Sentences and single words together, because what is done with either is
-    // the same: mark where it is, and cover it once there is something to put in
-    // its place. A word is only ever on the page while its sentence has not been
-    // translated over the top of it.
+    // Paragraphs, sentences and single words together, because what is done
+    // with any of them is the same: mark where it is, and cover it once there is
+    // something to put in its place. Each is only on the page while nothing
+    // larger has been translated over the top of it - a paragraph asked about
+    // whole leaves none of its sentences showing, and a translated sentence
+    // leaves none of its words.
     val marked = remember(sentences, translations) {
-        sentences.flatMap { sentence ->
-            val whole = translations[sentence.index]
+        sentences.groupBy { it.blockIndex }.flatMap { (blockIndex, inBlock) ->
+            val paragraph = translations.paragraph(blockIndex)
 
-            if (whole != null) {
-                listOf(MarkedPassage(sentence.quads, sentence.bounds, whole))
+            if (paragraph != null) {
+                val quads = inBlock.flatMap { it.quads }
+
+                listOf(MarkedPassage(quads, quads.union(), paragraph))
             } else {
-                sentence.words.mapNotNull { word ->
-                    translations.words(sentence.index)[word.index]?.let {
-                        MarkedPassage(word.quads, word.bounds, it)
-                    }
-                }
+                inBlock.flatMap { it.markedPassages(translations) }
             }
         }
     }
@@ -330,13 +331,26 @@ private val PanelRadius: Dp = 6.dp
  */
 private const val PANEL_FADE_MILLIS = 160
 
+/** What the reader has asked about inside one sentence, if anything. */
+private fun PageSentence.markedPassages(translations: SentenceTranslations): List<MarkedPassage> {
+    val whole = translations[index]
+
+    if (whole != null) return listOf(MarkedPassage(quads, bounds, whole))
+
+    return words.mapNotNull { word ->
+        translations.words(index)[word.index]?.let {
+            MarkedPassage(word.quads, word.bounds, it)
+        }
+    }
+}
+
 /**
- * One passage of a page the reader has asked about - a sentence, or a single
- * word inside one - and what has become of it.
+ * One passage of a page the reader has asked about - a paragraph, a sentence, or
+ * a single word inside one - and what has become of it.
  *
- * The two are the same thing to draw: some rectangles to mark, and somewhere to
- * put the answer once it arrives. Keeping them apart here would be two copies of
- * the same loop that differed only in where the rectangles came from.
+ * All three are the same thing to draw: some rectangles to mark, and somewhere
+ * to put the answer once it arrives. Keeping them apart here would be three
+ * copies of the same loop that differed only in where the rectangles came from.
  */
 private data class MarkedPassage(
     val quads: List<TextQuad>,

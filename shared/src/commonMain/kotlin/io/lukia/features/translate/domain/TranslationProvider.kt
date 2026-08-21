@@ -44,7 +44,7 @@ enum class TranslationProvider(
         defaultModel = "claude-opus-5",
         requiresKey = true,
         hasConfigurableEndpoint = false,
-        defaultTimeoutSeconds = 60,
+        defaultTimeoutSeconds = 120,
         suggestedModels = listOf("claude-opus-5", "claude-sonnet-5", "claude-haiku-4-5"),
     ),
 
@@ -54,7 +54,7 @@ enum class TranslationProvider(
         defaultModel = "gpt-4o",
         requiresKey = true,
         hasConfigurableEndpoint = false,
-        defaultTimeoutSeconds = 60,
+        defaultTimeoutSeconds = 120,
         suggestedModels = listOf("gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini"),
     ),
 
@@ -73,8 +73,9 @@ enum class TranslationProvider(
         hasConfigurableEndpoint = true,
         // Long enough to cover a model being read off disk into memory, which
         // is what the first request after choosing one actually waits for and
-        // is measured in minutes on a large model.
-        defaultTimeoutSeconds = 300,
+        // is measured in minutes on a large model - on a machine that is
+        // swapping, in many of them.
+        defaultTimeoutSeconds = 600,
         suggestedModels = emptyList(),
     ),
     ;
