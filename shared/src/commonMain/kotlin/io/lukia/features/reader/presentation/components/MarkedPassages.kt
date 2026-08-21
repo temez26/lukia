@@ -36,6 +36,19 @@ internal class MarkedPassages(
         if (isEmpty) return emptyList()
 
         return buildList {
+            // A paragraph asked about but not yet answered - waiting on its
+            // first words, or failed - has nothing to put on the page, so the
+            // book's own sentences are still drawn and none of them carries the
+            // whole-block index the mark is filed under. The mark still belongs
+            // to all of them, which is what this covers: without it, a paragraph
+            // being translated is a paragraph with no sign that anything is
+            // happening to it.
+            sentences[WHOLE_BLOCK]?.let { style ->
+                if (text.sentences.none { it.index == WHOLE_BLOCK }) {
+                    add(PassageMark(0, text.text.length, style))
+                }
+            }
+
             text.sentences.forEach { span ->
                 sentences[span.index]?.let { add(PassageMark(span.start, span.end, it)) }
             }

@@ -151,10 +151,10 @@ data class TranslationSettings(
          *
          * The floor is short enough to be impatient with and long enough that a
          * hosted service on a slow connection still gets a word in. The ceiling
-         * is half an hour, which is past any model load and short of a request
-         * that would outlive the reading session it belongs to.
+         * is an hour, which is past any model load on any machine and short of a
+         * request that would outlive the reading session it belongs to.
          */
-        val TimeoutSecondsRange = 5..1800
+        val TimeoutSecondsRange = 5..3600
 
         /**
          * Rebuilds the stored values, for whatever read them back off the disk.

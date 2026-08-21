@@ -24,11 +24,10 @@ import io.lukia.features.translate.infrastructure.asTranslationFailure
 import io.lukia.features.translate.infrastructure.buildTranslationPrompt
 import io.lukia.features.translate.infrastructure.forEachEventPayload
 import io.lukia.features.translate.infrastructure.readTranslatedPassage
+import io.lukia.features.translate.infrastructure.tokenAllowanceFor
 import io.lukia.features.translate.infrastructure.translationTimeouts
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
-
-private const val MAX_TOKENS = 1024
 
 /**
  * What a server that cannot be held to a schema is asked for instead. One
@@ -112,7 +111,9 @@ class OpenAiTranslator(
                 setBody(
                     ChatRequest(
                         model = configured.model,
-                        maxTokens = MAX_TOKENS,
+                        // Sized to the passage, and covering the model's own
+                        // thinking as well as the answer - see tokenAllowanceFor.
+                        maxTokens = tokenAllowanceFor(request.text),
                         responseFormat = TranslationResponseFormat.takeIf { enforcesSchema },
                         stream = true,
                         messages = listOf(
@@ -153,9 +154,18 @@ class OpenAiTranslator(
 
         // A model cut off mid-answer produces JSON that will not parse, and the
         // reason is worth giving rather than leaving as a parse failure.
+        //
+        // The passage is named last rather than first, because it is usually not
+        // what ran out of room: a model that thinks before it answers is charged
+        // for the thinking too, and it is perfectly capable of spending the whole
+        // allowance without writing a word - see tokenAllowanceFor.
         if (finishReason == "length") {
             throw AppErrorException(
-                AppError.Unexpected("The translation was cut short. Try a shorter passage."),
+                AppError.Unexpected(
+                    "${configured.model} stopped before it finished translating. It is " +
+                        "charged for thinking as well as for the answer - try a model that " +
+                        "thinks less before it answers, or a shorter passage.",
+                ),
             )
         }
 

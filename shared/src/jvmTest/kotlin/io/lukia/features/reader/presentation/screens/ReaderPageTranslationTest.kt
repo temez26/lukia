@@ -66,15 +66,16 @@ class ReaderPageTranslationTest {
     }
 
     /**
-     * A tap that landed on no words is a tap on the page. Putting the chrome
-     * away is what that has always meant, and translating has not taken it over.
+     * A tap that landed on no words is a tap on the page, and two of them put
+     * the chrome away - which is what that has always meant, and translating has
+     * not taken it over.
      */
     @Test
     fun tappingAwayFromTheWordsStillPutsTheChromeAway() = runComposeUiTest {
         var selected: PassageSelection? = null
 
         setPageReader(sentences = listOf(cornerWord), onPassageSelected = { selected = it })
-        tapPageTwo()
+        doubleTapPageTwo()
         waitForIdle()
 
         assertNull(selected, "the margin was read as a sentence")
@@ -89,7 +90,7 @@ class ReaderPageTranslationTest {
     fun aScannedPageWithNoTextLayerStillTogglesTheChrome() = runComposeUiTest {
         setPageReader(sentences = emptyList())
 
-        tapPageTwo()
+        doubleTapPageTwo()
         waitForIdle()
 
         assertEquals(

@@ -31,6 +31,7 @@ import io.lukia.features.library.presentation.components.BookCard
 import io.lukia.features.library.presentation.components.BookRow
 import io.lukia.features.library.presentation.components.CardSelection
 import io.lukia.features.library.presentation.components.ImportBookCard
+import io.lukia.features.library.presentation.components.ImportBookRow
 import io.lukia.features.library.presentation.components.LibraryHeader
 import io.lukia.features.library.presentation.components.libraryNavBarHeight
 import io.lukia.shared.presentation.components.BookActionsMenu
@@ -177,16 +178,32 @@ internal fun LibraryGrid(
         // like a result.
         if (!query.isNarrowed && books.isNotEmpty()) {
             item(key = "import", contentType = "import") {
-                ImportBookCard(
-                    menuExpanded = openMenu == OpenMenu.Import,
-                    onMenuRequest = { onOpenMenuChange(OpenMenu.Import) },
-                    onMenuDismiss = { onOpenMenuChange(null) },
-                    onImport = onImport,
-                    onImportFolder = onImportFolder,
-                    reveal = reveal,
-                    revealIndex = books.size + GridRevealOffset,
-                    modifier = Modifier.animateItem(),
-                )
+                // Drawn as whichever the shelf is laid out as, for the same
+                // reason a book is: a list's cell is the whole width of the
+                // window, and a cover drawn into one is enormous.
+                when (layout) {
+                    LibraryLayout.Grid -> ImportBookCard(
+                        menuExpanded = openMenu == OpenMenu.Import,
+                        onMenuRequest = { onOpenMenuChange(OpenMenu.Import) },
+                        onMenuDismiss = { onOpenMenuChange(null) },
+                        onImport = onImport,
+                        onImportFolder = onImportFolder,
+                        reveal = reveal,
+                        revealIndex = books.size + GridRevealOffset,
+                        modifier = Modifier.animateItem(),
+                    )
+
+                    LibraryLayout.List -> ImportBookRow(
+                        menuExpanded = openMenu == OpenMenu.Import,
+                        onMenuRequest = { onOpenMenuChange(OpenMenu.Import) },
+                        onMenuDismiss = { onOpenMenuChange(null) },
+                        onImport = onImport,
+                        onImportFolder = onImportFolder,
+                        reveal = reveal,
+                        revealIndex = books.size + GridRevealOffset,
+                        modifier = Modifier.animateItem(),
+                    )
+                }
             }
         }
     }

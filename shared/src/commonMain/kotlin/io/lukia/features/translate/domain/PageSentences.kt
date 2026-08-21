@@ -26,6 +26,17 @@ data class PageSentence(
      * the fourth word is no longer answerable.
      */
     val words: List<PageWord> = emptyList(),
+    /**
+     * Which block of the page it was read out of.
+     *
+     * A PDF records no paragraphs - what counts as a block here is inferred from
+     * the space left between lines, by [intoBlocks] - but that inference is made
+     * anyway, to stop a heading and the footnote under it from running into one
+     * sentence, and keeping its answer is what lets the reader ask about a whole
+     * paragraph of a page. Without it the grouping was worked out and thrown
+     * away on every page.
+     */
+    val blockIndex: Int = 0,
 ) {
 
     /** The whole sentence's extent, for hit-testing and for placing a caption. */
@@ -68,13 +79,19 @@ fun pageSentences(glyphs: List<PageGlyph>): List<PageSentence> {
     // the next begins is the space left between them - and without using it, a
     // heading, its paragraph and the footnote under it join into a single
     // sentence that ends wherever the page happens to have its first full stop.
-    return lines.intoBlocks().flatMap { block ->
-        block.sentences(from = next).also { next += it.size }
+    return lines.intoBlocks().flatMapIndexed { blockIndex, block ->
+        block.sentences(from = next, blockIndex = blockIndex).also { next += it.size }
     }
 }
 
-/** One block's sentences, numbered on from where the last block finished. */
-private fun List<List<PageGlyph>>.sentences(from: Int): List<PageSentence> {
+/**
+ * One block's sentences, numbered on from where the last block finished.
+ *
+ * Numbered across the page rather than from zero in each block, because that is
+ * how a page addresses its sentences - see [io.lukia.features.translate.domain.TextAnchor.Page].
+ * The block they came out of travels beside the number rather than replacing it.
+ */
+private fun List<List<PageGlyph>>.sentences(from: Int, blockIndex: Int): List<PageSentence> {
     val text = StringBuilder()
 
     // One entry per character of [text], naming the glyph it came from - or null
@@ -114,6 +131,7 @@ private fun List<List<PageGlyph>>.sentences(from: Int): List<PageSentence> {
             index = from + sentence.index,
             text = sentence.text,
             quads = placed.intoQuads(),
+            blockIndex = blockIndex,
             // The same offsets, cut finer. A word that breaks across a line is
             // two ribbons for the same reason a sentence is.
             words = sentence.words().mapNotNull { word ->

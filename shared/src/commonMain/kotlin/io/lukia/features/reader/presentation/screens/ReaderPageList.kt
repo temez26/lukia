@@ -42,22 +42,21 @@ import androidx.compose.ui.unit.Dp
 import io.lukia.features.reader.domain.PageSize
 import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderSettings
+import io.lukia.features.reader.presentation.TRANSLATE_SETTLE_MILLIS
 import io.lukia.features.reader.presentation.TranslateOnScreen
 import io.lukia.features.reader.presentation.components.PageTranslationOverlay
+import io.lukia.features.reader.presentation.components.detectReaderTaps
 import io.lukia.features.reader.presentation.renderWidthFor
 import io.lukia.features.translate.domain.PageSentence
 import io.lukia.features.translate.domain.PassageUnit
-import io.lukia.features.translate.domain.Sentence
-import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.TranslationGestures
-import io.lukia.features.translate.domain.sentenceAt
 import io.lukia.features.translate.presentation.PassageSelection
 import io.lukia.features.translate.presentation.ReaderTranslations
 import io.lukia.features.translate.presentation.SentenceTranslations
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.LukiaElevation
 import io.lukia.shared.presentation.theme.Space
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.delay
 
 /** Gap between pages, which is what makes them read as separate sheets. */
 internal val PageGap: Dp = Space.lg
@@ -122,7 +121,11 @@ internal fun PageList(
                     },
                 )
                 .pointerInput(Unit) {
-                    detectTapGestures(onTap = { onToggleChrome() })
+                    // Beside the pages rather than on one, so there is nothing
+                    // here to point at - but the chrome answers to two taps
+                    // wherever it is reached from, so that it stays one gesture
+                    // the reader learns once.
+                    detectTapGestures(onDoubleTap = { onToggleChrome() })
                 }
                 .horizontalScroll(rememberScrollState()),
         ) {
@@ -214,43 +217,18 @@ private fun DocumentPage(
     // a pinch or a resize moves it without recalculating anything.
     val scale = with(LocalDensity.current) { width.toPx() } / pageSize.width
 
-    // The rest of the page, which is the context a sentence on it travels with.
-    // Built once per page rather than once per tap: it is every word on the
-    // page joined up, and a reader works through a page a tap at a time.
-    val pageText = remember(sentences) { sentences.joinToString(" ") { it.text } }
+    // What is on the page and how a point on it becomes a passage - see
+    // PagePassages. Worked out once per page, because parsing the text out of
+    // one is far too much to do again on every tap.
+    val passages = remember(index, sentences) { PagePassages(index, sentences) }
 
-    val currentSentences by rememberUpdatedState(sentences)
-    val currentPageText by rememberUpdatedState(pageText)
+    val currentPassages by rememberUpdatedState(passages)
+    val currentTranslations by rememberUpdatedState(translations)
     val currentOnSelected by rememberUpdatedState(onPassageSelected)
-    val currentOnToggleChrome by rememberUpdatedState(onToggleChrome)
     val currentScale by rememberUpdatedState(scale)
-    val currentOnRequested by rememberUpdatedState(onPassagesRequested)
     val currentGestures by rememberUpdatedState(gestures)
 
-    // A page is either on screen or it is not - there is nothing on it that can
-    // be half of it - so unlike a paragraph of set text it needs nothing
-    // measured. Being composed at all is close enough: the list keeps a page or
-    // two either side, and translating one page ahead of somebody reading
-    // forward is what they asked for anyway.
-    var actedOn by remember { mutableStateOf(translateOnScreen.generation) }
-
-    LaunchedEffect(translateOnScreen, sentences) {
-        if (sentences.isEmpty()) return@LaunchedEffect
-        if (!translateOnScreen.continuous && translateOnScreen.generation == actedOn) {
-            return@LaunchedEffect
-        }
-
-        actedOn = translateOnScreen.generation
-        currentOnRequested(
-            sentences.map { sentence ->
-                PassageSelection(
-                    anchor = TextAnchor.Page(pageIndex = index, sentenceIndex = sentence.index),
-                    passage = sentence.text,
-                    surroundingText = pageText,
-                )
-            },
-        )
-    }
+    TranslateWhatIsOnThisPage(passages, translateOnScreen, onPassagesRequested)
 
     Box(
         modifier = Modifier
@@ -264,65 +242,32 @@ private fun DocumentPage(
             .semantics { contentDescription = "Page ${index + 1} of $pageCount" }
             .pointerInput(index) {
                 // A page of a PDF answers the same gestures as set text, down to
-                // the word: the words are inferred back out of the glyphs along
-                // with the sentences, so each of them has a piece of the page of
-                // its own to be pointed at and drawn over.
-                //
-                // The paragraph is the one unit a page cannot offer. A PDF
-                // records no paragraphs at all - what this reads as a block is a
-                // guess from the space left between lines, and it is not
-                // something an anchor into the page can name - so a gesture set
-                // to the paragraph takes the sentence instead.
-                fun select(position: Offset, unit: PassageUnit?) {
-                    if (unit == null) return
-
+                // the word and up to the paragraph: the words, the sentences and
+                // the blocks they sit in are all inferred back out of the glyphs
+                // and where they landed, so each of them has a piece of the page
+                // of its own to be pointed at and drawn over.
+                fun select(position: Offset, unit: PassageUnit?): Boolean {
                     // Back out of the drawn page into the file's own space,
                     // which is where the sentences know they are.
-                    val x = position.x / currentScale
-                    val y = position.y / currentScale
+                    val selection = currentPassages.at(
+                        x = position.x / currentScale,
+                        y = position.y / currentScale,
+                        unit = unit,
+                        translations = currentTranslations,
+                    ) ?: return false
 
-                    val sentence = currentSentences.sentenceAt(x, y) ?: return
-                    val word = if (unit == PassageUnit.Word) sentence.wordAt(x, y) else null
+                    currentOnSelected(selection)
 
-                    // A gesture set to the word that landed between two of them
-                    // asks about nothing, exactly as it does in set text: the
-                    // punctuation between two words belongs to neither.
-                    if (unit == PassageUnit.Word && word == null) return
-
-                    currentOnSelected(
-                        PassageSelection(
-                            anchor = TextAnchor.Page(
-                                pageIndex = index,
-                                sentenceIndex = sentence.index,
-                                wordIndex = word?.index,
-                            ),
-                            passage = word?.text ?: sentence.text,
-                            // A page has no chapter of its own to name, and the
-                            // rest of the page is the context around a passage.
-                            surroundingText = currentPageText,
-                            unit = if (word == null) PassageUnit.Sentence else PassageUnit.Word,
-                        ),
-                    )
+                    return true
                 }
 
-                detectTapGestures(
-                    onTap = { position ->
-                        val sentence = currentSentences.sentenceAt(
-                            x = position.x / currentScale,
-                            y = position.y / currentScale,
-                        )
-
-                        // A tap that landed on no words is a tap on the page: a
-                        // margin, a figure, or a page with no text layer at all.
-                        // That is how the chrome is put away and brought back,
-                        // and so is a tap the reader has set to do nothing.
-                        if (sentence == null || currentGestures.tap == null) {
-                            currentOnToggleChrome()
-                        } else {
-                            select(position, currentGestures.tap)
-                        }
-                    },
+                detectReaderTaps(
+                    // A tap that reached no words - a margin, a figure, a page
+                    // with no text layer at all - or one the reader has set to do
+                    // nothing is one of the two taps that bring the chrome back.
+                    onTap = { position -> select(position, currentGestures.tap) },
                     onLongPress = { position -> select(position, currentGestures.longPress) },
+                    onChrome = onToggleChrome,
                 )
             },
     ) {
@@ -343,7 +288,52 @@ private fun DocumentPage(
             translations = translations,
             scale = scale,
             pageColor = pageColor,
+            // Already in the file's own units - the panel knows which passage it
+            // covers, so nothing has to be worked back out of where it was drawn.
+            onTranslationPointedAt = { x, y ->
+                currentPassages.translationAt(x, y, currentTranslations)
+                    ?.let(currentOnSelected)
+            },
         )
+    }
+}
+
+/**
+ * Asks for everything written on this page, when the reader asks for what is in
+ * front of them.
+ *
+ * A page is either on screen or it is not - there is nothing on it that can be
+ * half of it - so unlike a paragraph of set text this needs nothing measured.
+ * Being composed at all is close enough: the list keeps a page or two either
+ * side, and translating one page ahead of somebody reading forward is what they
+ * asked for anyway.
+ */
+@Composable
+private fun TranslateWhatIsOnThisPage(
+    passages: PagePassages,
+    translateOnScreen: TranslateOnScreen,
+    onPassagesRequested: (List<PassageSelection>) -> Unit,
+) {
+    val requested by rememberUpdatedState(onPassagesRequested)
+
+    // What this page has already done. Starting at whatever is current means a
+    // page composed after the reader asked stays out of that round, which is
+    // right: it was not in front of them when they asked.
+    var actedOn by remember { mutableStateOf(translateOnScreen.generation) }
+
+    LaunchedEffect(translateOnScreen, passages) {
+        if (passages.isEmpty) return@LaunchedEffect
+        if (!translateOnScreen.continuous && translateOnScreen.generation == actedOn) {
+            return@LaunchedEffect
+        }
+
+        // Cancelled along with this page when it scrolls out of the list, so a
+        // page the reader went straight past is never asked about - see
+        // TRANSLATE_SETTLE_MILLIS.
+        if (translateOnScreen.continuous) delay(TRANSLATE_SETTLE_MILLIS)
+
+        actedOn = translateOnScreen.generation
+        requested(passages.all())
     }
 }
 

@@ -4,12 +4,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -88,59 +91,99 @@ internal fun ReaderToolbar(
         shape = MaterialTheme.shapes.large,
         modifier = modifier.fillMaxWidth(),
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = if (wide) Arrangement.Start else Arrangement.SpaceBetween,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(readerToolbarHeight()),
-        ) {
-            val back: @Composable () -> Unit = {
-                ShortcutTooltip(description = "Close the book", shortcut = "Esc") {
-                    LukiaIconButton(label = "Close book", onClick = onBack) { tint, glyph ->
-                        BackChevron(tint = tint, modifier = glyph)
-                    }
-                }
-            }
+        BoxWithConstraints {
+            // What the middle of the bar may take, whatever is written in it.
+            //
+            // A Row measures the children that named no weight first, in order,
+            // handing each one everything still unclaimed - so the page
+            // indicator, which is as wide as the chapter name inside it, could
+            // take the whole bar and leave the settings and translation controls
+            // after it measured at nothing. That is not a bar that overflows: it
+            // is a bar whose controls silently disappear, which is what a long
+            // chapter title actually did.
+            //
+            // Half is enough for a chapter to be worth naming and leaves the
+            // other half for the controls either side, which is where the eye
+            // looks for them.
+            val centerWidth = maxWidth * CENTER_SHARE
 
-            if (wide) {
-                // Three tracks rather than three controls in a row: the outer
-                // two share what is left over evenly, which is what keeps the
-                // page indicator in the middle of the bar however long the
-                // title beside it runs.
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.weight(1f),
-                ) {
-                    back()
-
-                    if (title != null) {
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.padding(start = Space.xs, end = Space.lg),
-                        )
-                    }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = if (wide) Arrangement.Start else Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(readerToolbarHeight()),
+            ) {
+                val center: @Composable () -> Unit = {
+                    Box(modifier = Modifier.widthIn(max = centerWidth)) { centerControl() }
                 }
 
-                centerControl()
+                if (wide) {
+                    // Three tracks rather than three controls in a row: the outer
+                    // two share what is left over evenly, which is what keeps the
+                    // page indicator in the middle of the bar however long the
+                    // title beside it runs.
+                    TitleTrack(onBack = onBack, title = title)
 
-                Row(
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.weight(1f),
-                ) {
+                    center()
+
+                    Row(
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        endControl()
+                    }
+                } else {
+                    CloseBookButton(onBack)
+                    center()
                     endControl()
                 }
-            } else {
-                back()
-                centerControl()
-                endControl()
             }
+        }
+    }
+}
+
+/** How much of the bar the page indicator may take before it starts ellipsising. */
+private const val CENTER_SHARE = 0.5f
+
+/** Leaving the book, which is the one control every window has room for. */
+@Composable
+private fun CloseBookButton(onBack: () -> Unit) {
+    ShortcutTooltip(description = "Close the book", shortcut = "Esc") {
+        LukiaIconButton(label = "Close book", onClick = onBack) { tint, glyph ->
+            BackChevron(tint = tint, modifier = glyph)
+        }
+    }
+}
+
+/**
+ * The way out and the name of what is open, which is the left-hand track of a
+ * bar wide enough to have tracks.
+ *
+ * The title gives way before the button does - it is the part that can run to a
+ * whole line, and the part a reader can do without.
+ */
+@Composable
+private fun RowScope.TitleTrack(onBack: () -> Unit, title: String?) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.weight(1f),
+    ) {
+        CloseBookButton(onBack)
+
+        if (title != null) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .padding(start = Space.xs, end = Space.lg),
+            )
         }
     }
 }

@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.unit.Dp
@@ -240,17 +241,31 @@ fun ReaderContent(
 
         val focusRequester = remember { FocusRequester() }
 
+        // Whether the keyboard is anywhere in the reader at all - on the book
+        // itself, or on a control in the chrome over it.
+        var holdsFocus by remember { mutableStateOf(false) }
+
         // The reader takes the keyboard as it opens, so the shortcuts work
-        // without a click first. Focus moves off it the moment anything in the
-        // chrome is tabbed to, and the handler below runs after that control has
+        // without a click first, and takes it back whenever it loses it
+        // entirely. Losing it is not hypothetical: pressing a toolbar button
+        // moves focus into the chrome, and hiding the chrome then takes the
+        // focused control out of the window - which left nothing focused, and so
+        // nothing for a key press to reach. That is the reader who put the bar
+        // away and found their shortcuts had gone with it.
+        //
+        // Only when it is lost altogether. Focus on a control in the chrome is
+        // left where it is, and the handler below runs after that control has
         // had its say - so Space on a focused segment chooses it rather than
         // turning a page.
-        LaunchedEffect(Unit) { focusRequester.requestFocus() }
+        LaunchedEffect(holdsFocus) {
+            if (!holdsFocus) focusRequester.requestFocus()
+        }
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
+                .onFocusChanged { holdsFocus = it.hasFocus }
                 .focusRequester(focusRequester)
                 .focusable()
                 .onKeyEvent { event ->

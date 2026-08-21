@@ -120,7 +120,11 @@ internal fun TextPageList(
                     },
                 )
                 .pointerInput(Unit) {
-                    detectTapGestures(onTap = { onToggleChrome() })
+                    // Beside the sheet rather than on it, so there is nothing
+                    // here to point at - but the chrome answers to two taps
+                    // wherever it is reached from, so that it stays one gesture
+                    // the reader learns once.
+                    detectTapGestures(onDoubleTap = { onToggleChrome() })
                 },
         ) {
             LazyColumn(

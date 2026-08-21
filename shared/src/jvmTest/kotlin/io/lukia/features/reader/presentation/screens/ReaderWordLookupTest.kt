@@ -20,6 +20,7 @@ import io.lukia.features.translate.presentation.PassageSelection
 import io.lukia.features.translate.presentation.PassageTranslation
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -74,11 +75,21 @@ class ReaderWordLookupTest {
     }
 
     /**
-     * Asking for what is on screen asks about every sentence on it, and asks
-     * about each of them once.
+     * Asking for what is on screen asks about the paragraphs on it, once each.
+     *
+     * Paragraphs rather than the sentences in them, because that is nearly the
+     * whole cost of the feature. Measured against a model running on the
+     * reader's own machine, on one block of twelve sentences:
+     *
+     *     a request per sentence, four at once   44s, 7,500 tokens
+     *     the paragraph, in one request          12s, 1,000 tokens
+     *
+     * A request per sentence sends the standing instructions, the book and the
+     * surrounding paragraph again every time - so the page is read once per
+     * sentence printed on it.
      */
     @Test
-    fun askingForWhatIsOnScreenAsksAboutTheSentencesThatAreOnIt() = runComposeUiTest {
+    fun askingForWhatIsOnScreenAsksAboutTheParagraphsOnIt() = runComposeUiTest {
         val requested = mutableListOf<PassageSelection>()
         var translate by mutableStateOf(TranslateOnScreen.Idle)
 
@@ -95,9 +106,16 @@ class ReaderWordLookupTest {
 
         val passages = requested.map { it.passage }
 
-        assertTrue(passages.contains(opening), "$passages")
-        assertTrue(passages.contains(second), "$passages")
-        assertEquals(passages.size, passages.distinct().size, "a sentence was asked about twice")
+        // The two sentences of the opening block, asked about as the one
+        // paragraph they are.
+        assertTrue(passages.contains("$opening $second"), "$passages")
+        assertFalse(passages.contains(opening), "a sentence was asked about on its own: $passages")
+
+        assertTrue(
+            requested.all { it.unit == PassageUnit.Paragraph },
+            "something other than a paragraph was asked about: $requested",
+        )
+        assertEquals(passages.size, passages.distinct().size, "a paragraph was asked about twice")
     }
 
     /**

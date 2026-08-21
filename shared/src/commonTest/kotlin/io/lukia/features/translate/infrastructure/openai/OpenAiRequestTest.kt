@@ -54,6 +54,72 @@ class OpenAiRequestTest {
         assertEquals("https://api.openai.com/v1/chat/completions", sent?.url.toString())
     }
 
+    /**
+     * The reason paragraphs would not translate while sentences would.
+     *
+     * `max_tokens` is a ceiling on the model's thinking *and* its answer, and a
+     * model that thinks is what a reader now runs locally. Measured against one:
+     * a sentence stopped on its own after 31 tokens, while a paragraph spent
+     * three thousand characters thinking and was cut off mid-answer. Held at a
+     * flat 1024 the paragraph could never get under it, and the reader was told
+     * their passage was too long by a model that had translated it fine.
+     *
+     * So every passage, down to the shortest, is allowed room to be thought
+     * about - which is what this pins.
+     */
+    @Test
+    fun everyPassageIsAllowedRoomToThinkIn() = runTest {
+        var sentence: HttpRequestData? = null
+        var paragraph: HttpRequestData? = null
+
+        translator(
+            answers {
+                sentence = it
+                ok()
+            },
+        ).translate(request())
+        translator(
+            answers {
+                paragraph = it
+                ok()
+            },
+        ).translate(request(text = LONG_PASSAGE))
+
+        assertTrue(sentence.maxTokens() >= 4096, "a sentence had ${sentence.maxTokens()}")
+        assertTrue(paragraph.maxTokens() >= 4096, "a paragraph had ${paragraph.maxTokens()}")
+    }
+
+    /** Past that, the room follows the passage: a long one needs a long answer. */
+    @Test
+    fun aPassageLongerThanTheFloorIsAllowedMoreThanIt() = runTest {
+        var sent: HttpRequestData? = null
+
+        translator(
+            answers {
+                sent = it
+                ok()
+            },
+        ).translate(request(text = LONG_PASSAGE.repeat(8)))
+
+        assertTrue(sent.maxTokens() > 4096, "a long passage was allowed only ${sent.maxTokens()}")
+    }
+
+    /** A model that has stopped translating and started rambling is still stopped. */
+    @Test
+    fun noPassageIsAllowedRoomWithoutEnd() = runTest {
+        var sent: HttpRequestData? = null
+
+        translator(
+            answers {
+                sent = it
+                ok()
+            },
+        )
+            .translate(request(text = LONG_PASSAGE.repeat(50)))
+
+        assertTrue(sent.maxTokens() <= 8192, "one passage was allowed ${sent.maxTokens()}")
+    }
+
     @Test
     fun theKeyIsSentAsABearerToken() = runTest {
         var sent: HttpRequestData? = null
@@ -225,3 +291,18 @@ class OpenAiRequestTest {
 
     /** The commonest state of a local server is not running. */
 }
+
+/**
+ * A paragraph of a real book, which is the length that stopped working - see
+ * `aParagraphIsAllowedMoreRoomThanASentence`.
+ */
+private const val LONG_PASSAGE =
+    "What Tisquantum saw on his return home was unimaginable. From southern Maine to " +
+        "Narragansett Bay, the coast was empty. What had once been a line of busy " +
+        "communities was now a mass of tumbledown homes and untended fields overrun by " +
+        "blackberries. Scattered among the houses and fields were skeletons bleached by " +
+        "the sun. Patuxet had been hit with special force. Not a single person remained."
+
+private fun HttpRequestData?.maxTokens(): Int =
+    this?.jsonBody()?.get("max_tokens")?.jsonPrimitive?.content?.toInt()
+        ?: error("no max_tokens was sent")

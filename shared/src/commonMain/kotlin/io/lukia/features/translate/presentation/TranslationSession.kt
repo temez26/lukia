@@ -29,18 +29,28 @@ import kotlinx.coroutines.sync.withPermit
 private const val MAX_KEPT_PASSAGES = 400
 
 /**
- * How many passages are being asked about at once.
+ * How many passages a standing order has in flight at once.
  *
- * One tap has never needed this. Translating everything on screen does: a page
- * is thirty or forty sentences, and thirty simultaneous requests is a rate
- * limit on a hosted service and a queue nobody can get in front of on a local
- * one - where the reader is still waiting on whichever sentence they actually
- * pointed at.
+ * One tap has never needed this. Translating what is on screen does, and the
+ * number matters more than it looks, because a model on the reader's own
+ * machine is one machine: asking it four things at once does not answer them
+ * four times faster, it answers all four at the end. Measured on a local model,
+ * four blocks of a page:
  *
- * Four is enough to keep a page filling in steadily and few enough that a
- * single tap still gets through it quickly.
+ *     one at a time    34s in total, and one arrived every 8s
+ *     two at a time    23s in total, first one at 12s
+ *     four at once     18s in total, and nothing at all until 18s
+ *
+ * Two, because a page filling in steadily is worth more to somebody reading it
+ * than the same page finishing four seconds sooner all at once - and because
+ * whatever the reader taps has to get past this, and the fewer are in front of
+ * it the sooner it does.
+ *
+ * A hosted service would take more without noticing. It is not given more
+ * because it does not need it: what is in flight here is now a paragraph at a
+ * time rather than a sentence, so a screenful is a handful of requests.
  */
-private const val MAX_AT_ONCE = 4
+private const val MAX_AT_ONCE = 2
 
 /**
  * Every passage translated while one book is open, and what a tap on each of
@@ -99,7 +109,7 @@ class TranslationSession(
     fun onPassageRequested(anchor: TextAnchor, request: () -> TranslationRequest) {
         if (kept.containsKey(anchor)) return
 
-        fetch(anchor, request())
+        fetch(anchor, request(), waitsItsTurn = true)
     }
 
     fun onPassageTapped(anchor: TextAnchor, request: () -> TranslationRequest) {
@@ -115,11 +125,21 @@ class TranslationSession(
 
             // A failure is not a state worth keeping. Tapping it is how the
             // reader retries, so it behaves exactly as the first tap did.
-            null, is PassageTranslation.Failed -> fetch(anchor, request())
+            null, is PassageTranslation.Failed -> fetch(anchor, request(), waitsItsTurn = false)
         }
     }
 
-    private fun fetch(anchor: TextAnchor, request: TranslationRequest) {
+    /**
+     * [waitsItsTurn] is false for the passage the reader pointed at.
+     *
+     * They are looking at it and it is one request, while the standing order
+     * behind it may be a page of them. Measured on a local model, a tap made to
+     * queue behind a page being translated took twenty seconds where the same
+     * tap on its own took six - which is the reader's own gesture stuck in a
+     * queue they did not ask for, and the thing [MAX_AT_ONCE] exists to bound
+     * rather than to cause.
+     */
+    private fun fetch(anchor: TextAnchor, request: TranslationRequest, waitsItsTurn: Boolean) {
         put(anchor, PassageTranslation.Loading())
 
         scope.launch {
@@ -134,7 +154,7 @@ class TranslationSession(
                 arriving.filterNotNull().collect { put(anchor, PassageTranslation.Loading(it)) }
             }
 
-            val state = inFlight.withPermit {
+            val state = translating(waitsItsTurn) {
                 translate(request) { arriving.value = it }
             }.fold(
                 onSuccess = { PassageTranslation.Ready(it) },
@@ -188,6 +208,10 @@ class TranslationSession(
         kept.clear()
         _passages.value = emptyMap()
     }
+
+    /** Runs the translation, holding a place in the queue only if it has to. */
+    private suspend fun <T> translating(waitsItsTurn: Boolean, translate: suspend () -> T): T =
+        if (waitsItsTurn) inFlight.withPermit { translate() } else translate()
 
     private fun put(anchor: TextAnchor, state: PassageTranslation) {
         // Removed before it is added so that touching a passage moves it to the

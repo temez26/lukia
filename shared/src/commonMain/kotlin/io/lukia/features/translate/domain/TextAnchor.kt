@@ -46,13 +46,19 @@ sealed interface TextAnchor {
     ) : TextAnchor
 
     /**
-     * A sentence on one page of a fixed-layout document. There are no blocks
-     * here: a PDF's text has no structure the reader can rely on, so its page
-     * is read as one run of sentences in the order they were laid out.
+     * A sentence on one page of a fixed-layout document, numbered across the
+     * whole page rather than within its block.
+     *
+     * [blockIndex] names a paragraph of the page - inferred from the space left
+     * between lines, since a PDF records none of its own. Only a paragraph asked
+     * about whole carries it: a sentence is addressed by its number on the page
+     * and nothing else, so that the same sentence tapped and asked for in bulk
+     * is the same passage rather than two of them.
      */
     data class Page(
         val pageIndex: Int,
         override val sentenceIndex: Int?,
         override val wordIndex: Int? = null,
+        val blockIndex: Int? = null,
     ) : TextAnchor
 }

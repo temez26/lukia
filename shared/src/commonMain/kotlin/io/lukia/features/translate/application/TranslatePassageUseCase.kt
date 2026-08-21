@@ -3,19 +3,10 @@ package io.lukia.features.translate.application
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.asFailure
 import io.lukia.core.domain.runCatchingApp
+import io.lukia.features.translate.domain.MAX_TRANSLATABLE_CHARS
 import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.Translator
-
-/**
- * The longest passage worth sending.
- *
- * A sentence is a line or two; this is well past that. What it actually catches
- * is a document with no sentence punctuation in it at all - a badly converted
- * text file where a whole chapter is one "sentence" - which would otherwise be
- * sent whole on a single tap and come back as something nobody wanted to read.
- */
-private const val MAX_PASSAGE_CHARS = 2000
 
 /**
  * Translates one passage, and is the only thing above the domain that knows a
@@ -45,7 +36,7 @@ class TranslatePassageUseCase(
             return AppError.Unexpected("There is nothing to translate here.").asFailure()
         }
 
-        if (passage.length > MAX_PASSAGE_CHARS) {
+        if (passage.length > MAX_TRANSLATABLE_CHARS) {
             return AppError.Unexpected("That passage is too long to translate.").asFailure()
         }
 
