@@ -1,5 +1,6 @@
 package io.lukia.features.reader.presentation.screens
 
+import io.lukia.features.translate.domain.MAX_TRANSLATABLE_CHARS
 import io.lukia.features.translate.domain.PageSentence
 import io.lukia.features.translate.domain.PageWord
 import io.lukia.features.translate.domain.PassageUnit
@@ -44,15 +45,36 @@ internal class PagePassages(
     val isEmpty: Boolean get() = sentences.isEmpty()
 
     /**
-     * Every sentence on the page, for when the reader asks for what is in front
-     * of them rather than pointing at one thing.
+     * The whole page, as the passages a standing order asks about: its
+     * paragraphs, one request each, rather than every sentence on it.
+     *
+     * A page is thirty or forty sentences and a handful of paragraphs, and the
+     * difference between asking about them one way and the other is most of what
+     * translating a page costs. Measured against a model running on the reader's
+     * own machine, on twelve sentences of one block:
+     *
+     *     a request per sentence, four at once   44s, 7,500 tokens
+     *     the paragraph, in one request          12s, 1,000 tokens
+     *
+     * Nearly all of that is the same work repeated. Each of those requests
+     * carried the standing instructions, the book, and the rest of the page as
+     * context - so the page was read once per sentence on it.
+     *
+     * A block too long to send whole falls back to its own sentences, which is
+     * what this used to do for all of them - see [MAX_TRANSLATABLE_CHARS].
      */
-    fun all(): List<PassageSelection> = sentences.map { sentence ->
-        PassageSelection(
-            anchor = TextAnchor.Page(pageIndex = pageIndex, sentenceIndex = sentence.index),
-            passage = sentence.text,
-            surroundingText = pageText,
-        )
+    fun all(): List<PassageSelection> = sentences
+        .groupBy { it.blockIndex }
+        .flatMap { (blockIndex, inBlock) -> bulk(blockIndex, inBlock) }
+
+    private fun bulk(blockIndex: Int, inBlock: List<PageSentence>): List<PassageSelection> {
+        val paragraph = paragraph(blockIndex)
+
+        if (paragraph == null || paragraph.passage.length > MAX_TRANSLATABLE_CHARS) {
+            return inBlock.map { passage(it, word = null) }
+        }
+
+        return listOf(paragraph)
     }
 
     /**

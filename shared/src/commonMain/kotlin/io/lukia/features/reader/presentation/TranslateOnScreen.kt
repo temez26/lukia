@@ -34,3 +34,18 @@ data class TranslateOnScreen(
         val Idle = TranslateOnScreen()
     }
 }
+
+/**
+ * How long text has to stay in view before a standing order asks about it.
+ *
+ * Only the standing order waits. A reader who presses the button is looking at
+ * the page and wants it now; a reader scrolling with "keep translating" on is
+ * throwing text past the window several screenfuls at a time, and without this
+ * every block that flickered past would be asked about - a queue of paragraphs
+ * the reader had already left behind, with whatever they finally stopped on
+ * waiting at the end of it.
+ *
+ * Long enough to sit out a flick and short enough that stopping to read starts
+ * the translating almost at once.
+ */
+internal const val TRANSLATE_SETTLE_MILLIS = 400L

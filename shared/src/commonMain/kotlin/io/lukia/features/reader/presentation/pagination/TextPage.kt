@@ -26,6 +26,15 @@ internal data class PageBlock(
     val sentenceOffset: Int = 0,
     /** True for a slice that carries on from the page before, which is not a new block. */
     val continued: Boolean = false,
+    /**
+     * True when this is the whole block rather than a piece of one.
+     *
+     * Which matters to whoever asks for a paragraph: a piece of one is not a
+     * paragraph, and asking about it as though it were would file the answer
+     * under the whole block - so the other piece, on the page before or after,
+     * would show the same translation over its own different words.
+     */
+    val whole: Boolean = true,
 )
 
 /** One page of a reflowable book, as much of it as the window holds. */

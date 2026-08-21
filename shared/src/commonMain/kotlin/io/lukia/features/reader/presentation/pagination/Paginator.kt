@@ -92,13 +92,13 @@ private class PageBuilder(
                 // a page to itself and is drawn scaled down to it.
                 if (!fits(remaining)) flush()
 
-                place(blockIndex, remaining, text, consumed, sizes.height(remaining))
+                place(blockIndex, remaining, Slice(text, consumed, cut = false))
                 return
             }
 
             val (head, tail, length) = cut
 
-            place(blockIndex, head, text, consumed, sizes.height(head))
+            place(blockIndex, head, Slice(text, consumed, cut = true))
             flush()
 
             remaining = tail
@@ -135,24 +135,36 @@ private class PageBuilder(
         return Triple(head, tail, blockText(head).length)
     }
 
-    private fun place(
-        blockIndex: Int,
-        block: TextBlock,
-        text: String,
-        consumed: Int,
-        heightPx: Int,
-    ) {
+    private fun place(blockIndex: Int, block: TextBlock, slice: Slice) {
         if (current.isNotEmpty()) usedPx += sizes.spacingPx
 
         current += PageBlock(
             sectionIndex = sectionIndex,
             blockIndex = blockIndex,
             block = block,
-            sentenceOffset = if (consumed == 0) 0 else sentencesBefore(text, consumed),
-            continued = consumed > 0,
+            sentenceOffset = slice.sentenceOffset(),
+            continued = slice.continued,
+            whole = slice.whole,
         )
 
-        usedPx += heightPx
+        usedPx += sizes.height(block)
+    }
+
+    /**
+     * Where a piece of a block sits in the block it was cut out of.
+     *
+     * [text] is the whole block's text, which is what a piece has to be measured
+     * against: a piece can only count its own sentences, and the book counts
+     * them from the start of the paragraph.
+     */
+    private class Slice(private val text: String, private val consumed: Int, val cut: Boolean) {
+
+        val continued: Boolean get() = consumed > 0
+
+        /** Nothing before it and nothing after it is the whole paragraph. */
+        val whole: Boolean get() = !continued && !cut
+
+        fun sentenceOffset(): Int = if (consumed == 0) 0 else sentencesBefore(text, consumed)
     }
 
     private fun availablePx(): Int =

@@ -175,13 +175,85 @@ putting the word back.
 moved to `PageTranslationPanel.kt` — which is a cleaner seam anyway: one file
 decides *which* passages are marked, the other draws *what* stands in for them.
 
+## 10. "Translate what is on screen" / "keep translating as you read" ✅
+
+**Asked:** make both fast enough for a local model to carry, tested against
+`google/gemma-4-e4b`, with the same optimisation applied to hosted providers.
+
+**Cause:** the feature asked about **one sentence per request**. Every one of
+those requests carried the standing instructions, the book, *and* the
+surrounding paragraph as context — so a paragraph of twelve sentences was sent
+to the model twelve times over, and reasoned about twelve times, to translate it
+once. Measured on the local model:
+
+| one block, 12 sentences | wall | tokens |
+|---|---|---|
+| a request per sentence, 4 at once | 44.1s | 7,539 |
+| a request per sentence, 1 at a time | 93.9s | 7,257 |
+| **the paragraph, in one request** | **11.6s** | **1,019** |
+
+- [x] Bulk asks for **paragraphs**, not the sentences in them — reusing
+      `PassageUnit.Paragraph`, which the app already had. No new port, no batch
+      protocol, no new response shape.
+- [x] Two blocks still go as sentences: one too long to send whole
+      (`MAX_TRANSLATABLE_CHARS`, moved to the domain so both the use case and the
+      caller read one number), and **a paragraph the layout cut across two
+      pages** — a piece of a paragraph is not one, and its answer is filed under
+      the block, so the piece on the other page would show the same translation
+      over its own different words. `PageBlock.whole` is new and says which.
+
+**Concurrency**, measured on 4 blocks — a local model is *one machine*, so
+asking it four things at once does not answer them four times faster:
+
+| | wall | slowest single block |
+|---|---|---|
+| 1 at a time | 34.1s | 10.2s |
+| **2 at a time** | **22.9s** | 12.2s |
+| 4 at once | 18.2s | **18.2s** — nothing arrives until the very end |
+
+- [x] `MAX_AT_ONCE` 4 → 2. Four finishes a few seconds sooner and delivers the
+      whole page in one lump at the end; two lets the page fill in steadily,
+      which is worth more to somebody reading it.
+
+**A tap stuck behind the queue.** Measured: a tap with 4 blocks already in
+flight took **20.3s**, against **6.3s** on its own.
+
+- [x] The passage the reader pointed at no longer waits for a place in the
+      queue. Only the standing order does.
+
+**Text scrolled past.** With "keep translating" on, every block that flickered
+past during a scroll was asked about — a queue of paragraphs the reader had
+already left behind, with whatever they finally stopped on waiting at the end.
+
+- [x] A standing order waits `TRANSLATE_SETTLE_MILLIS` (400ms) for text to
+      settle. The effect is cancelled when the block leaves the window, so a
+      paragraph scrolled past is never asked about at all. Pressing the button
+      still acts immediately — only the standing order waits.
+
+**End to end**, one screenful (5 paragraphs, 20 sentences), on the local model:
+
+| | wall | first arrives | tokens | requests |
+|---|---|---|---|---|
+| before | 73.6s | 9.3s | 12,311 | 20 |
+| **after** | **33.9s** | 15.0s | **4,345** | **5** |
+
+2.2× faster and 2.8× cheaper. **The one regression is time to first
+translation**: 9.3s → 15.0s, because a paragraph is a bigger thing to wait for
+than a sentence. It streams in as it is written, so the reader is not looking at
+nothing — but the first *complete* passage does land later than it used to.
+
+Hosted providers get the same treatment, as asked, and it costs them nothing:
+their per-request overhead is what the batching removes, and a screenful is now
+a handful of requests rather than a rate limit waiting to happen. **Only the
+local model was measured.**
+
 ---
 
 ## Verification
 
 - [x] `:shared:compileAndroidMain`, `:shared:compileKotlinJvm`,
       `:shared:compileCommonMainKotlinMetadata`, `:desktopApp:compileKotlin`
-- [x] `:shared:jvmTest` — 995 tests, all passing
+- [x] `:shared:jvmTest` — 997 tests, all passing
 - [x] `:shared:detekt`, `:shared:ktlintCheck`, `:shared:checkFileLength`
 - [x] Detekt baseline regenerated; it lost five findings the refactoring cleaned
 

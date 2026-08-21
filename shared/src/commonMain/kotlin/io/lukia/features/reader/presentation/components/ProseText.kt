@@ -28,6 +28,7 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.toSize
 import io.lukia.features.reader.domain.TextRun
+import io.lukia.features.reader.presentation.TRANSLATE_SETTLE_MILLIS
 import io.lukia.features.reader.presentation.TranslateOnScreen
 import io.lukia.features.translate.domain.PassageUnit
 import io.lukia.features.translate.domain.Sentence
@@ -37,6 +38,7 @@ import io.lukia.features.translate.domain.splitIntoSentences
 import io.lukia.features.translate.domain.words
 import io.lukia.features.translate.presentation.SentenceTranslations
 import io.lukia.features.translate.presentation.shownText
+import kotlinx.coroutines.delay
 
 // A paragraph of the book, and everything that happens when the reader points
 // at part of it.
@@ -150,6 +152,11 @@ internal fun ProseText(
         if (!translateOnScreen.continuous && translateOnScreen.generation == actedOn) {
             return@LaunchedEffect
         }
+
+        // Cancelled along with this effect the moment the block leaves the
+        // window, so a paragraph the reader scrolled past is never asked about -
+        // see TRANSLATE_SETTLE_MILLIS.
+        if (translateOnScreen.continuous) delay(TRANSLATE_SETTLE_MILLIS)
 
         actedOn = translateOnScreen.generation
         currentActions.onBlock(sentences, paragraph)

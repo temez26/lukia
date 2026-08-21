@@ -83,6 +83,29 @@ class PaginatorTest {
     }
 
     /**
+     * And no piece of it is the whole paragraph, which is what decides whether it
+     * can be asked about as one.
+     *
+     * A translation of a whole paragraph is filed under the block, so asking
+     * about a piece of one would put the answer where the *other* piece would
+     * find it too - and show one page's translation over another page's words.
+     */
+    @Test
+    fun noPieceOfACutBlockCallsItselfTheWholeBlock() {
+        val book = pagesOf(chapter(null, filler(250)))
+
+        assertTrue(book.pages.none { it.blocks.single().whole }, "a piece called itself whole")
+    }
+
+    /** A paragraph that was never cut is the whole of itself. */
+    @Test
+    fun aBlockThatFitsIsTheWholeBlock() {
+        val book = pagesOf(chapter(null, paragraph("Call me Ishmael.")))
+
+        assertTrue(book.pages.single().blocks.single().whole)
+    }
+
+    /**
      * An illustration cannot be divided, so it gets the page it did not fit on -
      * and is drawn scaled down to it rather than running off the bottom.
      */

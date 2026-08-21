@@ -10,6 +10,7 @@ import io.lukia.features.reader.presentation.components.NoBlockActions
 import io.lukia.features.reader.presentation.components.PassageActions
 import io.lukia.features.reader.presentation.pagination.PageBlock
 import io.lukia.features.reader.presentation.pagination.TextPage
+import io.lukia.features.translate.domain.MAX_TRANSLATABLE_CHARS
 import io.lukia.features.translate.domain.PassageUnit
 import io.lukia.features.translate.domain.Sentence
 import io.lukia.features.translate.domain.TextAnchor
@@ -100,12 +101,65 @@ private fun PageBlock.passageActions(
             )
         },
 
+        // A screenful, asked for as the paragraphs it is made of rather than as
+        // every sentence in them - see bulkPassages.
         onBlock = { _, sentences, paragraph ->
-            requested.value(sentences.map { sentence -> sentenceOf(sentence, paragraph) })
+            requested.value(bulkPassages(chapterTitle, sentences, paragraph))
         },
 
         onElsewhere = { toggleChrome.value() },
     ).forBlock(blockIndex)
+}
+
+/**
+ * One block of the book, as the passages a standing order asks about.
+ *
+ * The paragraph whole, in one request, rather than a request per sentence in it.
+ * Measured against a model running on the reader's own machine, on a block of
+ * twelve sentences:
+ *
+ *     a request per sentence, four at once   44s, 7,500 tokens
+ *     the paragraph, in one request          12s, 1,000 tokens
+ *
+ * Nearly all of that difference is the same work done over and over. Every one
+ * of those twelve requests carried the standing instructions, the book, and the
+ * whole paragraph as context - so the model read the paragraph twelve times to
+ * translate it once, and thought about it twelve times over.
+ *
+ * Two blocks still go as sentences. One too long to send in a single request,
+ * which is a document with no sentence punctuation to speak of rather than a
+ * long paragraph - see [MAX_TRANSLATABLE_CHARS]. And a paragraph the layout cut
+ * across two pages, because a piece of a paragraph is not one: the answer is
+ * filed under the block, and the piece on the other page would show the same
+ * translation over its own different words. Sentences are anchored finely enough
+ * to survive being split, which is why they were what this sent before.
+ */
+private fun PageBlock.bulkPassages(
+    chapterTitle: String?,
+    sentences: List<Sentence>,
+    paragraph: String,
+): List<PassageSelection> {
+    if (!whole || paragraph.length > MAX_TRANSLATABLE_CHARS) {
+        return sentences.map { sentence ->
+            selection(
+                chapterTitle = chapterTitle,
+                sentenceIndex = sentence.index,
+                passage = sentence.text,
+                paragraph = paragraph,
+                unit = PassageUnit.Sentence,
+            )
+        }
+    }
+
+    return listOf(
+        selection(
+            chapterTitle = chapterTitle,
+            sentenceIndex = null,
+            passage = paragraph,
+            paragraph = paragraph,
+            unit = PassageUnit.Paragraph,
+        ),
+    )
 }
 
 /**

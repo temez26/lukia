@@ -125,6 +125,22 @@ fun interface Translator {
 suspend fun Translator.translate(request: TranslationRequest): Translation =
     translate(request) {}
 
+/**
+ * The longest passage worth sending.
+ *
+ * A sentence is a line or two and a paragraph a handful of them; this is well
+ * past both. What it actually catches is a document with no sentence
+ * punctuation in it at all - a badly converted text file where a whole chapter
+ * is one "sentence" - which would otherwise be sent whole on a single tap and
+ * come back as something nobody wanted to read.
+ *
+ * In the domain rather than inside the use case that enforces it, because it is
+ * a fact about what can be translated rather than a rule one caller applies:
+ * whoever gathers a page's worth of passages needs the same number to know what
+ * it can ask about in one go.
+ */
+const val MAX_TRANSLATABLE_CHARS = 2000
+
 /** One passage, the language it is wanted in, and the book it came out of. */
 data class TranslationRequest(
     val text: String,

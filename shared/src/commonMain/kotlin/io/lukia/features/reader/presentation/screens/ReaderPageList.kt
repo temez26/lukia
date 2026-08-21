@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.Dp
 import io.lukia.features.reader.domain.PageSize
 import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderSettings
+import io.lukia.features.reader.presentation.TRANSLATE_SETTLE_MILLIS
 import io.lukia.features.reader.presentation.TranslateOnScreen
 import io.lukia.features.reader.presentation.components.PageTranslationOverlay
 import io.lukia.features.reader.presentation.components.detectReaderTaps
@@ -55,6 +56,7 @@ import io.lukia.features.translate.presentation.SentenceTranslations
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.LukiaElevation
 import io.lukia.shared.presentation.theme.Space
+import kotlinx.coroutines.delay
 
 /** Gap between pages, which is what makes them read as separate sheets. */
 internal val PageGap: Dp = Space.lg
@@ -324,6 +326,11 @@ private fun TranslateWhatIsOnThisPage(
         if (!translateOnScreen.continuous && translateOnScreen.generation == actedOn) {
             return@LaunchedEffect
         }
+
+        // Cancelled along with this page when it scrolls out of the list, so a
+        // page the reader went straight past is never asked about - see
+        // TRANSLATE_SETTLE_MILLIS.
+        if (translateOnScreen.continuous) delay(TRANSLATE_SETTLE_MILLIS)
 
         actedOn = translateOnScreen.generation
         requested(passages.all())
