@@ -50,6 +50,20 @@ val PassageTranslation?.shownText: String?
     }
 
 /**
+ * Whether something stands in place of the book's own words here - a
+ * translation, as much of one as has arrived, or the reason one failed.
+ *
+ * Wider than [shownText] by exactly the failure, which carries no translation
+ * and still has something to say. On a page that is a picture that something is
+ * drawn *over* the words rather than beside them, and this is the question that
+ * page has to ask: a passage covered up has none of its own words left on screen
+ * for the reader to point at, so pointing anywhere inside it can only mean the
+ * passage itself.
+ */
+val PassageTranslation?.replacesTheOriginal: Boolean
+    get() = shownText != null || this is PassageTranslation.Failed
+
+/**
  * Whether this passage should be marked on the page at all. A passage nobody
  * has touched is left exactly as the book set it.
  */

@@ -224,25 +224,9 @@ private fun DocumentPage(
     val currentTranslations by rememberUpdatedState(translations)
     val currentOnSelected by rememberUpdatedState(onPassageSelected)
     val currentScale by rememberUpdatedState(scale)
-    val currentOnRequested by rememberUpdatedState(onPassagesRequested)
     val currentGestures by rememberUpdatedState(gestures)
 
-    // A page is either on screen or it is not - there is nothing on it that can
-    // be half of it - so unlike a paragraph of set text it needs nothing
-    // measured. Being composed at all is close enough: the list keeps a page or
-    // two either side, and translating one page ahead of somebody reading
-    // forward is what they asked for anyway.
-    var actedOn by remember { mutableStateOf(translateOnScreen.generation) }
-
-    LaunchedEffect(translateOnScreen, passages) {
-        if (passages.isEmpty) return@LaunchedEffect
-        if (!translateOnScreen.continuous && translateOnScreen.generation == actedOn) {
-            return@LaunchedEffect
-        }
-
-        actedOn = translateOnScreen.generation
-        currentOnRequested(passages.all())
-    }
+    TranslateWhatIsOnThisPage(passages, translateOnScreen, onPassagesRequested)
 
     Box(
         modifier = Modifier
@@ -302,7 +286,47 @@ private fun DocumentPage(
             translations = translations,
             scale = scale,
             pageColor = pageColor,
+            // Already in the file's own units - the panel knows which passage it
+            // covers, so nothing has to be worked back out of where it was drawn.
+            onTranslationPointedAt = { x, y ->
+                currentPassages.translationAt(x, y, currentTranslations)
+                    ?.let(currentOnSelected)
+            },
         )
+    }
+}
+
+/**
+ * Asks for everything written on this page, when the reader asks for what is in
+ * front of them.
+ *
+ * A page is either on screen or it is not - there is nothing on it that can be
+ * half of it - so unlike a paragraph of set text this needs nothing measured.
+ * Being composed at all is close enough: the list keeps a page or two either
+ * side, and translating one page ahead of somebody reading forward is what they
+ * asked for anyway.
+ */
+@Composable
+private fun TranslateWhatIsOnThisPage(
+    passages: PagePassages,
+    translateOnScreen: TranslateOnScreen,
+    onPassagesRequested: (List<PassageSelection>) -> Unit,
+) {
+    val requested by rememberUpdatedState(onPassagesRequested)
+
+    // What this page has already done. Starting at whatever is current means a
+    // page composed after the reader asked stays out of that round, which is
+    // right: it was not in front of them when they asked.
+    var actedOn by remember { mutableStateOf(translateOnScreen.generation) }
+
+    LaunchedEffect(translateOnScreen, passages) {
+        if (passages.isEmpty) return@LaunchedEffect
+        if (!translateOnScreen.continuous && translateOnScreen.generation == actedOn) {
+            return@LaunchedEffect
+        }
+
+        actedOn = translateOnScreen.generation
+        requested(passages.all())
     }
 }
 

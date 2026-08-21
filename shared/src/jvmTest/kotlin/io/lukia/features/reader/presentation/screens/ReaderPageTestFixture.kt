@@ -90,6 +90,25 @@ internal val secondBlock = PageSentence(
     blockIndex = 1,
 )
 
+/**
+ * A page whose word is far smaller than the translation drawn over it, which is
+ * what every word on a real page is: the panel starts at the word's corner and
+ * runs as wide and as far down as another language needs, so almost none of
+ * what the reader can see of it is over the word itself.
+ */
+internal val pageWithATinyWord = PageSentence(
+    index = 0,
+    text = opening,
+    quads = listOf(TextQuad(left = 0f, top = 0f, right = 800f, bottom = 20f)),
+    words = listOf(
+        PageWord(
+            index = 0,
+            text = "Call",
+            quads = listOf(TextQuad(left = 0f, top = 0f, right = 12f, bottom = 8f)),
+        ),
+    ),
+)
+
 /** A word in the very corner, so the middle of the page is not on it. */
 internal val cornerWord = PageSentence(
     index = 0,

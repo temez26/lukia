@@ -137,13 +137,51 @@ error`, "output that does not match the expected peg-native format"). That is a
 server/model fault rather than this app's, but the app reads it as a generic
 parse failure because it ignores SSE `error` events. Worth its own look.
 
+## 9. On a PDF, tapping the translation does not put the words back ✅
+
+**Reported:** the translation floats over the page, and tapping it does nothing
+— it only closes when the *original* text is tapped. Worst on single words.
+
+**Asked:** is there no way to replace the words in place, as in an EPUB?
+
+**Answer:** no, and there cannot be. A PDF page is a rendered picture with a
+list of glyph positions; there is no text to re-set, so a translation can only
+be laid *over* the page. The floating panel is the right shape for it. What was
+wrong is that only the panel's *appearance* was over the page — its *taps* were
+not.
+
+**Cause:** the panel starts at the passage's corner and is free to run wider and
+further down than the passage ever did, because a translation is rarely the
+length of what it stands for. But a tap was hit-tested against the original
+glyph rectangles, so most of the visible panel was over nothing that answered.
+For a single word it was hopeless: the panel is several times the size of the
+word beneath it, so nearly every tap landed on the sentence around it instead —
+and with the tap set to Sentence, that translated the sentence rather than
+putting the word back.
+
+- [x] The panel answers for itself, and names the passage it covers by a point
+      the page recognises as inside it. No rectangle bookkeeping: Compose's own
+      hit-testing decides, and a tap the panel answers never reaches the page.
+- [x] `PagePassages.translationAt` — what a tap on a translation asks. It takes
+      no gesture setting, because a covered passage leaves nothing ambiguous.
+- [x] The same rule now applies to taps on whatever is left uncovered: a passage
+      with its translation drawn over it is addressed as itself, whatever the
+      gesture was set to.
+- [x] A hold on the panel means the same as a tap — with the words underneath
+      covered, there is no second thing for a second gesture to mean.
+- [x] Both new tests were confirmed to **fail** without the fix.
+
+`PageTranslationOverlay` was over the file-length limit after this, so the panel
+moved to `PageTranslationPanel.kt` — which is a cleaner seam anyway: one file
+decides *which* passages are marked, the other draws *what* stands in for them.
+
 ---
 
 ## Verification
 
 - [x] `:shared:compileAndroidMain`, `:shared:compileKotlinJvm`,
       `:shared:compileCommonMainKotlinMetadata`, `:desktopApp:compileKotlin`
-- [x] `:shared:jvmTest` — 993 tests, all passing
+- [x] `:shared:jvmTest` — 995 tests, all passing
 - [x] `:shared:detekt`, `:shared:ktlintCheck`, `:shared:checkFileLength`
 - [x] Detekt baseline regenerated; it lost five findings the refactoring cleaned
 

@@ -4,45 +4,22 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.reader.domain.TextQuad
 import io.lukia.features.translate.domain.PageSentence
 import io.lukia.features.translate.domain.union
 import io.lukia.features.translate.presentation.PassageTranslation
 import io.lukia.features.translate.presentation.SentenceTranslations
-
-/**
- * How far the covering panel is drawn outside the words it covers, so no
- * ascender or descender shows around the edge of it.
- */
-private val Bleed: Dp = 2.dp
-
-/** Where the translation is set inside its panel. */
-private val PanelPadding: Dp = 4.dp
 
 /**
  * What has been translated on one page of a fixed-layout document, drawn over
@@ -65,6 +42,20 @@ internal fun PageTranslationOverlay(
     scale: Float,
     pageColor: Color,
     modifier: Modifier = Modifier,
+    /**
+     * Somebody pointed at a translation, at this point of the page in the file's
+     * own units.
+     *
+     * The panel answers for itself rather than letting the tap fall through to
+     * the page, because it is not drawn inside the words it stands for: it
+     * starts at their corner and runs as wide and as far down as the
+     * translation needs. Most of what the reader can see of it is therefore over
+     * some other part of the page, or over no part of it at all - so a tap there
+     * reached the page and missed the passage, and putting the book's own words
+     * back meant hunting for whatever was left uncovered. A single word was
+     * nearly impossible: its panel is several times the size of the word.
+     */
+    onTranslationPointedAt: (x: Float, y: Float) -> Unit = { _, _ -> },
 ) {
     val colors = MaterialTheme.colorScheme
 
@@ -73,25 +64,7 @@ internal fun PageTranslationOverlay(
     // without looking at its sentences.
     if (translations.isEmpty) return
 
-    // Paragraphs, sentences and single words together, because what is done
-    // with any of them is the same: mark where it is, and cover it once there is
-    // something to put in its place. Each is only on the page while nothing
-    // larger has been translated over the top of it - a paragraph asked about
-    // whole leaves none of its sentences showing, and a translated sentence
-    // leaves none of its words.
-    val marked = remember(sentences, translations) {
-        sentences.groupBy { it.blockIndex }.flatMap { (blockIndex, inBlock) ->
-            val paragraph = translations.paragraph(blockIndex)
-
-            if (paragraph != null) {
-                val quads = inBlock.flatMap { it.quads }
-
-                listOf(MarkedPassage(quads, quads.union(), paragraph))
-            } else {
-                inBlock.flatMap { it.markedPassages(translations) }
-            }
-        }
-    }
+    val marked = remember(sentences, translations) { markedPassages(sentences, translations) }
 
     val markColors = passageMarkColors()
 
@@ -162,174 +135,40 @@ internal fun PageTranslationOverlay(
                     ),
                     scale = scale,
                     pageColor = pageColor,
+                    // The passage it stands for, named by a point the page will
+                    // recognise as inside it - which is anywhere in the first
+                    // of the rectangles it covers.
+                    onTap = { onTranslationPointedAt(passage.middle.x, passage.middle.y) },
                 )
             }
         }
     }
 }
 
-/** What a panel over a sentence has to say, if anything. */
-private data class PanelContent(
-    val text: String,
-    val detail: String?,
-    val failed: Boolean,
-)
-
 /**
- * A failure gets a panel of its own rather than only a red wash.
+ * Everything on this page the reader has asked about, gathered together.
  *
- * Whatever went wrong - a key refused, an account with nothing left, a passage
- * the service would not take - is something the reader can act on, and a tinted
- * rectangle tells them none of it. Without this, a translation that failed and
- * one still in flight look exactly alike.
+ * Paragraphs, sentences and single words in one list, because what is done with
+ * any of them is the same: mark where it is, and cover it once there is
+ * something to put in its place. Each is only on the page while nothing larger
+ * has been translated over the top of it - a paragraph asked about whole leaves
+ * none of its sentences showing, and a translated sentence leaves none of its
+ * words.
  */
-private fun PassageTranslation.panel(): PanelContent? = when (this) {
-    // A partly written sentence goes over the page as it arrives, the same as a
-    // finished one. Until the first words come back there is nothing to cover
-    // the original with, and the tint alone says a translation is on its way.
-    is PassageTranslation.Loading -> partial?.let {
-        PanelContent(text = it, detail = null, failed = false)
-    }
+private fun markedPassages(
+    sentences: List<PageSentence>,
+    translations: SentenceTranslations,
+): List<MarkedPassage> = sentences.groupBy { it.blockIndex }.flatMap { (blockIndex, inBlock) ->
+    val paragraph = translations.paragraph(blockIndex)
 
-    is PassageTranslation.Failed -> PanelContent(
-        text = error.displayShortMessage(),
-        detail = null,
-        failed = true,
-    )
+    if (paragraph == null) {
+        inBlock.flatMap { it.markedPassages(translations) }
+    } else {
+        val quads = inBlock.flatMap { it.quads }
 
-    is PassageTranslation.Ready -> takeIf { !showingOriginal }?.let {
-        PanelContent(text = translation.text, detail = translation.note, failed = false)
+        listOf(MarkedPassage(quads, quads.union(), paragraph))
     }
 }
-
-/**
- * The translation, over the sentence it replaces.
- *
- * Set to the width of the block the original occupied and left to be as tall as
- * it needs: a sentence rarely comes out the same length in another language, and
- * a panel clipped to the original's height would cut the translation off. Growing
- * downwards over the lines below is the honest compromise - the page underneath
- * is a picture and cannot make room.
- */
-@Composable
-private fun TranslationPanel(
-    bounds: TextQuad,
-    available: Dp,
-    glyphHeight: Float,
-    text: String,
-    detail: String?,
-    textColor: Color,
-    tint: Color,
-    scale: Float,
-    pageColor: Color,
-) {
-    val density = LocalDensity.current
-
-    val left = with(density) { (bounds.left * scale).toDp() }
-    val top = with(density) { (bounds.top * scale).toDp() }
-    val width = with(density) { (bounds.width * scale).toDp() }
-
-    // Set at the size the page is set at, worked back from the letters - see
-    // TYPE_OF_GLYPHS. Measured from one line of the original, never from the
-    // block a sentence covers: a sentence running down fifteen lines has bounds
-    // fifteen lines tall, and type set to that is a single word filling the page.
-    //
-    // Clamped at both ends, because a page can be laid out at any size at all: a
-    // display line set enormously does not want its translation set enormously
-    // too, and a footnote at five points wants something somebody can read.
-    val textSize = with(density) {
-        (glyphHeight * TYPE_OF_GLYPHS * scale)
-            .toSp()
-            .value
-            .coerceIn(MIN_TEXT_SP, MAX_TEXT_SP)
-            .sp
-    }
-
-    Column(
-        modifier = Modifier
-            .offset(x = left - Bleed, y = top - Bleed)
-            // At least as wide as what it replaces, and free to be wider.
-            //
-            // A word is the case that needs this: its panel is only as wide as
-            // the word underneath it, and a translation is very often longer
-            // than the word it stands for - so held to that width it wrapped,
-            // and one word became two lines sitting over the line below. Bounded
-            // by what is left of the page so it grows into the margin rather
-            // than off the edge of it.
-            .widthIn(
-                min = width + Bleed * 2,
-                max = (available - left + Bleed).coerceAtLeast(width + Bleed * 2),
-            )
-            .clip(RoundedCornerShape(PanelRadius))
-            // The page's own colour first, because what is underneath is the
-            // original and it has to stop showing through. The mark goes over
-            // that rather than behind the whole panel: the panel is the
-            // highlight here, which is what keeps the two from disagreeing about
-            // where the passage is.
-            .background(pageColor)
-            .background(tint.copy(alpha = PANEL_TINT))
-            .padding(PanelPadding),
-    ) {
-        Text(
-            text = text,
-            color = textColor,
-            style = MaterialTheme.typography.bodyMedium.copy(
-                fontSize = textSize,
-                lineHeight = textSize * 1.25f,
-            ),
-            textAlign = TextAlign.Start,
-        )
-
-        if (detail != null) {
-            Text(
-                text = detail,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontSize = textSize * 0.8f,
-                    lineHeight = textSize,
-                    fontStyle = FontStyle.Italic,
-                ),
-                modifier = Modifier.padding(top = 2.dp),
-            )
-        }
-    }
-}
-
-/**
- * The size the page's type was set at, worked back from the boxes it reports.
- *
- * There is no honest way to derive this. What a renderer calls a glyph's bounds
- * differs between them - some give the ink, some the em box, some the whole line
- * - and the file itself is not asked. So this is calibrated against real pages
- * rather than reasoned out, and it is the one number here to reach for when a
- * translation comes out the wrong size beside the words it covers.
- *
- * A little over parity. Under it the translation reads as a caption stuck on the
- * page; far over it, which is where this landed on the first attempt, the words
- * spill out of the line they belong to.
- */
-private const val TYPE_OF_GLYPHS = 1.15f
-
-/**
- * What a translation is never set smaller or larger than, whatever the page it
- * is covering does. Wide enough now to leave a heading at a heading's size,
- * which the old ceiling did not.
- */
-private const val MIN_TEXT_SP = 10f
-private const val MAX_TEXT_SP = 44f
-
-/** How much of the mark's colour a panel carries, being the highlight itself. */
-private const val PANEL_TINT = 0.16f
-
-/** Round enough to read as the same mark the set text gets. */
-private val PanelRadius: Dp = 6.dp
-
-/**
- * How long a panel takes to arrive over the words it covers. Short enough that
- * it reads as the answer landing rather than as an animation being played at
- * somebody who is waiting for it.
- */
-private const val PANEL_FADE_MILLIS = 160
 
 /** What the reader has asked about inside one sentence, if anything. */
 private fun PageSentence.markedPassages(translations: SentenceTranslations): List<MarkedPassage> {
@@ -356,7 +195,18 @@ private data class MarkedPassage(
     val quads: List<TextQuad>,
     val bounds: TextQuad,
     val state: PassageTranslation,
-)
+) {
+
+    /**
+     * A point the page will recognise as inside this passage, for naming it back
+     * to whoever asks - anywhere in the first of the rectangles it covers will
+     * do, and the middle of that one is furthest from every edge.
+     */
+    val middle: Offset
+        get() = quads.first().let {
+            Offset(it.left + it.width / 2, it.top + it.height / 2)
+        }
+}
 
 /**
  * How much taller than its letters a line is, as a fraction of their height.
