@@ -123,6 +123,11 @@ class OpenAiFailureTest {
         assertTrue(error.cause.orEmpty().contains("Try again"), error.cause.orEmpty())
     }
 
+    /**
+     * And says what actually ran out, which is usually not the passage: a model
+     * that thinks before it answers is charged for the thinking too, so it names
+     * the model and the thinking before it suggests a shorter passage.
+     */
     @Test
     fun anAnswerCutShortSaysWhyRatherThanFailingToParse() = runTest {
         val translator = translator(
@@ -130,6 +135,9 @@ class OpenAiFailureTest {
         )
 
         val error = translator.failureFor(request()) as AppError.Unexpected
-        assertTrue(error.cause.orEmpty().contains("cut short"), error.cause.orEmpty())
+        val cause = error.cause.orEmpty()
+
+        assertTrue(cause.contains("gpt-4o"), cause)
+        assertTrue(cause.contains("thinking"), cause)
     }
 }

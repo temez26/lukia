@@ -100,13 +100,50 @@ as the window and half again as tall.
 - [x] New `ImportBookRow`: a row among rows, at a book row's height, with the
       same menu hung off it. The grid still gets the card.
 
+## 8. Paragraph translations report themselves as "cut short" ✅
+
+**Reported:** paragraph translation still cuts out, while the same local model
+translates the passage perfectly well when asked directly.
+
+**Cause:** found by replaying the app's exact request against the running LM
+Studio server. `OpenAiTranslator` sent `max_tokens = 1024` — but that is a
+ceiling on the model's **thinking and its answer together**, and Gemma-4 streams
+its thinking on `reasoning_content`, a field the app never reads. So the budget
+was being spent invisibly, and the stream ended saying `length` with nothing to
+show. Measured against `google/gemma-4-e4b` on the reported paragraph:
+
+| passage | `max_tokens` | outcome |
+|---|---|---|
+| one sentence | 1024 | `stop`, **31 tokens** — never came near the ceiling |
+| one paragraph | 1024 | **`length`** — 3,094 chars of thinking, answer half written |
+| one paragraph | 4096 | `stop`, 497 tokens |
+
+That is exactly the shape reported: sentences translated, paragraphs did not.
+The Anthropic translator already documented this ("a ceiling on the thinking and
+the reply together") and budgeted 4096; the OpenAI path never got the same
+treatment, and local models are now overwhelmingly reasoning models.
+
+- [x] New shared `tokenAllowanceFor`, used by both translators: the passage's
+      own length over a floor of 4096, capped at 8192. A ceiling, not a target —
+      a model that answers in fifty tokens is charged for fifty.
+- [x] The message no longer leads with "try a shorter passage", which pointed at
+      the wrong thing. It names the model and says it is charged for thinking.
+- [x] Verified against the running server: the reported paragraph goes from
+      `finish_reason: length` to `stop` with a translation the app parses.
+
+**Noticed while reproducing, not fixed** — `openai/gpt-oss-20b` on this machine
+fails perhaps half the time with an LM Studio engine error mid-stream (`event:
+error`, "output that does not match the expected peg-native format"). That is a
+server/model fault rather than this app's, but the app reads it as a generic
+parse failure because it ignores SSE `error` events. Worth its own look.
+
 ---
 
 ## Verification
 
 - [x] `:shared:compileAndroidMain`, `:shared:compileKotlinJvm`,
       `:shared:compileCommonMainKotlinMetadata`, `:desktopApp:compileKotlin`
-- [x] `:shared:jvmTest` — 988 tests, all passing
+- [x] `:shared:jvmTest` — 993 tests, all passing
 - [x] `:shared:detekt`, `:shared:ktlintCheck`, `:shared:checkFileLength`
 - [x] Detekt baseline regenerated; it lost five findings the refactoring cleaned
 
@@ -117,6 +154,9 @@ as the window and half again as tall.
 - `aTapSetToTheParagraphTakesTheSentenceOnAPage` becomes
   `aTapSetToTheParagraphTakesTheParagraphOnAPage`, plus a new test that a gesture
   inside a translated paragraph on a page asks about the paragraph.
+- `anAnswerCutShortSaysWhyRatherThanFailingToParse` now checks the new wording,
+  plus three new tests pinning the floor, the scaling and the ceiling of the
+  token allowance.
 
 Not verified by running the app against a real PDF — the block inference is
 tested against glyphs laid out by hand, so how it divides a particular book's

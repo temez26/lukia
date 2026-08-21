@@ -22,22 +22,13 @@ import io.lukia.features.translate.infrastructure.asTranslationFailure
 import io.lukia.features.translate.infrastructure.buildTranslationPrompt
 import io.lukia.features.translate.infrastructure.forEachEventPayload
 import io.lukia.features.translate.infrastructure.readTranslatedPassage
+import io.lukia.features.translate.infrastructure.tokenAllowanceFor
 import io.lukia.features.translate.infrastructure.translationTimeouts
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
 
 /** The version of the wire format this speaks, sent on every request. */
 private const val API_VERSION = "2023-06-01"
-
-/**
- * Room for the answer.
- *
- * This is a ceiling on the thinking and the reply together, not on the reply -
- * and thinking is on by default on the models this offers. A sentence needs a
- * few dozen tokens of translation; the rest of this is headroom so a model that
- * decides to think about an idiom is not cut off mid-word.
- */
-private const val MAX_TOKENS = 4096
 
 /**
  * A sentence is not a reasoning problem. Low is where the wait is short enough
@@ -113,7 +104,10 @@ class AnthropicTranslator(
                 setBody(
                     MessagesRequest(
                         model = configured.model,
-                        maxTokens = MAX_TOKENS,
+                        // A ceiling on the thinking and the reply together, and
+                        // thinking is on by default on the models this offers -
+                        // see tokenAllowanceFor.
+                        maxTokens = tokenAllowanceFor(request.text),
                         system = prompt.system,
                         messages = listOf(Message.user(prompt.user)),
                         stream = true,
