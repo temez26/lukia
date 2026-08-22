@@ -18,10 +18,11 @@ import platform.zlib.z_stream
 import platform.zlib.zlibVersion
 
 /**
- * NOTE: uses Apple's system zlib via cinterop for raw (headerless) DEFLATE
- * inflation, since Kotlin/Native has no equivalent to java.util.zip.Inflater.
- * This has not been compiled/verified on macOS - please build and exercise
- * EPUB cover extraction on device/simulator before relying on it.
+ * Apple's own zlib, driven by hand: Kotlin/Native has no `java.util.zip`, so
+ * the stream and its window size are set up here rather than by a library.
+ *
+ * The window size is negative on purpose - that is how zlib is told the data
+ * has no header on it, which is how a ZIP entry stores it.
  */
 @OptIn(ExperimentalForeignApi::class)
 internal actual fun inflateRaw(compressedData: ByteArray, uncompressedSize: Int): ByteArray {

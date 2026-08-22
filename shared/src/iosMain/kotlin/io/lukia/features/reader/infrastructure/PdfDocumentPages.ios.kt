@@ -4,19 +4,17 @@ import androidx.compose.ui.graphics.ImageBitmap
 import io.lukia.features.reader.domain.DocumentPages
 import io.lukia.features.reader.domain.OutlineEntry
 import io.lukia.features.reader.domain.PageGlyph
+import io.lukia.features.reader.domain.PageImage
 import io.lukia.features.reader.domain.PageSize
 import io.lukia.features.reader.domain.TextQuad
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.useContents
-import kotlinx.cinterop.usePinned
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import platform.CoreGraphics.CGSizeMake
-import platform.Foundation.NSData
 import platform.Foundation.NSURL
 import platform.PDFKit.PDFDocument
 import platform.PDFKit.PDFOutline
@@ -24,7 +22,6 @@ import platform.PDFKit.PDFPage
 import platform.PDFKit.kPDFDisplayBoxCropBox
 import platform.UIKit.UIImagePNGRepresentation
 import platform.UIKit.UIScreen
-import platform.posix.memcpy
 
 internal actual fun openPdfPages(path: String): DocumentPages = IOSDocumentPages(path)
 
@@ -117,6 +114,21 @@ private class IOSDocumentPages(path: String) : DocumentPages {
             }
         }
 
+    /**
+     * Read by running the page's own drawing program rather than by asking
+     * PDFKit, which has no notion of what is on a page - see
+     * [coreGraphicsPageImages]. Serialised with everything else because it
+     * reaches the same document through the page PDFKit is holding.
+     */
+    override suspend fun pageImages(index: Int): List<PageImage> =
+        withContext(Dispatchers.Default) {
+            renderLock.withLock {
+                runCatching {
+                    document.pageAtIndex(index.toULong())?.pageRef?.let { coreGraphicsPageImages(it) }
+                }.getOrNull().orEmpty()
+            }
+        }
+
     override suspend fun pageText(index: Int): List<PageGlyph>? =
         withContext(Dispatchers.Default) {
             renderLock.withLock {
@@ -179,16 +191,4 @@ private class IOSDocumentPages(path: String) : DocumentPages {
      * that do hold one.
      */
     override fun close() = Unit
-
-    private fun NSData.toByteArray(): ByteArray {
-        val result = ByteArray(length.toInt())
-
-        if (result.isNotEmpty()) {
-            result.usePinned { pinned ->
-                memcpy(pinned.addressOf(0), bytes, length)
-            }
-        }
-
-        return result
-    }
 }

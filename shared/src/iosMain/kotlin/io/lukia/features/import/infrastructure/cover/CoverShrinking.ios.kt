@@ -12,13 +12,12 @@ import platform.UIKit.UIImageJPEGRepresentation
 
 private const val CoverJpegQuality = 0.85
 
-/**
- * NOTE: uses UIKit via cinterop. Not compiled/verified on macOS - please build
- * and exercise cover extraction on device/simulator before relying on it.
- */
 @OptIn(ExperimentalForeignApi::class)
 internal actual fun shrinkCoverImage(coverBytes: ByteArray, maxEdge: Int): ByteArray? {
-    val image = UIImage(data = coverBytes.toNSData())
+    // The factory rather than the constructor: bytes that are not a picture
+    // make it hand back nothing, where the constructor has nothing to hand back
+    // and fails instead.
+    val image = UIImage.imageWithData(coverBytes.toNSData()) ?: return null
 
     // Points rather than pixels, which are the same thing for an image made
     // from data: nothing has told it to be drawn at any other scale.
