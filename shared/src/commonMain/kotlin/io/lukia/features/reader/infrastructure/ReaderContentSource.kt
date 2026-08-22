@@ -4,9 +4,11 @@ import io.lukia.core.domain.DocumentType
 import io.lukia.core.infrastructure.readFileBytes
 import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderContent
+import io.lukia.features.reader.domain.TextExtraction
 import io.lukia.features.reader.infrastructure.text.readDocx
 import io.lukia.features.reader.infrastructure.text.readEpub
 import io.lukia.features.reader.infrastructure.text.readMarkdown
+import io.lukia.features.reader.infrastructure.text.readPdfAsText
 import io.lukia.features.reader.infrastructure.text.readPlainText
 
 /**
@@ -33,4 +35,28 @@ internal fun openReaderContent(type: DocumentType, path: String): ReaderContent?
     DocumentType.MARKDOWN -> readMarkdown(readFileBytes(path))
 
     DocumentType.UNKNOWN -> null
+}
+
+/**
+ * Opens the PDF at [path] as text the reader sets itself, or returns null when
+ * the file has no text layer to set - a scan, or pages that are each one
+ * photograph.
+ *
+ * The file is read once and given back: what comes out is the whole book's text,
+ * held in memory like any other reflowable book, and nothing is drawn from the
+ * file afterwards. That is also why this cannot be part of [openReaderContent],
+ * which is not suspending: reading a page's text is, and there are hundreds of
+ * pages here rather than one.
+ */
+internal suspend fun openPdfAsText(
+    path: String,
+    onProgress: (TextExtraction) -> Unit = {},
+): ReaderContent? {
+    val pages = openPdfPages(path)
+
+    return try {
+        readPdfAsText(pages, onProgress)
+    } finally {
+        pages.close()
+    }
 }

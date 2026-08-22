@@ -65,11 +65,17 @@ class CoverSizeMigrationTest {
         )
     }
 
+    /**
+     * Only the one step this is about. The schema above was created as it
+     * stands today, so running every later migration over it would replay
+     * statements whose tables are already there - and each one of those is a
+     * migration with a test of its own.
+     */
     private fun migrateFromTheversionBeforeTheLimit() {
         LukiaDatabase.Schema.migrate(
             driver,
             oldVersion = versionBeforeTheLimit,
-            newVersion = LukiaDatabase.Schema.version,
+            newVersion = versionBeforeTheLimit + 1,
         )
     }
 

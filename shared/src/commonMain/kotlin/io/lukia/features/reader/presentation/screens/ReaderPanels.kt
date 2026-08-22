@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import io.lukia.core.domain.DocumentType
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
@@ -33,6 +34,7 @@ internal fun BoxScope.ReaderPanels(
     outline: ReaderOutline,
     listState: LazyListState,
     settings: ReaderSettings,
+    layout: ReaderLayoutUi,
     onSettingsChange: (ReaderSettings) -> Unit,
 ) {
     val dimens = LocalLukiaDimens.current
@@ -58,7 +60,11 @@ internal fun BoxScope.ReaderPanels(
         settings = settings,
         // A PDF's type was set when the file was made.
         typographyEnabled = document?.content is ReflowableContent,
+        // Only a PDF can be read either way, and only an open one can be asked
+        // which it is - the choice belongs to the book rather than to the app.
+        layout = layout.layout.takeIf { document?.info?.type == DocumentType.PDF },
         onSettingsChange = onSettingsChange,
+        onLayoutChange = layout.onLayoutChange,
         onDismissRequest = chrome::closePanels,
         modifier = Modifier
             .align(Alignment.TopEnd)

@@ -2,8 +2,6 @@ package io.lukia.features.reader.presentation.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -23,6 +21,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.domain.LineSpacing
+import io.lukia.features.reader.domain.PdfLayout
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.domain.ReaderTypeface
@@ -70,13 +69,21 @@ private val WidePanelMaxHeight: Dp = 520.dp
  * A PDF's type was set when the file was made, so text size, spacing and face
  * have nothing to act on - they are shown, and disabled, rather than hidden, so
  * they are not mistaken for missing.
+ *
+ * [layout] is null for every document that has no choice to make about how it is
+ * read, which is every format except PDF. The control is left out altogether
+ * there rather than shown disabled: unlike the typography settings, which a PDF
+ * really does have and cannot use, this is a question that was never asked of an
+ * EPUB.
  */
 @Composable
 internal fun ReaderSettingsPanel(
     expanded: Boolean,
     settings: ReaderSettings,
     typographyEnabled: Boolean,
+    layout: PdfLayout?,
     onSettingsChange: (ReaderSettings) -> Unit,
+    onLayoutChange: (PdfLayout) -> Unit,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -105,6 +112,28 @@ internal fun ReaderSettingsPanel(
                 .padding(vertical = Space.md),
         ) {
             SectionHeading(label = "Page", wide = wide, inset = inset)
+
+            // First, because it is the one setting here that changes what the
+            // reader is looking at rather than how it looks: everything below
+            // acts on the book this chooses.
+            if (layout != null) {
+                SettingGroup(label = "Layout", wide = wide, inset = inset) {
+                    SegmentedControl(
+                        options = PdfLayout.entries,
+                        selected = layout,
+                        label = { it.name },
+                        onSelect = onLayoutChange,
+                    )
+                }
+
+                if (layout.asText) {
+                    PanelNote(
+                        text = "The words and pictures of the PDF, re-set by this " +
+                            "app. Its own page layout is not kept.",
+                        inset = inset,
+                    )
+                }
+            }
 
             SettingGroup(label = "Theme", wide = wide, inset = inset) {
                 SegmentedControl(
@@ -145,17 +174,11 @@ internal fun ReaderSettingsPanel(
             // Placed before the controls it explains, so it is read first
             // whether by eye or by screen reader.
             if (!typographyEnabled) {
-                Text(
+                PanelNote(
                     text = "These apply to reflowable books - this one carries " +
-                        "its own fixed layout.",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(
-                        start = inset,
-                        end = inset,
-                        top = Space.xxs,
-                        bottom = Space.md,
-                    ),
+                        "its own fixed layout." +
+                        if (layout == null) "" else " Read it as text to use them.",
+                    inset = inset,
                 )
             }
 
@@ -243,55 +266,6 @@ internal fun ReaderSettingsPanel(
                 SectionHeading(label = "Keyboard", wide = true, inset = inset)
                 ShortcutList(reflowable = typographyEnabled, inset = inset)
             }
-        }
-    }
-}
-
-/**
- * What the keys do.
- *
- * Shortcuts nobody can find are shortcuts nobody has. The bar's own controls
- * carry theirs in a tooltip, but turning pages has no button to hang one off -
- * and this is the panel a reader opens when they want to know how the reader
- * works. Only in the wide layout, since only the windows with room for it have
- * keyboards.
- */
-@Composable
-private fun ShortcutList(reflowable: Boolean, inset: Dp) {
-    val shortcuts = listOf(
-        "Turn page" to "Space  PgDn  PgUp",
-        "Scroll" to "↑  ↓",
-        "Start, end" to "Home  End",
-        // Named for what the keys do rather than for the setting they move, so
-        // the panel does not carry the words "Page width" twice - and what they
-        // do depends on the book, since there is no widening a re-set page.
-        (if (reflowable) "Larger, smaller" else "Wider, narrower") to "+  −  0",
-        "Contents, settings" to "C  T",
-        "Close book" to "Esc",
-    )
-
-    shortcuts.forEach { (action, keys) ->
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = inset, vertical = Space.xxs),
-        ) {
-            Text(
-                text = action,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                modifier = Modifier.weight(1f),
-            )
-
-            Text(
-                text = keys,
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-            )
         }
     }
 }

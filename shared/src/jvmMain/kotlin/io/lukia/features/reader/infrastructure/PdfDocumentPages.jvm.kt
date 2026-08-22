@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.toComposeImageBitmap
 import io.lukia.features.reader.domain.DocumentPages
 import io.lukia.features.reader.domain.OutlineEntry
 import io.lukia.features.reader.domain.PageGlyph
+import io.lukia.features.reader.domain.PageImage
 import io.lukia.features.reader.domain.PageSize
 import io.lukia.features.reader.domain.TextQuad
 import kotlinx.coroutines.Dispatchers
@@ -117,6 +118,19 @@ private class PdfBoxDocumentPages(path: String) : DocumentPages {
                     // sentences to point at.
                     stripper.glyphs.takeIf { it.isNotEmpty() }
                 }.getOrNull()
+            }
+        }
+
+    /**
+     * Walked page by page rather than read from the document, because a PDF
+     * keeps no list of what is drawn where - see [pdfBoxPageImages]. Serialised
+     * with everything else for the same reason they are serialised with each
+     * other: one document, and PDFBox's state inside it is shared.
+     */
+    override suspend fun pageImages(index: Int): List<PageImage> =
+        withContext(Dispatchers.Default) {
+            renderLock.withLock {
+                runCatching { pdfBoxPageImages(document.getPage(index)) }.getOrDefault(emptyList())
             }
         }
 

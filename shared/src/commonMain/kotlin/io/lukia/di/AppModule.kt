@@ -15,9 +15,12 @@ import io.lukia.features.library.infrastructure.LibrarySettingsRepository
 import io.lukia.features.library.infrastructure.SqlLibraryRepository
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.reader.application.OpenDocumentUseCase
+import io.lukia.features.reader.domain.PdfLayoutRepository
 import io.lukia.features.reader.domain.ReadingProgressRepository
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
+import io.lukia.features.reader.infrastructure.SqlPdfLayoutRepository
 import io.lukia.features.reader.infrastructure.SqlReadingProgressRepository
+import io.lukia.features.reader.presentation.ReaderTranslationsFactory
 import io.lukia.features.reader.presentation.ReaderViewModel
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.features.settings.presentation.SettingsViewModel
@@ -59,6 +62,13 @@ val commonModule = module {
         SqlReadingProgressRepository(get())
     }
 
+    // Which way each PDF is read, remembered per book - a choice about one
+    // document rather than a setting on the reader, so it is stored beside the
+    // reading position rather than with the preferences.
+    single<PdfLayoutRepository> {
+        SqlPdfLayoutRepository(get())
+    }
+
     single {
         ImportDocumentUseCase(get(), get())
     }
@@ -88,7 +98,7 @@ val commonModule = module {
     }
 
     single {
-        RemoveDocumentUseCase(get(), get(), get())
+        RemoveDocumentUseCase(get(), get(), get(), get())
     }
 
     single {
@@ -182,6 +192,12 @@ val commonModule = module {
 
     single {
         TranslatePassageUseCase(get())
+    }
+
+    // What the reader needs to translate with, minus the one thing only the
+    // ViewModel has - see ReaderTranslationsFactory.
+    single {
+        ReaderTranslationsFactory(get(), get())
     }
 
     // Only a server the reader points at themselves is worth asking what it can

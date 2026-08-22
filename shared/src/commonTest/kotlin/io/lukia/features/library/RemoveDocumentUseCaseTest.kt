@@ -6,6 +6,7 @@ import io.lukia.core.domain.FakeDocumentWorkspace
 import io.lukia.core.domain.TestDocuments
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.domain.LibraryRepository
+import io.lukia.features.reader.domain.FakePdfLayoutRepository
 import io.lukia.features.reader.domain.FakeReadingProgressRepository
 import io.lukia.features.reader.domain.ReadingProgress
 import kotlinx.coroutines.test.runTest
@@ -18,8 +19,9 @@ class RemoveDocumentUseCaseTest {
     private val library = FakeLibraryRepository()
     private val progress = FakeReadingProgressRepository()
     private val workspace = FakeDocumentWorkspace()
+    private val layouts = FakePdfLayoutRepository()
 
-    private val removeDocument = RemoveDocumentUseCase(library, workspace, progress)
+    private val removeDocument = RemoveDocumentUseCase(library, workspace, progress, layouts)
 
     @Test
     fun removingABookTakesItOutOfTheLibrary() = runTest {

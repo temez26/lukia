@@ -1,0 +1,9 @@
+-- Adds the record of how each book is read. See `ReaderLayout.sq`.
+--
+-- Nothing is backfilled and nothing needs to be: every book in a library that
+-- predates this table was read as the file laid itself out, which is what a
+-- missing row means.
+CREATE TABLE reader_layout (
+    location TEXT NOT NULL PRIMARY KEY,
+    layout TEXT NOT NULL
+);

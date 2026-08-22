@@ -15,6 +15,7 @@ import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runComposeUiTest
 import io.lukia.core.presentation.UiState
+import io.lukia.features.reader.domain.PdfLayout
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReaderTheme
@@ -242,9 +243,40 @@ class ReaderChromeTest {
             .assertIsNotEnabled()
         onNodeWithText(
             "These apply to reflowable books - this one carries " +
-                "its own fixed layout.",
+                "its own fixed layout. Read it as text to use them.",
         ).assertExists()
         assertNull(changed)
+    }
+
+    /**
+     * A PDF can be read as its own pages or as text this app sets, and the
+     * settings panel is where that is asked for.
+     */
+    @Test
+    fun theSettingsPanelOffersToReadAPdfAsText() = runComposeUiTest {
+        var chosen: PdfLayout? = null
+        setReader(pageCount = 10, layout = ReaderLayoutUi(onLayoutChange = { chosen = it }))
+
+        onNodeWithContentDescription("Reading settings").performClick()
+
+        onNodeWithText("Layout").assertExists()
+        onNodeWithText("Text").performClick()
+
+        assertEquals(PdfLayout.Text, chosen)
+    }
+
+    /**
+     * A scan has no words in the file to re-set. The reader gets the pages, and
+     * has to be told why - otherwise the setting looks broken.
+     */
+    @Test
+    fun aPdfWithNoTextToReSetSaysSo() = runComposeUiTest {
+        setReader(pageCount = 10, layout = ReaderLayoutUi(noTextLayer = true))
+
+        onNodeWithText(
+            "This PDF has no text in it to re-set - its pages are pictures. " +
+                "Showing it as pages.",
+        ).assertExists()
     }
 
     /** How large the pictures are is a setting somebody has to be able to find. */

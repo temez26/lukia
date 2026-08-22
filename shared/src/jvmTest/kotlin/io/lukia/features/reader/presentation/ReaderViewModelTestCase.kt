@@ -12,6 +12,7 @@ import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.reader.application.OpenDocumentUseCase
+import io.lukia.features.reader.domain.FakePdfLayoutRepository
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
@@ -29,7 +30,10 @@ import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeoutOrNull
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
+import org.apache.pdfbox.pdmodel.PDPageContentStream
 import org.apache.pdfbox.pdmodel.common.PDRectangle
+import org.apache.pdfbox.pdmodel.font.PDType1Font
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageFitWidthDestination
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem
@@ -79,6 +83,10 @@ abstract class ReaderViewModelTestCase {
      * afterwards - [ViewModelStore.clear] is the way to cancel a ViewModel's
      * scope from outside, since the ViewModel's own `clear` is internal.
      */
+
+    /** How each book is read. Nothing has chosen, so every PDF opens as pages. */
+    protected val layouts = FakePdfLayoutRepository()
+
     protected val viewModelStore = ViewModelStore()
     protected val openedViewModels = mutableListOf<ReaderViewModel>()
 
@@ -140,15 +148,33 @@ abstract class ReaderViewModelTestCase {
         ),
         settingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
         progressRepository = progress,
-        translatePassage = TranslatePassageUseCase(FakeTranslator()),
-        translationSettings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()),
+        layoutRepository = layouts,
+        translations = testTranslations(),
     ).also { track(it) }
 
-    protected fun pdfInLibrary(pageCount: Int, chapters: Int = 0): DocumentInfo {
+    /** A translator that answers, wired the way the app wires the real one. */
+    protected fun testTranslations() = ReaderTranslationsFactory(
+        TranslatePassageUseCase(FakeTranslator()),
+        TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()),
+    )
+
+    /**
+     * A PDF in the library. [text] is written on every page where it is given,
+     * which is what makes the difference between a document that can be read as
+     * text and a scan - a file of blank pages has no text layer at all.
+     */
+    protected fun pdfInLibrary(
+        pageCount: Int,
+        chapters: Int = 0,
+        text: String? = null,
+    ): DocumentInfo {
         val file = File(library, "book-${kotlin.random.Random.nextInt()}.pdf")
 
         PDDocument().use { document ->
-            repeat(pageCount) { document.addPage(PDPage(PDRectangle.A4)) }
+            repeat(pageCount) { index ->
+                val page = PDPage(PDRectangle.A4).also(document::addPage)
+                if (text != null) document.write(page, "$text ${index + 1}.")
+            }
 
             if (chapters > 0) {
                 val outline = PDDocumentOutline()
@@ -179,6 +205,16 @@ abstract class ReaderViewModelTestCase {
             exists = true,
             sizeBytes = file.length(),
         )
+    }
+
+    private fun PDDocument.write(page: PDPage, text: String) {
+        PDPageContentStream(this, page).use { content ->
+            content.beginText()
+            content.setFont(PDType1Font(Standard14Fonts.FontName.HELVETICA), 12f)
+            content.newLineAtOffset(60f, 700f)
+            content.showText(text)
+            content.endText()
+        }
     }
 
     private companion object {

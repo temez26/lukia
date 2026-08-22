@@ -38,3 +38,21 @@ data class PageGlyph(
     val text: String,
     val bounds: TextQuad,
 )
+
+/**
+ * One picture on a page, and where it sits on it.
+ *
+ * The bytes are an encoded image - PNG or JPEG - rather than a decoded one, for
+ * the same reason [TextBlock.Figure] holds encoded bytes: a book can carry
+ * hundreds, and decoding every one as the file is read would cost more memory
+ * than all of its text does.
+ *
+ * [bounds] is what puts the picture back among the words. A PDF states no
+ * reading order, so where a picture belongs in the re-set text is worked out
+ * from where it was drawn on the page - which is the same thing the paragraphs
+ * around it are ordered by.
+ *
+ * Identity equality, inherited from [Any]: comparing megabytes of image data to
+ * answer whether two pictures are the same picture is work nobody asked for.
+ */
+class PageImage(val bytes: ByteArray, val bounds: TextQuad)
