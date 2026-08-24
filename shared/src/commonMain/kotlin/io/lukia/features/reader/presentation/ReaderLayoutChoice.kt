@@ -1,5 +1,6 @@
 package io.lukia.features.reader.presentation
 
+import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.features.reader.domain.PdfLayout
 import io.lukia.features.reader.domain.PdfLayoutRepository
@@ -33,6 +34,27 @@ internal class ReaderLayoutChoice(
 
     /** How far through reading the file's text, or null when nothing is being read. */
     val extraction: StateFlow<TextExtraction?> = _extraction.asStateFlow()
+
+    private val _offered = MutableStateFlow(false)
+
+    /**
+     * Whether this book is one the choice applies to at all, which is to say a
+     * PDF.
+     *
+     * Learned from the book the first time it opens, and then kept - which is
+     * the whole point of it living here rather than being read off whatever is
+     * open. Converting a PDF to text is seconds of work during which nothing is
+     * open, and a control that appeared only alongside an open book went missing
+     * for exactly that stretch: the reader who had just asked for the
+     * conversion, watched the progress and thought better of it had no way back.
+     *
+     * Not known before a book has ever opened, so the first opening of one
+     * stored as text - which is a book converted once and closed before it
+     * finished - still has to wait. What that used to be, every reopening of
+     * every book read as text, is now answered from the conversion kept beside
+     * the file.
+     */
+    val offered: StateFlow<Boolean> = _offered.asStateFlow()
 
     private val _noTextLayer = MutableStateFlow(false)
 
@@ -95,6 +117,8 @@ internal class ReaderLayoutChoice(
      */
     suspend fun settle(document: ReaderDocument) {
         _extraction.value = null
+
+        if (document.info.type == DocumentType.PDF) _offered.value = true
 
         if (!_layout.value.asText || document.content is ReflowableContent) return
 

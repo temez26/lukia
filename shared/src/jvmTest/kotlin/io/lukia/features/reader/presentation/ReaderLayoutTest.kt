@@ -91,6 +91,28 @@ class ReaderLayoutTest : ReaderViewModelTestCase() {
     }
 
     /**
+     * The model half of the control staying put through a conversion: whether
+     * this book takes the choice is learned from the book and then kept, so
+     * re-opening it - which is what choosing does - never puts it back to not
+     * knowing.
+     *
+     * That the panel then shows it while there is no open book is asserted
+     * where the panel is, in `ReaderChromeTest`.
+     */
+    @Test
+    fun aBookGoesOnTakingTheChoiceWhileItIsBeingReadAgain() = runTest {
+        val document = pdfInLibrary(pageCount = 3, text = "Call me Ishmael. This is page")
+        val viewModel = createViewModel(document)
+        viewModel.settled()
+
+        assertTrue(viewModel.layoutOffered.value, "a PDF was not offered the choice")
+
+        viewModel.setPdfLayout(PdfLayout.Text)
+
+        assertTrue(viewModel.layoutOffered.value, "re-opening took the choice away")
+    }
+
+    /**
      * Reading the file is the one wait in the reader worth a number, and it is
      * over the moment the book is open - a progress report still standing over
      * an open book would be a reader waiting for something that already

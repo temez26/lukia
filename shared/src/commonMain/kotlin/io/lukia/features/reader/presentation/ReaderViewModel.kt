@@ -57,6 +57,7 @@ class ReaderViewModel(
     private val layoutChoice = ReaderLayoutChoice(location, layoutRepository)
 
     val pdfLayout: StateFlow<PdfLayout> = layoutChoice.layout
+    val layoutOffered: StateFlow<Boolean> = layoutChoice.offered
     val textExtraction: StateFlow<TextExtraction?> = layoutChoice.extraction
     val noTextLayer: StateFlow<Boolean> = layoutChoice.noTextLayer
 

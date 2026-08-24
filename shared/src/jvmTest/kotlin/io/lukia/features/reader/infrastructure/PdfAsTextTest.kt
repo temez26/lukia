@@ -113,6 +113,44 @@ class PdfAsTextTest {
         assertTrue(content.sections.single().blocks.none { it is TextBlock.Figure })
     }
 
+    /**
+     * The reason any of this is kept: converting a book is the most expensive
+     * thing the reader does, and somebody comparing the two ways of reading the
+     * same book asks for it twice within a few seconds.
+     */
+    @Test
+    fun aBookIsConvertedOnceAndReadBackFromThereAfterwards() = runTest {
+        val file = write(Line("Call me Ishmael.", y = 700f))
+
+        var conversions = 0
+        val first = assertIs<ReflowableContent>(openPdfAsText(file) { conversions++ })
+        val again = assertIs<ReflowableContent>(openPdfAsText(file) { conversions++ })
+
+        assertEquals(1, conversions, "the book was read out of the file more than once")
+        assertEquals(first.textOfFirstBlock(), again.textOfFirstBlock())
+    }
+
+    /**
+     * A note is about one file. Serving it for the book that replaced that file
+     * would show the reader the edition they have just got rid of.
+     */
+    @Test
+    fun aBookIsConvertedAgainOnceItsFileHasChanged() = runTest {
+        val file = write(Line("Call me Ishmael.", y = 700f))
+        val replacement = write(Line("It is a way I have of driving off the spleen.", y = 700f))
+
+        var conversions = 0
+        openPdfAsText(file) { conversions++ }
+        File(file).writeBytes(File(replacement).readBytes())
+        val second = assertIs<ReflowableContent>(openPdfAsText(file) { conversions++ })
+
+        assertTrue(conversions > 1, "the replaced book was served out of the old note")
+        assertTrue(second.textOfFirstBlock().startsWith("It is a way"))
+    }
+
+    private fun ReflowableContent.textOfFirstBlock(): String =
+        assertIs<TextBlock.Paragraph>(sections.first().blocks.first()).text.plainText()
+
     /** A file of blank pages is a stand-in for a scan: pages, and no words. */
     @Test
     fun aFileWithNothingWrittenInItCannotBeReadAsText() = runTest {

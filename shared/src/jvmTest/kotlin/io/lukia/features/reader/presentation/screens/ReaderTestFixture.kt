@@ -33,6 +33,12 @@ import io.lukia.shared.presentation.theme.LukiaTheme
 
 internal fun ComposeUiTest.setReader(
     pageCount: Int,
+    /**
+     * What the reader is showing. Overridden by the tests about the chrome
+     * around a book that has not arrived yet - converting a PDF to text is
+     * seconds of this state, and the controls have to work through it.
+     */
+    uiState: UiState<ReaderDocument>? = null,
     outline: ReaderOutline = ReaderOutline.Chapters(emptyList()),
     settings: ReaderSettings = ReaderSettings(),
     initialPosition: ReadingProgress? = null,
@@ -44,7 +50,7 @@ internal fun ComposeUiTest.setReader(
     setContent {
         LukiaTheme {
             ReaderContent(
-                uiState = UiState.Success(readerDocument(pageCount)),
+                uiState = uiState ?: UiState.Success(readerDocument(pageCount)),
                 settings = settings,
                 outline = outline,
                 initialPosition = initialPosition,

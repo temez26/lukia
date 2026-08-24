@@ -42,6 +42,7 @@ fun ReaderScreen(
     val gestures by viewModel.translationGestures.collectAsState()
     val bulkTranslation by viewModel.bulkTranslation.collectAsState()
     val pdfLayout by viewModel.pdfLayout.collectAsState()
+    val layoutOffered by viewModel.layoutOffered.collectAsState()
     val textExtraction by viewModel.textExtraction.collectAsState()
     val noTextLayer by viewModel.noTextLayer.collectAsState()
 
@@ -58,6 +59,7 @@ fun ReaderScreen(
         bulkTranslation = bulkTranslation,
         layout = ReaderLayoutUi(
             layout = pdfLayout,
+            offered = layoutOffered,
             converting = textExtraction,
             noTextLayer = noTextLayer,
             onLayoutChange = viewModel::setPdfLayout,

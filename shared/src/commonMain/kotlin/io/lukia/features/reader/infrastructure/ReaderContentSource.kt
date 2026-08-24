@@ -10,6 +10,8 @@ import io.lukia.features.reader.infrastructure.text.readEpub
 import io.lukia.features.reader.infrastructure.text.readMarkdown
 import io.lukia.features.reader.infrastructure.text.readPdfAsText
 import io.lukia.features.reader.infrastructure.text.readPlainText
+import io.lukia.features.reader.infrastructure.text.storeReflow
+import io.lukia.features.reader.infrastructure.text.storedReflow
 
 /**
  * Opens the document at [path] as something the reader can show, or returns null
@@ -47,16 +49,30 @@ internal fun openReaderContent(type: DocumentType, path: String): ReaderContent?
  * file afterwards. That is also why this cannot be part of [openReaderContent],
  * which is not suspending: reading a page's text is, and there are hundreds of
  * pages here rather than one.
+ *
+ * Read once in a stronger sense as well: what comes out is kept beside the file
+ * - see [storedReflow] - so that a reader who looks at the same book as pages
+ * and then as text again is not made to wait through the whole conversion a
+ * second time.
+ *
+ * A file with no text in it is not remembered as such. It costs a scan of the
+ * file to find out again, but only if somebody asks for the same scan as text
+ * twice, and writing down an absence is a thing to get wrong for the sake of a
+ * case the reader has already been told about.
  */
 internal suspend fun openPdfAsText(
     path: String,
     onProgress: (TextExtraction) -> Unit = {},
 ): ReaderContent? {
+    storedReflow(path)?.let { return it }
+
     val pages = openPdfPages(path)
 
-    return try {
+    val content = try {
         readPdfAsText(pages, onProgress)
     } finally {
         pages.close()
     }
+
+    return content?.also { storeReflow(path, it) }
 }
