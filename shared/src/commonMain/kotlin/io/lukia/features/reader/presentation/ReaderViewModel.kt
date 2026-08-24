@@ -7,32 +7,31 @@ import io.lukia.core.domain.runCatchingApp
 import io.lukia.core.domain.toAppError
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
-import io.lukia.core.presentation.displayTitle
 import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.domain.PagedContent
+import io.lukia.features.reader.domain.PdfLayout
+import io.lukia.features.reader.domain.PdfLayoutRepository
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.features.reader.domain.ReadingProgressRepository
+import io.lukia.features.reader.domain.TextExtraction
 import io.lukia.features.reader.domain.asTableOfContents
-import io.lukia.features.reader.domain.chapterCovering
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
-import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.PageSentence
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.TranslationGestures
-import io.lukia.features.translate.domain.TranslationRequest
-import io.lukia.features.translate.domain.asTranslationContext
 import io.lukia.features.translate.domain.pageSentences
-import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import io.lukia.features.translate.presentation.PassageSelection
 import io.lukia.features.translate.presentation.PassageTranslation
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -41,15 +40,26 @@ class ReaderViewModel(
     private val openDocumentUseCase: OpenDocumentUseCase,
     private val settingsRepository: ReaderSettingsRepository,
     private val progressRepository: ReadingProgressRepository,
-    translatePassage: TranslatePassageUseCase,
-    private val translationSettings: TranslationSettingsRepository,
+    layoutRepository: PdfLayoutRepository,
+    translations: ReaderTranslationsFactory,
 ) : ViewModel() {
 
     /**
      * Everything about translating what is on the page. Held here so the reader
      * screen sees one object, but implemented apart - see [ReaderTranslations].
      */
-    private val translation = ReaderTranslations(translatePassage, translationSettings, viewModelScope)
+    private val translation = translations.create(viewModelScope)
+
+    /**
+     * Whether this book is read as its own pages or as text, and what came of
+     * asking for the second - see [ReaderLayoutChoice].
+     */
+    private val layoutChoice = ReaderLayoutChoice(location, layoutRepository)
+
+    val pdfLayout: StateFlow<PdfLayout> = layoutChoice.layout
+    val layoutOffered: StateFlow<Boolean> = layoutChoice.offered
+    val textExtraction: StateFlow<TextExtraction?> = layoutChoice.extraction
+    val noTextLayer: StateFlow<Boolean> = layoutChoice.noTextLayer
 
     val translations: StateFlow<Map<TextAnchor, PassageTranslation>> = translation.passages
     val bulkTranslation: StateFlow<BulkTranslation> = translation.bulkTranslation
@@ -98,23 +108,70 @@ class ReaderViewModel(
         open()
     }
 
+    /**
+     * The opening in progress, so that a second one can stop the first.
+     *
+     * It matters now that a book can take a while to open: reading a long PDF's
+     * text is seconds of work, and somebody who changes their mind halfway
+     * through would otherwise have the book they abandoned arrive over the book
+     * they asked for.
+     */
+    private var opening: Job? = null
+
     private fun open() {
-        viewModelScope.launch {
+        opening?.cancel()
+
+        opening = viewModelScope.launch {
+            val layout = layoutChoice.restore()
+
             // getOrThrow re-raises the use case's own failure so that it and an
             // unanticipated throw are both narrowed in the same place.
-            val state = runCatchingApp { openDocumentUseCase(location).getOrThrow() }
-                .fold(
-                    onSuccess = { UiState.Success(it) },
-                    onFailure = { UiState.Failure(it.toAppError()) },
-                )
+            val state = runCatchingApp {
+                openDocumentUseCase(location, layout, layoutChoice::onProgress).getOrThrow()
+            }.fold(
+                onSuccess = { UiState.Success(it) },
+                onFailure = { UiState.Failure(it.toAppError()) },
+            )
+
+            // Cancelled between the file being opened and this line, which is
+            // the one window the suspension points cannot cover. What was
+            // opened is handed straight back rather than left holding the file.
+            if (!isActive) {
+                state.dataOrNull?.close()
+                return@launch
+            }
 
             _uiState.value = state
 
             if (state is UiState.Success) {
+                layoutChoice.settle(state.data)
                 restorePosition(state.data)
                 loadOutline(state.data)
             }
         }
+    }
+
+    /**
+     * Reads this book the other way.
+     *
+     * The book is opened again rather than converted where it sits: what a PDF
+     * is as text and what it is as pages are two different documents made from
+     * one file, and one of them holds a handle on that file. Where the reader
+     * was is not lost with it - the position is stored as they read, and both
+     * ways of reading restore it as a fraction of the book.
+     */
+    fun setPdfLayout(layout: PdfLayout) {
+        if (layoutChoice.layout.value == layout) return
+
+        viewModelScope.launch {
+            layoutChoice.choose(layout)
+            reopen()
+        }
+    }
+
+    /** The reader has seen that this PDF has no text in it to re-set. */
+    fun dismissNoTextLayerNotice() {
+        layoutChoice.dismissNotice()
     }
 
     /**
@@ -230,38 +287,8 @@ class ReaderViewModel(
         translation.setContinuous(continuous)
     }
 
-    /**
-     * The book is read here rather than at the tap because this is where it is
-     * known: the screen has the words and where they sit, and only the open
-     * document can say which book they came out of and what it is about. That
-     * is the whole of how a title and a genre reach a translator.
-     */
-    private fun ReaderDocument.requestFor(selection: PassageSelection) = TranslationRequest(
-        text = selection.passage,
-        targetLanguage = translation.targetLanguage,
-        context = info.metadata.asTranslationContext(
-            bookTitle = info.displayTitle(),
-            chapterTitle = selection.chapterTitle ?: chapterOf(selection.anchor),
-            surroundingText = selection.surroundingText,
-        ),
-        unit = selection.unit,
-    )
-
-    /**
-     * What a page sits under, for a document whose sentences carry no chapter of
-     * their own.
-     *
-     * A reflowable book's section names itself, so the screen already knows. A
-     * page of a PDF does not - but the book's own table of contents does, and it
-     * has been read and is sitting here already.
-     */
-    private fun chapterOf(anchor: TextAnchor): String? {
-        if (anchor !is TextAnchor.Page) return null
-
-        val chapters = (_outline.value as? ReaderOutline.Chapters)?.entries ?: return null
-
-        return chapters.chapterCovering(anchor.pageIndex)
-    }
+    private fun ReaderDocument.requestFor(selection: PassageSelection) =
+        translationRequest(selection, translation.targetLanguage, _outline.value)
 
     /**
      * Read in the background as soon as the book is open, rather than when the
@@ -285,6 +312,19 @@ class ReaderViewModel(
     }
 
     fun retry() {
+        reopen()
+    }
+
+    /**
+     * Puts the book back to before it was opened, and opens it again.
+     *
+     * Everything held about the open book goes with it: the document's own
+     * handle, the translations anchored into it, and the text read off its
+     * pages. All three are about the document that is being replaced - anchors
+     * point at sections a re-set book numbers differently, and a page's
+     * sentences are a fact about a page that may no longer exist.
+     */
+    private fun reopen() {
         closeDocument()
         translation.clear()
         pageSentences.clear()

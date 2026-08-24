@@ -6,14 +6,16 @@ import platform.PDFKit.PDFDocument
 import platform.PDFKit.kPDFDisplayBoxMediaBox
 import platform.UIKit.UIImagePNGRepresentation
 
-/**
- * NOTE: uses Apple's PDFKit via cinterop. Not compiled/verified on macOS -
- * please build and exercise PDF cover extraction on device/simulator before
- * relying on it.
- */
 @OptIn(ExperimentalForeignApi::class)
 internal actual fun renderPdfCover(pdfBytes: ByteArray): ByteArray? {
-    val document = PDFDocument(data = pdfBytes.toNSData())
+    // PDFKit has no nullable way in: handed something that is not a PDF, its
+    // initialiser returns nothing and the failure surfaces as a broken
+    // reference rather than an empty one. Caught here so that this keeps the
+    // promise the other platforms keep, which is that an unreadable file has no
+    // cover rather than an exception.
+    val document = runCatching { PDFDocument(data = pdfBytes.toNSData()) }.getOrNull()
+        ?: return null
+
     if (document.pageCount == 0uL) return null
 
     val page = document.pageAtIndex(0uL) ?: return null

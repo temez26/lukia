@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import io.lukia.features.reader.domain.DocumentPages
 import io.lukia.features.reader.domain.OutlineEntry
 import io.lukia.features.reader.domain.PageGlyph
+import io.lukia.features.reader.domain.PageImage
 import io.lukia.features.reader.domain.PageSize
 import io.lukia.features.reader.infrastructure.pdf.PdfOutlineReader
 import kotlinx.coroutines.Dispatchers
@@ -53,11 +54,11 @@ private class AndroidDocumentPages(path: String) : DocumentPages {
     }
 
     /**
-     * Opened only if somebody asks what a page says, because it means opening
-     * the file a second time with a library that can read text - which
-     * [PdfRenderer] cannot.
+     * Opened only if somebody asks what is on a page, because it means opening
+     * the file a second time with a library that can read one - which
+     * [PdfRenderer] cannot, for either the words or the pictures.
      */
-    private val text = lazy { AndroidPageText(file) }
+    private val content = lazy { AndroidPageContent(file) }
 
     override suspend fun pageText(index: Int): List<PageGlyph>? =
         withContext(Dispatchers.Default) {
@@ -65,7 +66,12 @@ private class AndroidDocumentPages(path: String) : DocumentPages {
             // with itself: this opens its own handle on the same file, and a
             // page being read while another is being drawn is contention over
             // one document either way.
-            renderLock.withLock { text.value.glyphs(index) }
+            renderLock.withLock { content.value.glyphs(index) }
+        }
+
+    override suspend fun pageImages(index: Int): List<PageImage> =
+        withContext(Dispatchers.Default) {
+            renderLock.withLock { content.value.images(index) }
         }
 
     override suspend fun renderPage(index: Int, targetWidthPx: Int): ImageBitmap? =
@@ -103,8 +109,8 @@ private class AndroidDocumentPages(path: String) : DocumentPages {
         runCatching { renderer.close() }
         runCatching { descriptor.close() }
         // Only if it was ever opened: reading a book cover to cover without
-        // translating anything never touches this.
-        if (text.isInitialized()) runCatching { text.value.close() }
+        // translating anything or re-setting it as text never touches this.
+        if (content.isInitialized()) runCatching { content.value.close() }
     }
 
     private companion object {

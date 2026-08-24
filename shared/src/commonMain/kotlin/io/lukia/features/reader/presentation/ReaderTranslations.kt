@@ -195,3 +195,24 @@ internal class ReaderTranslations(
         _onScreen.value = TranslateOnScreen.Idle
     }
 }
+
+/**
+ * Builds one of these once there is a scope to run it in.
+ *
+ * The scope belongs to the ViewModel and cannot be injected beside the two
+ * dependencies above it, so without this the ViewModel would have to be handed
+ * both of them - two dependencies it never uses itself, held only to pass on.
+ * What it is handed instead is the one thing it actually needs, which is a way
+ * to make a [ReaderTranslations].
+ *
+ * Public only because it names a ViewModel's dependency, and that ViewModel is
+ * reached from outside this feature.
+ */
+class ReaderTranslationsFactory(
+    private val translatePassage: TranslatePassageUseCase,
+    private val settings: TranslationSettingsRepository,
+) {
+
+    internal fun create(scope: CoroutineScope): ReaderTranslations =
+        ReaderTranslations(translatePassage, settings, scope)
+}

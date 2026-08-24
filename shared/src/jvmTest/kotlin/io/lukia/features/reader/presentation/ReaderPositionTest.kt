@@ -1,13 +1,9 @@
 package io.lukia.features.reader.presentation
 
-import io.lukia.core.domain.FakeSecretStore
 import io.lukia.core.domain.FakeSettingsStore
 import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
-import io.lukia.features.translate.application.TranslatePassageUseCase
-import io.lukia.features.translate.domain.FakeTranslator
-import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -88,8 +84,8 @@ class ReaderPositionTest : ReaderViewModelTestCase() {
             ),
             settingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
             progressRepository = progress,
-            translatePassage = TranslatePassageUseCase(FakeTranslator()),
-            translationSettings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()),
+            layoutRepository = layouts,
+            translations = testTranslations(),
         ).also { track(it) }
         viewModel.settled()
 

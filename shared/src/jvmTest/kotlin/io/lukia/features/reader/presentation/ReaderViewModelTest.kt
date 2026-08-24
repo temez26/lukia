@@ -3,7 +3,6 @@ package io.lukia.features.reader.presentation
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
-import io.lukia.core.domain.FakeSecretStore
 import io.lukia.core.domain.FakeSettingsStore
 import io.lukia.core.domain.PickedDocument
 import io.lukia.core.presentation.UiState
@@ -11,9 +10,6 @@ import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
-import io.lukia.features.translate.application.TranslatePassageUseCase
-import io.lukia.features.translate.domain.FakeTranslator
-import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import java.io.File
@@ -63,8 +59,8 @@ class ReaderViewModelTest : ReaderViewModelTestCase() {
             ),
             settingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
             progressRepository = progress,
-            translatePassage = TranslatePassageUseCase(FakeTranslator()),
-            translationSettings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()),
+            layoutRepository = layouts,
+            translations = testTranslations(),
         ).also { track(it) }
 
         assertEquals(UiState.Failure(AppError.DocumentNotFound), viewModel.settled())
@@ -125,8 +121,8 @@ class ReaderViewModelTest : ReaderViewModelTestCase() {
             ),
             settingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
             progressRepository = progress,
-            translatePassage = TranslatePassageUseCase(FakeTranslator()),
-            translationSettings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()),
+            layoutRepository = layouts,
+            translations = testTranslations(),
         ).also { track(it) }
 
         assertEquals(UiState.Failure(AppError.DocumentNotFound), viewModel.settled())
@@ -196,8 +192,8 @@ class ReaderViewModelTest : ReaderViewModelTestCase() {
             ),
             settingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
             progressRepository = progress,
-            translatePassage = TranslatePassageUseCase(FakeTranslator()),
-            translationSettings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()),
+            layoutRepository = layouts,
+            translations = testTranslations(),
         ).also { track(it) }
 
         assertNull(viewModel.page(index = 0, widthPx = 384))

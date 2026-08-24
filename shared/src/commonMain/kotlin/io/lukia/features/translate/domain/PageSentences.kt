@@ -1,7 +1,13 @@
 package io.lukia.features.translate.domain
 
+import io.lukia.features.reader.domain.GlyphBlock
 import io.lukia.features.reader.domain.PageGlyph
+import io.lukia.features.reader.domain.PlacedGlyph
 import io.lukia.features.reader.domain.TextQuad
+import io.lukia.features.reader.domain.between
+import io.lukia.features.reader.domain.intoBlocks
+import io.lukia.features.reader.domain.intoLines
+import io.lukia.features.reader.domain.placedText
 
 /**
  * One sentence of a laid-out page: what it says, and the rectangles it covers.
@@ -30,7 +36,8 @@ data class PageSentence(
      * Which block of the page it was read out of.
      *
      * A PDF records no paragraphs - what counts as a block here is inferred from
-     * the space left between lines, by [intoBlocks] - but that inference is made
+     * the space left between lines, by
+     * [io.lukia.features.reader.domain.intoBlocks] - but that inference is made
      * anyway, to stop a heading and the footnote under it from running into one
      * sentence, and keeping its answer is what lets the reader ask about a whole
      * paragraph of a page. Without it the grouping was worked out and thrown
@@ -61,12 +68,12 @@ data class PageWord(
 /**
  * Reads a page's sentences off the characters it is made of.
  *
- * A PDF stores glyphs and positions, not words, lines or sentences - a page is
- * a set of instructions for putting marks in places, and everything a reader
- * thinks of as structure has to be inferred back out of where those marks
- * landed. That inference is here, in common code, so it is the same on every
- * platform and can be tested without a PDF: what each platform provides is only
- * the characters and their boxes.
+ * The geometry - which glyphs share a line, where one block ends and the next
+ * begins, where the spaces between words go - is
+ * [io.lukia.features.reader.domain.PageBlocks]'s doing and is shared with
+ * everything else that reads a laid-out page. What is left here is the part that
+ * is about sentences: cutting the text into them, and keeping each one attached
+ * to the part of the page it covers.
  */
 fun pageSentences(glyphs: List<PageGlyph>): List<PageSentence> {
     val lines = glyphs.filter { it.text.isNotEmpty() }.intoLines()
@@ -74,11 +81,9 @@ fun pageSentences(glyphs: List<PageGlyph>): List<PageSentence> {
 
     var next = 0
 
-    // Read block by block rather than as one run of text down the page. A PDF
-    // records no paragraphs, so the only evidence of where one thing ends and
-    // the next begins is the space left between them - and without using it, a
-    // heading, its paragraph and the footnote under it join into a single
-    // sentence that ends wherever the page happens to have its first full stop.
+    // Read block by block rather than as one run of text down the page: a
+    // sentence that ran from a heading into the paragraph under it would be one
+    // passage made of two unrelated things.
     return lines.intoBlocks().flatMapIndexed { blockIndex, block ->
         block.sentences(from = next, blockIndex = blockIndex).also { next += it.size }
     }
@@ -88,113 +93,32 @@ fun pageSentences(glyphs: List<PageGlyph>): List<PageSentence> {
  * One block's sentences, numbered on from where the last block finished.
  *
  * Numbered across the page rather than from zero in each block, because that is
- * how a page addresses its sentences - see [io.lukia.features.translate.domain.TextAnchor.Page].
- * The block they came out of travels beside the number rather than replacing it.
+ * how a page addresses its sentences - see [TextAnchor.Page]. The block they
+ * came out of travels beside the number rather than replacing it.
  */
-private fun List<List<PageGlyph>>.sentences(from: Int, blockIndex: Int): List<PageSentence> {
-    val text = StringBuilder()
+private fun GlyphBlock.sentences(from: Int, blockIndex: Int): List<PageSentence> {
+    val placed = placedText()
 
-    // One entry per character of [text], naming the glyph it came from - or null
-    // for a space this code inferred, which belongs to no glyph and so covers no
-    // part of the page.
-    val owners = mutableListOf<PlacedGlyph?>()
-
-    fun append(part: String, owner: PlacedGlyph?) {
-        text.append(part)
-        repeat(part.length) { owners.add(owner) }
-    }
-
-    forEachIndexed { lineIndex, line ->
-        // A word broken across a line break is one word. Joining the halves with
-        // a space instead would hand the translator "exam- ple", which is two
-        // things it has to guess were one.
-        if (lineIndex > 0 && !text.endsWithHyphen()) append(" ", owner = null)
-
-        val threshold = line.spaceThreshold()
-
-        line.forEachIndexed { index, glyph ->
-            val previous = line.getOrNull(index - 1)
-
-            if (previous != null && previous.isSeparatedFrom(glyph, threshold)) {
-                append(" ", owner = null)
-            }
-
-            append(glyph.text, PlacedGlyph(glyph, lineIndex))
-        }
-    }
-
-    return splitIntoSentences(text.toString()).mapNotNull { sentence ->
-        val placed = owners.between(sentence.start, sentence.end)
-        if (placed.isEmpty()) return@mapNotNull null
+    return splitIntoSentences(placed.text).mapNotNull { sentence ->
+        val glyphs = placed.owners.between(sentence.start, sentence.end)
+        if (glyphs.isEmpty()) return@mapNotNull null
 
         PageSentence(
             index = from + sentence.index,
             text = sentence.text,
-            quads = placed.intoQuads(),
+            quads = glyphs.intoQuads(),
             blockIndex = blockIndex,
             // The same offsets, cut finer. A word that breaks across a line is
             // two ribbons for the same reason a sentence is.
             words = sentence.words().mapNotNull { word ->
-                owners.between(word.start, word.end)
+                placed.owners
+                    .between(word.start, word.end)
                     .takeIf { it.isNotEmpty() }
                     ?.let { PageWord(index = word.index, text = word.text, quads = it.intoQuads()) }
             },
         )
     }
 }
-
-/**
- * How far apart two lines have to be before they are separate things.
- *
- * Measured against the glyphs' own height, which is not a line's height: what a
- * PDF reports per glyph is roughly the cap height, and measurement against real
- * files puts that near 0.58 of the size the type was set at. So the gap between
- * one line's glyphs and the next is `leading - capHeight`, and this ratio works
- * out as `leading / fontSize / 0.58 - 1`:
- *
- *     leading 1.2x  ->  1.07     ordinary body text
- *     leading 1.5x  ->  1.59     loosely set body text
- *     leading 1.75x ->  2.02
- *     leading 2.0x  ->  2.45     a paragraph break, or the space under a heading
- *
- * Two is the gap between the two groups. It is deliberately nearer the second:
- * splitting a paragraph that was merely set loosely cuts a sentence in half
- * mid-thought, which the reader sees immediately, while failing to split two
- * blocks only leaves a longer passage.
- */
-private const val BLOCK_GAP_RATIO = 2.0f
-
-private fun List<List<PageGlyph>>.intoBlocks(): List<List<List<PageGlyph>>> {
-    val blocks = mutableListOf<MutableList<List<PageGlyph>>>()
-
-    forEach { line ->
-        val previous = blocks.lastOrNull()?.lastOrNull()
-
-        if (previous == null || line.followsOn(previous)) {
-            if (previous == null) blocks.add(mutableListOf(line)) else blocks.last().add(line)
-        } else {
-            blocks.add(mutableListOf(line))
-        }
-    }
-
-    return blocks
-}
-
-/** Whether this line reads as the next line of what came before it. */
-private fun List<PageGlyph>.followsOn(previous: List<PageGlyph>): Boolean {
-    val height = maxOf(
-        maxOf { it.bounds.height },
-        previous.maxOf { it.bounds.height },
-    )
-
-    val gap = minOf { it.bounds.top } - previous.maxOf { it.bounds.bottom }
-
-    return gap <= height * BLOCK_GAP_RATIO
-}
-
-/** The glyphs that produced the characters between two offsets of the block's text. */
-private fun List<PlacedGlyph?>.between(from: Int, to: Int): List<PlacedGlyph> =
-    (from until to).mapNotNull { getOrNull(it) }
 
 /**
  * One rectangle per line these glyphs were set on.
@@ -223,70 +147,3 @@ fun List<TextQuad>.union(): TextQuad = TextQuad(
     right = maxOf { it.right },
     bottom = maxOf { it.bottom },
 )
-
-private data class PlacedGlyph(val glyph: PageGlyph, val line: Int)
-
-/**
- * How far apart two glyphs have to be before the gap is a word break.
- *
- * Measured against the line's own height rather than a fixed distance, because
- * a footnote and a chapter title are set at sizes that differ by a factor of
- * three and the space between their words differs with them.
- */
-private const val SPACE_RATIO = 0.25f
-
-private fun PageGlyph.isSeparatedFrom(next: PageGlyph, threshold: Float): Boolean {
-    // A gap around a character that is already a space is not a second space.
-    if (text.last().isWhitespace() || next.text.first().isWhitespace()) return false
-
-    return next.bounds.left - bounds.right > threshold
-}
-
-private fun List<PageGlyph>.spaceThreshold(): Float =
-    maxOf { it.bounds.height } * SPACE_RATIO
-
-private fun StringBuilder.endsWithHyphen(): Boolean {
-    val last = lastOrNull() ?: return false
-
-    return last == '-' || last == '‐' || last == '­'
-}
-
-/**
- * The glyphs gathered into the lines they were set on, in reading order.
- *
- * By vertical overlap rather than by an exact baseline: a line holding a
- * superscript, a larger initial or a different face has glyphs whose tops and
- * bottoms do not agree, and grouping on equality would break every such line
- * into several. Two glyphs share a line when each one's middle falls inside the
- * other's height, which is true of everything set on one baseline and false of
- * the line above it.
- */
-private fun List<PageGlyph>.intoLines(): List<List<PageGlyph>> {
-    val byPosition = sortedWith(compareBy({ it.bounds.top }, { it.bounds.left }))
-    val lines = mutableListOf<MutableList<PageGlyph>>()
-
-    byPosition.forEach { glyph ->
-        val line = lines.lastOrNull()
-
-        if (line != null && line.sharesLineWith(glyph)) {
-            line.add(glyph)
-        } else {
-            lines.add(mutableListOf(glyph))
-        }
-    }
-
-    return lines.map { line -> line.sortedBy { it.bounds.left } }
-}
-
-private fun List<PageGlyph>.sharesLineWith(glyph: PageGlyph): Boolean {
-    val middle = glyph.bounds.top + glyph.bounds.height / 2
-
-    return any { onLine ->
-        val theirMiddle = onLine.bounds.top + onLine.bounds.height / 2
-
-        middle >= onLine.bounds.top &&
-            middle <= onLine.bounds.bottom ||
-            theirMiddle >= glyph.bounds.top &&
-            theirMiddle <= glyph.bounds.bottom
-    }
-}

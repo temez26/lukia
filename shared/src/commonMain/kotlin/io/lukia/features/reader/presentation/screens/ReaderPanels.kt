@@ -33,6 +33,7 @@ internal fun BoxScope.ReaderPanels(
     outline: ReaderOutline,
     listState: LazyListState,
     settings: ReaderSettings,
+    layout: ReaderLayoutUi,
     onSettingsChange: (ReaderSettings) -> Unit,
 ) {
     val dimens = LocalLukiaDimens.current
@@ -58,7 +59,13 @@ internal fun BoxScope.ReaderPanels(
         settings = settings,
         // A PDF's type was set when the file was made.
         typographyEnabled = document?.content is ReflowableContent,
+        // Only a PDF can be read either way, and which book this is comes from
+        // the choice rather than from what is open: converting one takes long
+        // enough that there is nothing open for most of it, and that is when
+        // somebody who has changed their mind goes looking for this control.
+        layout = layout.layout.takeIf { layout.offered },
         onSettingsChange = onSettingsChange,
+        onLayoutChange = layout.onLayoutChange,
         onDismissRequest = chrome::closePanels,
         modifier = Modifier
             .align(Alignment.TopEnd)

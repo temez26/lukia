@@ -15,10 +15,12 @@ import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runComposeUiTest
 import io.lukia.core.presentation.UiState
+import io.lukia.features.reader.domain.PdfLayout
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.domain.ReadingWidth
+import io.lukia.features.reader.domain.TextExtraction
 import io.lukia.shared.presentation.theme.LukiaTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -177,7 +179,11 @@ class ReaderChromeTest {
     @Test
     fun choosingAThemeReportsItImmediately() = runComposeUiTest {
         var changed: ReaderSettings? = null
-        setReader(pageCount = 10, onSettingsChange = { changed = it })
+        setReader(
+            pageCount = 10,
+            layout = ReaderLayoutUi(offered = true),
+            onSettingsChange = { changed = it },
+        )
 
         onNodeWithContentDescription("Reading settings").performClick()
         onNodeWithText("Sepia").performClick()
@@ -188,7 +194,11 @@ class ReaderChromeTest {
     @Test
     fun choosingAReadingWidthReportsItImmediately() = runComposeUiTest {
         var changed: ReaderSettings? = null
-        setReader(pageCount = 10, onSettingsChange = { changed = it })
+        setReader(
+            pageCount = 10,
+            layout = ReaderLayoutUi(offered = true),
+            onSettingsChange = { changed = it },
+        )
 
         onNodeWithContentDescription("Reading settings").performClick()
         onNodeWithText("75%").performClick()
@@ -203,7 +213,11 @@ class ReaderChromeTest {
     @Test
     fun theLargerPageWidthsAreOffered() = runComposeUiTest {
         var changed: ReaderSettings? = null
-        setReader(pageCount = 10, onSettingsChange = { changed = it })
+        setReader(
+            pageCount = 10,
+            layout = ReaderLayoutUi(offered = true),
+            onSettingsChange = { changed = it },
+        )
 
         onNodeWithContentDescription("Reading settings").performClick()
         onNodeWithText("150%").performClick()
@@ -234,7 +248,11 @@ class ReaderChromeTest {
     @Test
     fun textAndImageSettingsAreDisabledForAFixedLayoutDocument() = runComposeUiTest {
         var changed: ReaderSettings? = null
-        setReader(pageCount = 10, onSettingsChange = { changed = it })
+        setReader(
+            pageCount = 10,
+            layout = ReaderLayoutUi(offered = true),
+            onSettingsChange = { changed = it },
+        )
 
         onNodeWithContentDescription("Reading settings").performClick()
 
@@ -242,9 +260,82 @@ class ReaderChromeTest {
             .assertIsNotEnabled()
         onNodeWithText(
             "These apply to reflowable books - this one carries " +
-                "its own fixed layout.",
+                "its own fixed layout. Read it as text to use them.",
         ).assertExists()
         assertNull(changed)
+    }
+
+    /**
+     * A PDF can be read as its own pages or as text this app sets, and the
+     * settings panel is where that is asked for.
+     */
+    @Test
+    fun theSettingsPanelOffersToReadAPdfAsText() = runComposeUiTest {
+        var chosen: PdfLayout? = null
+        setReader(
+            pageCount = 10,
+            layout = ReaderLayoutUi(offered = true, onLayoutChange = { chosen = it }),
+        )
+
+        onNodeWithContentDescription("Reading settings").performClick()
+
+        onNodeWithText("Layout").assertExists()
+        onNodeWithText("Text").performClick()
+
+        assertEquals(PdfLayout.Text, chosen)
+    }
+
+    /**
+     * The control has to survive the wait it causes. Asking for a long PDF as
+     * text is seconds of conversion with no open book behind it, and that is
+     * exactly when somebody watching the page count climb decides they would
+     * rather have the pages back - so the way back cannot be the thing that
+     * disappears.
+     */
+    @Test
+    fun theLayoutChoiceIsStillThereWhileTheBookIsBeingConverted() = runComposeUiTest {
+        var chosen: PdfLayout? = null
+        setReader(
+            pageCount = 10,
+            uiState = UiState.Loading,
+            layout = ReaderLayoutUi(
+                layout = PdfLayout.Text,
+                offered = true,
+                converting = TextExtraction(pagesRead = 12, pageCount = 600),
+                onLayoutChange = { chosen = it },
+            ),
+        )
+
+        onNodeWithContentDescription("Reading settings").performClick()
+
+        onNodeWithText("Layout").assertExists()
+        onNodeWithText("Original").performClick()
+
+        assertEquals(PdfLayout.Original, chosen)
+    }
+
+    /** An EPUB was never asked which way to be read, so it is not asked here. */
+    @Test
+    fun aBookThatTakesNoLayoutChoiceIsNotOfferedOne() = runComposeUiTest {
+        setReader(pageCount = 10, layout = ReaderLayoutUi(offered = false))
+
+        onNodeWithContentDescription("Reading settings").performClick()
+
+        onNodeWithText("Layout").assertDoesNotExist()
+    }
+
+    /**
+     * A scan has no words in the file to re-set. The reader gets the pages, and
+     * has to be told why - otherwise the setting looks broken.
+     */
+    @Test
+    fun aPdfWithNoTextToReSetSaysSo() = runComposeUiTest {
+        setReader(pageCount = 10, layout = ReaderLayoutUi(noTextLayer = true))
+
+        onNodeWithText(
+            "This PDF has no text in it to re-set - its pages are pictures. " +
+                "Showing it as pages.",
+        ).assertExists()
     }
 
     /** How large the pictures are is a setting somebody has to be able to find. */

@@ -16,6 +16,7 @@ import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.domain.LibraryRepository
+import io.lukia.features.reader.domain.FakePdfLayoutRepository
 import io.lukia.features.reader.domain.FakeReadingProgressRepository
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -190,6 +191,7 @@ class BookDetailViewModelTest : MainDispatcherTest() {
             repository,
             FakeDocumentWorkspace(),
             FakeReadingProgressRepository(),
+            FakePdfLayoutRepository(),
         ),
     )
 

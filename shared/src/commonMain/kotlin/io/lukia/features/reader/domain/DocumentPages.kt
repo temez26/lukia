@@ -68,4 +68,18 @@ interface DocumentPages : AutoCloseable {
      * past is drawn, and only a page somebody points at is read.
      */
     suspend fun pageText(index: Int): List<PageGlyph>? = null
+
+    /**
+     * The pictures drawn on page [index], and where each of them sits.
+     *
+     * Only asked of a document being re-set as text - a page that is drawn
+     * carries its own pictures already, in place, and reading them back out
+     * would be work to arrive at what the reader can see.
+     *
+     * Empty rather than null for a platform that cannot read them, because
+     * nothing above this can act on the difference: a page with no pictures and
+     * a page whose pictures cannot be had both re-set as the words alone, and
+     * there is no version of this the reader would want to be told about.
+     */
+    suspend fun pageImages(index: Int): List<PageImage> = emptyList()
 }

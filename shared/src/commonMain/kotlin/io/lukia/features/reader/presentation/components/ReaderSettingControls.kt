@@ -237,3 +237,27 @@ private fun StepperButton(
         )
     }
 }
+
+/**
+ * A line of small print under a control, saying what the setting above it is
+ * subject to.
+ *
+ * Placed after the control it explains in the tree but read as belonging to it,
+ * which is what a screen reader does with it too. Small and grey: it is a note,
+ * and a panel where the explanations are as loud as the settings is a panel
+ * nobody reads either.
+ */
+@Composable
+internal fun PanelNote(text: String, inset: Dp) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(
+            start = inset,
+            end = inset,
+            top = Space.xxs,
+            bottom = Space.md,
+        ),
+    )
+}
