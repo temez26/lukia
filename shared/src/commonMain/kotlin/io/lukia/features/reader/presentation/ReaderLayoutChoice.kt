@@ -1,4 +1,4 @@
-package io.lukia.features.reader.presentation
+﻿package io.lukia.features.reader.presentation
 
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.runCatchingApp
@@ -124,13 +124,25 @@ internal class ReaderLayoutChoice(
      * the book again does not read the whole file a second time to reach the
      * same answer - and so that what the settings panel shows is what the reader
      * is looking at.
+     *
+     * [openedAs] is what this opening asked for, and is judged against rather
+     * than against the choice in hand. Opening a book runs on past the moment
+     * the reader can see it, so a reader who changes the layout in that window
+     * leaves two openings in flight - and the older one is reporting on a book
+     * already abandoned. Read against the current choice, it would answer
+     * "this has no text in it" about the wrong document and put the reader's new
+     * choice back to what they had just moved away from.
      */
-    suspend fun settle(document: ReaderDocument) {
+    suspend fun settle(document: ReaderDocument, openedAs: PdfLayout) {
         _extraction.value = null
 
         if (document.info.type == DocumentType.PDF) _offered.value = true
 
-        if (!_layout.value.asText || document.content is ReflowableContent) return
+        if (!openedAs.asText || document.content is ReflowableContent) return
+
+        // Superseded: the reader has asked for something else since this
+        // opening began, and it is their answer that stands.
+        if (_layout.value != openedAs) return
 
         choose(PdfLayout.Original)
         _noTextLayer.value = true

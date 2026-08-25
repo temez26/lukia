@@ -157,7 +157,7 @@ class ReaderViewModel(
             _uiState.value = state
 
             if (state is UiState.Success) {
-                layoutChoice.settle(state.data)
+                layoutChoice.settle(state.data, openedAs = layout)
                 restorePosition(state.data)
                 loadOutline(state.data)
             }
