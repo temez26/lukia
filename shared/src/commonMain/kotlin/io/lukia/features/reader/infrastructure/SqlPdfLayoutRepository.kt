@@ -17,13 +17,13 @@ class SqlPdfLayoutRepository(
 
     /**
      * Stored by name, so a value written by a build that knew a layout this one
-     * does not falls back to the default rather than throwing - the same rule
+     * does not reads as no choice at all rather than throwing - the same rule
      * the key-value settings follow, and for the same reason.
      */
-    override suspend fun layoutFor(location: String): PdfLayout = withContext(dispatcher) {
+    override suspend fun layoutFor(location: String): PdfLayout? = withContext(dispatcher) {
         val stored = layouts.selectByLocation(location).executeAsOneOrNull()
 
-        PdfLayout.entries.firstOrNull { it.name == stored } ?: PdfLayout.Original
+        PdfLayout.entries.firstOrNull { it.name == stored }
     }
 
     override suspend fun save(location: String, layout: PdfLayout) = withContext(dispatcher) {

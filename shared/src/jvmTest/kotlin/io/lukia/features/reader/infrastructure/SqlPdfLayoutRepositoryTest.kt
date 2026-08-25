@@ -6,6 +6,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class SqlPdfLayoutRepositoryTest {
 
@@ -14,10 +15,14 @@ class SqlPdfLayoutRepositoryTest {
         dispatcher = UnconfinedTestDispatcher(),
     )
 
-    /** A book nobody has chosen for is read as the file laid itself out. */
+    /**
+     * A book nobody has chosen for answers with nothing rather than with a
+     * layout, so the caller can tell it apart from a book chosen for and put its
+     * own default in the gap.
+     */
     @Test
-    fun aBookWithNoChoiceStoredOpensAsItsOwnPages() = runTest {
-        assertEquals(PdfLayout.Original, repository.layoutFor("/books/one.pdf"))
+    fun aBookWithNoChoiceStoredHasNoChoiceToGiveBack() = runTest {
+        assertNull(repository.layoutFor("/books/one.pdf"))
     }
 
     @Test
@@ -25,7 +30,7 @@ class SqlPdfLayoutRepositoryTest {
         repository.save("/books/one.pdf", PdfLayout.Text)
 
         assertEquals(PdfLayout.Text, repository.layoutFor("/books/one.pdf"))
-        assertEquals(PdfLayout.Original, repository.layoutFor("/books/two.pdf"))
+        assertNull(repository.layoutFor("/books/two.pdf"))
     }
 
     @Test
@@ -43,6 +48,6 @@ class SqlPdfLayoutRepositoryTest {
 
         repository.forget("/books/one.pdf")
 
-        assertEquals(PdfLayout.Original, repository.layoutFor("/books/one.pdf"))
+        assertNull(repository.layoutFor("/books/one.pdf"))
     }
 }

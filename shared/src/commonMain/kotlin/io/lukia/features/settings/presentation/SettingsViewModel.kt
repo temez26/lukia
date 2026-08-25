@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.core.domain.toAppError
+import io.lukia.features.reader.domain.ReaderSettings
+import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import io.lukia.features.settings.domain.AppSettings
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.features.translate.application.TranslatePassageUseCase
@@ -100,6 +102,7 @@ sealed interface ModelReadiness {
  */
 class SettingsViewModel(
     private val repository: AppSettingsRepository,
+    private val reader: ReaderSettingsRepository,
     private val translation: TranslationSettingsRepository,
     private val translatePassage: TranslatePassageUseCase,
     private val catalogue: ModelCatalogue,
@@ -107,6 +110,16 @@ class SettingsViewModel(
 ) : ViewModel() {
 
     val settings: StateFlow<AppSettings> = repository.settings
+
+    /**
+     * The same settings the reader's own panel edits, not a copy of them.
+     *
+     * There is one set of reader settings in the app and they were always
+     * app-wide; the panel is just where they used to be reachable from. Reading
+     * the repository's own flow here is what makes a change on this page show up
+     * in a book that is already open.
+     */
+    val readerSettings: StateFlow<ReaderSettings> = reader.settings
 
     val translationSettings: StateFlow<TranslationSettings> = translation.settings
 
@@ -131,6 +144,14 @@ class SettingsViewModel(
      */
     fun setAppearance(settings: AppSettings) {
         repository.update(settings)
+    }
+
+    /**
+     * How books are set - the page, the type, and what a PDF opens as - carried
+     * whole for the same reason [setAppearance] is.
+     */
+    fun setReaderSettings(settings: ReaderSettings) {
+        reader.update(settings)
     }
 
     fun setTargetLanguage(language: TargetLanguage) {

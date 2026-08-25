@@ -3,6 +3,7 @@ package io.lukia.features.settings.presentation
 import io.lukia.core.domain.FakeSecretStore
 import io.lukia.core.domain.FakeSettingsStore
 import io.lukia.core.domain.SettingsStore
+import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.FakeTranslator
@@ -121,6 +122,7 @@ class SettingsViewModelGesturesTest {
         translation: TranslationSettingsRepository,
     ) = SettingsViewModel(
         repository = AppSettingsRepository(store),
+        reader = ReaderSettingsRepository(store),
         translation = translation,
         translatePassage = TranslatePassageUseCase(FakeTranslator()),
         catalogue = ModelCatalogue { emptyList() },

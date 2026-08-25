@@ -9,8 +9,7 @@ class FakePdfLayoutRepository(
     private val layouts: MutableMap<String, PdfLayout> = mutableMapOf(),
 ) : PdfLayoutRepository {
 
-    override suspend fun layoutFor(location: String): PdfLayout =
-        layouts[location] ?: PdfLayout.Original
+    override suspend fun layoutFor(location: String): PdfLayout? = layouts[location]
 
     override suspend fun save(location: String, layout: PdfLayout) {
         layouts[location] = layout

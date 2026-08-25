@@ -125,6 +125,16 @@ data class ReaderSettings(
      * more say over one of them than over where a line breaks.
      */
     val figureSize: FigureSize = FigureSize.Normal,
+    /**
+     * What a PDF nobody has chosen for opens as.
+     *
+     * A starting point rather than a rule: how a book is read stays that book's
+     * own choice, and one that has been opened either way keeps what it was
+     * given whatever this says afterwards. It is here for the reader whose shelf
+     * is all PDFs and who re-sets every one of them - choosing that once is
+     * better than choosing it once a book.
+     */
+    val defaultPdfLayout: PdfLayout = PdfLayout.Original,
 ) {
 
     /** The preset this scale sits on, if it sits on one. */

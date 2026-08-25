@@ -1,9 +1,12 @@
 package io.lukia.features.reader.presentation
 
+import io.lukia.core.domain.FakeSettingsStore
 import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.PdfLayout
+import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReflowableContent
+import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -28,6 +31,40 @@ class ReaderLayoutTest : ReaderViewModelTestCase() {
         assertIs<PagedContent>(viewModel.settled().dataOrNull?.content)
         assertEquals(PdfLayout.Original, viewModel.pdfLayout.value)
     }
+
+    /**
+     * The reader whose shelf is all PDFs sets them to open as text once, in
+     * Settings, rather than once a book.
+     */
+    @Test
+    fun aPdfOpensAsTextWhenThatIsWhatNewOnesAreSetTo() = runTest {
+        val document = pdfInLibrary(pageCount = 2, text = "Call me Ishmael. This is page")
+
+        val viewModel = createViewModel(document, settings = openingPdfsAsText())
+
+        assertIs<ReflowableContent>(viewModel.settled().dataOrNull?.content)
+    }
+
+    /**
+     * And it reaches only the books that setting is about. A book already read
+     * one way keeps that way, because it is the one thing here somebody has
+     * said about this book rather than about all of them.
+     */
+    @Test
+    fun aBookAlreadyChosenForKeepsItsOwnChoice() = runTest {
+        val document = pdfInLibrary(pageCount = 2, text = "Call me Ishmael. This is page")
+        layouts.save(document.document.location, PdfLayout.Original)
+
+        val viewModel = createViewModel(document, settings = openingPdfsAsText())
+
+        assertIs<PagedContent>(viewModel.settled().dataOrNull?.content)
+        assertEquals(PdfLayout.Original, viewModel.pdfLayout.value)
+    }
+
+    private fun openingPdfsAsText() =
+        ReaderSettingsRepository(FakeSettingsStore()).also {
+            it.update(ReaderSettings(defaultPdfLayout = PdfLayout.Text))
+        }
 
     @Test
     fun aPdfChosenAsTextOpensAsAReflowableBook() = runTest {

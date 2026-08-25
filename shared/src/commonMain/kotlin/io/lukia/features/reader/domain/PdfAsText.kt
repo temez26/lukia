@@ -45,8 +45,12 @@ data class TextExtraction(val pagesRead: Int, val pageCount: Int)
  */
 interface PdfLayoutRepository {
 
-    /** [PdfLayout.Original] for a book nobody has chosen for, which is the default. */
-    suspend fun layoutFor(location: String): PdfLayout
+    /**
+     * Null for a book nobody has chosen for, so that the caller can tell an
+     * absent choice from a deliberate one and fall back to whatever new books
+     * are set to open as.
+     */
+    suspend fun layoutFor(location: String): PdfLayout?
 
     suspend fun save(location: String, layout: PdfLayout)
 

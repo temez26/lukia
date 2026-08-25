@@ -3,6 +3,7 @@ package io.lukia.features.reader.infrastructure
 import io.lukia.core.domain.FakeSettingsStore
 import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.domain.LineSpacing
+import io.lukia.features.reader.domain.PdfLayout
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.domain.ReaderTypeface
@@ -156,6 +157,29 @@ class ReaderSettingsRepositoryTest {
         assertEquals(
             TextAlignment.Ragged,
             ReaderSettingsRepository(FakeSettingsStore()).settings.value.alignment,
+        )
+    }
+
+    @Test
+    fun whatNewPdfsOpenAsIsReadBack() {
+        val store = FakeSettingsStore()
+
+        ReaderSettingsRepository(store).update(
+            ReaderSettings(defaultPdfLayout = PdfLayout.Text),
+        )
+
+        assertEquals(
+            PdfLayout.Text,
+            ReaderSettingsRepository(store).settings.value.defaultPdfLayout,
+        )
+    }
+
+    /** A PDF is what its maker made until somebody asks for otherwise. */
+    @Test
+    fun aPdfOpensAsItsOwnPages() {
+        assertEquals(
+            PdfLayout.Original,
+            ReaderSettingsRepository(FakeSettingsStore()).settings.value.defaultPdfLayout,
         )
     }
 }

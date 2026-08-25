@@ -139,17 +139,25 @@ abstract class ReaderViewModelTestCase {
     protected suspend fun ReaderViewModel.settled(): UiState<ReaderDocument> =
         uiState.first { it !is UiState.Loading }
 
-    protected fun createViewModel(document: DocumentInfo) = ReaderViewModel(
+    protected fun createViewModel(
+        document: DocumentInfo,
+        /** Supplied where a test cares what new books are set to open as. */
+        settings: ReaderSettingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
+    ) = ReaderViewModel(
         location = document.document.location,
         openDocumentUseCase = OpenDocumentUseCase(
             libraryRepository = FakeLibraryRepository(listOf(document)),
             documentWorkspace = workspace,
             dispatcher = openDispatcher,
         ),
-        settingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
+        settingsRepository = settings,
         progressRepository = progress,
         layoutRepository = layouts,
         translations = testTranslations(),
+        // Inline, because the outline is read beside the open book rather than
+        // as part of it: on a dispatcher of its own it is work no test can wait
+        // for, and a reopened book leaves two of them running at once.
+        outlineDispatcher = openDispatcher,
     ).also { track(it) }
 
     /** A translator that answers, wired the way the app wires the real one. */

@@ -128,7 +128,7 @@ val commonModule = module {
     }
 
     viewModel {
-        SettingsViewModel(get(), get(), get(), get(), get())
+        SettingsViewModel(get(), get(), get(), get(), get(), get())
     }
 
     // One client for the app, so connections are kept and reused between
