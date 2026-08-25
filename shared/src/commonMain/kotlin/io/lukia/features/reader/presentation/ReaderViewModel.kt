@@ -54,7 +54,9 @@ class ReaderViewModel(
      * Whether this book is read as its own pages or as text, and what came of
      * asking for the second - see [ReaderLayoutChoice].
      */
-    private val layoutChoice = ReaderLayoutChoice(location, layoutRepository)
+    private val layoutChoice = ReaderLayoutChoice(location, layoutRepository) {
+        settingsRepository.settings.value.defaultPdfLayout
+    }
 
     val pdfLayout: StateFlow<PdfLayout> = layoutChoice.layout
     val layoutOffered: StateFlow<Boolean> = layoutChoice.offered

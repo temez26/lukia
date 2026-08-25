@@ -31,20 +31,34 @@ import io.lukia.shared.presentation.theme.Space
 /**
  * The parts of the app somebody comes to Settings to change.
  *
- * Three rather than the eight sections behind them, because a settings page is
+ * Four rather than the nine sections behind them, because a settings page is
  * read by somebody who already knows what they want to change and is looking for
- * where it lives. Eight equally-weighted boxes in one column is a list to
- * search; three segments across the top is a question with an answer.
+ * where it lives. Nine equally-weighted boxes in one column is a list to search;
+ * four segments across the top is a question with an answer.
+ *
+ * The order is how often they are opened, which is also how much machinery each
+ * one asks the reader to think about: what the app looks like, how books are
+ * set, what is translated, and last of all who is doing it.
  */
 enum class SettingsArea(val title: String) {
 
     Appearance("Appearance"),
 
-    /** What a tap and a press do, and what the reader offers to translate. */
+    /** How a book is set: its page, its type, and what a PDF opens as. */
     Reading("Reading"),
 
-    /** Who does the translating, what they are asked for, and into what. */
+    /** What is translated, when, and into what. */
     Translating("Translating"),
+
+    /**
+     * Who answers - the translator, and whatever looks up a single word.
+     *
+     * Apart from Translating because it is the only group that can be filled in
+     * wrongly, and the only one whose settings are about machinery rather than
+     * about reading. Somebody changing the language they read into should not
+     * have to scroll past an API key to reach it.
+     */
+    Providers("Providers"),
     ;
 
     companion object {

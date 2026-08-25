@@ -27,15 +27,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.settings.domain.AppSettings
-import io.lukia.features.settings.presentation.AvailableModels
-import io.lukia.features.settings.presentation.ConnectionTest
-import io.lukia.features.settings.presentation.ModelReadiness
-import io.lukia.features.translate.domain.PassageUnit
-import io.lukia.features.translate.domain.TargetLanguage
-import io.lukia.features.translate.domain.TranslationProvider
+import io.lukia.features.settings.presentation.ProviderActions
+import io.lukia.features.settings.presentation.ProviderState
+import io.lukia.features.settings.presentation.TranslatingActions
 import io.lukia.features.translate.domain.TranslationSettings
-import io.lukia.features.translate.domain.WordLookup
 import io.lukia.shared.presentation.components.SegmentedControl
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
@@ -49,7 +46,7 @@ private val SettingsBottomClearance: Dp = 32.dp
 /**
  * The least room a group is given, however little it has to put in it.
  *
- * Appearance is one control and Translating is a dozen, and a page that shrank
+ * Appearance is one control and Providers is a dozen, and a page that shrank
  * to fit whichever was open made switching between them feel like opening and
  * closing something rather than moving along a row. Held at about the height of
  * a phone's content area, the shortest group still fills the view and the
@@ -81,27 +78,13 @@ private const val AreaSettleMillis = 220
 @Composable
 internal fun SettingsBody(
     settings: AppSettings,
+    reader: ReaderSettings,
     translation: TranslationSettings,
-    connectionTest: ConnectionTest,
-    availableModels: AvailableModels,
-    modelReadiness: ModelReadiness,
+    providerState: ProviderState,
     onAppearanceChange: (AppSettings) -> Unit,
-    onTargetLanguageChange: (TargetLanguage) -> Unit,
-    onProviderChange: (TranslationProvider) -> Unit,
-    onModelChange: (String) -> Unit,
-    onModelChoose: (String) -> Unit,
-    onApiKeyChange: (String) -> Unit,
-    onBaseUrlChange: (String) -> Unit,
-    onTimeoutChange: (Int) -> Unit,
-    onWordLookupChange: (WordLookup) -> Unit,
-    onGoogleApiKeyChange: (String) -> Unit,
-    onTapGestureChange: (PassageUnit?) -> Unit,
-    onLongPressGestureChange: (PassageUnit?) -> Unit,
-    onTranslateOnScreenChange: (Boolean) -> Unit,
-    onTranslateAsYouReadChange: (Boolean) -> Unit,
-    onTestConnection: () -> Unit,
-    onLoadModels: () -> Unit,
-    onLoadChosenModel: () -> Unit,
+    onReaderChange: (ReaderSettings) -> Unit,
+    translatingActions: TranslatingActions,
+    providerActions: ProviderActions,
     modifier: Modifier = Modifier,
     topClearance: Dp = TopChromeClearance,
     bottomClearance: Dp = SettingsBottomClearance,
@@ -128,7 +111,7 @@ internal fun SettingsBody(
                 .padding(horizontal = dimens.screenPadding),
         ) {
             // Open on the first one rather than on a menu of them. Settings is
-            // three groups, not a place to navigate around: the same control the
+            // four groups, not a place to navigate around: the same control the
             // library narrows itself with switches between them, in place, with
             // nothing to go back out of.
             var area by rememberSaveable { mutableStateOf(SettingsArea.Default) }
@@ -160,27 +143,13 @@ internal fun SettingsBody(
                 SettingsAreaContent(
                     area = shown,
                     settings = settings,
+                    reader = reader,
                     translation = translation,
-                    connectionTest = connectionTest,
-                    availableModels = availableModels,
-                    modelReadiness = modelReadiness,
+                    providerState = providerState,
                     onAppearanceChange = onAppearanceChange,
-                    onTapGestureChange = onTapGestureChange,
-                    onLongPressGestureChange = onLongPressGestureChange,
-                    onTranslateOnScreenChange = onTranslateOnScreenChange,
-                    onTranslateAsYouReadChange = onTranslateAsYouReadChange,
-                    onProviderChange = onProviderChange,
-                    onBaseUrlChange = onBaseUrlChange,
-                    onApiKeyChange = onApiKeyChange,
-                    onModelChange = onModelChange,
-                    onModelChoose = onModelChoose,
-                    onLoadModels = onLoadModels,
-                    onLoadChosenModel = onLoadChosenModel,
-                    onTimeoutChange = onTimeoutChange,
-                    onTestConnection = onTestConnection,
-                    onWordLookupChange = onWordLookupChange,
-                    onGoogleApiKeyChange = onGoogleApiKeyChange,
-                    onTargetLanguageChange = onTargetLanguageChange,
+                    onReaderChange = onReaderChange,
+                    translatingActions = translatingActions,
+                    providerActions = providerActions,
                     groupColor = groupColor,
                     modifier = Modifier.padding(top = dimens.sectionSpacing),
                 )
@@ -192,7 +161,7 @@ internal fun SettingsBody(
 }
 
 /**
- * The page's name and the control that switches between its three groups.
+ * The page's name and the control that switches between its four groups.
  *
  * It keeps its title where the library dropped one: the library is the app's
  * home and needs no introduction, while arriving here from a menu does.

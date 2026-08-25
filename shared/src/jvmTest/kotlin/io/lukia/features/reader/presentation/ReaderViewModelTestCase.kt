@@ -139,14 +139,18 @@ abstract class ReaderViewModelTestCase {
     protected suspend fun ReaderViewModel.settled(): UiState<ReaderDocument> =
         uiState.first { it !is UiState.Loading }
 
-    protected fun createViewModel(document: DocumentInfo) = ReaderViewModel(
+    protected fun createViewModel(
+        document: DocumentInfo,
+        /** Supplied where a test cares what new books are set to open as. */
+        settings: ReaderSettingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
+    ) = ReaderViewModel(
         location = document.document.location,
         openDocumentUseCase = OpenDocumentUseCase(
             libraryRepository = FakeLibraryRepository(listOf(document)),
             documentWorkspace = workspace,
             dispatcher = openDispatcher,
         ),
-        settingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
+        settingsRepository = settings,
         progressRepository = progress,
         layoutRepository = layouts,
         translations = testTranslations(),

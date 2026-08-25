@@ -25,9 +25,17 @@ import kotlinx.coroutines.flow.asStateFlow
 internal class ReaderLayoutChoice(
     private val location: String,
     private val repository: PdfLayoutRepository,
+    /**
+     * What a book nobody has chosen for opens as.
+     *
+     * Asked at the moment it is needed rather than captured once, so a reader
+     * who changes the setting and then opens a book they have never opened gets
+     * what they have just chosen rather than what was set when this was built.
+     */
+    private val defaultLayout: () -> PdfLayout,
 ) {
 
-    private val _layout = MutableStateFlow(PdfLayout.Original)
+    private val _layout = MutableStateFlow(defaultLayout())
     val layout: StateFlow<PdfLayout> = _layout.asStateFlow()
 
     private val _extraction = MutableStateFlow<TextExtraction?>(null)
@@ -78,8 +86,10 @@ internal class ReaderLayoutChoice(
      * failed - which would show the reader the setting they did not pick beside
      * the book they did.
      *
-     * A store that cannot be read at all leaves the book opening as its own
-     * pages, which is what every PDF did before this setting existed.
+     * A book with nothing stored for it, and a store that cannot be read at all,
+     * both open as whatever new books are set to open as. The two are worth
+     * collapsing: neither is a choice the reader made about this book, and there
+     * is nothing better to show them than the one they made about all of them.
      */
     suspend fun restore(): PdfLayout {
         _noTextLayer.value = false
@@ -87,7 +97,7 @@ internal class ReaderLayoutChoice(
         if (settled) return _layout.value
 
         _layout.value = runCatchingApp { repository.layoutFor(location) }.getOrNull()
-            ?: PdfLayout.Original
+            ?: defaultLayout()
         settled = true
 
         return _layout.value

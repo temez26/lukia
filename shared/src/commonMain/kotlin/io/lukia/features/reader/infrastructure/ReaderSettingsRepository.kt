@@ -4,6 +4,7 @@ import io.lukia.core.domain.SettingsStore
 import io.lukia.core.infrastructure.readEnum
 import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.domain.LineSpacing
+import io.lukia.features.reader.domain.PdfLayout
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.domain.ReaderTypeface
@@ -53,6 +54,11 @@ class ReaderSettingsRepository(
             typeface = store.readEnum(KEY_TYPEFACE, ReaderTypeface.entries, defaults.typeface),
             figureSize = store.readEnum(KEY_FIGURE_SIZE, FigureSize.entries, defaults.figureSize),
             alignment = store.readEnum(KEY_ALIGNMENT, TextAlignment.entries, defaults.alignment),
+            defaultPdfLayout = store.readEnum(
+                KEY_DEFAULT_PDF_LAYOUT,
+                PdfLayout.entries,
+                defaults.defaultPdfLayout,
+            ),
         )
     }
 
@@ -80,6 +86,7 @@ class ReaderSettingsRepository(
         store.putString(KEY_TYPEFACE, settings.typeface.name)
         store.putString(KEY_FIGURE_SIZE, settings.figureSize.name)
         store.putString(KEY_ALIGNMENT, settings.alignment.name)
+        store.putString(KEY_DEFAULT_PDF_LAYOUT, settings.defaultPdfLayout.name)
     }
 
     private companion object {
@@ -93,5 +100,6 @@ class ReaderSettingsRepository(
         const val KEY_TYPEFACE = "reader.typeface"
         const val KEY_FIGURE_SIZE = "reader.figureSize"
         const val KEY_ALIGNMENT = "reader.alignment"
+        const val KEY_DEFAULT_PDF_LAYOUT = "reader.defaultPdfLayout"
     }
 }

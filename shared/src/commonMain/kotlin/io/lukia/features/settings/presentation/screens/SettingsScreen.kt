@@ -11,19 +11,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.settings.domain.AppSettings
-import io.lukia.features.settings.presentation.AvailableModels
-import io.lukia.features.settings.presentation.ConnectionTest
-import io.lukia.features.settings.presentation.ModelReadiness
+import io.lukia.features.settings.presentation.ProviderActions
+import io.lukia.features.settings.presentation.ProviderState
 import io.lukia.features.settings.presentation.SettingsViewModel
-import io.lukia.features.translate.domain.PassageUnit
-import io.lukia.features.translate.domain.TargetLanguage
-import io.lukia.features.translate.domain.TranslationProvider
+import io.lukia.features.settings.presentation.TranslatingActions
+import io.lukia.features.settings.presentation.rememberProviderActions
+import io.lukia.features.settings.presentation.rememberTranslatingActions
 import io.lukia.features.translate.domain.TranslationSettings
-import io.lukia.features.translate.domain.WordLookup
 import io.lukia.shared.presentation.components.BackChevron
 import io.lukia.shared.presentation.components.IconButtonVariant
 import io.lukia.shared.presentation.components.LukiaIconButton
@@ -37,6 +36,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = koinViewModel(),
 ) {
     val settings by viewModel.settings.collectAsState()
+    val reader by viewModel.readerSettings.collectAsState()
     val translation by viewModel.translationSettings.collectAsState()
     val connectionTest by viewModel.connectionTest.collectAsState()
     val availableModels by viewModel.availableModels.collectAsState()
@@ -44,27 +44,15 @@ fun SettingsScreen(
 
     SettingsContent(
         settings = settings,
+        reader = reader,
         translation = translation,
-        connectionTest = connectionTest,
-        availableModels = availableModels,
-        modelReadiness = modelReadiness,
+        providerState = remember(connectionTest, availableModels, modelReadiness) {
+            ProviderState(connectionTest, availableModels, modelReadiness)
+        },
         onAppearanceChange = viewModel::setAppearance,
-        onTargetLanguageChange = viewModel::setTargetLanguage,
-        onProviderChange = viewModel::setProvider,
-        onModelChange = viewModel::setModel,
-        onModelChoose = viewModel::chooseModel,
-        onApiKeyChange = viewModel::setApiKey,
-        onBaseUrlChange = viewModel::onBaseUrlEdited,
-        onTimeoutChange = viewModel::setTimeoutSeconds,
-        onWordLookupChange = viewModel::setWordLookup,
-        onGoogleApiKeyChange = viewModel::setGoogleApiKey,
-        onTapGestureChange = viewModel::setTapGesture,
-        onLongPressGestureChange = viewModel::setLongPressGesture,
-        onTranslateOnScreenChange = viewModel::setTranslateOnScreen,
-        onTranslateAsYouReadChange = viewModel::setTranslateAsYouRead,
-        onTestConnection = viewModel::testConnection,
-        onLoadModels = viewModel::loadAvailableModels,
-        onLoadChosenModel = viewModel::loadChosenModel,
+        onReaderChange = viewModel::setReaderSettings,
+        translatingActions = rememberTranslatingActions(viewModel),
+        providerActions = rememberProviderActions(viewModel),
         onBack = onBack,
     )
 }
@@ -80,33 +68,20 @@ fun SettingsScreen(
 @Composable
 fun SettingsContent(
     settings: AppSettings,
+    reader: ReaderSettings,
     translation: TranslationSettings,
-    connectionTest: ConnectionTest = ConnectionTest.Untried,
-    availableModels: AvailableModels = AvailableModels.Unknown,
-    modelReadiness: ModelReadiness = ModelReadiness.Cold,
     onAppearanceChange: (AppSettings) -> Unit,
-    onTargetLanguageChange: (TargetLanguage) -> Unit,
-    onProviderChange: (TranslationProvider) -> Unit,
-    onModelChange: (String) -> Unit,
-    onModelChoose: (String) -> Unit = onModelChange,
-    onApiKeyChange: (String) -> Unit,
-    onBaseUrlChange: (String) -> Unit,
-    onTimeoutChange: (Int) -> Unit = {},
-    onWordLookupChange: (WordLookup) -> Unit = {},
-    onGoogleApiKeyChange: (String) -> Unit = {},
-    onTapGestureChange: (PassageUnit?) -> Unit = {},
-    onLongPressGestureChange: (PassageUnit?) -> Unit = {},
-    onTranslateOnScreenChange: (Boolean) -> Unit = {},
-    onTranslateAsYouReadChange: (Boolean) -> Unit = {},
-    onTestConnection: () -> Unit,
-    onLoadModels: () -> Unit = {},
-    onLoadChosenModel: () -> Unit = {},
+    onReaderChange: (ReaderSettings) -> Unit,
     onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    providerState: ProviderState = ProviderState(),
+    translatingActions: TranslatingActions = TranslatingActions(),
+    providerActions: ProviderActions = ProviderActions(),
 ) {
     val dimens = LocalLukiaDimens.current
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
     ) {
@@ -121,27 +96,13 @@ fun SettingsContent(
         ) {
             SettingsBody(
                 settings = settings,
+                reader = reader,
                 translation = translation,
-                connectionTest = connectionTest,
-                availableModels = availableModels,
-                modelReadiness = modelReadiness,
+                providerState = providerState,
                 onAppearanceChange = onAppearanceChange,
-                onTargetLanguageChange = onTargetLanguageChange,
-                onProviderChange = onProviderChange,
-                onModelChange = onModelChange,
-                onModelChoose = onModelChoose,
-                onApiKeyChange = onApiKeyChange,
-                onBaseUrlChange = onBaseUrlChange,
-                onTimeoutChange = onTimeoutChange,
-                onWordLookupChange = onWordLookupChange,
-                onGoogleApiKeyChange = onGoogleApiKeyChange,
-                onTapGestureChange = onTapGestureChange,
-                onLongPressGestureChange = onLongPressGestureChange,
-                onTranslateOnScreenChange = onTranslateOnScreenChange,
-                onTranslateAsYouReadChange = onTranslateAsYouReadChange,
-                onTestConnection = onTestConnection,
-                onLoadModels = onLoadModels,
-                onLoadChosenModel = onLoadChosenModel,
+                onReaderChange = onReaderChange,
+                translatingActions = translatingActions,
+                providerActions = providerActions,
                 modifier = Modifier.fillMaxSize(),
             )
 

@@ -5,6 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import io.lukia.features.settings.presentation.screens.SettingsBody
 import io.lukia.shared.presentation.components.OverlayPanel
@@ -39,6 +40,7 @@ fun SettingsOverlay(
 @Composable
 private fun SettingsPanelBody(viewModel: SettingsViewModel = koinViewModel()) {
     val settings by viewModel.settings.collectAsState()
+    val reader by viewModel.readerSettings.collectAsState()
     val translation by viewModel.translationSettings.collectAsState()
     val connectionTest by viewModel.connectionTest.collectAsState()
     val availableModels by viewModel.availableModels.collectAsState()
@@ -47,27 +49,15 @@ private fun SettingsPanelBody(viewModel: SettingsViewModel = koinViewModel()) {
 
     SettingsBody(
         settings = settings,
+        reader = reader,
         translation = translation,
-        connectionTest = connectionTest,
-        availableModels = availableModels,
-        modelReadiness = modelReadiness,
+        providerState = remember(connectionTest, availableModels, modelReadiness) {
+            ProviderState(connectionTest, availableModels, modelReadiness)
+        },
         onAppearanceChange = viewModel::setAppearance,
-        onTargetLanguageChange = viewModel::setTargetLanguage,
-        onProviderChange = viewModel::setProvider,
-        onModelChange = viewModel::setModel,
-        onModelChoose = viewModel::chooseModel,
-        onApiKeyChange = viewModel::setApiKey,
-        onBaseUrlChange = viewModel::onBaseUrlEdited,
-        onTimeoutChange = viewModel::setTimeoutSeconds,
-        onWordLookupChange = viewModel::setWordLookup,
-        onGoogleApiKeyChange = viewModel::setGoogleApiKey,
-        onTapGestureChange = viewModel::setTapGesture,
-        onLongPressGestureChange = viewModel::setLongPressGesture,
-        onTranslateOnScreenChange = viewModel::setTranslateOnScreen,
-        onTranslateAsYouReadChange = viewModel::setTranslateAsYouRead,
-        onTestConnection = viewModel::testConnection,
-        onLoadModels = viewModel::loadAvailableModels,
-        onLoadChosenModel = viewModel::loadChosenModel,
+        onReaderChange = viewModel::setReaderSettings,
+        translatingActions = rememberTranslatingActions(viewModel),
+        providerActions = rememberProviderActions(viewModel),
         modifier = Modifier.fillMaxWidth(),
         topClearance = OverlayPanelTopClearance,
         bottomClearance = dimens.sectionSpacing,
