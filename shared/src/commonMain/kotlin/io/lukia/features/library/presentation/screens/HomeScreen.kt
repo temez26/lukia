@@ -1,16 +1,9 @@
 package io.lukia.features.library.presentation.screens
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -18,10 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.presentation.UiState
 import io.lukia.features.import.presentation.rememberPlatformFilePicker
@@ -30,28 +20,24 @@ import io.lukia.features.library.presentation.HomeRow
 import io.lukia.features.library.presentation.ImportProgress
 import io.lukia.features.library.presentation.LibraryBook
 import io.lukia.features.library.presentation.LibraryQuery
+import io.lukia.features.library.presentation.LibraryShelfUi
 import io.lukia.features.library.presentation.LibraryViewModel
-import io.lukia.features.library.presentation.components.HomeShelfRow
 import io.lukia.features.library.presentation.homeRows
-import io.lukia.shared.presentation.components.GearGlyph
+import io.lukia.shared.presentation.components.ActionMenuScrim
 import io.lukia.shared.presentation.components.LoadingState
-import io.lukia.shared.presentation.components.LukiaIconButton
 import io.lukia.shared.presentation.components.UiStateContent
 import io.lukia.shared.presentation.components.rememberLaunchReveal
-import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import org.koin.compose.viewmodel.koinViewModel
 
-/** Clears the last row of the tab bar the screen scrolls up to. */
-private val HomeBottomPadding: Dp = 24.dp
-
 /**
- * Where the mobile app opens: what you were reading, what has just arrived, and
- * what you marked worth keeping.
+ * Where the mobile app opens: what you were reading, what has just arrived, what
+ * is nearly done, and the rest of the library sampled a row at a time.
  *
- * It is a way back in rather than a place to work. Everything that acts on a
- * book - its details, its menu, selecting several at once - lives on the library
- * tab, and a press here does the one thing this screen is for, which is to open
- * the book.
+ * It is a way back in rather than a place to work. A press on a cover does the
+ * one thing this screen is for, which is to open the book; everything else about
+ * a book - its details, its menu, selecting several at once - lives on the
+ * library tab, and the actions menu in the corner is the library's own, so
+ * nothing has to be learned twice.
  *
  * The library it draws from is the shared one - see `MobileShell` - so the rows
  * are already loaded by the time the tab is first looked at, and favouriting a
@@ -62,16 +48,23 @@ private val HomeBottomPadding: Dp = 24.dp
 internal fun HomeScreen(
     onOpenBook: (DocumentInfo) -> Unit,
     onSeeAll: (LibraryQuery) -> Unit,
+    onOpenLibrary: () -> Unit,
     onSettings: () -> Unit,
     viewModel: LibraryViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val library by viewModel.library.collectAsState()
+    val facets by viewModel.facets.collectAsState()
     val isImporting by viewModel.isImporting.collectAsState()
     val importProgress by viewModel.importProgress.collectAsState()
 
     val filePicker = rememberPlatformFilePicker()
     val folderPicker = rememberPlatformFolderPicker()
+
+    // The selection bar and the row of actions that come with it live on the
+    // library tab, so the menu rows that start one send the reader there first.
+    val shelf = rememberShelfUi(viewModel)
+    val homeShelf = remember(shelf, onOpenLibrary) { shelf.selectingOn(onOpenLibrary) }
 
     // Fires again each time the tab is re-entered from a book, which may have
     // moved how far through it its reader is and so which row it belongs on.
@@ -97,7 +90,9 @@ internal fun HomeScreen(
             }
         },
         onRetry = viewModel::refresh,
+        categories = facets.categories,
         importProgress = importProgress,
+        shelf = homeShelf,
         onSettings = onSettings,
     )
 }
@@ -121,17 +116,22 @@ internal fun HomeContent(
     onImportFolder: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
+    /** The subjects worth browsing by, or empty where the library has none. */
+    categories: List<String> = emptyList(),
     /**
      * How far through a multi-file import the library is, when there is more
      * than one file to count. Defaulted to nothing so this screen still composes
      * without a ViewModel behind it, which is how it is tested and previewed.
      */
     importProgress: ImportProgress? = null,
+    /** What the corner menu offers, which is what the library's own bar offers. */
+    shelf: LibraryShelfUi = LibraryShelfUi.None,
     onSettings: () -> Unit = {},
 ) {
-    // The import menu is opened from the empty state's card, and nothing else on
-    // this screen opens a menu at all.
-    var importMenuOpen by remember { mutableStateOf(false) }
+    // One value rather than a flag per menu, as everywhere else in this app: the
+    // header carries one and the empty state carries another, and at most one of
+    // them may be open.
+    var menuOpen by remember { mutableStateOf<HomeMenu?>(null) }
 
     Scaffold(
         modifier = modifier,
@@ -148,9 +148,19 @@ internal fun HomeContent(
             when {
                 rows.isNotEmpty() -> HomeRows(
                     rows = rows,
+                    categories = categories,
                     onOpenBook = onOpenBook,
                     onSeeAll = onSeeAll,
-                    onSettings = onSettings,
+                    header = {
+                        HomeHeader(
+                            menuExpanded = menuOpen == HomeMenu.Bar,
+                            onMenuExpandedChange = { menuOpen = if (it) HomeMenu.Bar else null },
+                            onImport = onImport,
+                            onImportFolder = onImportFolder,
+                            shelf = shelf,
+                            onSettings = onSettings,
+                        )
+                    },
                     modifier = Modifier.fillMaxSize(),
                 )
 
@@ -163,9 +173,9 @@ internal fun HomeContent(
                 )
 
                 else -> LibraryEmptyState(
-                    importMenuExpanded = importMenuOpen,
-                    onImportMenuRequest = { importMenuOpen = true },
-                    onMenuDismiss = { importMenuOpen = false },
+                    importMenuExpanded = menuOpen == HomeMenu.Import,
+                    onImportMenuRequest = { menuOpen = HomeMenu.Import },
+                    onMenuDismiss = { menuOpen = null },
                     onImport = onImport,
                     onImportFolder = onImportFolder,
                     reveal = rememberLaunchReveal(),
@@ -173,78 +183,18 @@ internal fun HomeContent(
                 )
             }
         }
-    }
-}
 
-@Composable
-private fun HomeRows(
-    rows: List<HomeRow>,
-    onOpenBook: (LibraryBook) -> Unit,
-    onSeeAll: (LibraryQuery) -> Unit,
-    onSettings: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val dimens = LocalLukiaDimens.current
-
-    LazyColumn(
-        modifier = modifier,
-        contentPadding = PaddingValues(bottom = HomeBottomPadding),
-        verticalArrangement = Arrangement.spacedBy(dimens.sectionSpacing),
-    ) {
-        item(key = "header", contentType = "header") {
-            HomeHeader(
-                onSettings = onSettings,
-                modifier = Modifier.padding(horizontal = dimens.screenPadding),
-            )
-        }
-
-        items(
-            items = rows,
-            key = { row -> row.shelf.name },
-            contentType = { "shelf" },
-        ) { row ->
-            HomeShelfRow(
-                row = row,
-                onOpenBook = onOpenBook,
-                onSeeAll = onSeeAll,
-            )
-        }
-    }
-}
-
-/**
- * The screen's name, and the way into the settings.
- *
- * This screen does carry a title where the library deliberately does not. The
- * library is one thing and says so by showing it; home is three samples of three
- * different things, and without a title the first row's own heading would read
- * as the name of the whole screen.
- *
- * The gear is here because home is where a reader lands. Reaching the settings
- * only through the library tab's menu would put the app's own preferences behind
- * a screen about books.
- */
-@Composable
-private fun HomeHeader(
-    onSettings: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Text(
-            text = "Home",
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.weight(1f),
+        // Every menu on this screen is a non-focusable popup drawn above this
+        // layer, so the press that dismisses one has to be caught here.
+        ActionMenuScrim(
+            visible = menuOpen != null,
+            onDismiss = { menuOpen = null },
         )
-
-        LukiaIconButton(
-            label = "Settings",
-            onClick = onSettings,
-        ) { tint, glyph ->
-            GearGlyph(tint = tint, modifier = glyph)
-        }
     }
+}
+
+/** The menus this screen can have open, of which at most one may be. */
+private enum class HomeMenu {
+    Bar,
+    Import,
 }

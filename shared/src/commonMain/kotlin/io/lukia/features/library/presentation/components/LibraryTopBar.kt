@@ -1,6 +1,5 @@
 package io.lukia.features.library.presentation.components
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -14,22 +13,15 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.library.presentation.LibraryShelfUi
-import io.lukia.shared.presentation.components.EllipsisGlyph
-import io.lukia.shared.presentation.components.IconButtonVariant
-import io.lukia.shared.presentation.components.LukiaIconButton
-import io.lukia.shared.presentation.components.PlusGlyph
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
-import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.isWideWindow
 
@@ -213,54 +205,4 @@ private fun RowScope.TitleSlot() {
         overflow = TextOverflow.Ellipsis,
         modifier = Modifier.weight(1f),
     )
-}
-
-/**
- * Everything the library can do that is not about one book.
- *
- * An ellipsis rather than a plus: this menu holds more than ways to get books in,
- * and a plus would promise only one of them. It is also what Apple's own apps put
- * in this corner when a screen's actions do not reduce to a single verb.
- *
- * The glyph fades into a close mark while the menu is open, so the control says
- * what pressing it again would do.
- */
-@Composable
-private fun MenuButton(
-    expanded: Boolean,
-    onClick: () -> Unit,
-) {
-    val openness by animateFloatAsState(
-        targetValue = if (expanded) 1f else 0f,
-        animationSpec = LukiaMotion.standard(),
-        label = "menuButtonOpenness",
-    )
-
-    LukiaIconButton(
-        label = if (expanded) "Close menu" else "Library actions",
-        onClick = onClick,
-        variant = IconButtonVariant.Filled,
-    ) { tint, glyph ->
-        // The two glyphs cross-fade in place, and the close mark turns in as it
-        // arrives, so the swap reads as one control changing rather than as two
-        // controls trading places.
-        Box(contentAlignment = Alignment.Center, modifier = glyph) {
-            EllipsisGlyph(
-                tint = tint,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .graphicsLayer { alpha = 1f - openness },
-            )
-
-            PlusGlyph(
-                tint = tint,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .graphicsLayer {
-                        alpha = openness
-                        rotationZ = 45f * openness
-                    },
-            )
-        }
-    }
 }

@@ -32,6 +32,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -79,8 +80,13 @@ internal fun LibrarySearchField(
     onQueryChange: (String) -> Unit,
     placeholder: String,
     modifier: Modifier = Modifier,
+    /**
+     * The reader saying they have finished typing, by pressing the keyboard's
+     * search key. Nothing to run - the list is already filtered - but it is the
+     * one moment a half-typed word can be told from a search somebody made.
+     */
+    onSubmit: () -> Unit = {},
 ) {
-    val metrics = LocalLukiaMetrics.current
     val compact = !isWideWindow
     val fieldHeight = searchFieldHeight()
     val textStyle = if (compact) {
@@ -102,10 +108,15 @@ internal fun LibrarySearchField(
         ),
         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-        // Nothing to submit - the list is already filtered as the query is
-        // typed - so the only thing left for the key to do is put the keyboard
+        // Nothing to run - the list is already filtered as the query is typed -
+        // so the key only reports that the search was made and puts the keyboard
         // away.
-        keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
+        keyboardActions = KeyboardActions(
+            onSearch = {
+                onSubmit()
+                focusManager.clearFocus()
+            },
+        ),
         interactionSource = interactionSource,
         modifier = modifier
             .height(fieldHeight)
@@ -119,49 +130,78 @@ internal fun LibrarySearchField(
             .pointerHoverIcon(PointerIcon.Text)
             .semantics { contentDescription = "Search your library" },
         decorationBox = { textField ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = Space.md),
-            ) {
-                SearchGlyph(
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(metrics.iconSmall),
-                )
-
-                Spacer(modifier = Modifier.width(Space.sm))
-
-                Box(modifier = Modifier.weight(1f)) {
-                    if (query.isEmpty()) {
-                        Text(
-                            text = placeholder,
-                            style = textStyle,
-                            // One line: the field is short on a phone, and a
-                            // placeholder that wraps or clips mid-count reads as a
-                            // bug rather than as a hint.
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-
-                    textField()
-                }
-
-                ClearButton(
-                    visible = query.isNotEmpty(),
-                    size = fieldHeight,
-                    glyphSize = metrics.iconSmall,
-                    // The cross is cut out of the circle in the colour of the
-                    // field behind it, so it reads in both themes.
-                    knockout = MaterialTheme.colorScheme.surfaceVariant,
-                    onClick = {
-                        onQueryChange("")
-                        focusManager.clearFocus()
-                    },
-                )
-            }
+            SearchFieldDecoration(
+                query = query,
+                placeholder = placeholder,
+                textStyle = textStyle,
+                fieldHeight = fieldHeight,
+                onClear = {
+                    onQueryChange("")
+                    focusManager.clearFocus()
+                },
+                textField = textField,
+            )
         },
     )
+}
+
+/**
+ * What sits in the field around the text being typed: the magnifier, the
+ * placeholder while it is empty, and the way to empty it again.
+ *
+ * Apart from the field itself because none of it is the field - it is chrome
+ * laid over one, and `BasicTextField` takes it as a slot precisely so the two
+ * can be written apart.
+ */
+@Composable
+private fun SearchFieldDecoration(
+    query: String,
+    placeholder: String,
+    textStyle: TextStyle,
+    fieldHeight: Dp,
+    onClear: () -> Unit,
+    textField: @Composable () -> Unit,
+) {
+    val metrics = LocalLukiaMetrics.current
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(horizontal = Space.md),
+    ) {
+        SearchGlyph(
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(metrics.iconSmall),
+        )
+
+        Spacer(modifier = Modifier.width(Space.sm))
+
+        Box(modifier = Modifier.weight(1f)) {
+            if (query.isEmpty()) {
+                Text(
+                    text = placeholder,
+                    style = textStyle,
+                    // One line: the field is short on a phone, and a placeholder
+                    // that wraps or clips mid-count reads as a bug rather than
+                    // as a hint.
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            textField()
+        }
+
+        ClearButton(
+            visible = query.isNotEmpty(),
+            size = fieldHeight,
+            glyphSize = metrics.iconSmall,
+            // The cross is cut out of the circle in the colour of the field
+            // behind it, so it reads in both themes.
+            knockout = MaterialTheme.colorScheme.surfaceVariant,
+            onClick = onClear,
+        )
+    }
 }
 
 @Composable

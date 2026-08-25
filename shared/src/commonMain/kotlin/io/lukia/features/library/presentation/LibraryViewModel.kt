@@ -17,6 +17,7 @@ import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.infrastructure.LibrarySettingsRepository
+import io.lukia.features.library.infrastructure.RecentSearchesRepository
 import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.features.reader.domain.ReadingProgressRepository
 import kotlinx.coroutines.CoroutineDispatcher
@@ -41,6 +42,7 @@ class LibraryViewModel(
     private val removeDocumentUseCase: RemoveDocumentUseCase,
     private val readingProgressRepository: ReadingProgressRepository,
     private val librarySettingsRepository: LibrarySettingsRepository,
+    recentSearchesRepository: RecentSearchesRepository,
     /**
      * Where the library is narrowed, ordered and measured. Off the main thread
      * in production, and injectable so tests can run it deterministically.
@@ -136,6 +138,7 @@ class LibraryViewModel(
         library = library,
         scope = viewModelScope,
         dispatcher = dispatcher,
+        recentSearches = recentSearchesRepository,
     )
 
     /** What this library can usefully be narrowed by, for the header's controls. */

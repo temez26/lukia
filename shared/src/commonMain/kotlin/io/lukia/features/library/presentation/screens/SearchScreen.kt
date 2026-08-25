@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -23,6 +25,7 @@ import io.lukia.features.library.presentation.LibraryBook
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.components.BookRow
 import io.lukia.features.library.presentation.components.LibrarySearchField
+import io.lukia.features.library.presentation.components.RecentSearches
 import io.lukia.shared.presentation.components.EmptyState
 import io.lukia.shared.presentation.components.SectionLabel
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
@@ -54,15 +57,27 @@ internal fun SearchScreen(
     onShowDetails: (DocumentInfo) -> Unit,
     viewModel: LibraryViewModel = koinViewModel(),
 ) {
-    val term by viewModel.search.term.collectAsState()
-    val results by viewModel.search.results.collectAsState()
+    val search = viewModel.search
+    val term by search.term.collectAsState()
+    val results by search.results.collectAsState()
+    val recent by search.recent.collectAsState()
 
     SearchContent(
         term = term,
-        onTermChange = viewModel.search::update,
+        onTermChange = search::update,
         results = results,
-        onOpenBook = { book -> onOpenBook(book.document) },
+        onOpenBook = { book ->
+            // Opening a result is the clearest sign a search was finished, and
+            // it catches the reader who never presses the search key because the
+            // list narrowed as they typed.
+            search.submit()
+            onOpenBook(book.document)
+        },
         onShowDetails = { book -> onShowDetails(book.document) },
+        onSubmit = search::submit,
+        recent = recent,
+        onForgetRecent = search::forget,
+        onClearRecent = search::clearRecent,
     )
 }
 
@@ -83,6 +98,11 @@ internal fun SearchContent(
     onOpenBook: (LibraryBook) -> Unit,
     onShowDetails: (LibraryBook) -> Unit,
     modifier: Modifier = Modifier,
+    onSubmit: () -> Unit = {},
+    /** What has been searched for before, newest first. */
+    recent: List<String> = emptyList(),
+    onForgetRecent: (String) -> Unit = {},
+    onClearRecent: () -> Unit = {},
 ) {
     val dimens = LocalLukiaDimens.current
 
@@ -102,27 +122,101 @@ internal fun SearchContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = dimens.screenPadding, vertical = Space.md),
+                onSubmit = onSubmit,
             )
 
-            when {
-                term.isBlank() -> SearchNotice(
-                    title = "Search Your Library",
-                    message = "Type a title or an author to find a book.",
-                )
-
-                results.isEmpty() -> SearchNotice(
-                    title = "No Results",
-                    message = "No books match “${term.trim()}”.",
-                )
-
-                else -> SearchResults(
-                    results = results,
-                    onOpenBook = onOpenBook,
-                    onShowDetails = onShowDetails,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
+            SearchBody(
+                term = term,
+                results = results,
+                onOpenBook = onOpenBook,
+                onShowDetails = onShowDetails,
+                recent = recent,
+                onSearchAgain = onTermChange,
+                onForgetRecent = onForgetRecent,
+                onClearRecent = onClearRecent,
+            )
         }
+    }
+}
+
+/**
+ * What sits under the field: the results, why there are none, or - before
+ * anything has been typed - the searches already made.
+ *
+ * The history earns the empty screen over a sentence explaining what searching
+ * is. A reader looking at an empty search field has either just arrived or just
+ * cleared it, and in both cases the words they have already found books with are
+ * worth more than the explanation. The sentence is kept for the reader who has
+ * no history yet, who is the only one it tells anything.
+ */
+@Composable
+private fun SearchBody(
+    term: String,
+    results: List<LibraryBook>,
+    onOpenBook: (LibraryBook) -> Unit,
+    onShowDetails: (LibraryBook) -> Unit,
+    recent: List<String>,
+    onSearchAgain: (String) -> Unit,
+    onForgetRecent: (String) -> Unit,
+    onClearRecent: () -> Unit,
+) {
+    when {
+        term.isNotBlank() && results.isEmpty() -> SearchNotice(
+            title = "No Results",
+            message = "No books match “${term.trim()}”.",
+        )
+
+        term.isNotBlank() -> SearchResults(
+            results = results,
+            onOpenBook = onOpenBook,
+            onShowDetails = onShowDetails,
+            modifier = Modifier.fillMaxSize(),
+        )
+
+        recent.isNotEmpty() -> SearchHistory(
+            recent = recent,
+            onSearch = onSearchAgain,
+            onForget = onForgetRecent,
+            onClear = onClearRecent,
+            modifier = Modifier.fillMaxSize(),
+        )
+
+        else -> SearchNotice(
+            title = "Search Your Library",
+            message = "Type a title or an author to find a book.",
+        )
+    }
+}
+
+@Composable
+private fun SearchHistory(
+    recent: List<String>,
+    onSearch: (String) -> Unit,
+    onForget: (String) -> Unit,
+    onClear: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val dimens = LocalLukiaDimens.current
+
+    // Scrollable rather than lazy: the history is capped at a handful of rows -
+    // see RecentSearchesRepository - and a lazy list for eight short lines is
+    // machinery for nothing. It scrolls at all only so the keyboard cannot trap
+    // the last row underneath itself on a short screen.
+    Box(
+        modifier = modifier
+            .verticalScroll(rememberScrollState())
+            .padding(
+                start = dimens.screenPadding,
+                end = dimens.screenPadding,
+                bottom = ResultsBottomPadding,
+            ),
+    ) {
+        RecentSearches(
+            terms = recent,
+            onSearch = onSearch,
+            onForget = onForget,
+            onClear = onClear,
+        )
     }
 }
 

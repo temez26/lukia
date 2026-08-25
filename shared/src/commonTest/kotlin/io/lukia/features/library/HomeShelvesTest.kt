@@ -60,15 +60,53 @@ class HomeShelvesTest {
         assertEquals(listOf("Also Kept", "Kept"), rows[HomeShelf.Favorites])
     }
 
+    @Test
+    fun unreadHoldsWhatHasNeverBeenOpened_newestFirst() {
+        val rows = rowsOf(
+            book("Older Arrival"),
+            book("Started", progress = readAt(10)),
+            book("Newer Arrival"),
+        )
+
+        assertEquals(listOf("Newer Arrival", "Older Arrival"), rows[HomeShelf.Unread])
+    }
+
+    @Test
+    fun finishedHoldsWhatWasReadToTheEnd_mostRecentlyFinishedFirst() {
+        val rows = rowsOf(
+            book("Long Ago", progress = ReadingProgress(99, 100, readAt = 10)),
+            book("Halfway", progress = readAt(30)),
+            book("Last Night", progress = ReadingProgress(99, 100, readAt = 20)),
+        )
+
+        assertEquals(listOf("Last Night", "Long Ago"), rows[HomeShelf.Finished])
+    }
+
     /**
-     * A heading over a blank strip teaches nothing, and three of them on a fresh
+     * The row exists to answer "what can I finish", so the answer is the top of
+     * it - and a book already finished has a row of its own.
+     */
+    @Test
+    fun almostDoneIsClosestToTheEndFirst_andExcludesWhatIsAlreadyDone() {
+        val rows = rowsOf(
+            book("Three Quarters", progress = ReadingProgress(74, 100)),
+            book("Barely Started", progress = ReadingProgress(9, 100)),
+            book("Nearly There", progress = ReadingProgress(94, 100)),
+            book("Done", progress = finished()),
+        )
+
+        assertEquals(listOf("Nearly There", "Three Quarters"), rows[HomeShelf.AlmostDone])
+    }
+
+    /**
+     * A heading over a blank strip teaches nothing, and six of them on a fresh
      * library is a screen that looks broken rather than new.
      */
     @Test
     fun aRowWithNothingOnItIsLeftOutEntirely() {
         val rows = rowsOf(book("Unread And Unloved"))
 
-        assertEquals(setOf(HomeShelf.RecentlyAdded), rows.keys)
+        assertEquals(setOf(HomeShelf.RecentlyAdded, HomeShelf.Unread), rows.keys)
     }
 
     @Test

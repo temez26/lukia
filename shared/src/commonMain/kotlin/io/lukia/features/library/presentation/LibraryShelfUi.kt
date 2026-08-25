@@ -35,6 +35,42 @@ class LibraryShelfUi(
 ) {
     val active: Boolean get() = selection.active
 
+    /**
+     * This shelf, with everything that starts a selection taking the reader to
+     * [shelf] first.
+     *
+     * For the home screen, which offers the library's own menu but has nowhere
+     * to put the selection bar and the row of actions that come with it. Rather
+     * than a second, shorter menu to keep in step with the first, the rows that
+     * need the shelf go and find it.
+     */
+    fun selectingOn(shelf: () -> Unit): LibraryShelfUi = LibraryShelfUi(
+        selection = selection,
+        running = running,
+        onStart = {
+            shelf()
+            onStart()
+        },
+        onStop = onStop,
+        onToggle = onToggle,
+        onToggleAll = onToggleAll,
+        onRefresh = onRefresh,
+        onFavorite = onFavorite,
+        onResetProgress = onResetProgress,
+        onDelete = onDelete,
+        upkeep = upkeep,
+        onSelectMissing = {
+            shelf()
+            onSelectMissing()
+        },
+        onSelectDuplicates = {
+            shelf()
+            onSelectDuplicates()
+        },
+        layout = layout,
+        onLayoutChange = onLayoutChange,
+    )
+
     companion object {
         val None = LibraryShelfUi()
     }

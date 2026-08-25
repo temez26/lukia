@@ -113,6 +113,7 @@ private fun NavGraphBuilder.tabDestinations(
                 library.updateQuery(query)
                 navController.switchTo(MobileTab.Library)
             },
+            onOpenLibrary = { navController.switchTo(MobileTab.Library) },
             onSettings = openSettings,
             viewModel = library,
         )

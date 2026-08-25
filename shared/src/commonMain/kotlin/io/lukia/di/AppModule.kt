@@ -12,6 +12,7 @@ import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.library.infrastructure.LibrarySettingsRepository
+import io.lukia.features.library.infrastructure.RecentSearchesRepository
 import io.lukia.features.library.infrastructure.SqlLibraryRepository
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.reader.application.OpenDocumentUseCase
@@ -82,7 +83,7 @@ val commonModule = module {
     }
 
     viewModel {
-        LibraryViewModel(get(), get(), get(), get(), get(), get(), get(), get())
+        LibraryViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get())
     }
 
     single {
@@ -119,6 +120,13 @@ val commonModule = module {
     // read back by whichever screen asks first.
     single {
         LibrarySettingsRepository(get())
+    }
+
+    // A single so that a search made on the search tab is in the history the
+    // next time any screen asks for it, without either of them re-reading the
+    // store.
+    single {
+        RecentSearchesRepository(get())
     }
 
     // Likewise a single: the app's theme is read at the root, so every screen
