@@ -30,6 +30,7 @@ import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.screens.HomeScreen
 import io.lukia.features.library.presentation.screens.LibraryScreen
 import io.lukia.features.library.presentation.screens.SearchScreen
+import io.lukia.shared.presentation.theme.LocalMotionStyle
 import io.lukia.shared.presentation.theme.LukiaMotion
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -51,6 +52,10 @@ internal fun MobileShell(library: LibraryViewModel = koinViewModel()) {
 
     val tab = MobileTab.forRoute(backStackEntry?.destination?.route)
 
+    // Read here rather than inside the transitions: those are plain lambdas
+    // rather than composables, so this is the last place that can ask.
+    val motion = LocalMotionStyle.current
+
     // Held rather than read straight from the back stack, so the bar still knows
     // which tab it is marking while it slides away under a screen pushed over it.
     var selectedTab by remember { mutableStateOf(MobileTab.Home) }
@@ -64,11 +69,20 @@ internal fun MobileShell(library: LibraryViewModel = koinViewModel()) {
             navController = navController,
             startDestination = Routes.Home.route,
             // A push everywhere except between the tabs themselves, which are
-            // peers rather than a stack - see [betweenTabs].
-            enterTransition = { if (betweenTabs()) tabEnter() else pushEnter() },
-            exitTransition = { if (betweenTabs()) tabExit() else pushExit() },
-            popEnterTransition = { if (betweenTabs()) tabEnter() else popEnter() },
-            popExitTransition = { if (betweenTabs()) tabExit() else popExit() },
+            // peers rather than a stack - see [changesInPlace], which is also
+            // where the reader's motion preset gets its say.
+            enterTransition = {
+                if (changesInPlace(motion)) tabEnter(motion) else pushEnter(motion)
+            },
+            exitTransition = {
+                if (changesInPlace(motion)) tabExit(motion) else pushExit(motion)
+            },
+            popEnterTransition = {
+                if (changesInPlace(motion)) tabEnter(motion) else popEnter(motion)
+            },
+            popExitTransition = {
+                if (changesInPlace(motion)) tabExit(motion) else popExit(motion)
+            },
         ) {
             tabDestinations(navController = navController, library = library)
 

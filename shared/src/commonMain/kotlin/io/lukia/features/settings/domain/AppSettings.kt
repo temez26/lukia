@@ -66,6 +66,34 @@ enum class AppAccent(val title: String) {
 }
 
 /**
+ * How much the app moves.
+ *
+ * Not a switch, because "animations off" and "animations on" are not the two
+ * things people actually want. What varies between readers is how much motion
+ * they want to notice: one finds it the difference between an app and a
+ * document, another finds it something standing between them and the page, and
+ * a reader who is sensitive to movement needs the second of those to be
+ * available rather than polite.
+ *
+ * [Standard] is the default and is what the app was designed around. The other
+ * two turn the same motion down and up rather than replacing it, so an app on
+ * [Calm] is still recognisably this app.
+ *
+ * [detail] is the second line under each on the settings screen.
+ */
+enum class AppMotion(val title: String, val detail: String) {
+
+    /** For a reader who would rather the app got out of the way. */
+    Calm("Calm", "Quick cross-fades. Nothing springs, slides or sparkles."),
+
+    /** What everything here was tuned to. */
+    Standard("Standard", "A short opening, and screens that move the way you sent them."),
+
+    /** For a reader who wants to see it work. */
+    Playful("Playful", "A longer opening, springier settling, and further to travel."),
+}
+
+/**
  * Settings that apply to the whole app, as opposed to the reader's own
  * presentation settings, which belong to a book being read and live in
  * [io.lukia.features.reader.domain.ReaderSettings].
@@ -77,4 +105,5 @@ data class AppSettings(
     val theme: AppTheme = AppTheme.System,
     val palette: AppPalette = AppPalette.Crisp,
     val accent: AppAccent = AppAccent.Themed,
+    val motion: AppMotion = AppMotion.Standard,
 )

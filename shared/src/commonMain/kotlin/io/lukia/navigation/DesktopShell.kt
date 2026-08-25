@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import io.lukia.Routes
 import io.lukia.features.library.presentation.screens.LibraryScreen
+import io.lukia.shared.presentation.theme.LocalMotionStyle
 
 /**
  * The app as a window: the library, with everything else pushed on top of it.
@@ -18,6 +19,7 @@ import io.lukia.features.library.presentation.screens.LibraryScreen
 @Composable
 internal fun DesktopShell() {
     val navController = rememberNavController()
+    val motion = LocalMotionStyle.current
 
     NavHost(
         navController = navController,
@@ -26,10 +28,10 @@ internal fun DesktopShell() {
         // is a push onto or a pop off the library, so declaring it once is
         // both less to repeat and one less thing to forget when a screen is
         // added.
-        enterTransition = { pushEnter() },
-        exitTransition = { pushExit() },
-        popEnterTransition = { popEnter() },
-        popExitTransition = { popExit() },
+        enterTransition = { if (changesInPlace(motion)) tabEnter(motion) else pushEnter(motion) },
+        exitTransition = { if (changesInPlace(motion)) tabExit(motion) else pushExit(motion) },
+        popEnterTransition = { if (changesInPlace(motion)) tabEnter(motion) else popEnter(motion) },
+        popExitTransition = { if (changesInPlace(motion)) tabExit(motion) else popExit(motion) },
     ) {
         composable(Routes.Library.route) {
             LibraryScreen(

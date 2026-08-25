@@ -9,7 +9,9 @@ import io.lukia.features.settings.domain.AppTheme
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.navigation.DesktopShell
 import io.lukia.navigation.MobileShell
+import io.lukia.shared.presentation.components.LaunchSplash
 import io.lukia.shared.presentation.theme.LukiaTheme
+import io.lukia.shared.presentation.theme.SystemAppearanceEffect
 import org.koin.compose.koinInject
 
 @Composable
@@ -33,11 +35,23 @@ fun App() {
     // is not a thing any phone does.
     val mobile = remember { getPlatform().isMobile }
 
+    // Not about this session but about the next one: the window the app opens
+    // into is painted before any of the above has run, and this is what the
+    // system consults when it picks the colour.
+    SystemAppearanceEffect(appSettings.theme)
+
     LukiaTheme(
         darkTheme = darkTheme,
         palette = appSettings.palette,
         accent = appSettings.accent,
+        motion = appSettings.motion,
     ) {
-        if (mobile) MobileShell() else DesktopShell()
+        // Inside the theme rather than around it: the opening is drawn on the
+        // reader's own background and highlighted with the reader's own accent,
+        // so the last frame of it and the first frame of the app are the same
+        // colours.
+        LaunchSplash {
+            if (mobile) MobileShell() else DesktopShell()
+        }
     }
 }

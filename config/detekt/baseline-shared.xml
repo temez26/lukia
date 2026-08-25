@@ -11,6 +11,7 @@
     <ID>CompositionLocalAllowlist:Dimens.kt$LocalLukiaDimens</ID>
     <ID>CompositionLocalAllowlist:Dimens.kt$LocalWindowWidthClass</ID>
     <ID>CompositionLocalAllowlist:Glass.kt$LocalGlassStyle</ID>
+    <ID>CompositionLocalAllowlist:MotionStyle.kt$LocalMotionStyle</ID>
     <ID>CompositionLocalAllowlist:Tokens.kt$LocalLukiaMetrics</ID>
     <ID>ContentSlotReused:ReaderSettingControls.kt$control</ID>
     <ID>ContentSlotReused:ReaderToolbar.kt$endControl</ID>

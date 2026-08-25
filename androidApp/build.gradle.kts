@@ -20,6 +20,10 @@ dependencies {
 
     implementation(libs.androidx.activity.compose)
 
+    // Only for taking the system splash screen out of the way of the app's
+    // own opening - see MainActivity.
+    implementation(libs.androidx.splashscreen)
+
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
 }

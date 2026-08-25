@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The icon the system splash screen shows: none.
+
+    Android 12 and up always draw a splash screen, and by default they draw the
+    launcher icon zooming in and back out again - which lands immediately before
+    the app's own mark does the same thing, and reads as the app opening twice.
+    The system's half of that is given nothing to draw, leaving a plain field of
+    the app's background colour for the real opening to begin on.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@android:color/transparent" />
+</shape>
