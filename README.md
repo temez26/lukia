@@ -8,6 +8,7 @@ shared/
     ├── App.kt
     ├── Routes.kt
     ├── Platform.kt
+    ├── navigation/
     ├── di/
     ├── shared/
     ├── core/
@@ -19,6 +20,9 @@ shared/
 - **features** – Self-contained business features (Library, Reader, ...)
 - **core** – Shared functionality used across multiple features
 - **shared** - Shared ui components mostly
+- **navigation** – The app shells and the graph they share. Mobile gets a bottom
+  tab bar over Home, Search and Library; desktop keeps the library as its one
+  screen
 - **di** – Dependency injection and application composition
 - **App.kt** – Application entry point
 - **Routes.kt** – Navigation definitions

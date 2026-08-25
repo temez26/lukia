@@ -73,6 +73,12 @@ internal fun BookRow(
     onClick: () -> Unit,
     onMenuRequest: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * What a long press is announced as. The shelf offers a book's actions;
+     * a list of search results offers what the book is, and a screen reader
+     * should say which of the two this row is.
+     */
+    longClickLabel: String = "Book actions",
     /** How this row takes part in selection, or null when nothing is being selected. */
     selection: CardSelection? = null,
 ) {
@@ -92,7 +98,7 @@ internal fun BookRow(
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = selection?.onToggle ?: onClick,
-                onLongClickLabel = "Book actions",
+                onLongClickLabel = longClickLabel,
                 onLongClick = selection?.onToggle ?: onMenuRequest,
             )
             .padding(Space.sm),

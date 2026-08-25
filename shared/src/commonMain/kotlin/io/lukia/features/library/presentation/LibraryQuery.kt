@@ -101,3 +101,18 @@ fun List<LibraryBook>.matching(query: LibraryQuery): List<LibraryBook> {
             (search.isEmpty() || book.searchKey.contains(search))
     }.sortedFor(query.sort)
 }
+
+/**
+ * What the search screen finds for [term]: the whole library, and nothing the
+ * shelf happens to be narrowed to.
+ *
+ * Searching is a separate question from browsing - a reader looking for a book
+ * is looking among all of them - so this builds its own query rather than
+ * borrowing the one the library screen is holding.
+ *
+ * A blank term finds nothing rather than everything. The screen has a prompt to
+ * show before anything has been typed, and handing it the entire library
+ * instead would answer a question nobody has asked yet.
+ */
+fun List<LibraryBook>.searching(term: String): List<LibraryBook> =
+    if (term.isBlank()) emptyList() else matching(LibraryQuery(search = term))

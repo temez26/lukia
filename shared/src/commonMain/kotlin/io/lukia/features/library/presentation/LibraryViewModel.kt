@@ -90,12 +90,6 @@ class LibraryViewModel(
     val message: StateFlow<String?> = _message.asStateFlow()
 
     /**
-     * True while an import is running. Reading the library is covered by
-     * [uiState]; this is the slow work that happens on top of a library that is
-     * already on screen.
-     */
-
-    /**
      * Getting books in, and saying how it is going. Held apart - see
      * [LibraryImportSession] - so that importing is a thing with its own state
      * rather than four more fields on the shelf.
@@ -129,10 +123,20 @@ class LibraryViewModel(
      * Off the main thread and computed once per load rather than once per
      * keystroke, which is the whole point of it existing.
      */
-    private val library: StateFlow<List<LibraryBook>> =
+    val library: StateFlow<List<LibraryBook>> =
         combine(_uiState, _readingProgress) { state, progress ->
             withContext(dispatcher) { state.dataOrNull.orEmpty().asLibrary(progress) }
         }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    /**
+     * Looking for a book, which is a different question from narrowing the
+     * shelf - see [LibrarySearchSession].
+     */
+    val search = LibrarySearchSession(
+        library = library,
+        scope = viewModelScope,
+        dispatcher = dispatcher,
+    )
 
     /** What this library can usefully be narrowed by, for the header's controls. */
     val facets: StateFlow<LibraryFacets> = library
