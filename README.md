@@ -70,6 +70,21 @@ Examples of shared code include:
 - Shared services
 - Cross-feature infrastructure
 
+## Supported platforms
+
+| Platform | Minimum                                           |
+| -------- | ------------------------------------------------- |
+| Android  | 6.0 Marshmallow (API 23)                          |
+| iOS      | 15.0                                              |
+| Desktop  | Windows, macOS and Linux with the bundled runtime |
+
+Both floors are set by the platform code rather than by taste: Android needs the
+keystore's AES support (API 23) to hold the reader's translation key, and iOS
+needs `UTType` and the content-type document picker (14.0), with 15.0 taken as
+the nearest whole release above it. `IPHONEOS_DEPLOYMENT_TARGET` lives in
+[Config.xcconfig](iosApp/Configuration/Config.xcconfig), the Android versions in
+[libs.versions.toml](gradle/libs.versions.toml).
+
 ## Technologies
 
 - Kotlin Multiplatform

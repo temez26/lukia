@@ -1,7 +1,10 @@
 [versions]
 agp = "9.1.1"
 android-compileSdk = "36"
-android-minSdk = "24"
+# API 23 is the floor the code itself sets: `AndroidSecretStore` generates its
+# key with `KeyGenParameterSpec`, which Android gained in Marshmallow. Anything
+# lower would need a second, weaker way to hold the reader's translation key.
+android-minSdk = "23"
 android-targetSdk = "36"
 androidx-activity = "1.13.0"
 androidx-splashscreen = "1.0.1"

@@ -15,7 +15,7 @@ dependencies {
 
     // Ktor is built against Java 8 APIs that Android only gained in API 26.
     // Desugaring back-fills them, which is what lets the app keep its minimum
-    // of API 24 while translating over the network.
+    // of API 23 while translating over the network.
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
     implementation(libs.androidx.activity.compose)

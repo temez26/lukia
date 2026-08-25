@@ -3,6 +3,12 @@ TEAM_ID=
 PRODUCT_NAME=Lukia
 PRODUCT_BUNDLE_IDENTIFIER=io.lukia.Lukia$(TEAM_ID)
 
+// The oldest iOS the app runs on, kept here rather than in the project file so
+// Debug and Release cannot drift apart. 15.0 reaches back to the iPhone 6s and
+// the first SE; the app's own floor is 14.0, where `UTType` and the content-type
+// document picker arrived, and Compose Multiplatform's is lower still.
+IPHONEOS_DEPLOYMENT_TARGET=15.0
+
 CURRENT_PROJECT_VERSION=1
 MARKETING_VERSION=1.0
 
