@@ -98,6 +98,10 @@ kotlin {
             implementation(libs.ktor.client.contentNegotiation)
             implementation(libs.ktor.serialization.json)
             implementation(libs.kotlinx.serialization.json)
+            // Reading time is bucketed into the reader's own days, which needs
+            // a calendar and a time zone - neither of which the standard
+            // library's clock has.
+            implementation(libs.kotlinx.datetime)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

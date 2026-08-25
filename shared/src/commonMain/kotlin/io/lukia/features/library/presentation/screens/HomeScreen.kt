@@ -23,6 +23,8 @@ import io.lukia.features.library.presentation.LibraryQuery
 import io.lukia.features.library.presentation.LibraryShelfUi
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.homeRows
+import io.lukia.features.profile.presentation.components.ProfileFace
+import io.lukia.features.profile.presentation.rememberProfileFace
 import io.lukia.shared.presentation.components.ActionMenuScrim
 import io.lukia.shared.presentation.components.LoadingState
 import io.lukia.shared.presentation.components.UiStateContent
@@ -49,6 +51,7 @@ internal fun HomeScreen(
     onOpenBook: (DocumentInfo) -> Unit,
     onSeeAll: (LibraryQuery) -> Unit,
     onOpenLibrary: () -> Unit,
+    onProfile: () -> Unit,
     onSettings: () -> Unit,
     viewModel: LibraryViewModel = koinViewModel(),
 ) {
@@ -93,7 +96,9 @@ internal fun HomeScreen(
         categories = facets.categories,
         importProgress = importProgress,
         shelf = homeShelf,
+        onProfile = onProfile,
         onSettings = onSettings,
+        face = rememberProfileFace(),
     )
 }
 
@@ -126,7 +131,10 @@ internal fun HomeContent(
     importProgress: ImportProgress? = null,
     /** What the corner menu offers, which is what the library's own bar offers. */
     shelf: LibraryShelfUi = LibraryShelfUi.None,
+    onProfile: () -> Unit = {},
     onSettings: () -> Unit = {},
+    /** Who is reading, for the disc on the header. Nobody in particular by default. */
+    face: ProfileFace = ProfileFace.Unknown,
 ) {
     // One value rather than a flag per menu, as everywhere else in this app: the
     // header carries one and the empty state carries another, and at most one of
@@ -158,7 +166,9 @@ internal fun HomeContent(
                             onImport = onImport,
                             onImportFolder = onImportFolder,
                             shelf = shelf,
+                            onProfile = onProfile,
                             onSettings = onSettings,
+                            face = face,
                         )
                     },
                     modifier = Modifier.fillMaxSize(),

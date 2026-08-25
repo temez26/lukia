@@ -15,6 +15,7 @@ detekt = "1.23.8"
 ktlint = "14.2.0"
 kotlin = "2.4.10"
 kotlinx-coroutines = "1.11.0"
+kotlinx-datetime = "0.7.1"
 koin = "4.2.2"
 # 3.2.0 is held back deliberately: it ships a field whose name contains
 # spaces, which Android's dexer rejects for any minimum below API 30.
@@ -29,6 +30,7 @@ sqldelight = "2.3.2"
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidx-testRunner" }
 desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugarJdkLibs" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }

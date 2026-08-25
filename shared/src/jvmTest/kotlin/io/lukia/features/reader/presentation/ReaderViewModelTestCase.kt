@@ -13,6 +13,7 @@ import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.domain.FakePdfLayoutRepository
+import io.lukia.features.reader.domain.FakeReadingSessionRepository
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
@@ -22,11 +23,13 @@ import io.lukia.features.translate.domain.FakeTranslator
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
@@ -125,6 +128,15 @@ abstract class ReaderViewModelTestCase {
         viewModelStore.clear()
         openedViewModels.forEach { it.uiState.value.dataOrNull?.close() }
 
+        // Cancelling a ViewModel's scope only starts the cancelling. Anything
+        // suspended in a `delay` is resumed from a timer thread of its own,
+        // which then asks the main dispatcher whether it needs to dispatch -
+        // and a dispatcher that has already been reset answers by throwing,
+        // into whichever test happens to be starting. Letting those landings
+        // happen before the dispatcher is taken away is what makes this suite
+        // green rather than usually green.
+        runBlocking { withContext(Dispatchers.Default) { delay(CANCELLATION_MILLIS) } }
+
         Dispatchers.resetMain()
         root.deleteRecursively()
     }
@@ -151,7 +163,7 @@ abstract class ReaderViewModelTestCase {
             dispatcher = openDispatcher,
         ),
         settingsRepository = settings,
-        progressRepository = progress,
+        reading = BookReadingFactory(progress, FakeReadingSessionRepository()),
         layoutRepository = layouts,
         translations = testTranslations(),
         // Inline, because the outline is read beside the open book rather than
@@ -228,6 +240,12 @@ abstract class ReaderViewModelTestCase {
     private companion object {
         /** Generous: the work is a few small files, not a real book. */
         const val SETTLE_TIMEOUT_MILLIS = 10_000L
+
+        /**
+         * Long enough for a cancelled coroutine to be resumed and finish, short
+         * enough to pay once per test class without anybody noticing.
+         */
+        const val CANCELLATION_MILLIS = 50L
     }
 
     protected class FakeLibraryRepository(

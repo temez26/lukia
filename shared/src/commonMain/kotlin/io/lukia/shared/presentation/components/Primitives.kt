@@ -135,6 +135,51 @@ fun SectionLabel(
 }
 
 /**
+ * One group of a settings-style page: a quiet header above a rounded surface,
+ * with any explanation set below it rather than inside.
+ *
+ * The shape iOS gives a grouped list, and the shape both the settings page and
+ * the profile are built from - which is why it lives here rather than inside
+ * either of them.
+ *
+ * [color] is passed on to the [GroupCard] and matters for the same reason: what
+ * a group has to contrast with differs between a screen laid on the window
+ * background and a panel laid on a raised surface.
+ */
+@Composable
+fun GroupSection(
+    title: String,
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.surface,
+    footnote: String? = null,
+    /** Rows that draw their own vertical padding ask for none of the card's. */
+    padding: Dp = Space.lg,
+    content: @Composable () -> Unit,
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        SectionLabel(
+            text = title,
+            modifier = Modifier.padding(start = Space.xs, bottom = Space.sm),
+        )
+
+        GroupCard(color = color) {
+            Box(modifier = Modifier.padding(horizontal = Space.lg, vertical = padding)) {
+                content()
+            }
+        }
+
+        if (footnote != null) {
+            Text(
+                text = footnote,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = Space.xs, top = Space.sm),
+            )
+        }
+    }
+}
+
+/**
  * A screen, or a region of one, with nothing in it - and the reason why.
  *
  * Distinct from [ErrorState], which is for something that was asked for and could

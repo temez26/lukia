@@ -23,7 +23,10 @@ import io.lukia.features.library.presentation.components.HomeCategoryRow
 import io.lukia.features.library.presentation.components.HomeShelfRow
 import io.lukia.features.library.presentation.components.LibraryMenu
 import io.lukia.features.library.presentation.components.MenuButton
+import io.lukia.features.profile.presentation.ProfileAvatarButton
+import io.lukia.features.profile.presentation.components.ProfileFace
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import io.lukia.shared.presentation.theme.Space
 
 /** Clears the last row of the tab bar the screen scrolls up to. */
 private val HomeBottomPadding: Dp = 24.dp
@@ -103,8 +106,11 @@ internal fun HomeHeader(
     onImport: () -> Unit,
     onImportFolder: () -> Unit,
     shelf: LibraryShelfUi,
+    onProfile: () -> Unit,
     onSettings: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Who is reading, for the disc that leads to their own page. */
+    face: ProfileFace = ProfileFace.Unknown,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -115,6 +121,12 @@ internal fun HomeHeader(
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.weight(1f),
+        )
+
+        ProfileAvatarButton(
+            face = face,
+            onClick = onProfile,
+            modifier = Modifier.padding(end = Space.md),
         )
 
         Box {

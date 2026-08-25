@@ -120,6 +120,8 @@ private fun NavGraphBuilder.tabDestinations(
 
     val openSettings: () -> Unit = { navController.navigate(Routes.Settings.route) }
 
+    val openProfile: () -> Unit = { navController.navigate(Routes.Profile.route) }
+
     tabDestination(Routes.Home.route) {
         HomeScreen(
             onOpenBook = openBook,
@@ -128,6 +130,7 @@ private fun NavGraphBuilder.tabDestinations(
                 navController.switchTo(MobileTab.Library)
             },
             onOpenLibrary = { navController.switchTo(MobileTab.Library) },
+            onProfile = openProfile,
             onSettings = openSettings,
             viewModel = library,
         )
@@ -146,6 +149,7 @@ private fun NavGraphBuilder.tabDestinations(
             viewModel = library,
             onDocumentClick = openBook,
             onDocumentDetails = openDetails,
+            onProfile = openProfile,
             onSettings = openSettings,
             // Searching has a tab of its own here, and a field on this screen as
             // well would be a second search with a second answer to the same

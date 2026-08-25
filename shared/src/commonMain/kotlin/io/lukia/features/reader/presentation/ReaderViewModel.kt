@@ -15,7 +15,6 @@ import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReadingProgress
-import io.lukia.features.reader.domain.ReadingProgressRepository
 import io.lukia.features.reader.domain.TextExtraction
 import io.lukia.features.reader.domain.asTableOfContents
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
@@ -40,7 +39,7 @@ class ReaderViewModel(
     private val location: String,
     private val openDocumentUseCase: OpenDocumentUseCase,
     private val settingsRepository: ReaderSettingsRepository,
-    private val progressRepository: ReadingProgressRepository,
+    reading: BookReadingFactory,
     layoutRepository: PdfLayoutRepository,
     translations: ReaderTranslationsFactory,
     /**
@@ -65,6 +64,14 @@ class ReaderViewModel(
      * Whether this book is read as its own pages or as text, and what came of
      * asking for the second - see [ReaderLayoutChoice].
      */
+
+    /**
+     * Where this book was left off and how long it has been read for - see
+     * [BookReading]. It writes as it goes, so leaving the reader needs nothing
+     * from here.
+     */
+    private val record = reading.create(location, viewModelScope)
+
     private val layoutChoice = ReaderLayoutChoice(location, layoutRepository) {
         settingsRepository.settings.value.defaultPdfLayout
     }
@@ -98,8 +105,7 @@ class ReaderViewModel(
      * following. A value that tracked the reader would send them back to where
      * they started every time it arrived.
      */
-    private val _initialPosition = MutableStateFlow<ReadingProgress?>(null)
-    val initialPosition: StateFlow<ReadingProgress?> = _initialPosition.asStateFlow()
+    val initialPosition: StateFlow<ReadingProgress?> = record.initialPosition
 
     /**
      * Exposed straight from the repository rather than copied into this
@@ -158,8 +164,12 @@ class ReaderViewModel(
 
             if (state is UiState.Success) {
                 layoutChoice.settle(state.data, openedAs = layout)
-                restorePosition(state.data)
+                record.restore(state.data)
                 loadOutline(state.data)
+
+                // Only once there is a book on screen: a file that could not be
+                // opened is not an evening's reading.
+                record.begin()
             }
         }
     }
@@ -188,41 +198,7 @@ class ReaderViewModel(
     }
 
     /**
-     * Where this book was left off, or its beginning if it has never been
-     * opened - which is the same instruction, so an unread book is not a case
-     * of its own.
-     *
-     * A book nobody has opened is given a length of nothing rather than the
-     * document's own count. For a PDF the two would be the same; for a
-     * reflowable book the count here is a page count, and what the document can
-     * say is how many divisions it was written in - a different number in a
-     * different unit, and one this must not pass off as the other. Nothing is
-     * the honest answer, and the reader opens at the beginning either way.
-     */
-    private suspend fun restorePosition(document: ReaderDocument) {
-        val stored = runCatchingApp { progressRepository.progressFor(location) }.getOrNull()
-        val content = document.content
-
-        _initialPosition.value = when {
-            stored == null -> ReadingProgress(pageIndex = 0, pageCount = 0)
-
-            // A fixed-layout document's pages are its own, so a stored page past
-            // the end of one is a file that has been replaced by a shorter one
-            // under the same name - and no place to open at. A reflowable book
-            // has no pages until it has been laid out for a window, so there is
-            // nothing here to clamp it against; the page list does that, against
-            // the layout it just made.
-            content is PagedContent -> ReadingProgress(
-                pageIndex = stored.pageIndex.coerceIn(0, (content.partCount - 1).coerceAtLeast(0)),
-                pageCount = content.partCount,
-            )
-
-            else -> stored
-        }
-    }
-
-    /**
-     * Records where the reader has come to rest.
+     * Records where the reader has come to rest, and that they are still there.
      *
      * Called when a scroll settles rather than as it moves: a fling through a
      * long book passes hundreds of pages the reader never saw, and storing each
@@ -230,19 +206,10 @@ class ReaderViewModel(
      * mattered.
      */
     fun onPageSettled(pageIndex: Int, pageCount: Int) {
-        // Nothing to remember about a book that never opened, and a length of
-        // nothing is a book that has not been laid out yet rather than one that
-        // has been read to the end of.
-        if (_uiState.value.dataOrNull == null || pageCount <= 0) return
+        // Nothing to remember about a book that never opened.
+        if (_uiState.value.dataOrNull == null) return
 
-        viewModelScope.launch {
-            runCatchingApp {
-                progressRepository.save(
-                    location = location,
-                    progress = ReadingProgress(pageIndex = pageIndex, pageCount = pageCount),
-                )
-            }
-        }
+        record.onPageSettled(pageIndex, pageCount)
     }
 
     private val pageSentences = PageSentenceCache()
@@ -343,7 +310,7 @@ class ReaderViewModel(
         pageSentences.clear()
         _uiState.value = UiState.Loading
         _outline.value = ReaderOutline.Loading
-        _initialPosition.value = null
+        record.forgetOpeningPosition()
         open()
     }
 

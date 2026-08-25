@@ -15,12 +15,20 @@ import io.lukia.features.library.infrastructure.LibrarySettingsRepository
 import io.lukia.features.library.infrastructure.RecentSearchesRepository
 import io.lukia.features.library.infrastructure.SqlLibraryRepository
 import io.lukia.features.library.presentation.LibraryViewModel
+import io.lukia.features.profile.application.GetReadingSummaryUseCase
+import io.lukia.features.profile.domain.ProfilePictureStore
+import io.lukia.features.profile.infrastructure.ProfileRepository
+import io.lukia.features.profile.infrastructure.SqlProfilePictureStore
+import io.lukia.features.profile.presentation.ProfileViewModel
 import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.domain.PdfLayoutRepository
 import io.lukia.features.reader.domain.ReadingProgressRepository
+import io.lukia.features.reader.domain.ReadingSessionRepository
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import io.lukia.features.reader.infrastructure.SqlPdfLayoutRepository
 import io.lukia.features.reader.infrastructure.SqlReadingProgressRepository
+import io.lukia.features.reader.infrastructure.SqlReadingSessionRepository
+import io.lukia.features.reader.presentation.BookReadingFactory
 import io.lukia.features.reader.presentation.ReaderTranslationsFactory
 import io.lukia.features.reader.presentation.ReaderViewModel
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
@@ -61,6 +69,12 @@ val commonModule = module {
 
     single<ReadingProgressRepository> {
         SqlReadingProgressRepository(get())
+    }
+
+    // How long each book has been read for, which is a different question from
+    // where the reader is in it - see `ReadingSession.sq`.
+    single<ReadingSessionRepository> {
+        SqlReadingSessionRepository(get())
     }
 
     // Which way each PDF is read, remembered per book - a choice about one
@@ -135,6 +149,24 @@ val commonModule = module {
         AppSettingsRepository(get())
     }
 
+    // And likewise: whether there is a reader at all is read at the root, where
+    // it decides whether the app opens on its library or on its welcome.
+    single {
+        ProfileRepository(get(), get())
+    }
+
+    single<ProfilePictureStore> {
+        SqlProfilePictureStore(get())
+    }
+
+    single {
+        GetReadingSummaryUseCase(get(), get(), get())
+    }
+
+    viewModel {
+        ProfileViewModel(get(), get())
+    }
+
     viewModel {
         SettingsViewModel(get(), get(), get(), get(), get(), get())
     }
@@ -200,6 +232,12 @@ val commonModule = module {
 
     single {
         TranslatePassageUseCase(get())
+    }
+
+    // Where each book was left off and how long it has been read for, minus the
+    // one thing only the ViewModel has - see BookReadingFactory.
+    single {
+        BookReadingFactory(get(), get())
     }
 
     // What the reader needs to translate with, minus the one thing only the

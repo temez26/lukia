@@ -12,7 +12,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +38,8 @@ import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.OpenMenu
 import io.lukia.features.library.presentation.components.LibraryNavBar
 import io.lukia.features.library.presentation.components.libraryNavBarHeight
+import io.lukia.features.profile.presentation.components.ProfileFace
+import io.lukia.features.profile.presentation.rememberProfileFace
 import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.features.settings.presentation.SettingsOverlay
 import io.lukia.shared.presentation.components.ActionMenuScrim
@@ -63,6 +64,7 @@ fun LibraryScreen(
     viewModel: LibraryViewModel = koinViewModel(),
     onDocumentClick: (DocumentInfo) -> Unit = {},
     onDocumentDetails: (DocumentInfo) -> Unit = {},
+    onProfile: () -> Unit = {},
     onSettings: () -> Unit = {},
     showSearch: Boolean = true,
 ) {
@@ -86,18 +88,12 @@ fun LibraryScreen(
     val settingsOpenInPlace = isWideWindow
     var settingsOpen by rememberSaveable { mutableStateOf(false) }
 
-    // Fires again each time the grid is re-entered from the detail screen, which
-    // may have favourited or removed a book behind its back.
-    LaunchedEffect(Unit) {
-        viewModel.refresh()
-    }
-
-    LaunchedEffect(message) {
-        message?.let {
-            snackbarHostState.showSnackbar(it)
-            viewModel.clearMessage()
-        }
-    }
+    LibraryEffects(
+        message = message,
+        snackbarHostState = snackbarHostState,
+        onRefresh = viewModel::refresh,
+        onClearMessage = viewModel::clearMessage,
+    )
 
     Box(modifier = Modifier.fillMaxSize()) {
         LibraryContent(
@@ -114,6 +110,7 @@ fun LibraryScreen(
             },
             onDocumentClick = onDocumentClick,
             onDocumentDetails = onDocumentDetails,
+            onProfile = onProfile,
             onSettings = {
                 if (settingsOpenInPlace) settingsOpen = true else onSettings()
             },
@@ -127,6 +124,7 @@ fun LibraryScreen(
             snackbarHostState = snackbarHostState,
             readingProgress = readingProgress,
             showSearch = showSearch,
+            face = rememberProfileFace(),
         )
 
         // Over the library and its own overlays both, since it is opened from the
@@ -170,6 +168,7 @@ fun LibraryContent(
      * without a ViewModel behind it, which is how it is tested and previewed.
      */
     importProgress: ImportProgress? = null,
+    onProfile: () -> Unit = {},
     onSettings: () -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     /**
@@ -182,6 +181,8 @@ fun LibraryContent(
     shelf: LibraryShelfUi = LibraryShelfUi.None,
     /** False where searching has a screen of its own - see [LibraryNavBar]. */
     showSearch: Boolean = true,
+    /** Who is reading, for the disc on the bar. Nobody in particular by default. */
+    face: ProfileFace = ProfileFace.Unknown,
 ) {
     val dimens = LocalLukiaDimens.current
     val reveal = rememberLaunchReveal()
@@ -348,9 +349,11 @@ fun LibraryContent(
                     onImport = onImport,
                     onImportFolder = onImportFolder,
                     shelf = shelf,
+                    onProfile = onProfile,
                     onSettings = onSettings,
                     modifier = Modifier.align(Alignment.TopCenter),
                     showSearch = showSearch,
+                    face = face,
                 )
             }
 

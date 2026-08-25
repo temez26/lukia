@@ -1,0 +1,136 @@
+package io.lukia.features.profile.presentation.screens
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import io.lukia.core.presentation.UiState
+import io.lukia.features.profile.domain.ReadingSummary
+import io.lukia.features.profile.domain.UserProfile
+import io.lukia.features.profile.presentation.ProfileViewModel
+import io.lukia.features.profile.presentation.components.ProfileFace
+import io.lukia.features.profile.presentation.components.face
+import io.lukia.features.profile.presentation.rememberPlatformImagePicker
+import io.lukia.shared.presentation.components.BackChevron
+import io.lukia.shared.presentation.components.IconButtonVariant
+import io.lukia.shared.presentation.components.LukiaIconButton
+import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import io.lukia.shared.presentation.theme.Space
+import org.koin.compose.viewmodel.koinViewModel
+
+/**
+ * The reader's own page: who they are, what their reading adds up to, how long
+ * it has taken, and what they have had open lately.
+ *
+ * [onOpenBook] takes a location rather than a document, because that is all this
+ * screen holds - it lists reading positions with the library's entry beside
+ * each, and opening a book is the library's own route by location.
+ */
+@Composable
+fun ProfileScreen(
+    onBack: () -> Unit,
+    onOpenBook: (String) -> Unit,
+    viewModel: ProfileViewModel = koinViewModel(),
+) {
+    val profile by viewModel.profile.collectAsState()
+    val picture by viewModel.picture.collectAsState()
+    val summary by viewModel.summary.collectAsState()
+
+    val imagePicker = rememberPlatformImagePicker()
+
+    // Counted again each time the page is returned to, which is what a reader
+    // coming back from a book expects: the pages and the minutes they have just
+    // spent are the whole point of looking.
+    LaunchedEffect(Unit) {
+        viewModel.refresh()
+    }
+
+    // Nothing to show for a reader who has no profile, which cannot happen from
+    // here - the app opens on onboarding until there is one, see `App`. Guarded
+    // rather than asserted, because a screen is a poor place to crash.
+    profile?.let { reader ->
+        ProfileContent(
+            profile = reader,
+            face = reader.face(picture),
+            summary = summary,
+            onBack = onBack,
+            actions = remember(viewModel, onOpenBook, imagePicker) {
+                ProfileActions(
+                    onRename = viewModel::rename,
+                    onOpenBook = onOpenBook,
+                    onRetry = viewModel::refresh,
+                    avatar = AvatarActions(
+                        onAvatar = viewModel::setAvatar,
+                        onTint = viewModel::setTint,
+                        onChoosePicture = { imagePicker.launch(viewModel::setPicture) },
+                        onRemovePicture = viewModel::clearPicture,
+                    ),
+                )
+            },
+        )
+    }
+}
+
+/**
+ * Stateless half of the screen, matching the other screens so the layout can be
+ * rendered without a ViewModel or dependency graph.
+ *
+ * Full-bleed like the settings and detail screens, so the page passes under the
+ * floating back control rather than starting below a bar.
+ */
+@Composable
+fun ProfileContent(
+    profile: UserProfile,
+    face: ProfileFace,
+    summary: UiState<ReadingSummary>,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    actions: ProfileActions = ProfileActions(),
+) {
+    val dimens = LocalLukiaDimens.current
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+    ) {
+        // The background stays outside the inset so colour still reaches the
+        // screen edges; the content inside it does not. Resolves to zero on
+        // desktop.
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.safeDrawing),
+        ) {
+            ProfileBody(
+                profile = profile,
+                face = face,
+                summary = summary,
+                actions = actions,
+                modifier = Modifier.fillMaxSize(),
+            )
+
+            LukiaIconButton(
+                label = "Go back",
+                onClick = onBack,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(start = dimens.screenPadding, top = Space.lg),
+                variant = IconButtonVariant.Glass,
+            ) { tint, glyph ->
+                BackChevron(tint = tint, modifier = glyph)
+            }
+        }
+    }
+}
