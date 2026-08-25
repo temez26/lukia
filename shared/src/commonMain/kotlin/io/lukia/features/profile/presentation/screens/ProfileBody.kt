@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import io.lukia.core.presentation.UiState
 import io.lukia.features.profile.domain.ReadingSummary
 import io.lukia.features.profile.domain.UserProfile
+import io.lukia.features.profile.presentation.components.ProfileFace
 import io.lukia.features.profile.presentation.components.ProfileHeader
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 
@@ -34,18 +35,17 @@ private val ProfileBottomClearance: Dp = 32.dp
  * `SettingsBody` is: a wide window has room to lay this over the library instead
  * of replacing it, and the day that is worth doing this is the part that moves.
  *
- * The order is who, then how much, then what lately, then the two things that
- * can be changed. Everything a reader came to look at is above everything they
- * came to edit, which is why the name sits below its own statistics rather than
- * beside the avatar that shows it.
+ * The order is who, then how much, then how long, then what lately, then the
+ * things that can be changed. Everything a reader came to look at is above
+ * everything they came to edit, which is why the name and the disc sit below
+ * their own statistics rather than beside the avatar that shows them.
  */
 @Composable
 internal fun ProfileBody(
     profile: UserProfile,
+    face: ProfileFace,
     summary: UiState<ReadingSummary>,
-    onRename: (String) -> Unit,
-    onOpenBook: (String) -> Unit,
-    onRetry: () -> Unit,
+    actions: ProfileActions,
     modifier: Modifier = Modifier,
     /**
      * What a group sits in, for the same reason `SettingsBody` takes one: this
@@ -68,25 +68,38 @@ internal fun ProfileBody(
                 .fillMaxWidth()
                 .padding(horizontal = dimens.screenPadding),
         ) {
-            ProfileHeader(profile = profile)
+            ProfileHeader(profile = profile, face = face)
 
             ReadingSection(
                 summary = summary,
-                onRetry = onRetry,
+                onRetry = actions.onRetry,
+                groupColor = groupColor,
+                modifier = Modifier.padding(top = dimens.sectionSpacing),
+            )
+
+            HabitsSection(
+                summary = summary,
                 groupColor = groupColor,
                 modifier = Modifier.padding(top = dimens.sectionSpacing),
             )
 
             ActivitySection(
                 summary = summary,
-                onOpenBook = onOpenBook,
+                onOpenBook = actions.onOpenBook,
+                groupColor = groupColor,
+                modifier = Modifier.padding(top = dimens.sectionSpacing),
+            )
+
+            AvatarSection(
+                face = face,
+                actions = actions.avatar,
                 groupColor = groupColor,
                 modifier = Modifier.padding(top = dimens.sectionSpacing),
             )
 
             NameSection(
                 profile = profile,
-                onRename = onRename,
+                onRename = actions.onRename,
                 groupColor = groupColor,
                 modifier = Modifier.padding(top = dimens.sectionSpacing),
             )
@@ -101,3 +114,18 @@ internal fun ProfileBody(
         Spacer(modifier = Modifier.height(ProfileBottomClearance))
     }
 }
+
+/**
+ * Everything the profile page can do.
+ *
+ * Gathered rather than passed one callback at a time: this page has seven of
+ * them and only one of the sections uses more than one, so the alternative is a
+ * screen whose signature is longer than its layout - which is exactly what the
+ * project's own limit on required parameters is there to prevent.
+ */
+data class ProfileActions(
+    val onRename: (String) -> Unit = {},
+    val onOpenBook: (String) -> Unit = {},
+    val onRetry: () -> Unit = {},
+    val avatar: AvatarActions = AvatarActions(),
+)

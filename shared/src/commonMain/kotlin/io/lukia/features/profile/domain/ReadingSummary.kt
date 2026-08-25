@@ -16,6 +16,8 @@ data class ReadingSummary(
     val stats: ReadingStats,
     /** Newest first. Empty for a reader who has not opened anything yet. */
     val recent: List<ReadingActivity>,
+    /** What the reading has cost in hours, and when it happened. */
+    val habits: ReadingHabits = ReadingHabits.Empty,
 ) {
 
     companion object {
@@ -113,6 +115,7 @@ private const val RecentLimit = 5
 fun readingSummary(
     documents: List<DocumentInfo>,
     progress: Map<String, ReadingProgress>,
+    habits: ReadingHabits = ReadingHabits.Empty,
     recentLimit: Int = RecentLimit,
 ): ReadingSummary {
     val read = documents.mapNotNull { document ->
@@ -127,6 +130,7 @@ fun readingSummary(
             .sortedByDescending { (_, progress) -> progress.readAt }
             .take(recentLimit)
             .map { (document, progress) -> ReadingActivity(document, progress) },
+        habits = habits,
     )
 }
 

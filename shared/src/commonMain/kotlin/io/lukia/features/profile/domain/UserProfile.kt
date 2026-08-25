@@ -15,10 +15,13 @@ package io.lukia.features.profile.domain
  */
 data class UserProfile(
     val username: String,
+    /** What the reader's disc has on it, and what colour it is. */
+    val avatar: ProfileAvatar = ProfileAvatar.Monogram,
+    val tint: ProfileTint = ProfileTint.Accent,
     val account: ProfileAccount = ProfileAccount.OnThisDevice,
 ) {
 
-    /** What the avatar draws - see [Usernames.initialsOf]. */
+    /** What the disc falls back to whatever else is chosen - see [Usernames.initialsOf]. */
     val initials: String get() = Usernames.initialsOf(username)
 }
 

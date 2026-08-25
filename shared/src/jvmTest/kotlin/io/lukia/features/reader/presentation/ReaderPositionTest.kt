@@ -2,6 +2,7 @@ package io.lukia.features.reader.presentation
 
 import io.lukia.core.domain.FakeSettingsStore
 import io.lukia.features.reader.application.OpenDocumentUseCase
+import io.lukia.features.reader.domain.FakeReadingSessionRepository
 import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import kotlinx.coroutines.flow.first
@@ -83,7 +84,7 @@ class ReaderPositionTest : ReaderViewModelTestCase() {
                 dispatcher = openDispatcher,
             ),
             settingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
-            progressRepository = progress,
+            reading = BookReadingFactory(progress, FakeReadingSessionRepository()),
             layoutRepository = layouts,
             translations = testTranslations(),
         ).also { track(it) }

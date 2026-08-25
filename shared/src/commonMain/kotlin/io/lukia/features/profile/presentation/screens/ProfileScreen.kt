@@ -12,12 +12,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import io.lukia.core.presentation.UiState
 import io.lukia.features.profile.domain.ReadingSummary
 import io.lukia.features.profile.domain.UserProfile
 import io.lukia.features.profile.presentation.ProfileViewModel
+import io.lukia.features.profile.presentation.components.ProfileFace
+import io.lukia.features.profile.presentation.components.face
+import io.lukia.features.profile.presentation.rememberPlatformImagePicker
 import io.lukia.shared.presentation.components.BackChevron
 import io.lukia.shared.presentation.components.IconButtonVariant
 import io.lukia.shared.presentation.components.LukiaIconButton
@@ -26,8 +30,8 @@ import io.lukia.shared.presentation.theme.Space
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
- * The reader's own page: who they are, what their reading adds up to, and what
- * they have had open lately.
+ * The reader's own page: who they are, what their reading adds up to, how long
+ * it has taken, and what they have had open lately.
  *
  * [onOpenBook] takes a location rather than a document, because that is all this
  * screen holds - it lists reading positions with the library's entry beside
@@ -40,11 +44,14 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = koinViewModel(),
 ) {
     val profile by viewModel.profile.collectAsState()
+    val picture by viewModel.picture.collectAsState()
     val summary by viewModel.summary.collectAsState()
 
+    val imagePicker = rememberPlatformImagePicker()
+
     // Counted again each time the page is returned to, which is what a reader
-    // coming back from a book expects: the pages they just read are the whole
-    // point of looking.
+    // coming back from a book expects: the pages and the minutes they have just
+    // spent are the whole point of looking.
     LaunchedEffect(Unit) {
         viewModel.refresh()
     }
@@ -55,11 +62,22 @@ fun ProfileScreen(
     profile?.let { reader ->
         ProfileContent(
             profile = reader,
+            face = reader.face(picture),
             summary = summary,
-            onRename = viewModel::rename,
-            onOpenBook = onOpenBook,
-            onRetry = viewModel::refresh,
             onBack = onBack,
+            actions = remember(viewModel, onOpenBook, imagePicker) {
+                ProfileActions(
+                    onRename = viewModel::rename,
+                    onOpenBook = onOpenBook,
+                    onRetry = viewModel::refresh,
+                    avatar = AvatarActions(
+                        onAvatar = viewModel::setAvatar,
+                        onTint = viewModel::setTint,
+                        onChoosePicture = { imagePicker.launch(viewModel::setPicture) },
+                        onRemovePicture = viewModel::clearPicture,
+                    ),
+                )
+            },
         )
     }
 }
@@ -74,12 +92,11 @@ fun ProfileScreen(
 @Composable
 fun ProfileContent(
     profile: UserProfile,
+    face: ProfileFace,
     summary: UiState<ReadingSummary>,
-    onRename: (String) -> Unit,
-    onOpenBook: (String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    onRetry: () -> Unit = {},
+    actions: ProfileActions = ProfileActions(),
 ) {
     val dimens = LocalLukiaDimens.current
 
@@ -98,10 +115,9 @@ fun ProfileContent(
         ) {
             ProfileBody(
                 profile = profile,
+                face = face,
                 summary = summary,
-                onRename = onRename,
-                onOpenBook = onOpenBook,
-                onRetry = onRetry,
+                actions = actions,
                 modifier = Modifier.fillMaxSize(),
             )
 

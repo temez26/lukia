@@ -12,13 +12,13 @@ class ProfileRepositoryTest {
 
     @Test
     fun thereIsNoProfileUntilOneIsMade() {
-        assertNull(ProfileRepository(FakeSettingsStore()).profile.value)
+        assertNull(ProfileRepository(FakeSettingsStore(), FakeProfilePictureStore()).profile.value)
     }
 
     @Test
     fun namingTheReaderCreatesTheProfile() {
         val store = FakeSettingsStore()
-        val repository = ProfileRepository(store)
+        val repository = ProfileRepository(store, FakeProfilePictureStore())
 
         repository.setUsername("Ada")
 
@@ -29,7 +29,7 @@ class ProfileRepositoryTest {
     /** A profile starts on the device it was made on, and nowhere else. */
     @Test
     fun aNewProfileIsKeptOnThisDevice() {
-        val repository = ProfileRepository(FakeSettingsStore())
+        val repository = ProfileRepository(FakeSettingsStore(), FakeProfilePictureStore())
 
         repository.setUsername("Ada")
 
@@ -40,13 +40,13 @@ class ProfileRepositoryTest {
     fun aStoredNameIsThereOnTheNextRun() {
         val store = FakeSettingsStore(mapOf("profile.username" to "Ada Lovelace"))
 
-        assertEquals("Ada Lovelace", ProfileRepository(store).profile.value?.username)
+        assertEquals("Ada Lovelace", ProfileRepository(store, FakeProfilePictureStore()).profile.value?.username)
     }
 
     @Test
     fun renamingKeepsOneProfileRatherThanMakingASecond() {
         val store = FakeSettingsStore()
-        val repository = ProfileRepository(store)
+        val repository = ProfileRepository(store, FakeProfilePictureStore())
 
         repository.setUsername("Ada")
         repository.setUsername("Ada Lovelace")
@@ -59,7 +59,7 @@ class ProfileRepositoryTest {
     fun theNameIsTidiedBeforeItIsStored() {
         val store = FakeSettingsStore()
 
-        ProfileRepository(store).setUsername("  Ada   Lovelace ")
+        ProfileRepository(store, FakeProfilePictureStore()).setUsername("  Ada   Lovelace ")
 
         assertEquals("Ada Lovelace", store.values["profile.username"])
     }
@@ -71,7 +71,7 @@ class ProfileRepositoryTest {
     @Test
     fun aNameTooShortToUseIsNotStored() {
         val store = FakeSettingsStore()
-        val repository = ProfileRepository(store)
+        val repository = ProfileRepository(store, FakeProfilePictureStore())
 
         repository.setUsername("A")
 
@@ -82,7 +82,7 @@ class ProfileRepositoryTest {
     @Test
     fun anUnusableRenameLeavesTheStoredNameAlone() {
         val store = FakeSettingsStore()
-        val repository = ProfileRepository(store)
+        val repository = ProfileRepository(store, FakeProfilePictureStore())
 
         repository.setUsername("Ada")
         repository.setUsername("")
@@ -94,7 +94,7 @@ class ProfileRepositoryTest {
     @Test
     fun renamingToTheSameNameWritesNothing() {
         val store = FakeSettingsStore()
-        val repository = ProfileRepository(store)
+        val repository = ProfileRepository(store, FakeProfilePictureStore())
 
         repository.setUsername("Ada")
         val afterFirst = store.writeCount
@@ -113,6 +113,6 @@ class ProfileRepositoryTest {
     fun anUnusableStoredNameReadsAsNoProfile() {
         val store = FakeSettingsStore(mapOf("profile.username" to " "))
 
-        assertNull(ProfileRepository(store).profile.value)
+        assertNull(ProfileRepository(store, FakeProfilePictureStore()).profile.value)
     }
 }

@@ -28,13 +28,14 @@ import io.lukia.shared.presentation.theme.Space
 @Composable
 internal fun ProfileHeader(
     profile: UserProfile,
+    face: ProfileFace,
     modifier: Modifier = Modifier,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxWidth(),
     ) {
-        ProfileAvatar(initials = profile.initials)
+        ProfileAvatar(face = face)
 
         Text(
             text = profile.username,

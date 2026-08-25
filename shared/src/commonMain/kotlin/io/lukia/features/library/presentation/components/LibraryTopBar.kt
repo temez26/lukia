@@ -21,6 +21,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.library.presentation.LibraryShelfUi
+import io.lukia.features.profile.presentation.ProfileAvatarButton
+import io.lukia.features.profile.presentation.components.ProfileFace
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.isWideWindow
@@ -100,6 +102,8 @@ internal fun LibraryNavBar(
      * of them being somewhere else.
      */
     showSearch: Boolean = true,
+    /** Who is reading, for the disc that leads to their own page. */
+    face: ProfileFace = ProfileFace.Unknown,
 ) {
     val dimens = LocalLukiaDimens.current
     val barColor = MaterialTheme.colorScheme.background
@@ -151,6 +155,14 @@ internal fun LibraryNavBar(
 
             Spacer(modifier = Modifier.width(Space.md))
 
+            // Before the actions button, so the row reads left to right as what
+            // this screen is, who is reading it, and what can be done to it.
+            ProfileAvatarButton(
+                face = face,
+                onClick = onProfile,
+                modifier = Modifier.padding(end = Space.md),
+            )
+
             Box {
                 MenuButton(
                     expanded = menuExpanded,
@@ -163,7 +175,6 @@ internal fun LibraryNavBar(
                     onImport = onImport,
                     onImportFolder = onImportFolder,
                     shelf = shelf,
-                    onProfile = onProfile,
                     onSettings = onSettings,
                 )
             }

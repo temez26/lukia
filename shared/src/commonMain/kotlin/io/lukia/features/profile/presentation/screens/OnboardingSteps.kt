@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import io.lukia.features.profile.domain.UsernameProblem
 import io.lukia.features.profile.domain.Usernames
 import io.lukia.features.profile.presentation.components.ProfileAvatar
+import io.lukia.features.profile.presentation.components.ProfileFace
 import io.lukia.features.profile.presentation.components.UsernameField
 import io.lukia.shared.presentation.components.LukiaMark
 import io.lukia.shared.presentation.theme.Space
@@ -128,7 +129,7 @@ internal fun ReadyStep(
     modifier: Modifier = Modifier,
 ) {
     StepColumn(modifier = modifier) {
-        ProfileAvatar(initials = Usernames.initialsOf(username))
+        ProfileAvatar(face = ProfileFace(initials = Usernames.initialsOf(username)))
 
         StepTitle(
             text = "You're all set, ${Usernames.clean(username)}",

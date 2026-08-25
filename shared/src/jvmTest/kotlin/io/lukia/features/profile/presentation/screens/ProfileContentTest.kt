@@ -19,6 +19,7 @@ import io.lukia.features.library.partRead
 import io.lukia.features.profile.domain.ReadingSummary
 import io.lukia.features.profile.domain.UserProfile
 import io.lukia.features.profile.domain.readingSummary
+import io.lukia.features.profile.presentation.components.face
 import io.lukia.shared.presentation.theme.LukiaTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -46,13 +47,18 @@ class ProfileContentTest {
     ) {
         setContent {
             LukiaTheme(darkTheme = false) {
+                val profile = UserProfile(username = username)
+
                 ProfileContent(
-                    profile = UserProfile(username = username),
+                    profile = profile,
+                    face = profile.face(),
                     summary = summary,
-                    onRename = { renamedTo = it },
-                    onOpenBook = { opened = it },
                     onBack = {},
-                    onRetry = { retried++ },
+                    actions = ProfileActions(
+                        onRename = { renamedTo = it },
+                        onOpenBook = { opened = it },
+                        onRetry = { retried++ },
+                    ),
                 )
             }
         }
@@ -63,7 +69,7 @@ class ProfileContentTest {
         setProfile(summaryOf())
 
         onAllNodesWithText("Ada Lovelace").onFirst().assertIsDisplayed()
-        onNodeWithText("AL").assertIsDisplayed()
+        onAllNodesWithText("AL").onFirst().assertIsDisplayed()
     }
 
     @Test
