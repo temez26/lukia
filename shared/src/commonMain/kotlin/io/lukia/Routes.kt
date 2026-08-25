@@ -4,6 +4,18 @@ import kotlin.io.encoding.Base64
 
 sealed class Routes(val route: String) {
 
+    /**
+     * The three destinations the mobile tab bar switches between. They are
+     * ordinary destinations rather than a nested graph: what makes them tabs is
+     * that the bar navigates between them and no screen pushes onto them.
+     *
+     * [Library] is also the desktop build's only starting point, where the tab
+     * bar does not exist at all.
+     */
+    data object Home : Routes("home")
+
+    data object Search : Routes("search")
+
     data object Library : Routes("library")
 
     data object Settings : Routes("settings")

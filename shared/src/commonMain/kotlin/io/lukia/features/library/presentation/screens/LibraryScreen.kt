@@ -64,6 +64,7 @@ fun LibraryScreen(
     onDocumentClick: (DocumentInfo) -> Unit = {},
     onDocumentDetails: (DocumentInfo) -> Unit = {},
     onSettings: () -> Unit = {},
+    showSearch: Boolean = true,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val books by viewModel.books.collectAsState()
@@ -105,9 +106,7 @@ fun LibraryScreen(
             facets = facets,
             query = query,
             onQueryChange = viewModel::updateQuery,
-            onImport = {
-                filePicker.launch(viewModel::importDocuments)
-            },
+            onImport = { filePicker.launch(viewModel::importDocuments) },
             onImportFolder = {
                 folderPicker.launch { pickedFolder ->
                     pickedFolder?.let { viewModel.importFolder(it) }
@@ -127,6 +126,7 @@ fun LibraryScreen(
             importProgress = importProgress,
             snackbarHostState = snackbarHostState,
             readingProgress = readingProgress,
+            showSearch = showSearch,
         )
 
         // Over the library and its own overlays both, since it is opened from the
@@ -180,6 +180,8 @@ fun LibraryContent(
     readingProgress: Map<String, ReadingProgress> = emptyMap(),
     /** How the shelf is laid out, what is picked off it, and what can be done to that. */
     shelf: LibraryShelfUi = LibraryShelfUi.None,
+    /** False where searching has a screen of its own - see [LibraryNavBar]. */
+    showSearch: Boolean = true,
 ) {
     val dimens = LocalLukiaDimens.current
     val reveal = rememberLaunchReveal()
@@ -348,6 +350,7 @@ fun LibraryContent(
                     shelf = shelf,
                     onSettings = onSettings,
                     modifier = Modifier.align(Alignment.TopCenter),
+                    showSearch = showSearch,
                 )
             }
 

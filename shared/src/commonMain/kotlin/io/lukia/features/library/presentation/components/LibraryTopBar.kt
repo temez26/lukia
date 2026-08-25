@@ -1,9 +1,8 @@
 package io.lukia.features.library.presentation.components
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,30 +11,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.library.presentation.LibraryShelfUi
-import io.lukia.shared.presentation.components.AlertGlyph
-import io.lukia.shared.presentation.components.AnchoredMenu
-import io.lukia.shared.presentation.components.CheckGlyph
-import io.lukia.shared.presentation.components.CopyGlyph
-import io.lukia.shared.presentation.components.EllipsisGlyph
-import io.lukia.shared.presentation.components.FolderGlyph
-import io.lukia.shared.presentation.components.GearGlyph
-import io.lukia.shared.presentation.components.IconButtonVariant
-import io.lukia.shared.presentation.components.LukiaIconButton
-import io.lukia.shared.presentation.components.MenuRow
-import io.lukia.shared.presentation.components.MenuSeparator
-import io.lukia.shared.presentation.components.PlusGlyph
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
-import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.isWideWindow
 
@@ -84,9 +70,10 @@ private fun searchPlaceholder(searchableCount: Int): String = when {
  * other actions is what the row is for. Everything that describes the library
  * rather than acting on it stays below, in the content, where it can scroll away.
  *
- * The bar carries no title. The screen does not name itself: the books are the
- * subject, and a bar that says "Library" over a library says nothing the reader
- * did not already know.
+ * Where the field is not wanted - see [showSearch] - the row carries the
+ * screen's name instead. That is a concession to the tab bar underneath it and
+ * to nothing else: a screen one of three tabs leads to has to confirm which of
+ * the three was pressed, where the only screen a desktop window has does not.
  *
  * [collapsedProgress] is a lambda rather than a value so that scrolling redraws
  * this bar without recomposing it - it is read only inside draw and layer blocks.
@@ -105,9 +92,15 @@ internal fun LibraryNavBar(
     shelf: LibraryShelfUi,
     onSettings: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * Whether the field belongs on this bar. False where searching has a screen
+     * of its own, which is the mobile app - see `MobileShell`. Two fields
+     * answering the same question with two different answers is worse than one
+     * of them being somewhere else.
+     */
+    showSearch: Boolean = true,
 ) {
     val dimens = LocalLukiaDimens.current
-    val compact = !isWideWindow
     val barColor = MaterialTheme.colorScheme.background
     val hairlineColor = MaterialTheme.colorScheme.outlineVariant
 
@@ -145,21 +138,15 @@ internal fun LibraryNavBar(
                 .fillMaxSize()
                 .padding(horizontal = dimens.screenPadding),
         ) {
-            // A phone gives the field the whole row, having nothing else to put
-            // there. Anything wider keeps it beside the button, where a toolbar
-            // puts it, rather than stretched into a text editor.
-            if (!compact) Spacer(modifier = Modifier.weight(1f))
-
-            LibrarySearchField(
-                query = query,
-                onQueryChange = onQueryChange,
-                placeholder = searchPlaceholder(searchableCount),
-                modifier = if (compact) {
-                    Modifier.weight(1f)
-                } else {
-                    Modifier.width(ToolbarSearchWidth)
-                },
-            )
+            if (showSearch) {
+                SearchSlot(
+                    query = query,
+                    onQueryChange = onQueryChange,
+                    searchableCount = searchableCount,
+                )
+            } else {
+                TitleSlot()
+            }
 
             Spacer(modifier = Modifier.width(Space.md))
 
@@ -183,177 +170,39 @@ internal fun LibraryNavBar(
 }
 
 /**
- * Everything the library can do that is not about one book.
+ * The field, sized for what is pointing at it.
  *
- * An ellipsis rather than a plus: this menu holds more than ways to get books in,
- * and a plus would promise only one of them. It is also what Apple's own apps put
- * in this corner when a screen's actions do not reduce to a single verb.
- *
- * The glyph fades into a close mark while the menu is open, so the control says
- * what pressing it again would do.
+ * A phone gives it the whole row, having nothing else to put there. Anything
+ * wider keeps it beside the button, where a toolbar puts it, rather than
+ * stretched into a text editor.
  */
 @Composable
-private fun MenuButton(
-    expanded: Boolean,
-    onClick: () -> Unit,
+private fun RowScope.SearchSlot(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    searchableCount: Int,
 ) {
-    val openness by animateFloatAsState(
-        targetValue = if (expanded) 1f else 0f,
-        animationSpec = LukiaMotion.standard(),
-        label = "menuButtonOpenness",
-    )
+    val compact = !isWideWindow
 
-    LukiaIconButton(
-        label = if (expanded) "Close menu" else "Library actions",
-        onClick = onClick,
-        variant = IconButtonVariant.Filled,
-    ) { tint, glyph ->
-        // The two glyphs cross-fade in place, and the close mark turns in as it
-        // arrives, so the swap reads as one control changing rather than as two
-        // controls trading places.
-        Box(contentAlignment = Alignment.Center, modifier = glyph) {
-            EllipsisGlyph(
-                tint = tint,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .graphicsLayer { alpha = 1f - openness },
-            )
+    if (!compact) Spacer(modifier = Modifier.weight(1f))
 
-            PlusGlyph(
-                tint = tint,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .graphicsLayer {
-                        alpha = openness
-                        rotationZ = 45f * openness
-                    },
-            )
-        }
-    }
-}
-
-/**
- * The ways a book gets into the library.
- *
- * Shared, because they are offered from two places - the bar's menu and the
- * import card in the grid - and a reader who learns them in one should find the
- * same two, worded the same way, in the other.
- *
- * Each closes the menu before acting, so it is never left open behind the
- * platform file dialog the action opens.
- */
-@Composable
-internal fun ColumnScope.ImportMenuRows(
-    onDismissRequest: () -> Unit,
-    onImport: () -> Unit,
-    onImportFolder: () -> Unit,
-) {
-    MenuRow(
-        label = "Import Books",
-        icon = { tint, glyph -> PlusGlyph(tint = tint, modifier = glyph) },
-        onClick = {
-            onDismissRequest()
-            onImport()
-        },
-    )
-
-    MenuSeparator()
-
-    MenuRow(
-        label = "Add Folder",
-        icon = { tint, glyph -> FolderGlyph(tint = tint, modifier = glyph) },
-        onClick = {
-            onDismissRequest()
-            onImportFolder()
-        },
+    LibrarySearchField(
+        query = query,
+        onQueryChange = onQueryChange,
+        placeholder = searchPlaceholder(searchableCount),
+        modifier = if (compact) Modifier.weight(1f) else Modifier.width(ToolbarSearchWidth),
     )
 }
 
+/** What the bar carries where the search field is not wanted. */
 @Composable
-private fun LibraryMenu(
-    expanded: Boolean,
-    onDismissRequest: () -> Unit,
-    onImport: () -> Unit,
-    onImportFolder: () -> Unit,
-    shelf: LibraryShelfUi,
-    onSettings: () -> Unit,
-) {
-    AnchoredMenu(
-        expanded = expanded,
-        onDismissRequest = onDismissRequest,
-    ) {
-        ImportMenuRows(
-            onDismissRequest = onDismissRequest,
-            onImport = onImport,
-            onImportFolder = onImportFolder,
-        )
-
-        MenuSeparator()
-
-        // Also here, and not only on a book: reaching a shelf-wide mode by
-        // holding down one particular book is a way in nobody finds by looking.
-        MenuRow(
-            label = "Select Books",
-            icon = { tint, glyph -> CheckGlyph(tint = tint, modifier = glyph) },
-            onClick = {
-                onDismissRequest()
-                shelf.onStart()
-            },
-        )
-
-        MenuSeparator()
-
-        UpkeepMenuRows(shelf = shelf, onDismissRequest = onDismissRequest)
-
-        MenuRow(
-            label = "Settings",
-            icon = { tint, glyph -> GearGlyph(tint = tint, modifier = glyph) },
-            onClick = {
-                onDismissRequest()
-                onSettings()
-            },
-        )
-    }
-}
-
-/**
- * What is worth tidying on the shelf, offered only where there is any.
- *
- * The count is on the row rather than behind it, so the menu answers "is my
- * library in a mess" without anything being pressed - and so a row that would
- * find nothing is never there to be pressed and do nothing. Both lead to the
- * books themselves, ticked and waiting to be looked at, rather than to a report.
- */
-@Composable
-private fun UpkeepMenuRows(
-    shelf: LibraryShelfUi,
-    onDismissRequest: () -> Unit,
-) {
-    val upkeep = shelf.upkeep
-
-    if (upkeep.missing.isNotEmpty()) {
-        MenuRow(
-            label = "Missing Files (${upkeep.missing.size})",
-            icon = { tint, glyph -> AlertGlyph(tint = tint, modifier = glyph) },
-            onClick = {
-                onDismissRequest()
-                shelf.onSelectMissing()
-            },
-        )
-
-        MenuSeparator()
-    }
-
-    if (upkeep.duplicates.isNotEmpty()) {
-        MenuRow(
-            label = "Duplicates (${upkeep.duplicates.size})",
-            icon = { tint, glyph -> CopyGlyph(tint = tint, modifier = glyph) },
-            onClick = {
-                onDismissRequest()
-                shelf.onSelectDuplicates()
-            },
-        )
-
-        MenuSeparator()
-    }
+private fun RowScope.TitleSlot() {
+    Text(
+        text = "Library",
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.onBackground,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        modifier = Modifier.weight(1f),
+    )
 }
