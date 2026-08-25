@@ -3,6 +3,7 @@ package io.lukia.features.settings.infrastructure
 import io.lukia.core.domain.SettingsStore
 import io.lukia.core.infrastructure.readEnum
 import io.lukia.features.settings.domain.AppAccent
+import io.lukia.features.settings.domain.AppMotion
 import io.lukia.features.settings.domain.AppPalette
 import io.lukia.features.settings.domain.AppSettings
 import io.lukia.features.settings.domain.AppTheme
@@ -41,6 +42,7 @@ class AppSettingsRepository(
             theme = store.readEnum(KEY_THEME, AppTheme.entries, defaults.theme),
             palette = store.readEnum(KEY_PALETTE, AppPalette.entries, defaults.palette),
             accent = store.readEnum(KEY_ACCENT, AppAccent.entries, defaults.accent),
+            motion = store.readEnum(KEY_MOTION, AppMotion.entries, defaults.motion),
         )
     }
 
@@ -48,11 +50,13 @@ class AppSettingsRepository(
         store.putString(KEY_THEME, settings.theme.name)
         store.putString(KEY_PALETTE, settings.palette.name)
         store.putString(KEY_ACCENT, settings.accent.name)
+        store.putString(KEY_MOTION, settings.motion.name)
     }
 
     private companion object {
         const val KEY_THEME = "app.theme"
         const val KEY_PALETTE = "app.palette"
         const val KEY_ACCENT = "app.accent"
+        const val KEY_MOTION = "app.motion"
     }
 }

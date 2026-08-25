@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.lukia.features.settings.domain.AppAccent
+import io.lukia.features.settings.domain.AppMotion
 import io.lukia.features.settings.domain.AppPalette
 
 /**
@@ -45,12 +46,14 @@ fun LukiaTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     palette: AppPalette = AppPalette.Crisp,
     accent: AppAccent = AppAccent.Themed,
+    motion: AppMotion = AppMotion.Standard,
     content: @Composable () -> Unit,
 ) {
     val colorScheme = remember(darkTheme, palette, accent) {
         colorSchemeFor(palette, darkTheme, accent)
     }
     val glassStyle = remember { platformGlassStyle() }
+    val motionStyle = remember(motion) { motionStyleFor(motion) }
 
     // Measured once at the root so every screen can lay itself out against the
     // real window size instead of assuming a phone.
@@ -62,6 +65,7 @@ fun LukiaTheme(
             LocalLukiaMetrics provides metricsFor(widthClass),
             LocalWindowWidthClass provides widthClass,
             LocalGlassStyle provides glassStyle,
+            LocalMotionStyle provides motionStyle,
         ) {
             MaterialTheme(
                 colorScheme = colorScheme,

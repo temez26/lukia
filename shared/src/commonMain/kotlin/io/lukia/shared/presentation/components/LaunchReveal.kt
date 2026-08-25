@@ -12,7 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.lukia.shared.presentation.theme.LocalMotionStyle
 import io.lukia.shared.presentation.theme.LukiaMotion
+import kotlinx.coroutines.delay
 
 /** Gap between one element's reveal and the next one's. */
 private const val StaggerMillis = 45
@@ -27,6 +29,18 @@ private const val MaxStaggered = 11
 private const val ElementMillis = 380
 
 private const val TotalMillis = StaggerMillis * MaxStaggered + ElementMillis
+
+/**
+ * How long the reveal waits before its clock starts.
+ *
+ * It starts under the launch animation rather than after it - see
+ * [LaunchTiming.ContentArrivalMillis]. Waiting for the mark to be gone first
+ * would leave an empty screen behind it and then assemble the library in front
+ * of the reader, which is the one moment in the app where that is most obvious.
+ * Starting early instead means the mark dissolves off a screen whose top has
+ * already settled, with only the lower rows still arriving.
+ */
+private const val StartDelayMillis = LaunchTiming.ContentArrivalMillis
 
 /** How far an element rises into place. */
 private val DefaultRise: Dp = 14.dp
@@ -64,6 +78,14 @@ private object LaunchRevealGate {
 class LaunchReveal internal constructor(
     private val elapsedMillis: State<Float>,
     private val playing: Boolean,
+    /**
+     * Whether elements take their turns one after another or all arrive at
+     * once. A stagger is something to watch, which is exactly what the calmest
+     * of the motion presets is asking the app not to be.
+     */
+    private val staggered: Boolean,
+    /** How far an element rises, against the standard distance. */
+    internal val travel: Float,
 ) {
     /**
      * How far into its arrival the element at [index] is, from 0 to 1. Always 1
@@ -72,8 +94,8 @@ class LaunchReveal internal constructor(
     fun progressFor(index: Int): Float {
         if (!playing) return 1f
 
-        val start = StaggerMillis * index.coerceIn(0, MaxStaggered)
-        return ((elapsedMillis.value - start) / ElementMillis).coerceIn(0f, 1f)
+        val turn = if (staggered) index.coerceIn(0, MaxStaggered) else 0
+        return ((elapsedMillis.value - StaggerMillis * turn) / ElementMillis).coerceIn(0f, 1f)
     }
 }
 
@@ -81,20 +103,36 @@ class LaunchReveal internal constructor(
 fun rememberLaunchReveal(): LaunchReveal {
     val playing = remember { LaunchRevealGate.claim() }
     val elapsed = remember { Animatable(0f) }
+    val motion = LocalMotionStyle.current
 
     LaunchedEffect(playing) {
         if (playing) {
+            // Stretched by the same factor as the launch animation above it, so
+            // the two still hand over to each other at the moment they were
+            // written to - see [LaunchTiming].
+            delay((StartDelayMillis * motion.stretch).toLong())
+
             // Linear: the shaping belongs to each element's own curve, applied in
             // [launchReveal]. Easing the shared clock as well would stagger the
             // stagger.
             elapsed.animateTo(
                 targetValue = TotalMillis.toFloat(),
-                animationSpec = tween(durationMillis = TotalMillis, easing = LinearEasing),
+                animationSpec = tween(
+                    durationMillis = (TotalMillis * motion.stretch).toInt(),
+                    easing = LinearEasing,
+                ),
             )
         }
     }
 
-    return remember(playing) { LaunchReveal(elapsed.asState(), playing) }
+    return remember(playing, motion) {
+        LaunchReveal(
+            elapsedMillis = elapsed.asState(),
+            playing = playing,
+            staggered = motion.flourishes,
+            travel = motion.travel,
+        )
+    }
 }
 
 /**
@@ -111,5 +149,5 @@ fun Modifier.launchReveal(
 ): Modifier = graphicsLayer {
     val progress = LukiaMotion.Standard.transform(reveal.progressFor(index))
     alpha = progress
-    translationY = rise.toPx() * (1f - progress)
+    translationY = rise.toPx() * reveal.travel * (1f - progress)
 }

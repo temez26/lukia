@@ -26,6 +26,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.settings.domain.AppAccent
+import io.lukia.features.settings.domain.AppMotion
 import io.lukia.features.settings.domain.AppPalette
 import io.lukia.features.settings.domain.AppSettings
 import io.lukia.features.settings.domain.AppTheme
@@ -45,9 +46,10 @@ private const val LightSurfaceLuminance = 0.5f
  * Everything about what the app looks like: how light it is, what its surfaces
  * are made of, and the one colour it highlights with.
  *
- * Three controls in the order somebody reaches for them - the light and dark
+ * Four controls in the order somebody reaches for them - the light and dark
  * switch is what most people came here for, the palette is a decision made once,
- * and the accent only means anything once the other two are settled.
+ * the accent only means anything once the other two are settled, and motion is
+ * about how the app behaves rather than what it looks like, so it goes last.
  */
 @Composable
 internal fun AppearanceSettings(
@@ -109,6 +111,48 @@ internal fun AppearanceSettings(
                 onSelect = { onChange(settings.copy(accent = it)) },
             )
         }
+
+        MotionSection(
+            selected = settings.motion,
+            onSelect = { onChange(settings.copy(motion = it)) },
+            groupColor = groupColor,
+            modifier = Modifier.padding(top = dimens.sectionSpacing),
+        )
+    }
+}
+
+/**
+ * How much the app moves.
+ *
+ * Last of the four because it is the only one here that is not about colour, and
+ * because it is the only one whose effect cannot be seen from the settings
+ * screen - the answer arrives the next time the app opens or a screen changes.
+ */
+@Composable
+private fun MotionSection(
+    selected: AppMotion,
+    onSelect: (AppMotion) -> Unit,
+    groupColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    SettingsSection(
+        title = "Motion",
+        // Says what the setting reaches, because it does not reach everything: a
+        // button still shrinks under a finger on every one of these, and
+        // promising otherwise would be a promise the app breaks the first time
+        // somebody presses something.
+        footnote = "How the app moves when it opens and when screens change. " +
+            "Buttons and controls respond the same way whichever you choose.",
+        groupColor = groupColor,
+        modifier = modifier,
+    ) {
+        ChoiceList(
+            options = AppMotion.entries,
+            selected = selected,
+            label = { it.title },
+            detail = { it.detail },
+            onSelect = onSelect,
+        )
     }
 }
 
