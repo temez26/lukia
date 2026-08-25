@@ -35,6 +35,8 @@ internal fun BoxScope.ReaderPanels(
     settings: ReaderSettings,
     layout: ReaderLayoutUi,
     onSettingsChange: (ReaderSettings) -> Unit,
+    /** What a phone puts at the top of the settings panel; empty on a wider window. */
+    translationSection: @Composable () -> Unit = {},
 ) {
     val dimens = LocalLukiaDimens.current
     val chromeHeight = chromeHeight()
@@ -70,5 +72,6 @@ internal fun BoxScope.ReaderPanels(
         modifier = Modifier
             .align(Alignment.TopEnd)
             .padding(top = chromeHeight, end = dimens.screenPadding),
+        translationSection = translationSection,
     )
 }

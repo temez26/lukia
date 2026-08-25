@@ -18,6 +18,7 @@ import io.lukia.shared.presentation.components.ShortcutTooltip
 import io.lukia.shared.presentation.components.TranslateGlyph
 import io.lukia.shared.presentation.components.TranslateOnwardsGlyph
 import io.lukia.shared.presentation.components.TranslationsShownGlyph
+import io.lukia.shared.presentation.theme.isWideWindow
 
 /**
  * What the toolbar needs to know about translating, gathered so the bar takes it
@@ -38,7 +39,29 @@ internal class ReaderTranslationUi(
 )
 
 /**
- * Translating what is on screen, once or from now on.
+ * Whether the controls belong in the toolbar, which is a question about how much
+ * bar there is.
+ *
+ * A window being pointed at has room for three more glyphs beside the title and
+ * a mouse to hover each one for a tooltip. A phone has neither: the same three
+ * pushed its back button, its place in the book and its settings into each
+ * other, and left the reader guessing at three unlabelled marks. There they move
+ * into the panel instead - see [ReaderTranslationSettings].
+ *
+ * The two are exclusive, so that the controls are in exactly one place whatever
+ * the window is doing.
+ */
+internal val ReaderTranslationUi.inToolbar: Boolean
+    @Composable get() = configured && isWideWindow
+
+internal val ReaderTranslationUi.inPanel: Boolean
+    @Composable get() = configured && !isWideWindow
+
+/**
+ * Translating what is on screen, once or from now on, as glyphs in the toolbar.
+ *
+ * The form a window with a mouse gets. [ReaderTranslationSettings] is the same
+ * three things written out for a window without one.
  *
  * Two buttons rather than one with a mode, because they answer different
  * questions: "do this page" is something a reader does at a page they are stuck

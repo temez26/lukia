@@ -75,6 +75,10 @@ private val WidePanelMaxHeight: Dp = 520.dp
  * there rather than shown disabled: unlike the typography settings, which a PDF
  * really does have and cannot use, this is a question that was never asked of an
  * EPUB.
+ *
+ * [translationSection] is what a window too narrow for the toolbar to hold the
+ * translation controls puts at the top of the panel instead. Empty everywhere
+ * else, so the panel neither knows nor cares what translating is.
  */
 @Composable
 internal fun ReaderSettingsPanel(
@@ -86,6 +90,7 @@ internal fun ReaderSettingsPanel(
     onLayoutChange: (PdfLayout) -> Unit,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
+    translationSection: @Composable () -> Unit = {},
 ) {
     val progress = rememberPopoverProgress(expanded, label = "readerSettingsPanel")
 
@@ -111,6 +116,10 @@ internal fun ReaderSettingsPanel(
                 .verticalScroll(rememberScrollState())
                 .padding(vertical = Space.md),
         ) {
+            // Empty where the toolbar has room to carry the translation controls
+            // itself, which is every window wider than a phone.
+            translationSection()
+
             SectionHeading(label = "Page", wide = wide, inset = inset)
 
             // First, because it is the one setting here that changes what the

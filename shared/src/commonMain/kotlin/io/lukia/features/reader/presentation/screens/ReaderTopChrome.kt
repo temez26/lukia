@@ -80,7 +80,10 @@ internal fun ReaderTopChrome(
                 // bar spaces its children evenly - and three controls drifting
                 // apart across half a phone is not a group of related buttons.
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (translation.configured) {
+                    // A phone's bar has no room for three more glyphs, so there
+                    // they are rows in the settings panel instead - which is
+                    // also where there is room to say what each one does.
+                    if (translation.inToolbar) {
                         TranslationControls(
                             continuous = translation.onScreen.continuous,
                             shown = translation.shown,
