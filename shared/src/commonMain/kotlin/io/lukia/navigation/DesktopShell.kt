@@ -43,6 +43,7 @@ internal fun DesktopShell() {
                 onDocumentDetails = { document ->
                     navController.navigate(Routes.Detail.createRoute(document.document.location))
                 },
+                onProfile = { navController.navigate(Routes.Profile.route) },
                 onSettings = { navController.navigate(Routes.Settings.route) },
             )
         }

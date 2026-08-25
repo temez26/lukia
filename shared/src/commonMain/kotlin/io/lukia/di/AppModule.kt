@@ -15,6 +15,9 @@ import io.lukia.features.library.infrastructure.LibrarySettingsRepository
 import io.lukia.features.library.infrastructure.RecentSearchesRepository
 import io.lukia.features.library.infrastructure.SqlLibraryRepository
 import io.lukia.features.library.presentation.LibraryViewModel
+import io.lukia.features.profile.application.GetReadingSummaryUseCase
+import io.lukia.features.profile.infrastructure.ProfileRepository
+import io.lukia.features.profile.presentation.ProfileViewModel
 import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.domain.PdfLayoutRepository
 import io.lukia.features.reader.domain.ReadingProgressRepository
@@ -133,6 +136,20 @@ val commonModule = module {
     // repaints from the same value the moment it changes.
     single {
         AppSettingsRepository(get())
+    }
+
+    // And likewise: whether there is a reader at all is read at the root, where
+    // it decides whether the app opens on its library or on its welcome.
+    single {
+        ProfileRepository(get())
+    }
+
+    single {
+        GetReadingSummaryUseCase(get(), get())
+    }
+
+    viewModel {
+        ProfileViewModel(get(), get())
     }
 
     viewModel {

@@ -103,6 +103,7 @@ internal fun HomeHeader(
     onImport: () -> Unit,
     onImportFolder: () -> Unit,
     shelf: LibraryShelfUi,
+    onProfile: () -> Unit,
     onSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -129,6 +130,7 @@ internal fun HomeHeader(
                 onImport = onImport,
                 onImportFolder = onImportFolder,
                 shelf = shelf,
+                onProfile = onProfile,
                 onSettings = onSettings,
             )
         }

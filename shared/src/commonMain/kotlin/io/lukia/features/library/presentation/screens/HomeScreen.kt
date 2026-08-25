@@ -49,6 +49,7 @@ internal fun HomeScreen(
     onOpenBook: (DocumentInfo) -> Unit,
     onSeeAll: (LibraryQuery) -> Unit,
     onOpenLibrary: () -> Unit,
+    onProfile: () -> Unit,
     onSettings: () -> Unit,
     viewModel: LibraryViewModel = koinViewModel(),
 ) {
@@ -93,6 +94,7 @@ internal fun HomeScreen(
         categories = facets.categories,
         importProgress = importProgress,
         shelf = homeShelf,
+        onProfile = onProfile,
         onSettings = onSettings,
     )
 }
@@ -126,6 +128,7 @@ internal fun HomeContent(
     importProgress: ImportProgress? = null,
     /** What the corner menu offers, which is what the library's own bar offers. */
     shelf: LibraryShelfUi = LibraryShelfUi.None,
+    onProfile: () -> Unit = {},
     onSettings: () -> Unit = {},
 ) {
     // One value rather than a flag per menu, as everywhere else in this app: the
@@ -158,6 +161,7 @@ internal fun HomeContent(
                             onImport = onImport,
                             onImportFolder = onImportFolder,
                             shelf = shelf,
+                            onProfile = onProfile,
                             onSettings = onSettings,
                         )
                     },

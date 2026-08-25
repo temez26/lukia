@@ -21,6 +21,13 @@ sealed class Routes(val route: String) {
     data object Settings : Routes("settings")
 
     /**
+     * The reader themselves. A destination pushed over whatever was showing,
+     * like [Settings] and for the same reason: it is about the app rather than
+     * about one book, and it is reached from the same menu.
+     */
+    data object Profile : Routes("profile")
+
+    /**
      * A destination that shows one book, addressed by its library location.
      *
      * A location is an absolute path, a content:// URI or a file:// URL, none of

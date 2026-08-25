@@ -21,6 +21,7 @@ import io.lukia.shared.presentation.components.IconButtonVariant
 import io.lukia.shared.presentation.components.LukiaIconButton
 import io.lukia.shared.presentation.components.MenuRow
 import io.lukia.shared.presentation.components.MenuSeparator
+import io.lukia.shared.presentation.components.PersonGlyph
 import io.lukia.shared.presentation.components.PlusGlyph
 import io.lukia.shared.presentation.theme.LukiaMotion
 
@@ -73,6 +74,7 @@ internal fun LibraryMenu(
     onImport: () -> Unit,
     onImportFolder: () -> Unit,
     shelf: LibraryShelfUi,
+    onProfile: () -> Unit,
     onSettings: () -> Unit,
 ) {
     AnchoredMenu(
@@ -101,6 +103,20 @@ internal fun LibraryMenu(
         MenuSeparator()
 
         UpkeepMenuRows(shelf = shelf, onDismissRequest = onDismissRequest)
+
+        // Above Settings, because it is about the reader rather than about the
+        // app, and because the two are the only rows here that leave the
+        // library behind entirely.
+        MenuRow(
+            label = "Profile",
+            icon = { tint, glyph -> PersonGlyph(tint = tint, modifier = glyph) },
+            onClick = {
+                onDismissRequest()
+                onProfile()
+            },
+        )
+
+        MenuSeparator()
 
         MenuRow(
             label = "Settings",

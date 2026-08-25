@@ -90,6 +90,7 @@ internal fun LibraryNavBar(
     onImportFolder: () -> Unit,
     /** How the shelf is worked with, which is what this bar's menu offers. */
     shelf: LibraryShelfUi,
+    onProfile: () -> Unit,
     onSettings: () -> Unit,
     modifier: Modifier = Modifier,
     /**
@@ -162,6 +163,7 @@ internal fun LibraryNavBar(
                     onImport = onImport,
                     onImportFolder = onImportFolder,
                     shelf = shelf,
+                    onProfile = onProfile,
                     onSettings = onSettings,
                 )
             }

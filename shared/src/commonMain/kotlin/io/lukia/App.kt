@@ -5,6 +5,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import io.lukia.features.profile.infrastructure.ProfileRepository
+import io.lukia.features.profile.presentation.screens.OnboardingScreen
 import io.lukia.features.settings.domain.AppTheme
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.navigation.DesktopShell
@@ -21,6 +23,13 @@ fun App() {
     // - exists yet. The repository loads synchronously, so this is settled before
     // the first frame and the app never opens in the wrong colours.
     val appSettings by koinInject<AppSettingsRepository>().settings.collectAsState()
+
+    // Injected here for the same reason, and read for a different one: whether
+    // there is a reader at all decides which of two things the app opens on, and
+    // that has to be settled before the first frame rather than swapped a moment
+    // into it. This store is synchronous too, so it is.
+    val profiles = koinInject<ProfileRepository>()
+    val profile by profiles.profile.collectAsState()
 
     val darkTheme = when (appSettings.theme) {
         AppTheme.System -> isSystemInDarkTheme()
@@ -51,7 +60,14 @@ fun App() {
         // so the last frame of it and the first frame of the app are the same
         // colours.
         LaunchSplash {
-            if (mobile) MobileShell() else DesktopShell()
+            // Instead of the app rather than over it. Until somebody has been
+            // through onboarding there is nothing behind it worth a glimpse of,
+            // and a library sliding away under a welcome would read as the app
+            // having started twice.
+            when (profile) {
+                null -> OnboardingScreen(onFinish = profiles::setUsername)
+                else -> if (mobile) MobileShell() else DesktopShell()
+            }
         }
     }
 }

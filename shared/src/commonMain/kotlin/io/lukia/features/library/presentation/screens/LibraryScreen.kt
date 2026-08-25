@@ -63,6 +63,7 @@ fun LibraryScreen(
     viewModel: LibraryViewModel = koinViewModel(),
     onDocumentClick: (DocumentInfo) -> Unit = {},
     onDocumentDetails: (DocumentInfo) -> Unit = {},
+    onProfile: () -> Unit = {},
     onSettings: () -> Unit = {},
     showSearch: Boolean = true,
 ) {
@@ -114,6 +115,7 @@ fun LibraryScreen(
             },
             onDocumentClick = onDocumentClick,
             onDocumentDetails = onDocumentDetails,
+            onProfile = onProfile,
             onSettings = {
                 if (settingsOpenInPlace) settingsOpen = true else onSettings()
             },
@@ -170,6 +172,7 @@ fun LibraryContent(
      * without a ViewModel behind it, which is how it is tested and previewed.
      */
     importProgress: ImportProgress? = null,
+    onProfile: () -> Unit = {},
     onSettings: () -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     /**
@@ -348,6 +351,7 @@ fun LibraryContent(
                     onImport = onImport,
                     onImportFolder = onImportFolder,
                     shelf = shelf,
+                    onProfile = onProfile,
                     onSettings = onSettings,
                     modifier = Modifier.align(Alignment.TopCenter),
                     showSearch = showSearch,

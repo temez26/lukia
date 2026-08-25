@@ -2,7 +2,6 @@ package io.lukia.features.settings.presentation.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,8 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.translate.domain.PassageUnit
-import io.lukia.shared.presentation.components.GroupCard
-import io.lukia.shared.presentation.components.SectionLabel
+import io.lukia.shared.presentation.components.GroupSection
 import io.lukia.shared.presentation.components.SegmentedControl
 import io.lukia.shared.presentation.theme.Space
 
@@ -164,8 +162,11 @@ internal fun LabelledField(label: String, content: @Composable () -> Unit) {
 }
 
 /**
- * One group of settings, in the style of an iOS grouped list: a header above a
- * rounded surface, with any explanation set below it rather than inside.
+ * One group of settings, in the style of an iOS grouped list.
+ *
+ * The layout itself is [GroupSection], which the profile page is built from too.
+ * This stays as the name the settings screens call it by, and as the one place
+ * that knows a settings group's surface is passed as `groupColor`.
  */
 @Composable
 internal fun SettingsSection(
@@ -177,25 +178,12 @@ internal fun SettingsSection(
     padding: Dp = Space.lg,
     content: @Composable () -> Unit,
 ) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        SectionLabel(
-            text = title,
-            modifier = Modifier.padding(start = Space.xs, bottom = Space.sm),
-        )
-
-        GroupCard(color = groupColor) {
-            Box(modifier = Modifier.padding(horizontal = Space.lg, vertical = padding)) {
-                content()
-            }
-        }
-
-        if (footnote != null) {
-            Text(
-                text = footnote,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = Space.xs, top = Space.sm),
-            )
-        }
-    }
+    GroupSection(
+        title = title,
+        modifier = modifier,
+        color = groupColor,
+        footnote = footnote,
+        padding = padding,
+        content = content,
+    )
 }
