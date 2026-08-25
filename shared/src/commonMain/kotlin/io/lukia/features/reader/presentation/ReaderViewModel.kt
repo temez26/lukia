@@ -26,6 +26,7 @@ import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.domain.pageSentences
 import io.lukia.features.translate.presentation.PassageSelection
 import io.lukia.features.translate.presentation.PassageTranslation
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,6 +43,16 @@ class ReaderViewModel(
     private val progressRepository: ReadingProgressRepository,
     layoutRepository: PdfLayoutRepository,
     translations: ReaderTranslationsFactory,
+    /**
+     * Where the outline is read off the file.
+     *
+     * Injected rather than reached for, because this is the one piece of work
+     * here that a caller cannot wait for: it is started beside the open book
+     * rather than as part of it, so nothing the reader holds finishes when it
+     * does. A test that has to take its dispatchers away at the end otherwise
+     * races it, and a scan of a long PDF is long enough to lose.
+     */
+    private val outlineDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ViewModel() {
 
     /**
@@ -303,7 +314,7 @@ class ReaderViewModel(
      */
     private fun loadOutline(document: ReaderDocument) {
         viewModelScope.launch {
-            val entries = withContext(Dispatchers.Default) {
+            val entries = withContext(outlineDispatcher) {
                 runCatchingApp { document.content.outline?.asTableOfContents() }.getOrNull()
             }
 
