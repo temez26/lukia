@@ -2,8 +2,12 @@
 
 package io.lukia.features.reader.presentation.screens
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -12,6 +16,8 @@ import androidx.compose.ui.test.click
 import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.BookMetadata
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
@@ -67,9 +73,15 @@ internal fun ComposeUiTest.setReader(
     gestures: TranslationGestures = TranslationGestures.Default,
     translationConfigured: Boolean = false,
     bulkTranslation: BulkTranslation = BulkTranslation.Default,
+    /**
+     * How wide the window is, or null for whatever the test host gives - which
+     * is a desktop-sized one. Only the tests that care where a control lives
+     * name it, since the theme reads the size to decide that.
+     */
+    width: Dp? = null,
 ) {
     setContent {
-        LukiaTheme {
+        WindowOf(width) {
             ReaderContent(
                 uiState = UiState.Success(book()),
                 settings = ReaderSettings(),
@@ -100,6 +112,21 @@ internal fun ComposeUiTest.setReader(
             .isNotEmpty()
     }
 }
+
+/** A window of a chosen width, themed, so a test can ask for a phone. */
+@Composable
+private fun WindowOf(width: Dp?, content: @Composable () -> Unit) {
+    if (width == null) {
+        LukiaTheme(content = content)
+    } else {
+        Box(modifier = Modifier.size(width, PhoneHeight)) {
+            LukiaTheme(content = content)
+        }
+    }
+}
+
+/** Tall enough that a panel opened in a sized window is not cut off. */
+private val PhoneHeight = 760.dp
 
 internal fun book() = ReaderDocument(
     info = DocumentInfo(

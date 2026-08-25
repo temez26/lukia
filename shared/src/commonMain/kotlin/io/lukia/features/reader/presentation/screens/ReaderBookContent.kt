@@ -317,6 +317,7 @@ internal fun ReaderContent(
                     settings = settings,
                     layout = layout,
                     onSettingsChange = onSettingsChange,
+                    translationSection = { ReaderTranslationSettings(translationUi) },
                 )
 
                 // Over everything, because it is about the book somebody is
