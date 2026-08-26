@@ -15,11 +15,11 @@ import androidx.compose.runtime.Composable
  * else's file, and a photograph the reader later moves or deletes does not take
  * their avatar with it.
  */
-interface PlatformImagePickerState {
+internal interface PlatformImagePickerState {
 
     /** Hands back null for a cancelled picker, and for a file that could not be read. */
     fun launch(onPicked: (ByteArray?) -> Unit)
 }
 
 @Composable
-expect fun rememberPlatformImagePicker(): PlatformImagePickerState
+internal expect fun rememberPlatformImagePicker(): PlatformImagePickerState

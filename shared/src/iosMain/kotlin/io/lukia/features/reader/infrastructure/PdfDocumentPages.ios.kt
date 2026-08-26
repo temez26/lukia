@@ -1,6 +1,7 @@
 package io.lukia.features.reader.infrastructure
 
 import androidx.compose.ui.graphics.ImageBitmap
+import io.lukia.core.infrastructure.toByteArray
 import io.lukia.features.reader.domain.DocumentPages
 import io.lukia.features.reader.domain.OutlineEntry
 import io.lukia.features.reader.domain.PageGlyph

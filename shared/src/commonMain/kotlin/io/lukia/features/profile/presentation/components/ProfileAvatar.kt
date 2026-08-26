@@ -38,10 +38,10 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.decodeToImageBitmap
 
 /** The size the disc takes where it stands for the whole screen's subject. */
-val ProfileAvatarSize: Dp = 84.dp
+internal val ProfileAvatarSize: Dp = 84.dp
 
 /** ...and where it is one control among others on a bar. */
-val ProfileAvatarButtonSize: Dp = 30.dp
+internal val ProfileAvatarButtonSize: Dp = 30.dp
 
 /**
  * How much of the disc the initials take up.
@@ -75,7 +75,7 @@ data class ProfileFace(
 }
 
 /** The reader as they have chosen to appear, from what is stored about them. */
-fun UserProfile.face(picture: ProfilePicture? = null): ProfileFace = ProfileFace(
+internal fun UserProfile.face(picture: ProfilePicture? = null): ProfileFace = ProfileFace(
     initials = initials,
     avatar = avatar,
     tint = tint,

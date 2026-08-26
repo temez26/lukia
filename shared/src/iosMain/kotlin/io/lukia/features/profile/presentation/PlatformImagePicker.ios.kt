@@ -2,9 +2,7 @@ package io.lukia.features.profile.presentation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.addressOf
-import kotlinx.cinterop.usePinned
+import io.lukia.core.infrastructure.toByteArray
 import platform.Foundation.NSData
 import platform.Foundation.NSURL
 import platform.Foundation.dataWithContentsOfURL
@@ -14,7 +12,6 @@ import platform.UIKit.UIDocumentPickerViewController
 import platform.UIKit.UIWindow
 import platform.UniformTypeIdentifiers.UTTypeImage
 import platform.darwin.NSObject
-import platform.posix.memcpy
 
 /**
  * The document picker asking for images, rather than `PHPicker`.
@@ -29,9 +26,8 @@ import platform.posix.memcpy
  * bytes can simply be read: nothing here holds a permission on the reader's
  * library.
  */
-@OptIn(ExperimentalForeignApi::class)
 @Composable
-actual fun rememberPlatformImagePicker(): PlatformImagePickerState = remember {
+internal actual fun rememberPlatformImagePicker(): PlatformImagePickerState = remember {
     object : PlatformImagePickerState {
 
         private var delegate: UIDocumentPickerDelegateProtocol? = null
@@ -54,7 +50,7 @@ actual fun rememberPlatformImagePicker(): PlatformImagePickerState = remember {
                 ) {
                     val url = didPickDocumentsAtURLs.filterIsInstance<NSURL>().firstOrNull()
 
-                    onPicked(url?.let { NSData.dataWithContentsOfURL(it)?.toByteArray() })
+                    onPicked(url?.let { NSData.dataWithContentsOfURL(it)?.pictureBytes() })
                 }
 
                 override fun documentPickerWasCancelled(
@@ -79,19 +75,11 @@ actual fun rememberPlatformImagePicker(): PlatformImagePickerState = remember {
 }
 
 /**
- * The bytes behind an [NSData], copied out once.
+ * The bytes behind an [NSData], or null for an empty one.
  *
- * Pinned for the length of the copy so the collector cannot move the array out
- * from under `memcpy`. An empty data has no first byte to address, which is why
- * it is answered before any of that.
+ * The copy itself is core's - see `NSDataBytes.kt`. What is this file's is the
+ * null: a file that turned out to hold nothing is not a picture the reader
+ * chose, and saying so here means nothing downstream has to test for an image
+ * of no bytes.
  */
-@OptIn(ExperimentalForeignApi::class)
-private fun NSData.toByteArray(): ByteArray? {
-    val size = length.toInt()
-
-    if (size <= 0) return null
-
-    return ByteArray(size).apply {
-        usePinned { pinned -> memcpy(pinned.addressOf(0), bytes, length) }
-    }
-}
+private fun NSData.pictureBytes(): ByteArray? = toByteArray().takeIf { it.isNotEmpty() }

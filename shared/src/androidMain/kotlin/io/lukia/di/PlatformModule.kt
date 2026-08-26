@@ -8,10 +8,10 @@ import io.lukia.core.infrastructure.AndroidDocumentWorkspace
 import io.lukia.core.infrastructure.AndroidSecretStore
 import io.lukia.core.infrastructure.AndroidSettingsStore
 import io.lukia.core.infrastructure.lukiaSqlDriver
-import io.lukia.features.import.domain.DocumentAnalyzer
-import io.lukia.features.import.domain.FolderScanner
-import io.lukia.features.import.infrastructure.AndroidDocumentAnalyzer
-import io.lukia.features.import.infrastructure.AndroidFolderScanner
+import io.lukia.features.library.domain.DocumentAnalyzer
+import io.lukia.features.library.domain.FolderScanner
+import io.lukia.features.library.infrastructure.importing.AndroidDocumentAnalyzer
+import io.lukia.features.library.infrastructure.importing.AndroidFolderScanner
 import org.koin.dsl.module
 
 val platformModule = module {

@@ -1,7 +1,6 @@
 package io.lukia.di
 
 import io.lukia.core.infrastructure.db.LukiaDatabase
-import io.lukia.features.bookdetail.bookDetailModule
 import io.lukia.features.library.libraryModule
 import io.lukia.features.profile.profileModule
 import io.lukia.features.reader.readerModule
@@ -14,8 +13,8 @@ import org.koin.dsl.module
  *
  * Each feature registers its own half of the graph, so what a feature offers the
  * rest of the app is decided beside the code that offers it rather than in one
- * list that has to import all seven. What is left here is the database, which
- * belongs to no feature and is shared by most of them.
+ * list that has to import every one of them. What is left here is the database,
+ * which belongs to no feature and is shared by most of them.
  */
 val commonModule = module {
 
@@ -27,7 +26,6 @@ val commonModule = module {
 
     includes(
         libraryModule,
-        bookDetailModule,
         readerModule,
         translateModule,
         profileModule,

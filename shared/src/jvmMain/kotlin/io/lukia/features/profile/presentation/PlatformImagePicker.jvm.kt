@@ -12,7 +12,7 @@ import javax.swing.filechooser.FileNameExtensionFilter
  * it out of the dialog than to accept it and then quietly do nothing.
  */
 @Composable
-actual fun rememberPlatformImagePicker(): PlatformImagePickerState =
+internal actual fun rememberPlatformImagePicker(): PlatformImagePickerState =
     object : PlatformImagePickerState {
 
         override fun launch(onPicked: (ByteArray?) -> Unit) {

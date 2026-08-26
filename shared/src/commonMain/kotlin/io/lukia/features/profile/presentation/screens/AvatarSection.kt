@@ -259,7 +259,7 @@ private fun PictureControls(
  * Everything this section can do, gathered so the profile page passes one thing
  * rather than four callbacks it does nothing with itself.
  */
-data class AvatarActions(
+internal data class AvatarActions(
     val onAvatar: (ProfileAvatar) -> Unit = {},
     val onTint: (ProfileTint) -> Unit = {},
     val onChoosePicture: () -> Unit = {},

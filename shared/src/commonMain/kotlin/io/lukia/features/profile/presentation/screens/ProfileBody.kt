@@ -123,7 +123,7 @@ internal fun ProfileBody(
  * screen whose signature is longer than its layout - which is exactly what the
  * project's own limit on required parameters is there to prevent.
  */
-data class ProfileActions(
+internal data class ProfileActions(
     val onRename: (String) -> Unit = {},
     val onOpenBook: (String) -> Unit = {},
     val onRetry: () -> Unit = {},

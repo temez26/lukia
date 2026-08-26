@@ -20,7 +20,7 @@ import io.lukia.shared.presentation.theme.Space
 
 /** One number worth showing, and what it counts. */
 @Immutable
-data class StatTile(val value: String, val label: String)
+internal data class StatTile(val value: String, val label: String)
 
 /**
  * The reader's figures, in the order they answer the question "how am I doing".
@@ -33,7 +33,7 @@ data class StatTile(val value: String, val label: String)
  * Pages are in there because they are the one figure that grows on an evening
  * when no book was started or finished, which is most evenings.
  */
-fun ReadingStats.tiles(): List<StatTile> = listOf(
+internal fun ReadingStats.tiles(): List<StatTile> = listOf(
     StatTile(value = booksReading.toString(), label = "Reading"),
     StatTile(value = booksFinished.toString(), label = "Finished"),
     StatTile(value = pagesRead.toString(), label = pluralise(pagesRead, "Page read", "Pages read")),
