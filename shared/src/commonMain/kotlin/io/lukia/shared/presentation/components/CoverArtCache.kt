@@ -1,5 +1,6 @@
 package io.lukia.shared.presentation.components
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.FilterQuality
@@ -58,7 +59,7 @@ internal const val CoverPixelBudget = 8_000_000
 internal object CoverArtCache {
 
     private val mutex = Mutex()
-    private val entries = LinkedHashMap<CoverImage, ImageBitmap>()
+    private val entries = LinkedHashMap<CoverImage, DecodedCover>()
     private var pixels = 0
 
     /**
@@ -68,7 +69,7 @@ internal object CoverArtCache {
      * it was before a cover was kept or as it was after, and never mid-edit.
      */
     @Volatile
-    private var decoded: Map<CoverImage, ImageBitmap> = emptyMap()
+    private var decoded: Map<CoverImage, DecodedCover> = emptyMap()
 
     /**
      * The artwork for [cover] if it has already been decoded, answered without
@@ -80,7 +81,7 @@ internal object CoverArtCache {
      * blank tile underneath - which is the flicker that runs through a shelf of
      * covers every time one comes back on screen.
      */
-    fun peek(cover: CoverImage): ImageBitmap? = decoded[cover]
+    fun peek(cover: CoverImage): DecodedCover? = decoded[cover]
 
     /**
      * The artwork for [cover], decoding it with [decode] if it is not already
@@ -94,25 +95,32 @@ internal object CoverArtCache {
     suspend fun artworkFor(
         cover: CoverImage,
         decode: suspend (CoverImage) -> ImageBitmap?,
-    ): ImageBitmap? {
+    ): DecodedCover? {
         held(cover)?.let { return it }
 
         val artwork = decode(cover) ?: return null
         val scaled = artwork.scaledToFit(MaxCoverEdge)
 
-        keep(cover, scaled)
+        // Made here, beside the decode and off the thread that draws, rather
+        // than where it is drawn. It is a resample of the whole cover down to a
+        // couple of dozen pixels, and a card re-entering composition - which is
+        // every card of a shelf being scrolled - was paying for one inside
+        // composition, on the frame it appeared on.
+        val kept = DecodedCover(artwork = scaled, backdrop = scaled.scaledToFit(CoverBackdropEdge))
 
-        return scaled
+        keep(cover, kept)
+
+        return kept
     }
 
-    private suspend fun held(cover: CoverImage): ImageBitmap? = mutex.withLock {
+    private suspend fun held(cover: CoverImage): DecodedCover? = mutex.withLock {
         // Removed and put back rather than read in place: this map keeps its
         // insertion order, so re-inserting is what moves a cover to the newest
         // end and out of the way of the next eviction.
         entries.remove(cover)?.also { entries[cover] = it }
     }
 
-    private suspend fun keep(cover: CoverImage, artwork: ImageBitmap) = mutex.withLock {
+    private suspend fun keep(cover: CoverImage, artwork: DecodedCover) = mutex.withLock {
         entries.remove(cover)?.let { pixels -= it.pixelCount }
         entries[cover] = artwork
         pixels += artwork.pixelCount
@@ -134,6 +142,20 @@ internal object CoverArtCache {
         decoded = emptyMap()
     }
 }
+
+/**
+ * A cover as it is drawn: the artwork itself, and the wash of it that fills the
+ * card around it - see `CoverArtwork`.
+ *
+ * The two are made and kept together because they are made from each other and
+ * are always drawn together. Keeping only the first meant the second being
+ * derived again every time a card came back on screen.
+ */
+@Immutable
+internal class DecodedCover(val artwork: ImageBitmap, val backdrop: ImageBitmap)
+
+private val DecodedCover.pixelCount: Int
+    get() = artwork.pixelCount + backdrop.pixelCount
 
 private val ImageBitmap.pixelCount: Int get() = width * height
 

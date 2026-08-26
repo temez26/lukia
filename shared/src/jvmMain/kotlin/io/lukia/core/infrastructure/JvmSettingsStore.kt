@@ -30,6 +30,12 @@ class JvmSettingsStore(
     override fun getString(key: String): String? = properties.getProperty(key)
 
     override fun putString(key: String, value: String) {
+        // Already-stored values are left alone - see [SettingsStore.putString].
+        // This is the store the guard matters most to: the write below is the
+        // whole file, synchronously, on whichever thread asked - and the callers
+        // are ViewModels and composables on the one that draws.
+        if (properties.getProperty(key) == value) return
+
         properties.setProperty(key, value)
 
         // A preference is not worth failing a screen over: losing one between

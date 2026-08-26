@@ -124,14 +124,14 @@ class CoverArtCacheTest {
     fun artworkIsKeptNoLargerThanItIsEverDrawn() = runTest {
         val artwork = CoverArtCache.artworkFor(cover(1)) { ImageBitmap(1_600, 2_200) }
 
-        assertEquals(MaxCoverEdge, artwork?.height)
-        assertEquals(581, artwork?.width)
+        assertEquals(MaxCoverEdge, artwork?.artwork?.height)
+        assertEquals(581, artwork?.artwork?.width)
     }
 
     @Test
     fun aCoverSmallEnoughAlreadyIsLeftExactlyAsItIs() = runTest {
         val decoded = ImageBitmap(400, 550)
 
-        assertSame(decoded, CoverArtCache.artworkFor(cover(1)) { decoded })
+        assertSame(decoded, CoverArtCache.artworkFor(cover(1)) { decoded }?.artwork)
     }
 }

@@ -17,7 +17,12 @@ class IOSSettingsStore : SettingsStore {
     override fun getString(key: String): String? = defaults.stringForKey(prefixed(key))
 
     override fun putString(key: String, value: String) {
-        defaults.setObject(value, prefixed(key))
+        // Already-stored values are left alone - see [SettingsStore.putString].
+        val name = prefixed(key)
+
+        if (defaults.stringForKey(name) == value) return
+
+        defaults.setObject(value, name)
     }
 
     private fun prefixed(key: String): String = "$KEY_PREFIX$key"

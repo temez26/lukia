@@ -45,12 +45,9 @@ fun List<LibraryBook>.facets(): LibraryFacets {
         shelves = listOf(LibraryShelf.All) + LibraryShelf.entries
             .filter { it != LibraryShelf.All && divides { book -> it.matches(book) } },
         formats = DocumentType.entries.filter { type -> divides { it.document.type == type } },
-        categories = distinctValues { it.categories }
-            .filter { value -> divides { it.categories.holds(value) } },
-        authors = distinctValues { it.authors }
-            .filter { value -> divides { it.authors.holds(value) } },
-        languages = distinctValues { listOfNotNull(it.language) }
-            .filter { value -> divides { it.language == value } },
+        categories = dividingValues { it.categories },
+        authors = dividingValues { it.authors },
+        languages = dividingValues { listOfNotNull(it.language) },
         hasFavourites = divides { it.document.isFavorite },
     )
 }
@@ -65,12 +62,41 @@ private inline fun List<LibraryBook>.divides(predicate: (LibraryBook) -> Boolean
 }
 
 /**
- * Every value the books carry, in alphabetical order, keeping the first spelling
- * of any that differ only in case - `Fiction` and `fiction` are one category
- * filed twice, and offering both is offering the same row twice.
+ * The values worth offering as filters: every one that some of this library
+ * carries and some does not, alphabetically, keeping the first spelling of any
+ * that differ only in case - `Fiction` and `fiction` are one category filed
+ * twice, and offering both is offering the same row twice.
+ *
+ * Counted in a single pass rather than by asking [divides] once per value. The
+ * two arrive at the same answer; the difference is what they cost. A pass per
+ * value is the whole library read once for every distinct author in it, which
+ * on a shelf of a few thousand books is millions of comparisons - and this is
+ * re-run whenever the library changes at all, down to one book being
+ * favourited.
  */
-private inline fun List<LibraryBook>.distinctValues(
+private inline fun List<LibraryBook>.dividingValues(
     values: (LibraryBook) -> List<String>,
-): List<String> = flatMap(values)
-    .distinctBy { it.lowercase() }
-    .sortedBy { it.lowercase() }
+): List<String> {
+    val spellings = mutableMapOf<String, String>()
+    val books = mutableMapOf<String, Int>()
+
+    forEach { book ->
+        // Counted once per book however often that book repeats the value,
+        // because carrying it is what a filter matches on - see [holds].
+        val carried = mutableSetOf<String>()
+
+        values(book).forEach { value ->
+            val key = value.lowercase()
+
+            spellings.getOrPut(key) { value }
+            if (carried.add(key)) books[key] = (books[key] ?: 0) + 1
+        }
+    }
+
+    // Anything here is carried by at least one book, so the only half of
+    // "divides" left to ask is whether it is carried by all of them.
+    return spellings
+        .filterKeys { (books[it] ?: 0) < size }
+        .values
+        .sortedBy { it.lowercase() }
+}

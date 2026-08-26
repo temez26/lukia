@@ -97,6 +97,22 @@ class LibraryFacetsTest {
         assertEquals(emptyList(), books.facets().categories)
     }
 
+    /**
+     * What a filter matches is whether a book carries a value, not how many
+     * times it says so - so a book that files itself under one category twice
+     * is still one book carrying it, and cannot on its own make that category
+     * look like a division of the library.
+     */
+    @Test
+    fun aCategoryRepeatedInsideOneBookIsStillOneBookCarryingIt() {
+        val books = library(
+            book("Dune", subjects = listOf("Fiction", "fiction")),
+            book("Solaris", subjects = listOf("Fiction")),
+        )
+
+        assertEquals(emptyList(), books.facets().categories)
+    }
+
     @Test
     fun authorsAndLanguagesFollowTheSameRule() {
         val books = library(
