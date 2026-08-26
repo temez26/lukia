@@ -6,6 +6,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import io.lukia.Routes
 import io.lukia.features.library.presentation.screens.LibraryScreen
+import io.lukia.features.profile.presentation.ProfileAvatarButton
+import io.lukia.features.profile.presentation.rememberProfileFace
 import io.lukia.shared.presentation.theme.LocalMotionStyle
 
 /**
@@ -43,8 +45,16 @@ internal fun DesktopShell() {
                 onDocumentDetails = { document ->
                     navController.navigate(Routes.Detail.createRoute(document.document.location))
                 },
-                onProfile = { navController.navigate(Routes.Profile.route) },
                 onSettings = { navController.navigate(Routes.Settings.route) },
+                // Filled here rather than by the library, which has a place for
+                // the reader's disc on its bar and no business knowing what a
+                // reader looks like. This shell is where the two features meet.
+                profileButton = {
+                    ProfileAvatarButton(
+                        face = rememberProfileFace(),
+                        onClick = { navController.navigate(Routes.Profile.route) },
+                    )
+                },
             )
         }
 

@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import io.lukia.core.presentation.UiState
 import io.lukia.features.library.presentation.LibraryFacets
 import io.lukia.features.library.presentation.LibraryQuery
+import io.lukia.features.profile.presentation.ProfileAvatarButton
 import io.lukia.features.profile.presentation.components.ProfileFace
 import io.lukia.shared.presentation.theme.LukiaTheme
 import kotlin.test.Test
@@ -26,6 +27,9 @@ import kotlin.test.assertTrue
  * things done to a shelf - importing, tidying, settings. A profile is not one of
  * those, so it has a control of its own on the bar, and these pin both halves of
  * that: that it is there, and that it is no longer in the menu.
+ *
+ * The bar takes the control as a slot rather than building it, so what is filled
+ * in here is what `MobileShell` and `DesktopShell` fill in for real.
  */
 @OptIn(ExperimentalTestApi::class)
 class LibraryProfileEntryTest {
@@ -51,8 +55,12 @@ class LibraryProfileEntryTest {
                         onDelete = {},
                         onRetry = {},
                         isImporting = false,
-                        onProfile = { openedProfile = true },
-                        face = ProfileFace(initials = "AL"),
+                        profileButton = {
+                            ProfileAvatarButton(
+                                face = ProfileFace(initials = "AL"),
+                                onClick = { openedProfile = true },
+                            )
+                        },
                     )
                 }
             }
