@@ -62,11 +62,41 @@ private class PdfBoxDocumentPages(path: String) : DocumentPages {
     private val pageIndexByDictionary: Map<COSDictionary, Int> =
         document.pages.withIndex().associate { (index, page) -> page.cosObject to index }
 
-    override val outline: List<OutlineEntry> by lazy {
-        val root = runCatching { document.documentCatalog.documentOutline }.getOrNull()
-            ?: return@lazy emptyList()
+    /**
+     * Read as the document is opened, which is the contract [DocumentPages]
+     * states - and here it is also the only way it can be safe.
+     *
+     * The walk parses objects out of the same PDFBox document [renderPage]
+     * draws from, and PDFBox shares mutable state across the two. Everything
+     * else that touches the document once it is open takes [renderLock]; a
+     * plain `val` cannot, so the only lock available to it is being finished
+     * before anybody else has the document at all. Left until something asked,
+     * this ran on a dispatcher of its own beside a page being drawn - one
+     * document, two threads, and the corruption the lock exists to prevent.
+     *
+     * Nobody waits longer for it. Opening already runs off the main thread, and
+     * the outline is read on both ways out of here anyway - the text path asks
+     * for it, and the reader reads it beside the open book. What this walks is
+     * structure the open has already parsed, not the file: the scan that would
+     * be too much to do up front belongs to Android, whose renderer has no
+     * outline of its own, and stays lazy there.
+     */
+    override val outline: List<OutlineEntry>? = readOutline()
 
-        buildList { appendOutline(root, level = 0) }
+    /**
+     * Null only for an outline that could not be walked at all, which is the
+     * "this platform cannot read one" of [DocumentPages.outline]. A file with
+     * no table of contents is an empty list, as it was before.
+     *
+     * Both have to be answers rather than throws now that this runs while the
+     * document is being opened: a malformed chapter list used to cost the
+     * reader the chapter list, and must not start costing them the book.
+     */
+    private fun readOutline(): List<OutlineEntry>? {
+        val root = runCatching { document.documentCatalog.documentOutline }.getOrNull()
+            ?: return emptyList()
+
+        return runCatching { buildList { appendOutline(root, level = 0) } }.getOrNull()
     }
 
     private fun MutableList<OutlineEntry>.appendOutline(node: PDOutlineNode, level: Int) {

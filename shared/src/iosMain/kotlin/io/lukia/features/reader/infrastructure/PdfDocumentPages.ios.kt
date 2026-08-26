@@ -59,10 +59,37 @@ private class IOSDocumentPages(path: String) : DocumentPages {
         }
     }
 
-    override val outline: List<OutlineEntry> by lazy {
-        val root = document.outlineRoot ?: return@lazy emptyList()
+    /**
+     * Read as the document is opened, which is the contract [DocumentPages]
+     * states - and here it is also the only way it can be safe.
+     *
+     * The walk reaches into the same [PDFDocument] [renderPage] draws from, for
+     * its root and for the index of every page an entry points at. Everything
+     * else that touches the document once it is open takes [renderLock]; a
+     * plain `val` cannot, so the only lock available to it is being finished
+     * before anybody else has the document at all. Left until something asked,
+     * this ran on a dispatcher of its own beside a page being drawn - and
+     * PDFKit does not promise a document is safe to use from two threads.
+     *
+     * Nobody waits longer for it: opening already runs off the main thread, and
+     * the outline is read on both ways out of here anyway - the text path asks
+     * for it, and the reader reads it beside the open book.
+     */
+    override val outline: List<OutlineEntry>? = readOutline()
 
-        buildList { appendOutline(root, level = 0) }
+    /**
+     * Null only for an outline that could not be walked at all, which is the
+     * "this platform cannot read one" of [DocumentPages.outline]. A file with
+     * no table of contents is an empty list, as it was before.
+     *
+     * Both have to be answers rather than throws now that this runs while the
+     * document is being opened: a malformed chapter list used to cost the
+     * reader the chapter list, and must not start costing them the book.
+     */
+    private fun readOutline(): List<OutlineEntry>? {
+        val root = document.outlineRoot ?: return emptyList()
+
+        return runCatching { buildList { appendOutline(root, level = 0) } }.getOrNull()
     }
 
     private fun MutableList<OutlineEntry>.appendOutline(node: PDFOutline, level: Int) {

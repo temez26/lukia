@@ -131,6 +131,31 @@ class PdfDocumentPagesTest {
         }
     }
 
+    /**
+     * The chapter list is read as the book is opened, not the first time
+     * somebody asks for it.
+     *
+     * Asserted by asking after the file has been given back, which is the one
+     * way from outside to tell the two apart. It matters because everything
+     * else that reads this document is serialised against everything else that
+     * draws from it, and a plain `val` has no way to join that - so the list
+     * being finished before the document is shared is what keeps a chapter list
+     * being read off a page being drawn. It is also what lets an opening the
+     * reader has already abandoned ask for one without reaching into a document
+     * that was closed underneath it.
+     */
+    @Test
+    fun theChaptersAreReadAsTheBookOpensRatherThanWhenAskedFor() {
+        val file = pdfFile(pageCount = 6) { document ->
+            document.outline("Introduction" to 0, "The End" to 5)
+        }
+
+        val pages = openPdfPages(file.absolutePath)
+        pages.close()
+
+        assertEquals(listOf("Introduction", "The End"), pages.outline?.map { it.title })
+    }
+
     /** Empty, not null: the document genuinely has no table of contents. */
     @Test
     fun aDocumentWithoutAnOutlineHasNoChapters() {
