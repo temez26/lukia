@@ -1,5 +1,6 @@
 package io.lukia.features.library.presentation
 
+import io.lukia.core.domain.CoverImage
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.FakeDocumentWorkspace
@@ -113,12 +114,14 @@ internal val booksFolder = PickedFolder(
 internal fun pdfDocumentInfo(
     location: String = "/test/book.pdf",
     favorite: Boolean = false,
+    cover: ByteArray? = null,
 ) = DocumentInfo(
     document = TestDocuments.pdf(location = location),
     type = DocumentType.PDF,
     exists = true,
     sizeBytes = 1024L,
     isFavorite = favorite,
+    coverImage = cover?.let(::CoverImage),
 )
 
 internal class FakeDocumentAnalyzer(
@@ -160,11 +163,17 @@ internal class FakeLibraryRepository(
         }
     }
 
-    override suspend fun getDocuments(): List<DocumentInfo> = documents.toList()
+    /** The shelf without its artwork, as the real store answers it. */
+    override suspend fun getDocuments(): List<DocumentInfo> =
+        documents.map { it.copy(coverImage = null) }
 
     override suspend fun getDocument(location: String): DocumentInfo? = documents.firstOrNull {
         it.document.location == location
     }
+
+    /** Read by location, exactly as the real store reads it. */
+    override suspend fun coverFor(location: String): CoverImage? =
+        getDocument(location)?.coverImage
 
     /** Answered the expensive way; nothing in a test cares what it costs. */
     override suspend fun knownLocations(): Set<String> =
@@ -188,6 +197,10 @@ internal class ThrowingLibraryRepository : LibraryRepository {
     override suspend fun getDocuments(): List<DocumentInfo> = throw IllegalStateException("library read blew up")
 
     override suspend fun getDocument(location: String): DocumentInfo? = null
+
+    /** Read by location, exactly as the real store reads it. */
+    override suspend fun coverFor(location: String): CoverImage? =
+        getDocument(location)?.coverImage
 
     /** Answered the expensive way; nothing in a test cares what it costs. */
     override suspend fun knownLocations(): Set<String> =

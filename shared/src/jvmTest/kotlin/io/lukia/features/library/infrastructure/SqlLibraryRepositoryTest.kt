@@ -37,6 +37,34 @@ class SqlLibraryRepositoryTest {
         assertContentEquals(byteArrayOf(1, 2, 3), stored?.coverImage?.bytes)
     }
 
+    /**
+     * The shelf is read without the artwork on it, which is the whole reason it
+     * is read as its own statement: a cover is around a hundred kilobytes, and a
+     * few thousand of them is a few hundred megabytes held for as long as the
+     * library is on screen.
+     */
+    @Test
+    fun theShelfComesBackWithoutTheArtworkOnIt() = runTest {
+        repository.addDocument(document("/books/one.pdf", cover = byteArrayOf(1, 2, 3)))
+
+        val shelf = repository.getDocuments().single()
+
+        assertNull(shelf.coverImage)
+        assertEquals("one.pdf", shelf.document.fileName)
+        assertEquals(DocumentType.PDF, shelf.type)
+    }
+
+    /** What the card that is about to draw a cover asks for instead. */
+    @Test
+    fun oneBooksArtworkIsReadByItself() = runTest {
+        repository.addDocument(document("/books/one.pdf", cover = byteArrayOf(1, 2, 3)))
+        repository.addDocument(document("/books/two.pdf", cover = null))
+
+        assertContentEquals(byteArrayOf(1, 2, 3), repository.coverFor("/books/one.pdf")?.bytes)
+        assertNull(repository.coverFor("/books/two.pdf"))
+        assertNull(repository.coverFor("/books/never-imported.pdf"))
+    }
+
     /** The whole point of a second run: a library that is still there. */
     @Test
     fun booksSurviveTheRepositoryThatStoredThem() = runTest {

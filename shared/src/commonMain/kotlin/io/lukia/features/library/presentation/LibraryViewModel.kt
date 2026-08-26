@@ -21,6 +21,8 @@ import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.domain.LibraryLayout
 import io.lukia.features.library.infrastructure.LibrarySettingsRepository
 import io.lukia.features.library.infrastructure.RecentSearchesRepository
+import io.lukia.shared.presentation.components.CoverArtCache
+import io.lukia.shared.presentation.components.CoverArtSource
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -128,8 +130,16 @@ class LibraryViewModel(
      */
     val library: StateFlow<List<LibraryBook>> =
         combine(_uiState, _readingProgress) { state, progress ->
-            withContext(dispatcher) { state.dataOrNull.orEmpty().asLibrary(progress) }
+            withContext(dispatcher) { state.dataOrNull.orEmpty().asLibrary(progress, ::coverOf) }
         }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    /**
+     * How a card gets the artwork the shelf deliberately did not read - see
+     * [LibraryBook.cover]. Nothing is read here; what comes back is the way to
+     * ask, and the asking happens as the card is drawn.
+     */
+    private fun coverOf(location: String): CoverArtSource =
+        CoverArtSource(location) { getLibraryDocumentsUseCase.coverFor(location)?.bytes }
 
     /**
      * Looking for a book, which is a different question from narrowing the
@@ -265,12 +275,17 @@ class LibraryViewModel(
                 .onSuccess { refreshed ->
                     // Patched in place rather than re-read, for the reason
                     // favouriting is: one row changing is not a reason to pull
-                    // every cover in the library back out of the database.
+                    // every book in the library back out of the database.
                     updateLoadedDocuments { documents ->
                         documents.map {
                             if (it.document.location == location) refreshed else it
                         }
                     }
+
+                    // The drawn artwork is filed under the book rather than
+                    // under the bytes, so new artwork read into an old name
+                    // would otherwise never reach the screen.
+                    CoverArtCache.forget(location)
 
                     _message.value = "Details refreshed"
                 }

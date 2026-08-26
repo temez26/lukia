@@ -29,9 +29,9 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
-import io.lukia.core.domain.CoverImage
 import io.lukia.core.domain.ReadingProgress
 import io.lukia.shared.presentation.components.BookCover
+import io.lukia.shared.presentation.components.CoverArtSource
 import io.lukia.shared.presentation.components.OpenBookGlyph
 import io.lukia.shared.presentation.components.ReadingProgressOverlay
 import io.lukia.shared.presentation.components.focusRing
@@ -71,7 +71,7 @@ private const val ReadControlFraction = 0.30f
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun ReadableCover(
-    coverImage: CoverImage?,
+    cover: CoverArtSource?,
     title: String,
     /** How far through. Null for a book that has never been opened. */
     progress: ReadingProgress?,
@@ -118,7 +118,7 @@ internal fun ReadableCover(
             .semantics { contentDescription = title },
     ) {
         BookCover(
-            coverImage = coverImage,
+            cover = cover,
             title = title,
             shape = shape,
             elevation = LukiaElevation.feature,

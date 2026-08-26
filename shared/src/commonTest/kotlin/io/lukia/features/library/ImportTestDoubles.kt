@@ -1,5 +1,6 @@
 package io.lukia.features.library
 
+import io.lukia.core.domain.CoverImage
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.PickedDocument
@@ -53,10 +54,16 @@ class FakeImportLibraryRepository(
         }
     }
 
-    override suspend fun getDocuments(): List<DocumentInfo> = documents.toList()
+    /** The shelf without its artwork, as the real store answers it. */
+    override suspend fun getDocuments(): List<DocumentInfo> =
+        documents.map { it.copy(coverImage = null) }
 
     override suspend fun getDocument(location: String): DocumentInfo? =
         documents.firstOrNull { it.document.location == location }
+
+    /** Read by location, exactly as the real store reads it. */
+    override suspend fun coverFor(location: String): CoverImage? =
+        getDocument(location)?.coverImage
 
     override suspend fun knownLocations(): Set<String> =
         documents.mapTo(mutableSetOf()) { it.document.location }

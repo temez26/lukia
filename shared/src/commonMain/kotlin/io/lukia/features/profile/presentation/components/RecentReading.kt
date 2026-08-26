@@ -30,6 +30,7 @@ import io.lukia.shared.presentation.components.LukiaDivider
 import io.lukia.shared.presentation.components.ReadingProgressBar
 import io.lukia.shared.presentation.components.focusRing
 import io.lukia.shared.presentation.components.hoverHighlight
+import io.lukia.shared.presentation.components.rememberBookCover
 import io.lukia.shared.presentation.theme.Space
 
 private val ActivityCoverHeight: Dp = 56.dp
@@ -93,7 +94,7 @@ private fun ActivityRow(
             .padding(vertical = Space.md),
     ) {
         BookCover(
-            coverImage = entry.document.coverImage,
+            cover = rememberBookCover(entry.location, entry.document.coverImage?.bytes),
             title = title,
             monogramFontSize = 13.sp,
             modifier = Modifier.size(ActivityCoverWidth, ActivityCoverHeight),

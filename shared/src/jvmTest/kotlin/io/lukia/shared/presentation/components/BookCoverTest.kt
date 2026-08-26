@@ -4,7 +4,6 @@ import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.runComposeUiTest
-import io.lukia.core.domain.CoverImage
 import io.lukia.shared.presentation.theme.LukiaTheme
 import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.skia.Surface
@@ -27,10 +26,18 @@ class BookCoverTest {
             .encodeToData(EncodedImageFormat.PNG)!!
             .bytes
 
-    private fun ComposeUiTest.setCover(coverImage: CoverImage?) {
+    /**
+     * A book of its own per case, because the decoded artwork is cached for the
+     * whole process and filed under the book - so three cases sharing one book
+     * would be three readings of whichever ran first.
+     */
+    private fun ComposeUiTest.setCover(book: String, bytes: ByteArray?) {
         setContent {
             LukiaTheme(darkTheme = false) {
-                BookCover(coverImage = coverImage, title = "Moby Dick")
+                BookCover(
+                    cover = bytes?.let { CoverArtSource(book) { it } },
+                    title = "Moby Dick",
+                )
             }
         }
     }
@@ -48,14 +55,14 @@ class BookCoverTest {
 
     @Test
     fun aBookWithNoCoverShowsItsMonogram() = runComposeUiTest {
-        setCover(null)
+        setCover(book = "/library/no-cover.epub", bytes = null)
 
         awaitMonogram(present = true)
     }
 
     @Test
     fun aBookWithArtworkShowsTheArtworkInsteadOfAMonogram() = runComposeUiTest {
-        setCover(CoverImage(decodablePng))
+        setCover(book = "/library/with-artwork.epub", bytes = decodablePng)
 
         awaitMonogram(present = false)
     }
@@ -67,7 +74,7 @@ class BookCoverTest {
      */
     @Test
     fun artworkThatWillNotDecodeFallsBackToTheMonogram() = runComposeUiTest {
-        setCover(CoverImage(byteArrayOf(1, 2, 3, 4)))
+        setCover(book = "/library/broken-artwork.epub", bytes = byteArrayOf(1, 2, 3, 4))
 
         awaitMonogram(present = true)
     }

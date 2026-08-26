@@ -44,6 +44,22 @@ class GetReadingSummaryUseCase(
                 today = now().toLocalDateTime(here).date,
                 zone = here,
             ),
-        )
+        ).withRecentCovers()
     }
+
+    /**
+     * The handful of books the profile actually shows, with their artwork.
+     *
+     * The library above is read without any - see [LibraryRepository.getDocuments]
+     * - so the few that are drawn here are asked for one at a time. There are
+     * five of them: reading five covers is nothing beside reading every cover in
+     * the library to draw five.
+     */
+    private suspend fun ReadingSummary.withRecentCovers(): ReadingSummary = copy(
+        recent = recent.map { activity ->
+            activity.copy(
+                document = activity.document.copy(coverImage = library.coverFor(activity.location)),
+            )
+        },
+    )
 }

@@ -1,5 +1,6 @@
 package io.lukia.features.library
 
+import io.lukia.core.domain.CoverImage
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.FakeDocumentWorkspace
@@ -72,9 +73,14 @@ class RemoveDocumentUseCaseTest {
             documents[document.document.location] = document
         }
 
-        override suspend fun getDocuments(): List<DocumentInfo> = documents.values.toList()
+        override suspend fun getDocuments(): List<DocumentInfo> =
+            documents.values.map { it.copy(coverImage = null) }
 
         override suspend fun getDocument(location: String): DocumentInfo? = documents[location]
+
+        /** Read by location, exactly as the real store reads it. */
+        override suspend fun coverFor(location: String): CoverImage? =
+            getDocument(location)?.coverImage
 
         /** Answered the expensive way; nothing in a test cares what it costs. */
         override suspend fun knownLocations(): Set<String> =

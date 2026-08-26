@@ -1,7 +1,6 @@
 package io.lukia.shared.presentation.components
 
 import androidx.compose.ui.graphics.ImageBitmap
-import io.lukia.core.domain.CoverImage
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -18,10 +17,11 @@ import kotlin.test.assertSame
  */
 class CoverArtCacheTest {
 
-    private fun cover(seed: Int) = CoverImage(ByteArray(8) { seed.toByte() })
+    /** A book, named the way the library names one: by where its file is. */
+    private fun cover(seed: Int) = "/library/book-$seed.epub"
 
     /** A cover at the largest size any of them is kept at. */
-    private suspend fun large(cover: CoverImage): ImageBitmap = ImageBitmap(MaxCoverEdge, MaxCoverEdge)
+    private suspend fun large(): ImageBitmap = ImageBitmap(MaxCoverEdge, MaxCoverEdge)
 
     private val coversThatFit = CoverPixelBudget / (MaxCoverEdge * MaxCoverEdge)
 
@@ -30,7 +30,7 @@ class CoverArtCacheTest {
     }
 
     /** Whether the cache had to go back for [cover], which is what it exists to avoid. */
-    private suspend fun reDecodes(cover: CoverImage): Boolean {
+    private suspend fun reDecodes(cover: String): Boolean {
         var decoded = false
 
         CoverArtCache.artworkFor(cover) {
@@ -50,7 +50,7 @@ class CoverArtCacheTest {
     @Test
     fun aCoverIsDecodedOnceAndHandedBackTheSameAfterwards() = runTest {
         var decodes = 0
-        val decode: suspend (CoverImage) -> ImageBitmap? = {
+        val decode: suspend () -> ImageBitmap? = {
             decodes++
             ImageBitmap(10, 10)
         }
@@ -62,12 +62,24 @@ class CoverArtCacheTest {
         assertSame(first, second)
     }
 
-    /** The same artwork read twice out of the database is the same artwork. */
+    /** The same book asked about twice is the same artwork, whoever asks. */
     @Test
-    fun theSameBytesAreTheSameCoverEvenAsADifferentInstance() = runTest {
+    fun theSameBookIsTheSameCoverHoweverManyCardsAskForIt() = runTest {
         val artwork = CoverArtCache.artworkFor(cover(1)) { ImageBitmap(10, 10) }
 
         assertSame(artwork, CoverArtCache.artworkFor(cover(1)) { ImageBitmap(20, 20) })
+    }
+
+    /**
+     * A book read again off disk can have artwork its old entry knows nothing
+     * about - the entry is filed under the book, not under the picture.
+     */
+    @Test
+    fun aForgottenCoverIsDrawnAgainNextTimeItIsAskedFor() = runTest {
+        CoverArtCache.artworkFor(cover(1), ::large)
+        CoverArtCache.forget(cover(1))
+
+        assertEquals(true, reDecodes(cover(1)))
     }
 
     /**

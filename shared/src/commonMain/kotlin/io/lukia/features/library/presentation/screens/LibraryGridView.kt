@@ -264,8 +264,7 @@ private fun LazyGridItemScope.ShelfItem(
 ) {
     when (layout) {
         LibraryLayout.Grid -> BookCard(
-            document = book.document,
-            progress = book.progress,
+            book = book,
             menuExpanded = menuExpanded,
             onClick = onClick,
             onMenuRequest = { onMenuExpandedChange(true) },
@@ -283,8 +282,7 @@ private fun LazyGridItemScope.ShelfItem(
 
         LibraryLayout.List -> Box {
             BookRow(
-                document = book.document,
-                progress = book.progress,
+                book = book,
                 onClick = onClick,
                 onMenuRequest = { onMenuExpandedChange(true) },
                 modifier = Modifier.animateItem(),

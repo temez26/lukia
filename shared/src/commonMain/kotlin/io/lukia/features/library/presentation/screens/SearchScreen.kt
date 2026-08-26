@@ -251,8 +251,7 @@ private fun SearchResults(
             contentType = { "result" },
         ) { book ->
             BookRow(
-                document = book.document,
-                progress = book.progress,
+                book = book,
                 onClick = { onOpenBook(book) },
                 // A search result is a book somebody is deciding about, so the
                 // press that is not "open it" is "tell me more" rather than the
