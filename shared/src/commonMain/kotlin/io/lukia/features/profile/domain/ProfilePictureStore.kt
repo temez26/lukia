@@ -4,7 +4,7 @@ package io.lukia.features.profile.domain
  * Where the reader's own picture is kept.
  *
  * Apart from the rest of the profile because it is the one part that cannot be
- * answered synchronously - see `ProfileRepository`, which owns both and hands
+ * answered synchronously - see `ProfileSettingsRepository`, which owns both and hands
  * the app one profile made of them.
  */
 interface ProfilePictureStore {

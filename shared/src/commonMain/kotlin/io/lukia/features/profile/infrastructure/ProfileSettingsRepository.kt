@@ -31,8 +31,14 @@ import kotlinx.coroutines.flow.asStateFlow
  * Null [profile] means nobody has been through onboarding yet, which is not the
  * same as an empty name - see [UserProfile]. A single instance is shared by the
  * app, which is why it is a `single` in the dependency graph.
+ *
+ * Named for the family it is in rather than for the word "profile". Nothing here
+ * is a database repository like [io.lukia.features.library.domain.LibraryRepository]
+ * - the one part that is kept in the database is [ProfilePictureStore], which has
+ * its own port and its own implementation. What is left is a settings holder, the
+ * same as the app's, the reader's and the shelf's.
  */
-class ProfileRepository(
+class ProfileSettingsRepository(
     private val store: SettingsStore,
     private val pictures: ProfilePictureStore,
 ) {

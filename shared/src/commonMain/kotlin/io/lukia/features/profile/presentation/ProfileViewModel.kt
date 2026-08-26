@@ -11,7 +11,7 @@ import io.lukia.features.profile.domain.ProfilePicture
 import io.lukia.features.profile.domain.ProfileTint
 import io.lukia.features.profile.domain.ReadingSummary
 import io.lukia.features.profile.domain.UserProfile
-import io.lukia.features.profile.infrastructure.ProfileRepository
+import io.lukia.features.profile.infrastructure.ProfileSettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
  * states.
  */
 class ProfileViewModel(
-    private val profiles: ProfileRepository,
+    private val profiles: ProfileSettingsRepository,
     private val getReadingSummary: GetReadingSummaryUseCase,
 ) : ViewModel() {
 
@@ -70,7 +70,7 @@ class ProfileViewModel(
         }
     }
 
-    /** Ignores a name that cannot be used - see [ProfileRepository.setUsername]. */
+    /** Ignores a name that cannot be used - see [ProfileSettingsRepository.setUsername]. */
     fun rename(username: String) {
         profiles.setUsername(username)
     }

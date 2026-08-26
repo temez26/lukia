@@ -55,7 +55,7 @@ private const val MonogramShare = 0.36f
  * How the reader is drawn, gathered into one value.
  *
  * The picture travels beside the choice rather than inside it because the two
- * are read from different places at different speeds - see `ProfileRepository`.
+ * are read from different places at different speeds - see `ProfileSettingsRepository`.
  * Passing them as one thing is what lets every disc in the app take a single
  * parameter and lets a test compose one without a dependency graph.
  */

@@ -6,7 +6,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import io.lukia.core.domain.AppTheme
-import io.lukia.features.profile.infrastructure.ProfileRepository
+import io.lukia.features.profile.infrastructure.ProfileSettingsRepository
 import io.lukia.features.profile.presentation.screens.OnboardingScreen
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.navigation.DesktopShell
@@ -28,7 +28,7 @@ fun App() {
     // there is a reader at all decides which of two things the app opens on, and
     // that has to be settled before the first frame rather than swapped a moment
     // into it. This store is synchronous too, so it is.
-    val profiles = koinInject<ProfileRepository>()
+    val profiles = koinInject<ProfileSettingsRepository>()
     val profile by profiles.profile.collectAsState()
 
     val darkTheme = when (appSettings.theme) {
