@@ -43,6 +43,7 @@ import io.lukia.features.settings.presentation.SettingsOverlay
 import io.lukia.shared.presentation.components.ActionMenuScrim
 import io.lukia.shared.presentation.components.LoadingState
 import io.lukia.shared.presentation.components.UiStateContent
+import io.lukia.shared.presentation.components.behindOverlay
 import io.lukia.shared.presentation.components.rememberLaunchReveal
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.isWideWindow
@@ -95,35 +96,41 @@ fun LibraryScreen(
     )
 
     Box(modifier = Modifier.fillMaxSize()) {
-        LibraryContent(
-            uiState = uiState,
-            books = books,
-            facets = facets,
-            query = query,
-            onQueryChange = viewModel::updateQuery,
-            onImport = { filePicker.launch(viewModel::importDocuments) },
-            onImportFolder = {
-                folderPicker.launch { pickedFolder ->
-                    pickedFolder?.let { viewModel.importFolder(it) }
-                }
-            },
-            onDocumentClick = onDocumentClick,
-            onDocumentDetails = onDocumentDetails,
-            onSettings = {
-                if (settingsOpenInPlace) settingsOpen = true else onSettings()
-            },
-            onToggleFavorite = viewModel::toggleFavorite,
-            onRefresh = viewModel::refreshDocument,
-            shelf = rememberShelfUi(viewModel),
-            onDelete = viewModel::deleteDocument,
-            onRetry = viewModel::refresh,
-            isImporting = isImporting,
-            importProgress = importProgress,
-            snackbarHostState = snackbarHostState,
-            readingProgress = readingProgress,
-            showSearch = showSearch,
-            statsButton = statsButton,
-        )
+        // Everything the settings panel is opened over, quietened while it is -
+        // see [behindOverlay]. Wrapped rather than passed a modifier because
+        // what has to go out of reach is the whole screen under the panel, not
+        // any one composable in it.
+        Box(modifier = Modifier.fillMaxSize().behindOverlay(settingsOpen)) {
+            LibraryContent(
+                uiState = uiState,
+                books = books,
+                facets = facets,
+                query = query,
+                onQueryChange = viewModel::updateQuery,
+                onImport = { filePicker.launch(viewModel::importDocuments) },
+                onImportFolder = {
+                    folderPicker.launch { pickedFolder ->
+                        pickedFolder?.let { viewModel.importFolder(it) }
+                    }
+                },
+                onDocumentClick = onDocumentClick,
+                onDocumentDetails = onDocumentDetails,
+                onSettings = {
+                    if (settingsOpenInPlace) settingsOpen = true else onSettings()
+                },
+                onToggleFavorite = viewModel::toggleFavorite,
+                onRefresh = viewModel::refreshDocument,
+                shelf = rememberShelfUi(viewModel),
+                onDelete = viewModel::deleteDocument,
+                onRetry = viewModel::refresh,
+                isImporting = isImporting,
+                importProgress = importProgress,
+                snackbarHostState = snackbarHostState,
+                readingProgress = readingProgress,
+                showSearch = showSearch,
+                statsButton = statsButton,
+            )
+        }
 
         // Over the library and its own overlays both, since it is opened from the
         // bar that floats above them.
@@ -231,134 +238,143 @@ fun LibraryContent(
                 .fillMaxSize()
                 .padding(paddingValues),
         ) {
+            // Everything the detail panel is opened over - the shelf, the bar
+            // floating on it, and the scrim for the card menus - out of reach
+            // while it is, see [behindOverlay].
             Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.TopCenter,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .behindOverlay(detailLocation != null),
             ) {
-                // Reading the library is the outer state; everything inside is
-                // what a successfully read library can look like.
-                //
-                // The width cap lives on the container, not the children: put it
-                // on the children and AnimatedContent's own sizing wins, which
-                // left-aligns the grid instead of centring it.
-                UiStateContent(
-                    state = uiState,
-                    actionLabel = "Try again",
-                    onAction = onRetry,
-                    modifier = Modifier
-                        // Capped first, then filled, so wide desktop windows keep
-                        // a readable measure instead of stretching edge to edge.
-                        .widthIn(max = dimens.maxGridWidth)
-                        .fillMaxSize(),
-                    // The library it hands back is only used to tell an empty
-                    // shelf from a full one; the grid draws [books].
-                ) { loaded ->
-                    // An import that lands books keeps the grid up and reports
-                    // itself in the header instead; the importing state below is
-                    // only for when there is nothing else to show yet.
-                    val contentState = when {
-                        loaded.isNotEmpty() -> LibraryContentState.Content
-                        isImporting -> LibraryContentState.Importing
-                        else -> LibraryContentState.Empty
-                    }
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.TopCenter,
+                ) {
+                    // Reading the library is the outer state; everything inside is
+                    // what a successfully read library can look like.
+                    //
+                    // The width cap lives on the container, not the children: put it
+                    // on the children and AnimatedContent's own sizing wins, which
+                    // left-aligns the grid instead of centring it.
+                    UiStateContent(
+                        state = uiState,
+                        actionLabel = "Try again",
+                        onAction = onRetry,
+                        modifier = Modifier
+                            // Capped first, then filled, so wide desktop windows keep
+                            // a readable measure instead of stretching edge to edge.
+                            .widthIn(max = dimens.maxGridWidth)
+                            .fillMaxSize(),
+                        // The library it hands back is only used to tell an empty
+                        // shelf from a full one; the grid draws [books].
+                    ) { loaded ->
+                        // An import that lands books keeps the grid up and reports
+                        // itself in the header instead; the importing state below is
+                        // only for when there is nothing else to show yet.
+                        val contentState = when {
+                            loaded.isNotEmpty() -> LibraryContentState.Content
+                            isImporting -> LibraryContentState.Importing
+                            else -> LibraryContentState.Empty
+                        }
 
-                    AnimatedContent(
-                        targetState = contentState,
-                        transitionSpec = {
-                            // `using null` disables the default SizeTransform,
-                            // which would otherwise animate the container bounds
-                            // and slide the content sideways mid-transition.
-                            (stateSwapIn() togetherWith softFadeOut()) using null
-                        },
-                        contentAlignment = Alignment.TopCenter,
-                        modifier = Modifier.fillMaxSize(),
-                        label = "libraryContent",
-                    ) { state ->
-                        when (state) {
-                            LibraryContentState.Importing -> LoadingState(
-                                message = importingMessage(importProgress),
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(top = libraryNavBarHeight()),
-                            )
+                        AnimatedContent(
+                            targetState = contentState,
+                            transitionSpec = {
+                                // `using null` disables the default SizeTransform,
+                                // which would otherwise animate the container bounds
+                                // and slide the content sideways mid-transition.
+                                (stateSwapIn() togetherWith softFadeOut()) using null
+                            },
+                            contentAlignment = Alignment.TopCenter,
+                            modifier = Modifier.fillMaxSize(),
+                            label = "libraryContent",
+                        ) { state ->
+                            when (state) {
+                                LibraryContentState.Importing -> LoadingState(
+                                    message = importingMessage(importProgress),
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(top = libraryNavBarHeight()),
+                                )
 
-                            LibraryContentState.Empty -> LibraryEmptyState(
-                                importMenuExpanded = openMenu == OpenMenu.Import,
-                                onImportMenuRequest = { openMenu = OpenMenu.Import },
-                                onMenuDismiss = { openMenu = null },
-                                onImport = onImport,
-                                onImportFolder = onImportFolder,
-                                reveal = reveal,
-                                modifier = Modifier.fillMaxSize(),
-                            )
+                                LibraryContentState.Empty -> LibraryEmptyState(
+                                    importMenuExpanded = openMenu == OpenMenu.Import,
+                                    onImportMenuRequest = { openMenu = OpenMenu.Import },
+                                    onMenuDismiss = { openMenu = null },
+                                    onImport = onImport,
+                                    onImportFolder = onImportFolder,
+                                    reveal = reveal,
+                                    modifier = Modifier.fillMaxSize(),
+                                )
 
-                            LibraryContentState.Content -> LibraryGrid(
-                                books = books,
-                                gridState = gridState,
-                                query = query,
-                                facets = facets,
-                                onQueryChange = onQueryChange,
-                                isImporting = isImporting,
-                                importProgress = importProgress,
-                                reveal = reveal,
-                                onDocumentClick = onDocumentClick,
-                                onDocumentDetails = { document ->
-                                    if (detailsOpenInPlace) {
-                                        detailLocation = document.document.location
-                                    } else {
-                                        onDocumentDetails(document)
-                                    }
-                                },
-                                openMenu = openMenu,
-                                onOpenMenuChange = { openMenu = it },
-                                onToggleFavorite = onToggleFavorite,
-                                onRefresh = onRefresh,
-                                onDelete = onDelete,
-                                onImport = onImport,
-                                onImportFolder = onImportFolder,
-                                modifier = Modifier.fillMaxSize(),
-                                layout = shelf.layout,
-                                onLayoutChange = shelf.onLayoutChange,
-                                selection = shelf.selection,
-                                onStartSelecting = shelf.onStart,
-                                onToggle = shelf.onToggle,
-                            )
+                                LibraryContentState.Content -> LibraryGrid(
+                                    books = books,
+                                    gridState = gridState,
+                                    query = query,
+                                    facets = facets,
+                                    onQueryChange = onQueryChange,
+                                    isImporting = isImporting,
+                                    importProgress = importProgress,
+                                    reveal = reveal,
+                                    onDocumentClick = onDocumentClick,
+                                    onDocumentDetails = { document ->
+                                        if (detailsOpenInPlace) {
+                                            detailLocation = document.document.location
+                                        } else {
+                                            onDocumentDetails(document)
+                                        }
+                                    },
+                                    openMenu = openMenu,
+                                    onOpenMenuChange = { openMenu = it },
+                                    onToggleFavorite = onToggleFavorite,
+                                    onRefresh = onRefresh,
+                                    onDelete = onDelete,
+                                    onImport = onImport,
+                                    onImportFolder = onImportFolder,
+                                    modifier = Modifier.fillMaxSize(),
+                                    layout = shelf.layout,
+                                    onLayoutChange = shelf.onLayoutChange,
+                                    selection = shelf.selection,
+                                    onStartSelecting = shelf.onStart,
+                                    onToggle = shelf.onToggle,
+                                )
+                            }
                         }
                     }
                 }
-            }
 
-            // Above the grid it floats over, below the menus and their scrims.
-            //
-            // One or the other, never both: searching and selecting are answers
-            // to different questions, and a shelf is only ever being asked one
-            // of them - see LibrarySelectionBar.
-            if (shelf.active) {
-                LibrarySelectionSurface(ui = shelf, books = books)
-            } else {
-                LibraryNavBar(
-                    collapsedProgress = collapsedProgress,
-                    query = query.search,
-                    onQueryChange = { onQueryChange(query.copy(search = it)) },
-                    searchableCount = books.size,
-                    menuExpanded = openMenu == OpenMenu.Bar,
-                    onMenuExpandedChange = { openMenu = if (it) OpenMenu.Bar else null },
-                    onImport = onImport,
-                    onImportFolder = onImportFolder,
-                    shelf = shelf,
-                    onSettings = onSettings,
-                    modifier = Modifier.align(Alignment.TopCenter),
-                    showSearch = showSearch,
-                    statsButton = statsButton,
+                // Above the grid it floats over, below the menus and their scrims.
+                //
+                // One or the other, never both: searching and selecting are answers
+                // to different questions, and a shelf is only ever being asked one
+                // of them - see LibrarySelectionBar.
+                if (shelf.active) {
+                    LibrarySelectionSurface(ui = shelf, books = books)
+                } else {
+                    LibraryNavBar(
+                        collapsedProgress = collapsedProgress,
+                        query = query.search,
+                        onQueryChange = { onQueryChange(query.copy(search = it)) },
+                        searchableCount = books.size,
+                        menuExpanded = openMenu == OpenMenu.Bar,
+                        onMenuExpandedChange = { openMenu = if (it) OpenMenu.Bar else null },
+                        onImport = onImport,
+                        onImportFolder = onImportFolder,
+                        shelf = shelf,
+                        onSettings = onSettings,
+                        modifier = Modifier.align(Alignment.TopCenter),
+                        showSearch = showSearch,
+                        statsButton = statsButton,
+                    )
+                }
+
+                // Every menu on this screen is a non-focusable popup drawn above this
+                // layer, so the press that dismisses one has to be caught here.
+                ActionMenuScrim(
+                    visible = openMenu != null,
+                    onDismiss = { openMenu = null },
                 )
             }
-
-            // Every menu on this screen is a non-focusable popup drawn above this
-            // layer, so the press that dismisses one has to be caught here.
-            ActionMenuScrim(
-                visible = openMenu != null,
-                onDismiss = { openMenu = null },
-            )
 
             // Last, so it covers the library and its chrome both. Draws nothing
             // at all until a book is being looked at.

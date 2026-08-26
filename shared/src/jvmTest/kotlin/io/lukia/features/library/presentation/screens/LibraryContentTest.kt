@@ -196,10 +196,15 @@ class LibraryContentTest {
 
         // The panel is up...
         onNodeWithText("Information").assertIsDisplayed()
-        // ...the library is still behind it...
-        onNodeWithText("The Hobbit").assertIsDisplayed()
-        // ...and nothing was navigated to.
+        // ...and nothing was navigated to, which is the difference between a
+        // panel laid over the library and a screen pushed instead of it.
         assertNull(navigatedTo)
+
+        // The library is still drawn behind, dimmed - but deliberately out of
+        // the semantics tree while the panel is open, so that a screen reader
+        // and the Tab key cannot walk out of a modal into the shelf under it.
+        // See `behindOverlay`, which BehindOverlayTest covers directly.
+        onNodeWithText("The Hobbit").assertDoesNotExist()
     }
 
     /** A phone has room for one thing at a time, so it still goes to a screen. */

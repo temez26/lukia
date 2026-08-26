@@ -14,6 +14,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
@@ -60,11 +63,19 @@ fun OverlayPanel(
 
     DismissOnBack(enabled = visible, onDismiss = onDismiss)
 
-    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+    // One group, so that what the panel holds is traversed as a unit and the
+    // index below is read as an order within it rather than against the screen.
+    BoxWithConstraints(
+        modifier = modifier.fillMaxSize().semantics { isTraversalGroup = true },
+    ) {
         // Dimming what is behind rather than hiding it: that is the context the
         // panel was opened from, and it should stay legible as the place the
         // reader is about to return to.
-        ActionMenuScrim(visible = visible, onDismiss = onDismiss)
+        ActionMenuScrim(
+            visible = visible,
+            onDismiss = onDismiss,
+            label = "Close this panel",
+        )
 
         // Measured against the window rather than fixed, so the panel stays a
         // panel - inset from every edge - at any size, and scrolls inside itself
@@ -85,7 +96,11 @@ fun OverlayPanel(
                 // control.
                 .popoverTransition(progress, TransformOrigin.Center)
                 .width(panelWidth)
-                .heightIn(max = maxHeight * MaxHeightFraction),
+                .heightIn(max = maxHeight * MaxHeightFraction)
+                // Ahead of the scrim, which fills the window and would otherwise
+                // sort first: a reader should hear what the panel says before
+                // being offered the way out of it.
+                .semantics { traversalIndex = -1f },
         ) {
             Box(modifier = Modifier.fillMaxWidth()) {
                 content()
