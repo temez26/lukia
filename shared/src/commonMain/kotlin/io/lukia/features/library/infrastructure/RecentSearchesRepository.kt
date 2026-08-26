@@ -1,9 +1,8 @@
 package io.lukia.features.library.infrastructure
 
 import io.lukia.core.domain.SettingsStore
-import kotlinx.coroutines.flow.MutableStateFlow
+import io.lukia.core.infrastructure.PersistedSettings
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * How many searches are kept. Enough to cover the handful of books somebody is
@@ -37,8 +36,11 @@ class RecentSearchesRepository(
     private val store: SettingsStore,
 ) {
 
-    private val _terms = MutableStateFlow(read())
-    val terms: StateFlow<List<String>> = _terms.asStateFlow()
+    private val persisted = PersistedSettings(read()) {
+        store.putString(KeyRecentSearches, it.joinToString(Separator))
+    }
+
+    val terms: StateFlow<List<String>> = persisted.state
 
     /**
      * Files [term] as the most recent search, or moves it back to the top if it
@@ -53,22 +55,17 @@ class RecentSearchesRepository(
         if (trimmed.isEmpty()) return
 
         write(
-            listOf(trimmed) + _terms.value.filterNot { it.equals(trimmed, ignoreCase = true) },
+            listOf(trimmed) + terms.value.filterNot { it.equals(trimmed, ignoreCase = true) },
         )
     }
 
     fun forget(term: String) {
-        write(_terms.value.filterNot { it.equals(term, ignoreCase = true) })
+        write(terms.value.filterNot { it.equals(term, ignoreCase = true) })
     }
 
     fun clear() = write(emptyList())
 
-    private fun write(terms: List<String>) {
-        val kept = terms.take(MaxRecentSearches)
-
-        _terms.value = kept
-        store.putString(KeyRecentSearches, kept.joinToString(Separator))
-    }
+    private fun write(terms: List<String>) = persisted.set(terms.take(MaxRecentSearches))
 
     /**
      * Blank entries are dropped on the way in rather than trusted: an empty

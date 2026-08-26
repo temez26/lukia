@@ -5,11 +5,10 @@ import io.lukia.core.domain.AppMotion
 import io.lukia.core.domain.AppPalette
 import io.lukia.core.domain.AppTheme
 import io.lukia.core.domain.SettingsStore
+import io.lukia.core.infrastructure.PersistedSettings
 import io.lukia.core.infrastructure.readEnum
 import io.lukia.features.settings.domain.AppSettings
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * The app's own settings, live and persisted.
@@ -25,15 +24,10 @@ class AppSettingsRepository(
     private val store: SettingsStore,
 ) {
 
-    private val _settings = MutableStateFlow(load())
-    val settings: StateFlow<AppSettings> = _settings.asStateFlow()
+    private val persisted = PersistedSettings(load(), ::save)
+    val settings: StateFlow<AppSettings> = persisted.state
 
-    fun update(settings: AppSettings) {
-        if (_settings.value == settings) return
-
-        _settings.value = settings
-        save(settings)
-    }
+    fun update(settings: AppSettings) = persisted.set(settings)
 
     private fun load(): AppSettings {
         val defaults = AppSettings()

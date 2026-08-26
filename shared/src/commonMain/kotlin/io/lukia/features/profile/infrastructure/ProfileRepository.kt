@@ -1,6 +1,7 @@
 package io.lukia.features.profile.infrastructure
 
 import io.lukia.core.domain.SettingsStore
+import io.lukia.core.infrastructure.PersistedSettings
 import io.lukia.core.infrastructure.readEnum
 import io.lukia.features.profile.domain.ProfileAccount
 import io.lukia.features.profile.domain.ProfileAvatar
@@ -36,10 +37,12 @@ class ProfileRepository(
     private val pictures: ProfilePictureStore,
 ) {
 
-    private val _profile = MutableStateFlow(load())
+    // The flow starts null - see [profile] - but nothing ever puts it back to
+    // null, so there is no "no profile" for [save] to have to write.
+    private val persisted = PersistedSettings<UserProfile?>(load()) { it?.let(::save) }
 
     /** Null until the reader has been through onboarding. */
-    val profile: StateFlow<UserProfile?> = _profile.asStateFlow()
+    val profile: StateFlow<UserProfile?> = persisted.state
 
     private val _picture = MutableStateFlow<ProfilePicture?>(null)
 
@@ -68,16 +71,16 @@ class ProfileRepository(
 
         if (Usernames.problemWith(cleaned) != null) return
 
-        update(_profile.value?.copy(username = cleaned) ?: UserProfile(cleaned))
+        update(profile.value?.copy(username = cleaned) ?: UserProfile(cleaned))
     }
 
     /** Ignored before there is a profile to dress, which is onboarding's job. */
     fun setAvatar(avatar: ProfileAvatar) {
-        update(_profile.value?.copy(avatar = avatar) ?: return)
+        update(profile.value?.copy(avatar = avatar) ?: return)
     }
 
     fun setTint(tint: ProfileTint) {
-        update(_profile.value?.copy(tint = tint) ?: return)
+        update(profile.value?.copy(tint = tint) ?: return)
     }
 
     /**
@@ -121,17 +124,12 @@ class ProfileRepository(
         pictures.clear()
         _picture.value = null
 
-        if (_profile.value?.avatar == ProfileAvatar.Picture) setAvatar(ProfileAvatar.Monogram)
+        if (profile.value?.avatar == ProfileAvatar.Picture) setAvatar(ProfileAvatar.Monogram)
     }
 
     private var loadedPicture = false
 
-    private fun update(profile: UserProfile) {
-        if (_profile.value == profile) return
-
-        _profile.value = profile
-        save(profile)
-    }
+    private fun update(profile: UserProfile) = persisted.set(profile)
 
     private fun load(): UserProfile? {
         val cleaned = Usernames.clean(store.getString(KEY_USERNAME).orEmpty())
