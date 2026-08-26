@@ -96,6 +96,7 @@ internal fun BookCard(
     val interactionSource = remember { MutableInteractionSource() }
     val hover = rememberHoverFraction(interactionSource)
     val coverShape = MaterialTheme.shapes.medium
+    // State, read inside the layer below rather than here - see jiggleAngle.
     val angle = jiggleAngle(active = selection != null, seed = revealIndex)
 
     Column(
@@ -115,7 +116,7 @@ internal fun BookCard(
             // That one is shared by hover and press and is there on every card
             // always; this exists only while a shelf is being selected from, and
             // costs nothing the rest of the time.
-            .graphicsLayer { rotationZ = angle },
+            .graphicsLayer { rotationZ = angle.value },
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             BookCover(
