@@ -61,6 +61,11 @@ kotlin {
 
     sourceSets {
         androidMain.dependencies {
+            // FileProvider, which is how a book handed to the app is addressed
+            // once copied - see AndroidIncomingDocumentStore. Declared rather
+            // than taken transitively from documentfile, since it is now used
+            // directly.
+            implementation(libs.androidx.core)
             implementation(libs.androidx.documentfile)
             implementation(libs.sqldelight.androidDriver)
             implementation(libs.ktor.client.okhttp)

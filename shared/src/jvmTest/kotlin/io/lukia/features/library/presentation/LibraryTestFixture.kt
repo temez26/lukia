@@ -4,6 +4,7 @@ import io.lukia.core.domain.CoverImage
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.FakeDocumentWorkspace
+import io.lukia.core.domain.FakeIncomingDocumentStore
 import io.lukia.core.domain.FakePdfLayoutRepository
 import io.lukia.core.domain.FakeReadingProgressRepository
 import io.lukia.core.domain.FakeSettingsStore
@@ -12,6 +13,8 @@ import io.lukia.core.domain.PickedFolder
 import io.lukia.core.domain.ReadingProgress
 import io.lukia.core.domain.ReadingProgressRepository
 import io.lukia.core.domain.TestDocuments
+import io.lukia.core.infrastructure.DocumentInbox
+import io.lukia.core.infrastructure.IncomingDocuments
 import io.lukia.core.presentation.UiState
 import io.lukia.features.library.application.GetLibraryDocumentsUseCase
 import io.lukia.features.library.application.ImportDocumentUseCase
@@ -58,6 +61,9 @@ internal fun createViewModel(
     analyzer: DocumentAnalyzer = FakeDocumentAnalyzer(pdfDocumentInfo()),
     folderScanner: FolderScanner = FakeFolderScanner(emptyList()),
     readingProgress: ReadingProgressRepository = FakeReadingProgressRepository(),
+    /** Passed in where a test wants to deliver a book to the app's inbox. */
+    incomingDocuments: DocumentInbox = DocumentInbox(),
+    incomingDocumentStore: FakeIncomingDocumentStore = FakeIncomingDocumentStore(),
 ): LibraryViewModel {
     // The use cases move work off the main dispatcher in production;
     // pinning it here keeps imports synchronous so state can be asserted
@@ -80,6 +86,7 @@ internal fun createViewModel(
             importDocumentsUseCase = importDocumentsUseCase,
             dispatcher = UnconfinedTestDispatcher(),
         ),
+        incoming = IncomingDocuments(inbox = incomingDocuments, store = incomingDocumentStore),
         setFavoriteUseCase = SetFavoriteUseCase(repository),
         refreshDocumentUseCase = RefreshDocumentUseCase(
             libraryRepository = repository,

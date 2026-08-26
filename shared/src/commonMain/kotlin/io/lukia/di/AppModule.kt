@@ -1,5 +1,7 @@
 package io.lukia.di
 
+import io.lukia.core.infrastructure.DocumentInbox
+import io.lukia.core.infrastructure.IncomingDocuments
 import io.lukia.core.infrastructure.db.LukiaDatabase
 import io.lukia.features.library.libraryModule
 import io.lukia.features.reader.readerModule
@@ -14,7 +16,8 @@ import org.koin.dsl.module
  * Each feature registers its own half of the graph, so what a feature offers the
  * rest of the app is decided beside the code that offers it rather than in one
  * list that has to import every one of them. What is left here is the database,
- * which belongs to no feature and is shared by most of them.
+ * which belongs to no feature and is shared by most of them, and the inbox that
+ * the platform fills and the library empties.
  */
 val commonModule = module {
 
@@ -22,6 +25,17 @@ val commonModule = module {
     // where the file lives; everything built on it is the same code.
     single {
         LukiaDatabase(get())
+    }
+
+    // One inbox for the process. The platform's own entry point puts documents
+    // in - see `MainActivity` and `iOSApp.swift` - and the library takes them
+    // out; neither can reach the other, and both can reach this.
+    single {
+        DocumentInbox()
+    }
+
+    single {
+        IncomingDocuments(inbox = get(), store = get())
     }
 
     includes(

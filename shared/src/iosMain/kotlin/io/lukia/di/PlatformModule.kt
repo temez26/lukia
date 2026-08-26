@@ -2,9 +2,11 @@ package io.lukia.di
 
 import app.cash.sqldelight.db.SqlDriver
 import io.lukia.core.domain.DocumentWorkspace
+import io.lukia.core.domain.IncomingDocumentStore
 import io.lukia.core.domain.SecretStore
 import io.lukia.core.domain.SettingsStore
 import io.lukia.core.infrastructure.IOSDocumentWorkspace
+import io.lukia.core.infrastructure.IOSIncomingDocumentStore
 import io.lukia.core.infrastructure.IOSSecretStore
 import io.lukia.core.infrastructure.IOSSettingsStore
 import io.lukia.core.infrastructure.lukiaSqlDriver
@@ -18,6 +20,10 @@ val platformModule = module {
 
     single<DocumentAnalyzer> {
         IOSDocumentAnalyzer()
+    }
+
+    single<IncomingDocumentStore> {
+        IOSIncomingDocumentStore()
     }
 
     single<DocumentWorkspace> {

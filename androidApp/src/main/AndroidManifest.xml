@@ -30,13 +30,75 @@
             android:exported="true"
             android:name=".MainActivity"
             android:configChanges="uiMode"
+            android:launchMode="singleTask"
             android:theme="@style/Theme.Lukia.Starting">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!--
+                A book tapped somewhere else on the device: in Files, in a mail
+                message, in a browser's downloads. Without this the app is only
+                reachable from its own icon, and every book has to be fetched
+                back through the picker from inside it.
+
+                Listed by type rather than by extension wildcard, and
+                deliberately without application/octet-stream: the picker
+                accepts that one because a reader pointing at a book is a
+                stated intention, where a VIEW filter carrying it would offer
+                Lukia for every unrecognised file on the device.
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+
+                <data android:mimeType="application/pdf" />
+                <data android:mimeType="application/epub+zip" />
+                <data
+                    android:mimeType="application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+                <data android:mimeType="text/plain" />
+                <data android:mimeType="text/markdown" />
+            </intent-filter>
+
+            <!-- The same books, arriving from a share sheet rather than a tap. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="application/pdf" />
+                <data android:mimeType="application/epub+zip" />
+                <data
+                    android:mimeType="application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+                <data android:mimeType="text/plain" />
+                <data android:mimeType="text/markdown" />
+            </intent-filter>
         </activity>
+
+        <!--
+            The app's own copies of books handed to it, addressed as content://
+            so that the analyser and the workspace reach them exactly as they
+            reach a picked document - see AndroidIncomingDocumentStore for why
+            that is worth a provider. Not exported: nothing outside the app has
+            any business in here, and the grants are never handed out.
+        -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.documents"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/document_paths" />
+        </provider>
     </application>
 
 </manifest>

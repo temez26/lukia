@@ -36,7 +36,18 @@ val libraryModule = module {
     }
 
     viewModel {
-        LibraryViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get())
+        LibraryViewModel(
+            get(),
+            get(),
+            get(),
+            get(),
+            get(),
+            get(),
+            get(),
+            get(),
+            get(),
+            get(),
+        )
     }
 
     single {

@@ -27,37 +27,7 @@ internal object WorkingCopyNaming {
         return if (suffix.isEmpty()) prefix else "$prefix.$suffix"
     }
 
-    /**
-     * FNV-1a. A non-cryptographic hash is the right tool here - this is a name,
-     * not a security boundary - but [String.hashCode] is only 32 bits, which is
-     * a coin flip away from a collision across a library of any size.
-     */
-    private fun hash(value: String): String {
-        var hash = FNV_OFFSET_BASIS
+    private fun hash(value: String): String = fnv1aHex(value)
 
-        value.encodeToByteArray().forEach { byte ->
-            hash = hash xor byte.toUByte().toULong()
-            hash *= FNV_PRIME
-        }
-
-        return hash.toHexString()
-    }
-
-    private fun ULong.toHexString(): String {
-        val digits = CharArray(HEX_DIGITS)
-        var remaining = this
-
-        for (index in HEX_DIGITS - 1 downTo 0) {
-            digits[index] = HEX_ALPHABET[(remaining and 0xFuL).toInt()]
-            remaining = remaining shr 4
-        }
-
-        return digits.concatToString()
-    }
-
-    private const val FNV_OFFSET_BASIS = 0xcbf29ce484222325uL
-    private const val FNV_PRIME = 0x100000001b3uL
-    private const val HEX_ALPHABET = "0123456789abcdef"
-    private const val HEX_DIGITS = 16
     private const val MAX_EXTENSION_LENGTH = 8
 }

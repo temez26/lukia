@@ -9,6 +9,7 @@ import io.lukia.core.domain.ReadingProgress
 import io.lukia.core.domain.ReadingProgressRepository
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.core.domain.toAppError
+import io.lukia.core.infrastructure.IncomingDocuments
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
 import io.lukia.core.presentation.displayShortMessage
@@ -40,6 +41,7 @@ class LibraryViewModel(
     private val getLibraryDocumentsUseCase: GetLibraryDocumentsUseCase,
     importDocumentsUseCase: ImportDocumentsUseCase,
     importFolderUseCase: ImportFolderUseCase,
+    incoming: IncomingDocuments,
     private val setFavoriteUseCase: SetFavoriteUseCase,
     private val refreshDocumentUseCase: RefreshDocumentUseCase,
     private val removeDocumentUseCase: RemoveDocumentUseCase,
@@ -102,6 +104,7 @@ class LibraryViewModel(
     private val importSession = LibraryImportSession(
         importDocumentsUseCase = importDocumentsUseCase,
         importFolderUseCase = importFolderUseCase,
+        incoming = incoming,
         scope = viewModelScope,
         onImported = ::loadDocuments,
         onMessage = { _message.value = it },
