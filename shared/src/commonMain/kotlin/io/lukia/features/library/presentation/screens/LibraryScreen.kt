@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.DocumentInfo
+import io.lukia.core.domain.ReadingProgress
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.bookdetail.presentation.BookDetailOverlay
@@ -40,7 +41,6 @@ import io.lukia.features.library.presentation.components.LibraryNavBar
 import io.lukia.features.library.presentation.components.libraryNavBarHeight
 import io.lukia.features.profile.presentation.components.ProfileFace
 import io.lukia.features.profile.presentation.rememberProfileFace
-import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.features.settings.presentation.SettingsOverlay
 import io.lukia.shared.presentation.components.ActionMenuScrim
 import io.lukia.shared.presentation.components.LoadingState

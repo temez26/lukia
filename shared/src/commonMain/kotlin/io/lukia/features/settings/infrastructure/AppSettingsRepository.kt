@@ -1,12 +1,12 @@
 package io.lukia.features.settings.infrastructure
 
+import io.lukia.core.domain.AppAccent
+import io.lukia.core.domain.AppMotion
+import io.lukia.core.domain.AppPalette
+import io.lukia.core.domain.AppTheme
 import io.lukia.core.domain.SettingsStore
 import io.lukia.core.infrastructure.readEnum
-import io.lukia.features.settings.domain.AppAccent
-import io.lukia.features.settings.domain.AppMotion
-import io.lukia.features.settings.domain.AppPalette
 import io.lukia.features.settings.domain.AppSettings
-import io.lukia.features.settings.domain.AppTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

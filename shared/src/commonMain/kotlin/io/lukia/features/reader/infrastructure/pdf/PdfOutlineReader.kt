@@ -1,5 +1,12 @@
 package io.lukia.features.reader.infrastructure.pdf
 
+import io.lukia.core.infrastructure.pdf.PdfByteSource
+import io.lukia.core.infrastructure.pdf.PdfObjectIndex
+import io.lukia.core.infrastructure.pdf.PdfValue
+import io.lukia.core.infrastructure.pdf.asArray
+import io.lukia.core.infrastructure.pdf.asDictionary
+import io.lukia.core.infrastructure.pdf.asName
+import io.lukia.core.infrastructure.pdf.asText
 import io.lukia.features.reader.domain.OutlineEntry
 
 /**

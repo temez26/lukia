@@ -2,11 +2,11 @@ package io.lukia.features.bookdetail
 
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.FakeReadingProgressRepository
+import io.lukia.core.domain.ReadingProgress
 import io.lukia.core.domain.TestDocuments
 import io.lukia.features.bookdetail.application.GetDocumentDetailsUseCase
 import io.lukia.features.library.domain.LibraryRepository
-import io.lukia.features.reader.domain.FakeReadingProgressRepository
-import io.lukia.features.reader.domain.ReadingProgress
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

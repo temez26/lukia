@@ -30,7 +30,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import io.lukia.core.domain.CoverImage
-import io.lukia.features.reader.domain.ReadingProgress
+import io.lukia.core.domain.ReadingProgress
 import io.lukia.shared.presentation.components.BookCover
 import io.lukia.shared.presentation.components.OpenBookGlyph
 import io.lukia.shared.presentation.components.ReadingProgressOverlay

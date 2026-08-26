@@ -13,9 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.DocumentInfo
+import io.lukia.core.domain.ReadingProgress
 import io.lukia.features.bookdetail.application.BookDetails
 import io.lukia.features.bookdetail.presentation.screens.BookDetailBody
-import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.shared.presentation.components.ActionMenuScrim
 import io.lukia.shared.presentation.components.BookActionsMenu
 import io.lukia.shared.presentation.components.EllipsisGlyph

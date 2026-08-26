@@ -1,6 +1,6 @@
 package io.lukia.features.reader.presentation
 
-import io.lukia.features.reader.domain.ReadingSessionRepository
+import io.lukia.core.domain.ReadingSessionRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

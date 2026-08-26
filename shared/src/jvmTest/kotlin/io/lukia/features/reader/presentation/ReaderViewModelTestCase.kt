@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.viewModelScope
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.FakePdfLayoutRepository
+import io.lukia.core.domain.FakeReadingSessionRepository
 import io.lukia.core.domain.FakeSecretStore
 import io.lukia.core.domain.FakeSettingsStore
 import io.lukia.core.domain.PickedDocument
@@ -13,8 +15,6 @@ import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.reader.application.OpenDocumentUseCase
-import io.lukia.features.reader.domain.FakePdfLayoutRepository
-import io.lukia.features.reader.domain.FakeReadingSessionRepository
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository

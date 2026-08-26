@@ -4,8 +4,8 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
-import io.lukia.features.settings.domain.AppAccent
-import io.lukia.features.settings.domain.AppPalette
+import io.lukia.core.domain.AppAccent
+import io.lukia.core.domain.AppPalette
 
 /**
  * One palette's surfaces, at one lightness.

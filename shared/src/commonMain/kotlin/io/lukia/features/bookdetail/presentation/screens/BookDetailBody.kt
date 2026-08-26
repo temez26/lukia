@@ -21,9 +21,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.lukia.core.presentation.authorLine
+import io.lukia.core.presentation.bookTitle
 import io.lukia.features.bookdetail.application.BookDetails
-import io.lukia.features.bookdetail.presentation.authorLine
-import io.lukia.features.bookdetail.presentation.bookTitle
 import io.lukia.features.bookdetail.presentation.components.ReadableCover
 import io.lukia.features.bookdetail.presentation.progressLabel
 import io.lukia.features.bookdetail.presentation.readActionLabel

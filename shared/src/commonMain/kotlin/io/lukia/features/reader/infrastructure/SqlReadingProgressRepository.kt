@@ -1,8 +1,8 @@
 package io.lukia.features.reader.infrastructure
 
+import io.lukia.core.domain.ReadingProgress
+import io.lukia.core.domain.ReadingProgressRepository
 import io.lukia.core.infrastructure.db.LukiaDatabase
-import io.lukia.features.reader.domain.ReadingProgress
-import io.lukia.features.reader.domain.ReadingProgressRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

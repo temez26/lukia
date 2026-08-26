@@ -1,14 +1,7 @@
-package io.lukia.features.translate.domain
+package io.lukia.features.reader.domain
 
-import io.lukia.features.reader.domain.GlyphBlock
-import io.lukia.features.reader.domain.PageGlyph
-import io.lukia.features.reader.domain.PlacedGlyph
-import io.lukia.features.reader.domain.TextQuad
-import io.lukia.features.reader.domain.between
-import io.lukia.features.reader.domain.intoBlocks
-import io.lukia.features.reader.domain.intoLines
-import io.lukia.features.reader.domain.placedText
-
+import io.lukia.features.translate.domain.splitIntoSentences
+import io.lukia.features.translate.domain.words
 /**
  * One sentence of a laid-out page: what it says, and the rectangles it covers.
  *

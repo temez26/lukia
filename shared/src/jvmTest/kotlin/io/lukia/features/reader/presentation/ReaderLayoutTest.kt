@@ -1,9 +1,9 @@
 package io.lukia.features.reader.presentation
 
 import io.lukia.core.domain.FakeSettingsStore
+import io.lukia.core.domain.PdfLayout
 import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.reader.domain.PagedContent
-import io.lukia.features.reader.domain.PdfLayout
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReflowableContent
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository

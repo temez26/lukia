@@ -2,8 +2,8 @@ package io.lukia.features.settings.presentation
 
 import io.lukia.core.domain.FakeSecretStore
 import io.lukia.core.domain.FakeSettingsStore
+import io.lukia.core.domain.PdfLayout
 import io.lukia.core.domain.SettingsStore
-import io.lukia.features.reader.domain.PdfLayout
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository

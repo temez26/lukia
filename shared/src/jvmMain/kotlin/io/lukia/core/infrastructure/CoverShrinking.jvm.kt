@@ -1,4 +1,4 @@
-package io.lukia.features.import.infrastructure.cover
+package io.lukia.core.infrastructure
 
 import java.awt.Color
 import java.awt.RenderingHints

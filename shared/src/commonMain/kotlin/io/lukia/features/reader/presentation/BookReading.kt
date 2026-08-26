@@ -1,11 +1,11 @@
 package io.lukia.features.reader.presentation
 
+import io.lukia.core.domain.ReadingProgress
+import io.lukia.core.domain.ReadingProgressRepository
+import io.lukia.core.domain.ReadingSessionRepository
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderDocument
-import io.lukia.features.reader.domain.ReadingProgress
-import io.lukia.features.reader.domain.ReadingProgressRepository
-import io.lukia.features.reader.domain.ReadingSessionRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

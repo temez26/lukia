@@ -3,12 +3,12 @@ package io.lukia.features.library
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.FakeDocumentWorkspace
+import io.lukia.core.domain.FakePdfLayoutRepository
+import io.lukia.core.domain.FakeReadingProgressRepository
+import io.lukia.core.domain.ReadingProgress
 import io.lukia.core.domain.TestDocuments
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.domain.LibraryRepository
-import io.lukia.features.reader.domain.FakePdfLayoutRepository
-import io.lukia.features.reader.domain.FakeReadingProgressRepository
-import io.lukia.features.reader.domain.ReadingProgress
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertNull

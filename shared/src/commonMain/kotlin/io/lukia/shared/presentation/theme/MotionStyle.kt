@@ -4,7 +4,7 @@ import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
-import io.lukia.features.settings.domain.AppMotion
+import io.lukia.core.domain.AppMotion
 
 /**
  * How much the app moves, as the parts of the app that move actually read it.

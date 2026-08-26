@@ -1,4 +1,4 @@
-package io.lukia.features.import.infrastructure.cover
+package io.lukia.core.infrastructure
 
 /**
  * [coverBytes] re-encoded no larger than [maxEdge] along its longer side.

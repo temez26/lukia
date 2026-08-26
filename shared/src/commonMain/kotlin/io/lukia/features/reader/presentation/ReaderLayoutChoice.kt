@@ -1,9 +1,9 @@
 ﻿package io.lukia.features.reader.presentation
 
 import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.PdfLayout
+import io.lukia.core.domain.PdfLayoutRepository
 import io.lukia.core.domain.runCatchingApp
-import io.lukia.features.reader.domain.PdfLayout
-import io.lukia.features.reader.domain.PdfLayoutRepository
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReflowableContent
 import io.lukia.features.reader.domain.TextExtraction

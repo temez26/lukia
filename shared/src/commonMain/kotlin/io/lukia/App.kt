@@ -5,9 +5,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import io.lukia.core.domain.AppTheme
 import io.lukia.features.profile.infrastructure.ProfileRepository
 import io.lukia.features.profile.presentation.screens.OnboardingScreen
-import io.lukia.features.settings.domain.AppTheme
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.navigation.DesktopShell
 import io.lukia.navigation.MobileShell

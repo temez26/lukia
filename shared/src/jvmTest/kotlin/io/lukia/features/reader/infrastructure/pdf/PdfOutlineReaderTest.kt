@@ -1,5 +1,7 @@
 package io.lukia.features.reader.infrastructure.pdf
 
+import io.lukia.core.infrastructure.pdf.ByteArrayPdfSource
+import io.lukia.core.infrastructure.pdf.MinimalPdf
 import io.lukia.features.reader.domain.OutlineEntry
 import io.lukia.features.reader.infrastructure.openPdfPages
 import org.apache.pdfbox.pdfwriter.compress.CompressParameters

@@ -1,7 +1,7 @@
 package io.lukia.features.profile
 
+import io.lukia.core.domain.ReadingSession
 import io.lukia.features.profile.domain.readingHabits
-import io.lukia.features.reader.domain.ReadingSession
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime

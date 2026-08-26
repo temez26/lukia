@@ -1,7 +1,7 @@
 package io.lukia.features.reader.presentation.screens
 
 import androidx.compose.runtime.Immutable
-import io.lukia.features.reader.domain.PdfLayout
+import io.lukia.core.domain.PdfLayout
 import io.lukia.features.reader.domain.TextExtraction
 
 /**

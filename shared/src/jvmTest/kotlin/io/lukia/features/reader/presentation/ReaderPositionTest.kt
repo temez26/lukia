@@ -1,9 +1,9 @@
 package io.lukia.features.reader.presentation
 
+import io.lukia.core.domain.FakeReadingSessionRepository
 import io.lukia.core.domain.FakeSettingsStore
+import io.lukia.core.domain.ReadingProgress
 import io.lukia.features.reader.application.OpenDocumentUseCase
-import io.lukia.features.reader.domain.FakeReadingSessionRepository
-import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest

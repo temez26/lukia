@@ -1,7 +1,7 @@
 package io.lukia.features.bookdetail.application
 
+import io.lukia.core.domain.ReadingProgressRepository
 import io.lukia.features.library.domain.LibraryRepository
-import io.lukia.features.reader.domain.ReadingProgressRepository
 
 /**
  * Everything known about one book, gathered for the screen that shows it.

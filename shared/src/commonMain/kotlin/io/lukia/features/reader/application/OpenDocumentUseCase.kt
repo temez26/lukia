@@ -4,9 +4,9 @@ import io.lukia.core.domain.AppError
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.DocumentWorkspace
+import io.lukia.core.domain.PdfLayout
 import io.lukia.core.domain.asFailure
 import io.lukia.features.library.domain.LibraryRepository
-import io.lukia.features.reader.domain.PdfLayout
 import io.lukia.features.reader.domain.ReaderContent
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.TextExtraction

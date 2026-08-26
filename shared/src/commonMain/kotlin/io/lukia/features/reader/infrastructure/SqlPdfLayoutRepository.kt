@@ -1,8 +1,8 @@
 package io.lukia.features.reader.infrastructure
 
+import io.lukia.core.domain.PdfLayout
+import io.lukia.core.domain.PdfLayoutRepository
 import io.lukia.core.infrastructure.db.LukiaDatabase
-import io.lukia.features.reader.domain.PdfLayout
-import io.lukia.features.reader.domain.PdfLayoutRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

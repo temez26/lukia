@@ -1,4 +1,4 @@
-package io.lukia.features.import.infrastructure.cover
+package io.lukia.core.infrastructure
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory

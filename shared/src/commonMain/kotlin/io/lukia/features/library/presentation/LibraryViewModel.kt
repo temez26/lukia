@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.PickedDocument
 import io.lukia.core.domain.PickedFolder
+import io.lukia.core.domain.ReadingProgress
+import io.lukia.core.domain.ReadingProgressRepository
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.core.domain.toAppError
 import io.lukia.core.presentation.UiState
@@ -18,8 +20,6 @@ import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.infrastructure.LibrarySettingsRepository
 import io.lukia.features.library.infrastructure.RecentSearchesRepository
-import io.lukia.features.reader.domain.ReadingProgress
-import io.lukia.features.reader.domain.ReadingProgressRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

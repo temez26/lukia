@@ -1,4 +1,4 @@
-package io.lukia.features.reader.infrastructure.pdf
+package io.lukia.core.infrastructure.pdf
 
 import io.lukia.core.infrastructure.archive.inflateZlib
 

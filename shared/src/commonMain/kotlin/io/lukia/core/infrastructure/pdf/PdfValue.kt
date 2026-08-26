@@ -1,4 +1,4 @@
-package io.lukia.features.reader.infrastructure.pdf
+package io.lukia.core.infrastructure.pdf
 
 /**
  * The subset of PDF's object model needed to find a table of contents: the

@@ -1,7 +1,7 @@
 package io.lukia.shared.presentation.theme
 
 import androidx.compose.runtime.Composable
-import io.lukia.features.settings.domain.AppTheme
+import io.lukia.core.domain.AppTheme
 
 /**
  * Nothing to tell the desktop. A window is created by the app that owns it,

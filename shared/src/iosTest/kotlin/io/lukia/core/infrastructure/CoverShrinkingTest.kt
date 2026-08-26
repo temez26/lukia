@@ -1,4 +1,4 @@
-package io.lukia.features.import.infrastructure.cover
+package io.lukia.core.infrastructure
 
 import io.lukia.core.domain.DocumentType
 import kotlin.test.Test

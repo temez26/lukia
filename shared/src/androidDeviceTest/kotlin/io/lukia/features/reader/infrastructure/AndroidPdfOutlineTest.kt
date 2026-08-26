@@ -1,7 +1,7 @@
 package io.lukia.features.reader.infrastructure
 
 import androidx.test.platform.app.InstrumentationRegistry
-import io.lukia.features.reader.infrastructure.pdf.MinimalPdf
+import io.lukia.core.infrastructure.pdf.MinimalPdf
 import io.lukia.features.reader.infrastructure.pdf.PdfOutlineReader
 import java.io.File
 import kotlin.test.AfterTest

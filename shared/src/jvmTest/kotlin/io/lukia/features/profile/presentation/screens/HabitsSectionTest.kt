@@ -7,10 +7,10 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runComposeUiTest
+import io.lukia.core.domain.ReadingSession
 import io.lukia.core.presentation.UiState
 import io.lukia.features.profile.domain.ReadingSummary
 import io.lukia.features.profile.domain.readingHabits
-import io.lukia.features.reader.domain.ReadingSession
 import io.lukia.shared.presentation.theme.LukiaTheme
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate

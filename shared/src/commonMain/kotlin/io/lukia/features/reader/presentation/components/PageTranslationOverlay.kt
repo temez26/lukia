@@ -15,9 +15,9 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import io.lukia.features.reader.domain.PageSentence
 import io.lukia.features.reader.domain.TextQuad
-import io.lukia.features.translate.domain.PageSentence
-import io.lukia.features.translate.domain.union
+import io.lukia.features.reader.domain.union
 import io.lukia.features.translate.presentation.PassageTranslation
 import io.lukia.features.translate.presentation.SentenceTranslations
 

@@ -1,13 +1,13 @@
 package io.lukia.features.profile
 
 import io.lukia.core.domain.DocumentInfo
+import io.lukia.core.domain.ReadingProgress
 import io.lukia.features.library.TestBook
 import io.lukia.features.library.book
 import io.lukia.features.library.finished
 import io.lukia.features.library.partRead
 import io.lukia.features.profile.domain.ReadingSummary
 import io.lukia.features.profile.domain.readingSummary
-import io.lukia.features.reader.domain.ReadingProgress
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

@@ -1,4 +1,4 @@
-package io.lukia.features.reader.infrastructure.pdf
+package io.lukia.core.infrastructure.pdf
 
 // The two shapes a PDF string object takes - `(literal)` and `<48657820>` - and
 // the escapes inside them. Split from the structural parser because escape

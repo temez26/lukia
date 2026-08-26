@@ -1,6 +1,6 @@
 package io.lukia.features.reader.presentation
 
-import io.lukia.features.translate.domain.PageSentence
+import io.lukia.features.reader.domain.PageSentence
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
