@@ -1,5 +1,7 @@
 package io.lukia.shared.presentation.theme
 
+import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import io.lukia.features.settings.domain.AppMotion
@@ -47,6 +49,25 @@ data class MotionStyle(
      */
     val flourishes: Boolean,
 )
+
+/**
+ * One of [LukiaMotion]'s durations, at the pace the reader asked for.
+ *
+ * Shared rather than written out at each call site, so every big movement in the
+ * app is stretched by the same arithmetic - a screen pushing over another, and
+ * the tab bar leaving underneath it, are one movement and have to agree.
+ */
+internal fun MotionStyle.millis(standard: Int): Int = (standard * stretch).toInt()
+
+/**
+ * [LukiaMotion.standard] and [LukiaMotion.exit] at the reader's pace, for the
+ * big movements that have to keep step with a screen change.
+ */
+internal fun <T> MotionStyle.standard(): FiniteAnimationSpec<T> =
+    tween(millis(LukiaMotion.StandardMillis), easing = LukiaMotion.Standard)
+
+internal fun <T> MotionStyle.exit(): FiniteAnimationSpec<T> =
+    tween(millis(LukiaMotion.ExitMillis), easing = LukiaMotion.Exit)
 
 /**
  * Neither the fastest nor the smallest values, but the ones everything else is

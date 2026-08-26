@@ -15,8 +15,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.lukia.features.library.presentation.HomeBookActions
+import io.lukia.features.library.presentation.HomeMenu
 import io.lukia.features.library.presentation.HomeRow
-import io.lukia.features.library.presentation.LibraryBook
 import io.lukia.features.library.presentation.LibraryQuery
 import io.lukia.features.library.presentation.LibraryShelfUi
 import io.lukia.features.library.presentation.components.HomeCategoryRow
@@ -44,10 +45,12 @@ private val HomeBottomPadding: Dp = 24.dp
 internal fun HomeRows(
     rows: List<HomeRow>,
     categories: List<String>,
-    onOpenBook: (LibraryBook) -> Unit,
+    actions: HomeBookActions,
+    openMenu: HomeMenu?,
+    onOpenMenuChange: (HomeMenu?) -> Unit,
     onSeeAll: (LibraryQuery) -> Unit,
-    header: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    header: @Composable () -> Unit,
 ) {
     val dimens = LocalLukiaDimens.current
 
@@ -69,7 +72,9 @@ internal fun HomeRows(
         ) { row ->
             HomeShelfRow(
                 row = row,
-                onOpenBook = onOpenBook,
+                actions = actions,
+                openMenu = openMenu,
+                onOpenMenuChange = onOpenMenuChange,
                 onSeeAll = onSeeAll,
             )
         }

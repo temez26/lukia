@@ -16,9 +16,10 @@ import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.presentation.UiState
 import io.lukia.features.import.presentation.rememberPlatformFilePicker
 import io.lukia.features.import.presentation.rememberPlatformFolderPicker
+import io.lukia.features.library.presentation.HomeBookActions
+import io.lukia.features.library.presentation.HomeMenu
 import io.lukia.features.library.presentation.HomeRow
 import io.lukia.features.library.presentation.ImportProgress
-import io.lukia.features.library.presentation.LibraryBook
 import io.lukia.features.library.presentation.LibraryQuery
 import io.lukia.features.library.presentation.LibraryShelfUi
 import io.lukia.features.library.presentation.LibraryViewModel
@@ -36,10 +37,11 @@ import org.koin.compose.viewmodel.koinViewModel
  * is nearly done, and the rest of the library sampled a row at a time.
  *
  * It is a way back in rather than a place to work. A press on a cover does the
- * one thing this screen is for, which is to open the book; everything else about
- * a book - its details, its menu, selecting several at once - lives on the
- * library tab, and the actions menu in the corner is the library's own, so
- * nothing has to be learned twice.
+ * one thing this screen is for, which is to open the book, and a long press
+ * offers the same menu the shelf hangs off its own covers - the one gesture a
+ * reader has already learned, answered the same way in both places. Picking
+ * several books at once is still the shelf's, and the menu row that starts it
+ * goes there first; see [LibraryShelfUi.selectingOn].
  *
  * The library it draws from is the shared one - see `MobileShell` - so the rows
  * are already loaded by the time the tab is first looked at, and favouriting a
@@ -49,6 +51,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 internal fun HomeScreen(
     onOpenBook: (DocumentInfo) -> Unit,
+    onShowDetails: (DocumentInfo) -> Unit,
     onSeeAll: (LibraryQuery) -> Unit,
     onOpenLibrary: () -> Unit,
     onProfile: () -> Unit,
@@ -80,11 +83,22 @@ internal fun HomeScreen(
     // on another tab has nothing to say about where they stopped reading.
     val rows = remember(library) { library.homeRows() }
 
+    val actions = remember(homeShelf, onOpenBook, onShowDetails, viewModel) {
+        HomeBookActions(
+            onOpen = { book -> onOpenBook(book.document) },
+            onShowDetails = { book -> onShowDetails(book.document) },
+            onToggleFavorite = { book -> viewModel.toggleFavorite(book.document) },
+            onRefresh = { book -> viewModel.refreshDocument(book.document) },
+            onDelete = { book -> viewModel.deleteDocument(book.document) },
+            onSelectBooks = homeShelf.onStart,
+        )
+    }
+
     HomeContent(
         uiState = uiState,
         rows = rows,
         isImporting = isImporting,
-        onOpenBook = { book -> onOpenBook(book.document) },
+        actions = actions,
         onSeeAll = onSeeAll,
         onImport = { filePicker.launch(viewModel::importDocuments) },
         onImportFolder = {
@@ -115,7 +129,7 @@ internal fun HomeContent(
     uiState: UiState<List<DocumentInfo>>,
     rows: List<HomeRow>,
     isImporting: Boolean,
-    onOpenBook: (LibraryBook) -> Unit,
+    actions: HomeBookActions,
     onSeeAll: (LibraryQuery) -> Unit,
     onImport: () -> Unit,
     onImportFolder: () -> Unit,
@@ -137,8 +151,8 @@ internal fun HomeContent(
     face: ProfileFace = ProfileFace.Unknown,
 ) {
     // One value rather than a flag per menu, as everywhere else in this app: the
-    // header carries one and the empty state carries another, and at most one of
-    // them may be open.
+    // header carries one, the empty state carries another and every cover on
+    // every row carries its own, and at most one of them may be open.
     var menuOpen by remember { mutableStateOf<HomeMenu?>(null) }
 
     Scaffold(
@@ -157,8 +171,11 @@ internal fun HomeContent(
                 rows.isNotEmpty() -> HomeRows(
                     rows = rows,
                     categories = categories,
-                    onOpenBook = onOpenBook,
+                    actions = actions,
+                    openMenu = menuOpen,
+                    onOpenMenuChange = { menuOpen = it },
                     onSeeAll = onSeeAll,
+                    modifier = Modifier.fillMaxSize(),
                     header = {
                         HomeHeader(
                             menuExpanded = menuOpen == HomeMenu.Bar,
@@ -171,7 +188,6 @@ internal fun HomeContent(
                             face = face,
                         )
                     },
-                    modifier = Modifier.fillMaxSize(),
                 )
 
                 // A library still filling has nothing to sample yet, and a card
@@ -201,10 +217,4 @@ internal fun HomeContent(
             onDismiss = { menuOpen = null },
         )
     }
-}
-
-/** The menus this screen can have open, of which at most one may be. */
-private enum class HomeMenu {
-    Bar,
-    Import,
 }

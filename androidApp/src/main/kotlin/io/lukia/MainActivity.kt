@@ -1,5 +1,6 @@
 package io.lukia
 
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -26,6 +27,18 @@ class MainActivity : ComponentActivity() {
         setContent {
             App()
         }
+    }
+
+    /**
+     * The activity survives a change of appearance rather than being rebuilt for
+     * one - see the manifest - so the only thing that has to be told about it is
+     * the system bars: their icons are drawn light or dark from whichever mode
+     * was in force when the edge-to-edge styles were applied, and that is no
+     * longer the launch.
+     */
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        enableEdgeToEdge()
     }
 }
 

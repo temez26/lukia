@@ -31,7 +31,9 @@ import io.lukia.features.library.presentation.screens.HomeScreen
 import io.lukia.features.library.presentation.screens.LibraryScreen
 import io.lukia.features.library.presentation.screens.SearchScreen
 import io.lukia.shared.presentation.theme.LocalMotionStyle
-import io.lukia.shared.presentation.theme.LukiaMotion
+import io.lukia.shared.presentation.theme.MotionStyle
+import io.lukia.shared.presentation.theme.exit
+import io.lukia.shared.presentation.theme.standard
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -92,7 +94,16 @@ internal fun MobileShell(library: LibraryViewModel = koinViewModel()) {
         BottomBar(
             visible = tab != null,
             selected = selectedTab,
-            onSelect = navController::switchTo,
+            // A tab is somewhere to go only from another one. Asking for the
+            // tab already showing pops that screen and puts a restored copy of
+            // it back, which the host answers - correctly, from where it sits -
+            // by cross-fading a screen into itself; and a press that lands
+            // while the bar is sliding out from under a book would take the
+            // book straight back off again.
+            onSelect = { chosen ->
+                if (tab != null && chosen != tab) navController.switchTo(chosen)
+            },
+            motion = motion,
             modifier = Modifier.align(Alignment.BottomCenter),
         )
     }
@@ -125,6 +136,7 @@ private fun NavGraphBuilder.tabDestinations(
     tabDestination(Routes.Home.route) {
         HomeScreen(
             onOpenBook = openBook,
+            onShowDetails = openDetails,
             onSeeAll = { query ->
                 library.updateQuery(query)
                 navController.switchTo(MobileTab.Library)
@@ -191,20 +203,26 @@ private fun NavGraphBuilder.tabDestination(
  *
  * It slides down rather than fading, so opening a book reads as the bar being
  * covered by the book rather than as chrome quietly disappearing.
+ *
+ * At the same pace as the screen that covers it: the bar leaving and the book
+ * arriving are one movement, so a preset that stretches the one has to stretch
+ * the other, or the bar is still on its way out from under a screen that has
+ * finished arriving.
  */
 @Composable
 private fun BottomBar(
     visible: Boolean,
     selected: MobileTab,
     onSelect: (MobileTab) -> Unit,
+    motion: MotionStyle,
     modifier: Modifier = Modifier,
 ) {
     AnimatedVisibility(
         visible = visible,
-        enter = slideInVertically(LukiaMotion.standard()) { height -> height } +
-            fadeIn(LukiaMotion.standard()),
-        exit = slideOutVertically(LukiaMotion.exit()) { height -> height } +
-            fadeOut(LukiaMotion.exit()),
+        enter = slideInVertically(motion.standard()) { height -> height } +
+            fadeIn(motion.standard()),
+        exit = slideOutVertically(motion.exit()) { height -> height } +
+            fadeOut(motion.exit()),
         modifier = modifier,
     ) {
         MobileNavigationBar(selected = selected, onSelect = onSelect)
