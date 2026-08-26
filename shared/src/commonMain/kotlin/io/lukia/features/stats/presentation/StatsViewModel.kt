@@ -28,17 +28,15 @@ class StatsViewModel(
     private val _summary = MutableStateFlow<UiState<ReadingSummary>>(UiState.Loading)
     val summary: StateFlow<UiState<ReadingSummary>> = _summary.asStateFlow()
 
-    init {
-        refresh()
-    }
-
     /**
-     * Reads the library, the positions and the sittings again.
+     * Reads the library, the positions and the sittings.
      *
-     * Called when the screen is entered as well as on construction, because this
-     * ViewModel outlives a trip into a book: the statistics are reached from a
-     * control on the shelf and left by going back to it, and the pages and the
-     * minutes in between are exactly what somebody returning here wants counted.
+     * Driven by the screen entering rather than by this being constructed, and
+     * not by both. This ViewModel outlives a trip into a book - the statistics
+     * are reached from a control on the shelf and left by going back to it - so
+     * the screen has to ask again on every entry anyway, and asking here as well
+     * only put a second read of the whole library in flight beside the first, at
+     * the moment the screen was still sliding in over the shelf.
      */
     fun refresh() {
         viewModelScope.launch {

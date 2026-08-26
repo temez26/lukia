@@ -14,7 +14,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,9 +32,10 @@ import io.lukia.features.stats.domain.DayReading
 import io.lukia.features.stats.presentation.dayLabel
 import io.lukia.features.stats.presentation.dayName
 import io.lukia.features.stats.presentation.readingTime
+import io.lukia.shared.presentation.theme.LocalMotionStyle
 import io.lukia.shared.presentation.theme.LukiaAlpha
-import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.Space
+import io.lukia.shared.presentation.theme.afterScreenChange
 
 /** How tall the tallest bar stands. Enough to read a shape from, not a wall. */
 private val ChartHeight: Dp = 104.dp
@@ -78,6 +83,8 @@ internal fun ReadingChart(
 ) {
     if (days.isEmpty()) return
 
+    val growth = chartGrowth()
+
     Row(
         verticalAlignment = Alignment.Bottom,
         modifier = modifier.fillMaxWidth(),
@@ -86,10 +93,41 @@ internal fun ReadingChart(
             DayColumn(
                 day = day,
                 share = if (busiestMs > 0) day.durationMs.toFloat() / busiestMs else 0f,
+                growth = growth,
                 modifier = Modifier.weight(1f),
             )
         }
     }
+}
+
+/**
+ * How much of the chart has grown, from nothing to its full height.
+ *
+ * One animation for the seven bars rather than one apiece. They are the same
+ * movement at the same moment, so seven clocks can only disagree about it - and
+ * a bar grows by being measured taller, which made seven of them seven layout
+ * passes a frame for a picture that tells one story.
+ *
+ * It waits out the screen change before it starts - see [afterScreenChange] -
+ * because this chart arrives on a screen that is still sliding in from the edge,
+ * and a chart growing through a push is the push's frames spent twice. A reader
+ * who has asked the app to stop flourishing gets the finished chart and no
+ * growth at all.
+ */
+@Composable
+private fun chartGrowth(): Float {
+    val motion = LocalMotionStyle.current
+    var grown by remember(motion) { mutableStateOf(!motion.flourishes) }
+
+    LaunchedEffect(motion) { grown = true }
+
+    val growth by animateFloatAsState(
+        targetValue = if (grown) 1f else 0f,
+        animationSpec = motion.afterScreenChange(),
+        label = "readingChart",
+    )
+
+    return growth
 }
 
 /**
@@ -103,6 +141,7 @@ internal fun ReadingChart(
 private fun DayColumn(
     day: DayReading,
     share: Float,
+    growth: Float,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -111,7 +150,7 @@ private fun DayColumn(
             contentDescription = "${dayName(day.date)}: ${day.spoken()}"
         },
     ) {
-        DayBar(day = day, share = share)
+        DayBar(day = day, share = share, growth = growth)
 
         DayLabel(day = day, modifier = Modifier.padding(top = Space.lg))
     }
@@ -122,13 +161,10 @@ private fun DayColumn(
 private fun DayBar(
     day: DayReading,
     share: Float,
+    growth: Float,
     modifier: Modifier = Modifier,
 ) {
-    val height by animateFloatAsState(
-        targetValue = if (day.hasReading) share.coerceIn(MinimumBar, 1f) else 0f,
-        animationSpec = LukiaMotion.gentle(),
-        label = "readingBar",
-    )
+    val height = if (day.hasReading) share.coerceIn(MinimumBar, 1f) * growth else 0f
 
     Box(
         contentAlignment = Alignment.BottomCenter,

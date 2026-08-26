@@ -70,6 +70,27 @@ internal fun <T> MotionStyle.exit(): FiniteAnimationSpec<T> =
     tween(millis(LukiaMotion.ExitMillis), easing = LukiaMotion.Exit)
 
 /**
+ * For a screen's own content settling in, once the screen it is on has finished
+ * arriving.
+ *
+ * Two animations at once is one too many. Content moving while the screen
+ * carrying it is still sliding is two movements the eye has to separate, and it
+ * spends on that content exactly the frames the slide needed. Waiting a
+ * screen-sized move keeps the content still while the screen travels, and moves
+ * it once the screen has stopped.
+ *
+ * The wait is written as [LukiaMotion.LargeMillis] rather than as a number of
+ * its own, so it stays exactly as long as the push it is waiting for at any
+ * pace the reader has chosen - see `ScreenTransitions`, which times that push
+ * from the same constant.
+ */
+internal fun <T> MotionStyle.afterScreenChange(): FiniteAnimationSpec<T> = tween(
+    durationMillis = millis(LukiaMotion.StandardMillis),
+    delayMillis = millis(LukiaMotion.LargeMillis),
+    easing = LukiaMotion.Standard,
+)
+
+/**
  * Neither the fastest nor the smallest values, but the ones everything else is
  * measured against: [MotionStyle] multiplies, so standard is where it does
  * nothing at all.

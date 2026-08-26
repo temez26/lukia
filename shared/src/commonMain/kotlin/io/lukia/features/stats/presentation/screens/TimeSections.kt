@@ -15,9 +15,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import io.lukia.core.presentation.UiState
 import io.lukia.features.stats.domain.ReadingHabits
-import io.lukia.features.stats.domain.ReadingSummary
 import io.lukia.features.stats.presentation.components.ReadingChart
 import io.lukia.features.stats.presentation.components.StatFigure
 import io.lukia.features.stats.presentation.readingTime
@@ -36,19 +34,13 @@ import io.lukia.shared.presentation.theme.Space
  * Left out entirely until there is something to show. An app that has just begun
  * counting has nothing to say here, and a card of zeroes is a reproach rather
  * than a statistic - the library figures below already say what is on the shelf.
- *
- * Nothing is shown while the count is still running, for the same reason the
- * activity list is not: one wait on a page is a page loading, and three is a
- * page that looks broken.
  */
 @Composable
 internal fun ThisWeekSection(
-    summary: UiState<ReadingSummary>,
+    habits: ReadingHabits,
     groupColor: Color,
     modifier: Modifier = Modifier,
 ) {
-    val habits = (summary as? UiState.Success)?.data?.habits ?: return
-
     if (habits.isEmpty) return
 
     GroupSection(
@@ -162,12 +154,10 @@ private fun WeekTotals(
  */
 @Composable
 internal fun AllTimeSection(
-    summary: UiState<ReadingSummary>,
+    habits: ReadingHabits,
     groupColor: Color,
     modifier: Modifier = Modifier,
 ) {
-    val habits = (summary as? UiState.Success)?.data?.habits ?: return
-
     if (habits.isEmpty) return
 
     GroupSection(title = "All time", color = groupColor, modifier = modifier) {

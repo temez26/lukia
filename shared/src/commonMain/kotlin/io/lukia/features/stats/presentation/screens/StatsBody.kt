@@ -1,5 +1,7 @@
 package io.lukia.features.stats.presentation.screens
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,9 +19,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.core.presentation.UiState
+import io.lukia.core.presentation.displayMessage
+import io.lukia.core.presentation.displayTitle
 import io.lukia.features.stats.domain.ReadingSummary
+import io.lukia.shared.presentation.components.ErrorState
+import io.lukia.shared.presentation.components.LoadingState
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
+import io.lukia.shared.presentation.theme.softFadeOut
+import io.lukia.shared.presentation.theme.stateSwapIn
 
 /** Vertical room reserved so content starts clear of the floating back control. */
 private val TopChromeClearance: Dp = 68.dp
@@ -28,17 +36,17 @@ private val TopChromeClearance: Dp = 68.dp
 private val StatsBottomClearance: Dp = 32.dp
 
 /**
+ * Room held while the figures are being counted, so the page arrives at roughly
+ * the height it will settle at rather than growing under the reader.
+ */
+private val StatsPlaceholderHeight: Dp = 260.dp
+
+/**
  * The statistics themselves, without the chrome around them.
  *
  * Written as a body of its own rather than inside the screen for the reason
  * `SettingsBody` is: a wide window has room to lay this over the library instead
  * of replacing it, and the day that is worth doing this is the part that moves.
- *
- * The order runs from the smallest span of time to the largest and then out to
- * what is on the shelf: today and this week, then everything ever counted, then
- * the library, then the books last open. Somebody opening this has just put a
- * book down, so what they did today is the first thing on the page and the size
- * of their collection is the last.
  */
 @Composable
 internal fun StatsBody(
@@ -68,28 +76,9 @@ internal fun StatsBody(
         ) {
             StatsTitle()
 
-            ThisWeekSection(
+            CountedContent(
                 summary = summary,
-                groupColor = groupColor,
-                modifier = Modifier.padding(top = dimens.sectionSpacing),
-            )
-
-            AllTimeSection(
-                summary = summary,
-                groupColor = groupColor,
-                modifier = Modifier.padding(top = dimens.sectionSpacing),
-            )
-
-            LibrarySection(
-                summary = summary,
-                onRetry = actions.onRetry,
-                groupColor = groupColor,
-                modifier = Modifier.padding(top = dimens.sectionSpacing),
-            )
-
-            ActivitySection(
-                summary = summary,
-                onOpenBook = actions.onOpenBook,
+                actions = actions,
                 groupColor = groupColor,
                 modifier = Modifier.padding(top = dimens.sectionSpacing),
             )
@@ -100,7 +89,111 @@ internal fun StatsBody(
 }
 
 /**
+ * Everything below the title, which is everything that has to be counted first.
+ *
+ * One wait for the whole page rather than one per card. Every figure here comes
+ * from a single read of the library and the sittings recorded against it, so
+ * three sections each deciding for themselves whether they had anything yet
+ * meant three of them appearing at three different moments - and the two that
+ * sit highest shoving the rest of the page down as they did, in the middle of
+ * the screen still sliding in over the shelf.
+ *
+ * The swap is the app's own - see `UiStateContent`, which does this for a screen
+ * where this does it for a section of one. Keyed on which state it is rather
+ * than on the state itself, so a second count landing with new figures does not
+ * dissolve the page into itself.
+ */
+@Composable
+private fun CountedContent(
+    summary: UiState<ReadingSummary>,
+    actions: StatsActions,
+    groupColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    AnimatedContent(
+        targetState = summary,
+        modifier = modifier.fillMaxWidth(),
+        // `using null` keeps AnimatedContent from animating the container's
+        // bounds as well, which slides the content sideways mid-transition.
+        transitionSpec = { (stateSwapIn() togetherWith softFadeOut()) using null },
+        contentKey = { state ->
+            when (state) {
+                is UiState.Loading -> "loading"
+                is UiState.Failure -> "failure"
+                is UiState.Success -> "success"
+            }
+        },
+        label = "statsContent",
+    ) { state ->
+        when (state) {
+            is UiState.Loading -> LoadingState(
+                modifier = Modifier.fillMaxWidth().height(StatsPlaceholderHeight),
+            )
+
+            is UiState.Failure -> ErrorState(
+                title = state.error.displayTitle(),
+                message = state.error.displayMessage(),
+                actionLabel = "Try again",
+                onAction = actions.onRetry,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            is UiState.Success -> StatsSections(
+                summary = state.data,
+                onOpenBook = actions.onOpenBook,
+                groupColor = groupColor,
+            )
+        }
+    }
+}
+
+/**
+ * The counted figures, in the order they are worth reading.
+ *
+ * From the smallest span of time to the largest and then out to what is on the
+ * shelf: today and this week, then everything ever counted, then the library,
+ * then the books last open. Somebody opening this has just put a book down, so
+ * what they did today is the first thing on the page and the size of their
+ * collection is the last.
+ */
+@Composable
+private fun StatsSections(
+    summary: ReadingSummary,
+    onOpenBook: (String) -> Unit,
+    groupColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    val dimens = LocalLukiaDimens.current
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        ThisWeekSection(habits = summary.habits, groupColor = groupColor)
+
+        AllTimeSection(
+            habits = summary.habits,
+            groupColor = groupColor,
+            modifier = Modifier.padding(top = dimens.sectionSpacing),
+        )
+
+        LibrarySection(
+            stats = summary.stats,
+            groupColor = groupColor,
+            modifier = Modifier.padding(top = dimens.sectionSpacing),
+        )
+
+        ActivitySection(
+            activity = summary.recent,
+            onOpenBook = onOpenBook,
+            groupColor = groupColor,
+            modifier = Modifier.padding(top = dimens.sectionSpacing),
+        )
+    }
+}
+
+/**
  * What the page is, in a large title set against the start edge.
+ *
+ * Above the count rather than inside it, so a library that cannot be read still
+ * leaves the reader on a page that says what it was going to be.
  *
  * Aligned with the groups under it rather than centred. There is no person at
  * the top of this screen any more, so there is nothing that wants a centre line
