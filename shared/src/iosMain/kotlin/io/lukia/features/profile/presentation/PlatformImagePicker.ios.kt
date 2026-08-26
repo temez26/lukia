@@ -31,7 +31,7 @@ import platform.posix.memcpy
  */
 @OptIn(ExperimentalForeignApi::class)
 @Composable
-actual fun rememberPlatformImagePicker(): PlatformImagePickerState = remember {
+internal actual fun rememberPlatformImagePicker(): PlatformImagePickerState = remember {
     object : PlatformImagePickerState {
 
         private var delegate: UIDocumentPickerDelegateProtocol? = null

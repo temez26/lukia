@@ -46,7 +46,7 @@ sealed interface ProfileAccount {
 }
 
 /** Why a typed name cannot be used, or null when it can. */
-enum class UsernameProblem {
+internal enum class UsernameProblem {
     Empty,
     TooShort,
 }
@@ -60,7 +60,7 @@ enum class UsernameProblem {
  * character classes and no case - and it is set here rather than in the field
  * that collects it so that onboarding and renaming cannot disagree about it.
  */
-object Usernames {
+internal object Usernames {
 
     const val MinLength = 2
 

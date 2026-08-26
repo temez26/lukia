@@ -90,7 +90,7 @@ fun ProfileScreen(
  * floating back control rather than starting below a bar.
  */
 @Composable
-fun ProfileContent(
+internal fun ProfileContent(
     profile: UserProfile,
     face: ProfileFace,
     summary: UiState<ReadingSummary>,

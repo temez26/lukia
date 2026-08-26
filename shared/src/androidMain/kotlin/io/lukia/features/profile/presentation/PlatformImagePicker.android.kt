@@ -17,7 +17,7 @@ import androidx.compose.ui.platform.LocalContext
  * themselves is looking in their photographs, not in Downloads.
  */
 @Composable
-actual fun rememberPlatformImagePicker(): PlatformImagePickerState {
+internal actual fun rememberPlatformImagePicker(): PlatformImagePickerState {
     val context = LocalContext.current
 
     val callback = remember { mutableStateOf<(ByteArray?) -> Unit>({}) }

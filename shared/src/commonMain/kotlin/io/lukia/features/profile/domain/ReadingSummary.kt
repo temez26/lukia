@@ -112,7 +112,7 @@ private const val RecentLimit = 5
  * store keys on location and takes no foreign key - and a reader who removed a
  * book from their library should not go on being credited with reading it.
  */
-fun readingSummary(
+internal fun readingSummary(
     documents: List<DocumentInfo>,
     progress: Map<String, ReadingProgress>,
     habits: ReadingHabits = ReadingHabits.Empty,

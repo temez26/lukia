@@ -7,7 +7,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class SqlProfilePictureStore(
+internal class SqlProfilePictureStore(
     database: LukiaDatabase,
     /** Injectable so tests can run against a database deterministically. */
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,

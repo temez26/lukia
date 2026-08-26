@@ -77,7 +77,7 @@ data class ReadingHabits(
  * eleven at night in Helsinki is that day's reading and not the next one's,
  * whatever UTC thinks.
  */
-fun readingHabits(
+internal fun readingHabits(
     sessions: List<ReadingSession>,
     today: LocalDate,
     zone: TimeZone,
