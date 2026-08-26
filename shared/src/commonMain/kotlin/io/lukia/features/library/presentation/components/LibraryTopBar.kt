@@ -100,14 +100,14 @@ internal fun LibraryNavBar(
      */
     showSearch: Boolean = true,
     /**
-     * The way to the reader's own page, supplied rather than built here.
+     * The way to the reading statistics, supplied rather than built here.
      *
-     * A library bar has a place for it and no business knowing what a reader
-     * looks like; the shell that composes both features is what fills it - see
+     * A library bar has a place for it and no business knowing what that screen
+     * is; the shell that composes both features is what fills it - see
      * `MobileShell`. Empty by default, so this bar composes in a test or a
-     * preview without a profile behind it.
+     * preview without the statistics feature behind it.
      */
-    profileButton: @Composable () -> Unit = {},
+    statsButton: @Composable () -> Unit = {},
 ) {
     val dimens = LocalLukiaDimens.current
     val barColor = MaterialTheme.colorScheme.background
@@ -160,9 +160,10 @@ internal fun LibraryNavBar(
             Spacer(modifier = Modifier.width(Space.md))
 
             // Before the actions button, so the row reads left to right as what
-            // this screen is, who is reading it, and what can be done to it.
+            // this screen is, how the reading is going, and what can be done to
+            // the shelf.
             Box(modifier = Modifier.padding(end = Space.md)) {
-                profileButton()
+                statsButton()
             }
 
             Box {

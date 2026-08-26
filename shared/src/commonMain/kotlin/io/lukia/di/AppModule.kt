@@ -2,9 +2,9 @@ package io.lukia.di
 
 import io.lukia.core.infrastructure.db.LukiaDatabase
 import io.lukia.features.library.libraryModule
-import io.lukia.features.profile.profileModule
 import io.lukia.features.reader.readerModule
 import io.lukia.features.settings.settingsModule
+import io.lukia.features.stats.statsModule
 import io.lukia.features.translate.translateModule
 import org.koin.dsl.module
 
@@ -28,7 +28,7 @@ val commonModule = module {
         libraryModule,
         readerModule,
         translateModule,
-        profileModule,
         settingsModule,
+        statsModule,
     )
 }

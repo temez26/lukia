@@ -164,7 +164,7 @@ internal fun LabelledField(label: String, content: @Composable () -> Unit) {
 /**
  * One group of settings, in the style of an iOS grouped list.
  *
- * The layout itself is [GroupSection], which the profile page is built from too.
+ * The layout itself is [GroupSection], which the statistics page is built from too.
  * This stays as the name the settings screens call it by, and as the one place
  * that knows a settings group's surface is passed as `groupColor`.
  */

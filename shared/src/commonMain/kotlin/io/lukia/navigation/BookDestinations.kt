@@ -7,13 +7,13 @@ import androidx.navigation.compose.composable
 import androidx.savedstate.read
 import io.lukia.Routes
 import io.lukia.features.library.presentation.screens.BookDetailScreen
-import io.lukia.features.profile.presentation.screens.ProfileScreen
 import io.lukia.features.reader.presentation.screens.ReaderScreen
 import io.lukia.features.settings.presentation.screens.SettingsScreen
+import io.lukia.features.stats.presentation.screens.StatsScreen
 
 /**
  * The screens that push over whatever was showing: one book being read, one
- * book being described, the settings, and the reader's own profile.
+ * book being described, the settings, and the reading statistics.
  *
  * Registered from here rather than from each shell because they are the same
  * screens reached the same way on every platform. What differs between a desktop
@@ -25,12 +25,12 @@ internal fun NavGraphBuilder.bookDestinations(navController: NavController) {
         SettingsScreen(onBack = { navController.popBackStack() })
     }
 
-    composable(Routes.Profile.route) {
-        ProfileScreen(
+    composable(Routes.Stats.route) {
+        StatsScreen(
             onBack = { navController.popBackStack() },
             // Straight into the book rather than back to the shelf it is on:
-            // the list this comes from is the reader's own recent reading, and
-            // the only thing anybody wants from a row of it is to carry on.
+            // the list this comes from is what was read most recently, and the
+            // only thing anybody wants from a row of it is to carry on.
             onOpenBook = { location ->
                 navController.navigate(Routes.Reader.createRoute(location))
             },

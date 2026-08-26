@@ -6,8 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import io.lukia.Routes
 import io.lukia.features.library.presentation.screens.LibraryScreen
-import io.lukia.features.profile.presentation.ProfileAvatarButton
-import io.lukia.features.profile.presentation.rememberProfileFace
+import io.lukia.features.stats.presentation.StatsButton
 import io.lukia.shared.presentation.theme.LocalMotionStyle
 
 /**
@@ -46,14 +45,11 @@ internal fun DesktopShell() {
                     navController.navigate(Routes.Detail.createRoute(document.document.location))
                 },
                 onSettings = { navController.navigate(Routes.Settings.route) },
-                // Filled here rather than by the library, which has a place for
-                // the reader's disc on its bar and no business knowing what a
-                // reader looks like. This shell is where the two features meet.
-                profileButton = {
-                    ProfileAvatarButton(
-                        face = rememberProfileFace(),
-                        onClick = { navController.navigate(Routes.Profile.route) },
-                    )
+                // Filled here rather than by the library, which has a place on
+                // its bar for it and no business knowing what the statistics
+                // screen is. This shell is where the two features meet.
+                statsButton = {
+                    StatsButton(onClick = { navController.navigate(Routes.Stats.route) })
                 },
             )
         }
