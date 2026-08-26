@@ -17,9 +17,19 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Lukia">
+        <!--
+            uiMode is handled rather than restarted on. Changing the theme in the
+            settings tells the system which appearance the app wears - see
+            SystemAppearanceEffect - and that is a configuration change, so
+            without this the activity is torn down and built again in the middle
+            of it: the window flashes its launch colour, then the splash theme's,
+            then the app's. Compose reads the new configuration either way, so
+            there is nothing the restart was buying.
+        -->
         <activity
             android:exported="true"
             android:name=".MainActivity"
+            android:configChanges="uiMode"
             android:theme="@style/Theme.Lukia.Starting">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

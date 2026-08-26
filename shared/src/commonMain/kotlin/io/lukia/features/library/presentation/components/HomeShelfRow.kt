@@ -25,9 +25,10 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.lukia.features.library.presentation.HomeBookActions
+import io.lukia.features.library.presentation.HomeMenu
 import io.lukia.features.library.presentation.HomeRow
 import io.lukia.features.library.presentation.HomeShelf
-import io.lukia.features.library.presentation.LibraryBook
 import io.lukia.features.library.presentation.LibraryQuery
 import io.lukia.shared.presentation.components.DisclosureChevron
 import io.lukia.shared.presentation.components.hoverHighlight
@@ -61,7 +62,9 @@ private val SeeAllChevronSize: Dp = 14.dp
 @Composable
 internal fun HomeShelfRow(
     row: HomeRow,
-    onOpenBook: (LibraryBook) -> Unit,
+    actions: HomeBookActions,
+    openMenu: HomeMenu?,
+    onOpenMenuChange: (HomeMenu?) -> Unit,
     onSeeAll: (LibraryQuery) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -93,7 +96,13 @@ internal fun HomeShelfRow(
                 HomeBookCard(
                     book = book,
                     width = cardWidth,
-                    onClick = { onOpenBook(book) },
+                    actions = actions,
+                    menuExpanded = openMenu == HomeMenu.Book(row.shelf, book.location),
+                    onMenuExpandedChange = { expanded ->
+                        onOpenMenuChange(
+                            HomeMenu.Book(row.shelf, book.location).takeIf { expanded },
+                        )
+                    },
                 )
             }
         }

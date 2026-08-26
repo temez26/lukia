@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import io.lukia.core.domain.CoverImage
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlin.concurrent.Volatile
 
 /**
  * How large a cover is kept once decoded, along its longer edge.
@@ -61,6 +62,27 @@ internal object CoverArtCache {
     private var pixels = 0
 
     /**
+     * What [entries] holds, in a form that can be read without suspending.
+     *
+     * Replaced wholesale rather than mutated, so a reader either sees the map as
+     * it was before a cover was kept or as it was after, and never mid-edit.
+     */
+    @Volatile
+    private var decoded: Map<CoverImage, ImageBitmap> = emptyMap()
+
+    /**
+     * The artwork for [cover] if it has already been decoded, answered without
+     * suspending.
+     *
+     * This is what lets a cover the app already has in memory be drawn on the
+     * frame its card is composed on. [artworkFor] cannot: it suspends, so even a
+     * hit arrives a frame or more later, and until it does the card shows the
+     * blank tile underneath - which is the flicker that runs through a shelf of
+     * covers every time one comes back on screen.
+     */
+    fun peek(cover: CoverImage): ImageBitmap? = decoded[cover]
+
+    /**
      * The artwork for [cover], decoding it with [decode] if it is not already
      * held. Null when it will not decode at all.
      *
@@ -75,8 +97,8 @@ internal object CoverArtCache {
     ): ImageBitmap? {
         held(cover)?.let { return it }
 
-        val decoded = decode(cover) ?: return null
-        val scaled = decoded.scaledToFit(MaxCoverEdge)
+        val artwork = decode(cover) ?: return null
+        val scaled = artwork.scaledToFit(MaxCoverEdge)
 
         keep(cover, scaled)
 
@@ -101,12 +123,15 @@ internal object CoverArtCache {
             val oldest = entries.keys.first()
             entries.remove(oldest)?.let { pixels -= it.pixelCount }
         }
+
+        decoded = entries.toMap()
     }
 
     /** For tests, which must not see what an earlier one left behind. */
     internal suspend fun clear() = mutex.withLock {
         entries.clear()
         pixels = 0
+        decoded = emptyMap()
     }
 }
 

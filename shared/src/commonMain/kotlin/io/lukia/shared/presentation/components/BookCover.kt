@@ -84,12 +84,24 @@ internal sealed interface CoverArt {
  */
 @Composable
 internal fun rememberCoverArt(coverImage: CoverImage?): CoverArt {
-    val art by produceState<CoverArt>(initialValue = CoverArt.Pending, coverImage) {
+    // Asked here rather than left to the producer below, which suspends and so
+    // cannot answer before the frame this card is composed on. A cover already
+    // in memory - every cover on a tab being returned to - would otherwise start
+    // as [CoverArt.Pending] and fade in over its own blank tile, which is the
+    // flicker that runs through a shelf each time it comes back on screen.
+    val known = remember(coverImage) {
+        coverImage?.let { CoverArtCache.peek(it) }?.let { CoverArt.Artwork(it) }
+    }
+
+    val art by produceState<CoverArt>(initialValue = known ?: CoverArt.Pending, coverImage) {
         // Reset explicitly: produceState keeps the previous value across a key
         // change, which would otherwise show one book's cover on another's card
         // for as long as the new one takes to decode.
-        value = CoverArt.Pending
+        value = known ?: CoverArt.Pending
 
+        // Run even when the cover was already known, so that asking the cache
+        // for it is what marks it as recently used. The value that comes back is
+        // the one already on screen, so nothing recomposes.
         value = if (coverImage == null) {
             CoverArt.Absent
         } else {

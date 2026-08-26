@@ -11,9 +11,7 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.navigation.NavBackStackEntry
 import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.MotionStyle
-
-/** One duration, at the pace the reader asked for. */
-private fun MotionStyle.millis(standard: Int): Int = (standard * stretch).toInt()
+import io.lukia.shared.presentation.theme.millis
 
 /** A screen-sized move, which is what every change registered here is. */
 private fun MotionStyle.large(): Int = millis(LukiaMotion.LargeMillis)
