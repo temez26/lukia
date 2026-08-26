@@ -18,7 +18,7 @@ import io.lukia.features.translate.domain.TextAnchor
  * six untouched, because what they are handed is the same value it was.
  */
 @Immutable
-class ReaderTranslations private constructor(
+class BookTranslations private constructor(
     private val pages: Map<Int, SentenceTranslations>,
     private val sections: Map<Int, SectionTranslations>,
 ) {
@@ -31,14 +31,14 @@ class ReaderTranslations private constructor(
 
     companion object {
 
-        val None = ReaderTranslations(emptyMap(), emptyMap())
+        val None = BookTranslations(emptyMap(), emptyMap())
 
         /**
          * Files the session's passages by where each of them is. One pass over
          * the whole map, done once when it changes, rather than a search of it
          * per page and per paragraph on screen.
          */
-        fun of(passages: Map<TextAnchor, PassageTranslation>): ReaderTranslations {
+        fun of(passages: Map<TextAnchor, PassageTranslation>): BookTranslations {
             if (passages.isEmpty()) return None
 
             val pages = mutableMapOf<Int, PassageBuilder>()
@@ -59,7 +59,7 @@ class ReaderTranslations private constructor(
                 }
             }
 
-            return ReaderTranslations(
+            return BookTranslations(
                 pages = pages.mapValues { (_, block) -> block.build() },
                 sections = sections.mapValues { (_, blocks) ->
                     SectionTranslations(blocks.mapValues { (_, block) -> block.build() })

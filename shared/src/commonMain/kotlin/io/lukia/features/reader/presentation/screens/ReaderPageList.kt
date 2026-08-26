@@ -50,8 +50,8 @@ import io.lukia.features.reader.presentation.components.detectReaderTaps
 import io.lukia.features.reader.presentation.renderWidthFor
 import io.lukia.features.translate.domain.PassageUnit
 import io.lukia.features.translate.domain.TranslationGestures
+import io.lukia.features.translate.presentation.BookTranslations
 import io.lukia.features.translate.presentation.PassageSelection
-import io.lukia.features.translate.presentation.ReaderTranslations
 import io.lukia.features.translate.presentation.SentenceTranslations
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.LukiaElevation
@@ -71,7 +71,7 @@ internal fun PageList(
     pageScale: Float,
     pageColor: Color,
     pageFilter: ColorFilter?,
-    translations: ReaderTranslations,
+    translations: BookTranslations,
     onToggleChrome: () -> Unit,
     onPageScaleChange: (Float) -> Unit,
     onPassageSelected: (PassageSelection) -> Unit,

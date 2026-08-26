@@ -18,7 +18,7 @@ import kotlin.test.assertTrue
  * paragraph exactly as it drew it last time, so the tests for it are tests about
  * whether translating a sentence is work for the rest of the book.
  */
-class ReaderTranslationsTest {
+class BookTranslationsTest {
 
     private val ready = PassageTranslation.Ready(Translation("Kutsukaa minua Ismaeliksi."))
     private val failed = PassageTranslation.Failed(AppError.TranslationFailed)
@@ -30,7 +30,7 @@ class ReaderTranslationsTest {
      */
     @Test
     fun aTranslatedWordIsFiledApartFromItsSentence() {
-        val translations = ReaderTranslations.of(
+        val translations = BookTranslations.of(
             mapOf(
                 TextAnchor.Section(0, 0, 1, wordIndex = 2) to
                     PassageTranslation.Ready(Translation("valas")),
@@ -48,7 +48,7 @@ class ReaderTranslationsTest {
 
     @Test
     fun aSentenceAndAWordInsideItAreBothKept() {
-        val translations = ReaderTranslations.of(
+        val translations = BookTranslations.of(
             mapOf(
                 TextAnchor.Page(3, 0) to PassageTranslation.Loading(),
                 TextAnchor.Page(3, 0, wordIndex = 1) to
@@ -64,14 +64,14 @@ class ReaderTranslationsTest {
 
     @Test
     fun aPagesSentenceIsFiledUnderThatPage() {
-        val translations = ReaderTranslations.of(mapOf(TextAnchor.Page(3, 7) to ready))
+        val translations = BookTranslations.of(mapOf(TextAnchor.Page(3, 7) to ready))
 
         assertEquals(ready, translations.page(3)[7])
     }
 
     @Test
     fun aSectionsSentenceIsFiledUnderThatSectionsBlock() {
-        val translations = ReaderTranslations.of(mapOf(TextAnchor.Section(2, 5, 1) to ready))
+        val translations = BookTranslations.of(mapOf(TextAnchor.Section(2, 5, 1) to ready))
 
         assertEquals(ready, translations.section(2).block(5)[1])
     }
@@ -79,14 +79,14 @@ class ReaderTranslationsTest {
     /** A page's sentence and a section's sentence are not the same sentence. */
     @Test
     fun pagesAndSectionsAreKeptApart() {
-        val translations = ReaderTranslations.of(mapOf(TextAnchor.Page(0, 0) to ready))
+        val translations = BookTranslations.of(mapOf(TextAnchor.Page(0, 0) to ready))
 
         assertNull(translations.section(0).block(0)[0])
     }
 
     @Test
     fun somewhereNothingHasBeenTranslatedIsEmptyRatherThanMissing() {
-        val translations = ReaderTranslations.of(mapOf(TextAnchor.Page(0, 0) to ready))
+        val translations = BookTranslations.of(mapOf(TextAnchor.Page(0, 0) to ready))
 
         assertTrue(translations.page(9).isEmpty)
         assertTrue(translations.section(9).block(0).isEmpty)
@@ -95,7 +95,7 @@ class ReaderTranslationsTest {
 
     @Test
     fun everythingIsFiledRatherThanTheFirstOfEach() {
-        val translations = ReaderTranslations.of(
+        val translations = BookTranslations.of(
             mapOf(
                 TextAnchor.Page(0, 0) to ready,
                 TextAnchor.Page(0, 1) to failed,
@@ -119,8 +119,8 @@ class ReaderTranslationsTest {
      */
     @Test
     fun translatingOnOnePageLeavesTheOtherPagesSlicesUnchanged() {
-        val before = ReaderTranslations.of(mapOf(TextAnchor.Page(1, 0) to ready))
-        val after = ReaderTranslations.of(
+        val before = BookTranslations.of(mapOf(TextAnchor.Page(1, 0) to ready))
+        val after = BookTranslations.of(
             mapOf(
                 TextAnchor.Page(1, 0) to ready,
                 TextAnchor.Page(5, 2) to PassageTranslation.Loading(),
@@ -134,8 +134,8 @@ class ReaderTranslationsTest {
     /** The same, one paragraph at a time, for a book the reader sets itself. */
     @Test
     fun translatingInOneBlockLeavesTheOtherBlocksSlicesUnchanged() {
-        val before = ReaderTranslations.of(mapOf(TextAnchor.Section(0, 0, 0) to ready))
-        val after = ReaderTranslations.of(
+        val before = BookTranslations.of(mapOf(TextAnchor.Section(0, 0, 0) to ready))
+        val after = BookTranslations.of(
             mapOf(
                 TextAnchor.Section(0, 0, 0) to ready,
                 TextAnchor.Section(0, 4, 1) to PassageTranslation.Loading(),
@@ -149,8 +149,8 @@ class ReaderTranslationsTest {
     /** And a whole untouched section is one comparison, not one per block. */
     @Test
     fun translatingInOneSectionLeavesTheOtherSectionsUnchanged() {
-        val before = ReaderTranslations.of(mapOf(TextAnchor.Section(0, 0, 0) to ready))
-        val after = ReaderTranslations.of(
+        val before = BookTranslations.of(mapOf(TextAnchor.Section(0, 0, 0) to ready))
+        val after = BookTranslations.of(
             mapOf(
                 TextAnchor.Section(0, 0, 0) to ready,
                 TextAnchor.Section(3, 0, 0) to ready,
@@ -164,15 +164,15 @@ class ReaderTranslationsTest {
     /** A sentence going from waiting to translated is a change where it is. */
     @Test
     fun aSentenceChangingStateChangesItsOwnSlice() {
-        val waiting = ReaderTranslations.of(mapOf(TextAnchor.Page(0, 0) to PassageTranslation.Loading()))
-        val arrived = ReaderTranslations.of(mapOf(TextAnchor.Page(0, 0) to ready))
+        val waiting = BookTranslations.of(mapOf(TextAnchor.Page(0, 0) to PassageTranslation.Loading()))
+        val arrived = BookTranslations.of(mapOf(TextAnchor.Page(0, 0) to ready))
 
         assertNotEquals(waiting.page(0), arrived.page(0))
     }
 
     @Test
     fun aBookNobodyHasTranslatedAnythingInHasNothingAnywhere() {
-        val translations = ReaderTranslations.of(emptyMap())
+        val translations = BookTranslations.of(emptyMap())
 
         assertTrue(translations.page(0).isEmpty)
         assertTrue(translations.section(0).block(0).isEmpty)
@@ -186,7 +186,7 @@ class ReaderTranslationsTest {
      */
     @Test
     fun aSliceOfABlockSeesItsOwnSentencesNumberedFromZero() {
-        val translations = ReaderTranslations.of(
+        val translations = BookTranslations.of(
             mapOf(
                 TextAnchor.Section(sectionIndex = 0, blockIndex = 0, sentenceIndex = 4) to ready,
             ),
@@ -201,7 +201,7 @@ class ReaderTranslationsTest {
     /** Sentences left behind on an earlier page are not on this one to mark. */
     @Test
     fun sentencesBeforeTheSliceAreNotInIt() {
-        val translations = ReaderTranslations.of(
+        val translations = BookTranslations.of(
             mapOf(
                 TextAnchor.Section(sectionIndex = 0, blockIndex = 0, sentenceIndex = 1) to ready,
             ),
@@ -213,7 +213,7 @@ class ReaderTranslationsTest {
     /** The first piece of a block is the block: nothing came before it. */
     @Test
     fun aSliceThatStartsAtTheBeginningIsTheBlockItself() {
-        val translations = ReaderTranslations.of(
+        val translations = BookTranslations.of(
             mapOf(
                 TextAnchor.Section(sectionIndex = 0, blockIndex = 0, sentenceIndex = 2) to ready,
             ),
@@ -227,7 +227,7 @@ class ReaderTranslationsTest {
     /** A paragraph translated whole stands in for all of it, on every page of it. */
     @Test
     fun aWholeBlockTranslationBelongsToEveryPieceOfIt() {
-        val translations = ReaderTranslations.of(
+        val translations = BookTranslations.of(
             mapOf(
                 TextAnchor.Section(sectionIndex = 0, blockIndex = 0, sentenceIndex = null) to ready,
             ),
