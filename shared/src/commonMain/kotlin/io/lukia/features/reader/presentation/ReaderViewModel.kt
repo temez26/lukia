@@ -138,6 +138,10 @@ class ReaderViewModel(
     private var opening: Job? = null
 
     private fun open() {
+        // Belt and braces: [reopen] has already cancelled by the time it calls
+        // this, and the first opening of all has nothing to cancel. It stays so
+        // that "only one opening at a time" holds for this function on its own
+        // rather than only for the one route into it that remembers.
         opening?.cancel()
 
         opening = viewModelScope.launch {
@@ -305,6 +309,19 @@ class ReaderViewModel(
      * sentences are a fact about a page that may no longer exist.
      */
     private fun reopen() {
+        // Stopped first, before any of the putting back.
+        //
+        // Everything below this line is about a book that is no longer being
+        // opened, and an opening still in flight through it is one that can
+        // still publish - putting the book it was told to abandon back over the
+        // top of the reset, and leaving its file handle where nothing will
+        // close it. The app never sees that: its main dispatcher is one thread
+        // and none of this suspends, so no other coroutine can get in between.
+        // Cancelling here rather than on the way into [open] is what makes that
+        // a property of this code rather than of the dispatcher it happens to
+        // be running on.
+        opening?.cancel()
+
         closeDocument()
         translation.clear()
         pageSentences.clear()
