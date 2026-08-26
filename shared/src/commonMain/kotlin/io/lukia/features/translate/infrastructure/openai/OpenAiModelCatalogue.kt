@@ -9,9 +9,8 @@ import io.lukia.core.domain.AppError
 import io.lukia.core.domain.AppErrorException
 import io.lukia.features.translate.domain.ModelCatalogue
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
-import io.lukia.features.translate.infrastructure.asTranslationFailure
+import io.lukia.features.translate.infrastructure.translating
 import io.lukia.features.translate.infrastructure.translationTimeouts
-import kotlinx.coroutines.CancellationException
 
 /**
  * Asks an OpenAI-compatible server what it can run.
@@ -38,7 +37,7 @@ class OpenAiModelCatalogue(
             )
         }
 
-        val response = try {
+        val response = translating(configured) {
             client.get("${configured.baseUrl.trimEnd('/')}/models") {
                 translationTimeouts(configured)
 
@@ -46,10 +45,6 @@ class OpenAiModelCatalogue(
                     headers { append("Authorization", "Bearer $key") }
                 }
             }
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        } catch (failure: Throwable) {
-            throw failure.asTranslationFailure(configured)
         }
 
         if (!response.status.isSuccess()) {

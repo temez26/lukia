@@ -203,17 +203,11 @@
     <ID>SwallowedException:FilePdfByteSource.kt$FilePdfByteSource$e: java.io.IOException</ID>
     <ID>SwallowedException:PdfCoverRenderer.android.kt$e: Exception</ID>
     <ID>SwallowedException:PdfCoverRenderer.jvm.kt$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:AnthropicTranslator.kt$AnthropicTranslator$failure: Throwable</ID>
     <ID>TooGenericExceptionCaught:AppError.kt$failure: Throwable</ID>
     <ID>TooGenericExceptionCaught:CoalescingTranslator.kt$CoalescingTranslator$failure: Throwable</ID>
-    <ID>TooGenericExceptionCaught:GoogleTranslator.kt$GoogleTranslator$failure: Throwable</ID>
     <ID>TooGenericExceptionCaught:ImportDocumentsUseCase.kt$ImportDocumentsUseCase$error: Exception</ID>
-    <ID>TooGenericExceptionCaught:OpenAiModelCatalogue.kt$OpenAiModelCatalogue$failure: Throwable</ID>
-    <ID>TooGenericExceptionCaught:OpenAiModelWarmUp.kt$OpenAiModelWarmUp$failure: Throwable</ID>
-    <ID>TooGenericExceptionCaught:OpenAiTranslator.kt$OpenAiTranslator$failure: Throwable</ID>
     <ID>TooGenericExceptionCaught:PdfCoverRenderer.android.kt$e: Exception</ID>
     <ID>TooGenericExceptionCaught:PdfCoverRenderer.jvm.kt$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:WiktionaryTranslator.kt$WiktionaryTranslator$failure: Throwable</ID>
     <ID>TooGenericExceptionThrown:CachingTranslatorTest.kt$CachingTranslatorTest$throw RuntimeException("no network")</ID>
     <ID>TooGenericExceptionThrown:CoalescingTranslatorTest.kt$CoalescingTranslatorTest$throw RuntimeException("no network")</ID>
     <ID>TooGenericExceptionThrown:TranslatePassageUseCaseTest.kt$TranslatePassageUseCaseTest$throw RuntimeException("no network")</ID>

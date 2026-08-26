@@ -12,9 +12,8 @@ import io.lukia.core.domain.AppError
 import io.lukia.core.domain.AppErrorException
 import io.lukia.features.translate.domain.ModelWarmUp
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
-import io.lukia.features.translate.infrastructure.asTranslationFailure
+import io.lukia.features.translate.infrastructure.translating
 import io.lukia.features.translate.infrastructure.translationTimeouts
-import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
 
 /**
@@ -54,7 +53,7 @@ class OpenAiModelWarmUp(
             )
         }
 
-        val response = try {
+        val response = translating(configured) {
             client.post("${configured.baseUrl.trimEnd('/')}/chat/completions") {
                 translationTimeouts(configured)
 
@@ -70,10 +69,6 @@ class OpenAiModelWarmUp(
                     ),
                 )
             }
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        } catch (failure: Throwable) {
-            throw failure.asTranslationFailure(configured)
         }
 
         if (response.status.isSuccess()) return

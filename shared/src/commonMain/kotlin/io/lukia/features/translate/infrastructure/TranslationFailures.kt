@@ -6,6 +6,7 @@ import io.lukia.core.domain.AppError
 import io.lukia.core.domain.AppErrorException
 import io.lukia.features.translate.domain.TranslationProvider
 import io.lukia.features.translate.domain.TranslationSettings
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * What to tell the reader when the request never came back at all.
@@ -61,3 +62,29 @@ private fun TranslationSettings.unreachable(): String = when (provider) {
 
     else -> "Could not reach the translation service. Check your connection."
 }
+
+/**
+ * Runs [block] and lets nothing out of it that the reader cannot read.
+ *
+ * Every provider had written this ladder out for itself, and the middle rung is
+ * the one worth having once: a failure that has already been turned into words -
+ * a rejected key, a model that is not there - must not be turned into them a
+ * second time, or "check your API key" becomes "could not reach the translation
+ * service".
+ *
+ * Cancellation is not a failure and is never described. A reader who turned the
+ * page while a sentence was in flight has not been told anything went wrong,
+ * because nothing did.
+ */
+@Suppress("TooGenericExceptionCaught")
+internal inline fun <T> translating(settings: TranslationSettings, block: () -> T): T =
+    try {
+        block()
+    } catch (cancellation: CancellationException) {
+        throw cancellation
+    } catch (failure: Throwable) {
+        throw when (failure) {
+            is AppErrorException -> failure
+            else -> failure.asTranslationFailure(settings)
+        }
+    }

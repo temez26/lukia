@@ -20,13 +20,12 @@ import io.lukia.features.translate.domain.TranslationSettings
 import io.lukia.features.translate.domain.Translator
 import io.lukia.features.translate.infrastructure.StreamedAnswer
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
-import io.lukia.features.translate.infrastructure.asTranslationFailure
 import io.lukia.features.translate.infrastructure.buildTranslationPrompt
 import io.lukia.features.translate.infrastructure.forEachEventPayload
 import io.lukia.features.translate.infrastructure.readTranslatedPassage
 import io.lukia.features.translate.infrastructure.tokenAllowanceFor
+import io.lukia.features.translate.infrastructure.translating
 import io.lukia.features.translate.infrastructure.translationTimeouts
-import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
 
 /**
@@ -99,7 +98,7 @@ class OpenAiTranslator(
         // Why the model stopped, from whichever chunk carried it.
         var finishReason: String? = null
 
-        try {
+        translating(configured) {
             client.preparePost("${configured.baseUrl.trimEnd('/')}/chat/completions") {
                 translationTimeouts(configured)
 
@@ -139,17 +138,6 @@ class OpenAiTranslator(
                     chunk.text?.let(answer::append)
                 }
             }
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        } catch (failure: AppErrorException) {
-            // Already in words the reader can act on. Only a transport failure
-            // needs the reading below.
-            throw failure
-        } catch (failure: Throwable) {
-            // A server that is not running is the single most common state of a
-            // local one, and neither "connection refused" nor a timeout is an
-            // answer somebody can act on without being told which it was.
-            throw failure.asTranslationFailure(configured)
         }
 
         // A model cut off mid-answer produces JSON that will not parse, and the
