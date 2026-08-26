@@ -1,8 +1,10 @@
 package io.lukia.features.reader.presentation
 
 import androidx.compose.ui.graphics.ImageBitmap
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 /**
  * How much drawn page is kept in memory, counted in pixels rather than pages.
@@ -33,10 +35,48 @@ internal class RenderedPageCache {
     private var cachedWidthPx = 0
 
     /**
+     * One gate per page being drawn, so that two callers asking for the same
+     * page draw it once between them.
+     *
+     * The reader asks twice as a matter of course: each page draws the one after
+     * it so that arriving there is not a wait, and that page then asks for
+     * itself as it is composed. Both miss the cache - neither has finished, so
+     * there is nothing in it to find - and without this the most expensive thing
+     * the reader does happens twice for every page turned.
+     *
+     * A gate rather than a shared result: the second caller waits, and finds the
+     * page in the cache the moment the first is done. If the first is cancelled
+     * on the way - a page scrolled past - the second simply draws it itself,
+     * which a shared result would have to be careful not to lose.
+     */
+    private val drawing = mutableMapOf<Int, PageGate>()
+
+    /**
      * The page at [index] at [widthPx], drawing it with [render] only if it is
-     * not already held.
+     * not already held and not already being drawn.
      */
     suspend fun page(index: Int, widthPx: Int, render: suspend () -> ImageBitmap?): ImageBitmap? {
+        cached(index, widthPx)?.let { return it }
+
+        val gate = enter(index)
+
+        return try {
+            gate.lock.withLock { drawn(index, widthPx, render) }
+        } finally {
+            // Uncancellable: a page scrolled away cancels this coroutine at its
+            // next suspension, and the gate has to be given back all the same.
+            withContext(NonCancellable) { leave(index, gate) }
+        }
+    }
+
+    /** The page, drawn and kept - called with this page's gate held. */
+    private suspend fun drawn(
+        index: Int,
+        widthPx: Int,
+        render: suspend () -> ImageBitmap?,
+    ): ImageBitmap? {
+        // Asked again on the other side of the wait, because whoever this
+        // caller queued behind will have stored it.
         cached(index, widthPx)?.let { return it }
 
         val rendered = render() ?: return null
@@ -48,6 +88,22 @@ internal class RenderedPageCache {
     fun clear() {
         pages.clear()
         cachedWidthPx = 0
+    }
+
+    /** One page's gate, and how many callers are still holding it open. */
+    private class PageGate {
+        val lock = Mutex()
+        var waiting = 0
+    }
+
+    private suspend fun enter(index: Int): PageGate = lock.withLock {
+        drawing.getOrPut(index, ::PageGate).also { it.waiting++ }
+    }
+
+    /** Dropped once nobody is left waiting on it, so a long book keeps none. */
+    private suspend fun leave(index: Int, gate: PageGate) = lock.withLock {
+        gate.waiting--
+        if (gate.waiting <= 0) drawing.remove(index)
     }
 
     private suspend fun cached(index: Int, widthPx: Int): ImageBitmap? = lock.withLock {

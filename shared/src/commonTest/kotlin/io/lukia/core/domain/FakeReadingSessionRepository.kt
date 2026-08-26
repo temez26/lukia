@@ -12,6 +12,16 @@ class FakeReadingSessionRepository(
 
     private val rows = initial.toMutableList()
 
+    /**
+     * How many times a sitting's length has been written down.
+     *
+     * Counted because how often the recorder writes is part of what it is for:
+     * it stores as it goes so that a process being killed costs seconds rather
+     * than an evening, and it must stop once there is nothing left to store.
+     */
+    var lengthsWritten = 0
+        private set
+
     override suspend fun start(location: String, startedAt: Long): Long {
         rows.add(ReadingSession(location = location, startedAt = startedAt, durationMs = 0))
 
@@ -20,6 +30,8 @@ class FakeReadingSessionRepository(
 
     override suspend fun extend(id: Long, durationMs: Long) {
         val index = id.toInt()
+
+        lengthsWritten++
 
         rows[index] = rows[index].copy(durationMs = durationMs)
     }

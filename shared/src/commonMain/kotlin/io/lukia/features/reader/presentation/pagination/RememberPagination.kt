@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
@@ -46,10 +47,19 @@ internal fun rememberPagination(
     // would be the most expensive thing the reader does.
     val figures = remember(sections, density) { FigureShapes(density) }
 
+    // The style with its colour taken out, which is what the book is actually
+    // measured against: no line is a different height for being a different
+    // colour. It matters because the reading theme is a colour - so a book keyed
+    // on the style as given was laid out again from end to end every time the
+    // page went from light to dark, on a reader that otherwise switches theme
+    // without re-rendering a thing. Two of these built from two themes compare
+    // equal, which is what stops the producer below from restarting.
+    val measured = remember(style) { style.copy(color = Color.Unspecified) }
+
     val laid by produceState(
         initialValue = PaginatedBook.Empty,
         sections,
-        style,
+        measured,
         widthPx,
         heightPx,
         figureSize,
@@ -61,7 +71,7 @@ internal fun rememberPagination(
                 sections = sections,
                 sizes = BlockMetrics(
                     measurer = measurer,
-                    style = style,
+                    style = measured,
                     widthPx = widthPx,
                     density = density,
                     figureHeight = { figure, width -> figures.heightOf(figure, width, figureSize) },

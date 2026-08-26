@@ -21,7 +21,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
@@ -46,7 +45,7 @@ const val BOOK_COVER_ASPECT_RATIO = 0.68f
  * itself. Small enough that nothing of the picture survives but its light, large
  * enough that the light still moves across the card. See [CoverArtwork].
  */
-private const val CoverBackdropEdge = 24
+internal const val CoverBackdropEdge = 24
 
 /** How far the backdrop is held behind the cover in front of it. */
 private const val BackdropDim = 0.3f
@@ -65,7 +64,7 @@ internal sealed interface CoverArt {
      */
     data object Absent : CoverArt
 
-    data class Artwork(val bitmap: ImageBitmap) : CoverArt
+    data class Artwork(val cover: DecodedCover) : CoverArt
 }
 
 /**
@@ -196,7 +195,7 @@ fun BookCover(
         contentAlignment = Alignment.Center,
     ) {
         when (art) {
-            is CoverArt.Artwork -> CoverArtwork(bitmap = art.bitmap, alpha = artworkAlpha)
+            is CoverArt.Artwork -> CoverArtwork(cover = art.cover, alpha = artworkAlpha)
 
             CoverArt.Absent -> Text(
                 text = title.trim().firstOrNull()?.uppercase() ?: "?",
@@ -235,16 +234,14 @@ fun BookCover(
  * fade in together as one thing.
  */
 @Composable
-private fun CoverArtwork(bitmap: ImageBitmap, alpha: Float) {
-    val backdrop = remember(bitmap) { bitmap.scaledToFit(CoverBackdropEdge) }
-
+private fun CoverArtwork(cover: DecodedCover, alpha: Float) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .graphicsLayer { this.alpha = alpha },
     ) {
         Image(
-            bitmap = backdrop,
+            bitmap = cover.backdrop,
             contentDescription = null,
             contentScale = ContentScale.Crop,
             // Bilinear, which is what turns two dozen pixels blown up across a
@@ -262,7 +259,7 @@ private fun CoverArtwork(bitmap: ImageBitmap, alpha: Float) {
         )
 
         Image(
-            bitmap = bitmap,
+            bitmap = cover.artwork,
             contentDescription = null,
             contentScale = ContentScale.Fit,
             modifier = Modifier.fillMaxSize(),

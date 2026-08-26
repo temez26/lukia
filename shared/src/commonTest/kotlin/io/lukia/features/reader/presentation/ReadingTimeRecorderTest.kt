@@ -3,11 +3,13 @@ package io.lukia.features.reader.presentation
 import io.lukia.core.domain.FakeReadingSessionRepository
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TestTimeSource
 
 /**
@@ -122,6 +124,41 @@ class ReadingTimeRecorderTest {
 
         assertEquals(2, sessions.all().size)
         assertEquals(5.minutes.inWholeMilliseconds, sessions.all().last().durationMs)
+    }
+
+    /**
+     * A book left open on a desk stops writing as well as stops counting.
+     *
+     * Once a sitting has gone idle its length cannot grow, so the clock has
+     * nothing left to bring - and a recorder that kept waking for it would
+     * store the same number three times a minute for as long as the book lay
+     * there.
+     */
+    @Test
+    fun aBookLeftOpenStopsWritingOnceItHasGoneIdle() = runTest {
+        val recorder = recorder()
+
+        recorder.begin()
+        time += 2.minutes
+        recorder.onActivity()
+        runCurrent()
+
+        // Past the idle limit, and one tick to store the length it settled at.
+        time += IdleAfter + 1.minutes
+        advanceTimeBy(WriteEvery + 1.seconds)
+        runCurrent()
+
+        val settled = sessions.lengthsWritten
+
+        // An hour of ticks with nobody reading.
+        advanceTimeBy(WriteEvery * 180)
+        runCurrent()
+
+        assertEquals(settled, sessions.lengthsWritten)
+        assertEquals(
+            (2.minutes + IdleAfter).inWholeMilliseconds,
+            sessions.all().single().durationMs,
+        )
     }
 
     /** Nothing is written for a book that was opened and shut again at once. */

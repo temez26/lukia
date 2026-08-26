@@ -130,22 +130,41 @@ internal class ReadingTimeRecorder(
     private suspend fun record(opened: TimeMark) {
         var sitting = Sitting(opened)
 
+        // Whether what has been written down is all there is to write: the
+        // sitting has gone idle, so its counted length has stopped growing.
+        var settled = false
+
         while (true) {
             // Woken by a page turn, or by nothing at all once the writing
             // interval is up - both are a moment to write down where we are.
-            val turned = withTimeoutOrNull(WriteEvery) { turns.receive() } != null
+            //
+            // A settled sitting waits only for the page turn. There is nothing
+            // left for the clock to bring: a book left open on a desk would
+            // otherwise wake three times a minute for as long as it lay there,
+            // storing the same number it stored the time before.
+            val turned = if (settled) {
+                turns.receive()
+                true
+            } else {
+                withTimeoutOrNull(WriteEvery) { turns.receive() } != null
+            }
 
             if (turned && sitting.hasGoneIdle()) {
                 // The old sitting ended when the reader stopped, hours ago; the
                 // page just turned is the first of a new one.
                 write(sitting)
                 sitting = Sitting(timeSource.markNow())
+                settled = false
                 continue
             }
 
             if (turned) sitting.lastActivity = timeSource.markNow()
 
             write(sitting)
+
+            // Asked after the write rather than before it, so the length that
+            // stops the clock is one that has been stored.
+            settled = sitting.hasGoneIdle()
         }
     }
 
