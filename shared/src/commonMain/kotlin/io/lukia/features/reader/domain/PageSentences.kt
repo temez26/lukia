@@ -49,7 +49,10 @@ data class PageSentence(
 
 /** One word of a laid-out page: what it says, and the rectangles it covers. */
 data class PageWord(
-    /** Its place in the sentence, which is how it is addressed - see [Word]. */
+    /**
+     * Its place in the sentence, which is how it is addressed - see
+     * [io.lukia.features.translate.domain.Word].
+     */
     val index: Int,
     val text: String,
     val quads: List<TextQuad>,
