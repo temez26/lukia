@@ -1,6 +1,7 @@
 package io.lukia.features.reader.presentation
 
 import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.viewModelScope
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.FakeSecretStore
@@ -23,13 +24,13 @@ import io.lukia.features.translate.domain.FakeTranslator
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.job
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
@@ -93,6 +94,16 @@ abstract class ReaderViewModelTestCase {
     protected val viewModelStore = ViewModelStore()
     protected val openedViewModels = mutableListOf<ReaderViewModel>()
 
+    /**
+     * The scope job of each ViewModel, taken while it is still alive.
+     *
+     * Held separately because it is the one thing tear-down needs *after*
+     * clearing the store, and asking a cleared ViewModel for its scope hands
+     * back a fresh one that is already finished - which would be a wait that
+     * always returns immediately and never waited for anything.
+     */
+    private val viewModelJobs = mutableListOf<Job>()
+
     @BeforeTest
     fun setUp() {
         Dispatchers.setMain(Dispatchers.Unconfined)
@@ -107,35 +118,32 @@ abstract class ReaderViewModelTestCase {
      * [resetMain] would by then have removed. Waiting for the work to land
      * first is what makes that impossible rather than unlikely.
      *
-     * The open document is closed for the same kind of reason: its file handle
-     * has to be given back before the directory underneath it goes.
+     * Clearing the store only *starts* the cancelling, so the scopes are then
+     * waited on rather than given a moment: a coroutine cancelled inside a
+     * blocking read still has to reach its next suspension point, and one
+     * still resuming while [resetMain] runs throws into whichever test happens
+     * to be starting next. Joining the scope is the moment that is over, and
+     * it is the same moment on a loaded machine as on an idle one.
+     *
+     * The open document is closed last for a related reason: its file handle
+     * has to be given back before the directory underneath it goes, and
+     * nothing may still be reading through it when it is.
      */
     @AfterTest
     fun tearDown() {
         runBlocking {
             withTimeoutOrNull(SETTLE_TIMEOUT_MILLIS) {
-                openedViewModels.forEach { viewModel ->
-                    val state = viewModel.uiState.first { it !is UiState.Loading }
-
-                    // Only a book that opened goes on to read an outline.
-                    if (state is UiState.Success) {
-                        viewModel.outline.first { it !is ReaderOutline.Loading }
-                    }
-                }
+                openedViewModels.forEach { it.settled() }
             }
         }
 
         viewModelStore.clear()
-        openedViewModels.forEach { it.uiState.value.dataOrNull?.close() }
 
-        // Cancelling a ViewModel's scope only starts the cancelling. Anything
-        // suspended in a `delay` is resumed from a timer thread of its own,
-        // which then asks the main dispatcher whether it needs to dispatch -
-        // and a dispatcher that has already been reset answers by throwing,
-        // into whichever test happens to be starting. Letting those landings
-        // happen before the dispatcher is taken away is what makes this suite
-        // green rather than usually green.
-        runBlocking { withContext(Dispatchers.Default) { delay(CANCELLATION_MILLIS) } }
+        runBlocking {
+            withTimeoutOrNull(SETTLE_TIMEOUT_MILLIS) { viewModelJobs.forEach { it.join() } }
+        }
+
+        openedViewModels.forEach { it.uiState.value.dataOrNull?.close() }
 
         Dispatchers.resetMain()
         root.deleteRecursively()
@@ -144,12 +152,36 @@ abstract class ReaderViewModelTestCase {
     protected fun track(viewModel: ReaderViewModel): ReaderViewModel {
         viewModelStore.put("reader-${openedViewModels.size}", viewModel)
         openedViewModels += viewModel
+        viewModelJobs += viewModel.viewModelScope.coroutineContext.job
         return viewModel
     }
 
-    /** The state once the document has finished opening, one way or the other. */
-    protected suspend fun ReaderViewModel.settled(): UiState<ReaderDocument> =
-        uiState.first { it !is UiState.Loading }
+    /**
+     * The state once the document has finished opening, one way or the other.
+     *
+     * A book that opened is waited for twice, because opening one publishes the
+     * state part-way through the work: `uiState` leaves `Loading`, and the same
+     * coroutine goes on to settle the layout choice, read the stored position
+     * and then the outline. The app never sees that gap - its main dispatcher
+     * is one thread, so the tail is one turn and nothing can observe the middle
+     * of it. Here the tail resumes on whichever pool thread finished the copy,
+     * while the test resumes on its own, so a wait that ended at the first
+     * signal would read [ReaderViewModel.layoutOffered] or
+     * [ReaderViewModel.textExtraction] while they were still being set.
+     *
+     * The outline is the last of it, and it is reached from the coroutine that
+     * set the rest - so waiting for it is waiting for all of it, whatever
+     * thread each part ran on. Anything the opening learns to set after the
+     * outline needs this wait extended to cover it.
+     */
+    protected suspend fun ReaderViewModel.settled(): UiState<ReaderDocument> {
+        val state = uiState.first { it !is UiState.Loading }
+
+        // Only a book that opened goes on to read an outline.
+        if (state is UiState.Success) outline.first { it !is ReaderOutline.Loading }
+
+        return state
+    }
 
     protected fun createViewModel(
         document: DocumentInfo,
@@ -238,14 +270,12 @@ abstract class ReaderViewModelTestCase {
     }
 
     private companion object {
-        /** Generous: the work is a few small files, not a real book. */
-        const val SETTLE_TIMEOUT_MILLIS = 10_000L
-
         /**
-         * Long enough for a cancelled coroutine to be resumed and finish, short
-         * enough to pay once per test class without anybody noticing.
+         * A backstop against a wait that can never end, rather than a duration
+         * anything is expected to take: the work is a few small files, not a
+         * real book.
          */
-        const val CANCELLATION_MILLIS = 50L
+        const val SETTLE_TIMEOUT_MILLIS = 10_000L
     }
 
     protected class FakeLibraryRepository(
