@@ -8,10 +8,10 @@ import io.lukia.core.infrastructure.IOSDocumentWorkspace
 import io.lukia.core.infrastructure.IOSSecretStore
 import io.lukia.core.infrastructure.IOSSettingsStore
 import io.lukia.core.infrastructure.lukiaSqlDriver
-import io.lukia.features.import.domain.DocumentAnalyzer
-import io.lukia.features.import.domain.FolderScanner
-import io.lukia.features.import.infrastructure.IOSDocumentAnalyzer
-import io.lukia.features.import.infrastructure.IOSFolderScanner
+import io.lukia.features.library.domain.DocumentAnalyzer
+import io.lukia.features.library.domain.FolderScanner
+import io.lukia.features.library.infrastructure.importing.IOSDocumentAnalyzer
+import io.lukia.features.library.infrastructure.importing.IOSFolderScanner
 import org.koin.dsl.module
 
 val platformModule = module {

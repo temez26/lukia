@@ -148,7 +148,7 @@ class ImportDocumentsUseCaseTest {
     /** Records what it was asked to open, so a skipped file can be proven skipped. */
     private class RecordingAnalyzer(
         private val analyzed: MutableList<String>,
-    ) : io.lukia.features.import.domain.DocumentAnalyzer {
+    ) : io.lukia.features.library.domain.DocumentAnalyzer {
 
         private val delegate = TypeFromExtensionAnalyzer()
 

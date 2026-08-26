@@ -9,7 +9,6 @@ import io.lukia.core.domain.FakePdfLayoutRepository
 import io.lukia.core.domain.FakeReadingProgressRepository
 import io.lukia.core.domain.TestDocuments
 import io.lukia.core.presentation.UiState
-import io.lukia.features.import.domain.DocumentAnalyzer
 import io.lukia.features.library.TypeFromExtensionAnalyzer
 import io.lukia.features.library.application.BookDetails
 import io.lukia.features.library.application.GetDocumentDetailsUseCase
@@ -17,6 +16,7 @@ import io.lukia.features.library.application.ImportDocumentUseCase
 import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
+import io.lukia.features.library.domain.DocumentAnalyzer
 import io.lukia.features.library.domain.LibraryRepository
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest

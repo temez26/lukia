@@ -212,9 +212,9 @@
     <ID>TooGenericExceptionThrown:CoalescingTranslatorTest.kt$CoalescingTranslatorTest$throw RuntimeException("no network")</ID>
     <ID>TooGenericExceptionThrown:TranslatePassageUseCaseTest.kt$TranslatePassageUseCaseTest$throw RuntimeException("no network")</ID>
     <ID>TooGenericExceptionThrown:TranslationSessionTest.kt$TranslationSessionTest$throw RuntimeException("no network")</ID>
-    <ID>UnusedImports:AndroidDocumentAnalyzerTest.kt$import io.lukia.features.import.infrastructure.AndroidDocumentAnalyzer</ID>
+    <ID>UnusedImports:AndroidDocumentAnalyzerTest.kt$import io.lukia.features.library.infrastructure.importing.AndroidDocumentAnalyzer</ID>
     <ID>UnusedImports:AnthropicFailureTest.kt$import io.lukia.features.translate.domain.translate</ID>
-    <ID>UnusedImports:IOSDocumentAnalyzerTest.kt$import io.lukia.features.import.infrastructure.IOSDocumentAnalyzer</ID>
+    <ID>UnusedImports:IOSDocumentAnalyzerTest.kt$import io.lukia.features.library.infrastructure.importing.IOSDocumentAnalyzer</ID>
     <ID>UnusedImports:OpenAiFailureTest.kt$import io.lukia.features.translate.domain.translate</ID>
     <ID>UnusedParameter:CoverArtCacheTest.kt$CoverArtCacheTest$cover: CoverImage</ID>
     <ID>UseCheckOrError:AndroidDocumentWorkspace.kt$AndroidDocumentWorkspace$throw IllegalStateException("Could not store a copy of $source")</ID>

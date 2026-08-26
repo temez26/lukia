@@ -6,9 +6,9 @@ import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.PickedDocument
 import io.lukia.core.domain.TestDocuments
 import io.lukia.core.domain.toAppError
-import io.lukia.features.import.domain.DocumentAnalyzer
 import io.lukia.features.library.application.ImportDocumentUseCase
 import io.lukia.features.library.application.RefreshDocumentUseCase
+import io.lukia.features.library.domain.DocumentAnalyzer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
