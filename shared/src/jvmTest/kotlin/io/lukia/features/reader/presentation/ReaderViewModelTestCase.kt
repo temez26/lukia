@@ -2,6 +2,7 @@ package io.lukia.features.reader.presentation
 
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.viewModelScope
+import io.lukia.core.domain.CoverImage
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.FakePdfLayoutRepository
@@ -287,10 +288,15 @@ abstract class ReaderViewModelTestCase {
             documents.add(document)
         }
 
-        override suspend fun getDocuments(): List<DocumentInfo> = documents.toList()
+        override suspend fun getDocuments(): List<DocumentInfo> =
+            documents.map { it.copy(coverImage = null) }
 
         override suspend fun getDocument(location: String): DocumentInfo? =
             documents.firstOrNull { it.document.location == location }
+
+        /** Read by location, exactly as the real store reads it. */
+        override suspend fun coverFor(location: String): CoverImage? =
+            getDocument(location)?.coverImage
 
         /** Answered the expensive way; nothing in a test cares what it costs. */
         override suspend fun knownLocations(): Set<String> =

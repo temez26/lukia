@@ -42,15 +42,38 @@ CREATE TABLE document (
     metaIdentifier TEXT
 );
 
+-- The shelf, without the artwork on it.
+--
+-- Every column but `coverImage`, spelled out rather than taken with a `*`,
+-- because the one left out is the point: a cover is around a hundred kilobytes
+-- of JPEG, and a library of two thousand books is a couple of hundred megabytes
+-- of them. Read whole, that sat in memory for as long as the shelf was on
+-- screen - many times what the decoded artwork the reader can actually see is
+-- held to.
+--
+-- What draws a cover asks for it by location instead, one at a time, as the card
+-- that needs it is drawn - see `selectCover`.
 selectAll:
-SELECT * FROM document ORDER BY sortKey;
+SELECT location, fileName, extension, type, fileExists, sizeBytes, isFavorite,
+       sortKey, metaTitle, metaAuthors, metaPublisher, metaPublished,
+       metaLanguage, metaDescription, metaSubjects, metaIdentifier
+FROM document ORDER BY sortKey;
 
+-- One book's artwork, for the card about to draw it. Bounded by what the reader
+-- can see rather than by how many books they own, which is what makes reading it
+-- per cover cheaper than reading it per library.
+selectCover:
+SELECT coverImage FROM document WHERE location = ?;
+
+-- One book, whole. Unlike the shelf above this keeps `SELECT *`: one row's
+-- artwork is a hundred kilobytes read once, and narrowing it would buy a second
+-- mapper rather than any memory.
 selectByLocation:
 SELECT * FROM document WHERE location = ?;
 
 -- Just the keys, for deciding what an import may leave alone. `selectAll` would
--- answer the same question, but it carries the cover art of every book in the
--- library with it - megabytes of BLOB decoded to compare a few hundred strings.
+-- answer the same question, but it reads every other column of every book to
+-- compare a few hundred strings.
 selectLocations:
 SELECT location FROM document;
 

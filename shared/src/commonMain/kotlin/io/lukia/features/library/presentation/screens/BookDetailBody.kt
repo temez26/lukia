@@ -29,6 +29,7 @@ import io.lukia.features.library.presentation.progressLabel
 import io.lukia.features.library.presentation.readActionLabel
 import io.lukia.shared.presentation.components.FavoriteBadge
 import io.lukia.shared.presentation.components.StatusBadge
+import io.lukia.shared.presentation.components.rememberBookCover
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 
@@ -99,7 +100,7 @@ internal fun BookDetailBody(
         ) {
             Box {
                 ReadableCover(
-                    coverImage = document.coverImage,
+                    cover = rememberBookCover(document.document.location, document.coverImage?.bytes),
                     title = title,
                     progress = details.progress,
                     enabled = document.exists,

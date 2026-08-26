@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.lukia.core.domain.CoverImage
 import io.lukia.shared.presentation.theme.LukiaElevation
 import io.lukia.shared.presentation.theme.LukiaMotion
 import kotlinx.coroutines.Dispatchers
@@ -76,23 +75,25 @@ internal sealed interface CoverArt {
  * once did, meant every card scrolled into view stalled the frame it appeared
  * on, so a fast scroll through a large library stuttered on all three platforms.
  *
- * What comes back is kept in [CoverArtCache], shrunk to the size it is actually
- * drawn at and held to a fixed budget. That is what makes scrolling back up a
- * long shelf free rather than a second decode of everything on the way, without
- * a library of any size costing more memory than a library of twenty books.
+ * The bytes are read here too, one cover at a time, rather than travelling with
+ * the book - see [CoverArtSource]. What comes back is kept in [CoverArtCache],
+ * shrunk to the size it is actually drawn at and held to a fixed budget. That is
+ * what makes scrolling back up a long shelf free rather than a second read of
+ * everything on the way, without a library of any size costing more memory than
+ * a library of twenty books.
  */
 @Composable
-internal fun rememberCoverArt(coverImage: CoverImage?): CoverArt {
+internal fun rememberCoverArt(cover: CoverArtSource?): CoverArt {
     // Asked here rather than left to the producer below, which suspends and so
     // cannot answer before the frame this card is composed on. A cover already
     // in memory - every cover on a tab being returned to - would otherwise start
     // as [CoverArt.Pending] and fade in over its own blank tile, which is the
     // flicker that runs through a shelf each time it comes back on screen.
-    val known = remember(coverImage) {
-        coverImage?.let { CoverArtCache.peek(it) }?.let { CoverArt.Artwork(it) }
+    val known = remember(cover) {
+        cover?.let { CoverArtCache.peek(it.key) }?.let { CoverArt.Artwork(it) }
     }
 
-    val art by produceState<CoverArt>(initialValue = known ?: CoverArt.Pending, coverImage) {
+    val art by produceState<CoverArt>(initialValue = known ?: CoverArt.Pending, cover) {
         // Reset explicitly: produceState keeps the previous value across a key
         // change, which would otherwise show one book's cover on another's card
         // for as long as the new one takes to decode.
@@ -101,15 +102,16 @@ internal fun rememberCoverArt(coverImage: CoverImage?): CoverArt {
         // Run even when the cover was already known, so that asking the cache
         // for it is what marks it as recently used. The value that comes back is
         // the one already on screen, so nothing recomposes.
-        value = if (coverImage == null) {
+        value = if (cover == null) {
             CoverArt.Absent
         } else {
             withContext(Dispatchers.Default) {
-                CoverArtCache.artworkFor(coverImage) { cover ->
-                    // A cover that will not decode is a cover the book does not
-                    // have, from the reader's side - so it is not an error to
-                    // report, and not something to try again on every scroll.
-                    runCatching { cover.bytes.decodeToImageBitmap() }.getOrNull()
+                CoverArtCache.artworkFor(cover.key) {
+                    // A cover that will not decode, and a book that has none
+                    // stored, are the same thing from the reader's side - so
+                    // neither is an error to report, and neither is worth trying
+                    // again on every scroll.
+                    runCatching { cover.load()?.decodeToImageBitmap() }.getOrNull()
                 }
                     ?.let { CoverArt.Artwork(it) }
                     ?: CoverArt.Absent
@@ -157,14 +159,14 @@ internal fun bookCoverColor(seed: String): Color {
  */
 @Composable
 fun BookCover(
-    coverImage: CoverImage?,
+    cover: CoverArtSource?,
     title: String,
     modifier: Modifier = Modifier,
     shape: Shape = MaterialTheme.shapes.medium,
     elevation: Dp = LukiaElevation.card,
     monogramFontSize: TextUnit = 30.sp,
 ) {
-    val art = rememberCoverArt(coverImage)
+    val art = rememberCoverArt(cover)
     val baseColor = remember(title) { bookCoverColor(title) }
 
     val artworkAlpha by animateFloatAsState(

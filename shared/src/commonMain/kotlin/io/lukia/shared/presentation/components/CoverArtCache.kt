@@ -10,7 +10,6 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
-import io.lukia.core.domain.CoverImage
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.concurrent.Volatile
@@ -52,14 +51,16 @@ internal const val CoverPixelBudget = 8_000_000
  * unbounded, because a whole library's worth of decoded artwork is hundreds of
  * megabytes and the crash that follows is a worse answer than a stutter.
  *
- * Keyed on the artwork itself, so two entries for the same bytes cannot disagree
- * and a book re-read out of the database finds the cover it had before.
- * [CoverImage] caches its own hash, so a lookup does not re-read the bytes.
+ * Keyed on the book rather than on the bytes. The bytes are no longer around to
+ * key on: they are read one cover at a time, decoded, and let go of - see
+ * [CoverArtSource] - which is what keeps a library of any size out of memory.
+ * Two copies of one book each decode their own, which is the price of not
+ * holding every cover in the library to compare them by.
  */
 internal object CoverArtCache {
 
     private val mutex = Mutex()
-    private val entries = LinkedHashMap<CoverImage, DecodedCover>()
+    private val entries = LinkedHashMap<String, DecodedCover>()
     private var pixels = 0
 
     /**
@@ -69,7 +70,7 @@ internal object CoverArtCache {
      * it was before a cover was kept or as it was after, and never mid-edit.
      */
     @Volatile
-    private var decoded: Map<CoverImage, DecodedCover> = emptyMap()
+    private var decoded: Map<String, DecodedCover> = emptyMap()
 
     /**
      * The artwork for [cover] if it has already been decoded, answered without
@@ -81,7 +82,7 @@ internal object CoverArtCache {
      * blank tile underneath - which is the flicker that runs through a shelf of
      * covers every time one comes back on screen.
      */
-    fun peek(cover: CoverImage): DecodedCover? = decoded[cover]
+    fun peek(key: String): DecodedCover? = decoded[key]
 
     /**
      * The artwork for [cover], decoding it with [decode] if it is not already
@@ -89,16 +90,16 @@ internal object CoverArtCache {
      *
      * [decode] is called outside the lock, so one slow cover does not hold up
      * every other card on screen. Two cards asking for the same cover at the
-     * same moment may both decode it, which costs one wasted decode and is far
-     * cheaper than serialising all of them behind one mutex.
+     * same moment may both read and decode it, which costs one wasted decode
+     * and is far cheaper than serialising all of them behind one mutex.
      */
     suspend fun artworkFor(
-        cover: CoverImage,
-        decode: suspend (CoverImage) -> ImageBitmap?,
+        key: String,
+        decode: suspend () -> ImageBitmap?,
     ): DecodedCover? {
-        held(cover)?.let { return it }
+        held(key)?.let { return it }
 
-        val artwork = decode(cover) ?: return null
+        val artwork = decode() ?: return null
         val scaled = artwork.scaledToFit(MaxCoverEdge)
 
         // Made here, beside the decode and off the thread that draws, rather
@@ -108,21 +109,33 @@ internal object CoverArtCache {
         // composition, on the frame it appeared on.
         val kept = DecodedCover(artwork = scaled, backdrop = scaled.scaledToFit(CoverBackdropEdge))
 
-        keep(cover, kept)
+        keep(key, kept)
 
         return kept
     }
 
-    private suspend fun held(cover: CoverImage): DecodedCover? = mutex.withLock {
+    /**
+     * Drops what was kept for [key], so the next card to ask draws it again.
+     *
+     * For a book whose file has been read a second time: keying on the book
+     * rather than on its bytes means new artwork under an old name would
+     * otherwise never be seen.
+     */
+    suspend fun forget(key: String) = mutex.withLock {
+        entries.remove(key)?.let { pixels -= it.pixelCount }
+        decoded = entries.toMap()
+    }
+
+    private suspend fun held(key: String): DecodedCover? = mutex.withLock {
         // Removed and put back rather than read in place: this map keeps its
         // insertion order, so re-inserting is what moves a cover to the newest
         // end and out of the way of the next eviction.
-        entries.remove(cover)?.also { entries[cover] = it }
+        entries.remove(key)?.also { entries[key] = it }
     }
 
-    private suspend fun keep(cover: CoverImage, artwork: DecodedCover) = mutex.withLock {
-        entries.remove(cover)?.let { pixels -= it.pixelCount }
-        entries[cover] = artwork
+    private suspend fun keep(key: String, artwork: DecodedCover) = mutex.withLock {
+        entries.remove(key)?.let { pixels -= it.pixelCount }
+        entries[key] = artwork
         pixels += artwork.pixelCount
 
         // The last entry survives whatever its size: the cover being asked for

@@ -31,6 +31,7 @@ import io.lukia.core.presentation.authorLine
 import io.lukia.core.presentation.displayTitle
 import io.lukia.core.presentation.displayType
 import io.lukia.core.presentation.formattedSize
+import io.lukia.features.library.presentation.LibraryBook
 import io.lukia.shared.presentation.components.BookCover
 import io.lukia.shared.presentation.components.FavoriteBadge
 import io.lukia.shared.presentation.components.ReadingProgressBar
@@ -67,9 +68,7 @@ private val ProgressBarHeight: Dp = 3.dp
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun BookRow(
-    document: DocumentInfo,
-    /** How far through. Null for a book that has never been opened. */
-    progress: ReadingProgress?,
+    book: LibraryBook,
     onClick: () -> Unit,
     onMenuRequest: () -> Unit,
     modifier: Modifier = Modifier,
@@ -82,6 +81,7 @@ internal fun BookRow(
     /** How this row takes part in selection, or null when nothing is being selected. */
     selection: CardSelection? = null,
 ) {
+    val document = book.document
     val title = document.displayTitle()
     val interactionSource = remember { MutableInteractionSource() }
     val shape = MaterialTheme.shapes.medium
@@ -113,7 +113,7 @@ internal fun BookRow(
 
         Box {
             BookCover(
-                coverImage = document.coverImage,
+                cover = book.cover,
                 title = title,
                 monogramFontSize = 14.sp,
                 modifier = Modifier.size(RowCoverWidth, RowCoverHeight),
@@ -129,7 +129,7 @@ internal fun BookRow(
         RowDetails(
             document = document,
             title = title,
-            progress = progress,
+            progress = book.progress,
             modifier = Modifier
                 .weight(1f)
                 .padding(start = Space.md),

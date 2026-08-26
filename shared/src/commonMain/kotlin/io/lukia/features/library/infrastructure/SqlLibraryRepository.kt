@@ -7,6 +7,7 @@ import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.PickedDocument
 import io.lukia.core.infrastructure.db.Document
 import io.lukia.core.infrastructure.db.LukiaDatabase
+import io.lukia.core.infrastructure.db.SelectAll
 import io.lukia.features.library.domain.LibraryRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -82,6 +83,10 @@ class SqlLibraryRepository(
         documents.selectAll().executeAsList().map { it.toDocumentInfo() }
     }
 
+    override suspend fun coverFor(location: String): CoverImage? = withContext(dispatcher) {
+        documents.selectCover(location).executeAsOneOrNull()?.coverImage?.let(::CoverImage)
+    }
+
     override suspend fun getDocument(location: String): DocumentInfo? = withContext(dispatcher) {
         documents.selectByLocation(location).executeAsOneOrNull()?.toDocumentInfo()
     }
@@ -105,6 +110,27 @@ class SqlLibraryRepository(
 }
 
 /**
+ * A shelf row as the rest of the app knows it - everything about a book except
+ * the artwork, which the shelf does not read. See `LibraryRepository.getDocuments`.
+ *
+ * A mapper of its own rather than a shared one: the two reads come back as two
+ * generated types, and the only way to write this once would be a function
+ * taking sixteen columns.
+ */
+private fun SelectAll.toDocumentInfo(): DocumentInfo = DocumentInfo(
+    document = PickedDocument(
+        fileName = fileName,
+        extension = extension,
+        location = location,
+    ),
+    type = storedType(type),
+    exists = fileExists,
+    sizeBytes = sizeBytes,
+    isFavorite = isFavorite,
+    metadata = storedMetadata(),
+)
+
+/**
  * A stored row as the rest of the app knows it.
  *
  * The type is stored by name rather than by ordinal: a name survives an enum
@@ -118,7 +144,7 @@ private fun Document.toDocumentInfo(): DocumentInfo = DocumentInfo(
         extension = extension,
         location = location,
     ),
-    type = DocumentType.entries.firstOrNull { it.name == type } ?: DocumentType.UNKNOWN,
+    type = storedType(type),
     exists = fileExists,
     sizeBytes = sizeBytes,
     coverImage = coverImage?.let { CoverImage(it) },
@@ -126,24 +152,41 @@ private fun Document.toDocumentInfo(): DocumentInfo = DocumentInfo(
     metadata = storedMetadata(),
 )
 
+/** See [Document.toDocumentInfo] for why the name rather than the ordinal. */
+private fun storedType(name: String): DocumentType =
+    DocumentType.entries.firstOrNull { it.name == name } ?: DocumentType.UNKNOWN
+
 /**
  * The metadata columns as one value, or null when the row carries none - which
  * is every row imported before this was stored, and every plain text file.
+ *
+ * Written once per read rather than once, for the reason the two row mappers
+ * are: the shelf and the single book come back as two generated types.
  */
-private fun Document.storedMetadata(): BookMetadata? {
-    val metadata = BookMetadata(
-        title = metaTitle,
-        authors = metaAuthors.fromStoredList(),
-        publisher = metaPublisher,
-        published = metaPublished,
-        language = metaLanguage,
-        description = metaDescription,
-        subjects = metaSubjects.fromStoredList(),
-        identifier = metaIdentifier,
-    )
+private fun SelectAll.storedMetadata(): BookMetadata? = BookMetadata(
+    title = metaTitle,
+    authors = metaAuthors.fromStoredList(),
+    publisher = metaPublisher,
+    published = metaPublished,
+    language = metaLanguage,
+    description = metaDescription,
+    subjects = metaSubjects.fromStoredList(),
+    identifier = metaIdentifier,
+).orNullIfEmpty()
 
-    return metadata.takeIf { !it.isEmpty }
-}
+private fun Document.storedMetadata(): BookMetadata? = BookMetadata(
+    title = metaTitle,
+    authors = metaAuthors.fromStoredList(),
+    publisher = metaPublisher,
+    published = metaPublished,
+    language = metaLanguage,
+    description = metaDescription,
+    subjects = metaSubjects.fromStoredList(),
+    identifier = metaIdentifier,
+).orNullIfEmpty()
+
+/** A row that told us nothing carries no metadata rather than empty metadata. */
+private fun BookMetadata.orNullIfEmpty(): BookMetadata? = takeIf { !it.isEmpty }
 
 /**
  * A list of short strings in one column, newline-separated. See the note on the

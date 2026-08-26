@@ -7,7 +7,10 @@ import io.lukia.core.domain.ReadingProgress
 import io.lukia.core.presentation.UiState
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 class LibraryViewModelTest : MainDispatcherTest() {
 
@@ -18,6 +21,25 @@ class LibraryViewModelTest : MainDispatcherTest() {
         val viewModel = createViewModel(repository)
 
         assertEquals(UiState.Success(listOf(documentInfo)), viewModel.uiState.value)
+    }
+
+    /**
+     * The shelf is read without its artwork, so what a card is handed is the way
+     * to ask for one - see [LibraryBook.cover]. This is the whole path: the book
+     * carries a handle, and the handle reads the cover the shelf left behind.
+     */
+    @Test
+    fun aBookOnTheShelfCarriesTheWayToGetItsArtwork() = runTest {
+        val artwork = byteArrayOf(4, 5, 6)
+        val repository = FakeLibraryRepository(
+            initialDocuments = listOf(pdfDocumentInfo(cover = artwork)),
+        )
+        val viewModel = createViewModel(repository)
+
+        val book = viewModel.library.value.single()
+
+        assertNull(book.document.coverImage)
+        assertContentEquals(artwork, assertNotNull(book.cover).load())
     }
 
     @Test

@@ -149,7 +149,7 @@ private fun Cover(
 ) {
     Box(modifier = modifier.fillMaxWidth()) {
         BookCover(
-            coverImage = book.document.coverImage,
+            cover = book.cover,
             title = title,
             shape = shape,
             monogramFontSize = CoverMonogramSize,

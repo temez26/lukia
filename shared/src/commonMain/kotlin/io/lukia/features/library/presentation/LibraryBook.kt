@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.ReadingProgress
 import io.lukia.core.presentation.displayTitle
+import io.lukia.shared.presentation.components.CoverArtSource
 
 /** Where a book stands with its reader, which is what the shelves are made of. */
 enum class ReadingStatus {
@@ -49,6 +50,16 @@ data class LibraryBook(
     val categories: List<String> = emptyList(),
     /** The primary language subtag, lower-cased - `en` for both `en-GB` and `en`. */
     val language: String? = null,
+    /**
+     * How to get this book's artwork, which is not the artwork itself.
+     *
+     * The shelf reads its books without their covers - see
+     * [io.lukia.features.library.domain.LibraryRepository.getDocuments] - because
+     * a library's worth of them is hundreds of megabytes to draw the dozen the
+     * reader can see. What travels with the book instead is the way to ask for
+     * one, and the asking happens as a card is drawn.
+     */
+    val cover: CoverArtSource? = null,
 ) {
     val location: String get() = document.document.location
 
@@ -68,7 +79,15 @@ data class LibraryBook(
  * off the main thread once per load, and the alternative is the same work spread
  * over the frames that draw the grid.
  */
-fun List<DocumentInfo>.asLibrary(progress: Map<String, ReadingProgress>): List<LibraryBook> =
+fun List<DocumentInfo>.asLibrary(
+    progress: Map<String, ReadingProgress>,
+    /**
+     * Where each book's artwork is to be found. Supplied rather than reached
+     * for, so that narrowing and ordering a library stays something a test can
+     * do without a database behind it.
+     */
+    coverFor: (location: String) -> CoverArtSource? = { null },
+): List<LibraryBook> =
     map { document ->
         val metadata = document.metadata
         val title = document.displayTitle()
@@ -76,6 +95,7 @@ fun List<DocumentInfo>.asLibrary(progress: Map<String, ReadingProgress>): List<L
 
         LibraryBook(
             document = document,
+            cover = coverFor(document.document.location),
             progress = progress[document.document.location],
             searchKey = buildList {
                 add(title)

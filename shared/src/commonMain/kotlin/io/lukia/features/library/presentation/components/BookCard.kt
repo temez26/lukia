@@ -31,10 +31,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.zIndex
 import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.ReadingProgress
 import io.lukia.core.presentation.displayTitle
 import io.lukia.core.presentation.displayType
 import io.lukia.core.presentation.formattedSize
+import io.lukia.features.library.presentation.LibraryBook
 import io.lukia.shared.presentation.components.BookActionsMenu
 import io.lukia.shared.presentation.components.BookCover
 import io.lukia.shared.presentation.components.EllipsisGlyph
@@ -74,9 +74,7 @@ private val SelectionMarkSize: Dp = 24.dp
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun BookCard(
-    document: DocumentInfo,
-    /** How far through. Null for a book that has never been opened. */
-    progress: ReadingProgress?,
+    book: LibraryBook,
     menuExpanded: Boolean,
     onClick: () -> Unit,
     onMenuRequest: () -> Unit,
@@ -92,6 +90,7 @@ internal fun BookCard(
     /** How this card takes part in selection, or null when nothing is being selected. */
     selection: CardSelection? = null,
 ) {
+    val document = book.document
     val title = document.displayTitle()
     val interactionSource = remember { MutableInteractionSource() }
     val hover = rememberHoverFraction(interactionSource)
@@ -120,7 +119,7 @@ internal fun BookCard(
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             BookCover(
-                coverImage = document.coverImage,
+                cover = book.cover,
                 title = title,
                 shape = coverShape,
                 // Deepens as the card lifts, so the two read as one movement
@@ -137,10 +136,10 @@ internal fun BookCard(
             // where the rounded corners do, and drawn only for a book somebody
             // has started - an empty bar on every unread cover would turn a
             // shelf into a progress report.
-            progress?.fraction?.let { fraction ->
+            book.progress?.fraction?.let { fraction ->
                 ReadingProgressOverlay(
                     fraction = fraction,
-                    percent = progress.percent,
+                    percent = book.progress?.percent,
                     modifier = Modifier.matchParentSize().clip(coverShape),
                 )
             }
