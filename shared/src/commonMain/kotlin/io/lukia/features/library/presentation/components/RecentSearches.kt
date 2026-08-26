@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import io.lukia.shared.presentation.components.ClearGlyph
 import io.lukia.shared.presentation.components.LukiaIconButton
@@ -99,6 +100,7 @@ private fun RecentSearchRow(
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
+                role = Role.Button,
                 onClickLabel = "Search for $term",
                 onClick = onClick,
             )
@@ -158,6 +160,7 @@ private fun ClearAll(
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
+                role = Role.Button,
                 onClickLabel = "Clear recent searches",
                 onClick = onClick,
             )

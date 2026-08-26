@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -131,6 +132,7 @@ internal fun ChapterRowItem(
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
+                role = Role.Button,
                 onClickLabel = "Go to ${entry.title}",
                 onClick = onClick,
             )
@@ -226,6 +228,7 @@ private fun DisclosureToggle(
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
+                role = Role.Button,
                 onClickLabel = label,
                 onClick = onClick,
             )

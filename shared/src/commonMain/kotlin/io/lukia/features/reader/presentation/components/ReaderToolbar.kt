@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -238,6 +239,7 @@ internal fun PageIndicatorButton(
                 .clickable(
                     interactionSource = interactionSource,
                     indication = null,
+                    role = Role.Button,
                     onClickLabel = "Open contents",
                     onClick = onClick,
                 )

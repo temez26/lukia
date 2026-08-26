@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -84,6 +85,11 @@ fun buttonInset(size: ButtonSize): Dp = when (size) {
  * [icon] is handed the resolved content colour and an already-sized modifier, so
  * a caller never picks a glyph size of its own - that is what left the app with
  * glyphs at 13, 14, 16, 17, 18 and 20dp.
+ *
+ * The role is declared rather than left to `clickable`, which sets none. A
+ * control drawn from scratch has to say what it is: Material's own `Button`
+ * carries this for free, and without it a screen reader announces the app's
+ * buttons as text somebody happens to be able to press.
  */
 @Composable
 fun LukiaButton(
@@ -150,6 +156,7 @@ fun LukiaButton(
                 enabled = enabled,
                 interactionSource = interactionSource,
                 indication = null,
+                role = Role.Button,
                 onClickLabel = label,
                 onClick = onClick,
             )
@@ -201,6 +208,9 @@ enum class IconButtonVariant {
  *
  * Presses scale rather than ripple. A ripple spreading across translucent chrome
  * reads as a smudge on the glass rather than as feedback.
+ *
+ * The role is declared for the reason it is on [LukiaButton]: nothing about a
+ * drawn glyph in a `clickable` box says "button" on its own.
  */
 @Composable
 fun LukiaIconButton(
@@ -247,6 +257,7 @@ fun LukiaIconButton(
                     enabled = enabled,
                     interactionSource = interactionSource,
                     indication = null,
+                    role = Role.Button,
                     onClickLabel = label,
                     onClick = onClick,
                 )
