@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
  *
  * `Modifier.blur()` is no substitute on any platform: it blurs a composable's
  * *own children*, not the backdrop behind it, and it is a no-op on Android below
- * API 31 (this app's minSdk is 24).
+ * API 31 (this app's minSdk is 23).
  *
  * So this is a hand-drawn approximation - layered translucency, a specular top
  * highlight and a hairline border - and it is one deliberately, on every
