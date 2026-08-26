@@ -1,10 +1,10 @@
-package io.lukia.features.bookdetail
+package io.lukia.features.library
 
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.ReadingProgress
 import io.lukia.core.domain.TestDocuments
-import io.lukia.features.bookdetail.application.BookDetails
+import io.lukia.features.library.application.BookDetails
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

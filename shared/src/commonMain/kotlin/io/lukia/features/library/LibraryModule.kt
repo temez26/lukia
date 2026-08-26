@@ -1,5 +1,6 @@
 package io.lukia.features.library
 
+import io.lukia.features.library.application.GetDocumentDetailsUseCase
 import io.lukia.features.library.application.GetLibraryDocumentsUseCase
 import io.lukia.features.library.application.ImportDocumentUseCase
 import io.lukia.features.library.application.ImportDocumentsUseCase
@@ -11,6 +12,7 @@ import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.library.infrastructure.LibrarySettingsRepository
 import io.lukia.features.library.infrastructure.RecentSearchesRepository
 import io.lukia.features.library.infrastructure.SqlLibraryRepository
+import io.lukia.features.library.presentation.BookDetailViewModel
 import io.lukia.features.library.presentation.LibraryViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -64,5 +66,13 @@ val libraryModule = module {
     // store.
     single {
         RecentSearchesRepository(get())
+    }
+
+    single {
+        GetDocumentDetailsUseCase(get(), get())
+    }
+
+    viewModel { (location: String) ->
+        BookDetailViewModel(location, get(), get(), get(), get())
     }
 }

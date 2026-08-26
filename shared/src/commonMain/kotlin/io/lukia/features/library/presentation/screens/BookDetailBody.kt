@@ -1,4 +1,4 @@
-package io.lukia.features.bookdetail.presentation.screens
+package io.lukia.features.library.presentation.screens
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,10 +23,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.core.presentation.authorLine
 import io.lukia.core.presentation.bookTitle
-import io.lukia.features.bookdetail.application.BookDetails
-import io.lukia.features.bookdetail.presentation.components.ReadableCover
-import io.lukia.features.bookdetail.presentation.progressLabel
-import io.lukia.features.bookdetail.presentation.readActionLabel
+import io.lukia.features.library.application.BookDetails
+import io.lukia.features.library.presentation.components.ReadableCover
+import io.lukia.features.library.presentation.progressLabel
+import io.lukia.features.library.presentation.readActionLabel
 import io.lukia.shared.presentation.components.FavoriteBadge
 import io.lukia.shared.presentation.components.StatusBadge
 import io.lukia.shared.presentation.theme.LocalLukiaDimens

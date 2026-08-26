@@ -26,9 +26,6 @@ class ArchitectureTest {
      * then fails as stale, and the rule tightens on its own.
      */
     private val allowedCycles = setOf(
-        // Phase 4's. The library opens a book's details, and the details screen reads the
-        // library back for the book it is showing.
-        "bookdetail -> library -> bookdetail",
         // No phase's yet - found by this test rather than by the audit that preceded it.
         // The library screen hosts the settings overlay, settings edits the reader's
         // settings, and the reader looks a book up in the library.

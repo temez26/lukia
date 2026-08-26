@@ -1,4 +1,4 @@
-package io.lukia.features.bookdetail.presentation
+package io.lukia.features.library.presentation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,8 +14,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.ReadingProgress
-import io.lukia.features.bookdetail.application.BookDetails
-import io.lukia.features.bookdetail.presentation.screens.BookDetailBody
+import io.lukia.features.library.application.BookDetails
+import io.lukia.features.library.presentation.screens.BookDetailBody
 import io.lukia.shared.presentation.components.ActionMenuScrim
 import io.lukia.shared.presentation.components.BookActionsMenu
 import io.lukia.shared.presentation.components.EllipsisGlyph

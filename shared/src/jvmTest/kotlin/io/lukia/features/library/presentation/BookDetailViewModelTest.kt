@@ -1,4 +1,4 @@
-package io.lukia.features.bookdetail.presentation
+package io.lukia.features.library.presentation
 
 import io.lukia.MainDispatcherTest
 import io.lukia.core.domain.AppError
@@ -9,10 +9,10 @@ import io.lukia.core.domain.FakePdfLayoutRepository
 import io.lukia.core.domain.FakeReadingProgressRepository
 import io.lukia.core.domain.TestDocuments
 import io.lukia.core.presentation.UiState
-import io.lukia.features.bookdetail.application.BookDetails
-import io.lukia.features.bookdetail.application.GetDocumentDetailsUseCase
 import io.lukia.features.import.domain.DocumentAnalyzer
 import io.lukia.features.library.TypeFromExtensionAnalyzer
+import io.lukia.features.library.application.BookDetails
+import io.lukia.features.library.application.GetDocumentDetailsUseCase
 import io.lukia.features.library.application.ImportDocumentUseCase
 import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase

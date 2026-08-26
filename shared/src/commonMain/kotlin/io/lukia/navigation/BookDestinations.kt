@@ -6,7 +6,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.savedstate.read
 import io.lukia.Routes
-import io.lukia.features.bookdetail.presentation.screens.BookDetailScreen
+import io.lukia.features.library.presentation.screens.BookDetailScreen
 import io.lukia.features.profile.presentation.screens.ProfileScreen
 import io.lukia.features.reader.presentation.screens.ReaderScreen
 import io.lukia.features.settings.presentation.screens.SettingsScreen

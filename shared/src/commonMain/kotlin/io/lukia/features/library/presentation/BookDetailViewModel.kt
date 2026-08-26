@@ -1,4 +1,4 @@
-package io.lukia.features.bookdetail.presentation
+package io.lukia.features.library.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,8 +8,8 @@ import io.lukia.core.domain.toAppError
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
 import io.lukia.core.presentation.displayShortMessage
-import io.lukia.features.bookdetail.application.BookDetails
-import io.lukia.features.bookdetail.application.GetDocumentDetailsUseCase
+import io.lukia.features.library.application.BookDetails
+import io.lukia.features.library.application.GetDocumentDetailsUseCase
 import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase

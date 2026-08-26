@@ -1,4 +1,4 @@
-package io.lukia.features.bookdetail.presentation.screens
+package io.lukia.features.library.presentation.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,8 +25,8 @@ import io.lukia.core.presentation.displayType
 import io.lukia.core.presentation.formattedSize
 import io.lukia.core.presentation.languageName
 import io.lukia.core.presentation.publishedYear
-import io.lukia.features.bookdetail.application.BookDetails
-import io.lukia.features.bookdetail.presentation.lengthLabel
+import io.lukia.features.library.application.BookDetails
+import io.lukia.features.library.presentation.lengthLabel
 import io.lukia.shared.presentation.components.BadgeTone
 import io.lukia.shared.presentation.components.ButtonSize
 import io.lukia.shared.presentation.components.ButtonVariant

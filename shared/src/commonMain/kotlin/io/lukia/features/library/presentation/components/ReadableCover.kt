@@ -1,4 +1,4 @@
-package io.lukia.features.bookdetail.presentation.components
+package io.lukia.features.library.presentation.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi

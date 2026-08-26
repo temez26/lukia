@@ -1,6 +1,6 @@
-package io.lukia.features.bookdetail.presentation
+package io.lukia.features.library.presentation
 
-import io.lukia.features.bookdetail.application.BookDetails
+import io.lukia.features.library.application.BookDetails
 
 /**
  * How long the book is, once that is known.

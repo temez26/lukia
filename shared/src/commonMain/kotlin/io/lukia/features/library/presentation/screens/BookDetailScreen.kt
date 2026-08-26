@@ -1,4 +1,4 @@
-package io.lukia.features.bookdetail.presentation.screens
+package io.lukia.features.library.presentation.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -21,8 +21,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
-import io.lukia.features.bookdetail.application.BookDetails
-import io.lukia.features.bookdetail.presentation.BookDetailViewModel
+import io.lukia.features.library.application.BookDetails
+import io.lukia.features.library.presentation.BookDetailViewModel
 import io.lukia.shared.presentation.components.ActionMenuScrim
 import io.lukia.shared.presentation.components.BackChevron
 import io.lukia.shared.presentation.components.BookActionsMenu

@@ -1,4 +1,4 @@
-package io.lukia.features.bookdetail.application
+package io.lukia.features.library.application
 
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.ReadingProgress

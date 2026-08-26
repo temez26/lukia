@@ -1,4 +1,4 @@
-package io.lukia.features.bookdetail
+package io.lukia.features.library
 
 import io.lukia.core.domain.BookMetadata
 import io.lukia.core.domain.DocumentInfo
@@ -9,10 +9,10 @@ import io.lukia.core.presentation.authorLine
 import io.lukia.core.presentation.bookTitle
 import io.lukia.core.presentation.languageName
 import io.lukia.core.presentation.publishedYear
-import io.lukia.features.bookdetail.application.BookDetails
-import io.lukia.features.bookdetail.presentation.lengthLabel
-import io.lukia.features.bookdetail.presentation.progressLabel
-import io.lukia.features.bookdetail.presentation.readActionLabel
+import io.lukia.features.library.application.BookDetails
+import io.lukia.features.library.presentation.lengthLabel
+import io.lukia.features.library.presentation.progressLabel
+import io.lukia.features.library.presentation.readActionLabel
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
