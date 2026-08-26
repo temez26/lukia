@@ -112,7 +112,7 @@ internal fun HomeHeader(
     onSettings: () -> Unit,
     modifier: Modifier = Modifier,
     /** The way to the reader's own page, supplied by the shell - see [LibraryNavBar]. */
-    profileButton: @Composable () -> Unit = {},
+    statsButton: @Composable () -> Unit = {},
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -126,7 +126,7 @@ internal fun HomeHeader(
         )
 
         Box(modifier = Modifier.padding(end = Space.md)) {
-            profileButton()
+            statsButton()
         }
 
         Box {

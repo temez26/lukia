@@ -30,8 +30,7 @@ import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.screens.HomeScreen
 import io.lukia.features.library.presentation.screens.LibraryScreen
 import io.lukia.features.library.presentation.screens.SearchScreen
-import io.lukia.features.profile.presentation.ProfileAvatarButton
-import io.lukia.features.profile.presentation.rememberProfileFace
+import io.lukia.features.stats.presentation.StatsButton
 import io.lukia.shared.presentation.theme.LocalMotionStyle
 import io.lukia.shared.presentation.theme.MotionStyle
 import io.lukia.shared.presentation.theme.exit
@@ -133,14 +132,11 @@ private fun NavGraphBuilder.tabDestinations(
 
     val openSettings: () -> Unit = { navController.navigate(Routes.Settings.route) }
 
-    // Filled here rather than by the library screens, which have a place for the
-    // reader's disc on their bars and no business knowing what a reader looks
-    // like. This shell is where the two features meet.
-    val profileButton: @Composable () -> Unit = {
-        ProfileAvatarButton(
-            face = rememberProfileFace(),
-            onClick = { navController.navigate(Routes.Profile.route) },
-        )
+    // Filled here rather than by the library screens, which have a place on
+    // their bars for it and no business knowing what the statistics screen is.
+    // This shell is where the two features meet.
+    val statsButton: @Composable () -> Unit = {
+        StatsButton(onClick = { navController.navigate(Routes.Stats.route) })
     }
 
     tabDestination(Routes.Home.route) {
@@ -153,7 +149,7 @@ private fun NavGraphBuilder.tabDestinations(
             },
             onOpenLibrary = { navController.switchTo(MobileTab.Library) },
             onSettings = openSettings,
-            profileButton = profileButton,
+            statsButton = statsButton,
             viewModel = library,
         )
     }
@@ -172,7 +168,7 @@ private fun NavGraphBuilder.tabDestinations(
             onDocumentClick = openBook,
             onDocumentDetails = openDetails,
             onSettings = openSettings,
-            profileButton = profileButton,
+            statsButton = statsButton,
             // Searching has a tab of its own here, and a field on this screen as
             // well would be a second search with a second answer to the same
             // question.

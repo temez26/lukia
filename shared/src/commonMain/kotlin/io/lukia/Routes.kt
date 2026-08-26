@@ -21,11 +21,11 @@ sealed class Routes(val route: String) {
     data object Settings : Routes("settings")
 
     /**
-     * The reader themselves. A destination pushed over whatever was showing,
-     * like [Settings] and for the same reason: it is about the app rather than
-     * about one book, and it is reached from the same menu.
+     * What the reading adds up to. A destination pushed over whatever was
+     * showing, like [Settings] and for the same reason: it is about the app
+     * rather than about one book, and it is reached from the same bar.
      */
-    data object Profile : Routes("profile")
+    data object Stats : Routes("stats")
 
     /**
      * A destination that shows one book, addressed by its library location.

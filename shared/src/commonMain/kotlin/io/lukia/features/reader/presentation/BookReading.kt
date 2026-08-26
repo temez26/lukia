@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
  * Split from [ReaderViewModel] because opening a book is one job and keeping the
  * record of it is another - and because the two halves of that record are
  * written for different reasons and read by different screens. The position is
- * what the reader comes back to; the time is what their profile counts.
+ * what the reader comes back to; the time is what the statistics count.
  *
  * The pair travels together rather than as two dependencies because they are
  * written at the same moment by the same event: a page settling is both "this is

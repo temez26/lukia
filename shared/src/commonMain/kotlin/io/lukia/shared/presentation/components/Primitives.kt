@@ -51,6 +51,9 @@ fun LukiaDivider(
 enum class BadgeTone {
     Error,
     Neutral,
+
+    /** Something going well, in whatever colour the app is highlighting with. */
+    Accent,
 }
 
 /**
@@ -70,6 +73,7 @@ fun StatusBadge(
     val color = when (tone) {
         BadgeTone.Error -> MaterialTheme.colorScheme.error
         BadgeTone.Neutral -> MaterialTheme.colorScheme.onSurfaceVariant
+        BadgeTone.Accent -> MaterialTheme.colorScheme.primary
     }
 
     Box(
@@ -139,7 +143,7 @@ fun SectionLabel(
  * with any explanation set below it rather than inside.
  *
  * The shape iOS gives a grouped list, and the shape both the settings page and
- * the profile are built from - which is why it lives here rather than inside
+ * the statistics are built from - which is why it lives here rather than inside
  * either of them.
  *
  * [color] is passed on to the [GroupCard] and matters for the same reason: what

@@ -6,8 +6,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import io.lukia.core.domain.AppTheme
-import io.lukia.features.profile.infrastructure.ProfileSettingsRepository
-import io.lukia.features.profile.presentation.screens.OnboardingScreen
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.navigation.DesktopShell
 import io.lukia.navigation.MobileShell
@@ -23,13 +21,6 @@ fun App() {
     // - exists yet. The repository loads synchronously, so this is settled before
     // the first frame and the app never opens in the wrong colours.
     val appSettings by koinInject<AppSettingsRepository>().settings.collectAsState()
-
-    // Injected here for the same reason, and read for a different one: whether
-    // there is a reader at all decides which of two things the app opens on, and
-    // that has to be settled before the first frame rather than swapped a moment
-    // into it. This store is synchronous too, so it is.
-    val profiles = koinInject<ProfileSettingsRepository>()
-    val profile by profiles.profile.collectAsState()
 
     val darkTheme = when (appSettings.theme) {
         AppTheme.System -> isSystemInDarkTheme()
@@ -60,14 +51,11 @@ fun App() {
         // so the last frame of it and the first frame of the app are the same
         // colours.
         LaunchSplash {
-            // Instead of the app rather than over it. Until somebody has been
-            // through onboarding there is nothing behind it worth a glimpse of,
-            // and a library sliding away under a welcome would read as the app
-            // having started twice.
-            when (profile) {
-                null -> OnboardingScreen(onFinish = profiles::setUsername)
-                else -> if (mobile) MobileShell() else DesktopShell()
-            }
+            // Straight into the app. There is nobody to introduce and nothing to
+            // ask for - the library, the positions in it and every setting are
+            // already on this device - so the first thing anybody sees is their
+            // own shelf rather than a form standing in front of it.
+            if (mobile) MobileShell() else DesktopShell()
         }
     }
 }

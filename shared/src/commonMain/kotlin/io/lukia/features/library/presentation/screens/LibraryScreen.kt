@@ -65,7 +65,7 @@ fun LibraryScreen(
     onSettings: () -> Unit = {},
     showSearch: Boolean = true,
     /** The way to the reader's own page, supplied by the shell - see `MobileShell`. */
-    profileButton: @Composable () -> Unit = {},
+    statsButton: @Composable () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val books by viewModel.books.collectAsState()
@@ -122,7 +122,7 @@ fun LibraryScreen(
             snackbarHostState = snackbarHostState,
             readingProgress = readingProgress,
             showSearch = showSearch,
-            profileButton = profileButton,
+            statsButton = statsButton,
         )
 
         // Over the library and its own overlays both, since it is opened from the
@@ -179,7 +179,7 @@ fun LibraryContent(
     /** False where searching has a screen of its own - see [LibraryNavBar]. */
     showSearch: Boolean = true,
     /** The way to the reader's own page, supplied by the shell - see `MobileShell`. */
-    profileButton: @Composable () -> Unit = {},
+    statsButton: @Composable () -> Unit = {},
 ) {
     val dimens = LocalLukiaDimens.current
     val reveal = rememberLaunchReveal()
@@ -349,7 +349,7 @@ fun LibraryContent(
                     onSettings = onSettings,
                     modifier = Modifier.align(Alignment.TopCenter),
                     showSearch = showSearch,
-                    profileButton = profileButton,
+                    statsButton = statsButton,
                 )
             }
 

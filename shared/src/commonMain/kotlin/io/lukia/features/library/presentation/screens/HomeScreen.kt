@@ -54,7 +54,7 @@ internal fun HomeScreen(
     onOpenLibrary: () -> Unit,
     onSettings: () -> Unit,
     /** The way to the reader's own page, supplied by the shell - see `MobileShell`. */
-    profileButton: @Composable () -> Unit = {},
+    statsButton: @Composable () -> Unit = {},
     viewModel: LibraryViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -110,7 +110,7 @@ internal fun HomeScreen(
         importProgress = importProgress,
         shelf = homeShelf,
         onSettings = onSettings,
-        profileButton = profileButton,
+        statsButton = statsButton,
     )
 }
 
@@ -145,7 +145,7 @@ internal fun HomeContent(
     shelf: LibraryShelfUi = LibraryShelfUi.None,
     onSettings: () -> Unit = {},
     /** The way to the reader's own page, supplied by the shell - see `MobileShell`. */
-    profileButton: @Composable () -> Unit = {},
+    statsButton: @Composable () -> Unit = {},
 ) {
     // One value rather than a flag per menu, as everywhere else in this app: the
     // header carries one, the empty state carries another and every cover on
@@ -181,7 +181,7 @@ internal fun HomeContent(
                             onImportFolder = onImportFolder,
                             shelf = shelf,
                             onSettings = onSettings,
-                            profileButton = profileButton,
+                            statsButton = statsButton,
                         )
                     },
                 )
