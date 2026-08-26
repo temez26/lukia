@@ -1,4 +1,4 @@
-package io.lukia.features.library.presentation
+package io.lukia.features.library.domain
 
 /**
  * How the shelf is laid out: as covers, or as rows.

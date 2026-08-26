@@ -37,15 +37,6 @@ class ArchitectureTest {
 
     private val layersAboveDomain = listOf("application", "infrastructure", "presentation")
 
-    /**
-     * Phase 3's. LibraryLayout is a library UI type the repository happens to store, and
-     * moves to library/domain - which is where a persisted choice belongs anyway.
-     */
-    private val presentationUsedByInfrastructure = setOf(
-        "shared/src/commonMain/kotlin/io/lukia/features/library/infrastructure/LibrarySettingsRepository.kt " +
-            "imports io.lukia.features.library.presentation.LibraryLayout",
-    )
-
     @Test
     fun noFeatureDependsOnAnotherInACircle() {
         val edges = featureEdges()
@@ -88,7 +79,7 @@ class ArchitectureTest {
     fun infrastructureStaysOutOfPresentation() {
         assertAllowListed(
             rule = "An infrastructure package may not depend on presentation",
-            allowed = presentationUsedByInfrastructure,
+            allowed = emptySet(),
             found = importsWhere(
                 from = { it.hasSegment("infrastructure") },
                 to = { it.inPackage("io.lukia") && it.hasSegment("presentation") },

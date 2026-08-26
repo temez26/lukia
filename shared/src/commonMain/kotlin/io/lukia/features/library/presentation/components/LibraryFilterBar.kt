@@ -18,9 +18,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.core.presentation.displayName
 import io.lukia.core.presentation.languageName
+import io.lukia.features.library.domain.LibraryLayout
 import io.lukia.features.library.presentation.LibraryFacet
 import io.lukia.features.library.presentation.LibraryFacets
-import io.lukia.features.library.presentation.LibraryLayout
 import io.lukia.features.library.presentation.LibraryQuery
 import io.lukia.features.library.presentation.LibrarySort
 import io.lukia.features.library.presentation.OpenMenu

@@ -21,9 +21,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.lukia.features.library.domain.LibraryLayout
 import io.lukia.features.library.presentation.ImportProgress
 import io.lukia.features.library.presentation.LibraryFacets
-import io.lukia.features.library.presentation.LibraryLayout
 import io.lukia.features.library.presentation.LibraryQuery
 import io.lukia.features.library.presentation.OpenMenu
 import io.lukia.shared.presentation.components.LaunchReveal
