@@ -43,9 +43,9 @@ import io.lukia.features.reader.presentation.theme.readerPageStyle
 import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.TranslationGestures
+import io.lukia.features.translate.presentation.BookTranslations
 import io.lukia.features.translate.presentation.PassageSelection
 import io.lukia.features.translate.presentation.PassageTranslation
-import io.lukia.features.translate.presentation.ReaderTranslations
 import io.lukia.shared.presentation.components.UiStateContent
 import io.lukia.shared.presentation.theme.isWideWindow
 
@@ -114,8 +114,8 @@ internal fun ReaderContent(
 
     // Filed by where each translation belongs, once per change, so that a
     // sentence changing state reaches the block or the page it is on and no
-    // further. See ReaderTranslations.
-    val translated = remember(translations) { ReaderTranslations.of(translations) }
+    // further. See BookTranslations.
+    val translated = remember(translations) { BookTranslations.of(translations) }
 
     // The reader wears its own theme; the rest of the app keeps following the
     // system. Everything inside - the glass chrome, the type, the panel - picks

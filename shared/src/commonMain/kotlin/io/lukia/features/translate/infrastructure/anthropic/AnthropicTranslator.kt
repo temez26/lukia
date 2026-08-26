@@ -18,13 +18,12 @@ import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.Translator
 import io.lukia.features.translate.infrastructure.StreamedAnswer
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
-import io.lukia.features.translate.infrastructure.asTranslationFailure
 import io.lukia.features.translate.infrastructure.buildTranslationPrompt
 import io.lukia.features.translate.infrastructure.forEachEventPayload
 import io.lukia.features.translate.infrastructure.readTranslatedPassage
 import io.lukia.features.translate.infrastructure.tokenAllowanceFor
+import io.lukia.features.translate.infrastructure.translating
 import io.lukia.features.translate.infrastructure.translationTimeouts
-import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
 
 /** The version of the wire format this speaks, sent on every request. */
@@ -91,7 +90,7 @@ class AnthropicTranslator(
         var stopReason: String? = null
         var reportedFailure: String? = null
 
-        try {
+        translating(configured) {
             client.preparePost("${configured.baseUrl.trimEnd('/')}/messages") {
                 translationTimeouts(configured)
 
@@ -131,13 +130,6 @@ class AnthropicTranslator(
                     event.delta?.answerText?.let(answer::append)
                 }
             }
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        } catch (failure: AppErrorException) {
-            // Already in words the reader can act on.
-            throw failure
-        } catch (failure: Throwable) {
-            throw failure.asTranslationFailure(configured)
         }
 
         // A declined request is a perfectly successful stream with nothing in

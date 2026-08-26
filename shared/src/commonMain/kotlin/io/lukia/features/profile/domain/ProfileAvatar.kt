@@ -22,7 +22,7 @@ sealed interface ProfileAvatar {
      *
      * The bytes are not here: they are stored apart and read asynchronously,
      * because they are the one part of a profile that cannot be answered in
-     * time for the first frame - see `ProfileRepository`. This case means "use
+     * time for the first frame - see `ProfileSettingsRepository`. This case means "use
      * the stored picture", and the disc falls back to [Monogram] while it is
      * being read, and for good if there turns out to be none.
      */

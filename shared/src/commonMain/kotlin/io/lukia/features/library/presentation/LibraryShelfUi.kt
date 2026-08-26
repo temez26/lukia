@@ -1,6 +1,7 @@
 package io.lukia.features.library.presentation
 
 import androidx.compose.runtime.Stable
+import io.lukia.features.library.domain.LibraryLayout
 
 /**
  * How the shelf is being worked with: how it is laid out, what is picked off it,

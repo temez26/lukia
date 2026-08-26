@@ -4,7 +4,7 @@ import io.lukia.core.domain.FakeSettingsStore
 import io.lukia.features.profile.domain.ProfileAvatar
 import io.lukia.features.profile.domain.ProfileSymbol
 import io.lukia.features.profile.domain.ProfileTint
-import io.lukia.features.profile.infrastructure.ProfileRepository
+import io.lukia.features.profile.infrastructure.ProfileSettingsRepository
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -16,11 +16,11 @@ class ProfileAvatarStorageTest {
 
     private val store = FakeSettingsStore()
     private val pictures = FakeProfilePictureStore()
-    private val repository = ProfileRepository(store, pictures)
+    private val repository = ProfileSettingsRepository(store, pictures)
 
     private fun named(name: String = "Ada") = repository.also { it.setUsername(name) }
 
-    private fun reopened() = ProfileRepository(store, pictures)
+    private fun reopened() = ProfileSettingsRepository(store, pictures)
 
     @Test
     fun aNewProfileWearsItsOwnInitialsInTheAppsOwnColour() {

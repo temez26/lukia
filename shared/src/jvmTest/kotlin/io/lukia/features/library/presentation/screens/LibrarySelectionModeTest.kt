@@ -25,8 +25,8 @@ import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.PickedDocument
 import io.lukia.core.presentation.UiState
+import io.lukia.features.library.domain.LibraryLayout
 import io.lukia.features.library.presentation.BulkAction
-import io.lukia.features.library.presentation.LibraryLayout
 import io.lukia.features.library.presentation.LibraryQuery
 import io.lukia.features.library.presentation.LibrarySelection
 import io.lukia.features.library.presentation.LibraryShelfUi

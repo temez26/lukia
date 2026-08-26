@@ -12,9 +12,8 @@ import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.Translator
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
-import io.lukia.features.translate.infrastructure.asTranslationFailure
+import io.lukia.features.translate.infrastructure.translating
 import io.lukia.features.translate.infrastructure.translationTimeouts
-import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
@@ -74,16 +73,12 @@ class WiktionaryTranslator(
         val word = request.text.trim()
         val reader = request.targetLanguage.tag.substringBefore('-')
 
-        val senses = try {
+        val senses = translating(settings.settings.value) {
             // Short-circuited rather than looked up and discarded: a reader whose
             // own language is the fallback has one wiki to ask, and asking it
             // twice to throw the second answer away is a request nobody wanted.
             lookUp(word, reader)
                 ?: if (reader == FALLBACK_WIKI) null else lookUp(word, FALLBACK_WIKI)
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        } catch (failure: Throwable) {
-            throw failure.asTranslationFailure(settings.settings.value)
         }
 
         if (senses.isNullOrEmpty()) {

@@ -2,23 +2,23 @@ package io.lukia.features.profile
 
 import io.lukia.core.domain.FakeSettingsStore
 import io.lukia.features.profile.domain.ProfileAccount
-import io.lukia.features.profile.infrastructure.ProfileRepository
+import io.lukia.features.profile.infrastructure.ProfileSettingsRepository
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 /** Whether there is a reader, what they are called, and what survives a restart. */
-class ProfileRepositoryTest {
+class ProfileSettingsRepositoryTest {
 
     @Test
     fun thereIsNoProfileUntilOneIsMade() {
-        assertNull(ProfileRepository(FakeSettingsStore(), FakeProfilePictureStore()).profile.value)
+        assertNull(ProfileSettingsRepository(FakeSettingsStore(), FakeProfilePictureStore()).profile.value)
     }
 
     @Test
     fun namingTheReaderCreatesTheProfile() {
         val store = FakeSettingsStore()
-        val repository = ProfileRepository(store, FakeProfilePictureStore())
+        val repository = ProfileSettingsRepository(store, FakeProfilePictureStore())
 
         repository.setUsername("Ada")
 
@@ -29,7 +29,7 @@ class ProfileRepositoryTest {
     /** A profile starts on the device it was made on, and nowhere else. */
     @Test
     fun aNewProfileIsKeptOnThisDevice() {
-        val repository = ProfileRepository(FakeSettingsStore(), FakeProfilePictureStore())
+        val repository = ProfileSettingsRepository(FakeSettingsStore(), FakeProfilePictureStore())
 
         repository.setUsername("Ada")
 
@@ -40,13 +40,16 @@ class ProfileRepositoryTest {
     fun aStoredNameIsThereOnTheNextRun() {
         val store = FakeSettingsStore(mapOf("profile.username" to "Ada Lovelace"))
 
-        assertEquals("Ada Lovelace", ProfileRepository(store, FakeProfilePictureStore()).profile.value?.username)
+        assertEquals(
+            "Ada Lovelace",
+            ProfileSettingsRepository(store, FakeProfilePictureStore()).profile.value?.username,
+        )
     }
 
     @Test
     fun renamingKeepsOneProfileRatherThanMakingASecond() {
         val store = FakeSettingsStore()
-        val repository = ProfileRepository(store, FakeProfilePictureStore())
+        val repository = ProfileSettingsRepository(store, FakeProfilePictureStore())
 
         repository.setUsername("Ada")
         repository.setUsername("Ada Lovelace")
@@ -59,7 +62,7 @@ class ProfileRepositoryTest {
     fun theNameIsTidiedBeforeItIsStored() {
         val store = FakeSettingsStore()
 
-        ProfileRepository(store, FakeProfilePictureStore()).setUsername("  Ada   Lovelace ")
+        ProfileSettingsRepository(store, FakeProfilePictureStore()).setUsername("  Ada   Lovelace ")
 
         assertEquals("Ada Lovelace", store.values["profile.username"])
     }
@@ -71,7 +74,7 @@ class ProfileRepositoryTest {
     @Test
     fun aNameTooShortToUseIsNotStored() {
         val store = FakeSettingsStore()
-        val repository = ProfileRepository(store, FakeProfilePictureStore())
+        val repository = ProfileSettingsRepository(store, FakeProfilePictureStore())
 
         repository.setUsername("A")
 
@@ -82,7 +85,7 @@ class ProfileRepositoryTest {
     @Test
     fun anUnusableRenameLeavesTheStoredNameAlone() {
         val store = FakeSettingsStore()
-        val repository = ProfileRepository(store, FakeProfilePictureStore())
+        val repository = ProfileSettingsRepository(store, FakeProfilePictureStore())
 
         repository.setUsername("Ada")
         repository.setUsername("")
@@ -94,7 +97,7 @@ class ProfileRepositoryTest {
     @Test
     fun renamingToTheSameNameWritesNothing() {
         val store = FakeSettingsStore()
-        val repository = ProfileRepository(store, FakeProfilePictureStore())
+        val repository = ProfileSettingsRepository(store, FakeProfilePictureStore())
 
         repository.setUsername("Ada")
         val afterFirst = store.writeCount
@@ -113,6 +116,6 @@ class ProfileRepositoryTest {
     fun anUnusableStoredNameReadsAsNoProfile() {
         val store = FakeSettingsStore(mapOf("profile.username" to " "))
 
-        assertNull(ProfileRepository(store, FakeProfilePictureStore()).profile.value)
+        assertNull(ProfileSettingsRepository(store, FakeProfilePictureStore()).profile.value)
     }
 }

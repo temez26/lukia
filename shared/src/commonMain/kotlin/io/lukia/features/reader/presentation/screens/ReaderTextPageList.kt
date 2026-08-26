@@ -40,8 +40,8 @@ import io.lukia.features.reader.presentation.pagination.PaginatedBook
 import io.lukia.features.reader.presentation.pagination.rememberPagination
 import io.lukia.features.reader.presentation.theme.readerTextStyle
 import io.lukia.features.translate.domain.TranslationGestures
+import io.lukia.features.translate.presentation.BookTranslations
 import io.lukia.features.translate.presentation.PassageSelection
-import io.lukia.features.translate.presentation.ReaderTranslations
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.LukiaElevation
 
@@ -69,7 +69,7 @@ internal fun TextPageList(
     listState: LazyListState,
     settings: ReaderSettings,
     pageColor: Color,
-    translations: ReaderTranslations,
+    translations: BookTranslations,
     onToggleChrome: () -> Unit,
     onSettingsChange: (ReaderSettings) -> Unit,
     onPassageSelected: (PassageSelection) -> Unit,

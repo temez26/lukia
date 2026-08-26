@@ -15,9 +15,8 @@ import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.Translator
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
-import io.lukia.features.translate.infrastructure.asTranslationFailure
+import io.lukia.features.translate.infrastructure.translating
 import io.lukia.features.translate.infrastructure.translationTimeouts
-import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -69,14 +68,8 @@ class GoogleTranslator(
         val configured = settings.settings.value
         val key = configured.googleApiKey
 
-        val text = try {
+        val text = translating(configured) {
             if (key == null) askPublicly(request) else askCloud(request, key)
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        } catch (failure: AppErrorException) {
-            throw failure
-        } catch (failure: Throwable) {
-            throw failure.asTranslationFailure(configured)
         }
 
         if (text.isBlank()) throw AppErrorException(AppError.TranslationFailed)

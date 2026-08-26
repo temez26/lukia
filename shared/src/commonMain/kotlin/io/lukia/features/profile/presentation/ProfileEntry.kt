@@ -16,7 +16,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
-import io.lukia.features.profile.infrastructure.ProfileRepository
+import io.lukia.features.profile.infrastructure.ProfileSettingsRepository
 import io.lukia.features.profile.presentation.components.ProfileAvatar
 import io.lukia.features.profile.presentation.components.ProfileAvatarButtonSize
 import io.lukia.features.profile.presentation.components.ProfileFace
@@ -84,7 +84,7 @@ fun ProfileAvatarButton(
  */
 @Composable
 fun rememberProfileFace(): ProfileFace {
-    val profiles = koinInject<ProfileRepository>()
+    val profiles = koinInject<ProfileSettingsRepository>()
     val profile by profiles.profile.collectAsState()
     val picture by profiles.picture.collectAsState()
 

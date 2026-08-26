@@ -2,6 +2,7 @@ package io.lukia.features.translate.infrastructure
 
 import io.lukia.core.domain.SecretStore
 import io.lukia.core.domain.SettingsStore
+import io.lukia.core.infrastructure.PersistedSettings
 import io.lukia.core.infrastructure.readEnum
 import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.PassageUnit
@@ -10,9 +11,7 @@ import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.domain.TranslationProvider
 import io.lukia.features.translate.domain.TranslationSettings
 import io.lukia.features.translate.domain.WordLookup
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * How translating is configured, live and persisted - the same shape as the
@@ -35,15 +34,10 @@ class TranslationSettingsRepository(
     private val secrets: SecretStore,
 ) {
 
-    private val _settings = MutableStateFlow(load())
-    val settings: StateFlow<TranslationSettings> = _settings.asStateFlow()
+    private val persisted = PersistedSettings(load(), ::save)
+    val settings: StateFlow<TranslationSettings> = persisted.state
 
-    fun update(settings: TranslationSettings) {
-        if (_settings.value == settings) return
-
-        _settings.value = settings
-        save(settings)
-    }
+    fun update(settings: TranslationSettings) = persisted.set(settings)
 
     private fun load(): TranslationSettings {
         val defaults = TranslationSettings()

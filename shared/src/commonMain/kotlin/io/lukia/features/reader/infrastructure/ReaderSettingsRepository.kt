@@ -2,6 +2,7 @@ package io.lukia.features.reader.infrastructure
 
 import io.lukia.core.domain.PdfLayout
 import io.lukia.core.domain.SettingsStore
+import io.lukia.core.infrastructure.PersistedSettings
 import io.lukia.core.infrastructure.readEnum
 import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.domain.LineSpacing
@@ -10,9 +11,7 @@ import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.domain.ReaderTypeface
 import io.lukia.features.reader.domain.ReadingWidth
 import io.lukia.features.reader.domain.TextAlignment
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * The reader's settings, live and persisted.
@@ -31,15 +30,10 @@ class ReaderSettingsRepository(
     private val store: SettingsStore,
 ) {
 
-    private val _settings = MutableStateFlow(load())
-    val settings: StateFlow<ReaderSettings> = _settings.asStateFlow()
+    private val persisted = PersistedSettings(load(), ::save)
+    val settings: StateFlow<ReaderSettings> = persisted.state
 
-    fun update(settings: ReaderSettings) {
-        if (_settings.value == settings) return
-
-        _settings.value = settings
-        save(settings)
-    }
+    fun update(settings: ReaderSettings) = persisted.set(settings)
 
     private fun load(): ReaderSettings {
         val defaults = ReaderSettings()

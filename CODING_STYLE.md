@@ -5,7 +5,8 @@ How Kotlin is written in this project, and what enforces it.
 Two tools split the work. **ktlint** owns formatting — whitespace, wrapping, imports,
 commas — and can fix everything it reports. **detekt** owns structure — size, complexity,
 naming, correctness, Compose usage — and reports what a formatter cannot decide for you.
-A third, project-specific check enforces the file length limit, which neither tool covers.
+Two project-specific checks cover what neither tool can: a Gradle task for the file
+length limit, and a test for the dependency directions between packages.
 
 Everything below is enforced on every pull request unless it says otherwise.
 
@@ -140,6 +141,28 @@ Enforced by the [compose-rules](https://mrmans0n.github.io/compose-rules/) detek
 - No `println`. Console output is invisible on a device.
 - No `GlobalScope`. Suspending work takes a scope from its caller, and a dispatcher is
   injected rather than hard-coded, so tests can replace it.
+
+## Architecture
+
+The layers and feature boundaries described in the [README](README.md#architecture) are
+held by [`ArchitectureTest`](shared/src/jvmTest/kotlin/io/lukia/ArchitectureTest.kt), which
+reads the `package` and `import` lines of every main source set:
+
+- No two features depend on each other in a circle.
+- `core` and `shared` never import from `features`.
+- A `domain` package never imports `application`, `infrastructure` or `presentation`.
+- An `infrastructure` package never imports `presentation`.
+- `core` never imports `shared`.
+
+None of these is something the compiler can fail, and the import that breaks one is always
+the convenient thing to write at the time. Test sources are not read — a fixture reaching
+across features is how a test builds its world, not a dependency the app carries.
+
+Where a rule is broken today, the exact pair — or the exact cycle — is allow-listed in the
+test with a comment saying whose job it is to remove. The allow-list is read both ways: an
+entry that no longer describes anything fails too, so fixing a violation tightens the rule
+rather than leaving a hole where it was. Adding an entry is a design decision, not a way
+past a red build.
 
 ## Visibility
 

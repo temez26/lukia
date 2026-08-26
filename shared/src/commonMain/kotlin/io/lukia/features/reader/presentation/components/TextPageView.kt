@@ -13,7 +13,7 @@ import io.lukia.features.reader.presentation.pagination.PageBlock
 import io.lukia.features.reader.presentation.pagination.TextPage
 import io.lukia.features.reader.presentation.theme.BLOCK_SPACING
 import io.lukia.features.translate.domain.TranslationGestures
-import io.lukia.features.translate.presentation.ReaderTranslations
+import io.lukia.features.translate.presentation.BookTranslations
 
 /**
  * One page of a reflowable book, set at the reader's chosen size.
@@ -42,7 +42,7 @@ internal fun TextPageView(
     pageHeight: Dp = Dp.Unspecified,
     /** How large illustrations are drawn, which is the reader's own setting. */
     figureSize: FigureSize = FigureSize.Normal,
-    translations: ReaderTranslations = ReaderTranslations.None,
+    translations: BookTranslations = BookTranslations.None,
     actionsFor: (PageBlock) -> BlockActions = { NoBlockActions },
     translateOnScreen: TranslateOnScreen = TranslateOnScreen.Idle,
     gestures: TranslationGestures = TranslationGestures.Default,

@@ -2,6 +2,7 @@ package io.lukia.features.library.presentation
 
 import io.lukia.MainDispatcherTest
 import io.lukia.core.domain.FakeSettingsStore
+import io.lukia.features.library.domain.LibraryLayout
 import io.lukia.features.library.infrastructure.LibrarySettingsRepository
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

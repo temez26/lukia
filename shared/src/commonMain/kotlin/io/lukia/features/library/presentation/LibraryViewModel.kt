@@ -18,6 +18,7 @@ import io.lukia.features.library.application.ImportFolderUseCase
 import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
+import io.lukia.features.library.domain.LibraryLayout
 import io.lukia.features.library.infrastructure.LibrarySettingsRepository
 import io.lukia.features.library.infrastructure.RecentSearchesRepository
 import kotlinx.coroutines.CoroutineDispatcher

@@ -1,11 +1,10 @@
 package io.lukia.features.library.infrastructure
 
 import io.lukia.core.domain.SettingsStore
+import io.lukia.core.infrastructure.PersistedSettings
 import io.lukia.core.infrastructure.readEnum
-import io.lukia.features.library.presentation.LibraryLayout
-import kotlinx.coroutines.flow.MutableStateFlow
+import io.lukia.features.library.domain.LibraryLayout
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * What the reader has chosen about the shelf itself, live and persisted.
@@ -19,17 +18,13 @@ class LibrarySettingsRepository(
     private val store: SettingsStore,
 ) {
 
-    private val _layout = MutableStateFlow(
+    private val persisted = PersistedSettings(
         store.readEnum(KEY_LAYOUT, LibraryLayout.entries, LibraryLayout.Grid),
-    )
-    val layout: StateFlow<LibraryLayout> = _layout.asStateFlow()
+    ) { store.putString(KEY_LAYOUT, it.name) }
 
-    fun setLayout(layout: LibraryLayout) {
-        if (_layout.value == layout) return
+    val layout: StateFlow<LibraryLayout> = persisted.state
 
-        _layout.value = layout
-        store.putString(KEY_LAYOUT, layout.name)
-    }
+    fun setLayout(layout: LibraryLayout) = persisted.set(layout)
 
     private companion object {
         const val KEY_LAYOUT = "library.layout"
