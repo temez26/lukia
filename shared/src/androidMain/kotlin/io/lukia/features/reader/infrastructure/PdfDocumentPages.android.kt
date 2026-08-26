@@ -48,6 +48,12 @@ private class AndroidDocumentPages(path: String) : DocumentPages {
      *
      * Lazy so that opening a book never pays for a chapter list until something
      * asks for one, and so the file is not scanned on the way to the first page.
+     *
+     * Lazy is safe here in a way it is not on the platforms whose renderer has
+     * an outline of its own: this reads the file through a handle of its own
+     * rather than through [renderer], so a chapter list being read while a page
+     * is being drawn is two readers of one file rather than two users of one
+     * document. That is why this one is not read up front as they are.
      */
     override val outline: List<OutlineEntry>? by lazy {
         FilePdfByteSource(file).use { PdfOutlineReader(it).read() }

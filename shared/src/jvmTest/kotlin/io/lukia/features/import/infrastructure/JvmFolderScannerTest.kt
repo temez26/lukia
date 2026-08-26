@@ -4,7 +4,7 @@ import io.lukia.core.domain.PickedFolder
 import io.lukia.features.import.domain.MaxFolderScanDepth
 import kotlinx.coroutines.test.runTest
 import java.io.File
-import java.nio.file.Files
+import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -13,6 +13,24 @@ import kotlin.test.assertTrue
 class JvmFolderScannerTest {
 
     private val scanner = JvmFolderScanner()
+
+    /**
+     * One directory per test, taken away afterwards.
+     *
+     * Deleted here rather than left to `deleteOnExit`, which cannot do it: that
+     * only removes a directory that is empty when the JVM stops, and half the
+     * tests below build folders inside their folder. What it left behind was a
+     * temporary directory per test, per run, for ever.
+     */
+    private val root = File(
+        System.getProperty("java.io.tmpdir"),
+        "lukia-scan-test-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}",
+    ).apply { mkdirs() }
+
+    @AfterTest
+    fun tearDown() {
+        root.deleteRecursively()
+    }
 
     @Test
     fun findsSupportedDocumentsAndIgnoresEverythingElse() = runTest {
@@ -117,24 +135,15 @@ class JvmFolderScannerTest {
 
     @Test
     fun returnsEmptyListForAPathThatIsNotAFolder() = runTest {
-        val missing = File(
-            Files.createTempDirectory("lukia-scan").toFile(),
-            "does-not-exist",
-        )
+        val missing = File(root, "does-not-exist")
 
         assertTrue(scanner.scan(missing.asPickedFolder()).isEmpty())
     }
 
     private fun createFolder(vararg fileNames: String): File {
-        val folder = Files.createTempDirectory("lukia-scan").toFile()
-        folder.deleteOnExit()
+        val folder = File(root, "folder-${kotlin.random.Random.nextInt()}").apply { mkdirs() }
 
-        fileNames.forEach { fileName ->
-            File(folder, fileName).apply {
-                writeText("test")
-                deleteOnExit()
-            }
-        }
+        fileNames.forEach { fileName -> File(folder, fileName).writeText("test") }
 
         return folder
     }

@@ -16,7 +16,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -93,14 +95,21 @@ internal fun SelectionMark(
  * Zero when the shelf is not being selected from, and the animation does not
  * exist at all then - a library of a hundred cards each running a forever
  * animation is a hundred recompositions a frame for a mode nobody is in.
+ *
+ * Handed back as state to be read where the card is drawn, never unwrapped
+ * here - the same arrangement as `passageSweep`, and for the same reason. A
+ * function that returns a value cannot restart on its own, so reading the
+ * animation here would put the read in the caller's scope and recompose the
+ * whole card sixty times a second: which is the cost above, paid by the mode
+ * somebody *is* in rather than the one they are not.
  */
 @Composable
-internal fun jiggleAngle(active: Boolean, seed: Int): Float {
-    if (!active) return 0f
+internal fun jiggleAngle(active: Boolean, seed: Int): State<Float> {
+    if (!active) return remember { mutableFloatStateOf(0f) }
 
     val transition = rememberInfiniteTransition(label = "jiggle")
 
-    val angle by transition.animateFloat(
+    return transition.animateFloat(
         initialValue = -JiggleDegrees,
         targetValue = JiggleDegrees,
         animationSpec = infiniteRepeatable(
@@ -115,8 +124,6 @@ internal fun jiggleAngle(active: Boolean, seed: Int): Float {
         ),
         label = "jiggleAngle",
     )
-
-    return angle
 }
 
 private const val JiggleDegrees = 1.1f
