@@ -1,4 +1,4 @@
-package io.lukia.features.reader.domain
+package io.lukia.core.domain
 
 /**
  * Positions in a map, for the tests that only need somewhere for a position to

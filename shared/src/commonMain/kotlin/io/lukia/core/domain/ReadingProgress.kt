@@ -1,4 +1,4 @@
-package io.lukia.features.reader.domain
+package io.lukia.core.domain
 
 /**
  * How far into a book someone got.

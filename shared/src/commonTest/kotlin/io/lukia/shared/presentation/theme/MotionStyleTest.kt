@@ -1,6 +1,6 @@
 package io.lukia.shared.presentation.theme
 
-import io.lukia.features.settings.domain.AppMotion
+import io.lukia.core.domain.AppMotion
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

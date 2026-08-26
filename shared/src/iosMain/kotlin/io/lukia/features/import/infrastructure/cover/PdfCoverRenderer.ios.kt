@@ -1,5 +1,7 @@
 package io.lukia.features.import.infrastructure.cover
 
+import io.lukia.core.infrastructure.toByteArray
+import io.lukia.core.infrastructure.toNSData
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.CoreGraphics.CGSizeMake
 import platform.PDFKit.PDFDocument

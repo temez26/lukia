@@ -24,8 +24,6 @@ import io.lukia.features.library.presentation.LibraryQuery
 import io.lukia.features.library.presentation.LibraryShelfUi
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.homeRows
-import io.lukia.features.profile.presentation.components.ProfileFace
-import io.lukia.features.profile.presentation.rememberProfileFace
 import io.lukia.shared.presentation.components.ActionMenuScrim
 import io.lukia.shared.presentation.components.LoadingState
 import io.lukia.shared.presentation.components.UiStateContent
@@ -54,8 +52,9 @@ internal fun HomeScreen(
     onShowDetails: (DocumentInfo) -> Unit,
     onSeeAll: (LibraryQuery) -> Unit,
     onOpenLibrary: () -> Unit,
-    onProfile: () -> Unit,
     onSettings: () -> Unit,
+    /** The way to the reader's own page, supplied by the shell - see `MobileShell`. */
+    profileButton: @Composable () -> Unit = {},
     viewModel: LibraryViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -110,9 +109,8 @@ internal fun HomeScreen(
         categories = facets.categories,
         importProgress = importProgress,
         shelf = homeShelf,
-        onProfile = onProfile,
         onSettings = onSettings,
-        face = rememberProfileFace(),
+        profileButton = profileButton,
     )
 }
 
@@ -145,10 +143,9 @@ internal fun HomeContent(
     importProgress: ImportProgress? = null,
     /** What the corner menu offers, which is what the library's own bar offers. */
     shelf: LibraryShelfUi = LibraryShelfUi.None,
-    onProfile: () -> Unit = {},
     onSettings: () -> Unit = {},
-    /** Who is reading, for the disc on the header. Nobody in particular by default. */
-    face: ProfileFace = ProfileFace.Unknown,
+    /** The way to the reader's own page, supplied by the shell - see `MobileShell`. */
+    profileButton: @Composable () -> Unit = {},
 ) {
     // One value rather than a flag per menu, as everywhere else in this app: the
     // header carries one, the empty state carries another and every cover on
@@ -183,9 +180,8 @@ internal fun HomeContent(
                             onImport = onImport,
                             onImportFolder = onImportFolder,
                             shelf = shelf,
-                            onProfile = onProfile,
                             onSettings = onSettings,
-                            face = face,
+                            profileButton = profileButton,
                         )
                     },
                 )

@@ -24,8 +24,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
+import io.lukia.core.presentation.authorLine
 import io.lukia.core.presentation.displayTitle
-import io.lukia.features.bookdetail.presentation.authorLine
 import io.lukia.features.library.presentation.HomeBookActions
 import io.lukia.features.library.presentation.LibraryBook
 import io.lukia.shared.presentation.components.BookActionsMenu

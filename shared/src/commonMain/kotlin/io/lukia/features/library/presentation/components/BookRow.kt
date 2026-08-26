@@ -26,11 +26,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.lukia.core.domain.DocumentInfo
+import io.lukia.core.domain.ReadingProgress
+import io.lukia.core.presentation.authorLine
 import io.lukia.core.presentation.displayTitle
 import io.lukia.core.presentation.displayType
 import io.lukia.core.presentation.formattedSize
-import io.lukia.features.bookdetail.presentation.authorLine
-import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.shared.presentation.components.BookCover
 import io.lukia.shared.presentation.components.FavoriteBadge
 import io.lukia.shared.presentation.components.ReadingProgressBar

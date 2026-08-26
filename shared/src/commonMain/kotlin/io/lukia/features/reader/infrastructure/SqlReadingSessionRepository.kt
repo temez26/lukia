@@ -1,8 +1,8 @@
 package io.lukia.features.reader.infrastructure
 
+import io.lukia.core.domain.ReadingSession
+import io.lukia.core.domain.ReadingSessionRepository
 import io.lukia.core.infrastructure.db.LukiaDatabase
-import io.lukia.features.reader.domain.ReadingSession
-import io.lukia.features.reader.domain.ReadingSessionRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

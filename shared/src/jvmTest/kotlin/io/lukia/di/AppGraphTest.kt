@@ -3,12 +3,12 @@ package io.lukia.di
 import app.cash.sqldelight.db.SqlDriver
 import io.ktor.client.HttpClient
 import io.lukia.core.domain.DocumentWorkspace
+import io.lukia.core.domain.ReadingProgressRepository
 import io.lukia.core.domain.SecretStore
 import io.lukia.core.domain.SettingsStore
 import io.lukia.core.infrastructure.lukiaSqlDriver
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.reader.application.OpenDocumentUseCase
-import io.lukia.features.reader.domain.ReadingProgressRepository
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.features.translate.application.TranslatePassageUseCase

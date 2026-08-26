@@ -1,5 +1,8 @@
 package io.lukia.di
 
+import io.lukia.core.domain.PdfLayoutRepository
+import io.lukia.core.domain.ReadingProgressRepository
+import io.lukia.core.domain.ReadingSessionRepository
 import io.lukia.core.infrastructure.db.LukiaDatabase
 import io.lukia.features.bookdetail.application.GetDocumentDetailsUseCase
 import io.lukia.features.bookdetail.presentation.BookDetailViewModel
@@ -21,9 +24,6 @@ import io.lukia.features.profile.infrastructure.ProfileRepository
 import io.lukia.features.profile.infrastructure.SqlProfilePictureStore
 import io.lukia.features.profile.presentation.ProfileViewModel
 import io.lukia.features.reader.application.OpenDocumentUseCase
-import io.lukia.features.reader.domain.PdfLayoutRepository
-import io.lukia.features.reader.domain.ReadingProgressRepository
-import io.lukia.features.reader.domain.ReadingSessionRepository
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import io.lukia.features.reader.infrastructure.SqlPdfLayoutRepository
 import io.lukia.features.reader.infrastructure.SqlReadingProgressRepository

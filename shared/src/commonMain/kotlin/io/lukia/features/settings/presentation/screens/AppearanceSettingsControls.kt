@@ -25,11 +25,11 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.lukia.features.settings.domain.AppAccent
-import io.lukia.features.settings.domain.AppMotion
-import io.lukia.features.settings.domain.AppPalette
+import io.lukia.core.domain.AppAccent
+import io.lukia.core.domain.AppMotion
+import io.lukia.core.domain.AppPalette
+import io.lukia.core.domain.AppTheme
 import io.lukia.features.settings.domain.AppSettings
-import io.lukia.features.settings.domain.AppTheme
 import io.lukia.features.settings.presentation.components.ChoiceList
 import io.lukia.shared.presentation.components.CheckGlyph
 import io.lukia.shared.presentation.components.SegmentedControl

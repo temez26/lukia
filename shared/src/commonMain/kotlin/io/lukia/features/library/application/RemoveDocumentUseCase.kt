@@ -1,9 +1,9 @@
 package io.lukia.features.library.application
 
 import io.lukia.core.domain.DocumentWorkspace
+import io.lukia.core.domain.PdfLayoutRepository
+import io.lukia.core.domain.ReadingProgressRepository
 import io.lukia.features.library.domain.LibraryRepository
-import io.lukia.features.reader.domain.PdfLayoutRepository
-import io.lukia.features.reader.domain.ReadingProgressRepository
 
 /**
  * Drops a document from the library index. The file on disk is left alone -

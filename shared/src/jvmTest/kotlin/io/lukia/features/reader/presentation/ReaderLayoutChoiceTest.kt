@@ -3,14 +3,14 @@ package io.lukia.features.reader.presentation
 import androidx.compose.ui.graphics.ImageBitmap
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.FakePdfLayoutRepository
+import io.lukia.core.domain.PdfLayout
 import io.lukia.core.domain.PickedDocument
 import io.lukia.core.domain.WorkingCopy
 import io.lukia.features.reader.domain.DocumentPages
-import io.lukia.features.reader.domain.FakePdfLayoutRepository
 import io.lukia.features.reader.domain.OutlineEntry
 import io.lukia.features.reader.domain.PageSize
 import io.lukia.features.reader.domain.PagedContent
-import io.lukia.features.reader.domain.PdfLayout
 import io.lukia.features.reader.domain.ReaderDocument
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

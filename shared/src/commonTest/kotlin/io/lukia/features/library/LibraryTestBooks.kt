@@ -4,9 +4,9 @@ import io.lukia.core.domain.BookMetadata
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.PickedDocument
+import io.lukia.core.domain.ReadingProgress
 import io.lukia.features.library.presentation.LibraryBook
 import io.lukia.features.library.presentation.asLibrary
-import io.lukia.features.reader.domain.ReadingProgress
 
 /**
  * Books for the tests around narrowing a library, built the way the screen

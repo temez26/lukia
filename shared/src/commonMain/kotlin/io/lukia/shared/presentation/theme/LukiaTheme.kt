@@ -11,9 +11,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.lukia.features.settings.domain.AppAccent
-import io.lukia.features.settings.domain.AppMotion
-import io.lukia.features.settings.domain.AppPalette
+import io.lukia.core.domain.AppAccent
+import io.lukia.core.domain.AppMotion
+import io.lukia.core.domain.AppPalette
 
 /**
  * The app's corner radii, and the only place any of them is decided.

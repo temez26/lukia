@@ -3,9 +3,13 @@ package io.lukia.features.library.presentation
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.FakeDocumentWorkspace
+import io.lukia.core.domain.FakePdfLayoutRepository
+import io.lukia.core.domain.FakeReadingProgressRepository
 import io.lukia.core.domain.FakeSettingsStore
 import io.lukia.core.domain.PickedDocument
 import io.lukia.core.domain.PickedFolder
+import io.lukia.core.domain.ReadingProgress
+import io.lukia.core.domain.ReadingProgressRepository
 import io.lukia.core.domain.TestDocuments
 import io.lukia.core.presentation.UiState
 import io.lukia.features.import.domain.DocumentAnalyzer
@@ -20,10 +24,6 @@ import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.library.infrastructure.LibrarySettingsRepository
 import io.lukia.features.library.infrastructure.RecentSearchesRepository
-import io.lukia.features.reader.domain.FakePdfLayoutRepository
-import io.lukia.features.reader.domain.FakeReadingProgressRepository
-import io.lukia.features.reader.domain.ReadingProgress
-import io.lukia.features.reader.domain.ReadingProgressRepository
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 
 /**

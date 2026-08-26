@@ -19,14 +19,14 @@ import io.lukia.core.domain.WorkingCopy
 import io.lukia.core.presentation.UiState
 import io.lukia.features.reader.domain.DocumentPages
 import io.lukia.features.reader.domain.OutlineEntry
+import io.lukia.features.reader.domain.PageSentence
 import io.lukia.features.reader.domain.PageSize
+import io.lukia.features.reader.domain.PageWord
 import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.TextQuad
-import io.lukia.features.translate.domain.PageSentence
-import io.lukia.features.translate.domain.PageWord
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.presentation.PassageSelection

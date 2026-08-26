@@ -1,4 +1,4 @@
-package io.lukia.features.reader.infrastructure.pdf
+package io.lukia.core.infrastructure.pdf
 
 /**
  * Where everything sits in a PDF, as found by one pass over its bytes.

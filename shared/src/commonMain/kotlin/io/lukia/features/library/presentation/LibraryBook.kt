@@ -2,8 +2,8 @@ package io.lukia.features.library.presentation
 
 import androidx.compose.runtime.Immutable
 import io.lukia.core.domain.DocumentInfo
+import io.lukia.core.domain.ReadingProgress
 import io.lukia.core.presentation.displayTitle
-import io.lukia.features.reader.domain.ReadingProgress
 
 /** Where a book stands with its reader, which is what the shelves are made of. */
 enum class ReadingStatus {

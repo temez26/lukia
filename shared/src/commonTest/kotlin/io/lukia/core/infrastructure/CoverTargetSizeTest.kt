@@ -1,4 +1,4 @@
-package io.lukia.features.import.infrastructure.cover
+package io.lukia.core.infrastructure
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

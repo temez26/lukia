@@ -1,13 +1,13 @@
 package io.lukia.features.profile
 
+import io.lukia.core.domain.FakeReadingProgressRepository
+import io.lukia.core.domain.FakeReadingSessionRepository
+import io.lukia.core.domain.ReadingSession
 import io.lukia.features.library.FakeImportLibraryRepository
 import io.lukia.features.library.book
 import io.lukia.features.library.finished
 import io.lukia.features.library.partRead
 import io.lukia.features.profile.application.GetReadingSummaryUseCase
-import io.lukia.features.reader.domain.FakeReadingProgressRepository
-import io.lukia.features.reader.domain.FakeReadingSessionRepository
-import io.lukia.features.reader.domain.ReadingSession
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

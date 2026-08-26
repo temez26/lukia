@@ -1,4 +1,4 @@
-package io.lukia.features.reader.domain
+package io.lukia.core.domain
 
 /**
  * Which of the two ways of reading a PDF somebody has asked for.
@@ -26,22 +26,13 @@ enum class PdfLayout {
 }
 
 /**
- * How far through reading a PDF's text the app has got.
- *
- * Worth reporting because it is the one thing in the reader that takes long
- * enough to watch: the text of every page has to be read out of the file before
- * the first of them can be laid out, and a long book is thousands of pages of
- * that. A spinner alone would leave somebody wondering whether a six-hundred
- * page book had hung.
- */
-data class TextExtraction(val pagesRead: Int, val pageCount: Int)
-
-/**
  * How each book was last read.
  *
  * Keyed by the same location the library keys on, exactly as a reading position
  * is, and with the same lifetime: it belongs to a book somebody has opened, and
- * it goes when the book does.
+ * it goes when the book does. Beside [ReadingProgress] rather than in the reader
+ * for that reason - the reader is what writes it, but the library is what has to
+ * forget it, and the settings screen is what chooses the default.
  */
 interface PdfLayoutRepository {
 

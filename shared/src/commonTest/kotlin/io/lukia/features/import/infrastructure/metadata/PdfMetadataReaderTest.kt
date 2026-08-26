@@ -1,6 +1,6 @@
 package io.lukia.features.import.infrastructure.metadata
 
-import io.lukia.features.reader.infrastructure.pdf.MinimalPdf
+import io.lukia.core.infrastructure.pdf.MinimalPdf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

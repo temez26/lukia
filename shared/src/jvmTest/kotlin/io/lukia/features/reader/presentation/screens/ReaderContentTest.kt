@@ -15,8 +15,8 @@ import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.runComposeUiTest
+import io.lukia.core.domain.ReadingProgress
 import io.lukia.features.reader.domain.ReaderSettings
-import io.lukia.features.reader.domain.ReadingProgress
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

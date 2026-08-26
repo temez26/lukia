@@ -1,7 +1,7 @@
 package io.lukia.shared.presentation.theme
 
-import io.lukia.features.settings.domain.AppAccent
-import io.lukia.features.settings.domain.AppPalette
+import io.lukia.core.domain.AppAccent
+import io.lukia.core.domain.AppPalette
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals

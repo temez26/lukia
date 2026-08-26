@@ -1,11 +1,11 @@
 package io.lukia.features.profile.application
 
+import io.lukia.core.domain.ReadingProgressRepository
+import io.lukia.core.domain.ReadingSessionRepository
 import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.profile.domain.ReadingSummary
 import io.lukia.features.profile.domain.readingHabits
 import io.lukia.features.profile.domain.readingSummary
-import io.lukia.features.reader.domain.ReadingProgressRepository
-import io.lukia.features.reader.domain.ReadingSessionRepository
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock

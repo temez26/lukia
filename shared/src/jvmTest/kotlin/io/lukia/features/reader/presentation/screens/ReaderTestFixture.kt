@@ -11,6 +11,7 @@ import androidx.compose.ui.test.performClick
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.PickedDocument
+import io.lukia.core.domain.ReadingProgress
 import io.lukia.core.domain.WorkingCopy
 import io.lukia.core.presentation.UiState
 import io.lukia.features.reader.domain.DocumentPages
@@ -20,7 +21,6 @@ import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
-import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.shared.presentation.theme.LukiaTheme
 
 /**

@@ -22,13 +22,14 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.input.key.onKeyEvent
+import io.lukia.core.domain.ReadingProgress
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
+import io.lukia.features.reader.domain.PageSentence
 import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
-import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.features.reader.domain.ReflowableContent
 import io.lukia.features.reader.presentation.ReaderCommand
 import io.lukia.features.reader.presentation.ShownTranslations
@@ -40,7 +41,6 @@ import io.lukia.features.reader.presentation.readerCommandFor
 import io.lukia.features.reader.presentation.theme.ReaderTheming
 import io.lukia.features.reader.presentation.theme.readerPageStyle
 import io.lukia.features.translate.domain.BulkTranslation
-import io.lukia.features.translate.domain.PageSentence
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.presentation.PassageSelection

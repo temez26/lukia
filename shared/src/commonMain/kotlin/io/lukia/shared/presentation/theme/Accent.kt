@@ -1,8 +1,8 @@
 package io.lukia.shared.presentation.theme
 
 import androidx.compose.ui.graphics.Color
-import io.lukia.features.settings.domain.AppAccent
-import io.lukia.features.settings.domain.AppPalette
+import io.lukia.core.domain.AppAccent
+import io.lukia.core.domain.AppPalette
 
 /**
  * The accents a reader may choose from.

@@ -1,7 +1,5 @@
-package io.lukia.features.translate.domain
+package io.lukia.features.reader.domain
 
-import io.lukia.features.reader.domain.PageGlyph
-import io.lukia.features.reader.domain.TextQuad
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

@@ -9,8 +9,8 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runComposeUiTest
 import io.lukia.core.domain.AppError
+import io.lukia.features.reader.domain.PageSentence
 import io.lukia.features.reader.domain.TextQuad
-import io.lukia.features.translate.domain.PageSentence
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.presentation.PassageSelection

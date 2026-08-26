@@ -23,12 +23,12 @@ import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.PickedDocument
+import io.lukia.core.domain.ReadingProgress
 import io.lukia.core.presentation.UiState
 import io.lukia.features.library.presentation.LibraryQuery
 import io.lukia.features.library.presentation.asLibrary
 import io.lukia.features.library.presentation.facets
 import io.lukia.features.library.presentation.matching
-import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.shared.presentation.theme.LukiaTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals

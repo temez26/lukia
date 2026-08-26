@@ -22,9 +22,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.lukia.core.domain.ReadingProgress
 import io.lukia.core.presentation.displayTitle
 import io.lukia.features.profile.domain.ReadingActivity
-import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.shared.presentation.components.BookCover
 import io.lukia.shared.presentation.components.LukiaDivider
 import io.lukia.shared.presentation.components.ReadingProgressBar

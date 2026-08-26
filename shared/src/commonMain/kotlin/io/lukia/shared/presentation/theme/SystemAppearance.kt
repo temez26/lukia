@@ -1,7 +1,7 @@
 package io.lukia.shared.presentation.theme
 
 import androidx.compose.runtime.Composable
-import io.lukia.features.settings.domain.AppTheme
+import io.lukia.core.domain.AppTheme
 
 /**
  * Tells the system which appearance the app is wearing.

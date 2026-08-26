@@ -14,8 +14,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runComposeUiTest
+import io.lukia.core.domain.PdfLayout
 import io.lukia.core.presentation.UiState
-import io.lukia.features.reader.domain.PdfLayout
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReaderTheme

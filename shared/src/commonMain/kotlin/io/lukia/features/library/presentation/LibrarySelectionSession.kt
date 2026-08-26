@@ -1,11 +1,11 @@
 package io.lukia.features.library.presentation
 
 import io.lukia.core.domain.DocumentInfo
+import io.lukia.core.domain.ReadingProgressRepository
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
-import io.lukia.features.reader.domain.ReadingProgressRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

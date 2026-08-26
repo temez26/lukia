@@ -1,7 +1,7 @@
 package io.lukia.features.bookdetail.application
 
 import io.lukia.core.domain.DocumentInfo
-import io.lukia.features.reader.domain.ReadingProgress
+import io.lukia.core.domain.ReadingProgress
 
 /**
  * Everything the detail screen shows about one book, from the two places it is

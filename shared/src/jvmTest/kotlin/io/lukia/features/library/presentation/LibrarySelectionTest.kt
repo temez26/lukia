@@ -3,8 +3,8 @@ package io.lukia.features.library.presentation
 import io.lukia.MainDispatcherTest
 import io.lukia.core.domain.BookMetadata
 import io.lukia.core.domain.DocumentInfo
-import io.lukia.features.reader.domain.FakeReadingProgressRepository
-import io.lukia.features.reader.domain.ReadingProgress
+import io.lukia.core.domain.FakeReadingProgressRepository
+import io.lukia.core.domain.ReadingProgress
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

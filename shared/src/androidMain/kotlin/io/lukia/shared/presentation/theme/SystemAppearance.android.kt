@@ -6,7 +6,7 @@ import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
-import io.lukia.features.settings.domain.AppTheme
+import io.lukia.core.domain.AppTheme
 
 /**
  * Android takes the answer from API 31 onwards, which is the same release that

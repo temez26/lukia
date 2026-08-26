@@ -1,5 +1,6 @@
 package io.lukia.features.reader.domain
 
+import io.lukia.core.domain.PdfLayout
 import kotlin.math.abs
 import kotlin.math.round
 import kotlin.math.roundToInt

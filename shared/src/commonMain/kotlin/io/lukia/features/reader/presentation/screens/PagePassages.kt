@@ -1,11 +1,11 @@
 package io.lukia.features.reader.presentation.screens
 
+import io.lukia.features.reader.domain.PageSentence
+import io.lukia.features.reader.domain.PageWord
+import io.lukia.features.reader.domain.sentenceAt
 import io.lukia.features.translate.domain.MAX_TRANSLATABLE_CHARS
-import io.lukia.features.translate.domain.PageSentence
-import io.lukia.features.translate.domain.PageWord
 import io.lukia.features.translate.domain.PassageUnit
 import io.lukia.features.translate.domain.TextAnchor
-import io.lukia.features.translate.domain.sentenceAt
 import io.lukia.features.translate.presentation.PassageSelection
 import io.lukia.features.translate.presentation.SentenceTranslations
 import io.lukia.features.translate.presentation.replacesTheOriginal

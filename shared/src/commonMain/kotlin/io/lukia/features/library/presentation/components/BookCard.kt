@@ -31,10 +31,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.zIndex
 import io.lukia.core.domain.DocumentInfo
+import io.lukia.core.domain.ReadingProgress
 import io.lukia.core.presentation.displayTitle
 import io.lukia.core.presentation.displayType
 import io.lukia.core.presentation.formattedSize
-import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.shared.presentation.components.BookActionsMenu
 import io.lukia.shared.presentation.components.BookCover
 import io.lukia.shared.presentation.components.EllipsisGlyph

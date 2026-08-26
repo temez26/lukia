@@ -21,8 +21,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.library.presentation.LibraryShelfUi
-import io.lukia.features.profile.presentation.ProfileAvatarButton
-import io.lukia.features.profile.presentation.components.ProfileFace
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.isWideWindow
@@ -92,7 +90,6 @@ internal fun LibraryNavBar(
     onImportFolder: () -> Unit,
     /** How the shelf is worked with, which is what this bar's menu offers. */
     shelf: LibraryShelfUi,
-    onProfile: () -> Unit,
     onSettings: () -> Unit,
     modifier: Modifier = Modifier,
     /**
@@ -102,8 +99,15 @@ internal fun LibraryNavBar(
      * of them being somewhere else.
      */
     showSearch: Boolean = true,
-    /** Who is reading, for the disc that leads to their own page. */
-    face: ProfileFace = ProfileFace.Unknown,
+    /**
+     * The way to the reader's own page, supplied rather than built here.
+     *
+     * A library bar has a place for it and no business knowing what a reader
+     * looks like; the shell that composes both features is what fills it - see
+     * `MobileShell`. Empty by default, so this bar composes in a test or a
+     * preview without a profile behind it.
+     */
+    profileButton: @Composable () -> Unit = {},
 ) {
     val dimens = LocalLukiaDimens.current
     val barColor = MaterialTheme.colorScheme.background
@@ -157,11 +161,9 @@ internal fun LibraryNavBar(
 
             // Before the actions button, so the row reads left to right as what
             // this screen is, who is reading it, and what can be done to it.
-            ProfileAvatarButton(
-                face = face,
-                onClick = onProfile,
-                modifier = Modifier.padding(end = Space.md),
-            )
+            Box(modifier = Modifier.padding(end = Space.md)) {
+                profileButton()
+            }
 
             Box {
                 MenuButton(

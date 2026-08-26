@@ -23,10 +23,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import io.lukia.core.presentation.displayType
 import io.lukia.core.presentation.formattedSize
+import io.lukia.core.presentation.languageName
+import io.lukia.core.presentation.publishedYear
 import io.lukia.features.bookdetail.application.BookDetails
-import io.lukia.features.bookdetail.presentation.languageName
 import io.lukia.features.bookdetail.presentation.lengthLabel
-import io.lukia.features.bookdetail.presentation.publishedYear
 import io.lukia.shared.presentation.components.BadgeTone
 import io.lukia.shared.presentation.components.ButtonSize
 import io.lukia.shared.presentation.components.ButtonVariant

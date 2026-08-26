@@ -1,6 +1,7 @@
 package io.lukia.features.import.infrastructure.cover
 
 import io.lukia.core.domain.DocumentType
+import io.lukia.core.infrastructure.shrinkCoverImage
 
 /**
  * How large a stored cover may be along its longer edge.

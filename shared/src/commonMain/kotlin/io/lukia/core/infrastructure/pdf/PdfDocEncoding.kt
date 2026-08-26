@@ -1,4 +1,4 @@
-package io.lukia.features.reader.infrastructure.pdf
+package io.lukia.core.infrastructure.pdf
 
 /**
  * PDF text is either UTF-16 with a byte-order mark, or PDFDocEncoding. Both

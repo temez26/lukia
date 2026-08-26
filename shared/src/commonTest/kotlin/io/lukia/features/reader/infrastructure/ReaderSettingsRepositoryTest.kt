@@ -1,9 +1,9 @@
 package io.lukia.features.reader.infrastructure
 
 import io.lukia.core.domain.FakeSettingsStore
+import io.lukia.core.domain.PdfLayout
 import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.domain.LineSpacing
-import io.lukia.features.reader.domain.PdfLayout
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.domain.ReaderTypeface

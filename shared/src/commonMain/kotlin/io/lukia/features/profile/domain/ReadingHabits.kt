@@ -1,6 +1,6 @@
 package io.lukia.features.profile.domain
 
-import io.lukia.features.reader.domain.ReadingSession
+import io.lukia.core.domain.ReadingSession
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone

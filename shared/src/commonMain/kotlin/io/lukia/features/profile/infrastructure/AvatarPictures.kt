@@ -1,6 +1,6 @@
 package io.lukia.features.profile.infrastructure
 
-import io.lukia.features.import.infrastructure.cover.shrinkCoverImage
+import io.lukia.core.infrastructure.shrinkCoverImage
 import io.lukia.features.profile.domain.ProfilePicture
 
 /**

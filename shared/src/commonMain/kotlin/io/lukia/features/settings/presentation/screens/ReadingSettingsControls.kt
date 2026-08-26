@@ -7,9 +7,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import io.lukia.core.domain.PdfLayout
 import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.domain.LineSpacing
-import io.lukia.features.reader.domain.PdfLayout
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.domain.ReaderTypeface

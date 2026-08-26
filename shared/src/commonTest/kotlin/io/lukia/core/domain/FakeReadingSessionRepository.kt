@@ -1,4 +1,4 @@
-package io.lukia.features.reader.domain
+package io.lukia.core.domain
 
 /**
  * Sittings in a list, for the tests that only need somewhere for one to go.

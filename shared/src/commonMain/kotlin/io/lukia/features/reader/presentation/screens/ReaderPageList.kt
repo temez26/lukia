@@ -39,6 +39,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
+import io.lukia.features.reader.domain.PageSentence
 import io.lukia.features.reader.domain.PageSize
 import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderSettings
@@ -47,7 +48,6 @@ import io.lukia.features.reader.presentation.TranslateOnScreen
 import io.lukia.features.reader.presentation.components.PageTranslationOverlay
 import io.lukia.features.reader.presentation.components.detectReaderTaps
 import io.lukia.features.reader.presentation.renderWidthFor
-import io.lukia.features.translate.domain.PageSentence
 import io.lukia.features.translate.domain.PassageUnit
 import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.presentation.PassageSelection

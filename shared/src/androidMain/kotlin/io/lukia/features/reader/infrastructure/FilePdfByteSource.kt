@@ -1,6 +1,6 @@
 package io.lukia.features.reader.infrastructure
 
-import io.lukia.features.reader.infrastructure.pdf.PdfByteSource
+import io.lukia.core.infrastructure.pdf.PdfByteSource
 import java.io.File
 import java.io.RandomAccessFile
 

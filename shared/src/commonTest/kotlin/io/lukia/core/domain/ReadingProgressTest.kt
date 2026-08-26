@@ -1,4 +1,4 @@
-package io.lukia.features.reader.domain
+package io.lukia.core.domain
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

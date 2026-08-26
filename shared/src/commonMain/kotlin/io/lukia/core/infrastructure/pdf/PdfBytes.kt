@@ -1,4 +1,4 @@
-package io.lukia.features.reader.infrastructure.pdf
+package io.lukia.core.infrastructure.pdf
 
 // The lexical bytes PDF syntax is built from. Named once here rather than
 // written as literals at each use, so that the classification below and the

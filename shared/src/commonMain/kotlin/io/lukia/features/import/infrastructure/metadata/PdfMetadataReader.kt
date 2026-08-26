@@ -2,9 +2,9 @@ package io.lukia.features.import.infrastructure.metadata
 
 import io.lukia.core.domain.BookMetadata
 import io.lukia.core.infrastructure.epub.collapseWhitespace
-import io.lukia.features.reader.infrastructure.pdf.ByteArrayPdfSource
-import io.lukia.features.reader.infrastructure.pdf.PdfObjectIndex
-import io.lukia.features.reader.infrastructure.pdf.asText
+import io.lukia.core.infrastructure.pdf.ByteArrayPdfSource
+import io.lukia.core.infrastructure.pdf.PdfObjectIndex
+import io.lukia.core.infrastructure.pdf.asText
 
 /**
  * A PDF's document information dictionary.

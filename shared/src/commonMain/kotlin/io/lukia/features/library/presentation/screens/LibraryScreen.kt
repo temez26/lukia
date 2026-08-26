@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.DocumentInfo
+import io.lukia.core.domain.ReadingProgress
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.bookdetail.presentation.BookDetailOverlay
@@ -38,9 +39,6 @@ import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.OpenMenu
 import io.lukia.features.library.presentation.components.LibraryNavBar
 import io.lukia.features.library.presentation.components.libraryNavBarHeight
-import io.lukia.features.profile.presentation.components.ProfileFace
-import io.lukia.features.profile.presentation.rememberProfileFace
-import io.lukia.features.reader.domain.ReadingProgress
 import io.lukia.features.settings.presentation.SettingsOverlay
 import io.lukia.shared.presentation.components.ActionMenuScrim
 import io.lukia.shared.presentation.components.LoadingState
@@ -64,9 +62,10 @@ fun LibraryScreen(
     viewModel: LibraryViewModel = koinViewModel(),
     onDocumentClick: (DocumentInfo) -> Unit = {},
     onDocumentDetails: (DocumentInfo) -> Unit = {},
-    onProfile: () -> Unit = {},
     onSettings: () -> Unit = {},
     showSearch: Boolean = true,
+    /** The way to the reader's own page, supplied by the shell - see `MobileShell`. */
+    profileButton: @Composable () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val books by viewModel.books.collectAsState()
@@ -110,7 +109,6 @@ fun LibraryScreen(
             },
             onDocumentClick = onDocumentClick,
             onDocumentDetails = onDocumentDetails,
-            onProfile = onProfile,
             onSettings = {
                 if (settingsOpenInPlace) settingsOpen = true else onSettings()
             },
@@ -124,7 +122,7 @@ fun LibraryScreen(
             snackbarHostState = snackbarHostState,
             readingProgress = readingProgress,
             showSearch = showSearch,
-            face = rememberProfileFace(),
+            profileButton = profileButton,
         )
 
         // Over the library and its own overlays both, since it is opened from the
@@ -168,7 +166,6 @@ fun LibraryContent(
      * without a ViewModel behind it, which is how it is tested and previewed.
      */
     importProgress: ImportProgress? = null,
-    onProfile: () -> Unit = {},
     onSettings: () -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     /**
@@ -181,8 +178,8 @@ fun LibraryContent(
     shelf: LibraryShelfUi = LibraryShelfUi.None,
     /** False where searching has a screen of its own - see [LibraryNavBar]. */
     showSearch: Boolean = true,
-    /** Who is reading, for the disc on the bar. Nobody in particular by default. */
-    face: ProfileFace = ProfileFace.Unknown,
+    /** The way to the reader's own page, supplied by the shell - see `MobileShell`. */
+    profileButton: @Composable () -> Unit = {},
 ) {
     val dimens = LocalLukiaDimens.current
     val reveal = rememberLaunchReveal()
@@ -349,11 +346,10 @@ fun LibraryContent(
                     onImport = onImport,
                     onImportFolder = onImportFolder,
                     shelf = shelf,
-                    onProfile = onProfile,
                     onSettings = onSettings,
                     modifier = Modifier.align(Alignment.TopCenter),
                     showSearch = showSearch,
-                    face = face,
+                    profileButton = profileButton,
                 )
             }
 
