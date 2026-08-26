@@ -3,18 +3,15 @@ package io.lukia.features.library.infrastructure.importing
 import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.DocumentType
 import io.lukia.core.domain.PickedDocument
+import io.lukia.core.infrastructure.toByteArray
 import io.lukia.features.library.domain.DocumentAnalyzer
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.addressOf
-import kotlinx.cinterop.usePinned
-import platform.Foundation.NSData
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSFileSize
 import platform.Foundation.NSFileType
 import platform.Foundation.NSFileTypeDirectory
 import platform.Foundation.NSNumber
 import platform.Foundation.NSURL
-import platform.posix.memcpy
 
 @OptIn(ExperimentalForeignApi::class)
 class IOSDocumentAnalyzer : DocumentAnalyzer {
@@ -76,15 +73,5 @@ class IOSDocumentAnalyzer : DocumentAnalyzer {
             coverImage = contents.coverImage,
             metadata = contents.metadata,
         )
-    }
-
-    private fun NSData.toByteArray(): ByteArray {
-        val result = ByteArray(length.toInt())
-        if (result.isNotEmpty()) {
-            result.usePinned { pinned ->
-                memcpy(pinned.addressOf(0), bytes, length)
-            }
-        }
-        return result
     }
 }

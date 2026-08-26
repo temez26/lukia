@@ -1,5 +1,6 @@
 package io.lukia.features.reader.infrastructure
 
+import io.lukia.core.infrastructure.toByteArray
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.allocArrayOf
 import kotlinx.cinterop.memScoped
