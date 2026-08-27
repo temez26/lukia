@@ -10,9 +10,6 @@ import org.apache.pdfbox.cos.COSName
 import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.graphics.image.PDImage
 import java.awt.geom.Point2D
-import java.awt.image.BufferedImage
-import java.io.ByteArrayOutputStream
-import javax.imageio.ImageIO
 
 /**
  * The pictures on one page of a PDF, in the places they were drawn.
@@ -24,31 +21,25 @@ import javax.imageio.ImageIO
  * at each image.
  *
  * That is what [PDFGraphicsStreamEngine] is: a renderer with nothing behind it.
- * Every method below except [drawImage] is a painting instruction being
- * deliberately ignored - the lines, curves and fills of the page are exactly
- * what this is not interested in - and the engine still has to be told, because
- * it is the running of the whole program that puts each image where it belongs.
+ * Every method below except [ImageCollector.drawImage] is a painting
+ * instruction being deliberately ignored - the lines, curves and fills of the
+ * page are exactly what this is not interested in - and the engine still has to
+ * be told, because it is the running of the whole program that puts each image
+ * where it belongs.
+ *
+ * [figures] belongs to the document rather than to the page, and is what keeps
+ * a mark printed on every leaf from being decoded on every leaf - see
+ * [PdfFigureBytes].
  */
-internal fun pdfBoxPageImages(page: PDPage): List<PageImage> =
+internal fun pdfBoxPageImages(page: PDPage, figures: PdfFigureBytes): List<PageImage> =
     runCatching {
-        ImageCollector(page).also { it.processPage(page) }.images
+        ImageCollector(page, figures).also { it.processPage(page) }.images
     }.getOrDefault(emptyList())
 
-/**
- * How large a picture is kept, in pixels along its longer side.
- *
- * A book's plates are stored at print resolution, which is several times more
- * than any screen will draw them at, and every one of them is held in memory
- * for as long as the book is open. Shrinking to something no screen exceeds
- * costs nothing anybody can see and is the difference between a converted art
- * book and one that cannot be opened.
- */
-private const val MAX_FIGURE_PIXELS = 1600
-
-/** Enough to keep a diagram's lines clean without storing a photograph twice. */
-private const val JPEG_QUALITY = 0.82f
-
-private class ImageCollector(private val page: PDPage) : PDFGraphicsStreamEngine(page) {
+private class ImageCollector(
+    private val page: PDPage,
+    private val figures: PdfFigureBytes,
+) : PDFGraphicsStreamEngine(page) {
 
     val images = mutableListOf<PageImage>()
 
@@ -78,75 +69,7 @@ private class ImageCollector(private val page: PDPage) : PDFGraphicsStreamEngine
         // two points tall is most of what reading a page would cost.
         if (!bounds.isWorthShowing()) return
 
-        runCatching { pdImage.image?.let { images += PageImage(it.encoded(), bounds) } }
-    }
-
-    /**
-     * The picture as bytes the reader can decode, shrunk to something a screen
-     * can use.
-     *
-     * JPEG unless the image has transparency to keep, which is the trade a
-     * browser makes with the same images: a photograph as PNG is several times
-     * the size for a difference nobody can see, while a diagram with a
-     * see-through background loses its background as JPEG.
-     */
-    private fun BufferedImage.encoded(): ByteArray {
-        val shrunk = shrunkToFit()
-        val transparent = colorModel.hasAlpha()
-        val bytes = ByteArrayOutputStream()
-
-        if (transparent) {
-            ImageIO.write(shrunk, "png", bytes)
-        } else {
-            writeJpeg(shrunk, bytes)
-        }
-
-        return bytes.toByteArray()
-    }
-
-    private fun BufferedImage.shrunkToFit(): BufferedImage {
-        val longest = maxOf(width, height)
-        if (longest <= MAX_FIGURE_PIXELS) return this
-
-        val scale = MAX_FIGURE_PIXELS.toFloat() / longest
-        val target = BufferedImage(
-            (width * scale).toInt().coerceAtLeast(1),
-            (height * scale).toInt().coerceAtLeast(1),
-            if (colorModel.hasAlpha()) BufferedImage.TYPE_INT_ARGB else BufferedImage.TYPE_INT_RGB,
-        )
-
-        val canvas = target.createGraphics()
-        canvas.drawImage(this, 0, 0, target.width, target.height, null)
-        canvas.dispose()
-
-        return target
-    }
-
-    private fun writeJpeg(image: BufferedImage, into: ByteArrayOutputStream) {
-        // JPEG cannot carry an alpha channel, and an image that has one - even
-        // an unused one - is written as garbled colour rather than refused.
-        val opaque = if (image.colorModel.hasAlpha()) image.withoutAlpha() else image
-
-        val writer = ImageIO.getImageWritersByFormatName("jpeg").next()
-        val parameters = writer.defaultWriteParam.apply {
-            compressionMode = javax.imageio.ImageWriteParam.MODE_EXPLICIT
-            compressionQuality = JPEG_QUALITY
-        }
-
-        ImageIO.createImageOutputStream(into).use { stream ->
-            writer.output = stream
-            writer.write(null, javax.imageio.IIOImage(opaque, null, null), parameters)
-            writer.dispose()
-        }
-    }
-
-    private fun BufferedImage.withoutAlpha(): BufferedImage {
-        val opaque = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
-        val canvas = opaque.createGraphics()
-        canvas.drawImage(this, 0, 0, null)
-        canvas.dispose()
-
-        return opaque
+        figures.of(pdImage)?.let { images += PageImage(it, bounds) }
     }
 
     // Everything the page paints that is not a picture. The engine runs the

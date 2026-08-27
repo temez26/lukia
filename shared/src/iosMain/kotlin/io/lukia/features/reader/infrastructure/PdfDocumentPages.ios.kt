@@ -41,6 +41,12 @@ private class IOSDocumentPages(path: String) : DocumentPages {
     /** PDFKit does not promise a document is safe to use from two threads. */
     private val renderLock = Mutex()
 
+    /**
+     * The reading half of this document, over the same handle and behind the
+     * same lock - see [IOSPageContent].
+     */
+    private val content = IOSPageContent(document, renderLock)
+
     override val pageSizes: List<PageSize> = List(document.pageCount.toInt()) { index ->
         val page = document.pageAtIndex(index.toULong())
 
@@ -140,27 +146,9 @@ private class IOSDocumentPages(path: String) : DocumentPages {
             }
         }
 
-    /**
-     * Read by running the page's own drawing program rather than by asking
-     * PDFKit, which has no notion of what is on a page - see
-     * [coreGraphicsPageImages]. Serialised with everything else because it
-     * reaches the same document through the page PDFKit is holding.
-     */
-    override suspend fun pageImages(index: Int): List<PageImage> =
-        withContext(Dispatchers.Default) {
-            renderLock.withLock {
-                runCatching {
-                    document.pageAtIndex(index.toULong())?.pageRef?.let { coreGraphicsPageImages(it) }
-                }.getOrNull().orEmpty()
-            }
-        }
+    override suspend fun pageImages(index: Int): List<PageImage> = content.pageImages(index)
 
-    override suspend fun pageText(index: Int): List<PageGlyph>? =
-        withContext(Dispatchers.Default) {
-            renderLock.withLock {
-                runCatching { document.pageAtIndex(index.toULong())?.pageGlyphs() }.getOrNull()
-            }
-        }
+    override suspend fun pageText(index: Int): List<PageGlyph>? = content.pageText(index)
 
     /**
      * Nothing to release: PDFKit owns the file handle and lets it go with the

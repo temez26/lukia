@@ -35,11 +35,24 @@ private class AndroidDocumentPages(path: String) : DocumentPages {
      */
     private val renderLock = Mutex()
 
-    override val pageSizes: List<PageSize> = List(renderer.pageCount) { index ->
-        renderer.openPage(index).use { page ->
-            PageSize(width = page.width.toFloat(), height = page.height.toFloat())
+    /**
+     * Measured on demand rather than as the document opens, because every one
+     * of them is a page opened through [PdfRenderer] - a JNI call each, and
+     * hundreds of them on a long book. The reader forces the whole list the
+     * moment it lays out its page slots, so nothing waits longer for it; what
+     * this saves is the document opened for some other reason paying the same
+     * bill for a list nobody asks it for.
+     */
+    override val pageSizes: List<PageSize> by lazy {
+        List(renderer.pageCount) { index ->
+            renderer.openPage(index).use { page ->
+                PageSize(width = page.width.toFloat(), height = page.height.toFloat())
+            }
         }
     }
+
+    /** The renderer's own count, so that asking it does not measure every page. */
+    override val pageCount: Int = renderer.pageCount
 
     /**
      * Read out of the file itself, because [PdfRenderer] exposes page count and
@@ -66,19 +79,16 @@ private class AndroidDocumentPages(path: String) : DocumentPages {
      */
     private val content = lazy { AndroidPageContent(file) }
 
+    // Serialised with drawing for the same reason drawing is serialised with
+    // itself: this opens its own handle on the same file, and a page being read
+    // while another is being drawn is contention over one document either way.
+    // The content keeps a lock of its own as well, for the documents a
+    // conversion opens where there is no renderer to contend with.
     override suspend fun pageText(index: Int): List<PageGlyph>? =
-        withContext(Dispatchers.Default) {
-            // Serialised with drawing for the same reason drawing is serialised
-            // with itself: this opens its own handle on the same file, and a
-            // page being read while another is being drawn is contention over
-            // one document either way.
-            renderLock.withLock { content.value.glyphs(index) }
-        }
+        renderLock.withLock { content.value.pageText(index) }
 
     override suspend fun pageImages(index: Int): List<PageImage> =
-        withContext(Dispatchers.Default) {
-            renderLock.withLock { content.value.images(index) }
-        }
+        renderLock.withLock { content.value.pageImages(index) }
 
     override suspend fun renderPage(index: Int, targetWidthPx: Int): ImageBitmap? =
         withContext(Dispatchers.Default) {

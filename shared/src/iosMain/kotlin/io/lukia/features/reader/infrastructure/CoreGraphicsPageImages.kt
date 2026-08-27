@@ -57,13 +57,20 @@ import platform.CoreGraphics.kCGPDFCropBox
  * them here, the two that save and restore the transformation, the one that
  * changes it, and the one that draws something the page named.
  *
+ * [figures] belongs to the document rather than to the page, and is what keeps
+ * a mark printed on every leaf from being decoded on every leaf - see
+ * [CoreGraphicsFigureBytes].
+ *
  * Not found: an image written into the page's program rather than named by it,
  * the inline image. CoreGraphics does not offer its data to a scanner at all,
  * and the format exists for the small marks a page draws by hand - a rule, a
  * bullet - which are already below the size worth carrying into the text.
  */
 @OptIn(ExperimentalForeignApi::class)
-internal fun coreGraphicsPageImages(page: CGPDFPageRef): List<PageImage> {
+internal fun coreGraphicsPageImages(
+    page: CGPDFPageRef,
+    figures: CoreGraphicsFigureBytes,
+): List<PageImage> {
     val operators = imageOperators() ?: return emptyList()
     val content = CGPDFContentStreamCreateWithPage(page)
 
@@ -72,7 +79,7 @@ internal fun coreGraphicsPageImages(page: CGPDFPageRef): List<PageImage> {
         return emptyList()
     }
 
-    val walk = PageWalk(page, operators)
+    val walk = PageWalk(page, operators, figures)
     val handle = StableRef.create(walk)
     walk.info = handle.asCPointer()
 
@@ -97,7 +104,11 @@ internal fun coreGraphicsPageImages(page: CGPDFPageRef): List<PageImage> {
  * goes past unread.
  */
 @OptIn(ExperimentalForeignApi::class)
-private class PageWalk(page: CGPDFPageRef, val operators: CGPDFOperatorTableRef) {
+private class PageWalk(
+    page: CGPDFPageRef,
+    val operators: CGPDFOperatorTableRef,
+    private val figures: CoreGraphicsFigureBytes,
+) {
 
     val images = mutableListOf<PageImage>()
 
@@ -172,7 +183,7 @@ private class PageWalk(page: CGPDFPageRef, val operators: CGPDFOperatorTableRef)
         // two points tall is most of what reading a page would cost.
         if (!bounds.isWorthShowing()) return
 
-        coreGraphicsImageBytes(stream, dictionary, content)?.let {
+        figures.of(stream, dictionary, content)?.let {
             images += PageImage(bytes = it, bounds = bounds)
         }
     }

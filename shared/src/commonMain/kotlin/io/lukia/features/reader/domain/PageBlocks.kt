@@ -34,7 +34,7 @@ internal typealias GlyphBlock = List<GlyphLine>
  * the line above it.
  */
 internal fun List<PageGlyph>.intoLines(): List<GlyphLine> {
-    val byPosition = sortedWith(compareBy({ it.bounds.top }, { it.bounds.left }))
+    val byPosition = sortedWith(DownThePage)
     val lines = mutableListOf<MutableList<PageGlyph>>()
 
     byPosition.forEach { glyph ->
@@ -47,8 +47,24 @@ internal fun List<PageGlyph>.intoLines(): List<GlyphLine> {
         }
     }
 
-    return lines.map { line -> line.sortedBy { it.bounds.left } }
+    return lines.map { line -> line.sortedWith(AcrossTheLine) }
 }
+
+/**
+ * Down the page and then across it, and along one line.
+ *
+ * Written out rather than built with `compareBy`, which takes what it is given
+ * as [Comparable] and so boxes two floats per comparison - a few hundred
+ * thousand of them on a page, and every page of the book comes through here.
+ */
+private val DownThePage = Comparator<PageGlyph> { left, right ->
+    val down = left.bounds.top.compareTo(right.bounds.top)
+
+    if (down != 0) down else left.bounds.left.compareTo(right.bounds.left)
+}
+
+private val AcrossTheLine =
+    Comparator<PageGlyph> { left, right -> left.bounds.left.compareTo(right.bounds.left) }
 
 /**
  * The lines gathered into blocks, cut wherever more space was left than one line
@@ -95,19 +111,53 @@ internal fun List<PlacedGlyph?>.between(from: Int, to: Int): List<PlacedGlyph> =
     (from until to).mapNotNull { getOrNull(it) }
 
 internal fun GlyphBlock.placedText(): PlacedText {
-    val text = StringBuilder()
     val owners = mutableListOf<PlacedGlyph?>()
 
-    fun append(part: String, owner: PlacedGlyph?) {
-        text.append(part)
+    val text = written { part, glyph, line ->
+        val owner = glyph?.let { PlacedGlyph(it, line) }
+
         repeat(part.length) { owners.add(owner) }
     }
+
+    return PlacedText(text, owners)
+}
+
+/**
+ * The same words, without the map back to the page underneath them.
+ *
+ * What re-setting a PDF as text needs and all it needs: it asks whether a block
+ * is a heading, a bullet or a paragraph, and every one of those questions is
+ * about the characters. The owners are a [PlacedGlyph] per character of the
+ * book - a few hundred thousand of them on a long one - allocated to be read
+ * once and dropped, which on a phone is most of what the conversion costs the
+ * collector.
+ *
+ * They are still exactly what pointing at a sentence needs, which is why both
+ * ways of writing a block out are here and share the one set of rules about
+ * where the spaces go.
+ */
+internal fun GlyphBlock.written(): String = written { _, _, _ -> }
+
+/**
+ * This block written out, reporting each piece and the glyph it came from.
+ *
+ * [onPart] is called with null wherever a space was inferred rather than set,
+ * since a space this code decided on belongs to no glyph and so covers no part
+ * of the page.
+ */
+private inline fun GlyphBlock.written(
+    onPart: (part: String, glyph: PageGlyph?, line: Int) -> Unit,
+): String {
+    val text = StringBuilder()
 
     forEachIndexed { lineIndex, line ->
         // A word broken across a line break is one word. Joining the halves with
         // a space instead would hand the translator "exam- ple", which is two
         // things it has to guess were one.
-        if (lineIndex > 0 && !text.endsWithHyphen()) append(" ", owner = null)
+        if (lineIndex > 0 && !text.endsWithHyphen()) {
+            text.append(" ")
+            onPart(" ", null, lineIndex)
+        }
 
         val threshold = line.spaceThreshold()
 
@@ -115,14 +165,16 @@ internal fun GlyphBlock.placedText(): PlacedText {
             val previous = line.getOrNull(index - 1)
 
             if (previous != null && previous.isSeparatedFrom(glyph, threshold)) {
-                append(" ", owner = null)
+                text.append(" ")
+                onPart(" ", null, lineIndex)
             }
 
-            append(glyph.text, PlacedGlyph(glyph, lineIndex))
+            text.append(glyph.text)
+            onPart(glyph.text, glyph, lineIndex)
         }
     }
 
-    return PlacedText(text.toString(), owners)
+    return text.toString()
 }
 
 /**

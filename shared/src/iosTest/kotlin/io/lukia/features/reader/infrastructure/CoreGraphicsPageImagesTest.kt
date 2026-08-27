@@ -22,6 +22,7 @@ import platform.UIKit.UIImage
 import platform.UIKit.UIRectFill
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 /**
@@ -106,6 +107,70 @@ class CoreGraphicsPageImagesTest {
             val images = openPdfPages(path).use { it.pageImages(0) }
 
             assertTrue(images.isEmpty())
+        }
+    }
+
+    /**
+     * The saving that makes converting an illustrated book affordable: a mark
+     * drawn on every page of a book is decoded once rather than once a page.
+     *
+     * Asserted as the same array rather than as equal bytes, because equal
+     * bytes would also be what decoding it three times produces - and it is the
+     * decoding that this is about.
+     */
+    @Test
+    fun aMarkDrawnOnEveryPageIsReadOnce() = runTest {
+        withTemporaryPdf(pdfWithAMarkOnEveryPage(pages = 3)) { path ->
+            openPdfPages(path).use { pages ->
+                val first = pages.pageImages(0).single().bytes
+
+                repeat(2) { page ->
+                    assertSame(
+                        first,
+                        pages.pageImages(page + 1).single().bytes,
+                        "the mark was read again on page ${'$'}{page + 2}",
+                    )
+                }
+            }
+        }
+    }
+
+    /** Two different pictures stay two pictures. */
+    @Test
+    fun differentPicturesAreReadSeparately() = runTest {
+        val renderer = UIGraphicsPDFRenderer(
+            bounds = CGRectMake(0.0, 0.0, PAGE_WIDTH, PAGE_HEIGHT),
+        )
+
+        val data = renderer.PDFDataWithActions { context ->
+            listOf(true, false).forEach { opaque ->
+                context?.beginPage()
+                solidImage(opaque).drawInRect(CGRectMake(50.0, 100.0, 100.0, 80.0))
+            }
+        }
+
+        withTemporaryPdf(data) { path ->
+            openPdfPages(path).use { pages ->
+                val first = pages.pageImages(0).single().bytes
+                val second = pages.pageImages(1).single().bytes
+
+                assertTrue(!first.contentEquals(second), "two pictures, one set of bytes")
+            }
+        }
+    }
+
+    /** One picture, drawn in the same place on every page of a short book. */
+    private fun pdfWithAMarkOnEveryPage(pages: Int): NSData {
+        val renderer = UIGraphicsPDFRenderer(
+            bounds = CGRectMake(0.0, 0.0, PAGE_WIDTH, PAGE_HEIGHT),
+        )
+        val mark = solidImage(opaque = true)
+
+        return renderer.PDFDataWithActions { context ->
+            repeat(pages) {
+                context?.beginPage()
+                mark.drawInRect(CGRectMake(50.0, 100.0, 100.0, 80.0))
+            }
         }
     }
 

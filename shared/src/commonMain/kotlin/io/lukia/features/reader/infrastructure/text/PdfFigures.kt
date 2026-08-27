@@ -1,6 +1,5 @@
 package io.lukia.features.reader.infrastructure.text
 
-import io.lukia.features.reader.domain.PageImage
 import io.lukia.features.reader.domain.TextBlock
 
 /**
@@ -45,25 +44,42 @@ internal class PdfFigures {
     private var keptBytes = 0
 
     /**
-     * One page's pictures, with any already seen replaced by the copy already
-     * held.
+     * One page's blocks, with every picture on it replaced by the copy already
+     * held - and any the book has no more room for taken out.
+     *
+     * Given the blocks rather than the pictures, and so run after a page has
+     * been read back rather than during it. That is what lets the pages be read
+     * in parallel: this is the one part of the conversion that has to see the
+     * book in order, and keeping it here means the rest does not - see
+     * `readPdfAsText`. Nothing about a page's own blocks depends on it, so
+     * running it afterwards leaves them exactly as they were.
      *
      * A picture drawn twice on the same page counts once: what is being counted
      * is the pages it appears on, and a logo in both corners of one page is not
      * evidence of anything.
      */
-    fun onPage(images: List<PageImage>): List<PageImage> {
+    fun onPage(blocks: List<TextBlock>): List<TextBlock> {
         val seenHere = mutableSetOf<ByteArray>()
 
-        return images.mapNotNull { image ->
-            val canonical = intern(image.bytes) ?: return@mapNotNull null
+        return blocks.mapNotNull { block ->
+            val figure = block as? TextBlock.Figure ?: return@mapNotNull block
 
-            if (seenHere.add(canonical)) {
-                pagesAppearedOn[canonical] = (pagesAppearedOn[canonical] ?: 0) + 1
-            }
-
-            if (canonical === image.bytes) image else PageImage(canonical, image.bounds)
+            intern(figure.bytes)?.let { canonical -> figure.kept(canonical, seenHere) }
         }
+    }
+
+    /** This picture as the copy being held, counted against the page it is on. */
+    private fun TextBlock.Figure.kept(
+        canonical: ByteArray,
+        seenHere: MutableSet<ByteArray>,
+    ): TextBlock.Figure {
+        if (seenHere.add(canonical)) {
+            pagesAppearedOn[canonical] = (pagesAppearedOn[canonical] ?: 0) + 1
+        }
+
+        if (canonical === bytes) return this
+
+        return TextBlock.Figure(bytes = canonical, description = description)
     }
 
     /**

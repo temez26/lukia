@@ -2,6 +2,7 @@ package io.lukia.features.reader.infrastructure.text
 
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.features.reader.domain.DocumentPages
+import io.lukia.features.reader.domain.PageContent
 import io.lukia.features.reader.domain.PageSize
 import io.lukia.features.reader.domain.ReflowableContent
 import io.lukia.features.reader.domain.TextBlock
@@ -9,6 +10,11 @@ import io.lukia.features.reader.domain.TextExtraction
 import io.lukia.features.reader.domain.TextRun
 import io.lukia.features.reader.domain.TextSection
 import io.lukia.features.reader.domain.plainText
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
  * A PDF read as text the reader can re-set, rather than as pages it draws.
@@ -34,25 +40,32 @@ import io.lukia.features.reader.domain.plainText
  */
 internal suspend fun readPdfAsText(
     pages: DocumentPages,
+    /**
+     * Further handles on the same file, opened so that the book can be read
+     * through more than one of them at once. Empty reads it through [pages]
+     * alone, which is what every caller that is not converting a whole book
+     * does.
+     */
+    alongside: List<PageContent> = emptyList(),
     onProgress: (TextExtraction) -> Unit = {},
 ): ReflowableContent? {
     val pageCount = pages.pageCount
-    val sections = mutableListOf<MutableList<TextBlock>>()
+
+    val read = readPages(
+        readers = listOf(pages) + alongside,
+        pageSizes = pages.pageSizes,
+        pageCount = pageCount,
+        onProgress = onProgress,
+    )
 
     val figures = PdfFigures()
 
-    repeat(pageCount) { index ->
-        // A page that cannot be read costs the reader that page rather than the
-        // book, exactly as a page that cannot be drawn does.
-        val glyphs = runCatchingApp { pages.pageText(index) }.getOrNull().orEmpty()
-        val drawn = runCatchingApp { pages.pageImages(index) }.getOrNull().orEmpty()
-        val size = pages.pageSizes.getOrElse(index) { PageSize(width = 0f, height = 0f) }
+    // In page order, and the only part of this that has to be: what a picture
+    // is, and how many pages carry it, is a fact about the book rather than
+    // about a page - see [PdfFigures.onPage].
+    val sections = read.map { figures.onPage(it).toMutableList() }
 
-        sections += pdfPageBlocks(glyphs, figures.onPage(drawn), size).toMutableList()
-        sections.joinAcrossPageBreak()
-
-        onProgress(TextExtraction(pagesRead = index + 1, pageCount = pageCount))
-    }
+    for (page in 1 until sections.size) sections.joinAcrossPageBreak(page)
 
     // Nothing but pictures is nothing to re-set: that is a scan, and the caller
     // shows its pages rather than a list of photographs of them.
@@ -76,6 +89,60 @@ internal suspend fun readPdfAsText(
 }
 
 /**
+ * Every page of the file read back as blocks, in order.
+ *
+ * The readers divide the book between them and take a run of pages each, so a
+ * conversion finishes in about as long as the slowest run rather than as long
+ * as all of them. Runs rather than every nth page because each handle parses
+ * what it touches and keeps it: a handle that reads a quarter of the book holds
+ * a quarter of the book's structure, where four handles reading every fourth
+ * page would each end up holding the lot.
+ *
+ * Nothing here needs the book in order, which is what makes it divisible at
+ * all - inferring one page's blocks is a question about that page. What does
+ * need the order is the caller, and it gets it: each reader hands back its own
+ * run, and the runs are laid end to end.
+ */
+private suspend fun readPages(
+    readers: List<PageContent>,
+    pageSizes: List<PageSize>,
+    pageCount: Int,
+    onProgress: (TextExtraction) -> Unit,
+): List<List<TextBlock>> = coroutineScope {
+    val counted = Mutex()
+    var read = 0
+
+    val run = (pageCount + readers.size - 1) / readers.size
+
+    readers.mapIndexed { index, reader ->
+        val from = (index * run).coerceAtMost(pageCount)
+        val until = (from + run).coerceAtMost(pageCount)
+
+        async {
+            (from until until).map { page ->
+                reader.blocksOn(page, pageSizes).also {
+                    // Counted rather than reported by whoever reached it, since
+                    // several readers are somewhere in the book at once and no
+                    // one of them knows how far the rest have got.
+                    counted.withLock { onProgress(TextExtraction(++read, pageCount)) }
+                }
+            }
+        }
+    }.awaitAll().flatten()
+}
+
+/** One page read back as the things written and drawn on it. */
+private suspend fun PageContent.blocksOn(index: Int, pageSizes: List<PageSize>): List<TextBlock> {
+    // A page that cannot be read costs the reader that page rather than the
+    // book, exactly as a page that cannot be drawn does.
+    val glyphs = runCatchingApp { pageText(index) }.getOrNull().orEmpty()
+    val drawn = runCatchingApp { pageImages(index) }.getOrNull().orEmpty()
+    val size = pageSizes.getOrElse(index) { PageSize(width = 0f, height = 0f) }
+
+    return pdfPageBlocks(glyphs, drawn, size)
+}
+
+/**
  * Joins a paragraph that ran over the foot of one page onto the head of the
  * next.
  *
@@ -90,11 +157,9 @@ internal suspend fun readPdfAsText(
  * on the sections above. A page whose only paragraph was a continuation is left
  * empty, which is a section with nothing in it and costs the reader nothing.
  */
-private fun MutableList<MutableList<TextBlock>>.joinAcrossPageBreak() {
-    if (size < 2) return
-
-    val previous = this[size - 2]
-    val current = last()
+private fun List<MutableList<TextBlock>>.joinAcrossPageBreak(page: Int) {
+    val previous = this[page - 1]
+    val current = this[page]
 
     val tail = previous.lastOrNull() as? TextBlock.Paragraph ?: return
     val head = current.firstOrNull() as? TextBlock.Paragraph ?: return
