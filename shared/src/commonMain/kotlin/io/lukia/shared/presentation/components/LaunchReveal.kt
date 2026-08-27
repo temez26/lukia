@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -46,22 +47,85 @@ private const val StartDelayMillis = LaunchTiming.ContentArrivalMillis
 private val DefaultRise: Dp = 14.dp
 
 /**
- * Claims the app-open reveal for the first composition that asks for it.
+ * The app's opening, as a moment in the life of the process rather than
+ * something any one screen owns.
  *
- * Process-scoped rather than screen-scoped on purpose: this animation is about
- * the app opening, not about the library being composed, so coming back to the
- * library from a book must not replay it. Surviving an Android configuration
- * change is the same property seen from the other side - a rotation is not a
- * launch either.
+ * Process-scoped on purpose: this is about the app opening, not about a screen
+ * being composed, so coming back to the library from a book must not replay it,
+ * and an Android configuration change - which recreates the activity without the
+ * process ever having stopped - is not a launch either.
+ *
+ * One clock, so that a screen composing while it runs joins the stagger part-way
+ * through rather than starting one of its own. That is the whole point of it
+ * being shared: an element's turn comes at a fixed point after launch, not at a
+ * fixed point after whenever it happened to be composed.
  */
-private object LaunchRevealGate {
+private object AppOpening {
+
     private var claimed = false
+
+    /** How far into the reveal the app is, in milliseconds, for every screen taking part. */
+    val elapsed = Animatable(0f)
+
+    /** Whether the opening is still going on, as a screen composing now finds it. */
+    var running = false
+        private set
 
     fun claim(): Boolean {
         if (claimed) return false
+
         claimed = true
+        running = true
         return true
     }
+
+    fun finish() {
+        running = false
+    }
+}
+
+/**
+ * Claims the app's opening for this run of the process and starts the reveal
+ * underneath it, answering true for the first caller only.
+ *
+ * Called from [LaunchSplash] and nowhere else, because the mark and the reveal
+ * are two halves of one opening and a second gate could only disagree with the
+ * first about when the app opened.
+ */
+@Composable
+internal fun rememberAppOpening(): Boolean {
+    val opening = remember { AppOpening.claim() }
+    val motion = LocalMotionStyle.current
+
+    LaunchedEffect(opening) {
+        if (!opening) return@LaunchedEffect
+
+        try {
+            // Stretched by the same factor as the launch animation above it, so
+            // the two still hand over to each other at the moment they were
+            // written to - see [LaunchTiming].
+            delay((StartDelayMillis * motion.stretch).toLong())
+
+            // Linear: the shaping belongs to each element's own curve, applied
+            // in [launchReveal]. Easing the shared clock as well would stagger
+            // the stagger.
+            AppOpening.elapsed.animateTo(
+                targetValue = TotalMillis.toFloat(),
+                animationSpec = tween(
+                    durationMillis = (TotalMillis * motion.stretch).toInt(),
+                    easing = LinearEasing,
+                ),
+            )
+        } finally {
+            // On the way out as well as at the end: an activity torn down
+            // part-way through has ended the opening, and a window left open
+            // behind it would hand the next screen composed a reveal to play
+            // off a clock that has stopped.
+            AppOpening.finish()
+        }
+    }
+
+    return opening
 }
 
 /**
@@ -97,41 +161,46 @@ class LaunchReveal internal constructor(
         val turn = if (staggered) index.coerceIn(0, MaxStaggered) else 0
         return ((elapsedMillis.value - StaggerMillis * turn) / ElementMillis).coerceIn(0f, 1f)
     }
+
+    companion object {
+
+        /** A reveal with nothing left to reveal, which is what most of the app's life is. */
+        internal val Finished = LaunchReveal(
+            elapsedMillis = mutableFloatStateOf(0f),
+            playing = false,
+            staggered = false,
+            travel = 1f,
+        )
+    }
 }
 
+/**
+ * This screen's share of the app's opening, or a reveal already over when the
+ * app opened before this screen existed.
+ *
+ * Decided once, as the screen composes, and never revisited: whether a screen
+ * was there as the app opened is a fact about that screen, and a reveal that
+ * could start later is a screen change wearing the launch animation's clothes.
+ * It used to be claimed by whichever screen asked first, which is how the
+ * library came to play the app's opening - once, minutes in - as the animation
+ * for switching to its tab.
+ */
 @Composable
 fun rememberLaunchReveal(): LaunchReveal {
-    val playing = remember { LaunchRevealGate.claim() }
-    val elapsed = remember { Animatable(0f) }
+    val playing = remember { AppOpening.running }
     val motion = LocalMotionStyle.current
 
-    LaunchedEffect(playing) {
-        if (playing) {
-            // Stretched by the same factor as the launch animation above it, so
-            // the two still hand over to each other at the moment they were
-            // written to - see [LaunchTiming].
-            delay((StartDelayMillis * motion.stretch).toLong())
-
-            // Linear: the shaping belongs to each element's own curve, applied in
-            // [launchReveal]. Easing the shared clock as well would stagger the
-            // stagger.
-            elapsed.animateTo(
-                targetValue = TotalMillis.toFloat(),
-                animationSpec = tween(
-                    durationMillis = (TotalMillis * motion.stretch).toInt(),
-                    easing = LinearEasing,
-                ),
+    return remember(playing, motion) {
+        if (!playing) {
+            LaunchReveal.Finished
+        } else {
+            LaunchReveal(
+                elapsedMillis = AppOpening.elapsed.asState(),
+                playing = true,
+                staggered = motion.flourishes,
+                travel = motion.travel,
             )
         }
-    }
-
-    return remember(playing, motion) {
-        LaunchReveal(
-            elapsedMillis = elapsed.asState(),
-            playing = playing,
-            staggered = motion.flourishes,
-            travel = motion.travel,
-        )
     }
 }
 

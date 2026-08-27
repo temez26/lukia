@@ -20,6 +20,7 @@ import io.lukia.features.reader.domain.TextQuad
 import io.lukia.features.reader.domain.union
 import io.lukia.features.translate.presentation.PassageTranslation
 import io.lukia.features.translate.presentation.SentenceTranslations
+import io.lukia.shared.presentation.theme.LukiaMotion
 
 /**
  * What has been translated on one page of a fixed-layout document, drawn over
@@ -108,8 +109,11 @@ internal fun PageTranslationOverlay(
             // reader can still read the original underneath while they wait.
             AnimatedVisibility(
                 visible = panel != null,
-                enter = fadeIn(tween(PANEL_FADE_MILLIS)),
-                exit = fadeOut(tween(PANEL_FADE_MILLIS)),
+                // On the app's own curves rather than on Compose's defaults,
+                // so a panel landing over a word moves the way everything else
+                // that arrives and leaves in this app does - see [LukiaMotion].
+                enter = fadeIn(tween(PANEL_FADE_MILLIS, easing = LukiaMotion.Standard)),
+                exit = fadeOut(tween(PANEL_FADE_MILLIS, easing = LukiaMotion.Exit)),
             ) {
                 // Held after it goes, so the panel fades out with words in it
                 // rather than emptying first and then fading.

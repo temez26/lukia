@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.reader.domain.TextQuad
 import io.lukia.features.translate.presentation.PassageTranslation
+import io.lukia.shared.presentation.theme.LukiaMotion
 
 // The translation itself, drawn over the page it replaces - see
 // PageTranslationOverlay for which passages get one.
@@ -202,6 +203,7 @@ private val PanelRadius: Dp = 6.dp
 /**
  * How long a panel takes to arrive over the words it covers. Short enough that
  * it reads as the answer landing rather than as an animation being played at
- * somebody who is waiting for it.
+ * somebody who is waiting for it, which is exactly what the app's quickest
+ * duration is for - see [LukiaMotion].
  */
-internal const val PANEL_FADE_MILLIS = 160
+internal const val PANEL_FADE_MILLIS = LukiaMotion.QuickMillis
