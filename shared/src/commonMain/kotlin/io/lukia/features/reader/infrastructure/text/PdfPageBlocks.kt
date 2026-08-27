@@ -10,7 +10,7 @@ import io.lukia.features.reader.domain.TextQuad
 import io.lukia.features.reader.domain.TextRun
 import io.lukia.features.reader.domain.intoBlocks
 import io.lukia.features.reader.domain.intoLines
-import io.lukia.features.reader.domain.placedText
+import io.lukia.features.reader.domain.written
 
 /**
  * One page of a PDF, read as the things written on it rather than as marks in
@@ -128,7 +128,7 @@ private const val HEADING_MAX_CHARS = 120
 private const val HEADING_MAX_LINES = 3
 
 private fun GlyphBlock.asTextBlock(bodyHeight: Float, page: PageSize): TextBlock? {
-    val text = placedText().text.trim()
+    val text = written().trim()
     val ratio = height() / bodyHeight
 
     if (text.isBlank() || isPageFurniture(page, text, ratio)) return null
@@ -246,7 +246,7 @@ private fun GlyphBlock.splitAtBullets(): List<GlyphBlock> {
     val parts = mutableListOf<MutableList<GlyphLine>>()
 
     forEach { line ->
-        val opensAnItem = bulletMarker(listOf(line).placedText().text.trimStart()) != null
+        val opensAnItem = bulletMarker(listOf(line).written().trimStart()) != null
 
         if (opensAnItem || parts.isEmpty()) parts.add(mutableListOf(line)) else parts.last().add(line)
     }

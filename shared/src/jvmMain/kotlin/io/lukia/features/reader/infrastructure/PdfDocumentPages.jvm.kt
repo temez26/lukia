@@ -41,6 +41,13 @@ private class PdfBoxDocumentPages(path: String) : DocumentPages {
      */
     private val renderLock = Mutex()
 
+    /**
+     * The pictures this book has already given up, kept for as long as it is
+     * open - see [PdfFigureBytes]. Held by the document because that is the
+     * scope a repeated picture repeats over.
+     */
+    private val figures = PdfFigureBytes()
+
     override val pageSizes: List<PageSize> = document.pages.map { page ->
         val box = page.cropBox
 
@@ -160,7 +167,8 @@ private class PdfBoxDocumentPages(path: String) : DocumentPages {
     override suspend fun pageImages(index: Int): List<PageImage> =
         withContext(Dispatchers.Default) {
             renderLock.withLock {
-                runCatching { pdfBoxPageImages(document.getPage(index)) }.getOrDefault(emptyList())
+                runCatching { pdfBoxPageImages(document.getPage(index), figures) }
+                    .getOrDefault(emptyList())
             }
         }
 

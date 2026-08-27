@@ -1,23 +1,11 @@
 package io.lukia.features.reader.infrastructure
 
-import android.graphics.Bitmap
-import android.graphics.Path
-import android.graphics.PointF
-import com.tom_roush.pdfbox.contentstream.PDFGraphicsStreamEngine
-import com.tom_roush.pdfbox.cos.COSName
 import com.tom_roush.pdfbox.pdmodel.PDDocument
-import com.tom_roush.pdfbox.pdmodel.PDPage
-import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImage
 import com.tom_roush.pdfbox.text.PDFTextStripper
 import com.tom_roush.pdfbox.text.TextPosition
 import io.lukia.features.reader.domain.PageGlyph
 import io.lukia.features.reader.domain.PageImage
-import io.lukia.features.reader.domain.PageSize
 import io.lukia.features.reader.domain.TextQuad
-import io.lukia.features.reader.infrastructure.pdf.PdfRect
-import io.lukia.features.reader.infrastructure.pdf.isWorthShowing
-import io.lukia.features.reader.infrastructure.pdf.pdfImageBounds
-import java.io.ByteArrayOutputStream
 import java.io.File
 
 /**
@@ -45,6 +33,13 @@ internal class AndroidPageContent(private val file: File) : AutoCloseable {
     private var document: PDDocument? = null
     private var opened = false
 
+    /**
+     * The pictures this book has already given up, kept for as long as it is
+     * open - see [AndroidFigureBytes]. Held beside the document because that is
+     * the scope a repeated picture repeats over.
+     */
+    private val figures = AndroidFigureBytes()
+
     fun glyphs(pageIndex: Int): List<PageGlyph>? {
         val document = document() ?: return null
 
@@ -64,11 +59,8 @@ internal class AndroidPageContent(private val file: File) : AutoCloseable {
     fun images(pageIndex: Int): List<PageImage> {
         val document = document() ?: return emptyList()
 
-        return runCatching {
-            val page = document.getPage(pageIndex)
-
-            ImageCollector(page).also { it.processPage(page) }.images
-        }.getOrDefault(emptyList())
+        return runCatching { androidPageImages(document.getPage(pageIndex), figures) }
+            .getOrDefault(emptyList())
     }
 
     /**
@@ -114,109 +106,5 @@ private class GlyphStripper : PDFTextStripper() {
                 ),
             )
         }
-    }
-}
-
-/** See `PdfBoxPageImages.kt` on the desktop: the same walk, in this library. */
-private class ImageCollector(private val page: PDPage) : PDFGraphicsStreamEngine(page) {
-
-    val images = mutableListOf<PageImage>()
-
-    override fun drawImage(pdImage: PDImage) {
-        // A stencil is a shape painted in the current colour - a mask, a logo
-        // cut out of one ink. It carries no picture of its own to show.
-        if (pdImage.isStencil) return
-
-        val matrix = graphicsState.currentTransformationMatrix
-        val box = page.cropBox
-
-        val bounds = pdfImageBounds(
-            drawn = PdfRect(
-                x = matrix.translateX - box.lowerLeftX,
-                y = matrix.translateY - box.lowerLeftY,
-                width = matrix.scalingFactorX,
-                height = matrix.scalingFactorY,
-            ),
-            // The box the file states, not the shape the page is shown at: the
-            // turning is what `rotation` is for.
-            page = PageSize(width = box.width, height = box.height),
-            rotation = page.rotation,
-        )
-
-        // Asked before the image is decoded: a page can carry hundreds of
-        // hairlines and gradient tiles, and decoding each one to find out it is
-        // two points tall is most of what reading a page would cost.
-        if (!bounds.isWorthShowing()) return
-
-        runCatching { pdImage.image?.let { images += PageImage(it.encoded(), bounds) } }
-    }
-
-    /**
-     * The picture as bytes the reader can decode, shrunk to something a screen
-     * can use - see the desktop's own encoder for the trade between the two
-     * formats.
-     */
-    private fun Bitmap.encoded(): ByteArray {
-        val shrunk = shrunkToFit()
-        val bytes = ByteArrayOutputStream()
-
-        if (hasAlpha()) {
-            shrunk.compress(Bitmap.CompressFormat.PNG, PNG_QUALITY, bytes)
-        } else {
-            shrunk.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, bytes)
-        }
-
-        if (shrunk !== this) shrunk.recycle()
-
-        return bytes.toByteArray()
-    }
-
-    private fun Bitmap.shrunkToFit(): Bitmap {
-        val longest = maxOf(width, height)
-        if (longest <= MAX_FIGURE_PIXELS) return this
-
-        val scale = MAX_FIGURE_PIXELS.toFloat() / longest
-
-        return Bitmap.createScaledBitmap(
-            this,
-            (width * scale).toInt().coerceAtLeast(1),
-            (height * scale).toInt().coerceAtLeast(1),
-            true,
-        )
-    }
-
-    // Everything the page paints that is not a picture. The engine runs the
-    // whole content stream either way; these are where the rest of it goes.
-    override fun appendRectangle(p0: PointF, p1: PointF, p2: PointF, p3: PointF) = Unit
-
-    override fun clip(windingRule: Path.FillType) = Unit
-
-    override fun moveTo(x: Float, y: Float) = Unit
-
-    override fun lineTo(x: Float, y: Float) = Unit
-
-    override fun curveTo(x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float) = Unit
-
-    override fun getCurrentPoint(): PointF = PointF(0f, 0f)
-
-    override fun closePath() = Unit
-
-    override fun endPath() = Unit
-
-    override fun strokePath() = Unit
-
-    override fun fillPath(windingRule: Path.FillType) = Unit
-
-    override fun fillAndStrokePath(windingRule: Path.FillType) = Unit
-
-    override fun shadingFill(shadingName: COSName) = Unit
-
-    private companion object {
-        /** See the desktop's own constant: no screen draws a plate larger. */
-        const val MAX_FIGURE_PIXELS = 1600
-
-        /** PNG is lossless, so the number is only how hard it tries to pack it. */
-        const val PNG_QUALITY = 100
-        const val JPEG_QUALITY = 82
     }
 }
