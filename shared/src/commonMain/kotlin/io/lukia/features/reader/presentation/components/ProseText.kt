@@ -2,8 +2,6 @@ package io.lukia.features.reader.presentation.components
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -38,6 +36,7 @@ import io.lukia.features.translate.domain.splitIntoSentences
 import io.lukia.features.translate.domain.words
 import io.lukia.features.translate.presentation.SentenceTranslations
 import io.lukia.features.translate.presentation.shownText
+import io.lukia.shared.presentation.theme.LukiaMotion
 import kotlinx.coroutines.delay
 
 // A paragraph of the book, and everything that happens when the reader points
@@ -210,7 +209,7 @@ internal fun ProseText(
                     Modifier.animateContentSize(
                         animationSpec = tween(
                             durationMillis = TRANSLATION_SETTLE_MILLIS,
-                            easing = TranslationEasing,
+                            easing = LukiaMotion.Standard,
                         ),
                     )
                 },
@@ -218,7 +217,7 @@ internal fun ProseText(
     ) {
         Crossfade(
             targetState = drawn,
-            animationSpec = tween(TRANSLATION_FADE_MILLIS, easing = TranslationEasing),
+            animationSpec = tween(TRANSLATION_FADE_MILLIS, easing = LukiaMotion.Standard),
             modifier = tappable,
         ) { paragraphText ->
             // Each copy measures itself. The outgoing one is still on screen
@@ -350,16 +349,6 @@ private fun LayoutCoordinates.isOnScreen(): Boolean {
 }
 
 /**
- * How the page moves when a translation lands.
- *
- * A long tail out of a quick start: nearly all of the distance is covered at
- * once, and the last of it settles rather than stopping. That is the difference
- * between text that moved and text that was moved - and it is what lets the eye
- * stay on the line it was reading while the line travels.
- */
-private val TranslationEasing: Easing = CubicBezierEasing(0.32f, 0.72f, 0f, 1f)
-
-/**
  * How long the words take to change, and how long the block takes to reach its
  * new height.
  *
@@ -367,6 +356,11 @@ private val TranslationEasing: Easing = CubicBezierEasing(0.32f, 0.72f, 0f, 1f)
  * one movement: text that has already changed sitting in a block still settling
  * looks like the page catching up with itself, while the reverse opens a gap
  * before anything arrives to fill it.
+ *
+ * Both are the app's own durations, on the app's own curve - a long tail out of
+ * a quick start, which is what lets the eye stay on the line it was reading
+ * while the line travels. See [LukiaMotion], which is where every other timing
+ * in the app comes from; a page re-setting itself is not a special case.
  */
-private const val TRANSLATION_FADE_MILLIS = 180
-private const val TRANSLATION_SETTLE_MILLIS = 260
+private const val TRANSLATION_FADE_MILLIS = LukiaMotion.QuickMillis
+private const val TRANSLATION_SETTLE_MILLIS = LukiaMotion.StandardMillis

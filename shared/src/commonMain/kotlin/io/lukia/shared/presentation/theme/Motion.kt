@@ -71,25 +71,7 @@ object LukiaMotion {
     fun <T> exit(): FiniteAnimationSpec<T> = tween(ExitMillis, easing = Exit)
 }
 
-/**
- * The app's one "content arrives" entrance: a short fade with the faintest lift.
- *
- * The rise is deliberately small. A large one reads as a slide - a claim that the
- * content came from somewhere - where this only needs to say that it was not
- * there a moment ago.
- */
-fun softRiseIn(
-    durationMillis: Int = LukiaMotion.StandardMillis,
-    delayMillis: Int = 0,
-    riseFraction: Float = 0.06f,
-): EnterTransition = fadeIn(
-    animationSpec = tween(durationMillis, delayMillis, LukiaMotion.Standard),
-) + slideInVertically(
-    animationSpec = tween(durationMillis, delayMillis, LukiaMotion.Standard),
-    initialOffsetY = { height -> (height * riseFraction).toInt() },
-)
-
-/** The counterpart to [softRiseIn]: leaves in place rather than sinking back. */
+/** What anything the app is finished with does: leaves in place, quickly. */
 fun softFadeOut(durationMillis: Int = LukiaMotion.ExitMillis): ExitTransition =
     fadeOut(animationSpec = tween(durationMillis, easing = LukiaMotion.Exit))
 

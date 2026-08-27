@@ -154,6 +154,11 @@ internal fun HomeContent(
     // every row carries its own, and at most one of them may be open.
     var menuOpen by remember { mutableStateOf<HomeMenu?>(null) }
 
+    // This is where the mobile app opens, so this is the screen the launch
+    // animation hands over to - see [LaunchSplash]. Read once here and handed
+    // down, because the header and the rows are one stagger and not four.
+    val reveal = rememberLaunchReveal()
+
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.background,
@@ -176,6 +181,7 @@ internal fun HomeContent(
                     openMenu = menuOpen,
                     onOpenMenuChange = { menuOpen = it },
                     onSeeAll = onSeeAll,
+                    reveal = reveal,
                     modifier = Modifier.fillMaxSize(),
                     header = {
                         HomeHeader(
@@ -204,7 +210,7 @@ internal fun HomeContent(
                     onMenuDismiss = { menuOpen = null },
                     onImport = onImport,
                     onImportFolder = onImportFolder,
-                    reveal = rememberLaunchReveal(),
+                    reveal = reveal,
                     modifier = Modifier.fillMaxSize(),
                 )
             }

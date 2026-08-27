@@ -143,23 +143,6 @@ private const val GlowAlpha = 0.1f
 private const val GlowExtent = 2f
 
 /**
- * Claims the launch animation for the first composition that asks for it.
- *
- * Process-scoped for the same reason [LaunchReveal] is: this is about the app
- * opening, so an Android configuration change - which recreates the activity
- * without the process ever having stopped - must not play it a second time.
- */
-private object LaunchSplashGate {
-    private var claimed = false
-
-    fun claim(): Boolean {
-        if (claimed) return false
-        claimed = true
-        return true
-    }
-}
-
-/**
  * The app's opening: the mark arriving over the app's own background, settling
  * with a single soft overshoot, and dissolving into whatever [content] is as
  * that grows out to meet it.
@@ -175,7 +158,12 @@ private object LaunchSplashGate {
  */
 @Composable
 fun LaunchSplash(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
-    var playing by remember { mutableStateOf(LaunchSplashGate.claim()) }
+    // The one place the app's opening is claimed, for the mark here and for the
+    // reveal on the screens underneath both - see [rememberAppOpening]. Held
+    // apart from [playing], which goes false the instant the mark is gone while
+    // the reveal beneath it is still finishing.
+    val opening = rememberAppOpening()
+    var playing by remember { mutableStateOf(opening) }
     val elapsed = remember { Animatable(0f) }
     val clock = elapsed.asState()
     val motion = LocalMotionStyle.current

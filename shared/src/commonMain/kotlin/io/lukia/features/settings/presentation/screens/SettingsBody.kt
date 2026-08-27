@@ -2,8 +2,6 @@ package io.lukia.features.settings.presentation.screens
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -35,6 +33,7 @@ import io.lukia.features.settings.presentation.TranslatingActions
 import io.lukia.features.translate.domain.TranslationSettings
 import io.lukia.shared.presentation.components.SegmentedControl
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.Space
 
 /** Vertical room reserved so content starts clear of the floating back control. */
@@ -59,11 +58,12 @@ private val MinAreaHeight: Dp = 400.dp
  * to reach the new height.
  *
  * The words go first and the height follows, which is the order that reads as
- * one movement rather than as two things happening to the same screen.
+ * one movement rather than as two things happening to the same screen. Both are
+ * the app's own durations rather than numbers of their own - see [LukiaMotion] -
+ * so switching groups here moves at the rate a menu or a panel does.
  */
-
-private const val AreaFadeMillis = 140
-private const val AreaSettleMillis = 220
+private const val AreaFadeMillis = LukiaMotion.QuickMillis
+private const val AreaSettleMillis = LukiaMotion.StandardMillis
 
 /**
  * The settings themselves, without the chrome around them.
@@ -130,10 +130,10 @@ internal fun SettingsBody(
             // the further apart the two groups are in length.
             Crossfade(
                 targetState = area,
-                animationSpec = tween(AreaFadeMillis, easing = LinearOutSlowInEasing),
+                animationSpec = tween(AreaFadeMillis, easing = LukiaMotion.Standard),
                 modifier = Modifier
                     .animateContentSize(
-                        animationSpec = tween(AreaSettleMillis, easing = FastOutSlowInEasing),
+                        animationSpec = tween(AreaSettleMillis, easing = LukiaMotion.Standard),
                     )
                     // Applied inside the animation, so what eases between the
                     // groups is already the held height rather than the height

@@ -23,6 +23,7 @@ import io.lukia.features.reader.infrastructure.SqlReadingProgressRepository
 import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.FakeTranslator
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -203,7 +204,14 @@ abstract class ReaderViewModelTestCase {
         // as part of it: on a dispatcher of its own it is work no test can wait
         // for, and a reopened book leaves two of them running at once.
         outlineDispatcher = openDispatcher,
+        sentenceDispatcher = sentenceDispatcher,
     ).also { track(it) }
+
+    /**
+     * Where a page's words are gathered. Inline by default for the reason the
+     * outline is; a test about *where* that work runs replaces it.
+     */
+    protected open val sentenceDispatcher: CoroutineDispatcher = Dispatchers.Unconfined
 
     /** A translator that answers, wired the way the app wires the real one. */
     protected fun testTranslations() = ReaderTranslationsFactory(

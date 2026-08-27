@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,11 +24,16 @@ import io.lukia.features.library.presentation.components.HomeCategoryRow
 import io.lukia.features.library.presentation.components.HomeShelfRow
 import io.lukia.features.library.presentation.components.LibraryMenu
 import io.lukia.features.library.presentation.components.MenuButton
+import io.lukia.shared.presentation.components.LaunchReveal
+import io.lukia.shared.presentation.components.launchReveal
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 
 /** Clears the last row of the tab bar the screen scrolls up to. */
 private val HomeBottomPadding: Dp = 24.dp
+
+/** The first reveal slot belongs to the header; the rows follow it down the page. */
+private const val RowRevealOffset = 1
 
 /**
  * The screen itself: its name and menu, then a row for each way the library is
@@ -48,6 +53,12 @@ internal fun HomeRows(
     onOpenMenuChange: (HomeMenu?) -> Unit,
     onSeeAll: (LibraryQuery) -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * The app's opening, which this screen is what is opened onto - see
+     * [LaunchReveal]. A row takes its turn by its place down the page, so the
+     * page settles from the top rather than all at once.
+     */
+    reveal: LaunchReveal = LaunchReveal.Finished,
     header: @Composable () -> Unit,
 ) {
     val dimens = LocalLukiaDimens.current
@@ -58,22 +69,27 @@ internal fun HomeRows(
         verticalArrangement = Arrangement.spacedBy(dimens.sectionSpacing),
     ) {
         item(key = "header", contentType = "header") {
-            Box(modifier = Modifier.padding(horizontal = dimens.screenPadding)) {
+            Box(
+                modifier = Modifier
+                    .padding(horizontal = dimens.screenPadding)
+                    .launchReveal(reveal, index = 0),
+            ) {
                 header()
             }
         }
 
-        items(
+        itemsIndexed(
             items = rows,
-            key = { row -> row.shelf.name },
-            contentType = { "shelf" },
-        ) { row ->
+            key = { _, row -> row.shelf.name },
+            contentType = { _, _ -> "shelf" },
+        ) { index, row ->
             HomeShelfRow(
                 row = row,
                 actions = actions,
                 openMenu = openMenu,
                 onOpenMenuChange = onOpenMenuChange,
                 onSeeAll = onSeeAll,
+                modifier = Modifier.launchReveal(reveal, index = index + RowRevealOffset),
             )
         }
 
@@ -85,6 +101,10 @@ internal fun HomeRows(
                 HomeCategoryRow(
                     categories = categories,
                     onSelect = { category -> onSeeAll(LibraryQuery(category = category)) },
+                    modifier = Modifier.launchReveal(
+                        reveal,
+                        index = rows.size + RowRevealOffset,
+                    ),
                 )
             }
         }
