@@ -193,23 +193,32 @@ private fun DocumentPage(
     sentencesOnPage: suspend (index: Int) -> List<PageSentence>,
     renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?,
 ) {
+    // Read through the state rather than captured, for the same reason every
+    // other lambda on this page is. These are not keys of the effects below, so
+    // a caller handing down a fresh lambda would leave the running producer
+    // holding the one it started with - which is harmless while both come off a
+    // ViewModel and compare equal, and is a page drawn by a stale renderer the
+    // first time one of them does not.
+    val currentRenderPage by rememberUpdatedState(renderPage)
+    val currentSentencesOnPage by rememberUpdatedState(sentencesOnPage)
+
     // Keyed on the width as well as the page: a resized window, or a different
     // zoom, invalidates what was drawn for the old one.
     val page by produceState<ImageBitmap?>(initialValue = null, index, renderWidthPx) {
-        value = renderPage(index, renderWidthPx)
+        value = currentRenderPage(index, renderWidthPx)
 
         // Draw the next page while this one is being read, so arriving at it
         // does not mean waiting for it. Cancelled along with this page when it
         // scrolls away, which is what stops a fast scroll from queueing work for
         // pages already passed.
-        renderPage(index + 1, renderWidthPx)
+        currentRenderPage(index + 1, renderWidthPx)
     }
 
     // Read once per page and kept: parsing the text out of a page is far too
     // much to do again on every tap, and a reader working through a page taps
     // it several times.
     val sentences by produceState(initialValue = emptyList<PageSentence>(), index) {
-        value = sentencesOnPage(index)
+        value = currentSentencesOnPage(index)
     }
 
     // The one number relating the file to what is on screen. Everything the

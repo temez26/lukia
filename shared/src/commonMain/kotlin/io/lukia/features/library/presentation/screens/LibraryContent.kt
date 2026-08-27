@@ -3,8 +3,10 @@ package io.lukia.features.library.presentation.screens
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.MaterialTheme
@@ -143,6 +145,12 @@ fun LibraryContent(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbarHostState) },
+        // safeDrawing rather than the Scaffold's own default of systemBars,
+        // which leaves out the display cutout: in landscape on a notched phone
+        // that is the difference between the shelf starting clear of the camera
+        // and starting under it. The screens that are pushed rather than tabbed
+        // to already spell it this way.
+        contentWindowInsets = WindowInsets.safeDrawing,
     ) { paddingValues ->
         Box(
             modifier = Modifier
