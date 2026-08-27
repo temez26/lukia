@@ -21,6 +21,7 @@ import io.lukia.features.reader.domain.asTableOfContents
 import io.lukia.features.reader.domain.pageSentences
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import io.lukia.features.translate.domain.BulkTranslation
+import io.lukia.features.translate.domain.TargetLanguage
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.presentation.PassageSelection
@@ -86,6 +87,7 @@ class ReaderViewModel(
     val translateOnScreen: StateFlow<TranslateOnScreen> = translation.onScreen
     val shownTranslations: StateFlow<ShownTranslations> = translation.shown
     val translationGestures: StateFlow<TranslationGestures> = translation.gestures
+    val targetLanguage: StateFlow<TargetLanguage> = translation.targetLanguage
     val translationConfigured: StateFlow<Boolean> = translation.configured
 
     private val _uiState = MutableStateFlow<UiState<ReaderDocument>>(UiState.Loading)
@@ -271,8 +273,21 @@ class ReaderViewModel(
         translation.setContinuous(continuous)
     }
 
+    /**
+     * The reader has changed what translating does from the panel over the book
+     * rather than from the settings screen. Both write the same setting - see
+     * [ReaderTranslations.setTargetLanguage].
+     */
+    fun setTargetLanguage(language: TargetLanguage) {
+        translation.setTargetLanguage(language)
+    }
+
+    fun setTranslationGestures(gestures: TranslationGestures) {
+        translation.setGestures(gestures)
+    }
+
     private fun ReaderDocument.requestFor(selection: PassageSelection) =
-        translationRequest(selection, translation.targetLanguage, _outline.value)
+        translationRequest(selection, translation.currentTargetLanguage, _outline.value)
 
     /**
      * Read in the background as soon as the book is open, rather than when the

@@ -48,6 +48,8 @@ class ReaderSettingsRepository(
             typeface = store.readEnum(KEY_TYPEFACE, ReaderTypeface.entries, defaults.typeface),
             figureSize = store.readEnum(KEY_FIGURE_SIZE, FigureSize.entries, defaults.figureSize),
             alignment = store.readEnum(KEY_ALIGNMENT, TextAlignment.entries, defaults.alignment),
+            keepScreenAwake = store.getString(KEY_KEEP_SCREEN_AWAKE)?.toBooleanStrictOrNull()
+                ?: defaults.keepScreenAwake,
             defaultPdfLayout = store.readEnum(
                 KEY_DEFAULT_PDF_LAYOUT,
                 PdfLayout.entries,
@@ -80,6 +82,7 @@ class ReaderSettingsRepository(
         store.putString(KEY_TYPEFACE, settings.typeface.name)
         store.putString(KEY_FIGURE_SIZE, settings.figureSize.name)
         store.putString(KEY_ALIGNMENT, settings.alignment.name)
+        store.putString(KEY_KEEP_SCREEN_AWAKE, settings.keepScreenAwake.toString())
         store.putString(KEY_DEFAULT_PDF_LAYOUT, settings.defaultPdfLayout.name)
     }
 
@@ -94,6 +97,7 @@ class ReaderSettingsRepository(
         const val KEY_TYPEFACE = "reader.typeface"
         const val KEY_FIGURE_SIZE = "reader.figureSize"
         const val KEY_ALIGNMENT = "reader.alignment"
+        const val KEY_KEEP_SCREEN_AWAKE = "reader.keepScreenAwake"
         const val KEY_DEFAULT_PDF_LAYOUT = "reader.defaultPdfLayout"
     }
 }

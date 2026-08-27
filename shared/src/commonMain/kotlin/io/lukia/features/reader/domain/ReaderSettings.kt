@@ -127,6 +127,17 @@ data class ReaderSettings(
      */
     val figureSize: FigureSize = FigureSize.Normal,
     /**
+     * Whether the device is asked not to dim and lock while a book is open.
+     *
+     * On by default, and a mobile setting only: a page somebody is reading is a
+     * page nobody is touching, and a phone that locks itself mid-paragraph is
+     * the oldest complaint there is about reading on one. It costs battery,
+     * which is why it is a switch rather than something the reader is simply
+     * given - and why it stops the moment the book is closed rather than for as
+     * long as the app is running.
+     */
+    val keepScreenAwake: Boolean = true,
+    /**
      * What a PDF nobody has chosen for opens as.
      *
      * A starting point rather than a rule: how a book is read stays that book's

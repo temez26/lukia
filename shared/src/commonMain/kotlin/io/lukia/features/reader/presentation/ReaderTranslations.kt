@@ -129,7 +129,41 @@ internal class ReaderTranslations(
             initialValue = settings.settings.value.isConfigured,
         )
 
-    val targetLanguage: TargetLanguage get() = settings.settings.value.targetLanguage
+    /**
+     * The language the book is being read into.
+     *
+     * A flow as well as the value below it because the reader's own panel now
+     * offers this setting: what is shown there has to follow a change made on
+     * the settings screen, and the next tapped sentence has to be answered in
+     * whatever was chosen last - wherever it was chosen.
+     */
+    val targetLanguage: StateFlow<TargetLanguage> = settings.settings
+        .map { it.targetLanguage }
+        .stateIn(
+            scope = scope,
+            started = SharingStarted.Eagerly,
+            initialValue = settings.settings.value.targetLanguage,
+        )
+
+    /** What a request is built against, read at the moment it is built. */
+    val currentTargetLanguage: TargetLanguage get() = settings.settings.value.targetLanguage
+
+    /**
+     * Changing what translating is set to do, from inside the open book.
+     *
+     * Written straight through to the same settings the settings screen edits,
+     * rather than kept as a second copy for this session: a reader who switches
+     * language mid-chapter has changed their mind about the language, not about
+     * this book. Anything already translated stays as it is - it was asked for
+     * and paid for - and the next passage comes back in the new one.
+     */
+    fun setTargetLanguage(language: TargetLanguage) {
+        settings.update(settings.settings.value.copy(targetLanguage = language))
+    }
+
+    fun setGestures(gestures: TranslationGestures) {
+        settings.update(settings.settings.value.withGestures(gestures))
+    }
 
     /** A passage the reader pointed at. */
     fun onPassageTapped(anchor: TextAnchor, request: () -> TranslationRequest) {

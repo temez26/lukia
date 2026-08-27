@@ -40,6 +40,7 @@ fun ReaderScreen(
     val translationConfigured by viewModel.translationConfigured.collectAsState()
     val shownTranslations by viewModel.shownTranslations.collectAsState()
     val gestures by viewModel.translationGestures.collectAsState()
+    val targetLanguage by viewModel.targetLanguage.collectAsState()
     val bulkTranslation by viewModel.bulkTranslation.collectAsState()
     val pdfLayout by viewModel.pdfLayout.collectAsState()
     val layoutOffered by viewModel.layoutOffered.collectAsState()
@@ -56,6 +57,7 @@ fun ReaderScreen(
         translationConfigured = translationConfigured,
         shownTranslations = shownTranslations,
         gestures = gestures,
+        targetLanguage = targetLanguage,
         bulkTranslation = bulkTranslation,
         layout = ReaderLayoutUi(
             layout = pdfLayout,
@@ -74,6 +76,8 @@ fun ReaderScreen(
         onTranslateOnScreen = viewModel::onTranslateOnScreen,
         onContinuousTranslationChange = viewModel::setContinuousTranslation,
         onTranslationsVisibleChange = viewModel::setTranslationsVisible,
+        onTargetLanguageChange = viewModel::setTargetLanguage,
+        onTranslationGesturesChange = viewModel::setTranslationGestures,
         sentencesOnPage = viewModel::sentencesOn,
         renderPage = viewModel::page,
     )

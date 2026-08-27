@@ -1,7 +1,6 @@
 package io.lukia.features.reader.presentation.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,18 +9,13 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.input.key.onKeyEvent
 import io.lukia.core.domain.ReadingProgress
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
@@ -31,16 +25,17 @@ import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReflowableContent
-import io.lukia.features.reader.presentation.ReaderCommand
+import io.lukia.features.reader.presentation.KeepScreenAwake
 import io.lukia.features.reader.presentation.ShownTranslations
 import io.lukia.features.reader.presentation.TranslateOnScreen
 import io.lukia.features.reader.presentation.components.ReaderNotice
+import io.lukia.features.reader.presentation.components.ReaderProgressLine
 import io.lukia.features.reader.presentation.pagination.PaginatedBook
 import io.lukia.features.reader.presentation.pagination.onPages
-import io.lukia.features.reader.presentation.readerCommandFor
 import io.lukia.features.reader.presentation.theme.ReaderTheming
 import io.lukia.features.reader.presentation.theme.readerPageStyle
 import io.lukia.features.translate.domain.BulkTranslation
+import io.lukia.features.translate.domain.TargetLanguage
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.presentation.BookTranslations
@@ -81,6 +76,8 @@ internal fun ReaderContent(
     shownTranslations: ShownTranslations = ShownTranslations.None,
     /** What a tap and a long press on the book ask for. */
     gestures: TranslationGestures = TranslationGestures.Default,
+    /** The language a passage comes back in, which the panel can also change. */
+    targetLanguage: TargetLanguage = TargetLanguage.Default,
     /** Which of the two ways of translating more than one passage are offered at all. */
     bulkTranslation: BulkTranslation = BulkTranslation.Default,
     /** How this book is being read, and what became of asking for it as text. */
@@ -94,6 +91,8 @@ internal fun ReaderContent(
     onTranslateOnScreen: () -> Unit = {},
     onContinuousTranslationChange: (Boolean) -> Unit = {},
     onTranslationsVisibleChange: (Boolean) -> Unit = {},
+    onTargetLanguageChange: (TargetLanguage) -> Unit = {},
+    onTranslationGesturesChange: (TranslationGestures) -> Unit = {},
     /** What is written on a page of a fixed-layout document, read when one is looked at. */
     sentencesOnPage: suspend (index: Int) -> List<PageSentence> = { emptyList() },
     renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?,
@@ -112,6 +111,13 @@ internal fun ReaderContent(
         onVisibleChange = onTranslationsVisibleChange,
     )
 
+    val translationPreferences = ReaderTranslationPreferences(
+        targetLanguage = targetLanguage,
+        gestures = gestures,
+        onTargetLanguageChange = onTargetLanguageChange,
+        onGesturesChange = onTranslationGesturesChange,
+    )
+
     // Filed by where each translation belongs, once per change, so that a
     // sentence changing state reaches the block or the page it is on and no
     // further. See BookTranslations.
@@ -123,6 +129,11 @@ internal fun ReaderContent(
     ReaderTheming(theme = settings.theme) {
         val document = uiState.dataOrNull
         val pageStyle = readerPageStyle(settings.theme)
+
+        // Only with a book actually open: a reader waiting on a file that will
+        // not open, or looking at the error from one, is not reading.
+        KeepScreenAwake(enabled = settings.keepScreenAwake && document != null)
+
         // Created here rather than in the page list so that it survives the list
         // being replaced, and so the toolbar can read the page number from it.
         val listState = rememberLazyListState()
@@ -181,56 +192,11 @@ internal fun ReaderContent(
             },
         )
 
-        val focusRequester = remember { FocusRequester() }
-
-        // Whether the keyboard is anywhere in the reader at all - on the book
-        // itself, or on a control in the chrome over it.
-        var holdsFocus by remember { mutableStateOf(false) }
-
-        // The reader takes the keyboard as it opens, so the shortcuts work
-        // without a click first, and takes it back whenever it loses it
-        // entirely. Losing it is not hypothetical: pressing a toolbar button
-        // moves focus into the chrome, and hiding the chrome then takes the
-        // focused control out of the window - which left nothing focused, and so
-        // nothing for a key press to reach. That is the reader who put the bar
-        // away and found their shortcuts had gone with it.
-        //
-        // Only when it is lost altogether. Focus on a control in the chrome is
-        // left where it is, and the handler below runs after that control has
-        // had its say - so Space on a focused segment chooses it rather than
-        // turning a page.
-        LaunchedEffect(holdsFocus) {
-            if (!holdsFocus) focusRequester.requestFocus()
-        }
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
-                .onFocusChanged { holdsFocus = it.hasFocus }
-                .focusRequester(focusRequester)
-                .focusable()
-                .onKeyEvent { event ->
-                    val command = readerCommandFor(event) ?: return@onKeyEvent false
-
-                    // Escape closes whatever is open on top of the book before
-                    // it closes the book. Handled here rather than left to the
-                    // panels' own back handler: that one answers to the
-                    // platform's back gesture, which not every platform routes a
-                    // key into, and "Escape leaves the book" firing under an
-                    // open panel is not a mistake worth risking.
-                    if (command == ReaderCommand.Close && chrome.panelOpen) {
-                        chrome.closePanels()
-                        return@onKeyEvent true
-                    }
-
-                    // A shortcut is a reason to show the chrome: it is how the
-                    // reader sees that the page width changed, or which page
-                    // they landed on.
-                    chrome.showChrome()
-                    commands(command)
-                    true
-                },
+                .readerKeys(chrome = chrome, onCommand = commands),
         ) {
             Box(
                 modifier = Modifier
@@ -308,6 +274,16 @@ internal fun ReaderContent(
                     modifier = Modifier.align(Alignment.TopCenter),
                 )
 
+                // Under the panels and over the page: it is a fact about the
+                // book rather than a control, and nothing it can be behind ever
+                // reaches the bottom edge.
+                ReaderProgressLine(
+                    listState = listState,
+                    pageCount = pageCount,
+                    visible = !chrome.chromeShown,
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                )
+
                 ReaderPanels(
                     chrome = chrome,
                     document = document,
@@ -317,7 +293,9 @@ internal fun ReaderContent(
                     settings = settings,
                     layout = layout,
                     onSettingsChange = onSettingsChange,
-                    translationSection = { ReaderTranslationSettings(translationUi) },
+                    translationSection = {
+                        ReaderTranslationSettings(translationUi, translationPreferences)
+                    },
                 )
 
                 // Over everything, because it is about the book somebody is

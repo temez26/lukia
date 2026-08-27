@@ -8,7 +8,7 @@ import kotlin.test.assertTrue
 class IncomingDocumentNamingTest {
 
     @Test
-    fun `the same book shared twice lands on the same name`() {
+    fun theSameBookSharedTwiceLandsOnTheSameName() {
         val bytes = "a book".encodeToByteArray()
 
         assertEquals(
@@ -18,7 +18,7 @@ class IncomingDocumentNamingTest {
     }
 
     @Test
-    fun `two books sent under one file name do not collide`() {
+    fun twoBooksSentUnderOneFileNameDoNotCollide() {
         // Both arrive as document.pdf, which is why the name is not hashed.
         val first = IncomingDocumentNaming.fileName("first".encodeToByteArray(), "pdf")
         val second = IncomingDocumentNaming.fileName("second".encodeToByteArray(), "pdf")
@@ -27,14 +27,14 @@ class IncomingDocumentNamingTest {
     }
 
     @Test
-    fun `the extension is kept, lowercased and stripped of anything odd`() {
+    fun theExtensionIsKeptLowercasedAndStrippedOfAnythingOdd() {
         val name = IncomingDocumentNaming.fileName("book".encodeToByteArray(), "PDF")
 
         assertTrue(name.endsWith(".pdf"), name)
     }
 
     @Test
-    fun `a document with no extension is still given a name`() {
+    fun aDocumentWithNoExtensionIsStillGivenAName() {
         val name = IncomingDocumentNaming.fileName("book".encodeToByteArray(), "")
 
         assertTrue(name.startsWith("in-"), name)
@@ -42,7 +42,7 @@ class IncomingDocumentNamingTest {
     }
 
     @Test
-    fun `an extension that is all punctuation is dropped rather than kept`() {
+    fun anExtensionThatIsAllPunctuationIsDroppedRatherThanKept() {
         val name = IncomingDocumentNaming.fileName("book".encodeToByteArray(), "../..")
 
         assertTrue(!name.contains('.'), name)

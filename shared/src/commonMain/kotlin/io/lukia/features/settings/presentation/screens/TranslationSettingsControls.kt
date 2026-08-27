@@ -13,10 +13,10 @@ import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.settings.presentation.AvailableModels
 import io.lukia.features.settings.presentation.ConnectionTest
 import io.lukia.features.settings.presentation.ModelReadiness
-import io.lukia.features.settings.presentation.components.ChoiceList
 import io.lukia.features.settings.presentation.components.SettingsTextField
 import io.lukia.features.translate.domain.TranslationProvider
 import io.lukia.shared.presentation.components.ButtonVariant
+import io.lukia.shared.presentation.components.ChoiceList
 import io.lukia.shared.presentation.components.LukiaButton
 import io.lukia.shared.presentation.theme.Space
 

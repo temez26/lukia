@@ -17,9 +17,6 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-/** How long one sparkle takes to arrive, hold and go. */
-internal const val SparkleLifeMillis = 420
-
 /** The most opaque a sparkle ever gets. Anything brighter is confetti. */
 private const val SparklePeakAlpha = 0.5f
 
@@ -33,38 +30,6 @@ private const val SparkleDrift = 0.1f
 private const val SparkleWaist = 0.2f
 
 private const val DegreesPerRadian = 180f / PI.toFloat()
-
-/**
- * One sparkle's place and moment.
- *
- * [distance] and [size] are given in half-logos rather than dp, so the whole
- * arrangement scales with the mark instead of drifting inwards on a desktop
- * window where the logo is drawn larger.
- */
-internal class Sparkle(
-    val angleDegrees: Float,
-    val distance: Float,
-    val size: Float,
-    val startMillis: Int,
-    val tiltDegrees: Float,
-) {
-    val endMillis: Int get() = startMillis + SparkleLifeMillis
-}
-
-/**
- * Five of them, at unrelated angles and unrelated moments.
- *
- * Placed by hand rather than at random: random placement produces a pair sitting
- * on top of each other roughly one launch in five, and the one thing this
- * animation cannot afford is to look different every time the app opens.
- */
-internal val Sparkles = listOf(
-    Sparkle(angleDegrees = 28f, distance = 1.3f, size = 0.15f, startMillis = 160, tiltDegrees = 0f),
-    Sparkle(angleDegrees = 152f, distance = 1.18f, size = 0.11f, startMillis = 300, tiltDegrees = 18f),
-    Sparkle(angleDegrees = 205f, distance = 1.35f, size = 0.17f, startMillis = 240, tiltDegrees = -12f),
-    Sparkle(angleDegrees = 320f, distance = 1.22f, size = 0.12f, startMillis = 380, tiltDegrees = 10f),
-    Sparkle(angleDegrees = 95f, distance = 1.42f, size = 0.1f, startMillis = 430, tiltDegrees = -20f),
-)
 
 /** A four-point star at unit radius, centred on the origin. */
 private val UnitSparkle = Path().apply {
@@ -101,16 +66,6 @@ internal fun LaunchSparkles(
             drawSparkle(sparkle, sparkleProgress(elapsedMillis.value, sparkle), color, half)
         }
     }
-}
-
-/**
- * How far through its life the sparkle is at [elapsedMillis], from 0 to 1.
- * Outside its window it is 0, which is also its alpha, so nothing is drawn.
- */
-internal fun sparkleProgress(elapsedMillis: Float, sparkle: Sparkle): Float {
-    if (elapsedMillis >= sparkle.endMillis) return 0f
-
-    return ((elapsedMillis - sparkle.startMillis) / SparkleLifeMillis).coerceIn(0f, 1f)
 }
 
 /**
