@@ -6,15 +6,47 @@
 	<true/>
 	<!--
 	    Together these put a Lukia folder in the Files app and let the reader
-	    fill it: books can be dropped in from another app, from a download or
-	    over AirDrop, and then picked from inside Lukia like any other folder.
-	    Without them the app's own storage is invisible and every book has to
-	    arrive through the picker.
+	    fill it: books can be dropped in there from another app, from a download
+	    or over AirDrop, and then picked from inside Lukia like any other folder.
+	    Without them the app's own storage is invisible.
+
+	    They do not, on their own, offer Lukia as somewhere to send a book -
+	    that is CFBundleDocumentTypes below, and the two are worth reading
+	    together.
 	-->
 	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
+	<!--
+	    What Lukia will accept from another app, which is what puts it in the
+	    Share Sheet and behind "Open in" for a book. Without this the two keys
+	    above only publish a folder to put books in - the app itself is never
+	    offered as somewhere to send one.
+
+	    Declared as `Alternate` rather than `Owner`: these are formats Lukia
+	    reads, not formats it defines, and an app claiming ownership of PDF is
+	    an app fighting every other reader on the device for the file's icon.
+	-->
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Book</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.adobe.pdf</string>
+				<string>org.idpf.epub-container</string>
+				<string>org.openxmlformats.wordprocessingml.document</string>
+				<string>public.plain-text</string>
+				<string>net.daringfireball.markdown</string>
+			</array>
+		</dict>
+	</array>
 	<!--
 	    Asked for only when the reader points translation at a model running on
 	    their own machine. Reading a book needs nothing from the network at all.

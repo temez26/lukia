@@ -22,13 +22,27 @@ enum class DocumentType {
          * open it and says so.
          */
         fun fromExtension(extension: String): DocumentType =
-            when (extension.lowercase()) {
-                "pdf" -> PDF
-                "epub" -> EPUB
-                "docx" -> DOCX
-                "txt", "text" -> TEXT
-                "md", "markdown" -> MARKDOWN
-                else -> UNKNOWN
-            }
+            byExtension[extension.lowercase()] ?: UNKNOWN
+
+        /**
+         * The same extensions, for a caller that has to list them rather than
+         * test one - a file dialog's filter, most of all.
+         *
+         * Read off the same table [fromExtension] answers from, because the
+         * alternative is a second list: the desktop picker kept one of its own
+         * until this existed, and it had drifted to offering `.text` files the
+         * library would have taken and none of the `.markdown` ones it would.
+         */
+        val supportedExtensions: Set<String> get() = byExtension.keys
+
+        private val byExtension = mapOf(
+            "pdf" to PDF,
+            "epub" to EPUB,
+            "docx" to DOCX,
+            "txt" to TEXT,
+            "text" to TEXT,
+            "md" to MARKDOWN,
+            "markdown" to MARKDOWN,
+        )
     }
 }

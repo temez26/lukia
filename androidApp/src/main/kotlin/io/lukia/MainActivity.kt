@@ -1,5 +1,6 @@
 package io.lukia
 
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,6 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import io.lukia.core.infrastructure.deliverIncomingDocuments
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,6 +29,24 @@ class MainActivity : ComponentActivity() {
         setContent {
             App()
         }
+
+        // A cold start from a tapped book. The inbox holds it until the
+        // library has been composed and starts collecting.
+        deliverIncomingDocuments(intent)
+    }
+
+    /**
+     * A book tapped while Lukia is already open.
+     *
+     * The activity is `singleTask`, so the running one is handed the intent
+     * rather than a second copy of the app being stacked on the first - see the
+     * manifest. Without this the book would arrive at an activity nobody is
+     * looking at.
+     */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        deliverIncomingDocuments(intent)
     }
 
     /**

@@ -18,15 +18,22 @@ import io.lukia.shared.presentation.theme.LukiaMotion
 
 /**
  * Tap-anywhere-to-dismiss backdrop for an open [AnchoredMenu], which is a
- * non-focusable popup and so cannot catch the press itself.
+ * non-focusable popup and so cannot catch the press itself. Also what dims the
+ * screen behind an [OverlayPanel].
  *
  * Uses no ripple, so it reads as a surface rather than as a button.
+ *
+ * [label] is what a screen reader announces it as. A backdrop is a real way out
+ * - often the only one a menu offers - so it is named rather than hidden, and
+ * named for what pressing it does: without the label it is a full-screen node
+ * that can be activated and cannot be described.
  */
 @Composable
 fun ActionMenuScrim(
     visible: Boolean,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    label: String = "Dismiss",
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
@@ -43,6 +50,7 @@ fun ActionMenuScrim(
                 .clickable(
                     interactionSource = interactionSource,
                     indication = null,
+                    onClickLabel = label,
                     onClick = onDismiss,
                 ),
         )

@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
@@ -130,6 +131,7 @@ internal fun ImportBookCard(
                     .clickable(
                         interactionSource = interactionSource,
                         indication = null,
+                        role = Role.Button,
                         onClickLabel = "Add books",
                     ) {
                         scope.launch {

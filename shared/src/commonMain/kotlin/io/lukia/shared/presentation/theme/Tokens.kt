@@ -91,11 +91,17 @@ val FocusRingWidth: Dp = 2.dp
  * pixels across and a 44dp button under one is mostly padding - which is most of
  * what makes a desktop window look like a scaled-up phone.
  *
- * Window width stands in for the input device, as it already does elsewhere in
- * the app for tooltips and for the search field's proportions. The trade-off is
- * that a large tablet is given pointer metrics; that is the same bet the rest of
- * the app already makes, and taking it once here is better than each control
- * making its own guess.
+ * Window width used to stand in for the input device here, as it still does for
+ * tooltips and the search field's proportions. It cannot: those are questions
+ * about room, and this is not. A 1024dp iPad is pointed at with a finger and was
+ * being handed 32dp controls and 24dp icon buttons - under Apple's 44pt floor
+ * and Material's 48dp one - and so, for as long as it was turned, was an
+ * ordinary phone in landscape at 844dp.
+ *
+ * So this asks the platform instead, which is the same thing `App` already asks
+ * to decide which navigation the app has. A build somebody holds is touched at
+ * every window size it can be turned to; a desktop is pointed at whether or not
+ * its window is small.
  */
 @Immutable
 data class LukiaMetrics(
@@ -135,7 +141,7 @@ private val PointerMetrics = LukiaMetrics(
     rowHeight = 30.dp,
 )
 
-internal fun metricsFor(widthClass: WindowWidthClass): LukiaMetrics =
-    if (widthClass == WindowWidthClass.Compact) TouchMetrics else PointerMetrics
+internal fun metricsFor(touch: Boolean): LukiaMetrics =
+    if (touch) TouchMetrics else PointerMetrics
 
 val LocalLukiaMetrics = staticCompositionLocalOf { TouchMetrics }

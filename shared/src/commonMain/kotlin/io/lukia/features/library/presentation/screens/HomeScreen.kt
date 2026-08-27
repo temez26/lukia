@@ -1,7 +1,9 @@
 package io.lukia.features.library.presentation.screens
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -155,6 +157,8 @@ internal fun HomeContent(
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.background,
+        // See `LibraryContent`: the cutout is not in the Scaffold's default.
+        contentWindowInsets = WindowInsets.safeDrawing,
     ) { paddingValues ->
         UiStateContent(
             state = uiState,

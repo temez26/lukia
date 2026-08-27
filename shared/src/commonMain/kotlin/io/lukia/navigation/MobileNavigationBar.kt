@@ -25,6 +25,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -141,13 +142,17 @@ private fun RowScope.TabItem(
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
+                role = Role.Tab,
                 onClick = onClick,
             )
             .scaleOnPress(interactionSource, pressedScale = 0.92f)
             .pointerHoverIcon(PointerIcon.Hand)
             .padding(top = Space.sm)
             // One node for the pair, so a screen reader announces "Library,
-            // selected" rather than reading a glyph and a word separately.
+            // tab, selected" rather than reading a glyph and a word separately.
+            // The role is what supplies the middle of that: this is a drawn Row
+            // rather than Material's `NavigationBarItem`, so nothing else says
+            // the bar is a set of tabs rather than three unrelated controls.
             .semantics(mergeDescendants = true) {
                 contentDescription = tab.label
                 this.selected = selected

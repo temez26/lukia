@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -122,8 +123,13 @@ fun AnchoredMenu(
  * [selected] is for a menu that is a list of choices rather than a list of
  * actions - which format to show, which order to sort in. The tick sits at the
  * end of the row, in the accent colour, which is where iOS puts the mark on a
- * chosen menu item; the row is also announced as the chosen one rather than as
- * a button that happens to be ticked.
+ * chosen menu item, and the row carries the selected flag so the mark is
+ * announced rather than only drawn.
+ *
+ * The role stays [Role.Button] either way. A row that is a choice is still a
+ * button that is currently the chosen one - which is how the platforms
+ * themselves announce a ticked menu item - and a menu cannot tell an unticked
+ * choice from a plain action to say anything more precise.
  */
 @Composable
 fun MenuRow(
@@ -149,6 +155,7 @@ fun MenuRow(
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
+                role = Role.Button,
                 onClickLabel = label,
                 onClick = onClick,
             )
