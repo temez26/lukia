@@ -18,14 +18,14 @@ import kotlinx.coroutines.test.runTest
 import java.io.ByteArrayOutputStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /** A shelf's worth of books, which is what an import of several arrives as. */
 private const val BooksInALibrary = 8
 
-/** Past the two megabytes a CursorWindow holds, and so past what can be read. */
+/** Past the two megabytes a CursorWindow is configured to hold. */
 private const val CoverOverTheWindow = 2_100_000
 
 private const val ArtworkWidth = 2000
@@ -41,11 +41,13 @@ private const val BookSizeBytes = 1024L
 /**
  * The limit on a stored cover, against the platform that imposes it.
  *
- * Android hands a query's results over through a CursorWindow of two megabytes,
- * and a row too large for one does not come back short - the read throws. That
- * read is the whole library, so one book's cover art could empty the shelf and
- * leave a retry button in its place, which is what importing a batch of books
- * with large covers used to do.
+ * Android hands a query's results over through a CursorWindow, and on the
+ * versions Lukia opens on - it goes back to API 23 - that window is the two
+ * megabytes `config_cursorWindowSize` still says it is. A row too large for one
+ * does not come back short there: the read throws. That read is the whole
+ * library, so one book's cover art could empty the shelf and leave a retry
+ * button in its place, which is what importing a batch of books with large
+ * covers used to do.
  */
 class AndroidCoverStorageTest {
 
@@ -70,15 +72,32 @@ class AndroidCoverStorageTest {
     }
 
     /**
-     * The reason the limit exists, kept as a test so that it is a fact about
-     * this platform rather than a claim in a comment. If Android ever reads a
-     * row this size, this is what will say so.
+     * The reason the limit exists, kept as a test so that it is a fact about the
+     * platform rather than a claim in a comment - and written to hold on every
+     * version of it, because the two no longer agree.
+     *
+     * Up to Android 14 a cover this size throws on the way back and takes the
+     * shelf with it. Android 16 grows the window to the row instead and hands
+     * back a twenty-five megabyte blob without complaint, while still reporting
+     * the same two-megabyte window size. Asserting the throw alone therefore
+     * fails on a new device and passes on an old one, which says nothing about
+     * either.
+     *
+     * What is pinned instead is what has to be true on both: the shelf either
+     * arrives whole or fails in a way the app can recognise. It never comes back
+     * short, and the failure is never something other than the row being too
+     * large - either of which would be a library quietly losing books.
      */
     @Test
-    fun aCoverOverTheWindowTakesTheWholeLibraryWithIt() = runTest {
+    fun aCoverOverTheWindowNeverLeavesTheLibraryShort() = runTest {
         repository.addDocument(book(0, coverBytes = CoverOverTheWindow))
 
-        assertFailsWith<SQLiteBlobTooBigException> { repository.getDocuments() }
+        val shelf = runCatching { repository.getDocuments() }
+
+        shelf.fold(
+            onSuccess = { assertEquals(1, it.size) },
+            onFailure = { assertIs<SQLiteBlobTooBigException>(it) },
+        )
     }
 
     @Test

@@ -30,8 +30,8 @@ import io.lukia.core.domain.AppMotion
 import io.lukia.core.domain.AppPalette
 import io.lukia.core.domain.AppTheme
 import io.lukia.features.settings.domain.AppSettings
-import io.lukia.features.settings.presentation.components.ChoiceList
 import io.lukia.shared.presentation.components.CheckGlyph
+import io.lukia.shared.presentation.components.ChoiceList
 import io.lukia.shared.presentation.components.SegmentedControl
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space

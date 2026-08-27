@@ -2,6 +2,7 @@ package io.lukia.features.reader.presentation.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -27,6 +28,7 @@ import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.domain.ReaderTypeface
 import io.lukia.features.reader.domain.ReadingWidth
 import io.lukia.features.reader.domain.TextAlignment
+import io.lukia.getPlatform
 import io.lukia.shared.presentation.components.DismissOnBack
 import io.lukia.shared.presentation.components.GlassSurface
 import io.lukia.shared.presentation.components.GlassTone
@@ -42,9 +44,6 @@ import kotlin.math.roundToInt
 /** Grows out of the control it hangs from, matching the book actions menu. */
 private val PanelTransformOrigin = TransformOrigin(1f, 0f)
 
-/** Wide enough for three segments of readable type, narrow enough for a phone. */
-private val CompactPanelWidth: Dp = 284.dp
-
 /**
  * On a window with room, the panel is wider and its labels sit beside their
  * controls rather than above them. A phone stacks them because it has no choice;
@@ -53,8 +52,15 @@ private val CompactPanelWidth: Dp = 284.dp
  */
 private val WidePanelWidth: Dp = 380.dp
 
-/** How far the panel may grow before it scrolls inside itself. */
-private val CompactPanelMaxHeight: Dp = 440.dp
+/**
+ * How far the panel may grow before it scrolls inside itself.
+ *
+ * The compact one is the taller of the two because it is the one whose controls
+ * are stacked under their labels, and because a phone has nothing else on screen
+ * to leave room for. Either way the window is the real limit - a phone in
+ * landscape stops the panel long before this does.
+ */
+private val CompactPanelMaxHeight: Dp = 560.dp
 private val WidePanelMaxHeight: Dp = 520.dp
 
 /**
@@ -76,9 +82,11 @@ private val WidePanelMaxHeight: Dp = 520.dp
  * really does have and cannot use, this is a question that was never asked of an
  * EPUB.
  *
- * [translationSection] is what a window too narrow for the toolbar to hold the
- * translation controls puts at the top of the panel instead. Empty everywhere
- * else, so the panel neither knows nor cares what translating is.
+ * [translationSection] is translating, at the top of the panel: the language and
+ * the gestures on every window, and on a phone - whose toolbar has no room for
+ * them - the controls a wider window's toolbar carries as glyphs. Empty when
+ * nothing is set up to translate with, so the panel neither knows nor cares what
+ * translating is.
  */
 @Composable
 internal fun ReaderSettingsPanel(
@@ -90,6 +98,13 @@ internal fun ReaderSettingsPanel(
     onLayoutChange: (PdfLayout) -> Unit,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * Whether this device is one that dims and locks itself, which is the only
+     * kind the screen setting means anything on. Read from the platform rather
+     * than passed by the screen, in the way the theme reads whether the app is
+     * being touched or pointed at.
+     */
+    keepAwakeOffered: Boolean = getPlatform().isMobile,
     translationSection: @Composable () -> Unit = {},
 ) {
     val progress = rememberPopoverProgress(expanded, label = "readerSettingsPanel")
@@ -108,7 +123,12 @@ internal fun ReaderSettingsPanel(
     ) {
         Column(
             modifier = Modifier
-                .width(if (wide) WidePanelWidth else CompactPanelWidth)
+                // A phone gets the width of its window rather than a column
+                // floating in one corner of it. The panel is the only thing on
+                // screen a thumb is aiming at while it is open, and five width
+                // presets sharing 284dp were a row of 56dp targets against the
+                // 44dp a finger is actually worth.
+                .then(if (wide) Modifier.width(WidePanelWidth) else Modifier.fillMaxWidth())
                 // A short window - a phone in landscape - would otherwise
                 // leave the last setting past the bottom edge with no way to
                 // reach it.
@@ -116,8 +136,7 @@ internal fun ReaderSettingsPanel(
                 .verticalScroll(rememberScrollState())
                 .padding(vertical = Space.md),
         ) {
-            // Empty where the toolbar has room to carry the translation controls
-            // itself, which is every window wider than a phone.
+            // Empty until there is something set up to translate with.
             translationSection()
 
             SectionHeading(label = "Page", wide = wide, inset = inset)
@@ -164,6 +183,19 @@ internal fun ReaderSettingsPanel(
                     selected = settings.matchingWidth,
                     label = { "${(it.fraction * 100).roundToInt()}%" },
                     onSelect = { onSettingsChange(settings.withPageScale(it.fraction)) },
+                )
+            }
+
+            // Last of the page settings, and the only one here that is about the
+            // device rather than the book: everything above changes what the
+            // page looks like, and this one keeps it visible long enough to
+            // read. Absent altogether where a screen does not lock itself.
+            if (keepAwakeOffered) {
+                PanelSwitchRow(
+                    label = "Keep the screen awake",
+                    checked = settings.keepScreenAwake,
+                    onChange = { onSettingsChange(settings.copy(keepScreenAwake = it)) },
+                    inset = inset,
                 )
             }
 

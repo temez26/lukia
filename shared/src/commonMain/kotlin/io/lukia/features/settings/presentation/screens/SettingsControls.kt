@@ -18,9 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.lukia.features.translate.domain.PassageUnit
 import io.lukia.shared.presentation.components.GroupSection
-import io.lukia.shared.presentation.components.SegmentedControl
 import io.lukia.shared.presentation.theme.Space
 
 // The parts a settings page is built from. None of them knows what a setting
@@ -123,29 +121,6 @@ private fun BetaBadge(modifier: Modifier = Modifier) {
             .padding(horizontal = Space.xs, vertical = 1.dp),
     )
 }
-
-/**
- * What one gesture asks for, including nothing at all.
- *
- * Off is a choice in the same row as the units rather than a switch beside them,
- * because it is the same question: what does this gesture do? A reader who only
- * ever looks words up turns the tap off here and stops translating sentences by
- * accident.
- */
-@Composable
-internal fun GestureControl(
-    selected: PassageUnit?,
-    onSelect: (PassageUnit?) -> Unit,
-) {
-    SegmentedControl(
-        options = GestureChoices,
-        selected = selected,
-        label = { it?.label ?: "Off" },
-        onSelect = onSelect,
-    )
-}
-
-private val GestureChoices: List<PassageUnit?> = listOf(null) + PassageUnit.entries
 
 /** A caption over one field, for a group holding several of them. */
 @Composable

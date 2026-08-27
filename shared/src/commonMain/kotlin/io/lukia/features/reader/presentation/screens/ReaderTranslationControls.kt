@@ -13,6 +13,8 @@ import androidx.compose.ui.Modifier
 import io.lukia.features.reader.presentation.ShownTranslations
 import io.lukia.features.reader.presentation.TranslateOnScreen
 import io.lukia.features.translate.domain.BulkTranslation
+import io.lukia.features.translate.domain.TargetLanguage
+import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.shared.presentation.components.LukiaIconButton
 import io.lukia.shared.presentation.components.ShortcutTooltip
 import io.lukia.shared.presentation.components.TranslateGlyph
@@ -39,6 +41,25 @@ internal class ReaderTranslationUi(
 )
 
 /**
+ * What translating is *set* to do, as opposed to what it is doing - the language
+ * the book is read into and what a thumb on the page asks for.
+ *
+ * Apart from [ReaderTranslationUi] because the two answer different questions
+ * and are shown in different places. Those are the controls of a session: press
+ * this now, keep doing it, put them away. These are standing preferences that
+ * live on the settings screen as well, and are repeated in the reader's panel
+ * because they are the two somebody wants to change with a book open - a
+ * sentence that came back in the wrong language, or a tap that keeps translating
+ * a paragraph they were only skimming.
+ */
+internal class ReaderTranslationPreferences(
+    val targetLanguage: TargetLanguage,
+    val gestures: TranslationGestures,
+    val onTargetLanguageChange: (TargetLanguage) -> Unit,
+    val onGesturesChange: (TranslationGestures) -> Unit,
+)
+
+/**
  * Whether the controls belong in the toolbar, which is a question about how much
  * bar there is.
  *
@@ -60,8 +81,9 @@ internal val ReaderTranslationUi.inPanel: Boolean
 /**
  * Translating what is on screen, once or from now on, as glyphs in the toolbar.
  *
- * The form a window with a mouse gets. [ReaderTranslationSettings] is the same
- * three things written out for a window without one.
+ * The form a window with a mouse gets. A window without one gets the same three
+ * written out as rows, at the top of the reader's panel - see
+ * [ReaderTranslationSettings].
  *
  * Two buttons rather than one with a mode, because they answer different
  * questions: "do this page" is something a reader does at a page they are stuck

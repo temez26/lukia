@@ -8,9 +8,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import io.lukia.features.settings.presentation.TranslatingActions
-import io.lukia.features.settings.presentation.components.ChoiceList
 import io.lukia.features.translate.domain.TargetLanguage
 import io.lukia.features.translate.domain.TranslationSettings
+import io.lukia.features.translate.presentation.GestureControl
+import io.lukia.shared.presentation.components.ChoiceList
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 

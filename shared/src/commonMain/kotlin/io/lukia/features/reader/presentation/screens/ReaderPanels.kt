@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
@@ -14,6 +15,7 @@ import io.lukia.features.reader.domain.ReflowableContent
 import io.lukia.features.reader.presentation.components.ReaderContentsPanel
 import io.lukia.features.reader.presentation.components.ReaderSettingsPanel
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import io.lukia.shared.presentation.theme.isWideWindow
 import kotlinx.coroutines.launch
 
 /**
@@ -42,6 +44,12 @@ internal fun BoxScope.ReaderPanels(
     val chromeHeight = chromeHeight()
     val scope = rememberCoroutineScope()
 
+    // A phone's panels are as wide as its window, so they are inset from both
+    // edges rather than hung off one of them - see ReaderSettingsPanel. A wider
+    // window keeps them where the control that opened them is.
+    val wide = isWideWindow
+    val sidePadding = if (wide) 0.dp else dimens.screenPadding
+
     if (document != null) {
         ReaderContentsPanel(
             expanded = chrome.contentsExpanded,
@@ -52,7 +60,7 @@ internal fun BoxScope.ReaderPanels(
             onDismissRequest = chrome::closePanels,
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = chromeHeight),
+                .padding(top = chromeHeight, start = sidePadding, end = sidePadding),
         )
     }
 
@@ -70,8 +78,8 @@ internal fun BoxScope.ReaderPanels(
         onLayoutChange = layout.onLayoutChange,
         onDismissRequest = chrome::closePanels,
         modifier = Modifier
-            .align(Alignment.TopEnd)
-            .padding(top = chromeHeight, end = dimens.screenPadding),
+            .align(if (wide) Alignment.TopEnd else Alignment.TopCenter)
+            .padding(top = chromeHeight, start = sidePadding, end = dimens.screenPadding),
         translationSection = translationSection,
     )
 }

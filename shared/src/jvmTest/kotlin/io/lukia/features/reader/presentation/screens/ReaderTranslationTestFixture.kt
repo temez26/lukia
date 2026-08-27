@@ -33,6 +33,7 @@ import io.lukia.features.reader.domain.TextRun
 import io.lukia.features.reader.domain.TextSection
 import io.lukia.features.reader.presentation.TranslateOnScreen
 import io.lukia.features.translate.domain.BulkTranslation
+import io.lukia.features.translate.domain.TargetLanguage
 import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.TranslationGestures
 import io.lukia.features.translate.presentation.PassageSelection
@@ -71,6 +72,9 @@ internal fun ComposeUiTest.setReader(
     onPassagesRequested: (List<PassageSelection>) -> Unit = {},
     translateOnScreen: () -> TranslateOnScreen = { TranslateOnScreen.Idle },
     gestures: TranslationGestures = TranslationGestures.Default,
+    onTranslationGesturesChange: (TranslationGestures) -> Unit = {},
+    targetLanguage: TargetLanguage = TargetLanguage.Default,
+    onTargetLanguageChange: (TargetLanguage) -> Unit = {},
     translationConfigured: Boolean = false,
     bulkTranslation: BulkTranslation = BulkTranslation.Default,
     /**
@@ -89,6 +93,7 @@ internal fun ComposeUiTest.setReader(
                 translations = translations(),
                 translateOnScreen = translateOnScreen(),
                 gestures = gestures,
+                targetLanguage = targetLanguage,
                 translationConfigured = translationConfigured,
                 bulkTranslation = bulkTranslation,
                 onBack = {},
@@ -96,6 +101,8 @@ internal fun ComposeUiTest.setReader(
                 onSettingsChange = {},
                 onPassageSelected = onPassageSelected,
                 onPassagesRequested = onPassagesRequested,
+                onTargetLanguageChange = onTargetLanguageChange,
+                onTranslationGesturesChange = onTranslationGesturesChange,
                 renderPage = { _, _ -> null },
             )
         }

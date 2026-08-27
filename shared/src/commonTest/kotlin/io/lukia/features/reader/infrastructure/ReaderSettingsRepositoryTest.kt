@@ -40,6 +40,7 @@ class ReaderSettingsRepositoryTest {
             lineSpacing = LineSpacing.Relaxed,
             pageScale = ReadingWidth.Narrow.fraction,
             typeface = ReaderTypeface.Serif,
+            keepScreenAwake = false,
         )
 
         ReaderSettingsRepository(store).update(settings)
@@ -57,6 +58,18 @@ class ReaderSettingsRepositoryTest {
 
         assertEquals(ReaderTheme.Sepia.name, store.values["reader.theme"])
         assertEquals(ReadingWidth.Medium.fraction.toString(), store.values["reader.pageScale"])
+    }
+
+    /**
+     * A reader who turned the screen setting off gets it back off. Stored as a
+     * word rather than as an enum, so it is the one setting whose nonsense value
+     * is a `null` from parsing rather than a name that matched nothing.
+     */
+    @Test
+    fun anUnreadableScreenSettingFallsBackToKeepingItAwake() {
+        val store = FakeSettingsStore(mapOf("reader.keepScreenAwake" to "sometimes"))
+
+        assertEquals(true, ReaderSettingsRepository(store).settings.value.keepScreenAwake)
     }
 
     /**

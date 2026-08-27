@@ -1,4 +1,4 @@
-package io.lukia.features.settings.presentation.components
+package io.lukia.shared.presentation.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,8 +20,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.lukia.shared.presentation.components.CheckGlyph
-import io.lukia.shared.presentation.components.LukiaDivider
 import io.lukia.shared.presentation.theme.Space
 
 /** The tick's box, sized so every row's text starts at the same place. */
@@ -33,14 +31,15 @@ private val RowPadding: Dp = 12.dp
  * One choice from a list too long to be a row of segments.
  *
  * A list rather than a menu because that is what this is for - seventeen
- * languages chosen once, in a screen that already scrolls. A popup would hide
- * the setting behind a tap and put a scrolling list inside a scrolling page.
+ * languages chosen once, in a screen or a panel that already scrolls. A popup
+ * would hide the setting behind a tap and put a scrolling list inside a
+ * scrolling page.
  *
  * Each row carries radio-button semantics, so assistive technology reads the
  * group as a single choice rather than as a column of unrelated buttons.
  */
 @Composable
-internal fun <T> ChoiceList(
+fun <T> ChoiceList(
     options: List<T>,
     selected: T?,
     label: (T) -> String,

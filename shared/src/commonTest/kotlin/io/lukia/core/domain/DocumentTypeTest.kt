@@ -15,7 +15,7 @@ import kotlin.test.assertTrue
 class DocumentTypeTest {
 
     @Test
-    fun `every listed extension is one the library reads`() {
+    fun everyListedExtensionIsOneTheLibraryReads() {
         DocumentType.supportedExtensions.forEach { extension ->
             assertNotEquals(
                 DocumentType.UNKNOWN,
@@ -26,7 +26,7 @@ class DocumentTypeTest {
     }
 
     @Test
-    fun `every type the library reads is offered by at least one extension`() {
+    fun everyTypeTheLibraryReadsIsOfferedByAtLeastOneExtension() {
         val offered = DocumentType.supportedExtensions
             .map(DocumentType::fromExtension)
             .toSet()
@@ -39,13 +39,13 @@ class DocumentTypeTest {
     }
 
     @Test
-    fun `an extension is recognised whatever its case`() {
+    fun anExtensionIsRecognisedWhateverItsCase() {
         assertEquals(DocumentType.PDF, DocumentType.fromExtension("PDF"))
         assertEquals(DocumentType.MARKDOWN, DocumentType.fromExtension("Markdown"))
     }
 
     @Test
-    fun `anything else is unknown`() {
+    fun anythingElseIsUnknown() {
         assertEquals(DocumentType.UNKNOWN, DocumentType.fromExtension("mobi"))
         assertEquals(DocumentType.UNKNOWN, DocumentType.fromExtension(""))
     }

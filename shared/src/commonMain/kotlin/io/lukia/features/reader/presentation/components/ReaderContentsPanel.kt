@@ -41,9 +41,7 @@ import kotlin.math.roundToInt
 /** Grows out of the control it hangs from, matching the other reader panels. */
 private val PanelTransformOrigin = TransformOrigin(0.5f, 0f)
 
-private val CompactPanelWidth: Dp = 300.dp
-
-/** A window with room gets a wider panel, so long chapter titles stay on one line. */
+/** A window with room gets a fixed panel, so long chapter titles stay on one line. */
 private val WidePanelWidth: Dp = 380.dp
 
 /** Enough for roughly seven chapters before the list takes over the scrolling. */
@@ -98,7 +96,12 @@ internal fun ReaderContentsPanel(
     ) {
         Column(
             modifier = Modifier
-                .width(if (wide) WidePanelWidth else CompactPanelWidth)
+                // A phone gets the width of its window. The scrubber is the
+                // control here that a wider one makes better - dragging through
+                // a four-hundred-page book across 300dp is fourteen pages a
+                // millimetre - and a chapter title has that much more room
+                // before it is cut.
+                .then(if (wide) Modifier.width(WidePanelWidth) else Modifier.fillMaxWidth())
                 .padding(vertical = Space.md),
         ) {
             PositionScrubber(
