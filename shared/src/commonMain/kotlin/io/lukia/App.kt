@@ -1,11 +1,15 @@
 package io.lukia
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import io.lukia.core.domain.AppTheme
+import io.lukia.features.library.presentation.PlatformPickerHost
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.navigation.DesktopShell
 import io.lukia.navigation.MobileShell
@@ -51,11 +55,28 @@ fun App() {
         // so the last frame of it and the first frame of the app are the same
         // colours.
         LaunchSplash {
-            // Straight into the app. There is nobody to introduce and nothing to
-            // ask for - the library, the positions in it and every setting are
-            // already on this device - so the first thing anybody sees is their
-            // own shelf rather than a form standing in front of it.
-            if (mobile) MobileShell() else DesktopShell()
+            AppShell(mobile = mobile)
         }
+    }
+}
+
+/**
+ * The app itself, and the one thing that is drawn over all of it.
+ *
+ * Straight into the shell. There is nobody to introduce and nothing to ask for -
+ * the library, the positions in it and every setting are already on this device -
+ * so the first thing anybody sees is their own shelf rather than a form standing
+ * in front of it.
+ */
+@Composable
+private fun AppShell(mobile: Boolean, modifier: Modifier = Modifier) {
+    Box(modifier = modifier.fillMaxSize()) {
+        if (mobile) MobileShell() else DesktopShell()
+
+        // Over the shell rather than inside a screen, because choosing a file is
+        // the app being asked a question rather than something one screen does.
+        // Draws nothing on the platforms whose picker is the system's own - see
+        // [PlatformPickerHost].
+        PlatformPickerHost()
     }
 }

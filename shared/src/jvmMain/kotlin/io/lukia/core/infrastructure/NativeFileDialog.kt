@@ -6,7 +6,6 @@ import java.awt.Frame
 import java.awt.KeyboardFocusManager
 import java.awt.Window
 import java.io.File
-import javax.swing.JFileChooser
 
 /**
  * The desktop's own open panel.
@@ -62,21 +61,19 @@ private fun ownerFrame(): Frame? {
 }
 
 /**
- * A folder, through whatever the platform will give.
+ * A folder, on the one platform that will give one.
  *
- * macOS has a native answer and it is worth taking: setting this property puts
- * `NSOpenPanel` into directory mode, so a reader choosing where their books live
- * gets the Finder panel rather than a drawn approximation of one. The property
- * is read when the dialog is shown and put back afterwards, since it would
- * otherwise turn the *file* panel into a folder panel the next time one opened.
+ * Setting this property puts `NSOpenPanel` into directory mode, so a reader
+ * choosing where their books live gets the Finder panel rather than a drawn
+ * approximation of one. The property is read when the dialog is shown and put
+ * back afterwards, since it would otherwise turn the *file* panel into a folder
+ * panel the next time one opened.
  *
  * Windows and Linux have no equivalent - `FileDialog` there cannot select a
- * directory at all - so they keep Swing's chooser, which at least can. Given an
- * owner this time, so it is app-modal and cannot end up behind the window.
+ * directory at all - and browse the app's own panel instead, so they never reach
+ * this. See `PlatformFolderPicker.jvm`.
  */
 internal fun openFolder(title: String): File? {
-    if (!isMacOs) return chooseFolderWithSwing(title)
-
     System.setProperty(APPLE_DIRECTORY_MODE, "true")
 
     return try {
@@ -89,17 +86,6 @@ internal fun openFolder(title: String): File? {
     } finally {
         System.setProperty(APPLE_DIRECTORY_MODE, "false")
     }
-}
-
-private fun chooseFolderWithSwing(title: String): File? {
-    val chooser = JFileChooser().apply {
-        fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
-        dialogTitle = title
-    }
-
-    val result = chooser.showOpenDialog(ownerFrame())
-
-    return if (result == JFileChooser.APPROVE_OPTION) chooser.selectedFile else null
 }
 
 private const val APPLE_DIRECTORY_MODE = "apple.awt.fileDialogForDirectories"
