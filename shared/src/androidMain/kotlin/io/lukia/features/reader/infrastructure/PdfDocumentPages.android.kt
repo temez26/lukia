@@ -36,18 +36,26 @@ private class AndroidDocumentPages(path: String) : DocumentPages {
     private val renderLock = Mutex()
 
     /**
-     * Measured on demand rather than as the document opens, because every one
-     * of them is a page opened through [PdfRenderer] - a JNI call each, and
-     * hundreds of them on a long book. The reader forces the whole list the
-     * moment it lays out its page slots, so nothing waits longer for it; what
-     * this saves is the document opened for some other reason paying the same
-     * bill for a list nobody asks it for.
+     * Measured as the document opens, which is where the other platforms measure
+     * theirs.
+     *
+     * Every one of these is a page opened through [PdfRenderer] - a JNI call
+     * each, and hundreds of them on a long book - so where this runs decides
+     * whether opening a book stutters. It used to be lazy, on the argument that
+     * a document opened for some other reason should not pay for a list nobody
+     * asks it for. Nobody was saved: both ways out of here force it, the reader
+     * as it lays out its page slots and the text conversion as it starts. What
+     * the laziness actually did was move hundreds of JNI calls onto whichever
+     * thread asked first - and the reader asks from composition, so a long PDF
+     * paid for its own page list on the main thread, on the frames the screen
+     * carrying it was still arriving on.
+     *
+     * Nobody waits longer for it now: opening already runs off the main thread -
+     * see `OpenDocumentUseCase`, which is the only place documents are opened.
      */
-    override val pageSizes: List<PageSize> by lazy {
-        List(renderer.pageCount) { index ->
-            renderer.openPage(index).use { page ->
-                PageSize(width = page.width.toFloat(), height = page.height.toFloat())
-            }
+    override val pageSizes: List<PageSize> = List(renderer.pageCount) { index ->
+        renderer.openPage(index).use { page ->
+            PageSize(width = page.width.toFloat(), height = page.height.toFloat())
         }
     }
 
@@ -84,11 +92,20 @@ private class AndroidDocumentPages(path: String) : DocumentPages {
     // while another is being drawn is contention over one document either way.
     // The content keeps a lock of its own as well, for the documents a
     // conversion opens where there is no renderer to contend with.
+    //
+    // Off the main thread before touching [content], the way drawing already is.
+    // The lock only suspends, but the first caller through here also opens the
+    // file a second time with a library that can read it, and a PDF being parsed
+    // where it was asked for is a PDF being parsed on the thread that draws.
     override suspend fun pageText(index: Int): List<PageGlyph>? =
-        renderLock.withLock { content.value.pageText(index) }
+        withContext(Dispatchers.Default) {
+            renderLock.withLock { content.value.pageText(index) }
+        }
 
     override suspend fun pageImages(index: Int): List<PageImage> =
-        renderLock.withLock { content.value.pageImages(index) }
+        withContext(Dispatchers.Default) {
+            renderLock.withLock { content.value.pageImages(index) }
+        }
 
     override suspend fun renderPage(index: Int, targetWidthPx: Int): ImageBitmap? =
         withContext(Dispatchers.Default) {

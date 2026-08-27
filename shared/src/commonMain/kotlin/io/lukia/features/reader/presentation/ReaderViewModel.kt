@@ -53,6 +53,12 @@ class ReaderViewModel(
      * races it, and a scan of a long PDF is long enough to lose.
      */
     private val outlineDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    /**
+     * Where a page's words are gathered out of its glyphs. Injectable for the
+     * same reason [outlineDispatcher] is: a test that takes its dispatchers away
+     * should not race work nobody is waiting for.
+     */
+    private val sentenceDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ViewModel() {
 
     /**
@@ -231,8 +237,16 @@ class ReaderViewModel(
         val pages = (_uiState.value.dataOrNull?.content as? PagedContent)?.pages ?: return emptyList()
 
         return pageSentences.sentencesOn(index) {
-            val glyphs = runCatchingApp { pages.pageText(index) }.getOrNull()
-            glyphs?.let { pageSentences(it) }.orEmpty()
+            // Off the main thread for the grouping as well as the reading. The
+            // document switches for itself before it touches the file, but what
+            // comes back is every glyph on the page, and gathering those into
+            // words and sentences is a pass over all of them - which would
+            // otherwise run wherever this was asked from. The reader asks from
+            // composition, as each page arrives.
+            withContext(sentenceDispatcher) {
+                val glyphs = runCatchingApp { pages.pageText(index) }.getOrNull()
+                glyphs?.let { pageSentences(it) }.orEmpty()
+            }
         }
     }
 
