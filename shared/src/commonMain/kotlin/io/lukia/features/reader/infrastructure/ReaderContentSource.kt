@@ -1,7 +1,9 @@
 package io.lukia.features.reader.infrastructure
 
 import io.lukia.core.domain.DocumentType
+import io.lukia.core.infrastructure.availableProcessors
 import io.lukia.core.infrastructure.readFileBytes
+import io.lukia.features.reader.domain.PageContent
 import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderContent
 import io.lukia.features.reader.domain.TextExtraction
@@ -50,6 +52,11 @@ internal fun openReaderContent(type: DocumentType, path: String): ReaderContent?
  * which is not suspending: reading a page's text is, and there are hundreds of
  * pages here rather than one.
  *
+ * Hundreds of pages is also why the file is opened more than once - see
+ * [readersFor]. Reading a page is the longest thing the app does and one
+ * handle can only do it one page at a time, so the book is divided between as
+ * many handles as the device has cores to read them with.
+ *
  * Read once in a stronger sense as well: what comes out is kept beside the file
  * - see [storedReflow] - so that a reader who looks at the same book as pages
  * and then as text again is not made to wait through the whole conversion a
@@ -67,12 +74,61 @@ internal suspend fun openPdfAsText(
     storedReflow(path)?.let { return it }
 
     val pages = openPdfPages(path)
+    val alongside = readersAlongside(path, readersFor(pages.pageCount) - 1)
 
     val content = try {
-        readPdfAsText(pages, onProgress)
+        readPdfAsText(pages, alongside, onProgress)
     } finally {
+        alongside.forEach { runCatching { it.close() } }
         pages.close()
     }
 
     return content?.also { storeReflow(path, it) }
 }
+
+/**
+ * How many handles on the file a conversion reads it through.
+ *
+ * One per core, up to a point. The point is [MAX_READERS], because the reading
+ * is as much file and memory as it is arithmetic and a machine stops going
+ * faster well before it runs out of cores - and because each handle parses and
+ * holds its own share of the book, which is memory a phone has less of than it
+ * has patience.
+ *
+ * One handle for a short document, whatever the machine. Opening a file four
+ * times to read twelve pages costs more than reading them does, and a
+ * conversion nobody waits for is not one worth dividing.
+ */
+private fun readersFor(pageCount: Int): Int {
+    if (pageCount < MIN_PAGES_TO_DIVIDE) return 1
+
+    return minOf(
+        MAX_READERS,
+        availableProcessors().coerceAtLeast(1),
+        pageCount / MIN_PAGES_EACH,
+    ).coerceAtLeast(1)
+}
+
+/**
+ * [count] more ways into the file, or as many as could be opened.
+ *
+ * A handle that cannot be opened costs the conversion some of its speed and
+ * nothing else, so it is not worth failing an open over: the book is divided
+ * between whatever came back, and one handle is the way this always worked.
+ */
+private fun readersAlongside(path: String, count: Int): List<PageContent> = buildList {
+    repeat(count) {
+        val reader = runCatching { openPdfPageContent(path) }.getOrNull() ?: return@buildList
+
+        add(reader)
+    }
+}
+
+/** Below this a conversion is over before a second handle has finished opening. */
+private const val MIN_PAGES_TO_DIVIDE = 24
+
+/** And below this a handle would spend more time being opened than reading. */
+private const val MIN_PAGES_EACH = 12
+
+/** Past this the file, not the processor, is what the conversion is waiting on. */
+private const val MAX_READERS = 4

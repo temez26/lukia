@@ -3,10 +3,26 @@ package io.lukia.features.reader.infrastructure
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
 import com.tom_roush.pdfbox.text.TextPosition
+import io.lukia.features.reader.domain.PageContent
 import io.lukia.features.reader.domain.PageGlyph
 import io.lukia.features.reader.domain.PageImage
 import io.lukia.features.reader.domain.TextQuad
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.io.File
+
+/**
+ * Opens the PDF at [path] to be read rather than drawn - see [PageContent].
+ *
+ * On Android this is what the reader was already doing behind
+ * [android.graphics.pdf.PdfRenderer], so a handle opened only to read pages is
+ * exactly this and nothing else: no renderer, no page measurements and no table
+ * of contents.
+ */
+internal actual fun openPdfPageContent(path: String): PageContent =
+    AndroidPageContent(File(path))
 
 /**
  * What is on a page of a PDF on Android: the words, and the pictures.
@@ -28,7 +44,7 @@ import java.io.File
  * being opened; everything after the glyphs and the pictures come out is common
  * code.
  */
-internal class AndroidPageContent(private val file: File) : AutoCloseable {
+internal class AndroidPageContent(private val file: File) : PageContent {
 
     private var document: PDDocument? = null
     private var opened = false
@@ -40,7 +56,20 @@ internal class AndroidPageContent(private val file: File) : AutoCloseable {
      */
     private val figures = AndroidFigureBytes()
 
-    fun glyphs(pageIndex: Int): List<PageGlyph>? {
+    /**
+     * PDFBox keeps mutable state inside a document, so two pages read at once
+     * corrupt each other's output. Its own rather than the renderer's, because
+     * a conversion opens several of these and each one is a separate document.
+     */
+    private val lock = Mutex()
+
+    override suspend fun pageText(index: Int): List<PageGlyph>? =
+        withContext(Dispatchers.Default) { lock.withLock { glyphs(index) } }
+
+    override suspend fun pageImages(index: Int): List<PageImage> =
+        withContext(Dispatchers.Default) { lock.withLock { images(index) } }
+
+    private fun glyphs(pageIndex: Int): List<PageGlyph>? {
         val document = document() ?: return null
 
         return runCatching {
@@ -56,7 +85,7 @@ internal class AndroidPageContent(private val file: File) : AutoCloseable {
         }.getOrNull()
     }
 
-    fun images(pageIndex: Int): List<PageImage> {
+    private fun images(pageIndex: Int): List<PageImage> {
         val document = document() ?: return emptyList()
 
         return runCatching { androidPageImages(document.getPage(pageIndex), figures) }

@@ -7,7 +7,6 @@ import io.lukia.features.reader.domain.OutlineEntry
 import io.lukia.features.reader.domain.PageGlyph
 import io.lukia.features.reader.domain.PageImage
 import io.lukia.features.reader.domain.PageSize
-import io.lukia.features.reader.domain.TextQuad
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -18,8 +17,6 @@ import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineNode
 import org.apache.pdfbox.rendering.ImageType
 import org.apache.pdfbox.rendering.PDFRenderer
-import org.apache.pdfbox.text.PDFTextStripper
-import org.apache.pdfbox.text.TextPosition
 import java.io.File
 
 /** Guards against an outline that is malformed into a cycle or absurdly deep. */
@@ -40,13 +37,6 @@ private class PdfBoxDocumentPages(path: String) : DocumentPages {
      * than an edge one.
      */
     private val renderLock = Mutex()
-
-    /**
-     * The pictures this book has already given up, kept for as long as it is
-     * open - see [PdfFigureBytes]. Held by the document because that is the
-     * scope a repeated picture repeats over.
-     */
-    private val figures = PdfFigureBytes()
 
     override val pageSizes: List<PageSize> = document.pages.map { page ->
         val box = page.cropBox
@@ -137,78 +127,18 @@ private class PdfBoxDocumentPages(path: String) : DocumentPages {
             }
         }
 
-    override suspend fun pageText(index: Int): List<PageGlyph>? =
-        withContext(Dispatchers.Default) {
-            renderLock.withLock {
-                runCatching {
-                    val stripper = GlyphStripper().apply {
-                        // PDFBox counts pages from one, and reads the range
-                        // rather than the document when asked for text.
-                        startPage = index + 1
-                        endPage = index + 1
-                    }
-
-                    stripper.getText(document)
-
-                    // Empty is not the same as unavailable, but it reaches the
-                    // reader the same way: a page with nothing on it has no
-                    // sentences to point at.
-                    stripper.glyphs.takeIf { it.isNotEmpty() }
-                }.getOrNull()
-            }
-        }
-
     /**
-     * Walked page by page rather than read from the document, because a PDF
-     * keeps no list of what is drawn where - see [pdfBoxPageImages]. Serialised
-     * with everything else for the same reason they are serialised with each
-     * other: one document, and PDFBox's state inside it is shared.
+     * The reading half of this document, over the same handle and behind the
+     * same lock - see [PdfBoxPageContent]. Not owned: closing the document is
+     * this class's job, and doing it twice would be one close too many.
      */
-    override suspend fun pageImages(index: Int): List<PageImage> =
-        withContext(Dispatchers.Default) {
-            renderLock.withLock {
-                runCatching { pdfBoxPageImages(document.getPage(index), figures) }
-                    .getOrDefault(emptyList())
-            }
-        }
+    private val content = PdfBoxPageContent(document, renderLock, owned = false)
+
+    override suspend fun pageText(index: Int): List<PageGlyph>? = content.pageText(index)
+
+    override suspend fun pageImages(index: Int): List<PageImage> = content.pageImages(index)
 
     override fun close() {
         document.close()
-    }
-}
-
-/**
- * Collects every positioned character on a page instead of writing the page out
- * as a string.
- *
- * [PDFTextStripper] exists to produce text, and its own idea of where the words
- * and lines are is thrown away by the time it hands one over. What is wanted
- * here is the layer underneath that: the glyphs, and the boxes the file put them
- * in, which is what the reader needs to draw a translation exactly over the
- * words it stands for.
- *
- * The `Dir` accessors are the ones already turned the right way up - origin at
- * the top left, rotated pages accounted for - which is the space
- * [io.lukia.features.reader.domain.TextQuad] is defined in.
- */
-private class GlyphStripper : PDFTextStripper() {
-
-    val glyphs = mutableListOf<PageGlyph>()
-
-    override fun writeString(text: String, textPositions: List<TextPosition>) {
-        textPositions.forEach { position ->
-            val character = position.unicode ?: return@forEach
-            if (character.isEmpty()) return@forEach
-
-            glyphs += PageGlyph(
-                text = character,
-                bounds = TextQuad(
-                    left = position.xDirAdj,
-                    top = position.yDirAdj - position.heightDir,
-                    right = position.xDirAdj + position.widthDirAdj,
-                    bottom = position.yDirAdj,
-                ),
-            )
-        }
     }
 }

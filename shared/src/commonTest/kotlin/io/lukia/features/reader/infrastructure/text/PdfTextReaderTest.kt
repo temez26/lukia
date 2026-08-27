@@ -179,6 +179,80 @@ class PdfTextReaderTest {
         assertTrue(reported.all { it.pageCount == 3 })
     }
 
+    /**
+     * A long book is read through several handles at once, one run of pages
+     * each - so what has to hold is that the book which comes back is the book
+     * the one handle produced, in the same order, with the same letterhead
+     * found and the same paragraphs joined across the same page breaks.
+     */
+    @Test
+    fun readingThroughSeveralHandlesGivesBackTheSameBook() = runTest {
+        val logo = byteArrayOf(9, 9, 9)
+        val written = List(PAGES_TO_DIVIDE) { index ->
+            // Every third page ends mid-sentence, so the join across the page
+            // break falls inside runs and on the seam between two of them.
+            if (index % 3 == 0) {
+                page("Page ${'$'}{index + 1} began a sentence that runs on")
+            } else {
+                page("Page ${'$'}{index + 1}. Something written on it.")
+            }
+        }
+        val pictures = List(PAGES_TO_DIVIDE) { index ->
+            when {
+                index % 2 == 0 -> listOf(picture(logo.copyOf()))
+                index == 7 -> listOf(picture(byteArrayOf(4, 5, 6)))
+                else -> emptyList()
+            }
+        }
+
+        val alone = assertNotNullContent(readPdfAsText(FakePdfPages(written, pictures = pictures)))
+        val divided = assertNotNullContent(
+            readPdfAsText(
+                pages = FakePdfPages(written, pictures = pictures),
+                alongside = List(3) { FakePdfPages(written, pictures = pictures) },
+            ),
+        )
+
+        assertEquals(alone.sections.size, divided.sections.size)
+
+        alone.sections.zip(divided.sections).forEachIndexed { index, (expected, actual) ->
+            assertEquals(
+                expected.blocks.map { it.readable() },
+                actual.blocks.map { it.readable() },
+                "page ${'$'}{index + 1} came back different",
+            )
+        }
+    }
+
+    /** Every handle still counts its pages towards the one total. */
+    @Test
+    fun progressAcrossSeveralHandlesCountsTheWholeBook() = runTest {
+        val written = List(PAGES_TO_DIVIDE) { page("Page ${'$'}{it + 1}. Written on.") }
+        val reported = mutableListOf<TextExtraction>()
+
+        readPdfAsText(
+            pages = FakePdfPages(written),
+            alongside = List(3) { FakePdfPages(written) },
+        ) { reported += it }
+
+        assertEquals(
+            (1..PAGES_TO_DIVIDE).toList(),
+            reported.map { it.pagesRead },
+            "the pages were counted twice or not at all",
+        )
+        assertTrue(reported.all { it.pageCount == PAGES_TO_DIVIDE })
+    }
+
+    /**
+     * A block as something two runs of the same book can be compared by:
+     * [TextBlock.Figure] is its own identity, so a picture read through one
+     * handle is never the picture read through another however alike they are.
+     */
+    private fun TextBlock.readable(): Any = when (this) {
+        is TextBlock.Figure -> "figure:${'$'}{bytes.toList()}:${'$'}description"
+        else -> this
+    }
+
     /** One picture, the size a diagram is, well inside the page. */
     private fun picture(bytes: ByteArray) = PageImage(
         bytes = bytes,
@@ -221,3 +295,6 @@ class PdfTextReaderTest {
         override fun close() = Unit
     }
 }
+
+/** Enough pages that four handles each get a run of them. */
+private const val PAGES_TO_DIVIDE = 13
