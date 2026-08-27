@@ -5,6 +5,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
+import io.lukia.core.infrastructure.AppCommand
+import io.lukia.core.infrastructure.AppCommands
+import org.koin.compose.koinInject
 
 /**
  * What the library screen does besides draw itself.
@@ -20,12 +23,14 @@ internal fun LibraryEffects(
     snackbarHostState: SnackbarHostState,
     onRefresh: () -> Unit,
     onClearMessage: () -> Unit,
+    onCommand: (AppCommand) -> Unit,
 ) {
     // Read through the state rather than captured, so a caller passing a fresh
     // lambda each composition does not tear these down and start them again -
     // which for the first of them would be a re-read of the whole library.
     val refresh by rememberUpdatedState(onRefresh)
     val clear by rememberUpdatedState(onClearMessage)
+    val command by rememberUpdatedState(onCommand)
 
     // Fires again each time the grid is re-entered from the detail screen, which
     // may have favourited or removed a book behind its back.
@@ -40,5 +45,15 @@ internal fun LibraryEffects(
             snackbarHostState.showSnackbar(it)
             clear()
         }
+    }
+
+    // What a desktop menu bar asked for - see [AppCommands]. Collected here
+    // rather than in the screen because it is one more standing arrangement and
+    // draws nothing, which is what this function is for. Nothing arrives on the
+    // platforms with no menu bar, so the collector simply waits there.
+    val commands: AppCommands = koinInject()
+
+    LaunchedEffect(commands) {
+        commands.commands.collect { requested -> command(requested) }
     }
 }

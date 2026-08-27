@@ -6,12 +6,12 @@ package io.lukia.core.infrastructure
  * Asked at runtime rather than at build time because the desktop target is one
  * binary that runs on all three, so there is no compile-time answer to have.
  *
- * Shared because two very different things need it - how translucent the app's
- * chrome is drawn, and whether the platform's file panel can be asked for a
- * folder - and a second copy of this string comparison is a second chance to
- * spell one of the names wrong.
+ * Shared because several unrelated things need it - how translucent the app's
+ * chrome is drawn, whether the platform's file panel can be asked for a folder,
+ * and which modifier key the menu bar's shortcuts hang off - and a second copy
+ * of this string comparison is a second chance to spell one of the names wrong.
  */
-internal val isMacOs: Boolean by lazy {
+val isMacOs: Boolean by lazy {
     osName.contains("mac") || osName.contains("darwin")
 }
 

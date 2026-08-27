@@ -1,5 +1,6 @@
 package io.lukia.di
 
+import io.lukia.core.infrastructure.AppCommands
 import io.lukia.core.infrastructure.DocumentInbox
 import io.lukia.core.infrastructure.IncomingDocuments
 import io.lukia.core.infrastructure.db.LukiaDatabase
@@ -36,6 +37,12 @@ val commonModule = module {
 
     single {
         IncomingDocuments(inbox = get(), store = get())
+    }
+
+    // What a desktop menu bar asks the app for. Empty on the platforms with no
+    // menu bar to ask from, which is every platform but one.
+    single {
+        AppCommands()
     }
 
     includes(
