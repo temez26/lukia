@@ -34,7 +34,7 @@ internal typealias GlyphBlock = List<GlyphLine>
  * the line above it.
  */
 internal fun List<PageGlyph>.intoLines(): List<GlyphLine> {
-    val byPosition = sortedWith(compareBy({ it.bounds.top }, { it.bounds.left }))
+    val byPosition = sortedWith(DownThePage)
     val lines = mutableListOf<MutableList<PageGlyph>>()
 
     byPosition.forEach { glyph ->
@@ -47,8 +47,24 @@ internal fun List<PageGlyph>.intoLines(): List<GlyphLine> {
         }
     }
 
-    return lines.map { line -> line.sortedBy { it.bounds.left } }
+    return lines.map { line -> line.sortedWith(AcrossTheLine) }
 }
+
+/**
+ * Down the page and then across it, and along one line.
+ *
+ * Written out rather than built with `compareBy`, which takes what it is given
+ * as [Comparable] and so boxes two floats per comparison - a few hundred
+ * thousand of them on a page, and every page of the book comes through here.
+ */
+private val DownThePage = Comparator<PageGlyph> { left, right ->
+    val down = left.bounds.top.compareTo(right.bounds.top)
+
+    if (down != 0) down else left.bounds.left.compareTo(right.bounds.left)
+}
+
+private val AcrossTheLine =
+    Comparator<PageGlyph> { left, right -> left.bounds.left.compareTo(right.bounds.left) }
 
 /**
  * The lines gathered into blocks, cut wherever more space was left than one line

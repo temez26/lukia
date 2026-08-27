@@ -106,9 +106,30 @@ private fun TextQuad.isPageBackground(page: PageSize, pageHasText: Boolean): Boo
  * Those pages have no body text for a heading to stand out from anyway.
  */
 private fun List<GlyphLine>.bodyHeight(): Float {
-    val heights = flatten().map { it.bounds.height }.filter { it > 0f }.sorted()
+    // Into an array of numbers rather than through a chain of lists. Every page
+    // of the book asks this of every glyph on it, and the readable spelling of
+    // it - flatten, map, filter, sort - is four lists of a few thousand boxed
+    // floats built to read one of them and drop the rest.
+    var measured = 0
 
-    return heights.getOrNull(heights.size / 2) ?: 1f
+    forEach { line -> line.forEach { if (it.bounds.height > 0f) measured++ } }
+
+    if (measured == 0) return 1f
+
+    val heights = FloatArray(measured)
+    var at = 0
+
+    forEach { line ->
+        line.forEach { glyph ->
+            val height = glyph.bounds.height
+
+            if (height > 0f) heights[at++] = height
+        }
+    }
+
+    heights.sort()
+
+    return heights[measured / 2]
 }
 
 /**
@@ -236,6 +257,27 @@ private fun Float.differsInSizeFrom(other: Float): Boolean {
 }
 
 /**
+ * Whether it is worth setting this line out in order to ask whether it opens a
+ * list item.
+ *
+ * The question below costs the line's whole text, and is asked of every line of
+ * the book - where all but a handful are prose, which cannot open one. A list
+ * item begins with its marker, so what the marker would have to be is the first
+ * character the line has: if that is not one, no amount of what follows it can
+ * make the line a bullet.
+ *
+ * Never wrong in the direction that matters. A line this turns away is a line
+ * whose written text could not have started with a marker either, since the
+ * inferred spaces the setting adds are trimmed off the front of it just as the
+ * blank glyphs are skipped here.
+ */
+private fun GlyphLine.mayOpenAnItem(): Boolean {
+    val opening = firstOrNull { it.text.isNotBlank() }?.text?.trimStart() ?: return false
+
+    return BulletMarkers.any { opening.startsWith(it) }
+}
+
+/**
  * A block cut at every line that opens a new bullet.
  *
  * A list set with ordinary leading is one block to the geometry - the lines are
@@ -246,7 +288,8 @@ private fun GlyphBlock.splitAtBullets(): List<GlyphBlock> {
     val parts = mutableListOf<MutableList<GlyphLine>>()
 
     forEach { line ->
-        val opensAnItem = bulletMarker(listOf(line).written().trimStart()) != null
+        val opensAnItem = line.mayOpenAnItem() &&
+            bulletMarker(listOf(line).written().trimStart()) != null
 
         if (opensAnItem || parts.isEmpty()) parts.add(mutableListOf(line)) else parts.last().add(line)
     }
