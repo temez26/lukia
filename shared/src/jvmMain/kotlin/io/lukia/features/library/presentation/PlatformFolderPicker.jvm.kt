@@ -2,32 +2,21 @@ package io.lukia.features.library.presentation
 
 import androidx.compose.runtime.Composable
 import io.lukia.core.domain.PickedFolder
-import javax.swing.JFileChooser
+import io.lukia.core.infrastructure.openFolder
 
 @Composable
-actual fun rememberPlatformFolderPicker(): PlatformFolderPickerState = object : PlatformFolderPickerState {
+actual fun rememberPlatformFolderPicker(): PlatformFolderPickerState =
+    object : PlatformFolderPickerState {
 
-    override fun launch(
-        onPicked: (PickedFolder?) -> Unit,
-    ) {
-        val chooser = JFileChooser()
-
-        chooser.fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
-        chooser.dialogTitle = "Choose a library folder"
-
-        val result = chooser.showOpenDialog(null)
-
-        if (result == JFileChooser.APPROVE_OPTION) {
-            val directory = chooser.selectedFile
+        override fun launch(
+            onPicked: (PickedFolder?) -> Unit,
+        ) {
+            val directory = openFolder(title = "Choose a library folder")
 
             onPicked(
-                PickedFolder(
-                    name = directory.name,
-                    location = directory.absolutePath,
-                ),
+                directory?.let {
+                    PickedFolder(name = it.name, location = it.absolutePath)
+                },
             )
-        } else {
-            onPicked(null)
         }
     }
-}
