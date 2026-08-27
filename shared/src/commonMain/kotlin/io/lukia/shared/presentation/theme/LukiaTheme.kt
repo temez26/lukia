@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.AppAccent
 import io.lukia.core.domain.AppMotion
 import io.lukia.core.domain.AppPalette
+import io.lukia.getPlatform
 
 /**
  * The app's corner radii, and the only place any of them is decided.
@@ -40,6 +41,11 @@ internal val LukiaShapes = Shapes(
 /**
  * [palette] and [accent] default to what the app ships with, so a preview or a
  * test composes the same colours a first run does without having to say so.
+ *
+ * [touch] decides how large every control is drawn - see [LukiaMetrics]. It
+ * defaults to what the platform says rather than to what the window measures,
+ * because a finger does not get smaller when a tablet is turned on its side. A
+ * parameter rather than a straight lookup so a test can compose either.
  */
 @Composable
 fun LukiaTheme(
@@ -47,6 +53,7 @@ fun LukiaTheme(
     palette: AppPalette = AppPalette.Crisp,
     accent: AppAccent = AppAccent.Themed,
     motion: AppMotion = AppMotion.Standard,
+    touch: Boolean = getPlatform().isMobile,
     content: @Composable () -> Unit,
 ) {
     val colorScheme = remember(darkTheme, palette, accent) {
@@ -62,7 +69,7 @@ fun LukiaTheme(
 
         CompositionLocalProvider(
             LocalLukiaDimens provides dimensFor(widthClass),
-            LocalLukiaMetrics provides metricsFor(widthClass),
+            LocalLukiaMetrics provides metricsFor(touch),
             LocalWindowWidthClass provides widthClass,
             LocalGlassStyle provides glassStyle,
             LocalMotionStyle provides motionStyle,
