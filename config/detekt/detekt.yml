@@ -194,6 +194,19 @@ Compose:
     active: true
   CompositionLocalAllowlist:
     active: true
+    # The app's design system. Each of these answers a question about the window
+    # or the device that every screen asks and no screen can answer for itself -
+    # how wide it is, how short it is, how large a control has to be for whatever
+    # is pointing at it, how the platform draws glass, how fast the reader wants
+    # things to move. Passing any of them as a parameter would mean threading it
+    # through every composable between the theme and the one that reads it.
+    allowedCompositionLocals:
+      - LocalLukiaDimens
+      - LocalLukiaMetrics
+      - LocalWindowWidthClass
+      - LocalWindowHeightClass
+      - LocalGlassStyle
+      - LocalMotionStyle
   ContentEmitterReturningValues:
     active: true
   DefaultsVisibility:

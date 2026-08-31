@@ -6,8 +6,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.unit.dp
+import io.lukia.shared.presentation.components.GlyphWeight
 import io.lukia.shared.presentation.components.LukiaIconButton
+import io.lukia.shared.presentation.components.glyphStrokeWidth
 
 /**
  * The way in to the reading statistics: a mark on the library's bar.
@@ -41,6 +42,10 @@ fun StatsButton(
  * the page behind it are recognisably the same drawing - a reader who has seen
  * one knows what the other will be. Drawn rather than closed shapes because at
  * seventeen points three filled rectangles silt together into a block.
+ *
+ * At the icon set's own weight - see [GlyphWeight] - rather than the 2.2dp it
+ * used to carry. This sits on the same bar as the gear and the actions button,
+ * and a mark a fifth heavier than its neighbours reads as a different set.
  */
 @Composable
 private fun ChartGlyph(
@@ -48,7 +53,7 @@ private fun ChartGlyph(
     modifier: Modifier = Modifier,
 ) {
     Canvas(modifier = modifier) {
-        val width = 2.2.dp.toPx()
+        val width = glyphStrokeWidth()
         val bottom = size.height * 0.80f
 
         listOf(0.22f to 0.58f, 0.50f to 0.36f, 0.78f to 0.18f).forEach { (x, top) ->

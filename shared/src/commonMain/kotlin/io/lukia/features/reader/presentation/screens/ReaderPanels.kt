@@ -50,6 +50,13 @@ internal fun BoxScope.ReaderPanels(
     val wide = isWideWindow
     val sidePadding = if (wide) 0.dp else dimens.screenPadding
 
+    // A panel is a panel because it is inset from every edge, and on a tall
+    // window it never grows far enough down for the bottom one to be tested.
+    // On a phone in landscape it does: with nothing here, both of these ran
+    // flush to the bottom of the safe area and stopped reading as something
+    // floating over the book. The same gutter the chrome above them uses.
+    val bottomPadding = ChromeVerticalPadding
+
     if (document != null) {
         ReaderContentsPanel(
             expanded = chrome.contentsExpanded,
@@ -60,7 +67,12 @@ internal fun BoxScope.ReaderPanels(
             onDismissRequest = chrome::closePanels,
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = chromeHeight, start = sidePadding, end = sidePadding),
+                .padding(
+                    top = chromeHeight,
+                    bottom = bottomPadding,
+                    start = sidePadding,
+                    end = sidePadding,
+                ),
         )
     }
 
@@ -79,7 +91,12 @@ internal fun BoxScope.ReaderPanels(
         onDismissRequest = chrome::closePanels,
         modifier = Modifier
             .align(if (wide) Alignment.TopEnd else Alignment.TopCenter)
-            .padding(top = chromeHeight, start = sidePadding, end = dimens.screenPadding),
+            .padding(
+                top = chromeHeight,
+                bottom = bottomPadding,
+                start = sidePadding,
+                end = dimens.screenPadding,
+            ),
         translationSection = translationSection,
     )
 }

@@ -37,16 +37,14 @@ import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 
 /**
- * How wide a cover is drawn on the row a reader came back for, against every
- * other row.
+ * How much larger a cover is drawn on the row a reader came back for than on
+ * every other row.
  *
  * Where you left off is the reason the screen exists, so it is given the larger
  * card. The rows under it are a wall of jackets to scan, and a smaller cover
  * puts more of them within a flick.
  */
-private val ContinueCardWidth: Dp = 132.dp
-
-private val ShelfCardWidth: Dp = 104.dp
+private const val ContinueCardScale = 1.27f
 
 /** The chevron after "See All", at the size a label wears rather than a button. */
 private val SeeAllChevronSize: Dp = 14.dp
@@ -70,7 +68,18 @@ internal fun HomeShelfRow(
     modifier: Modifier = Modifier,
 ) {
     val dimens = LocalLukiaDimens.current
-    val cardWidth = if (row.shelf == HomeShelf.Recent) ContinueCardWidth else ShelfCardWidth
+
+    // Off the same measurement the library grid sizes its cells from, rather
+    // than off two constants of its own. Written as fixed dp, a home row stayed
+    // at phone proportions on every window the app opens in: an iPad running
+    // the mobile shell grew its shelf to 142dp cells and went on sampling them
+    // at 104, so the two screens showing the same books disagreed about how big
+    // a book is. Identical on a phone, which is where these numbers came from.
+    val cardWidth = if (row.shelf == HomeShelf.Recent) {
+        dimens.bookCellMinWidth * ContinueCardScale
+    } else {
+        dimens.bookCellMinWidth
+    }
 
     Column(modifier = modifier.fillMaxWidth()) {
         RowHeader(

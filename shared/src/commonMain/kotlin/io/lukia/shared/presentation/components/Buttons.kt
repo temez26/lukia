@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -235,6 +236,20 @@ fun LukiaIconButton(
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
+                // Room for a thumb around a mark drawn smaller than one - the
+                // ✕ beside a recent search, the actions mark in a cover's
+                // corner, both at [LukiaMetrics.iconButtonSmall].
+                //
+                // Compose already extends the hit area of anything clickable out
+                // to the minimum target; what it cannot do is stop two of those
+                // extensions overlapping, which is what a 32dp control with 32dp
+                // of layout around it produces - a press landing in the gap
+                // between two of them belongs to either. This reserves the room,
+                // so the target a press is tested against is the reader's own
+                // and not shared. Draws nothing, and reserves nothing at all
+                // under a pointer: see where the theme provides Material's
+                // floor.
+                .minimumInteractiveComponentSize()
                 .size(buttonSize)
                 .clip(CircleShape)
                 .then(

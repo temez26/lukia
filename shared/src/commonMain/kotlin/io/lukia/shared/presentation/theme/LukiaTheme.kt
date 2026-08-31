@@ -4,6 +4,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.runtime.Composable
@@ -63,16 +64,36 @@ fun LukiaTheme(
     val motionStyle = remember(motion) { motionStyleFor(motion) }
 
     // Measured once at the root so every screen can lay itself out against the
-    // real window size instead of assuming a phone.
+    // real window size instead of assuming a phone. Both axes: a phone in
+    // landscape is as wide as a tablet and shorter than anything else the app
+    // runs in, and width alone cannot tell those two apart.
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val widthClass = WindowWidthClass.fromWidth(maxWidth)
+        val heightClass = WindowHeightClass.fromHeight(maxHeight)
 
         CompositionLocalProvider(
             LocalLukiaDimens provides dimensFor(widthClass),
             LocalLukiaMetrics provides metricsFor(touch),
             LocalWindowWidthClass provides widthClass,
+            LocalWindowHeightClass provides heightClass,
             LocalGlassStyle provides glassStyle,
             LocalMotionStyle provides motionStyle,
+            // Material's own floor, told what this app's floor is.
+            //
+            // The modifier behind it expands what a control can be *hit* on
+            // without changing what is drawn, which is exactly the trade a
+            // 32dp mark beside a search term needs: keep the small ✕, give the
+            // thumb something to aim at. Material defaults it to its own 48dp;
+            // this app has decided on Apple's 44 and sizes every other control
+            // to it, so leaving the two floors different would mean one number
+            // for the controls the app draws and another for the ones it
+            // borrows.
+            //
+            // Nothing at all where a mouse is doing the pointing: a Switch
+            // reserving 48dp of a panel whose rows are 30dp is precisely the
+            // stretched-phone look [LukiaMetrics] exists to avoid.
+            LocalMinimumInteractiveComponentSize provides
+                if (touch) MinTouchTarget else 0.dp,
         ) {
             MaterialTheme(
                 colorScheme = colorScheme,

@@ -3,12 +3,10 @@ package io.lukia.shared.presentation.components
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.unit.dp
 
 // Glyphs that report a state rather than offer an action.
 
@@ -29,15 +27,7 @@ fun CheckGlyph(
             lineTo(size.width * 0.80f, size.height * 0.29f)
         }
 
-        drawPath(
-            path = tick,
-            color = tint,
-            style = Stroke(
-                width = 2.dp.toPx(),
-                cap = StrokeCap.Round,
-                join = StrokeJoin.Round,
-            ),
-        )
+        drawPath(path = tick, color = tint, style = glyphStroke())
     }
 }
 
@@ -48,7 +38,7 @@ fun AlertGlyph(
     modifier: Modifier = Modifier,
 ) {
     Canvas(modifier = modifier) {
-        val strokeWidth = 2.dp.toPx()
+        val strokeWidth = glyphStrokeWidth()
         val centerX = size.width / 2f
         val centerY = size.height / 2f
         val radius = size.minDimension * 0.40f
@@ -56,19 +46,19 @@ fun AlertGlyph(
         drawCircle(
             color = tint,
             radius = radius,
-            style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
+            style = glyphStroke(cap = StrokeCap.Round),
         )
         drawLine(
             color = tint,
-            start = androidx.compose.ui.geometry.Offset(centerX, centerY - radius * 0.46f),
-            end = androidx.compose.ui.geometry.Offset(centerX, centerY + radius * 0.10f),
+            start = Offset(centerX, centerY - radius * 0.46f),
+            end = Offset(centerX, centerY + radius * 0.10f),
             strokeWidth = strokeWidth,
             cap = StrokeCap.Round,
         )
         drawCircle(
             color = tint,
             radius = strokeWidth * 0.62f,
-            center = androidx.compose.ui.geometry.Offset(centerX, centerY + radius * 0.50f),
+            center = Offset(centerX, centerY + radius * 0.50f),
         )
     }
 }
@@ -84,7 +74,7 @@ fun InfoGlyph(
     modifier: Modifier = Modifier,
 ) {
     Canvas(modifier = modifier) {
-        val strokeWidth = 2.dp.toPx()
+        val strokeWidth = glyphStrokeWidth()
         val centerX = size.width / 2f
         val centerY = size.height / 2f
         val radius = size.minDimension * 0.40f
@@ -92,17 +82,17 @@ fun InfoGlyph(
         drawCircle(
             color = tint,
             radius = radius,
-            style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
+            style = glyphStroke(cap = StrokeCap.Round),
         )
         drawCircle(
             color = tint,
             radius = strokeWidth * 0.62f,
-            center = androidx.compose.ui.geometry.Offset(centerX, centerY - radius * 0.50f),
+            center = Offset(centerX, centerY - radius * 0.50f),
         )
         drawLine(
             color = tint,
-            start = androidx.compose.ui.geometry.Offset(centerX, centerY - radius * 0.10f),
-            end = androidx.compose.ui.geometry.Offset(centerX, centerY + radius * 0.46f),
+            start = Offset(centerX, centerY - radius * 0.10f),
+            end = Offset(centerX, centerY + radius * 0.46f),
             strokeWidth = strokeWidth,
             cap = StrokeCap.Round,
         )

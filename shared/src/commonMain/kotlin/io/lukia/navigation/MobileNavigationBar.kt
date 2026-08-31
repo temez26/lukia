@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.semantics.Role
@@ -36,12 +37,25 @@ import io.lukia.shared.presentation.components.scaleOnPress
 import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.MinTouchTarget
 import io.lukia.shared.presentation.theme.Space
+import io.lukia.shared.presentation.theme.isShortWindow
 
 /** The bar itself, above whatever the system reserves below it. */
 private val BarContentHeight: Dp = 52.dp
 
+/**
+ * What the bar shrinks to when the window is short - see [isShortWindow].
+ *
+ * Still a full touch target, and no less. What is saved is the padding around
+ * the mark and the row the label had to itself, both of which are affordable
+ * only on a screen that is not already out of height.
+ */
+private val ShortBarContentHeight: Dp = MinTouchTarget
+
 /** The mark over each label. Smaller than a button's, since it repeats three times. */
 private val TabIconSize: Dp = 24.dp
+
+/** ...and smaller again beside its label rather than over it. */
+private val InlineTabIconSize: Dp = 20.dp
 
 /**
  * How much room the bar takes at the bottom of the screen, system inset
@@ -51,10 +65,17 @@ private val TabIconSize: Dp = 24.dp
  * drawn over them rather than beside them - it is one strip shared by three
  * screens, and re-laying the whole screen out on every tab change to make room
  * for something that never moves would be work for nothing.
+ *
+ * A short window gets the shorter bar, and every screen behind it is handed the
+ * smaller inset without knowing that anything changed.
  */
 @Composable
 internal fun mobileNavBarHeight(): Dp =
-    BarContentHeight + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    barContentHeight() + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
+@Composable
+private fun barContentHeight(): Dp =
+    if (isShortWindow) ShortBarContentHeight else BarContentHeight
 
 /**
  * The bar along the bottom of the mobile app.
@@ -69,6 +90,11 @@ internal fun mobileNavBarHeight(): Dp =
  * Labels are always shown. A bar of three unlabelled glyphs asks the reader to
  * learn what a house and a stack of books mean in this particular app, and the
  * room saved by dropping two words is room nothing else wanted.
+ *
+ * What a short window changes is where the label sits rather than whether it is
+ * there. Stacked under the mark, a tab costs 52dp of a 390dp-tall landscape
+ * phone; set beside it, the same tab costs 44dp and stays a full touch target -
+ * which is the shape both platforms give a tab bar when the screen is turned.
  */
 @Composable
 internal fun MobileNavigationBar(
@@ -78,6 +104,7 @@ internal fun MobileNavigationBar(
 ) {
     val barColor = MaterialTheme.colorScheme.background
     val hairlineColor = MaterialTheme.colorScheme.outlineVariant
+    val inline = isShortWindow
 
     Row(
         verticalAlignment = Alignment.Top,
@@ -102,6 +129,7 @@ internal fun MobileNavigationBar(
             TabItem(
                 tab = tab,
                 selected = tab == selected,
+                inline = inline,
                 onClick = { onSelect(tab) },
             )
         }
@@ -119,6 +147,7 @@ internal fun MobileNavigationBar(
 private fun RowScope.TabItem(
     tab: MobileTab,
     selected: Boolean,
+    inline: Boolean,
     onClick: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -133,40 +162,58 @@ private fun RowScope.TabItem(
         label = "tabTint",
     )
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(Space.xxs),
-        modifier = Modifier
-            .weight(1f)
-            .height(MinTouchTarget + Space.md)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                role = Role.Tab,
-                onClick = onClick,
-            )
-            .scaleOnPress(interactionSource, pressedScale = 0.92f)
-            .pointerHoverIcon(PointerIcon.Hand)
-            .padding(top = Space.sm)
-            // One node for the pair, so a screen reader announces "Library,
-            // tab, selected" rather than reading a glyph and a word separately.
-            // The role is what supplies the middle of that: this is a drawn Row
-            // rather than Material's `NavigationBarItem`, so nothing else says
-            // the bar is a set of tabs rather than three unrelated controls.
-            .semantics(mergeDescendants = true) {
-                contentDescription = tab.label
-                this.selected = selected
-            },
-    ) {
-        tab.icon(tint, Modifier.size(TabIconSize))
-
-        Text(
-            text = tab.label,
-            style = MaterialTheme.typography.labelSmall,
-            // The selected tab's name thickens along with its colour. Colour
-            // alone is not something everybody can read.
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-            color = tint,
+    val target = Modifier
+        .weight(1f)
+        .height(if (inline) MinTouchTarget else MinTouchTarget + Space.md)
+        .clickable(
+            interactionSource = interactionSource,
+            indication = null,
+            role = Role.Tab,
+            onClick = onClick,
         )
+        .scaleOnPress(interactionSource, pressedScale = 0.92f)
+        .pointerHoverIcon(PointerIcon.Hand)
+        // One node for the pair, so a screen reader announces "Library,
+        // tab, selected" rather than reading a glyph and a word separately.
+        // The role is what supplies the middle of that: this is a drawn Row
+        // rather than Material's `NavigationBarItem`, so nothing else says
+        // the bar is a set of tabs rather than three unrelated controls.
+        .semantics(mergeDescendants = true) {
+            contentDescription = tab.label
+            this.selected = selected
+        }
+
+    if (inline) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(Space.sm, Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = target,
+        ) {
+            tab.icon(tint, Modifier.size(InlineTabIconSize))
+
+            TabLabel(tab = tab, selected = selected, tint = tint)
+        }
+    } else {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Space.xxs),
+            modifier = target.padding(top = Space.sm),
+        ) {
+            tab.icon(tint, Modifier.size(TabIconSize))
+
+            TabLabel(tab = tab, selected = selected, tint = tint)
+        }
     }
+}
+
+@Composable
+private fun TabLabel(tab: MobileTab, selected: Boolean, tint: Color) {
+    Text(
+        text = tab.label,
+        style = MaterialTheme.typography.labelSmall,
+        // The selected tab's name thickens along with its colour. Colour
+        // alone is not something everybody can read.
+        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+        color = tint,
+    )
 }

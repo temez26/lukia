@@ -36,6 +36,34 @@ enum class WindowWidthClass {
 }
 
 /**
+ * Window height buckets, on Material's own breakpoints.
+ *
+ * Width alone cannot answer every layout question, and the one it kept getting
+ * wrong is the phone turned on its side. A 390x844 phone in landscape is 844dp
+ * wide - Medium, which is what a small tablet reports - and 390dp tall, which
+ * nothing else in the app is. Everything sized against the width therefore grew,
+ * and the vertical room it grew into was not there.
+ *
+ * [Compact] is the bucket that matters: it is a phone in landscape, and the
+ * split-screen half of a tablet. Chrome that costs a fixed number of points has
+ * to cost fewer of them here, because the points are what has run out.
+ */
+enum class WindowHeightClass {
+    Compact,
+    Medium,
+    Expanded,
+    ;
+
+    companion object {
+        fun fromHeight(height: Dp): WindowHeightClass = when {
+            height < 480.dp -> Compact
+            height < 900.dp -> Medium
+            else -> Expanded
+        }
+    }
+}
+
+/**
  * Apple's minimum comfortable target, and what every control settles on where a
  * finger is what does the pointing.
  *
@@ -159,6 +187,21 @@ internal fun dimensFor(widthClass: WindowWidthClass): LukiaDimens = when (widthC
 val LocalLukiaDimens = staticCompositionLocalOf { CompactDimens }
 
 val LocalWindowWidthClass = staticCompositionLocalOf { WindowWidthClass.Compact }
+
+val LocalWindowHeightClass = staticCompositionLocalOf { WindowHeightClass.Medium }
+
+/**
+ * Whether this window is short enough that vertical room is the scarce one -
+ * a phone in landscape, or a tablet sharing its screen with something else.
+ *
+ * The companion to [isWideWindow], and written for the same reason: the
+ * comparison was going to be spelled out at every call site that cared, and a
+ * comparison spelled out that many times is one that will eventually be spelled
+ * out wrongly.
+ */
+val isShortWindow: Boolean
+    @Composable
+    get() = LocalWindowHeightClass.current == WindowHeightClass.Compact
 
 /**
  * Whether this window is being pointed at rather than touched, which is the one

@@ -5,10 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.unit.dp
 
 // Chevrons that point the way out of a screen or deeper into a row.
 
@@ -29,21 +25,15 @@ fun BackChevron(
             lineTo(size.width * 0.62f, size.height * 0.80f)
         }
 
-        drawPath(
-            path = chevron,
-            color = tint,
-            style = Stroke(
-                width = 2.dp.toPx(),
-                cap = StrokeCap.Round,
-                join = StrokeJoin.Round,
-            ),
-        )
+        drawPath(path = chevron, color = tint, style = glyphStroke())
     }
 }
 
 /**
  * A downward chevron, marking a control that opens something beneath it. Drawn
- * at the same weight as [BackChevron] so the two read as one family.
+ * at the same weight as [BackChevron] so the two read as one family - which for
+ * as long as both were written as literals here they were not: this one was
+ * 1.6dp against the other's 2.0.
  */
 @Composable
 fun DisclosureChevron(
@@ -57,14 +47,6 @@ fun DisclosureChevron(
             lineTo(size.width * 0.85f, size.height * 0.35f)
         }
 
-        drawPath(
-            path = chevron,
-            color = tint,
-            style = Stroke(
-                width = 1.6.dp.toPx(),
-                cap = StrokeCap.Round,
-                join = StrokeJoin.Round,
-            ),
-        )
+        drawPath(path = chevron, color = tint, style = glyphStroke())
     }
 }

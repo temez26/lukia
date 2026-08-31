@@ -8,23 +8,13 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.unit.dp
 
 // The marks on the mobile tab bar. Search wears SearchGlyph, which the library's
 // own field already uses, so only these two are new.
 
-/**
- * How heavy a tab's mark is drawn.
- *
- * Thinner than the app's other glyphs, which are drawn at 2dp. A tab bar carries
- * its marks at a smaller size than a button does and repeats them across the
- * bottom of every screen, and at 2dp three of them read as a row of blobs.
- */
-private val TabStrokeWidth = 1.8.dp
+// A tab's mark is drawn a step lighter than the rest of the set - see
+// [GlyphWeight.Light]. The bar repeats its marks across the bottom of every
+// screen, and at the family weight three of them read as a row of blobs.
 
 /**
  * A house, for the screen a reader lands on.
@@ -55,8 +45,8 @@ fun HomeGlyph(
             lineTo(w * 0.77f, h * 0.42f)
         }
 
-        drawPath(path = roof, color = tint, style = tabStroke())
-        drawPath(path = body, color = tint, style = tabStroke())
+        drawPath(path = roof, color = tint, style = glyphStroke(GlyphWeight.Light))
+        drawPath(path = body, color = tint, style = glyphStroke(GlyphWeight.Light))
     }
 }
 
@@ -101,13 +91,7 @@ fun BooksGlyph(
             close()
         }
 
-        drawPath(path = standing, color = tint, style = tabStroke())
-        drawPath(path = leaning, color = tint, style = tabStroke())
+        drawPath(path = standing, color = tint, style = glyphStroke(GlyphWeight.Light))
+        drawPath(path = leaning, color = tint, style = glyphStroke(GlyphWeight.Light))
     }
 }
-
-private fun DrawScope.tabStroke(): Stroke = Stroke(
-    width = TabStrokeWidth.toPx(),
-    cap = StrokeCap.Round,
-    join = StrokeJoin.Round,
-)
