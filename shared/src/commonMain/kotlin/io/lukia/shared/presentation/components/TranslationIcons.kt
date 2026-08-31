@@ -9,10 +9,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.unit.dp
 
 // Glyphs for the translation controls.
 //
@@ -27,11 +24,10 @@ import androidx.compose.ui.unit.dp
 // chevrons for "and the ones after it", and is absent from the eye, which is
 // about seeing rather than about translating.
 
-/** The weight the whole set is stroked at. */
-private val GlyphStroke = 1.8.dp
-
-/** The rule standing for the untranslated line, a little lighter than the frame. */
-private val RuleStroke = 1.6.dp
+// Stroked at the family weight, with the rule standing for the untranslated
+// line a step lighter than the frame around it - see [GlyphWeight]. That
+// contrast is the glyph rather than a preference: a page frame and the line
+// inside it drawn at one weight is a page with a line through it.
 
 /**
  * A page with one line of it translated: what the button does, to what is on
@@ -51,14 +47,14 @@ fun TranslateGlyph(
             topLeft = Offset(size.width * 0.16f, size.height * 0.10f),
             size = Size(size.width * 0.68f, size.height * 0.80f),
             cornerRadius = CornerRadius(size.width * 0.14f),
-            style = Stroke(width = GlyphStroke.toPx(), join = StrokeJoin.Round),
+            style = glyphStroke(),
         )
 
         drawLine(
             color = tint,
             start = Offset(size.width * 0.31f, size.height * 0.33f),
             end = Offset(size.width * 0.69f, size.height * 0.33f),
-            strokeWidth = RuleStroke.toPx(),
+            strokeWidth = glyphStrokeWidth(GlyphWeight.Light),
             cap = StrokeCap.Round,
         )
 
@@ -119,11 +115,7 @@ fun TranslationsShownGlyph(
         drawPath(
             path = outline,
             color = tint,
-            style = Stroke(
-                width = GlyphStroke.toPx(),
-                cap = StrokeCap.Round,
-                join = StrokeJoin.Round,
-            ),
+            style = glyphStroke(),
         )
 
         drawCircle(color = tint, radius = w * 0.13f, center = Offset(w * 0.50f, h * 0.50f))
@@ -134,7 +126,7 @@ fun TranslationsShownGlyph(
             color = tint,
             start = Offset(w * 0.16f, h * 0.86f),
             end = Offset(w * 0.84f, h * 0.14f),
-            strokeWidth = GlyphStroke.toPx(),
+            strokeWidth = glyphStrokeWidth(),
             cap = StrokeCap.Round,
         )
     }
@@ -177,10 +169,6 @@ private fun DrawScope.drawChevron(tint: Color, top: Float) {
     drawPath(
         path = chevron,
         color = tint,
-        style = Stroke(
-            width = GlyphStroke.toPx(),
-            cap = StrokeCap.Round,
-            join = StrokeJoin.Round,
-        ),
+        style = glyphStroke(),
     )
 }

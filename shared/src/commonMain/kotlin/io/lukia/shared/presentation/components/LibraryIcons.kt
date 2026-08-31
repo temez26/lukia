@@ -9,9 +9,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.unit.dp
 
 // Glyphs for the things a library holds - books, folders, and what is done to them.
 
@@ -44,15 +41,7 @@ fun FolderGlyph(
             close()
         }
 
-        drawPath(
-            path = folder,
-            color = tint,
-            style = Stroke(
-                width = 2.dp.toPx(),
-                cap = StrokeCap.Round,
-                join = StrokeJoin.Round,
-            ),
-        )
+        drawPath(path = folder, color = tint, style = glyphStroke())
     }
 }
 
@@ -85,15 +74,7 @@ fun HeartGlyph(
         if (filled) {
             drawPath(path = heart, color = tint)
         } else {
-            drawPath(
-                path = heart,
-                color = tint,
-                style = Stroke(
-                    width = 2.dp.toPx(),
-                    cap = StrokeCap.Round,
-                    join = StrokeJoin.Round,
-                ),
-            )
+            drawPath(path = heart, color = tint, style = glyphStroke())
         }
     }
 }
@@ -159,8 +140,14 @@ fun OpenBookGlyph(
 }
 
 /**
- * A simple stacked-books mark used for the empty state and the import action.
- * Kept as vector drawing so it inherits the current content colour.
+ * A plus: adding a book to the library, on the empty state and on the import
+ * action. Two crossed strokes rather than a glyph with a shape of its own,
+ * because "add" is the one idea in the set that every reader already reads
+ * without being told.
+ *
+ * Turned 45 degrees it is also the app's close mark - see [OverlayPanel] - which
+ * is one drawing serving "put this here" and "take this away" rather than two
+ * marks that would have to be kept in step with each other.
  */
 @Composable
 fun PlusGlyph(
@@ -168,23 +155,23 @@ fun PlusGlyph(
     modifier: Modifier = Modifier,
 ) {
     Canvas(modifier = modifier) {
-        val stroke = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round)
+        val strokeWidth = glyphStrokeWidth()
         val centerX = size.width / 2f
         val centerY = size.height / 2f
         val arm = size.minDimension * 0.30f
 
         drawLine(
             color = tint,
-            start = androidx.compose.ui.geometry.Offset(centerX - arm, centerY),
-            end = androidx.compose.ui.geometry.Offset(centerX + arm, centerY),
-            strokeWidth = stroke.width,
+            start = Offset(centerX - arm, centerY),
+            end = Offset(centerX + arm, centerY),
+            strokeWidth = strokeWidth,
             cap = StrokeCap.Round,
         )
         drawLine(
             color = tint,
-            start = androidx.compose.ui.geometry.Offset(centerX, centerY - arm),
-            end = androidx.compose.ui.geometry.Offset(centerX, centerY + arm),
-            strokeWidth = stroke.width,
+            start = Offset(centerX, centerY - arm),
+            end = Offset(centerX, centerY + arm),
+            strokeWidth = strokeWidth,
             cap = StrokeCap.Round,
         )
     }
@@ -207,11 +194,7 @@ fun LayoutGlyph(
     Canvas(modifier = modifier) {
         val w = size.width
         val h = size.height
-        val stroke = Stroke(
-            width = 2.dp.toPx(),
-            cap = StrokeCap.Round,
-            join = StrokeJoin.Round,
-        )
+        val stroke = glyphStroke()
 
         val path = Path().apply {
             if (list) {
@@ -251,11 +234,7 @@ fun CopyGlyph(
     Canvas(modifier = modifier) {
         val w = size.width
         val h = size.height
-        val stroke = Stroke(
-            width = 2.dp.toPx(),
-            cap = StrokeCap.Round,
-            join = StrokeJoin.Round,
-        )
+        val stroke = glyphStroke()
 
         val behind = Path().apply {
             moveTo(w * 0.30f, h * 0.22f)

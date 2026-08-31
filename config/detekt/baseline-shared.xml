@@ -7,11 +7,6 @@
     <ID>ComplexCondition:PdfStringParsing.kt$digits &lt; 3 &amp;&amp; position &lt; bytes.size &amp;&amp; bytes[position] &gt;= '0'.code.toByte() &amp;&amp; bytes[position] &lt;= '7'.code.toByte()</ID>
     <ID>ComposableParamOrder:ReaderBookContent.kt$ReaderContent</ID>
     <ID>ComposableParamOrder:ReaderToolbar.kt$ReaderToolbar</ID>
-    <ID>CompositionLocalAllowlist:Dimens.kt$LocalLukiaDimens</ID>
-    <ID>CompositionLocalAllowlist:Dimens.kt$LocalWindowWidthClass</ID>
-    <ID>CompositionLocalAllowlist:Glass.kt$LocalGlassStyle</ID>
-    <ID>CompositionLocalAllowlist:MotionStyle.kt$LocalMotionStyle</ID>
-    <ID>CompositionLocalAllowlist:Tokens.kt$LocalLukiaMetrics</ID>
     <ID>ContentSlotReused:ReaderSettingControls.kt$control</ID>
     <ID>ContentSlotReused:ReaderToolbar.kt$endControl</ID>
     <ID>ContentSlotReused:ShortcutTooltip.kt$content</ID>

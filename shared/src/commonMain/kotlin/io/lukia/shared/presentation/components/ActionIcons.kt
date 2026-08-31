@@ -8,9 +8,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.unit.dp
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -26,11 +23,7 @@ fun TrashGlyph(
     Canvas(modifier = modifier) {
         val w = size.width
         val h = size.height
-        val stroke = Stroke(
-            width = 2.dp.toPx(),
-            cap = StrokeCap.Round,
-            join = StrokeJoin.Round,
-        )
+        val stroke = glyphStroke()
 
         val lidWithHandle = Path().apply {
             moveTo(w * 0.13f, h * 0.28f)
@@ -73,9 +66,9 @@ fun SearchGlyph(
     modifier: Modifier = Modifier,
 ) {
     Canvas(modifier = modifier) {
-        val strokeWidth = 1.8.dp.toPx()
+        val strokeWidth = glyphStrokeWidth()
         val radius = size.minDimension * 0.30f
-        val center = androidx.compose.ui.geometry.Offset(
+        val center = Offset(
             x = size.width * 0.42f,
             y = size.height * 0.42f,
         )
@@ -84,17 +77,17 @@ fun SearchGlyph(
             color = tint,
             radius = radius,
             center = center,
-            style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
+            style = glyphStroke(cap = StrokeCap.Round),
         )
         // Starts on the ring rather than at its centre, so the two strokes meet
         // cleanly instead of the handle appearing to pass through the glass.
         drawLine(
             color = tint,
-            start = androidx.compose.ui.geometry.Offset(
+            start = Offset(
                 x = center.x + radius * 0.72f,
                 y = center.y + radius * 0.72f,
             ),
-            end = androidx.compose.ui.geometry.Offset(
+            end = Offset(
                 x = size.width * 0.84f,
                 y = size.height * 0.84f,
             ),
@@ -120,7 +113,7 @@ fun ClearGlyph(
 ) {
     Canvas(modifier = modifier) {
         val radius = size.minDimension / 2f
-        val center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f)
+        val center = Offset(size.width / 2f, size.height / 2f)
         val arm = radius * 0.42f
 
         drawCircle(color = tint, radius = radius, center = center)
@@ -131,9 +124,9 @@ fun ClearGlyph(
         ).forEach { (dx, dy) ->
             drawLine(
                 color = knockout,
-                start = androidx.compose.ui.geometry.Offset(center.x - dx, center.y - dy),
-                end = androidx.compose.ui.geometry.Offset(center.x + dx, center.y + dy),
-                strokeWidth = 1.6.dp.toPx(),
+                start = Offset(center.x - dx, center.y - dy),
+                end = Offset(center.x + dx, center.y + dy),
+                strokeWidth = glyphStrokeWidth(GlyphWeight.Light),
                 cap = StrokeCap.Round,
             )
         }
@@ -154,15 +147,15 @@ fun GearGlyph(
     modifier: Modifier = Modifier,
 ) {
     Canvas(modifier = modifier) {
-        val strokeWidth = 1.6.dp.toPx()
-        val center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f)
+        val strokeWidth = glyphStrokeWidth(GlyphWeight.Light)
+        val center = Offset(size.width / 2f, size.height / 2f)
         val rimRadius = size.minDimension * 0.27f
 
         drawCircle(
             color = tint,
             radius = rimRadius,
             center = center,
-            style = Stroke(width = strokeWidth),
+            style = glyphStroke(GlyphWeight.Light, cap = StrokeCap.Butt),
         )
 
         // Wide enough that the stroke leaves a hole rather than closing over it,
@@ -171,7 +164,7 @@ fun GearGlyph(
             color = tint,
             radius = size.minDimension * 0.105f,
             center = center,
-            style = Stroke(width = strokeWidth),
+            style = glyphStroke(GlyphWeight.Light, cap = StrokeCap.Butt),
         )
 
         val toothInner = rimRadius + strokeWidth * 0.25f
@@ -184,11 +177,11 @@ fun GearGlyph(
 
             drawLine(
                 color = tint,
-                start = androidx.compose.ui.geometry.Offset(
+                start = Offset(
                     x = center.x + dx * toothInner,
                     y = center.y + dy * toothInner,
                 ),
-                end = androidx.compose.ui.geometry.Offset(
+                end = Offset(
                     x = center.x + dx * toothOuter,
                     y = center.y + dy * toothOuter,
                 ),
@@ -215,7 +208,7 @@ fun EllipsisGlyph(
             drawCircle(
                 color = tint,
                 radius = radius,
-                center = androidx.compose.ui.geometry.Offset(size.width * fraction, centerY),
+                center = Offset(size.width * fraction, centerY),
             )
         }
     }
@@ -236,7 +229,7 @@ fun RefreshGlyph(
 ) {
     Canvas(modifier = modifier) {
         val radius = size.minDimension * 0.30f
-        val center = androidx.compose.ui.geometry.Offset(
+        val center = Offset(
             x = size.width / 2f,
             y = size.height / 2f,
         )
@@ -246,20 +239,20 @@ fun RefreshGlyph(
             startAngle = 40f,
             sweepAngle = 280f,
             useCenter = false,
-            topLeft = androidx.compose.ui.geometry.Offset(
+            topLeft = Offset(
                 x = center.x - radius,
                 y = center.y - radius,
             ),
             size = androidx.compose.ui.geometry.Size(radius * 2f, radius * 2f),
-            style = Stroke(width = 1.8.dp.toPx(), cap = StrokeCap.Round),
+            style = glyphStroke(cap = StrokeCap.Round),
         )
 
         // Where the sweep ends, pointing the way it was travelling: clockwise,
         // which on a y-down canvas is the direction the angle increases in.
         val endAngle = (40f + 280f) * PI.toFloat() / 180f
-        val outward = androidx.compose.ui.geometry.Offset(cos(endAngle), sin(endAngle))
-        val along = androidx.compose.ui.geometry.Offset(-sin(endAngle), cos(endAngle))
-        val tip = androidx.compose.ui.geometry.Offset(
+        val outward = Offset(cos(endAngle), sin(endAngle))
+        val along = Offset(-sin(endAngle), cos(endAngle))
+        val tip = Offset(
             x = center.x + radius * outward.x,
             y = center.y + radius * outward.y,
         )
@@ -290,11 +283,7 @@ fun SortGlyph(
     modifier: Modifier = Modifier,
 ) {
     Canvas(modifier = modifier) {
-        val stroke = Stroke(
-            width = 1.6.dp.toPx(),
-            cap = StrokeCap.Round,
-            join = StrokeJoin.Round,
-        )
+        val stroke = glyphStroke(GlyphWeight.Light)
 
         val top = size.height * 0.18f
         val bottom = size.height * 0.82f
