@@ -6,9 +6,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
-import io.lukia.shared.presentation.components.GlyphWeight
-import io.lukia.shared.presentation.components.LukiaIconButton
-import io.lukia.shared.presentation.components.glyphStrokeWidth
+import io.lukia.shared.presentation.components.controls.LukiaIconButton
+import io.lukia.shared.presentation.components.icons.GlyphWeight
+import io.lukia.shared.presentation.components.icons.glyphStrokeWidth
 
 /**
  * The way in to the reading statistics: a mark on the library's bar.

@@ -1,10 +1,10 @@
 package io.lukia.features.translate.infrastructure
 
-import io.lukia.features.translate.domain.TargetLanguage
 import io.lukia.features.translate.domain.Translation
-import io.lukia.features.translate.domain.TranslationProvider
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.Translator
+import io.lukia.features.translate.domain.provider.TranslationProvider
+import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.translate
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

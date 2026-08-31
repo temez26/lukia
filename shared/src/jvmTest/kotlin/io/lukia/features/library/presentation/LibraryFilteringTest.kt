@@ -1,6 +1,7 @@
 package io.lukia.features.library.presentation
 
 import io.lukia.MainDispatcherTest
+import io.lukia.features.library.presentation.model.LibraryQuery
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

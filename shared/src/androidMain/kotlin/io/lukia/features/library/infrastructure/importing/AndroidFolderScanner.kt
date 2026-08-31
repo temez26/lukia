@@ -4,8 +4,8 @@ import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import android.provider.DocumentsContract
-import io.lukia.core.domain.PickedDocument
-import io.lukia.core.domain.PickedFolder
+import io.lukia.core.domain.document.PickedDocument
+import io.lukia.core.domain.document.PickedFolder
 import io.lukia.features.library.domain.FolderScanner
 import io.lukia.features.library.domain.MaxFolderScanDepth
 import io.lukia.features.library.domain.isSupportedDocument

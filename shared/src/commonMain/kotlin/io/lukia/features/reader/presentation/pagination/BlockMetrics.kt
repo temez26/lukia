@@ -7,9 +7,9 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
-import io.lukia.features.reader.domain.TextBlock
-import io.lukia.features.reader.domain.TextRun
-import io.lukia.features.reader.presentation.components.spanStyle
+import io.lukia.features.reader.domain.text.TextBlock
+import io.lukia.features.reader.domain.text.TextRun
+import io.lukia.features.reader.presentation.components.text.spanStyle
 import io.lukia.features.reader.presentation.theme.BLOCK_SPACING
 import io.lukia.features.reader.presentation.theme.CodePaddingVertical
 import io.lukia.features.reader.presentation.theme.HeadingTopPadding

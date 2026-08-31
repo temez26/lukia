@@ -26,16 +26,16 @@ import io.lukia.core.presentation.formattedSize
 import io.lukia.core.presentation.languageName
 import io.lukia.core.presentation.publishedYear
 import io.lukia.features.library.application.BookDetails
-import io.lukia.features.library.presentation.lengthLabel
-import io.lukia.shared.presentation.components.BadgeTone
-import io.lukia.shared.presentation.components.ButtonSize
-import io.lukia.shared.presentation.components.ButtonVariant
-import io.lukia.shared.presentation.components.GroupCard
-import io.lukia.shared.presentation.components.LukiaButton
-import io.lukia.shared.presentation.components.LukiaDivider
-import io.lukia.shared.presentation.components.SectionLabel
-import io.lukia.shared.presentation.components.StatusBadge
-import io.lukia.shared.presentation.components.buttonInset
+import io.lukia.features.library.presentation.model.lengthLabel
+import io.lukia.shared.presentation.components.controls.ButtonSize
+import io.lukia.shared.presentation.components.controls.ButtonVariant
+import io.lukia.shared.presentation.components.controls.LukiaButton
+import io.lukia.shared.presentation.components.controls.buttonInset
+import io.lukia.shared.presentation.components.surface.BadgeTone
+import io.lukia.shared.presentation.components.surface.GroupCard
+import io.lukia.shared.presentation.components.surface.LukiaDivider
+import io.lukia.shared.presentation.components.surface.SectionLabel
+import io.lukia.shared.presentation.components.surface.StatusBadge
 import io.lukia.shared.presentation.theme.Space
 
 /** How much of a blurb is shown before it is folded away behind "More". */

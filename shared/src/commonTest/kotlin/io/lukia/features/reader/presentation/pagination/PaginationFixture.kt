@@ -1,8 +1,8 @@
 package io.lukia.features.reader.presentation.pagination
 
-import io.lukia.features.reader.domain.TextBlock
-import io.lukia.features.reader.domain.TextRun
-import io.lukia.features.reader.domain.TextSection
+import io.lukia.features.reader.domain.text.TextBlock
+import io.lukia.features.reader.domain.text.TextRun
+import io.lukia.features.reader.domain.text.TextSection
 
 /**
  * A book whose blocks are exactly as tall as they say they are.

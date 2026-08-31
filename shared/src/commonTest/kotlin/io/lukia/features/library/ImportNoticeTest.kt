@@ -1,7 +1,7 @@
 package io.lukia.features.library
 
 import io.lukia.features.library.application.ImportSummary
-import io.lukia.features.library.presentation.notice
+import io.lukia.features.library.presentation.model.notice
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

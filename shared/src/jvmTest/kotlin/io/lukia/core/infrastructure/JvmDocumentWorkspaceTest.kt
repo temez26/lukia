@@ -1,8 +1,8 @@
 package io.lukia.core.infrastructure
 
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.DocumentType
-import io.lukia.core.domain.PickedDocument
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.domain.document.PickedDocument
 import kotlinx.coroutines.test.runTest
 import java.io.File
 import kotlin.test.AfterTest

@@ -1,10 +1,10 @@
 package io.lukia.core.infrastructure.db
 
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
-import io.lukia.core.domain.CoverImage
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.DocumentType
-import io.lukia.core.domain.PickedDocument
+import io.lukia.core.domain.document.CoverImage
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.domain.document.PickedDocument
 import io.lukia.features.library.infrastructure.SqlLibraryRepository
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

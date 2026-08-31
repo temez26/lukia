@@ -3,7 +3,7 @@ package io.lukia.features.settings
 import io.lukia.core.domain.AppAccent
 import io.lukia.core.domain.AppPalette
 import io.lukia.core.domain.AppTheme
-import io.lukia.core.domain.FakeSettingsStore
+import io.lukia.core.domain.storage.FakeSettingsStore
 import io.lukia.features.settings.domain.AppSettings
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import kotlin.test.Test

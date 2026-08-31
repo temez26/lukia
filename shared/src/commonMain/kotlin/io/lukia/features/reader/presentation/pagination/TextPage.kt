@@ -1,7 +1,7 @@
 package io.lukia.features.reader.presentation.pagination
 
 import androidx.compose.runtime.Immutable
-import io.lukia.features.reader.domain.TextBlock
+import io.lukia.features.reader.domain.text.TextBlock
 
 /**
  * One block of a book, or the part of one that fits on a page.

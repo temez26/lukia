@@ -9,11 +9,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.lukia.features.reader.domain.ReaderDocument
-import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReflowableContent
-import io.lukia.features.reader.presentation.components.ReaderContentsPanel
-import io.lukia.features.reader.presentation.components.ReaderSettingsPanel
+import io.lukia.features.reader.domain.outline.ReaderOutline
+import io.lukia.features.reader.presentation.components.contents.ReaderContentsPanel
+import io.lukia.features.reader.presentation.components.settings.ReaderSettingsPanel
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.isWideWindow
 import kotlinx.coroutines.launch

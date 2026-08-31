@@ -1,6 +1,6 @@
 package io.lukia.features.library
 
-import io.lukia.core.domain.FakeSettingsStore
+import io.lukia.core.domain.storage.FakeSettingsStore
 import io.lukia.features.library.infrastructure.RecentSearchesRepository
 import kotlin.test.Test
 import kotlin.test.assertEquals

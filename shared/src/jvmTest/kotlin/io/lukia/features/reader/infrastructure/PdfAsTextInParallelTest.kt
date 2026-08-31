@@ -1,10 +1,10 @@
 package io.lukia.features.reader.infrastructure
 
-import io.lukia.features.reader.domain.PageContent
 import io.lukia.features.reader.domain.ReflowableContent
-import io.lukia.features.reader.domain.TextBlock
-import io.lukia.features.reader.domain.plainText
-import io.lukia.features.reader.infrastructure.text.readPdfAsText
+import io.lukia.features.reader.domain.page.PageContent
+import io.lukia.features.reader.domain.text.TextBlock
+import io.lukia.features.reader.domain.text.plainText
+import io.lukia.features.reader.infrastructure.pdf.readPdfAsText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext

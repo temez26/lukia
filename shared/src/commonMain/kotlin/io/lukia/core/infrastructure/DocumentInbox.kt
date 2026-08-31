@@ -1,6 +1,6 @@
 package io.lukia.core.infrastructure
 
-import io.lukia.core.domain.IncomingDocument
+import io.lukia.core.domain.document.IncomingDocument
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow

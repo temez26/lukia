@@ -9,8 +9,8 @@ import com.tom_roush.pdfbox.cos.COSName
 import com.tom_roush.pdfbox.pdmodel.PDPage
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImage
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject
-import io.lukia.features.reader.domain.PageImage
-import io.lukia.features.reader.domain.PageSize
+import io.lukia.features.reader.domain.page.PageImage
+import io.lukia.features.reader.domain.page.PageSize
 import io.lukia.features.reader.infrastructure.pdf.PdfRect
 import io.lukia.features.reader.infrastructure.pdf.isWorthShowing
 import io.lukia.features.reader.infrastructure.pdf.pdfImageBounds

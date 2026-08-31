@@ -2,8 +2,8 @@ package io.lukia.features.translate.presentation
 
 import io.lukia.core.domain.toAppError
 import io.lukia.features.translate.application.TranslatePassageUseCase
-import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.TranslationRequest
+import io.lukia.features.translate.domain.text.TextAnchor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.MutableStateFlow

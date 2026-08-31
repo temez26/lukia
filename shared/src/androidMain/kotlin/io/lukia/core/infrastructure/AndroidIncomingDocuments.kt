@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.OpenableColumns
-import io.lukia.core.domain.IncomingDocument
+import io.lukia.core.domain.document.IncomingDocument
 import org.koin.mp.KoinPlatformTools
 
 /**

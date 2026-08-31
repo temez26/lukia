@@ -1,6 +1,6 @@
 package io.lukia.features.library.infrastructure.importing.cover
 
-import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.infrastructure.shrinkCoverImage
 import kotlin.test.Test
 import kotlin.test.assertEquals

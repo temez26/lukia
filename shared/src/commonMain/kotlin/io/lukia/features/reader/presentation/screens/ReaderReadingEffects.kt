@@ -6,7 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
-import io.lukia.core.domain.ReadingProgress
+import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderDocument
 import kotlinx.coroutines.flow.distinctUntilChanged

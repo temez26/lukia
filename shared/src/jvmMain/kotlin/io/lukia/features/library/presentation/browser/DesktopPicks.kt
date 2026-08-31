@@ -3,8 +3,8 @@ package io.lukia.features.library.presentation.browser
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import io.lukia.core.domain.PickedDocument
-import io.lukia.core.domain.PickedFolder
+import io.lukia.core.domain.document.PickedDocument
+import io.lukia.core.domain.document.PickedFolder
 import java.io.File
 
 /** What the reader is being asked for, and what to do with the answer. */

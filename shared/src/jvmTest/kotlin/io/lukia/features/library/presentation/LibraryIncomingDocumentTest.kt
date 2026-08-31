@@ -1,8 +1,8 @@
 package io.lukia.features.library.presentation
 
 import androidx.lifecycle.viewModelScope
-import io.lukia.core.domain.FakeIncomingDocumentStore
-import io.lukia.core.domain.IncomingDocument
+import io.lukia.core.domain.document.FakeIncomingDocumentStore
+import io.lukia.core.domain.document.IncomingDocument
 import io.lukia.core.infrastructure.DocumentInbox
 import io.lukia.features.library.TypeFromExtensionAnalyzer
 import kotlinx.coroutines.Dispatchers

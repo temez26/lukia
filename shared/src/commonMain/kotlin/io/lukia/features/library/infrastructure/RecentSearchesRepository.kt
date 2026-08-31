@@ -1,6 +1,6 @@
 package io.lukia.features.library.infrastructure
 
-import io.lukia.core.domain.SettingsStore
+import io.lukia.core.domain.storage.SettingsStore
 import io.lukia.core.infrastructure.PersistedSettings
 import kotlinx.coroutines.flow.StateFlow
 

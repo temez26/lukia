@@ -3,10 +3,10 @@ package io.lukia.features.reader.infrastructure
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
 import com.tom_roush.pdfbox.text.TextPosition
-import io.lukia.features.reader.domain.PageContent
-import io.lukia.features.reader.domain.PageGlyph
-import io.lukia.features.reader.domain.PageImage
-import io.lukia.features.reader.domain.TextQuad
+import io.lukia.features.reader.domain.page.PageContent
+import io.lukia.features.reader.domain.page.PageGlyph
+import io.lukia.features.reader.domain.page.PageImage
+import io.lukia.features.reader.domain.page.TextQuad
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock

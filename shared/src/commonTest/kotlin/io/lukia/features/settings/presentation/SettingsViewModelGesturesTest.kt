@@ -1,16 +1,16 @@
 package io.lukia.features.settings.presentation
 
-import io.lukia.core.domain.FakeSecretStore
-import io.lukia.core.domain.FakeSettingsStore
-import io.lukia.core.domain.SettingsStore
+import io.lukia.core.domain.storage.FakeSecretStore
+import io.lukia.core.domain.storage.FakeSettingsStore
+import io.lukia.core.domain.storage.SettingsStore
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.features.translate.application.TranslatePassageUseCase
-import io.lukia.features.translate.domain.FakeTranslator
-import io.lukia.features.translate.domain.ModelCatalogue
-import io.lukia.features.translate.domain.ModelWarmUp
-import io.lukia.features.translate.domain.PassageUnit
-import io.lukia.features.translate.domain.WordLookup
+import io.lukia.features.translate.domain.provider.FakeTranslator
+import io.lukia.features.translate.domain.provider.ModelCatalogue
+import io.lukia.features.translate.domain.provider.ModelWarmUp
+import io.lukia.features.translate.domain.text.PassageUnit
+import io.lukia.features.translate.domain.text.WordLookup
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import kotlin.test.Test
 import kotlin.test.assertEquals

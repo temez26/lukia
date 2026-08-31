@@ -3,7 +3,7 @@ package io.lukia.features.translate.infrastructure.openai
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.lukia.core.domain.AppError
-import io.lukia.features.translate.domain.TranslationProvider
+import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.translate
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.JsonObject

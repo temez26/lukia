@@ -1,9 +1,9 @@
 package io.lukia.features.translate.presentation
 
 import io.lukia.core.domain.AppError
-import io.lukia.features.translate.domain.PassageUnit
-import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.Translation
+import io.lukia.features.translate.domain.text.PassageUnit
+import io.lukia.features.translate.domain.text.TextAnchor
 
 /**
  * What has become of one passage the reader asked about.
@@ -87,7 +87,7 @@ data class PassageSelection(
     /**
      * How much of the book this is, which is what decides who is asked about it:
      * a single word can go to a dictionary and everything larger cannot. See
-     * [io.lukia.features.translate.domain.WordLookup].
+     * [io.lukia.features.translate.domain.text.WordLookup].
      */
     val unit: PassageUnit = PassageUnit.Sentence,
 )

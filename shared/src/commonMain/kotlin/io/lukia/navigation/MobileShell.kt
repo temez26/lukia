@@ -25,7 +25,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import io.lukia.Routes
-import io.lukia.core.domain.DocumentInfo
+import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.screens.HomeScreen
 import io.lukia.features.library.presentation.screens.LibraryScreen

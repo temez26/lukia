@@ -11,11 +11,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.lukia.features.library.presentation.ImportProgress
-import io.lukia.features.library.presentation.components.ImportBookCard
-import io.lukia.shared.presentation.components.EmptyState
-import io.lukia.shared.presentation.components.LaunchReveal
-import io.lukia.shared.presentation.components.launchReveal
+import io.lukia.features.library.presentation.components.book.ImportBookCard
+import io.lukia.features.library.presentation.model.ImportProgress
+import io.lukia.shared.presentation.components.launch.LaunchReveal
+import io.lukia.shared.presentation.components.launch.launchReveal
+import io.lukia.shared.presentation.components.surface.EmptyState
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 
 /** The lone import card on an empty screen, at about a grid cell's width. */

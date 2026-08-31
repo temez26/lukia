@@ -1,5 +1,6 @@
 package io.lukia.features.library.infrastructure.importing.metadata
 
+import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.infrastructure.pdf.MinimalPdf
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -110,7 +111,7 @@ class PdfMetadataReaderTest {
     @Test
     fun theExtractionSwitchRoutesPdfsHere() {
         val metadata = extractMetadata(
-            type = io.lukia.core.domain.DocumentType.PDF,
+            type = io.lukia.core.domain.document.DocumentType.PDF,
             documentBytes = MinimalPdf.withInfo("/Title (A Real Book) /Author (Jane Roe)"),
         )
 
@@ -121,7 +122,7 @@ class PdfMetadataReaderTest {
     fun plainTextCarriesNoMetadataToRead() {
         assertTrue(
             extractMetadata(
-                type = io.lukia.core.domain.DocumentType.TEXT,
+                type = io.lukia.core.domain.document.DocumentType.TEXT,
                 documentBytes = "Call me Ishmael.".encodeToByteArray(),
             ) == null,
         )

@@ -1,9 +1,9 @@
 package io.lukia.features.reader.presentation.pagination
 
-import io.lukia.features.reader.domain.Emphasis
-import io.lukia.features.reader.domain.TextBlock
-import io.lukia.features.reader.domain.TextRun
-import io.lukia.features.reader.domain.plainText
+import io.lukia.features.reader.domain.text.Emphasis
+import io.lukia.features.reader.domain.text.TextBlock
+import io.lukia.features.reader.domain.text.TextRun
+import io.lukia.features.reader.domain.text.plainText
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

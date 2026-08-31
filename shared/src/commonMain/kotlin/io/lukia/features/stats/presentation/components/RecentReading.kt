@@ -23,15 +23,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.lukia.core.domain.ReadingProgress
+import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.core.presentation.displayTitle
 import io.lukia.features.stats.domain.ReadingActivity
-import io.lukia.shared.presentation.components.BookCover
-import io.lukia.shared.presentation.components.LukiaDivider
-import io.lukia.shared.presentation.components.ReadingProgressBar
-import io.lukia.shared.presentation.components.focusRing
-import io.lukia.shared.presentation.components.hoverHighlight
-import io.lukia.shared.presentation.components.rememberBookCover
+import io.lukia.shared.presentation.components.controls.ReadingProgressBar
+import io.lukia.shared.presentation.components.controls.focusRing
+import io.lukia.shared.presentation.components.controls.hoverHighlight
+import io.lukia.shared.presentation.components.cover.BookCover
+import io.lukia.shared.presentation.components.cover.rememberBookCover
+import io.lukia.shared.presentation.components.surface.LukiaDivider
 import io.lukia.shared.presentation.theme.Space
 
 private val ActivityCoverHeight: Dp = 56.dp

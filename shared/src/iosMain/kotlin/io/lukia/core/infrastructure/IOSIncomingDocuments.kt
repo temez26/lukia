@@ -1,6 +1,6 @@
 package io.lukia.core.infrastructure
 
-import io.lukia.core.domain.IncomingDocument
+import io.lukia.core.domain.document.IncomingDocument
 import kotlinx.cinterop.ExperimentalForeignApi
 import org.koin.mp.KoinPlatformTools
 import platform.Foundation.NSData

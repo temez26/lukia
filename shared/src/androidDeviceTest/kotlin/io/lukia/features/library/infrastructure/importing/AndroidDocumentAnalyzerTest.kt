@@ -1,8 +1,8 @@
 package io.lukia.features.library.infrastructure.importing
 
 import androidx.test.platform.app.InstrumentationRegistry
-import io.lukia.core.domain.DocumentType
-import io.lukia.core.domain.TestDocuments
+import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.domain.document.TestDocuments
 import io.lukia.features.library.infrastructure.importing.AndroidDocumentAnalyzer
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

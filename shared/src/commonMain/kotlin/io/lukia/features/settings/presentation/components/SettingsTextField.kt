@@ -32,10 +32,10 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.lukia.shared.presentation.components.ClearGlyph
-import io.lukia.shared.presentation.components.IconButtonVariant
-import io.lukia.shared.presentation.components.LukiaIconButton
-import io.lukia.shared.presentation.components.focusRing
+import io.lukia.shared.presentation.components.controls.IconButtonVariant
+import io.lukia.shared.presentation.components.controls.LukiaIconButton
+import io.lukia.shared.presentation.components.controls.focusRing
+import io.lukia.shared.presentation.components.icons.ClearGlyph
 import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.Space
 

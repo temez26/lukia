@@ -1,6 +1,6 @@
 package io.lukia.core.infrastructure
 
-import io.lukia.core.domain.SettingsStore
+import io.lukia.core.domain.storage.SettingsStore
 import java.io.File
 import java.util.Properties
 

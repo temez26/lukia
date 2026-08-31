@@ -14,13 +14,13 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runComposeUiTest
-import io.lukia.core.domain.PdfLayout
+import io.lukia.core.domain.reading.PdfLayout
 import io.lukia.core.presentation.UiState
-import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.domain.ReadingWidth
-import io.lukia.features.reader.domain.TextExtraction
+import io.lukia.features.reader.domain.outline.ReaderOutline
+import io.lukia.features.reader.domain.text.TextExtraction
 import io.lukia.shared.presentation.theme.LukiaTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals

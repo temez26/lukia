@@ -17,8 +17,8 @@ import io.lukia.features.stats.domain.ReadingStats
 import io.lukia.features.stats.presentation.components.RecentReadingList
 import io.lukia.features.stats.presentation.components.StatTileGrid
 import io.lukia.features.stats.presentation.components.tiles
-import io.lukia.shared.presentation.components.GroupSection
-import io.lukia.shared.presentation.components.ReadingProgressBar
+import io.lukia.shared.presentation.components.controls.ReadingProgressBar
+import io.lukia.shared.presentation.components.surface.GroupSection
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.isWideWindow
 

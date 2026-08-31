@@ -12,9 +12,9 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.unit.dp
-import io.lukia.shared.presentation.components.LukiaButton
-import io.lukia.shared.presentation.components.LukiaIconButton
-import io.lukia.shared.presentation.components.PlusGlyph
+import io.lukia.shared.presentation.components.controls.LukiaButton
+import io.lukia.shared.presentation.components.controls.LukiaIconButton
+import io.lukia.shared.presentation.components.icons.PlusGlyph
 import kotlin.test.Test
 
 /**

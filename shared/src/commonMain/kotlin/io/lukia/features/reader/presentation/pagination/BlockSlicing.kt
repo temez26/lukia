@@ -1,8 +1,8 @@
 package io.lukia.features.reader.presentation.pagination
 
-import io.lukia.features.reader.domain.TextBlock
-import io.lukia.features.reader.domain.TextRun
-import io.lukia.features.translate.domain.splitIntoSentences
+import io.lukia.features.reader.domain.text.TextBlock
+import io.lukia.features.reader.domain.text.TextRun
+import io.lukia.features.translate.domain.text.splitIntoSentences
 
 /**
  * A block cut in two at a character offset, for a block too tall to fit on the

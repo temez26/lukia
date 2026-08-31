@@ -1,9 +1,9 @@
 package io.lukia.features.library
 
-import io.lukia.core.domain.CoverImage
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.DocumentType
-import io.lukia.core.domain.TestDocuments
+import io.lukia.core.domain.document.CoverImage
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.domain.document.TestDocuments
 import io.lukia.features.library.application.GetLibraryDocumentsUseCase
 import io.lukia.features.library.domain.LibraryRepository
 import kotlinx.coroutines.test.runTest

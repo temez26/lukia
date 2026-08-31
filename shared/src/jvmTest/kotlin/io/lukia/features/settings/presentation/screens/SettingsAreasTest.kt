@@ -10,7 +10,7 @@ import io.lukia.features.settings.domain.AppSettings
 import io.lukia.features.settings.presentation.ProviderActions
 import io.lukia.features.settings.presentation.ProviderState
 import io.lukia.features.settings.presentation.TranslatingActions
-import io.lukia.features.translate.domain.TranslationSettings
+import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.shared.presentation.theme.LukiaTheme
 import kotlin.test.Test
 

@@ -3,9 +3,9 @@ package io.lukia.features.library.infrastructure.importing
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.DocumentType
-import io.lukia.core.domain.PickedDocument
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.domain.document.PickedDocument
 import io.lukia.features.library.domain.DocumentAnalyzer
 
 class AndroidDocumentAnalyzer(

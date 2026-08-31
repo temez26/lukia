@@ -1,7 +1,7 @@
 package io.lukia.features.reader.infrastructure
 
-import io.lukia.features.reader.domain.pageSentences
-import io.lukia.features.reader.domain.sentenceAt
+import io.lukia.features.reader.domain.page.pageSentences
+import io.lukia.features.reader.domain.page.sentenceAt
 import kotlinx.coroutines.test.runTest
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage

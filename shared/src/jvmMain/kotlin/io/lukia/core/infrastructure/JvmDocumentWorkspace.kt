@@ -1,8 +1,8 @@
 package io.lukia.core.infrastructure
 
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.DocumentWorkspace
-import io.lukia.core.domain.WorkingCopy
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.storage.DocumentWorkspace
+import io.lukia.core.domain.storage.WorkingCopy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File

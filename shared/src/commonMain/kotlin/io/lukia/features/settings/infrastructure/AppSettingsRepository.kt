@@ -4,7 +4,7 @@ import io.lukia.core.domain.AppAccent
 import io.lukia.core.domain.AppMotion
 import io.lukia.core.domain.AppPalette
 import io.lukia.core.domain.AppTheme
-import io.lukia.core.domain.SettingsStore
+import io.lukia.core.domain.storage.SettingsStore
 import io.lukia.core.infrastructure.PersistedSettings
 import io.lukia.core.infrastructure.readEnum
 import io.lukia.features.settings.domain.AppSettings

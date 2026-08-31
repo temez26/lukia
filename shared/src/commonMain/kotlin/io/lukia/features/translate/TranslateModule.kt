@@ -1,11 +1,11 @@
 package io.lukia.features.translate
 
 import io.lukia.features.translate.application.TranslatePassageUseCase
-import io.lukia.features.translate.domain.ModelCatalogue
-import io.lukia.features.translate.domain.ModelWarmUp
-import io.lukia.features.translate.domain.PassageUnit
 import io.lukia.features.translate.domain.TranslationCache
 import io.lukia.features.translate.domain.Translator
+import io.lukia.features.translate.domain.provider.ModelCatalogue
+import io.lukia.features.translate.domain.provider.ModelWarmUp
+import io.lukia.features.translate.domain.text.PassageUnit
 import io.lukia.features.translate.infrastructure.CachingTranslator
 import io.lukia.features.translate.infrastructure.CoalescingTranslator
 import io.lukia.features.translate.infrastructure.ConfiguredTranslator

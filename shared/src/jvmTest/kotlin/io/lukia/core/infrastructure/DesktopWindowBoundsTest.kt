@@ -1,6 +1,6 @@
 package io.lukia.core.infrastructure
 
-import io.lukia.core.domain.FakeSettingsStore
+import io.lukia.core.domain.storage.FakeSettingsStore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

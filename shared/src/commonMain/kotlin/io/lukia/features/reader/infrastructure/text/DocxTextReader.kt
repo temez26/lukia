@@ -4,11 +4,11 @@ import io.lukia.core.infrastructure.archive.ZipArchiveReader
 import io.lukia.core.infrastructure.archive.resolveArchivePath
 import io.lukia.core.infrastructure.xml.XmlEvent
 import io.lukia.core.infrastructure.xml.xmlEvents
-import io.lukia.features.reader.domain.Emphasis
 import io.lukia.features.reader.domain.ReflowableContent
-import io.lukia.features.reader.domain.TextBlock
-import io.lukia.features.reader.domain.TextRun
-import io.lukia.features.reader.domain.isBlank
+import io.lukia.features.reader.domain.text.Emphasis
+import io.lukia.features.reader.domain.text.TextBlock
+import io.lukia.features.reader.domain.text.TextRun
+import io.lukia.features.reader.domain.text.isBlank
 
 private const val DOCUMENT_ENTRY = "word/document.xml"
 private const val RELATIONSHIPS_ENTRY = "word/_rels/document.xml.rels"

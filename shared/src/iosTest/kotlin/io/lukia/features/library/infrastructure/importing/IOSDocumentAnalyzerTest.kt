@@ -1,7 +1,7 @@
 package io.lukia.features.library.infrastructure.importing
 
-import io.lukia.core.domain.DocumentType
-import io.lukia.core.domain.TestDocuments
+import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.domain.document.TestDocuments
 import io.lukia.features.library.infrastructure.importing.IOSDocumentAnalyzer
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.test.runTest

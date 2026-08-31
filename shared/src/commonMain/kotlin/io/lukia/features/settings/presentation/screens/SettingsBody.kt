@@ -30,8 +30,8 @@ import io.lukia.features.settings.domain.AppSettings
 import io.lukia.features.settings.presentation.ProviderActions
 import io.lukia.features.settings.presentation.ProviderState
 import io.lukia.features.settings.presentation.TranslatingActions
-import io.lukia.features.translate.domain.TranslationSettings
-import io.lukia.shared.presentation.components.SegmentedControl
+import io.lukia.features.translate.domain.settings.TranslationSettings
+import io.lukia.shared.presentation.components.controls.SegmentedControl
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.Space

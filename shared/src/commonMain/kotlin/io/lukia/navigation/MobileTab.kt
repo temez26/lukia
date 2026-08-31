@@ -4,9 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import io.lukia.Routes
-import io.lukia.shared.presentation.components.BooksGlyph
-import io.lukia.shared.presentation.components.HomeGlyph
-import io.lukia.shared.presentation.components.SearchGlyph
+import io.lukia.shared.presentation.components.icons.BooksGlyph
+import io.lukia.shared.presentation.components.icons.HomeGlyph
+import io.lukia.shared.presentation.components.icons.SearchGlyph
 
 /**
  * The three places the tab bar goes, in the order they sit along the bottom of

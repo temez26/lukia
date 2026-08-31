@@ -3,29 +3,28 @@ package io.lukia.features.reader.presentation
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.lukia.core.domain.PdfLayout
-import io.lukia.core.domain.PdfLayoutRepository
-import io.lukia.core.domain.ReadingProgress
+import io.lukia.core.domain.reading.PdfLayout
+import io.lukia.core.domain.reading.PdfLayoutRepository
+import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.core.domain.toAppError
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.reader.application.OpenDocumentUseCase
-import io.lukia.features.reader.domain.PageSentence
 import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderDocument
-import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
-import io.lukia.features.reader.domain.TextExtraction
-import io.lukia.features.reader.domain.asTableOfContents
-import io.lukia.features.reader.domain.pageSentences
+import io.lukia.features.reader.domain.outline.ReaderOutline
+import io.lukia.features.reader.domain.outline.asTableOfContents
+import io.lukia.features.reader.domain.page.PageSentence
+import io.lukia.features.reader.domain.page.pageSentences
+import io.lukia.features.reader.domain.text.TextExtraction
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
-import io.lukia.features.translate.domain.BulkTranslation
-import io.lukia.features.translate.domain.TargetLanguage
-import io.lukia.features.translate.domain.TextAnchor
-import io.lukia.features.translate.domain.TranslationGestures
-import io.lukia.features.translate.presentation.PassageSelection
-import io.lukia.features.translate.presentation.PassageTranslation
+import io.lukia.features.reader.presentation.rendering.PageSentenceCache
+import io.lukia.features.reader.presentation.rendering.ReaderLayoutChoice
+import io.lukia.features.reader.presentation.rendering.RenderedPageCache
+import io.lukia.features.reader.presentation.rendering.renderWidthFor
+import io.lukia.features.reader.presentation.translation.ReaderTranslationsFactory
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -65,7 +64,7 @@ class ReaderViewModel(
      * Everything about translating what is on the page. Held here so the reader
      * screen sees one object, but implemented apart - see [ReaderTranslations].
      */
-    private val translation = translations.create(viewModelScope)
+    internal val translation = translations.create(viewModelScope)
 
     /**
      * Whether this book is read as its own pages or as text, and what came of
@@ -87,14 +86,6 @@ class ReaderViewModel(
     val layoutOffered: StateFlow<Boolean> = layoutChoice.offered
     val textExtraction: StateFlow<TextExtraction?> = layoutChoice.extraction
     val noTextLayer: StateFlow<Boolean> = layoutChoice.noTextLayer
-
-    val translations: StateFlow<Map<TextAnchor, PassageTranslation>> = translation.passages
-    val bulkTranslation: StateFlow<BulkTranslation> = translation.bulkTranslation
-    val translateOnScreen: StateFlow<TranslateOnScreen> = translation.onScreen
-    val shownTranslations: StateFlow<ShownTranslations> = translation.shown
-    val translationGestures: StateFlow<TranslationGestures> = translation.gestures
-    val targetLanguage: StateFlow<TargetLanguage> = translation.targetLanguage
-    val translationConfigured: StateFlow<Boolean> = translation.configured
 
     private val _uiState = MutableStateFlow<UiState<ReaderDocument>>(UiState.Loading)
     val uiState: StateFlow<UiState<ReaderDocument>> = _uiState.asStateFlow()
@@ -249,59 +240,6 @@ class ReaderViewModel(
             }
         }
     }
-
-    /** A passage the reader pointed at. */
-    fun onPassageSelected(selection: PassageSelection) {
-        val document = _uiState.value.dataOrNull ?: return
-
-        translation.onPassageTapped(selection.anchor) { document.requestFor(selection) }
-    }
-
-    /**
-     * Every passage the reader can see, translated in one go.
-     *
-     * Asked for rather than tapped, so a sentence they have already flipped back
-     * to the original stays as they left it and a failure is not retried behind
-     * their back - see
-     * [io.lukia.features.translate.presentation.TranslationSession.onPassageRequested].
-     */
-    fun onPassagesRequested(selections: List<PassageSelection>) {
-        val document = _uiState.value.dataOrNull ?: return
-
-        selections.forEach { selection ->
-            translation.onPassageRequested(selection.anchor) {
-                document.requestFor(selection)
-            }
-        }
-    }
-
-    fun onTranslateOnScreen() {
-        translation.requestOnScreen()
-    }
-
-    fun setTranslationsVisible(visible: Boolean) {
-        translation.showTranslations(visible)
-    }
-
-    fun setContinuousTranslation(continuous: Boolean) {
-        translation.setContinuous(continuous)
-    }
-
-    /**
-     * The reader has changed what translating does from the panel over the book
-     * rather than from the settings screen. Both write the same setting - see
-     * [ReaderTranslations.setTargetLanguage].
-     */
-    fun setTargetLanguage(language: TargetLanguage) {
-        translation.setTargetLanguage(language)
-    }
-
-    fun setTranslationGestures(gestures: TranslationGestures) {
-        translation.setGestures(gestures)
-    }
-
-    private fun ReaderDocument.requestFor(selection: PassageSelection) =
-        translationRequest(selection, translation.currentTargetLanguage, _outline.value)
 
     /**
      * Read in the background as soon as the book is open, rather than when the

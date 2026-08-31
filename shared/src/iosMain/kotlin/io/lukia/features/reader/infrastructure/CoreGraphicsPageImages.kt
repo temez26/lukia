@@ -1,7 +1,7 @@
 package io.lukia.features.reader.infrastructure
 
-import io.lukia.features.reader.domain.PageImage
-import io.lukia.features.reader.domain.PageSize
+import io.lukia.features.reader.domain.page.PageImage
+import io.lukia.features.reader.domain.page.PageSize
 import io.lukia.features.reader.infrastructure.pdf.PdfRect
 import io.lukia.features.reader.infrastructure.pdf.isWorthShowing
 import io.lukia.features.reader.infrastructure.pdf.pdfImageBounds

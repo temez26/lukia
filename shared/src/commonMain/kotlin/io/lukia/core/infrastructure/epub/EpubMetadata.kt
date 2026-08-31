@@ -1,6 +1,6 @@
 package io.lukia.core.infrastructure.epub
 
-import io.lukia.core.domain.BookMetadata
+import io.lukia.core.domain.document.BookMetadata
 import io.lukia.core.infrastructure.xml.XmlEvent
 import io.lukia.core.infrastructure.xml.xmlEvents
 

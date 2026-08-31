@@ -2,9 +2,9 @@ package io.lukia.core.infrastructure
 
 import android.content.Context
 import androidx.core.content.FileProvider
-import io.lukia.core.domain.IncomingDocument
-import io.lukia.core.domain.IncomingDocumentStore
-import io.lukia.core.domain.PickedDocument
+import io.lukia.core.domain.document.IncomingDocument
+import io.lukia.core.domain.document.IncomingDocumentStore
+import io.lukia.core.domain.document.PickedDocument
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File

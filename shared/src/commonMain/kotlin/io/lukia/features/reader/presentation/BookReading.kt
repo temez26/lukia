@@ -1,8 +1,8 @@
 package io.lukia.features.reader.presentation
 
-import io.lukia.core.domain.ReadingProgress
-import io.lukia.core.domain.ReadingProgressRepository
-import io.lukia.core.domain.ReadingSessionRepository
+import io.lukia.core.domain.reading.ReadingProgress
+import io.lukia.core.domain.reading.ReadingProgressRepository
+import io.lukia.core.domain.reading.ReadingSessionRepository
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderDocument

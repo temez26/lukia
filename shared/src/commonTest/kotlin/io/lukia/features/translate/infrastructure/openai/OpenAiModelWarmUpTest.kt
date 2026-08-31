@@ -11,12 +11,12 @@ import io.ktor.content.TextContent
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.lukia.core.domain.AppError
-import io.lukia.core.domain.FakeSecretStore
-import io.lukia.core.domain.FakeSettingsStore
+import io.lukia.core.domain.storage.FakeSecretStore
+import io.lukia.core.domain.storage.FakeSettingsStore
 import io.lukia.core.domain.toAppError
-import io.lukia.features.translate.domain.TargetLanguage
-import io.lukia.features.translate.domain.TranslationProvider
-import io.lukia.features.translate.domain.TranslationSettings
+import io.lukia.features.translate.domain.provider.TranslationProvider
+import io.lukia.features.translate.domain.settings.TargetLanguage
+import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json

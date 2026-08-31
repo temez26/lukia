@@ -1,9 +1,9 @@
 package io.lukia.features.library
 
-import io.lukia.core.domain.CoverImage
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.DocumentType
-import io.lukia.core.domain.PickedDocument
+import io.lukia.core.domain.document.CoverImage
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.domain.document.PickedDocument
 import io.lukia.features.library.domain.DocumentAnalyzer
 import io.lukia.features.library.domain.LibraryRepository
 

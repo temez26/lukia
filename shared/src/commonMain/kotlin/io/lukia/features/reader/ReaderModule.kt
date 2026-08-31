@@ -1,16 +1,16 @@
 package io.lukia.features.reader
 
-import io.lukia.core.domain.PdfLayoutRepository
-import io.lukia.core.domain.ReadingProgressRepository
-import io.lukia.core.domain.ReadingSessionRepository
+import io.lukia.core.domain.reading.PdfLayoutRepository
+import io.lukia.core.domain.reading.ReadingProgressRepository
+import io.lukia.core.domain.reading.ReadingSessionRepository
 import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import io.lukia.features.reader.infrastructure.SqlPdfLayoutRepository
 import io.lukia.features.reader.infrastructure.SqlReadingProgressRepository
 import io.lukia.features.reader.infrastructure.SqlReadingSessionRepository
 import io.lukia.features.reader.presentation.BookReadingFactory
-import io.lukia.features.reader.presentation.ReaderTranslationsFactory
 import io.lukia.features.reader.presentation.ReaderViewModel
+import io.lukia.features.reader.presentation.translation.ReaderTranslationsFactory
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 

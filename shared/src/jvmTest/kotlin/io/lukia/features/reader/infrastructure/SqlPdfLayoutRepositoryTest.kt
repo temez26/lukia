@@ -1,6 +1,6 @@
 package io.lukia.features.reader.infrastructure
 
-import io.lukia.core.domain.PdfLayout
+import io.lukia.core.domain.reading.PdfLayout
 import io.lukia.core.infrastructure.testDatabase
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest

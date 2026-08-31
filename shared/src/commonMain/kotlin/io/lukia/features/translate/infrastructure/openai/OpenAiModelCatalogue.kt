@@ -7,7 +7,7 @@ import io.ktor.client.request.headers
 import io.ktor.http.isSuccess
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.AppErrorException
-import io.lukia.features.translate.domain.ModelCatalogue
+import io.lukia.features.translate.domain.provider.ModelCatalogue
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import io.lukia.features.translate.infrastructure.translating
 import io.lukia.features.translate.infrastructure.translationTimeouts

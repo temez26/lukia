@@ -1,6 +1,6 @@
 package io.lukia.features.library.presentation.browser
 
-import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.document.DocumentType
 import java.io.File
 
 /**

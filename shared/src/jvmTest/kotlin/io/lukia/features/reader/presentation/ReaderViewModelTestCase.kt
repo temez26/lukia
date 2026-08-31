@@ -2,14 +2,14 @@ package io.lukia.features.reader.presentation
 
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.viewModelScope
-import io.lukia.core.domain.CoverImage
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.DocumentType
-import io.lukia.core.domain.FakePdfLayoutRepository
-import io.lukia.core.domain.FakeReadingSessionRepository
-import io.lukia.core.domain.FakeSecretStore
-import io.lukia.core.domain.FakeSettingsStore
-import io.lukia.core.domain.PickedDocument
+import io.lukia.core.domain.document.CoverImage
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.domain.document.PickedDocument
+import io.lukia.core.domain.reading.FakePdfLayoutRepository
+import io.lukia.core.domain.reading.FakeReadingSessionRepository
+import io.lukia.core.domain.storage.FakeSecretStore
+import io.lukia.core.domain.storage.FakeSettingsStore
 import io.lukia.core.infrastructure.JvmDocumentWorkspace
 import io.lukia.core.infrastructure.testDatabase
 import io.lukia.core.presentation.UiState
@@ -17,11 +17,12 @@ import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.domain.ReaderDocument
-import io.lukia.features.reader.domain.ReaderOutline
+import io.lukia.features.reader.domain.outline.ReaderOutline
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import io.lukia.features.reader.infrastructure.SqlReadingProgressRepository
+import io.lukia.features.reader.presentation.translation.ReaderTranslationsFactory
 import io.lukia.features.translate.application.TranslatePassageUseCase
-import io.lukia.features.translate.domain.FakeTranslator
+import io.lukia.features.translate.domain.provider.FakeTranslator
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers

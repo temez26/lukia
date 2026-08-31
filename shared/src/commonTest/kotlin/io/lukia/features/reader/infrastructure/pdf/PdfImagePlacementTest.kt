@@ -1,6 +1,6 @@
 package io.lukia.features.reader.infrastructure.pdf
 
-import io.lukia.features.reader.domain.PageSize
+import io.lukia.features.reader.domain.page.PageSize
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

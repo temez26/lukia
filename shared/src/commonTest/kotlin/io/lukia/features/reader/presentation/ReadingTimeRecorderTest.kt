@@ -1,6 +1,6 @@
 package io.lukia.features.reader.presentation
 
-import io.lukia.core.domain.FakeReadingSessionRepository
+import io.lukia.core.domain.reading.FakeReadingSessionRepository
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy

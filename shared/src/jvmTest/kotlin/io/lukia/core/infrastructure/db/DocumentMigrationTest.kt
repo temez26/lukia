@@ -1,6 +1,7 @@
 package io.lukia.core.infrastructure.db
 
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import io.lukia.core.domain.document.BookMetadata
 import io.lukia.features.library.infrastructure.SqlLibraryRepository
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -99,7 +100,7 @@ class DocumentMigrationTest {
         val existing = repository.getDocument("/books/moby.epub")!!
         repository.addDocument(
             existing.copy(
-                metadata = io.lukia.core.domain.BookMetadata(
+                metadata = io.lukia.core.domain.document.BookMetadata(
                     title = "Moby Dick",
                     authors = listOf("Herman Melville"),
                 ),

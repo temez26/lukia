@@ -1,6 +1,6 @@
 package io.lukia.features.library.infrastructure.importing
 
-import io.lukia.core.domain.PickedFolder
+import io.lukia.core.domain.document.PickedFolder
 import io.lukia.features.library.domain.MaxFolderScanDepth
 import kotlinx.coroutines.test.runTest
 import java.io.File

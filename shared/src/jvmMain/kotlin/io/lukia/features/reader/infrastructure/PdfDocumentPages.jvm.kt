@@ -2,11 +2,11 @@ package io.lukia.features.reader.infrastructure
 
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
-import io.lukia.features.reader.domain.DocumentPages
-import io.lukia.features.reader.domain.OutlineEntry
-import io.lukia.features.reader.domain.PageGlyph
-import io.lukia.features.reader.domain.PageImage
-import io.lukia.features.reader.domain.PageSize
+import io.lukia.features.reader.domain.outline.OutlineEntry
+import io.lukia.features.reader.domain.page.DocumentPages
+import io.lukia.features.reader.domain.page.PageGlyph
+import io.lukia.features.reader.domain.page.PageImage
+import io.lukia.features.reader.domain.page.PageSize
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock

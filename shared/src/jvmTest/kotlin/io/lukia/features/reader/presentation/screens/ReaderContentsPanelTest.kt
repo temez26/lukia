@@ -8,8 +8,8 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
-import io.lukia.features.reader.domain.OutlineEntry
-import io.lukia.features.reader.domain.ReaderOutline
+import io.lukia.features.reader.domain.outline.OutlineEntry
+import io.lukia.features.reader.domain.outline.ReaderOutline
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

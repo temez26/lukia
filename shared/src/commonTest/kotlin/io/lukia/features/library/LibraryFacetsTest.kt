@@ -1,9 +1,9 @@
 package io.lukia.features.library
 
-import io.lukia.core.domain.DocumentType
-import io.lukia.features.library.presentation.LibraryFacets
-import io.lukia.features.library.presentation.LibraryShelf
-import io.lukia.features.library.presentation.facets
+import io.lukia.core.domain.document.DocumentType
+import io.lukia.features.library.presentation.model.LibraryFacets
+import io.lukia.features.library.presentation.model.LibraryShelf
+import io.lukia.features.library.presentation.model.facets
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

@@ -1,10 +1,10 @@
 package io.lukia.features.translate.infrastructure
 
-import io.lukia.features.translate.domain.PassageUnit
 import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.Translator
-import io.lukia.features.translate.domain.WordLookup
+import io.lukia.features.translate.domain.text.PassageUnit
+import io.lukia.features.translate.domain.text.WordLookup
 
 /**
  * Sends a single word wherever the reader has said single words should go, and

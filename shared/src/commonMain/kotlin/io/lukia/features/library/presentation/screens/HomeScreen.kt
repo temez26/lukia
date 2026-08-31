@@ -14,22 +14,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import io.lukia.core.domain.DocumentInfo
+import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.presentation.UiState
-import io.lukia.features.library.presentation.HomeBookActions
-import io.lukia.features.library.presentation.HomeMenu
-import io.lukia.features.library.presentation.HomeRow
-import io.lukia.features.library.presentation.ImportProgress
-import io.lukia.features.library.presentation.LibraryQuery
-import io.lukia.features.library.presentation.LibraryShelfUi
 import io.lukia.features.library.presentation.LibraryViewModel
-import io.lukia.features.library.presentation.homeRows
-import io.lukia.features.library.presentation.rememberPlatformFilePicker
-import io.lukia.features.library.presentation.rememberPlatformFolderPicker
-import io.lukia.shared.presentation.components.ActionMenuScrim
-import io.lukia.shared.presentation.components.LoadingState
-import io.lukia.shared.presentation.components.UiStateContent
-import io.lukia.shared.presentation.components.rememberLaunchReveal
+import io.lukia.features.library.presentation.model.HomeMenu
+import io.lukia.features.library.presentation.model.HomeRow
+import io.lukia.features.library.presentation.model.ImportProgress
+import io.lukia.features.library.presentation.model.LibraryQuery
+import io.lukia.features.library.presentation.model.homeRows
+import io.lukia.features.library.presentation.pickers.rememberPlatformFilePicker
+import io.lukia.features.library.presentation.pickers.rememberPlatformFolderPicker
+import io.lukia.features.library.presentation.sessions.HomeBookActions
+import io.lukia.features.library.presentation.sessions.LibraryShelfUi
+import io.lukia.shared.presentation.components.launch.rememberLaunchReveal
+import io.lukia.shared.presentation.components.menu.ActionMenuScrim
+import io.lukia.shared.presentation.components.state.LoadingState
+import io.lukia.shared.presentation.components.state.UiStateContent
 import org.koin.compose.viewmodel.koinViewModel
 
 /**

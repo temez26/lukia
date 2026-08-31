@@ -1,6 +1,6 @@
 package io.lukia.features.library.domain
 
-import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.document.DocumentType
 
 /**
  * Folder scanners filter on this before handing a file to the import use case,

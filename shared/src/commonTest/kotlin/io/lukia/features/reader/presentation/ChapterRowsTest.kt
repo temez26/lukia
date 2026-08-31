@@ -1,6 +1,6 @@
 package io.lukia.features.reader.presentation
 
-import io.lukia.features.reader.domain.OutlineEntry
+import io.lukia.features.reader.domain.outline.OutlineEntry
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

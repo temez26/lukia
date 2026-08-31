@@ -13,8 +13,8 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import io.lukia.features.reader.domain.FigureSize
-import io.lukia.features.reader.domain.TextBlock
-import io.lukia.features.reader.domain.TextSection
+import io.lukia.features.reader.domain.text.TextBlock
+import io.lukia.features.reader.domain.text.TextSection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

@@ -1,8 +1,8 @@
 package io.lukia.features.reader.presentation.screens
 
 import androidx.compose.runtime.Immutable
-import io.lukia.core.domain.PdfLayout
-import io.lukia.features.reader.domain.TextExtraction
+import io.lukia.core.domain.reading.PdfLayout
+import io.lukia.features.reader.domain.text.TextExtraction
 
 /**
  * What the screen needs to know about how this book is being read, gathered so

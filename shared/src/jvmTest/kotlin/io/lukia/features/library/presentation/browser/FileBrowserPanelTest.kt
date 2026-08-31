@@ -11,7 +11,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.unit.dp
-import io.lukia.core.domain.PickedDocument
+import io.lukia.core.domain.document.PickedDocument
 import io.lukia.shared.presentation.theme.LukiaTheme
 import kotlinx.coroutines.Dispatchers
 import java.io.File

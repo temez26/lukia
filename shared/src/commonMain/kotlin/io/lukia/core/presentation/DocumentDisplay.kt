@@ -1,8 +1,8 @@
 package io.lukia.core.presentation
 
-import io.lukia.core.domain.BookMetadata
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.document.BookMetadata
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.document.DocumentType
 
 fun DocumentInfo.displayTitle(): String {
     val fileName = document.fileName

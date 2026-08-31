@@ -1,6 +1,6 @@
 package io.lukia.features.reader.presentation
 
-import io.lukia.features.reader.domain.OutlineEntry
+import io.lukia.features.reader.domain.outline.OutlineEntry
 
 /**
  * One row of the contents list: an entry, plus what the entries around it say

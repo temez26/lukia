@@ -1,8 +1,8 @@
 package io.lukia.features.reader.infrastructure
 
-import io.lukia.features.reader.domain.TextBlock
-import io.lukia.features.reader.domain.plainText
-import io.lukia.features.reader.infrastructure.text.readPdfAsText
+import io.lukia.features.reader.domain.text.TextBlock
+import io.lukia.features.reader.domain.text.plainText
+import io.lukia.features.reader.infrastructure.pdf.readPdfAsText
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.test.runTest

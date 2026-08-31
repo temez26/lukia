@@ -1,8 +1,8 @@
 package io.lukia.features.stats
 
-import io.lukia.core.domain.FakeReadingProgressRepository
-import io.lukia.core.domain.FakeReadingSessionRepository
-import io.lukia.core.domain.ReadingSession
+import io.lukia.core.domain.reading.FakeReadingProgressRepository
+import io.lukia.core.domain.reading.FakeReadingSessionRepository
+import io.lukia.core.domain.reading.ReadingSession
 import io.lukia.features.library.FakeImportLibraryRepository
 import io.lukia.features.library.book
 import io.lukia.features.library.finished

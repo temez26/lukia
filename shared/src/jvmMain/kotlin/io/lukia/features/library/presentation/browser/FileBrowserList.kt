@@ -24,13 +24,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.lukia.shared.presentation.components.BackChevron
-import io.lukia.shared.presentation.components.CheckGlyph
-import io.lukia.shared.presentation.components.FolderGlyph
-import io.lukia.shared.presentation.components.LukiaChip
-import io.lukia.shared.presentation.components.OpenBookGlyph
-import io.lukia.shared.presentation.components.hoverHighlight
-import io.lukia.shared.presentation.components.scaleOnPress
+import io.lukia.shared.presentation.components.controls.LukiaChip
+import io.lukia.shared.presentation.components.controls.hoverHighlight
+import io.lukia.shared.presentation.components.controls.scaleOnPress
+import io.lukia.shared.presentation.components.icons.BackChevron
+import io.lukia.shared.presentation.components.icons.CheckGlyph
+import io.lukia.shared.presentation.components.icons.FolderGlyph
+import io.lukia.shared.presentation.components.icons.OpenBookGlyph
 import io.lukia.shared.presentation.theme.Space
 
 /** The mark at the head of a row, at the size a list wears rather than a button. */

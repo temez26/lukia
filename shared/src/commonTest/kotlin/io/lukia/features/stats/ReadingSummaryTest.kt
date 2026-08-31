@@ -1,7 +1,7 @@
 package io.lukia.features.stats
 
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.ReadingProgress
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.features.library.TestBook
 import io.lukia.features.library.book
 import io.lukia.features.library.finished
