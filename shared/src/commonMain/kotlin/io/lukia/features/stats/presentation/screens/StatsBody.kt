@@ -22,8 +22,8 @@ import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.displayMessage
 import io.lukia.core.presentation.displayTitle
 import io.lukia.features.stats.domain.ReadingSummary
-import io.lukia.shared.presentation.components.ErrorState
-import io.lukia.shared.presentation.components.LoadingState
+import io.lukia.shared.presentation.components.state.ErrorState
+import io.lukia.shared.presentation.components.state.LoadingState
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.softFadeOut

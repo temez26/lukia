@@ -1,7 +1,7 @@
 package io.lukia.features.reader.infrastructure
 
-import io.lukia.core.domain.PdfLayout
-import io.lukia.core.domain.SettingsStore
+import io.lukia.core.domain.reading.PdfLayout
+import io.lukia.core.domain.storage.SettingsStore
 import io.lukia.core.infrastructure.PersistedSettings
 import io.lukia.core.infrastructure.readEnum
 import io.lukia.features.reader.domain.FigureSize

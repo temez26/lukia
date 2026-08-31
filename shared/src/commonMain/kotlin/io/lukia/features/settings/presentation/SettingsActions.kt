@@ -2,10 +2,10 @@ package io.lukia.features.settings.presentation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import io.lukia.features.translate.domain.PassageUnit
-import io.lukia.features.translate.domain.TargetLanguage
-import io.lukia.features.translate.domain.TranslationProvider
-import io.lukia.features.translate.domain.WordLookup
+import io.lukia.features.translate.domain.provider.TranslationProvider
+import io.lukia.features.translate.domain.settings.TargetLanguage
+import io.lukia.features.translate.domain.text.PassageUnit
+import io.lukia.features.translate.domain.text.WordLookup
 
 /**
  * What the settings screen may be told about the service it is configuring.

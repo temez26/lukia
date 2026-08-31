@@ -1,15 +1,15 @@
 package io.lukia.features.reader.application
 
 import io.lukia.core.domain.AppError
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.DocumentType
-import io.lukia.core.domain.DocumentWorkspace
-import io.lukia.core.domain.PdfLayout
 import io.lukia.core.domain.asFailure
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.domain.reading.PdfLayout
+import io.lukia.core.domain.storage.DocumentWorkspace
 import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.reader.domain.ReaderContent
 import io.lukia.features.reader.domain.ReaderDocument
-import io.lukia.features.reader.domain.TextExtraction
+import io.lukia.features.reader.domain.text.TextExtraction
 import io.lukia.features.reader.infrastructure.openPdfAsText
 import io.lukia.features.reader.infrastructure.openReaderContent
 import kotlinx.coroutines.CoroutineDispatcher

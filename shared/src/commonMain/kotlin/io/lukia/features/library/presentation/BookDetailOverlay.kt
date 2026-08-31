@@ -12,17 +12,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.ReadingProgress
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.features.library.application.BookDetails
 import io.lukia.features.library.presentation.screens.BookDetailBody
-import io.lukia.shared.presentation.components.ActionMenuScrim
-import io.lukia.shared.presentation.components.BookActionsMenu
-import io.lukia.shared.presentation.components.EllipsisGlyph
-import io.lukia.shared.presentation.components.IconButtonVariant
-import io.lukia.shared.presentation.components.LukiaIconButton
-import io.lukia.shared.presentation.components.OverlayPanel
-import io.lukia.shared.presentation.components.OverlayPanelTopClearance
+import io.lukia.shared.presentation.components.controls.IconButtonVariant
+import io.lukia.shared.presentation.components.controls.LukiaIconButton
+import io.lukia.shared.presentation.components.icons.EllipsisGlyph
+import io.lukia.shared.presentation.components.menu.ActionMenuScrim
+import io.lukia.shared.presentation.components.menu.BookActionsMenu
+import io.lukia.shared.presentation.components.surface.OverlayPanel
+import io.lukia.shared.presentation.components.surface.OverlayPanelTopClearance
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 
 /**

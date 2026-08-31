@@ -1,8 +1,8 @@
 package io.lukia.core.infrastructure
 
-import io.lukia.core.domain.IncomingDocument
-import io.lukia.core.domain.IncomingDocumentStore
-import io.lukia.core.domain.PickedDocument
+import io.lukia.core.domain.document.IncomingDocument
+import io.lukia.core.domain.document.IncomingDocumentStore
+import io.lukia.core.domain.document.PickedDocument
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO

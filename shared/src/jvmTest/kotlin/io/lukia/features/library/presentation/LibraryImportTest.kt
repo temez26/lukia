@@ -2,9 +2,9 @@ package io.lukia.features.library.presentation
 
 import io.lukia.MainDispatcherTest
 import io.lukia.core.domain.AppError
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.DocumentType
-import io.lukia.core.domain.TestDocuments
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.domain.document.TestDocuments
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.library.TypeFromExtensionAnalyzer

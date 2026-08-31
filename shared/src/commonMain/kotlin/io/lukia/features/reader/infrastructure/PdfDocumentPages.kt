@@ -1,7 +1,7 @@
 package io.lukia.features.reader.infrastructure
 
-import io.lukia.features.reader.domain.DocumentPages
-import io.lukia.features.reader.domain.PageContent
+import io.lukia.features.reader.domain.page.DocumentPages
+import io.lukia.features.reader.domain.page.PageContent
 
 /**
  * Opens the PDF at [path] for reading, using whatever the platform draws PDFs
@@ -14,7 +14,7 @@ internal expect fun openPdfPages(path: String): DocumentPages
 
 /**
  * Opens the PDF at [path] to be read rather than drawn - see
- * [io.lukia.features.reader.domain.PageContent].
+ * [io.lukia.features.reader.domain.page.PageContent].
  *
  * Separate from [openPdfPages] because it is opened for a different reason and
  * so should do different work: this is what a conversion opens one of per core,

@@ -21,10 +21,10 @@ import io.lukia.features.stats.presentation.components.StatFigure
 import io.lukia.features.stats.presentation.readingTime
 import io.lukia.features.stats.presentation.readingTimeOrDash
 import io.lukia.features.stats.presentation.streakLine
-import io.lukia.shared.presentation.components.BadgeTone
-import io.lukia.shared.presentation.components.GroupSection
-import io.lukia.shared.presentation.components.LukiaDivider
-import io.lukia.shared.presentation.components.StatusBadge
+import io.lukia.shared.presentation.components.surface.BadgeTone
+import io.lukia.shared.presentation.components.surface.GroupSection
+import io.lukia.shared.presentation.components.surface.LukiaDivider
+import io.lukia.shared.presentation.components.surface.StatusBadge
 import io.lukia.shared.presentation.theme.Space
 
 /**

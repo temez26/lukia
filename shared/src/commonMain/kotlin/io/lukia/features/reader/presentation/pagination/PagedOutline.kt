@@ -1,6 +1,6 @@
 package io.lukia.features.reader.presentation.pagination
 
-import io.lukia.features.reader.domain.ReaderOutline
+import io.lukia.features.reader.domain.outline.ReaderOutline
 
 /**
  * The book's contents, pointing at the pages the reader turns.

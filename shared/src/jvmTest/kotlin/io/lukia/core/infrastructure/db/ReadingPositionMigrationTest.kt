@@ -1,7 +1,7 @@
 package io.lukia.core.infrastructure.db
 
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
-import io.lukia.core.domain.ReadingProgress
+import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.features.reader.infrastructure.SqlReadingProgressRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest

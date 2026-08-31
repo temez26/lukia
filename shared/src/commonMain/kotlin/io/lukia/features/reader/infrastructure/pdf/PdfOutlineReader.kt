@@ -7,7 +7,7 @@ import io.lukia.core.infrastructure.pdf.asArray
 import io.lukia.core.infrastructure.pdf.asDictionary
 import io.lukia.core.infrastructure.pdf.asName
 import io.lukia.core.infrastructure.pdf.asText
-import io.lukia.features.reader.domain.OutlineEntry
+import io.lukia.features.reader.domain.outline.OutlineEntry
 
 /**
  * Reads a PDF's table of contents straight out of the file.

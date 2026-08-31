@@ -14,10 +14,10 @@ import io.ktor.http.isSuccess
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.AppErrorException
 import io.lukia.features.translate.domain.Translation
-import io.lukia.features.translate.domain.TranslationProvider
 import io.lukia.features.translate.domain.TranslationRequest
-import io.lukia.features.translate.domain.TranslationSettings
 import io.lukia.features.translate.domain.Translator
+import io.lukia.features.translate.domain.provider.TranslationProvider
+import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.features.translate.infrastructure.StreamedAnswer
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import io.lukia.features.translate.infrastructure.buildTranslationPrompt

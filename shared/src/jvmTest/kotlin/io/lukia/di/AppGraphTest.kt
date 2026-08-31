@@ -2,19 +2,19 @@ package io.lukia.di
 
 import app.cash.sqldelight.db.SqlDriver
 import io.ktor.client.HttpClient
-import io.lukia.core.domain.DocumentWorkspace
-import io.lukia.core.domain.ReadingProgressRepository
-import io.lukia.core.domain.SecretStore
-import io.lukia.core.domain.SettingsStore
+import io.lukia.core.domain.reading.ReadingProgressRepository
+import io.lukia.core.domain.storage.DocumentWorkspace
+import io.lukia.core.domain.storage.SecretStore
+import io.lukia.core.domain.storage.SettingsStore
 import io.lukia.core.infrastructure.lukiaSqlDriver
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.features.translate.application.TranslatePassageUseCase
-import io.lukia.features.translate.domain.ModelCatalogue
 import io.lukia.features.translate.domain.TranslationCache
 import io.lukia.features.translate.domain.Translator
+import io.lukia.features.translate.domain.provider.ModelCatalogue
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module

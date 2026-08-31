@@ -1,8 +1,8 @@
 package io.lukia.features.library
 
-import io.lukia.core.domain.ReadingProgress
-import io.lukia.features.library.presentation.HomeShelf
-import io.lukia.features.library.presentation.homeRows
+import io.lukia.core.domain.reading.ReadingProgress
+import io.lukia.features.library.presentation.model.HomeShelf
+import io.lukia.features.library.presentation.model.homeRows
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

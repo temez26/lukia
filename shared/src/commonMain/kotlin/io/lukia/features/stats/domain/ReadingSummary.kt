@@ -1,7 +1,7 @@
 package io.lukia.features.stats.domain
 
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.ReadingProgress
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.reading.ReadingProgress
 
 /**
  * How many books there are to read, how far the reading has got, and what is

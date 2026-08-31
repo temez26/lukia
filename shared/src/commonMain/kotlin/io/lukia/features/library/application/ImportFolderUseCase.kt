@@ -1,8 +1,8 @@
 package io.lukia.features.library.application
 
 import io.lukia.core.domain.AppError
-import io.lukia.core.domain.PickedFolder
 import io.lukia.core.domain.asFailure
+import io.lukia.core.domain.document.PickedFolder
 import io.lukia.features.library.domain.FolderScanner
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers

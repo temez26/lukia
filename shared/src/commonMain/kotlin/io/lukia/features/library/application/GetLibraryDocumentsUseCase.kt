@@ -1,7 +1,7 @@
 package io.lukia.features.library.application
 
-import io.lukia.core.domain.CoverImage
-import io.lukia.core.domain.DocumentInfo
+import io.lukia.core.domain.document.CoverImage
+import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.features.library.domain.LibraryRepository
 
 /**

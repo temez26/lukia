@@ -1,12 +1,12 @@
 package io.lukia.features.library
 
-import io.lukia.core.domain.BookMetadata
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.DocumentType
-import io.lukia.core.domain.PickedDocument
-import io.lukia.core.domain.ReadingProgress
-import io.lukia.features.library.presentation.LibraryBook
-import io.lukia.features.library.presentation.asLibrary
+import io.lukia.core.domain.document.BookMetadata
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.domain.document.PickedDocument
+import io.lukia.core.domain.reading.ReadingProgress
+import io.lukia.features.library.presentation.model.LibraryBook
+import io.lukia.features.library.presentation.model.asLibrary
 
 /**
  * Books for the tests around narrowing a library, built the way the screen

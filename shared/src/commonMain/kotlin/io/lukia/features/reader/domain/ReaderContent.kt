@@ -1,5 +1,9 @@
 package io.lukia.features.reader.domain
 
+import io.lukia.features.reader.domain.outline.OutlineEntry
+import io.lukia.features.reader.domain.page.DocumentPages
+import io.lukia.features.reader.domain.text.TextSection
+
 /**
  * What the reader is showing, in the two shapes a document can take.
  *

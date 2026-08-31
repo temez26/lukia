@@ -1,8 +1,8 @@
 package io.lukia.features.translate.presentation
 
 import androidx.compose.runtime.Composable
-import io.lukia.features.translate.domain.PassageUnit
-import io.lukia.shared.presentation.components.SegmentedControl
+import io.lukia.features.translate.domain.text.PassageUnit
+import io.lukia.shared.presentation.components.controls.SegmentedControl
 
 /**
  * What one gesture asks for, including nothing at all.

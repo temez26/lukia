@@ -1,10 +1,21 @@
 package io.lukia.features.library.presentation
 
 import io.lukia.MainDispatcherTest
-import io.lukia.core.domain.BookMetadata
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.FakeReadingProgressRepository
-import io.lukia.core.domain.ReadingProgress
+import io.lukia.core.domain.document.BookMetadata
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.reading.FakeReadingProgressRepository
+import io.lukia.core.domain.reading.ReadingProgress
+import io.lukia.features.library.presentation.model.LibraryQuery
+import io.lukia.features.library.presentation.sessions.deleteSelected
+import io.lukia.features.library.presentation.sessions.resetProgressOnSelected
+import io.lukia.features.library.presentation.sessions.selectDuplicates
+import io.lukia.features.library.presentation.sessions.selectMissing
+import io.lukia.features.library.presentation.sessions.selection
+import io.lukia.features.library.presentation.sessions.setFavoriteOnSelected
+import io.lukia.features.library.presentation.sessions.startSelecting
+import io.lukia.features.library.presentation.sessions.stopSelecting
+import io.lukia.features.library.presentation.sessions.toggleAllSelected
+import io.lukia.features.library.presentation.sessions.toggleSelected
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

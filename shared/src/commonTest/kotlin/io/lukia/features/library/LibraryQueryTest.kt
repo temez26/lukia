@@ -1,11 +1,12 @@
 package io.lukia.features.library
 
-import io.lukia.core.domain.DocumentType
-import io.lukia.features.library.presentation.LibraryFacets
-import io.lukia.features.library.presentation.LibraryQuery
-import io.lukia.features.library.presentation.LibraryShelf
-import io.lukia.features.library.presentation.facets
-import io.lukia.features.library.presentation.matching
+import io.lukia.core.domain.document.DocumentType
+import io.lukia.features.library.presentation.model.LibraryFacets
+import io.lukia.features.library.presentation.model.LibraryQuery
+import io.lukia.features.library.presentation.model.LibraryShelf
+import io.lukia.features.library.presentation.model.LibrarySort
+import io.lukia.features.library.presentation.model.facets
+import io.lukia.features.library.presentation.model.matching
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -149,7 +150,7 @@ class LibraryQueryTest {
         assertTrue(LibraryQuery(shelf = LibraryShelf.Unread).isNarrowed)
         assertTrue(LibraryQuery(favouritesOnly = true).isNarrowed)
         // An order is not a narrowing: every book is still on screen.
-        assertFalse(LibraryQuery(sort = io.lukia.features.library.presentation.LibrarySort.Title).isNarrowed)
+        assertFalse(LibraryQuery(sort = io.lukia.features.library.presentation.model.LibrarySort.Title).isNarrowed)
     }
 
     /**

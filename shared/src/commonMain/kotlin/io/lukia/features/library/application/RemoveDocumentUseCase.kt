@@ -1,8 +1,8 @@
 package io.lukia.features.library.application
 
-import io.lukia.core.domain.DocumentWorkspace
-import io.lukia.core.domain.PdfLayoutRepository
-import io.lukia.core.domain.ReadingProgressRepository
+import io.lukia.core.domain.reading.PdfLayoutRepository
+import io.lukia.core.domain.reading.ReadingProgressRepository
+import io.lukia.core.domain.storage.DocumentWorkspace
 import io.lukia.features.library.domain.LibraryRepository
 
 /**

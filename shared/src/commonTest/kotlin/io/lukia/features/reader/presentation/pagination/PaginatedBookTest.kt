@@ -1,7 +1,7 @@
 package io.lukia.features.reader.presentation.pagination
 
-import io.lukia.features.reader.domain.OutlineEntry
-import io.lukia.features.reader.domain.ReaderOutline
+import io.lukia.features.reader.domain.outline.OutlineEntry
+import io.lukia.features.reader.domain.outline.ReaderOutline
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

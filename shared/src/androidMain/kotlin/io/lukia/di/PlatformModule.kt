@@ -1,10 +1,10 @@
 package io.lukia.di
 
 import app.cash.sqldelight.db.SqlDriver
-import io.lukia.core.domain.DocumentWorkspace
-import io.lukia.core.domain.IncomingDocumentStore
-import io.lukia.core.domain.SecretStore
-import io.lukia.core.domain.SettingsStore
+import io.lukia.core.domain.document.IncomingDocumentStore
+import io.lukia.core.domain.storage.DocumentWorkspace
+import io.lukia.core.domain.storage.SecretStore
+import io.lukia.core.domain.storage.SettingsStore
 import io.lukia.core.infrastructure.AndroidDocumentWorkspace
 import io.lukia.core.infrastructure.AndroidIncomingDocumentStore
 import io.lukia.core.infrastructure.AndroidSecretStore

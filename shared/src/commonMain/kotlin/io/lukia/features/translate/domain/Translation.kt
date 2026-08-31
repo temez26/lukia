@@ -1,6 +1,8 @@
 package io.lukia.features.translate.domain
 
-import io.lukia.core.domain.BookMetadata
+import io.lukia.core.domain.document.BookMetadata
+import io.lukia.features.translate.domain.settings.TargetLanguage
+import io.lukia.features.translate.domain.text.PassageUnit
 
 /**
  * What a book is, told to whatever is doing the translating.

@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import io.lukia.core.domain.PdfLayout
+import io.lukia.core.domain.reading.PdfLayout
 import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.domain.LineSpacing
 import io.lukia.features.reader.domain.ReaderSettings
@@ -15,8 +15,8 @@ import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.domain.ReaderTypeface
 import io.lukia.features.reader.domain.ReadingWidth
 import io.lukia.features.reader.domain.TextAlignment
-import io.lukia.features.reader.presentation.components.TextSizeStepper
-import io.lukia.shared.presentation.components.SegmentedControl
+import io.lukia.features.reader.presentation.components.settings.TextSizeStepper
+import io.lukia.shared.presentation.components.controls.SegmentedControl
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import kotlin.math.roundToInt

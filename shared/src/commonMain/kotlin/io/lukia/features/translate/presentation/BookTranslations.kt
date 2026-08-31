@@ -1,7 +1,7 @@
 package io.lukia.features.translate.presentation
 
 import androidx.compose.runtime.Immutable
-import io.lukia.features.translate.domain.TextAnchor
+import io.lukia.features.translate.domain.text.TextAnchor
 
 /**
  * Every translation in the open book, filed by where it belongs.

@@ -5,11 +5,11 @@ import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import io.lukia.features.reader.domain.DocumentPages
-import io.lukia.features.reader.domain.OutlineEntry
-import io.lukia.features.reader.domain.PageGlyph
-import io.lukia.features.reader.domain.PageImage
-import io.lukia.features.reader.domain.PageSize
+import io.lukia.features.reader.domain.outline.OutlineEntry
+import io.lukia.features.reader.domain.page.DocumentPages
+import io.lukia.features.reader.domain.page.PageGlyph
+import io.lukia.features.reader.domain.page.PageImage
+import io.lukia.features.reader.domain.page.PageSize
 import io.lukia.features.reader.infrastructure.pdf.PdfOutlineReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex

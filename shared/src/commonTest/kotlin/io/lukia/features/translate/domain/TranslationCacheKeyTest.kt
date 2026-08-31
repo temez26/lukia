@@ -1,5 +1,6 @@
 package io.lukia.features.translate.domain
 
+import io.lukia.features.translate.domain.settings.TargetLanguage
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals

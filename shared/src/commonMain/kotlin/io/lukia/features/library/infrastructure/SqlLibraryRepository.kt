@@ -1,10 +1,10 @@
 package io.lukia.features.library.infrastructure
 
-import io.lukia.core.domain.BookMetadata
-import io.lukia.core.domain.CoverImage
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.DocumentType
-import io.lukia.core.domain.PickedDocument
+import io.lukia.core.domain.document.BookMetadata
+import io.lukia.core.domain.document.CoverImage
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.domain.document.PickedDocument
 import io.lukia.core.infrastructure.db.Document
 import io.lukia.core.infrastructure.db.LukiaDatabase
 import io.lukia.core.infrastructure.db.SelectAll

@@ -2,10 +2,10 @@ package io.lukia.features.translate.application
 
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.toAppError
-import io.lukia.features.translate.domain.TargetLanguage
 import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.Translator
+import io.lukia.features.translate.domain.settings.TargetLanguage
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

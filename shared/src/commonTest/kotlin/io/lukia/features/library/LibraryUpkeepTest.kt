@@ -1,11 +1,11 @@
 package io.lukia.features.library
 
-import io.lukia.core.domain.BookMetadata
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.DocumentType
-import io.lukia.core.domain.PickedDocument
-import io.lukia.features.library.presentation.asLibrary
-import io.lukia.features.library.presentation.upkeep
+import io.lukia.core.domain.document.BookMetadata
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.domain.document.PickedDocument
+import io.lukia.features.library.presentation.model.asLibrary
+import io.lukia.features.library.presentation.model.upkeep
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

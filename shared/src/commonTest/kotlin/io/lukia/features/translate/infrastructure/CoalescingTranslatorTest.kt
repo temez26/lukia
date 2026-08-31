@@ -1,8 +1,8 @@
 package io.lukia.features.translate.infrastructure
 
-import io.lukia.features.translate.domain.TargetLanguage
 import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.domain.TranslationRequest
+import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.translate
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async

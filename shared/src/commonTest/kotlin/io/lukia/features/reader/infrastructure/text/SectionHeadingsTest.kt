@@ -1,9 +1,9 @@
 package io.lukia.features.reader.infrastructure.text
 
-import io.lukia.features.reader.domain.OutlineEntry
-import io.lukia.features.reader.domain.TextBlock
-import io.lukia.features.reader.domain.TextRun
-import io.lukia.features.reader.domain.TextSection
+import io.lukia.features.reader.domain.outline.OutlineEntry
+import io.lukia.features.reader.domain.text.TextBlock
+import io.lukia.features.reader.domain.text.TextRun
+import io.lukia.features.reader.domain.text.TextSection
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

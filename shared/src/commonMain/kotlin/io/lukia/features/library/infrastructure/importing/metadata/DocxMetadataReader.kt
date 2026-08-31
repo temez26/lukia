@@ -1,6 +1,6 @@
 package io.lukia.features.library.infrastructure.importing.metadata
 
-import io.lukia.core.domain.BookMetadata
+import io.lukia.core.domain.document.BookMetadata
 import io.lukia.core.infrastructure.archive.ZipArchiveReader
 import io.lukia.core.infrastructure.epub.collapseWhitespace
 import io.lukia.core.infrastructure.xml.XmlEvent

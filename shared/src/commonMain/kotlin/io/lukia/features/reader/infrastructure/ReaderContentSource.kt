@@ -1,19 +1,19 @@
 package io.lukia.features.reader.infrastructure
 
-import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.infrastructure.availableProcessors
 import io.lukia.core.infrastructure.readFileBytes
-import io.lukia.features.reader.domain.PageContent
 import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderContent
-import io.lukia.features.reader.domain.TextExtraction
+import io.lukia.features.reader.domain.page.PageContent
+import io.lukia.features.reader.domain.text.TextExtraction
+import io.lukia.features.reader.infrastructure.pdf.readPdfAsText
+import io.lukia.features.reader.infrastructure.text.epub.readEpub
 import io.lukia.features.reader.infrastructure.text.readDocx
-import io.lukia.features.reader.infrastructure.text.readEpub
 import io.lukia.features.reader.infrastructure.text.readMarkdown
-import io.lukia.features.reader.infrastructure.text.readPdfAsText
 import io.lukia.features.reader.infrastructure.text.readPlainText
-import io.lukia.features.reader.infrastructure.text.storeReflow
-import io.lukia.features.reader.infrastructure.text.storedReflow
+import io.lukia.features.reader.infrastructure.text.reflow.storeReflow
+import io.lukia.features.reader.infrastructure.text.reflow.storedReflow
 
 /**
  * Opens the document at [path] as something the reader can show, or returns null

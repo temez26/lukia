@@ -1,7 +1,7 @@
 package io.lukia.features.reader.infrastructure.pdf
 
-import io.lukia.features.reader.domain.PageSize
-import io.lukia.features.reader.domain.TextQuad
+import io.lukia.features.reader.domain.page.PageSize
+import io.lukia.features.reader.domain.page.TextQuad
 import kotlin.math.max
 import kotlin.math.min
 

@@ -7,7 +7,7 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.timeout
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.serialization.kotlinx.json.json
-import io.lukia.features.translate.domain.TranslationSettings
+import io.lukia.features.translate.domain.settings.TranslationSettings
 import kotlinx.serialization.json.Json
 
 /**

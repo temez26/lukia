@@ -1,8 +1,8 @@
 package io.lukia.features.library
 
-import io.lukia.core.domain.ReadingProgress
-import io.lukia.features.library.presentation.LibrarySort
-import io.lukia.features.library.presentation.sortedFor
+import io.lukia.core.domain.reading.ReadingProgress
+import io.lukia.features.library.presentation.model.LibrarySort
+import io.lukia.features.library.presentation.model.sortedFor
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

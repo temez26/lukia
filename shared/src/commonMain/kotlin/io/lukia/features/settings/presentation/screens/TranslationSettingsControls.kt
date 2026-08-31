@@ -14,10 +14,10 @@ import io.lukia.features.settings.presentation.AvailableModels
 import io.lukia.features.settings.presentation.ConnectionTest
 import io.lukia.features.settings.presentation.ModelReadiness
 import io.lukia.features.settings.presentation.components.SettingsTextField
-import io.lukia.features.translate.domain.TranslationProvider
-import io.lukia.shared.presentation.components.ButtonVariant
-import io.lukia.shared.presentation.components.ChoiceList
-import io.lukia.shared.presentation.components.LukiaButton
+import io.lukia.features.translate.domain.provider.TranslationProvider
+import io.lukia.shared.presentation.components.controls.ButtonVariant
+import io.lukia.shared.presentation.components.controls.ChoiceList
+import io.lukia.shared.presentation.components.controls.LukiaButton
 import io.lukia.shared.presentation.theme.Space
 
 // The controls only the translation group has: picking a model off a server,

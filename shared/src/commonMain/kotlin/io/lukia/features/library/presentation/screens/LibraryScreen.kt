@@ -11,13 +11,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import io.lukia.core.domain.DocumentInfo
+import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.infrastructure.AppCommand
 import io.lukia.features.library.presentation.LibraryViewModel
-import io.lukia.features.library.presentation.rememberPlatformFilePicker
-import io.lukia.features.library.presentation.rememberPlatformFolderPicker
+import io.lukia.features.library.presentation.pickers.rememberPlatformFilePicker
+import io.lukia.features.library.presentation.pickers.rememberPlatformFolderPicker
 import io.lukia.features.settings.presentation.SettingsOverlay
-import io.lukia.shared.presentation.components.behindOverlay
+import io.lukia.shared.presentation.components.surface.behindOverlay
 import io.lukia.shared.presentation.theme.isWideWindow
 import org.koin.compose.viewmodel.koinViewModel
 

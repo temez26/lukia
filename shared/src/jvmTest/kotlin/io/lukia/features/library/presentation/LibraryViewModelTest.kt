@@ -2,8 +2,8 @@ package io.lukia.features.library.presentation
 
 import io.lukia.MainDispatcherTest
 import io.lukia.core.domain.AppError
-import io.lukia.core.domain.FakeReadingProgressRepository
-import io.lukia.core.domain.ReadingProgress
+import io.lukia.core.domain.reading.FakeReadingProgressRepository
+import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.core.presentation.UiState
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

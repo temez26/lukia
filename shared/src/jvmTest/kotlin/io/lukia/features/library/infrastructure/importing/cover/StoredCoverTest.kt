@@ -1,6 +1,6 @@
 package io.lukia.features.library.infrastructure.importing.cover
 
-import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.infrastructure.shrinkCoverImage
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage

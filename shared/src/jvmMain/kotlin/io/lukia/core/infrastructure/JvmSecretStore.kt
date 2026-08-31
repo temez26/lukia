@@ -1,6 +1,6 @@
 package io.lukia.core.infrastructure
 
-import io.lukia.core.domain.SecretStore
+import io.lukia.core.domain.storage.SecretStore
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermission

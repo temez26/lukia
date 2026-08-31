@@ -9,11 +9,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import io.lukia.core.domain.AppTheme
-import io.lukia.features.library.presentation.PlatformPickerHost
+import io.lukia.features.library.presentation.pickers.PlatformPickerHost
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.navigation.DesktopShell
 import io.lukia.navigation.MobileShell
-import io.lukia.shared.presentation.components.LaunchSplash
+import io.lukia.shared.presentation.components.launch.LaunchSplash
 import io.lukia.shared.presentation.theme.LukiaTheme
 import io.lukia.shared.presentation.theme.SystemAppearanceEffect
 import org.koin.compose.koinInject

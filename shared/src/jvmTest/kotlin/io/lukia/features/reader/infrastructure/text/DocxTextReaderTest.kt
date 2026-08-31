@@ -1,9 +1,9 @@
 package io.lukia.features.reader.infrastructure.text
 
-import io.lukia.features.reader.domain.Emphasis
-import io.lukia.features.reader.domain.TextBlock
-import io.lukia.features.reader.domain.TextSection
-import io.lukia.features.reader.domain.plainText
+import io.lukia.features.reader.domain.text.Emphasis
+import io.lukia.features.reader.domain.text.TextBlock
+import io.lukia.features.reader.domain.text.TextSection
+import io.lukia.features.reader.domain.text.plainText
 import java.io.ByteArrayOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream

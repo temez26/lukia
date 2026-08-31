@@ -1,6 +1,6 @@
 package io.lukia.core.infrastructure
 
-import io.lukia.core.domain.IncomingDocumentStore
+import io.lukia.core.domain.document.IncomingDocumentStore
 
 /**
  * Books other apps hand to Lukia: where they arrive, and where they are kept.

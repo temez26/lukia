@@ -1,6 +1,6 @@
 package io.lukia.core.infrastructure.epub
 
-import io.lukia.core.domain.BookMetadata
+import io.lukia.core.domain.document.BookMetadata
 import io.lukia.core.infrastructure.archive.ZipArchiveReader
 import io.lukia.core.infrastructure.archive.decodePercentEncoding
 import io.lukia.core.infrastructure.archive.resolveArchivePath

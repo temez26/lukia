@@ -1,6 +1,6 @@
 package io.lukia.features.library.infrastructure
 
-import io.lukia.core.domain.SettingsStore
+import io.lukia.core.domain.storage.SettingsStore
 import io.lukia.core.infrastructure.PersistedSettings
 import io.lukia.core.infrastructure.readEnum
 import io.lukia.features.library.domain.LibraryLayout

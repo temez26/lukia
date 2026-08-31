@@ -1,7 +1,7 @@
 package io.lukia.features.library.domain
 
-import io.lukia.core.domain.PickedDocument
-import io.lukia.core.domain.PickedFolder
+import io.lukia.core.domain.document.PickedDocument
+import io.lukia.core.domain.document.PickedFolder
 
 /**
  * How many levels below the chosen folder a scan will look.

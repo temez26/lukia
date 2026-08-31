@@ -1,8 +1,8 @@
 package io.lukia.features.library.infrastructure.importing
 
-import io.lukia.core.domain.BookMetadata
-import io.lukia.core.domain.CoverImage
-import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.document.BookMetadata
+import io.lukia.core.domain.document.CoverImage
+import io.lukia.core.domain.document.DocumentType
 import io.lukia.features.library.infrastructure.importing.cover.extractCover
 import io.lukia.features.library.infrastructure.importing.metadata.extractMetadata
 

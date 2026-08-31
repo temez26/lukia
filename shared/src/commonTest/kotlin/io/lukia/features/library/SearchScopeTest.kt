@@ -1,7 +1,7 @@
 package io.lukia.features.library
 
-import io.lukia.core.domain.DocumentType
-import io.lukia.features.library.presentation.searching
+import io.lukia.core.domain.document.DocumentType
+import io.lukia.features.library.presentation.model.searching
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

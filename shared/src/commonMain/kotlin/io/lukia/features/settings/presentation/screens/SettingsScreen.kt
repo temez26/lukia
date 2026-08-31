@@ -22,10 +22,10 @@ import io.lukia.features.settings.presentation.SettingsViewModel
 import io.lukia.features.settings.presentation.TranslatingActions
 import io.lukia.features.settings.presentation.rememberProviderActions
 import io.lukia.features.settings.presentation.rememberTranslatingActions
-import io.lukia.features.translate.domain.TranslationSettings
-import io.lukia.shared.presentation.components.BackChevron
-import io.lukia.shared.presentation.components.IconButtonVariant
-import io.lukia.shared.presentation.components.LukiaIconButton
+import io.lukia.features.translate.domain.settings.TranslationSettings
+import io.lukia.shared.presentation.components.controls.IconButtonVariant
+import io.lukia.shared.presentation.components.controls.LukiaIconButton
+import io.lukia.shared.presentation.components.icons.BackChevron
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import org.koin.compose.viewmodel.koinViewModel

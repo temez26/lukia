@@ -1,7 +1,7 @@
 package io.lukia.features.reader.infrastructure.text
 
-import io.lukia.features.reader.domain.Emphasis
-import io.lukia.features.reader.domain.TextRun
+import io.lukia.features.reader.domain.text.Emphasis
+import io.lukia.features.reader.domain.text.TextRun
 
 /**
  * Adds [text], merged into the run before it when the formatting has not

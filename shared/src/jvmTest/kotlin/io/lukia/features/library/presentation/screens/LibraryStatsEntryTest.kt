@@ -12,8 +12,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.unit.dp
 import io.lukia.core.presentation.UiState
-import io.lukia.features.library.presentation.LibraryFacets
-import io.lukia.features.library.presentation.LibraryQuery
+import io.lukia.features.library.presentation.model.LibraryFacets
+import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.stats.presentation.StatsButton
 import io.lukia.shared.presentation.theme.LukiaTheme
 import kotlin.test.Test

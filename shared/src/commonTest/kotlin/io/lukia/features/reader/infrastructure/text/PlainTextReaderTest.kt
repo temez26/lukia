@@ -1,8 +1,8 @@
 package io.lukia.features.reader.infrastructure.text
 
-import io.lukia.features.reader.domain.TextBlock
-import io.lukia.features.reader.domain.TextSection
-import io.lukia.features.reader.domain.plainText
+import io.lukia.features.reader.domain.text.TextBlock
+import io.lukia.features.reader.domain.text.TextSection
+import io.lukia.features.reader.domain.text.plainText
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

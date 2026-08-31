@@ -10,12 +10,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import io.lukia.features.library.presentation.LibraryBook
-import io.lukia.features.library.presentation.LibraryShelfUi
 import io.lukia.features.library.presentation.LibraryViewModel
-import io.lukia.features.library.presentation.components.LibrarySelectionActions
-import io.lukia.features.library.presentation.components.LibrarySelectionBar
-import io.lukia.shared.presentation.components.ConfirmDialog
+import io.lukia.features.library.presentation.components.selection.LibrarySelectionActions
+import io.lukia.features.library.presentation.components.selection.LibrarySelectionBar
+import io.lukia.features.library.presentation.model.LibraryBook
+import io.lukia.features.library.presentation.sessions.LibraryShelfUi
+import io.lukia.features.library.presentation.sessions.bulkAction
+import io.lukia.features.library.presentation.sessions.deleteSelected
+import io.lukia.features.library.presentation.sessions.refreshSelected
+import io.lukia.features.library.presentation.sessions.resetProgressOnSelected
+import io.lukia.features.library.presentation.sessions.selectDuplicates
+import io.lukia.features.library.presentation.sessions.selectMissing
+import io.lukia.features.library.presentation.sessions.selection
+import io.lukia.features.library.presentation.sessions.setFavoriteOnSelected
+import io.lukia.features.library.presentation.sessions.startSelecting
+import io.lukia.features.library.presentation.sessions.stopSelecting
+import io.lukia.features.library.presentation.sessions.toggleAllSelected
+import io.lukia.features.library.presentation.sessions.toggleSelected
+import io.lukia.shared.presentation.components.surface.ConfirmDialog
 
 /**
  * The selection mode's state and the view model's answers to it, in one value.

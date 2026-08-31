@@ -1,7 +1,7 @@
 package io.lukia.features.reader.presentation.pagination
 
-import io.lukia.features.reader.domain.TextBlock
-import io.lukia.features.reader.domain.TextSection
+import io.lukia.features.reader.domain.text.TextBlock
+import io.lukia.features.reader.domain.text.TextSection
 
 /**
  * Lays a reflowable book out as pages that each fit the window.

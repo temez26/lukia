@@ -1,6 +1,6 @@
 package io.lukia.features.stats
 
-import io.lukia.core.domain.ReadingSession
+import io.lukia.core.domain.reading.ReadingSession
 import io.lukia.features.stats.domain.readingHabits
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate

@@ -1,6 +1,6 @@
 package io.lukia.features.library.application
 
-import io.lukia.core.domain.ReadingProgressRepository
+import io.lukia.core.domain.reading.ReadingProgressRepository
 import io.lukia.features.library.domain.LibraryRepository
 
 /**

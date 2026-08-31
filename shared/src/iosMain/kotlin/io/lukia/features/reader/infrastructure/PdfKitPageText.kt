@@ -1,7 +1,7 @@
 package io.lukia.features.reader.infrastructure
 
-import io.lukia.features.reader.domain.PageGlyph
-import io.lukia.features.reader.domain.TextQuad
+import io.lukia.features.reader.domain.page.PageGlyph
+import io.lukia.features.reader.domain.page.TextQuad
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped

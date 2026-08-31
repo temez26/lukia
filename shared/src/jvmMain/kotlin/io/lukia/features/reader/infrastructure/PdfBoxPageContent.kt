@@ -1,9 +1,9 @@
 package io.lukia.features.reader.infrastructure
 
-import io.lukia.features.reader.domain.PageContent
-import io.lukia.features.reader.domain.PageGlyph
-import io.lukia.features.reader.domain.PageImage
-import io.lukia.features.reader.domain.TextQuad
+import io.lukia.features.reader.domain.page.PageContent
+import io.lukia.features.reader.domain.page.PageGlyph
+import io.lukia.features.reader.domain.page.PageImage
+import io.lukia.features.reader.domain.page.TextQuad
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -99,7 +99,7 @@ internal class PdfBoxPageContent(
  *
  * The `Dir` accessors are the ones already turned the right way up - origin at
  * the top left, rotated pages accounted for - which is the space
- * [io.lukia.features.reader.domain.TextQuad] is defined in.
+ * [io.lukia.features.reader.domain.page.TextQuad] is defined in.
  */
 private class GlyphStripper : PDFTextStripper() {
 

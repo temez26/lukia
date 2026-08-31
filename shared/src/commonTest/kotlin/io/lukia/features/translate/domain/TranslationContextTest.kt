@@ -1,6 +1,6 @@
 package io.lukia.features.translate.domain
 
-import io.lukia.core.domain.BookMetadata
+import io.lukia.core.domain.document.BookMetadata
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

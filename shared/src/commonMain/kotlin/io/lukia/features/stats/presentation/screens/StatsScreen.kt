@@ -18,9 +18,9 @@ import androidx.compose.ui.Modifier
 import io.lukia.core.presentation.UiState
 import io.lukia.features.stats.domain.ReadingSummary
 import io.lukia.features.stats.presentation.StatsViewModel
-import io.lukia.shared.presentation.components.BackChevron
-import io.lukia.shared.presentation.components.IconButtonVariant
-import io.lukia.shared.presentation.components.LukiaIconButton
+import io.lukia.shared.presentation.components.controls.IconButtonVariant
+import io.lukia.shared.presentation.components.controls.LukiaIconButton
+import io.lukia.shared.presentation.components.icons.BackChevron
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import org.koin.compose.viewmodel.koinViewModel

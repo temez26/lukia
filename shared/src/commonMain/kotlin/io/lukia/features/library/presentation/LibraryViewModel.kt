@@ -2,11 +2,11 @@ package io.lukia.features.library.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.PickedDocument
-import io.lukia.core.domain.PickedFolder
-import io.lukia.core.domain.ReadingProgress
-import io.lukia.core.domain.ReadingProgressRepository
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.document.PickedDocument
+import io.lukia.core.domain.document.PickedFolder
+import io.lukia.core.domain.reading.ReadingProgress
+import io.lukia.core.domain.reading.ReadingProgressRepository
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.core.domain.toAppError
 import io.lukia.core.infrastructure.IncomingDocuments
@@ -22,8 +22,20 @@ import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.domain.LibraryLayout
 import io.lukia.features.library.infrastructure.LibrarySettingsRepository
 import io.lukia.features.library.infrastructure.RecentSearchesRepository
-import io.lukia.shared.presentation.components.CoverArtCache
-import io.lukia.shared.presentation.components.CoverArtSource
+import io.lukia.features.library.presentation.model.ImportProgress
+import io.lukia.features.library.presentation.model.LibraryBook
+import io.lukia.features.library.presentation.model.LibraryFacets
+import io.lukia.features.library.presentation.model.LibraryQuery
+import io.lukia.features.library.presentation.model.LibraryUpkeep
+import io.lukia.features.library.presentation.model.asLibrary
+import io.lukia.features.library.presentation.model.facets
+import io.lukia.features.library.presentation.model.matching
+import io.lukia.features.library.presentation.model.upkeep
+import io.lukia.features.library.presentation.sessions.LibraryImportSession
+import io.lukia.features.library.presentation.sessions.LibrarySearchSession
+import io.lukia.features.library.presentation.sessions.LibrarySelectionSession
+import io.lukia.shared.presentation.components.cover.CoverArtCache
+import io.lukia.shared.presentation.components.cover.CoverArtSource
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -60,16 +72,13 @@ class LibraryViewModel(
      * see [LibrarySelectionSession] - so that a mode with its own state and its
      * own actions is a thing rather than a scattering of fields.
      */
-    private val selectionSession = LibrarySelectionSession(
+    internal val selectionSession = LibrarySelectionSession(
         setFavoriteUseCase = setFavoriteUseCase,
         refreshDocumentUseCase = refreshDocumentUseCase,
         removeDocumentUseCase = removeDocumentUseCase,
         progressRepository = readingProgressRepository,
         scope = viewModelScope,
     )
-
-    val selection: StateFlow<LibrarySelection> = selectionSession.selection
-    val bulkAction: StateFlow<BulkAction?> = selectionSession.running
 
     private val _uiState = MutableStateFlow<UiState<List<DocumentInfo>>>(UiState.Loading)
     val uiState: StateFlow<UiState<List<DocumentInfo>>> = _uiState.asStateFlow()
@@ -327,8 +336,6 @@ class LibraryViewModel(
         }
     }
 
-    fun startSelecting() = selectionSession.start()
-
     /**
      * What is worth tidying on the shelf as it is currently narrowed, so that
      * the menu can say how much there is before anyone presses anything.
@@ -336,40 +343,6 @@ class LibraryViewModel(
     val upkeep: StateFlow<LibraryUpkeep> = books
         .map { it.upkeep() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LibraryUpkeep.None)
-
-    /**
-     * Ticks the books whose files have gone, and leaves the reader looking at
-     * them.
-     *
-     * Worked out from the shelf as it stands rather than read from [upkeep],
-     * which is shared only while the menu showing its counts is on screen - an
-     * action must act on the library, not on whether anybody was watching it.
-     */
-    fun selectMissing() = selectionSession.start(books.value.upkeep().missing)
-
-    /** Ticks every copy but the first of each book that is on the shelf twice. */
-    fun selectDuplicates() = selectionSession.start(books.value.upkeep().duplicates)
-
-    fun stopSelecting() = selectionSession.stop()
-
-    fun toggleSelected(location: String) = selectionSession.toggle(location)
-
-    /**
-     * Ticks what the shelf is showing rather than the whole library: a reader
-     * who has narrowed to one author and pressed Select All has selected that
-     * author, and being handed everything they own instead would be the app
-     * answering a question nobody asked.
-     */
-    fun toggleAllSelected() = selectionSession.toggleAll(books.value.map { it.location })
-
-    fun refreshSelected() = selectionSession.refresh(::onBulkDone)
-
-    fun setFavoriteOnSelected() =
-        selectionSession.setFavorite(_uiState.value.dataOrNull.orEmpty(), ::onBulkDone)
-
-    fun resetProgressOnSelected() = selectionSession.resetProgress(::onBulkDone)
-
-    fun deleteSelected() = selectionSession.delete(::onBulkDone)
 
     /**
      * The library is read again rather than patched after a bulk action.
@@ -380,7 +353,7 @@ class LibraryViewModel(
      * patches to apply is more work - and more ways to be wrong - than reading
      * the shelf once.
      */
-    private fun onBulkDone(message: String) {
+    internal fun onBulkDone(message: String) {
         _message.value = message
 
         loadDocuments()

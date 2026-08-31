@@ -1,6 +1,6 @@
 package io.lukia.features.library.application
 
-import io.lukia.core.domain.PickedDocument
+import io.lukia.core.domain.document.PickedDocument
 import io.lukia.features.library.domain.LibraryRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher

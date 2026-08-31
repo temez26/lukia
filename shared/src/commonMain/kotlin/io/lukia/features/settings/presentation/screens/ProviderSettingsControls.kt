@@ -10,11 +10,11 @@ import androidx.compose.ui.graphics.Color
 import io.lukia.features.settings.presentation.ProviderActions
 import io.lukia.features.settings.presentation.ProviderState
 import io.lukia.features.settings.presentation.components.SettingsTextField
-import io.lukia.features.translate.domain.TranslationProvider
-import io.lukia.features.translate.domain.TranslationSettings
-import io.lukia.features.translate.domain.WordLookup
-import io.lukia.shared.presentation.components.ChoiceList
-import io.lukia.shared.presentation.components.SegmentedControl
+import io.lukia.features.translate.domain.provider.TranslationProvider
+import io.lukia.features.translate.domain.settings.TranslationSettings
+import io.lukia.features.translate.domain.text.WordLookup
+import io.lukia.shared.presentation.components.controls.ChoiceList
+import io.lukia.shared.presentation.components.controls.SegmentedControl
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 

@@ -4,8 +4,8 @@ import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.AppErrorException
-import io.lukia.features.translate.domain.TranslationProvider
-import io.lukia.features.translate.domain.TranslationSettings
+import io.lukia.features.translate.domain.provider.TranslationProvider
+import io.lukia.features.translate.domain.settings.TranslationSettings
 import kotlin.coroutines.cancellation.CancellationException
 
 /**

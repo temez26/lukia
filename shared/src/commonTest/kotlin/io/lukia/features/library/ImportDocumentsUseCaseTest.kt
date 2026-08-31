@@ -1,9 +1,10 @@
 package io.lukia.features.library
 
 import io.lukia.core.domain.AppError
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.DocumentType
-import io.lukia.core.domain.TestDocuments
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.domain.document.PickedDocument
+import io.lukia.core.domain.document.TestDocuments
 import io.lukia.core.domain.toAppError
 import io.lukia.features.library.application.ImportDocumentUseCase
 import io.lukia.features.library.application.ImportDocumentsUseCase
@@ -152,7 +153,7 @@ class ImportDocumentsUseCaseTest {
 
         private val delegate = TypeFromExtensionAnalyzer()
 
-        override suspend fun analyze(document: io.lukia.core.domain.PickedDocument): DocumentInfo {
+        override suspend fun analyze(document: io.lukia.core.domain.document.PickedDocument): DocumentInfo {
             analyzed += document.location
             return delegate.analyze(document)
         }

@@ -1,7 +1,7 @@
 package io.lukia.features.library.infrastructure.importing.metadata
 
-import io.lukia.core.domain.BookMetadata
-import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.document.BookMetadata
+import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.infrastructure.epub.EpubPackage
 
 /**

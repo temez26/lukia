@@ -1,7 +1,7 @@
 package io.lukia.features.translate.presentation
 
-import io.lukia.features.translate.domain.TextAnchor
 import io.lukia.features.translate.domain.Translation
+import io.lukia.features.translate.domain.text.TextAnchor
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

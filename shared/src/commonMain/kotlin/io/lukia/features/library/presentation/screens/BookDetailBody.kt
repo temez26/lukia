@@ -24,12 +24,12 @@ import androidx.compose.ui.unit.dp
 import io.lukia.core.presentation.authorLine
 import io.lukia.core.presentation.bookTitle
 import io.lukia.features.library.application.BookDetails
-import io.lukia.features.library.presentation.components.ReadableCover
-import io.lukia.features.library.presentation.progressLabel
-import io.lukia.features.library.presentation.readActionLabel
-import io.lukia.shared.presentation.components.FavoriteBadge
-import io.lukia.shared.presentation.components.StatusBadge
-import io.lukia.shared.presentation.components.rememberBookCover
+import io.lukia.features.library.presentation.components.book.ReadableCover
+import io.lukia.features.library.presentation.model.progressLabel
+import io.lukia.features.library.presentation.model.readActionLabel
+import io.lukia.shared.presentation.components.cover.FavoriteBadge
+import io.lukia.shared.presentation.components.cover.rememberBookCover
+import io.lukia.shared.presentation.components.surface.StatusBadge
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 

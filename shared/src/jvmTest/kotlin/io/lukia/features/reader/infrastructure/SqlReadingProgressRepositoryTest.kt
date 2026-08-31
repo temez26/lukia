@@ -1,6 +1,6 @@
 package io.lukia.features.reader.infrastructure
 
-import io.lukia.core.domain.ReadingProgress
+import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.core.infrastructure.testDatabase
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest

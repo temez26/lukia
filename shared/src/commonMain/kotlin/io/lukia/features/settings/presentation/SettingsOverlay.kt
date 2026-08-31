@@ -8,8 +8,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import io.lukia.features.settings.presentation.screens.SettingsBody
-import io.lukia.shared.presentation.components.OverlayPanel
-import io.lukia.shared.presentation.components.OverlayPanelTopClearance
+import io.lukia.shared.presentation.components.surface.OverlayPanel
+import io.lukia.shared.presentation.components.surface.OverlayPanelTopClearance
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import org.koin.compose.viewmodel.koinViewModel
 

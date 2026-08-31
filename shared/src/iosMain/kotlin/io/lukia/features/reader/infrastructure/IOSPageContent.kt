@@ -1,8 +1,8 @@
 package io.lukia.features.reader.infrastructure
 
-import io.lukia.features.reader.domain.PageContent
-import io.lukia.features.reader.domain.PageGlyph
-import io.lukia.features.reader.domain.PageImage
+import io.lukia.features.reader.domain.page.PageContent
+import io.lukia.features.reader.domain.page.PageGlyph
+import io.lukia.features.reader.domain.page.PageImage
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex

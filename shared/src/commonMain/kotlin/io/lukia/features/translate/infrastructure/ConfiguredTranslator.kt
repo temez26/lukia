@@ -1,9 +1,9 @@
 package io.lukia.features.translate.infrastructure
 
 import io.lukia.features.translate.domain.Translation
-import io.lukia.features.translate.domain.TranslationProvider
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.Translator
+import io.lukia.features.translate.domain.provider.TranslationProvider
 
 /**
  * Whichever translator the reader has set up, chosen per request.

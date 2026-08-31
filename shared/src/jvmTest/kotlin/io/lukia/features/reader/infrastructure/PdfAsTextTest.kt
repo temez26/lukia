@@ -1,8 +1,8 @@
 package io.lukia.features.reader.infrastructure
 
 import io.lukia.features.reader.domain.ReflowableContent
-import io.lukia.features.reader.domain.TextBlock
-import io.lukia.features.reader.domain.plainText
+import io.lukia.features.reader.domain.text.TextBlock
+import io.lukia.features.reader.domain.text.plainText
 import kotlinx.coroutines.test.runTest
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage

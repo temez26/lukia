@@ -1,6 +1,6 @@
 package io.lukia.features.reader.presentation.pagination
 
-import io.lukia.features.reader.domain.TextBlock
+import io.lukia.features.reader.domain.text.TextBlock
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

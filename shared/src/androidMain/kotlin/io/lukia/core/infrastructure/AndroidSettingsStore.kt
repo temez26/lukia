@@ -1,7 +1,7 @@
 package io.lukia.core.infrastructure
 
 import android.content.Context
-import io.lukia.core.domain.SettingsStore
+import io.lukia.core.domain.storage.SettingsStore
 
 /**
  * Shared preferences: already in memory after the first read, and written back

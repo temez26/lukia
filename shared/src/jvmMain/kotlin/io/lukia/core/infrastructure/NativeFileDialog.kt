@@ -1,6 +1,6 @@
 package io.lukia.core.infrastructure
 
-import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.document.DocumentType
 import java.awt.FileDialog
 import java.awt.Frame
 import java.awt.KeyboardFocusManager

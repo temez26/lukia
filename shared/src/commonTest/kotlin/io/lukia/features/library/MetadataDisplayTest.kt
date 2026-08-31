@@ -1,18 +1,18 @@
 package io.lukia.features.library
 
-import io.lukia.core.domain.BookMetadata
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.DocumentType
-import io.lukia.core.domain.PickedDocument
-import io.lukia.core.domain.ReadingProgress
+import io.lukia.core.domain.document.BookMetadata
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.domain.document.PickedDocument
+import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.core.presentation.authorLine
 import io.lukia.core.presentation.bookTitle
 import io.lukia.core.presentation.languageName
 import io.lukia.core.presentation.publishedYear
 import io.lukia.features.library.application.BookDetails
-import io.lukia.features.library.presentation.lengthLabel
-import io.lukia.features.library.presentation.progressLabel
-import io.lukia.features.library.presentation.readActionLabel
+import io.lukia.features.library.presentation.model.lengthLabel
+import io.lukia.features.library.presentation.model.progressLabel
+import io.lukia.features.library.presentation.model.readActionLabel
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

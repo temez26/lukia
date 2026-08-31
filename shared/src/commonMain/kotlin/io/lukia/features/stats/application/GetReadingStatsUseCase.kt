@@ -1,7 +1,7 @@
 package io.lukia.features.stats.application
 
-import io.lukia.core.domain.ReadingProgressRepository
-import io.lukia.core.domain.ReadingSessionRepository
+import io.lukia.core.domain.reading.ReadingProgressRepository
+import io.lukia.core.domain.reading.ReadingSessionRepository
 import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.stats.domain.ReadingSummary
 import io.lukia.features.stats.domain.readingHabits

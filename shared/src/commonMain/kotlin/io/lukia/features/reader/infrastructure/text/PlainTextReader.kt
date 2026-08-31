@@ -1,8 +1,8 @@
 package io.lukia.features.reader.infrastructure.text
 
 import io.lukia.features.reader.domain.ReflowableContent
-import io.lukia.features.reader.domain.TextBlock
-import io.lukia.features.reader.domain.TextRun
+import io.lukia.features.reader.domain.text.TextBlock
+import io.lukia.features.reader.domain.text.TextRun
 
 /**
  * Reads a plain text file as paragraphs.
