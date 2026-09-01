@@ -35,7 +35,7 @@ class PaginatedBookTest {
     @Test
     fun everyPageSaysWhereInTheBookItStarts() {
         assertEquals(
-            listOf(0 to 0, 0 to 1, 0 to 2, 1 to 0),
+            listOf(BookPlace(0, 0), BookPlace(0, 1), BookPlace(0, 2), BookPlace(1, 0)),
             book.pages.indices.map(book::placeOf),
         )
     }
@@ -58,12 +58,12 @@ class PaginatedBookTest {
             pageHeightPx = PAGE_HEIGHT / 2,
         )
 
-        assertEquals(0 to 2, place)
+        assertEquals(BookPlace(0, 2), place)
 
         // On the page rather than at the top of it: laid out smaller, that block
         // starts partway down a page that opens with the one before it. What
         // must not happen is the reader being sent to a page without it.
-        val landed = larger.pages[larger.pageOf(place.first, place.second)]
+        val landed = larger.pages[larger.pageOf(place)]
 
         assertTrue(landed.blocks.any { it.sectionIndex == 0 && it.blockIndex == 2 })
     }

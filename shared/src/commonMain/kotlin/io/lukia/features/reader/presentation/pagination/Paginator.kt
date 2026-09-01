@@ -23,14 +23,39 @@ internal fun paginate(
 ): PaginatedBook {
     if (sections.isEmpty() || pageHeightPx <= 0) return PaginatedBook.Empty
 
+    val chunk = paginateChunk(sections, sizes, pageHeightPx, firstSection = 0)
+
+    return PaginatedBook(pages = chunk.pages, sectionPages = chunk.sectionPages)
+}
+
+/**
+ * One run of a book's sections, laid out on pages of its own.
+ *
+ * The same rule as [paginate] applied to part of a book, so that the parts can
+ * be laid out at the same time as each other and shown as they arrive. What
+ * makes that give the same book back is where the runs are cut: a run begins at
+ * a section that opens a page, so it begins with an empty page exactly as a
+ * whole book does, and nothing on its first page could have been carried over
+ * from the run before. See `chunkStarts`.
+ *
+ * [firstSection] is where this run begins in the book, because a page has to be
+ * able to say which section of the book its blocks came from, not which section
+ * of the run.
+ */
+internal fun paginateChunk(
+    sections: List<TextSection>,
+    sizes: BlockSizes,
+    pageHeightPx: Int,
+    firstSection: Int,
+): PaginatedChunk {
     val builder = PageBuilder(sizes, pageHeightPx)
 
-    sections.forEachIndexed { sectionIndex, section ->
+    sections.forEachIndexed { index, section ->
         // A chapter opens a page. A section with no name of its own is not a
         // chapter but the rest of one - the reader divides an over-long file
         // into several - and running straight on is what makes it read as one
         // chapter rather than as a page break in the middle of a sentence.
-        builder.startSection(sectionIndex, newPage = section.title != null)
+        builder.startSection(firstSection + index, newPage = section.title != null)
 
         section.blocks.forEachIndexed { blockIndex, block ->
             builder.add(blockIndex, block)
@@ -106,10 +131,10 @@ private class PageBuilder(
         }
     }
 
-    fun build(): PaginatedBook {
+    fun build(): PaginatedChunk {
         flush()
 
-        return PaginatedBook(pages = pages.toList(), sectionPages = sectionPages.toList())
+        return PaginatedChunk(pages = pages.toList(), sectionPages = sectionPages.toList())
     }
 
     /** Whether what is left of the page can hold [block] whole. */

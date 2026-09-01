@@ -17,7 +17,7 @@ class EpubSingleFileBookTest {
 
     @Test
     fun aFileHoldingEveryChapterIsDividedIntoThem() {
-        val content = readEpub(singleFileBook())
+        val content = epubRead(singleFileBook())
 
         assertNotNull(content)
         assertEquals(
@@ -29,7 +29,7 @@ class EpubSingleFileBookTest {
     /** A row per chapter that all lead to the same place is a panel that does nothing. */
     @Test
     fun theContentsLeadsToTheChapterItsAnchorNames() {
-        val content = readEpub(singleFileBook())
+        val content = epubRead(singleFileBook())
 
         assertNotNull(content)
         assertEquals(
@@ -41,7 +41,7 @@ class EpubSingleFileBookTest {
     /** No chapter of a divided book is large enough to stutter when it is drawn. */
     @Test
     fun noSectionIsLargerThanTheLayoutBudget() {
-        val content = readEpub(singleFileBook(paragraphs = 900))
+        val content = epubRead(singleFileBook(paragraphs = 900))
 
         assertNotNull(content)
         assertTrue(content.sections.all { it.blocks.size <= MAX_BLOCKS_PER_SECTION })
@@ -53,7 +53,7 @@ class EpubSingleFileBookTest {
      */
     @Test
     fun aFileTheReaderCanLayOutIsLeftAsTheOneSectionTheSpineSaysItIs() {
-        val content = readEpub(singleFileBook(paragraphs = 4))
+        val content = epubRead(singleFileBook(paragraphs = 4))
 
         assertNotNull(content)
         assertEquals(1, content.sections.size)
