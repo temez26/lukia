@@ -6,7 +6,13 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.KeyShortcut
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.FrameWindowScope
@@ -83,6 +89,9 @@ fun main() {
             state = windowState,
             title = "Lukia",
             icon = windowIcon,
+            // What the menu bar would otherwise be carrying, on the desktops
+            // that no longer have one - see [LukiaMenuBar].
+            onKeyEvent = { event -> !isMacOs && commands.requestedBy(event) },
         ) {
             // Compose has no parameter for a minimum, so it is set on the AWT
             // window underneath. Below this the grid has no room for two columns
@@ -93,7 +102,7 @@ fun main() {
 
             RememberWhereTheWindowWas(windowState, bounds)
 
-            LukiaMenuBar(commands)
+            if (isMacOs) LukiaMenuBar(commands)
 
             App()
         }
@@ -138,12 +147,20 @@ private data class WindowShape(
 )
 
 /**
- * The window's own menus.
+ * The window's own menus, on the one desktop where they belong at the top of the
+ * screen rather than at the top of the window.
  *
- * Every item here has a control on a screen that does the same thing - this is
- * a second way to reach it, and on a desktop the expected one. An application
- * with no menu bar has no discoverable shortcuts and no answer to a reader who
- * looks up at the top of the screen for what it can do.
+ * macOS keeps this in its own menu bar, where every application has one and a
+ * reader looks up for it. Windows and Linux draw it as a strip inside the
+ * window - a row of chrome above a library that already carries search, the
+ * statistics and its own actions menu, saying "File" and nothing else. That is
+ * the whole menu bar's width spent on one word, over an app whose every other
+ * surface is a floating panel.
+ *
+ * So it is built on macOS only. Nothing is lost with it: adding books, adding a
+ * folder and the settings are all in the library's actions menu, and the
+ * shortcuts that were the menu's other job are handled by the window itself -
+ * see [requestedBy].
  *
  * Settings sits under File rather than in the application menu it would occupy
  * on macOS, because that menu belongs to the JVM and is not Compose's to add to.
@@ -174,9 +191,36 @@ private fun FrameWindowScope.LukiaMenuBar(commands: AppCommands) {
     }
 }
 
-/** Command on a Mac, Control everywhere else, which is what each expects. */
+/** Command, which is the modifier of the one platform that still carries this menu. */
 private fun shortcut(key: Key, shift: Boolean = false): KeyShortcut =
-    KeyShortcut(key, meta = isMacOs, ctrl = !isMacOs, shift = shift)
+    KeyShortcut(key, meta = true, shift = shift)
+
+/**
+ * The same three shortcuts the menu declares, read off the window instead.
+ *
+ * Windows and Linux have no menu bar to hang them on - see [LukiaMenuBar] - and
+ * a reader who has learnt Ctrl+O in every other application should not find it
+ * dead here because of where this app decided to put its chrome.
+ *
+ * Control only: the Command half of [shortcut] is for the platform that still
+ * has the menu. Read after the composition rather than before it, so a shortcut
+ * never fires out of a field the reader is typing in.
+ *
+ * Returns whether the press was ours, which is what stops it travelling on.
+ */
+private fun AppCommands.requestedBy(event: KeyEvent): Boolean {
+    if (event.type != KeyEventType.KeyDown || !event.isCtrlPressed) return false
+
+    val command = when (event.key) {
+        Key.O -> if (event.isShiftPressed) AppCommand.AddFolder else AppCommand.AddBooks
+        Key.Comma -> AppCommand.OpenSettings
+        else -> null
+    } ?: return false
+
+    request(command)
+
+    return true
+}
 
 /**
  * Where the window was, unless that is nowhere useful.
