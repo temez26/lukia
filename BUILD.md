@@ -28,6 +28,26 @@ Requires macOS + Xcode.
 ./gradlew :shared:embedAndSignAppleFrameworkForXcode
 ```
 
+### Signing
+
+Building to a real iPhone or iPad needs an Apple developer team, which is
+personal to whoever is building and so is not in the repository. Xcode fails
+with *Signing for "iosApp" requires a development team* until it has one.
+
+Write yours into `iosApp/Configuration/Local.xcconfig`, which git ignores and
+`Config.xcconfig` picks up if it is there:
+
+```bash
+echo 'TEAM_ID=YOURTEAMID' > iosApp/Configuration/Local.xcconfig
+```
+
+The ten-character ID is in Xcode under Settings > Accounts, or on
+[developer.apple.com](https://developer.apple.com/account) under Membership
+details. A free Apple ID is enough for building to your own device; signing is
+automatic from there, and Xcode makes the provisioning profile itself.
+
+The Simulator needs none of this.
+
 ## Build Android + Desktop
 
 ### macOS
