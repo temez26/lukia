@@ -4,6 +4,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollToIndexAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollToIndex
@@ -32,6 +33,21 @@ class ReaderReadingStatusTest {
 
         onNodeWithText("1%").assertExists()
         onNodeWithContentDescription("1 percent read").assertExists()
+    }
+
+    /**
+     * The bar is a scale, not a stripe. Without the zero at its start a
+     * part-filled track says "some" and the figure says how much without saying
+     * of what.
+     */
+    @Test
+    fun theBarIsAnchoredAtTheStartOfTheBook() = runComposeUiTest {
+        setReader(pageCount = pageCount)
+
+        // Both ends of one bar: the merged node carries the zero and the share
+        // together, which is the arrangement rather than two loose labels that
+        // happen to be on screen.
+        onNode(hasText("0") and hasText("1%")).assertExists()
     }
 
     @Test

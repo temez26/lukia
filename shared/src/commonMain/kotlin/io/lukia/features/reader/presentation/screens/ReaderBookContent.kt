@@ -27,7 +27,6 @@ import io.lukia.features.reader.domain.outline.ReaderOutline
 import io.lukia.features.reader.domain.page.PageSentence
 import io.lukia.features.reader.presentation.KeepScreenAwake
 import io.lukia.features.reader.presentation.components.chrome.ReaderNotice
-import io.lukia.features.reader.presentation.components.chrome.ReaderReadingStatus
 import io.lukia.features.reader.presentation.pagination.PaginatedBook
 import io.lukia.features.reader.presentation.pagination.onPages
 import io.lukia.features.reader.presentation.screens.input.readerCommands
@@ -282,18 +281,13 @@ internal fun ReaderContent(
                     modifier = Modifier.align(Alignment.TopCenter),
                 )
 
-                // The bottom half of the chrome, shown with the top half rather
-                // than in place of it: putting the bar away is a reader asking
-                // for the page and nothing else, and that has to mean both ends
-                // of the window.
-                //
                 // Under the panels and over the page: it is a fact about the
                 // book rather than a control, and nothing it can be behind ever
                 // reaches the bottom edge.
-                ReaderReadingStatus(
-                    listState = listState,
+                ReaderBottomChrome(
+                    chrome = chrome,
                     pageCount = pageCount,
-                    visible = chrome.chromeShown,
+                    listState = listState,
                     modifier = Modifier.align(Alignment.BottomCenter),
                 )
 

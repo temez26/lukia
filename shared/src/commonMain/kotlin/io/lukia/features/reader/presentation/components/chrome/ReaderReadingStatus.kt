@@ -1,14 +1,13 @@
 package io.lukia.features.reader.presentation.components.chrome
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,143 +21,151 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.reader.presentation.percentThrough
-import io.lukia.shared.presentation.theme.LocalLukiaDimens
-import io.lukia.shared.presentation.theme.LukiaAlpha
+import io.lukia.shared.presentation.components.surface.GlassSurface
 import io.lukia.shared.presentation.theme.Space
-import io.lukia.shared.presentation.theme.bottomChromeIn
-import io.lukia.shared.presentation.theme.bottomChromeOut
 
-/** Thick enough to see against a page, thin enough not to be a control. */
-private val LineHeight: Dp = 3.dp
+/** Thick enough to read as a bar rather than a rule, inside chrome of its own. */
+private val TrackHeight: Dp = 4.dp
 
 /** How much of the theme's ink the unread part of the book is drawn in. */
 private const val TrackAlpha = 0.18f
 
-/** Room for "100%" set in the label face, so nothing shuffles as the figure grows a digit. */
-private val ShareWidth: Dp = 40.dp
+/** Room for "100%", so the track does not shorten as the figure gains a digit. */
+private val ShareWidth: Dp = 34.dp
 
 /**
- * How far through the book the reader is: a line along the bottom edge, and the
- * share of the book behind them written above it.
+ * How far through the book the reader is, as a bar of its own along the bottom
+ * of the window: where the book starts, how far along it they are, and the share
+ * of it behind them.
  *
- * Shown with the toolbar and only with it. The page is what the reader came for,
- * and a book laid out edge to edge with nothing on it but words is the whole
- * point of putting the chrome away - a line and a figure left burning along the
- * bottom are two things still asking to be looked at. Both ends of the chrome
- * therefore arrive and leave together, which also means one gesture governs
- * everything drawn over the page rather than one thing appearing as another
- * goes.
+ * One bar rather than a figure floating over a hairline. The two were the same
+ * fact drawn twice at opposite scales - a chip in the corner and a rule welded to
+ * the window edge - and read as two pieces of chrome that happened to arrive
+ * together. Set end to end, the "0" and the percentage are the ends of the same
+ * scale and the track between them is the reading of it.
  *
- * The percentage is the fact the toolbar does not carry. Its indicator says
- * "12 / 348", which answers where the reader is; a share answers how much is
- * left, and a reader deciding whether to finish a chapter tonight is asking the
- * second question. The two forms sit at opposite edges rather than in one
- * control because neither is worth crossing the page to read.
+ * The zero is what makes it a scale rather than a stripe. A part-filled bar with
+ * nothing at either end says "some", and the figure alone says how much without
+ * saying of what; the two together say where the book begins and how far in this
+ * page is.
  *
- * At the end of the row rather than centred, where the notice that can appear
- * over the same edge sits - see [ReaderNotice].
+ * Wears the toolbar's own glass capsule, at the same measure and the same inset
+ * from the window - see [ReaderToolbar]. They are the two halves of one piece of
+ * chrome and they arrive together, so they are built alike.
  *
- * The line is not a control. There is a scrubber in the contents panel for going
- * somewhere, and it is reached from the toolbar this appears alongside.
+ * Not a control. There is a scrubber in the contents panel for going somewhere,
+ * and it is reached from the toolbar this appears opposite.
  *
- * The page is read here and nowhere else, so turning one redraws this rather
- * than the reader around it, and the `derivedStateOf` keeps that to once per
- * page rather than once per scrolled pixel.
+ * The page is read here and nowhere else, so turning one redraws this bar rather
+ * than the reader around it, and the `derivedStateOf` keeps that to once per page
+ * rather than once per scrolled pixel.
  */
 @Composable
 internal fun ReaderReadingStatus(
     listState: LazyListState,
     /** How long the book is; zero while it is still being laid out. */
     pageCount: Int,
-    visible: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val position by remember(listState) {
         derivedStateOf { listState.firstVisibleItemIndex + 1 }
     }
 
-    AnimatedVisibility(
-        visible = visible && pageCount > 0,
-        // Along the bottom edge as the toolbar comes down the top one, so the
-        // two read as one piece of chrome opening rather than as two things
-        // that happen to appear at once.
-        enter = bottomChromeIn(),
-        exit = bottomChromeOut(),
-        modifier = modifier,
+    val percent = percentThrough(position, pageCount)
+
+    GlassSurface(
+        shape = MaterialTheme.shapes.large,
+        modifier = modifier.fillMaxWidth(),
     ) {
-        Column(
-            horizontalAlignment = Alignment.End,
-            modifier = Modifier.fillMaxWidth(),
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = Space.lg, vertical = Space.md)
+                // One statement rather than three. Read out separately, a bar
+                // between "0" and "42%" is two numbers with nothing joining
+                // them; announced as a whole it is the sentence they add up to.
+                //
+                // Deliberately not a live region: this changes on every page,
+                // and a reader scrolling through a chapter does not want each
+                // one read out. The pages themselves carry the position.
+                .semantics(mergeDescendants = true) {
+                    contentDescription = "$percent percent read"
+                },
         ) {
-            ReadShare(
-                percent = percentThrough(position, pageCount),
-                modifier = Modifier.padding(
-                    horizontal = LocalLukiaDimens.current.screenPadding,
-                    vertical = Space.sm,
-                ),
+            Marker(text = "0", emphasised = false)
+
+            ProgressTrack(
+                // From the page rather than from the rounded figure beside it, so
+                // the fill creeps a book's length in single pages instead of
+                // stepping whenever the percentage gains a whole point.
+                fraction = if (pageCount <= 0) 0f else position.toFloat() / pageCount,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = Space.lg),
             )
 
-            // From the page rather than from the rounded figure above it, so the
-            // line still creeps a book's length in single pages instead of
-            // stepping whenever the percentage gains a whole point.
-            ProgressLine(fraction = position.toFloat() / pageCount)
+            Marker(text = "$percent%", emphasised = true)
         }
     }
 }
 
 /**
- * The share of the book behind the reader, as a figure.
+ * One end of the scale.
  *
- * Wearing the same recessed fill as the toolbar's own page indicator, because it
- * is the same kind of thing said the other way round - and because a bare figure
- * laid straight over a paragraph is unreadable against half the pages in a book.
+ * The zero is the quieter of the two on purpose: it never changes and is there to
+ * be measured against rather than read, while the figure opposite it is the thing
+ * the reader actually came to the bar for.
  *
- * Announced rather than hidden: unlike the line, this is a fact the toolbar does
- * not state anywhere. Not a live region, for the reason the page indicator is
- * not one either - it changes on every page, and a reader scrolling through a
- * chapter does not want each one read out.
+ * Both are held to the width of the longest figure either can hold, so the track
+ * between them keeps one length for the whole book instead of shortening by a
+ * character at 10% and again at 100%.
  */
 @Composable
-private fun ReadShare(percent: Int, modifier: Modifier = Modifier) {
+private fun Marker(text: String, emphasised: Boolean) {
     Text(
-        text = "$percent%",
+        text = text,
         style = MaterialTheme.typography.labelMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        // Centred in a width held for the longest figure, so the chip neither
-        // grows nor leaves the digits adrift in it.
-        textAlign = TextAlign.Center,
-        modifier = modifier
-            .clip(MaterialTheme.shapes.small)
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = LukiaAlpha.Fill))
-            .padding(horizontal = Space.md, vertical = Space.xs)
-            .widthIn(min = ShareWidth)
-            .semantics { contentDescription = "$percent percent read" },
+        fontWeight = if (emphasised) FontWeight.SemiBold else FontWeight.Normal,
+        color = if (emphasised) {
+            MaterialTheme.colorScheme.onSurface
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        },
+        textAlign = if (emphasised) TextAlign.End else TextAlign.Start,
+        maxLines = 1,
+        modifier = Modifier.widthIn(min = ShareWidth),
     )
 }
 
 /**
- * The same fact drawn, along the very bottom of the window.
+ * The reading itself, between the two ends.
  *
- * Drawn rather than laid out - `drawBehind` on one box, so a page turn repaints
- * three pixels and moves nothing.
+ * Painted rather than laid out. The filled part is a fraction of the track's real
+ * width, and expressing that through layout - a nested `fillMaxWidth(fraction)`,
+ * a weighted row - measures the fraction against constraints a parent has already
+ * fixed and lands the fill somewhere other than against the leading edge. The
+ * same reason `ReadingProgressBar` is drawn.
  *
- * Silent to assistive technology: it says exactly what the figure above it says,
- * and once is enough.
+ * Rounded, unlike the rule this replaced: that one was welded to the window's own
+ * edge and took its shape from it, and this one is a bar sitting inside a
+ * capsule.
  */
 @Composable
-private fun ProgressLine(fraction: Float) {
+private fun ProgressTrack(fraction: Float, modifier: Modifier = Modifier) {
     val track = MaterialTheme.colorScheme.onSurface.copy(alpha = TrackAlpha)
     val fill = MaterialTheme.colorScheme.primary
     val filled = fraction.coerceIn(0f, 1f)
 
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(LineHeight)
+        modifier = modifier
+            .height(TrackHeight)
+            .clip(CircleShape)
             .drawBehind {
                 drawRect(color = track)
                 drawRect(color = fill, size = Size(size.width * filled, size.height))
