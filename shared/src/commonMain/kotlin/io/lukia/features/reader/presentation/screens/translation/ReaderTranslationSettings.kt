@@ -17,12 +17,15 @@ import io.lukia.features.reader.presentation.components.settings.SettingGroup
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.presentation.GestureControl
 import io.lukia.shared.presentation.components.controls.ButtonVariant
+import io.lukia.shared.presentation.components.controls.ChoiceDensity
 import io.lukia.shared.presentation.components.controls.ChoiceList
 import io.lukia.shared.presentation.components.controls.LukiaButton
 import io.lukia.shared.presentation.components.surface.LukiaDivider
 import io.lukia.shared.presentation.components.surface.SectionLabel
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
+import io.lukia.shared.presentation.theme.disclosureIn
+import io.lukia.shared.presentation.theme.disclosureOut
 
 /**
  * Translating, at the top of the reader's own settings panel.
@@ -164,6 +167,12 @@ private fun ReaderTranslationSessionControls(
  * chosen. Seventeen rows is more than the whole rest of the panel put together,
  * and a panel that opens with them showing is one where the type settings have
  * been pushed off the bottom of a phone.
+ *
+ * Compact even so - see [ChoiceDensity]. The settings screen's rows are a page's
+ * worth of row each, and seventeen of those opened inside a panel capped at a
+ * few hundred points is a list twice as tall as the thing holding it: the reader
+ * scrolls through languages to get back to the text size. Here they are the
+ * height of the rows the panel is otherwise built from.
  */
 @Composable
 private fun TargetLanguageSetting(
@@ -180,7 +189,11 @@ private fun TargetLanguageSetting(
         inset = inset,
     )
 
-    AnimatedVisibility(visible = expanded) {
+    AnimatedVisibility(
+        visible = expanded,
+        enter = disclosureIn(),
+        exit = disclosureOut(),
+    ) {
         ChoiceList(
             options = TargetLanguage.entries,
             selected = preferences.targetLanguage,
@@ -193,6 +206,7 @@ private fun TargetLanguageSetting(
                 expanded = false
             },
             modifier = Modifier.padding(horizontal = inset),
+            density = ChoiceDensity.Compact,
         )
     }
 }

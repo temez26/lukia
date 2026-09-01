@@ -27,7 +27,6 @@ import io.lukia.features.reader.domain.outline.ReaderOutline
 import io.lukia.features.reader.domain.page.PageSentence
 import io.lukia.features.reader.presentation.KeepScreenAwake
 import io.lukia.features.reader.presentation.components.chrome.ReaderNotice
-import io.lukia.features.reader.presentation.components.chrome.ReaderProgressLine
 import io.lukia.features.reader.presentation.pagination.PaginatedBook
 import io.lukia.features.reader.presentation.pagination.onPages
 import io.lukia.features.reader.presentation.screens.input.readerCommands
@@ -285,10 +284,10 @@ internal fun ReaderContent(
                 // Under the panels and over the page: it is a fact about the
                 // book rather than a control, and nothing it can be behind ever
                 // reaches the bottom edge.
-                ReaderProgressLine(
-                    listState = listState,
+                ReaderBottomChrome(
+                    chrome = chrome,
                     pageCount = pageCount,
-                    visible = !chrome.chromeShown,
+                    listState = listState,
                     modifier = Modifier.align(Alignment.BottomCenter),
                 )
 
