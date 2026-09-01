@@ -22,6 +22,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -40,6 +41,8 @@ import androidx.compose.ui.window.PopupProperties
 import io.lukia.shared.presentation.components.controls.IconButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.icons.PlusGlyph
+import io.lukia.shared.presentation.components.menu.popoverTransition
+import io.lukia.shared.presentation.components.menu.rememberPopoverProgress
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 
 /** How dark the book behind the illustration goes. Nearly out: the picture is the point. */
@@ -73,13 +76,26 @@ private const val MaxScale = 8f
  * page it came from. Focusable, unlike the app's menus, because it covers
  * everything and should take Escape and Back for itself rather than leaving them
  * to close the book underneath it.
+ *
+ * Arrives the way every panel in the app arrives - see [popoverTransition] - so
+ * that a picture opening reads as one more of this app's surfaces rather than as
+ * a viewer bolted onto it. The scrim only fades: a full-window fill scaled from
+ * 0.92 would show a band of the unfaded page down each edge on the way in.
+ *
+ * Draws nothing once closed and settled, so [FigureBlock] can leave it in the
+ * tree and let it animate itself out.
  */
 @Composable
 internal fun FigureViewer(
+    visible: Boolean,
     image: ImageBitmap,
     description: String?,
     onDismiss: () -> Unit,
 ) {
+    val progress = rememberPopoverProgress(visible, label = "figureViewer")
+
+    if (!visible && progress == 0f) return
+
     val dismissSource = remember { MutableInteractionSource() }
 
     Popup(
@@ -91,7 +107,6 @@ internal fun FigureViewer(
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = ViewerScrimAlpha))
                 // The margin around the illustration is a way out too, and the
                 // named one: the picture itself answers a press by closing only
                 // while it is unzoomed, which is not something to describe to a
@@ -103,13 +118,37 @@ internal fun FigureViewer(
                     onClick = onDismiss,
                 ),
         ) {
-            ZoomableFigure(image = image, description = description, onDismiss = onDismiss)
+            // A layer of its own rather than a background on the box above,
+            // which would fade the picture and the button along with it.
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer { alpha = progress }
+                    .background(Color.Black.copy(alpha = ViewerScrimAlpha)),
+            )
+
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxSize()
+                    // From the middle of the window, because that is where it
+                    // ends up: nothing on screen anchors it, unlike a menu
+                    // growing out of the control that opened it.
+                    .popoverTransition(progress, TransformOrigin.Center),
+            ) {
+                ZoomableFigure(image = image, description = description, onDismiss = onDismiss)
+            }
 
             LukiaIconButton(
                 label = "Close",
                 onClick = onDismiss,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
+                    // Fades without scaling. It belongs to the corner of the
+                    // window rather than to the picture, and a corner control
+                    // scaled about the middle travels further on its way in than
+                    // anything this small should.
+                    .graphicsLayer { alpha = progress }
                     .padding(LocalLukiaDimens.current.screenPadding),
                 variant = IconButtonVariant.Glass,
             ) { tint, glyph ->

@@ -254,13 +254,15 @@ internal fun FigureBlock(
             )
         }
 
-        if (lookingCloser) {
-            FigureViewer(
-                image = bitmap,
-                description = block.description,
-                onDismiss = { lookingCloser = false },
-            )
-        }
+        // Left in the tree rather than mounted on the press: it draws nothing
+        // until it is asked for, and holding it is what lets it animate itself
+        // out again.
+        FigureViewer(
+            visible = lookingCloser,
+            image = bitmap,
+            description = block.description,
+            onDismiss = { lookingCloser = false },
+        )
     }
 }
 

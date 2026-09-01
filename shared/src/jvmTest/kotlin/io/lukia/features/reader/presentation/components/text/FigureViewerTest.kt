@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -59,6 +60,24 @@ class FigureViewerTest {
         showFigure()
 
         onNodeWithContentDescription("plate").assertHasClickAction()
+    }
+
+    /**
+     * The viewer is left in the tree unopened so that closing it can be animated
+     * - see [FigureViewer] - and a book carries hundreds of these, so an unopened
+     * one has to cost nothing at all.
+     */
+    @Test
+    fun anUnopenedViewerDrawsNothing() = runComposeUiTest {
+        showFigure()
+
+        assertEquals(
+            1,
+            onAllNodesWithContentDescription("plate").fetchSemanticsNodes().size,
+            "An unopened viewer should draw no second copy of the figure",
+        )
+
+        onAllNodesWithContentDescription("Close").assertCountEquals(0)
     }
 
     @Test
