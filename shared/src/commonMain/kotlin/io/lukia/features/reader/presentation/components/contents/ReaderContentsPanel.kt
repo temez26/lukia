@@ -27,6 +27,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.reader.domain.outline.ReaderOutline
+import io.lukia.features.reader.presentation.percentThrough
 import io.lukia.shared.presentation.components.menu.DismissOnBack
 import io.lukia.shared.presentation.components.menu.popoverTransition
 import io.lukia.shared.presentation.components.menu.rememberPopoverProgress
@@ -154,11 +155,20 @@ private fun PositionScrubber(
 
     val shown = dragged ?: current
 
+    val percent = percentThrough(shown, pageCount)
+
     Column(modifier = Modifier.padding(horizontal = inset)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                // One statement rather than two loose fragments. Read out
+                // separately, "1%" follows "Page 1 of 100" as a label with no
+                // subject and means nothing at all.
+                .semantics(mergeDescendants = true) {
+                    contentDescription = "Page $shown of $pageCount, $percent percent through"
+                },
         ) {
             Text(
                 text = "Page $shown of $pageCount",
@@ -169,7 +179,7 @@ private fun PositionScrubber(
             // How far in, which the page number alone does not say: page 120 is
             // a different place in a pamphlet than in a doorstop.
             Text(
-                text = "${percentThrough(shown, pageCount)}%",
+                text = "$percent%",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -201,6 +211,3 @@ private fun PositionScrubber(
         }
     }
 }
-
-private fun percentThrough(position: Int, pageCount: Int): Int =
-    if (pageCount <= 1) 100 else (position * 100f / pageCount).roundToInt()
