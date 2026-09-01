@@ -46,6 +46,27 @@ internal data class TextPage(val blocks: List<PageBlock>) {
 }
 
 /**
+ * A place in the book itself: which block of which section.
+ *
+ * A fact about the book rather than about any layout of it, which is what makes
+ * it the thing worth remembering. A page number is not: the same place is a
+ * different page at a different type size, and a hundred pages further into a
+ * long book on a phone than on a monitor.
+ */
+@Immutable
+internal data class BookPlace(val sectionIndex: Int, val blockIndex: Int = 0)
+
+/**
+ * One run of a book's sections, laid out on pages of its own.
+ *
+ * The unit a book is laid out in - see `chunkStarts` for where the runs are cut
+ * and why a cut there changes nothing. Not a book: [sectionPages] counts pages
+ * from the start of this run rather than from the start of the book, so it means
+ * something only alongside where the run begins.
+ */
+internal class PaginatedChunk(val pages: List<TextPage>, val sectionPages: List<Int>)
+
+/**
  * A reflowable book laid out as pages, for one window and one type size.
  *
  * Every page count and every page number the reader is shown comes from here
@@ -60,6 +81,16 @@ internal class PaginatedBook(
     val pages: List<TextPage>,
     /** The page each of the book's sections opens on, by section index. */
     private val sectionPages: List<Int>,
+    /**
+     * False while more of the book is still being laid out behind these pages.
+     *
+     * A reflowable book arrives a run of sections at a time - see
+     * `paginateProgressively` - so what the reader is holding is often a true
+     * beginning of a book rather than the whole of one. Everything that reads a
+     * page number off this is right either way; the only thing that is not yet
+     * settled is how many pages there turn out to be.
+     */
+    val complete: Boolean = true,
 ) {
 
     val pageCount: Int get() = pages.size
@@ -72,6 +103,9 @@ internal class PaginatedBook(
      * a larger size has the same sections, and an entry that pointed at nothing
      * would be a contents row that does nothing when pressed.
      */
+    fun pageOf(place: BookPlace): Int = pageOf(place.sectionIndex, place.blockIndex)
+
+    /** The same, for a caller that holds the two halves apart - see [PagedOutline]. */
     fun pageOf(sectionIndex: Int, blockIndex: Int = 0): Int {
         val first = sectionPages.getOrNull(sectionIndex) ?: return pages.lastIndex.coerceAtLeast(0)
 
@@ -105,10 +139,10 @@ internal class PaginatedBook(
      * paragraph the reader was in the middle of - which is the right way to be
      * wrong: it never skips text they have not read.
      */
-    fun placeOf(pageIndex: Int): Pair<Int, Int> {
-        val block = pages.getOrNull(pageIndex)?.blocks?.firstOrNull() ?: return 0 to 0
+    fun placeOf(pageIndex: Int): BookPlace {
+        val block = pages.getOrNull(pageIndex)?.blocks?.firstOrNull() ?: return BookPlace(0)
 
-        return block.sectionIndex to block.blockIndex
+        return BookPlace(block.sectionIndex, block.blockIndex)
     }
 
     companion object {

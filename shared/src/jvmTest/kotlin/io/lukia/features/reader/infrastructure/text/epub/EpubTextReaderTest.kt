@@ -13,7 +13,7 @@ class EpubTextReaderTest {
     /** The spine is the book's own statement of what order it is read in. */
     @Test
     fun sectionsFollowTheSpineRatherThanTheManifest() {
-        val content = readEpub(
+        val content = epubRead(
             epub(
                 manifest = """
                     <item id="c2" href="two.xhtml" media-type="application/xhtml+xml"/>
@@ -52,7 +52,7 @@ class EpubTextReaderTest {
             </html>
         """.trimIndent()
 
-        val content = readEpub(
+        val content = epubRead(
             epub(
                 manifest = """
                     <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml"
@@ -105,7 +105,7 @@ class EpubTextReaderTest {
             </ncx>
         """.trimIndent()
 
-        val content = readEpub(
+        val content = epubRead(
             epub(
                 manifest = """
                     <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
@@ -138,7 +138,7 @@ class EpubTextReaderTest {
     /** A flat list of real chapter names beats a panel saying the book has none. */
     @Test
     fun aBookWithNoNavigationGetsAContentsFromItsOwnHeadings() {
-        val content = readEpub(
+        val content = epubRead(
             epub(
                 manifest = """
                     <item id="c1" href="one.xhtml" media-type="application/xhtml+xml"/>
@@ -166,7 +166,7 @@ class EpubTextReaderTest {
     fun illustrationsAreResolvedRelativeToTheChapterThatShowsThem() {
         val plate = byteArrayOf(1, 2, 3, 4)
 
-        val content = readEpub(
+        val content = epubRead(
             epub(
                 manifest = """
                     <item id="c1" href="text/one.xhtml" media-type="application/xhtml+xml"/>
@@ -194,7 +194,7 @@ class EpubTextReaderTest {
     /** An href is a URL; the entry it names is not. */
     @Test
     fun percentEncodedHrefsFindTheirEntries() {
-        val content = readEpub(
+        val content = epubRead(
             epub(
                 manifest = """
                     <item id="c1" href="Chapter%20One.xhtml" media-type="application/xhtml+xml"/>
@@ -210,13 +210,13 @@ class EpubTextReaderTest {
 
     @Test
     fun aFileThatIsNotAnEpubIsNotReadAsOne() {
-        assertNull(readEpub("not a zip at all".encodeToByteArray()))
-        assertNull(readEpub(zip(mapOf("hello.txt" to "hi"))))
+        assertNull(epubRead("not a zip at all".encodeToByteArray()))
+        assertNull(epubRead(zip(mapOf("hello.txt" to "hi"))))
     }
 
     @Test
     fun paragraphsSurviveWithTheirEmphasis() {
-        val content = readEpub(
+        val content = epubRead(
             epub(
                 manifest =
                 """<item id="c1" href="one.xhtml" media-type="application/xhtml+xml"/>""",
@@ -275,7 +275,7 @@ class EpubTextReaderTest {
             </body></html>
         """.trimIndent()
 
-        val content = readEpub(
+        val content = epubRead(
             epub(
                 manifest = """
                     <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml"
@@ -314,7 +314,7 @@ class EpubTextReaderTest {
             </ncx>
         """.trimIndent()
 
-        val content = readEpub(
+        val content = epubRead(
             epub(
                 manifest = """
                     <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
@@ -350,7 +350,7 @@ class EpubTextReaderTest {
             </html>
         """.trimIndent()
 
-        val content = readEpub(
+        val content = epubRead(
             epub(
                 manifest = """
                     <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml"

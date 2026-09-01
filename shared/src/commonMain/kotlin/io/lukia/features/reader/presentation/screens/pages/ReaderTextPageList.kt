@@ -1,17 +1,8 @@
 package io.lukia.features.reader.presentation.screens.pages
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.BoxWithConstraintsScope
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,31 +12,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.DpSize
+import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.text.TextSection
-import io.lukia.features.reader.presentation.components.text.TextPageView
+import io.lukia.features.reader.presentation.pagination.BookPlace
 import io.lukia.features.reader.presentation.pagination.PaginatedBook
 import io.lukia.features.reader.presentation.pagination.rememberPagination
-import io.lukia.features.reader.presentation.screens.SheetPadding
-import io.lukia.features.reader.presentation.screens.chromeHeight
 import io.lukia.features.reader.presentation.theme.readerTextStyle
 import io.lukia.features.reader.presentation.translation.TranslateOnScreen
 import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.presentation.BookTranslations
 import io.lukia.features.translate.presentation.PassageSelection
-import io.lukia.shared.presentation.theme.LocalLukiaDimens
-import io.lukia.shared.presentation.theme.LukiaElevation
 
 /**
  * A reflowable book, page by page.
@@ -79,8 +59,17 @@ internal fun TextPageList(
     onPagesChange: (PaginatedBook) -> Unit,
     translateOnScreen: TranslateOnScreen,
     gestures: TranslationGestures,
-    /** Where the reader left off last time, as a fraction of the book. */
-    openAt: Float?,
+    /**
+     * Where the reader left off last time, or null while the stored position is
+     * still being read.
+     *
+     * The difference between the two matters now that a book can be laid out
+     * faster than its position can be read back: a book that opened at its first
+     * page because nobody had said otherwise *yet* would start following a
+     * reader who had not arrived, and the place they actually left off would
+     * arrive to find the book already claiming to be somewhere.
+     */
+    openedAt: ReadingProgress?,
 ) {
     // Held here while a pinch is in progress and committed when it ends, so the
     // type follows the fingers without every intermediate size being written to
@@ -104,109 +93,124 @@ internal fun TextPageList(
             widthPx = with(density) { sheet.textWidth.roundToPx() },
             heightPx = with(density) { sheet.textHeight.roundToPx() },
             figureSize = settings.figureSize,
+            openingPage = openedAt?.pageIndex,
         )
 
-        FollowPlaceAcrossLayout(book = book, listState = listState, openAt = openAt)
+        FollowPlaceAcrossLayout(book = book, listState = listState, openedAt = openedAt)
         ReportPages(book = book, onPagesChange = onPagesChange)
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .pinchToZoom(
+                .typeGestures(
                     scale = pinchScale ?: settings.textScale,
-                    range = ReaderSettings.MIN_TEXT_SCALE..ReaderSettings.MAX_TEXT_SCALE,
                     onPinch = { pinchScale = it },
                     onPinchEnd = {
                         pinchScale?.let { onSettingsChange(settings.withTextScale(it)) }
                         pinchScale = null
                     },
-                )
-                .pointerInput(Unit) {
-                    // Beside the sheet rather than on it, so there is nothing
-                    // here to point at - but the chrome answers to two taps
-                    // wherever it is reached from, so that it stays one gesture
-                    // the reader learns once.
-                    detectTapGestures(onDoubleTap = { onToggleChrome() })
-                },
-        ) {
-            LazyColumn(
-                state = listState,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(PageGap),
-                contentPadding = PaddingValues(
-                    top = chromeHeight(),
-                    bottom = PageListPadding,
+                    onToggleChrome = onToggleChrome,
                 ),
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                items(count = book.pageCount) { index ->
-                    PageSheet(
-                        number = index + 1,
-                        of = book.pageCount,
-                        size = DpSize(sheet.sheetWidth, sheet.pageHeight),
-                        color = pageColor,
-                    ) { textHeight ->
-                        TextPageView(
-                            page = book.pages[index],
-                            style = drawnStyle,
-                            pageHeight = textHeight,
-                            figureSize = settings.figureSize,
-                            translations = translations,
-                            translateOnScreen = translateOnScreen,
-                            gestures = gestures,
-                            resizingType = pinchScale != null,
-                            actionsFor = rememberPageActions(
-                                page = book.pages[index],
-                                sections = sections,
-                                onToggleChrome = onToggleChrome,
-                                onPassageSelected = onPassageSelected,
-                                onPassagesRequested = onPassagesRequested,
-                            ),
-                        )
-                    }
-                }
-            }
+        ) {
+            BookSheets(
+                book = book,
+                listState = listState,
+                sheet = SheetStyle(
+                    geometry = sheet,
+                    pageColor = pageColor,
+                    textStyle = drawnStyle,
+                    figureSize = settings.figureSize,
+                    resizingType = pinchScale != null,
+                ),
+                translations = translations,
+                translateOnScreen = translateOnScreen,
+                gestures = gestures,
+                actionsFor = { page ->
+                    rememberPageActions(
+                        page = page,
+                        sections = sections,
+                        onToggleChrome = onToggleChrome,
+                        onPassageSelected = onPassageSelected,
+                        onPassagesRequested = onPassagesRequested,
+                    )
+                },
+            )
         }
     }
 }
 
 /**
- * How big a sheet is in this window, and how much of it is text.
+ * The page a stored position names in this layout of the book.
  *
- * One measurement for the whole book: every page is drawn to the same size, so
- * working it out per page would be the same answer computed hundreds of times -
- * and the book was laid out against exactly these numbers.
+ * The stored page number itself, wherever the book is the length it was stored
+ * against - which is what reopening a book almost always is: the same window,
+ * the same type, the same book, and so the same pages. No arithmetic can improve
+ * on the number that was written down.
+ *
+ * It is also the only reading of a stored position that can be answered before
+ * the book has been laid out from end to end, which is what lets the reader be
+ * put on their page while the later chapters are still being measured. A
+ * fraction has to be multiplied by a page count, and a page count is the one
+ * thing a book that is still growing does not have.
+ *
+ * A finished book of a different length is a book that has been re-set since -
+ * a larger type, a turned phone - and there the fraction is the better answer,
+ * because the page it was stored as is a page of a book that no longer exists.
  */
-private data class PageGeometry(
-    val sheetWidth: Dp,
-    val pageHeight: Dp,
-    val textWidth: Dp,
-    val textHeight: Dp,
-)
-
-/**
- * The window with the chrome and the list's own padding taken out of it, and
- * then the sheet's own margins.
- */
-@Composable
-private fun BoxWithConstraintsScope.pageGeometry(pageScale: Float): PageGeometry {
-    val dimens = LocalLukiaDimens.current
-
-    val columnWidth = if (dimens.maxReaderWidth == Dp.Unspecified) {
-        maxWidth
-    } else {
-        minOf(maxWidth, dimens.maxReaderWidth)
+private fun PaginatedBook.openingPage(openedAt: ReadingProgress): Int {
+    if (!complete || openedAt.pageCount == pageCount) {
+        return openedAt.pageIndex.coerceIn(0, pages.lastIndex)
     }
 
-    val sheetWidth = minOf(columnWidth * pageScale, maxWidth)
-    val pageHeight = maxHeight - chromeHeight() - PageListPadding
+    val fraction = openedAt.fraction ?: return 0
 
-    return PageGeometry(
-        sheetWidth = sheetWidth,
-        pageHeight = pageHeight,
-        textWidth = sheetWidth - SheetPadding * 2,
-        textHeight = pageHeight - SheetPadding * 2,
-    )
+    return ((fraction * pageCount).toInt() - 1).coerceIn(0, pages.lastIndex)
+}
+
+/**
+ * Keeps the reader where they were when the book is laid out again.
+ *
+ * A page number does not survive a re-layout: the same place in a book set one
+ * step larger is a different page, and a hundred pages further into a long one.
+ * What is followed instead is the place - the block at the top of the page they
+ * were on - which is a fact about the book rather than about this layout of it.
+ * Without this, changing the type size would move the reader to somewhere else
+ * in the book, which is the one thing a settings panel must never do.
+ *
+ * The first layout has no place to go back to, so it goes to [openedAt] instead
+ * - see [openingPage]. Nothing happens at all until that is known, because a
+ * book that started following the reader before they had been put anywhere would
+ * take its own first page for their place and never move off it. That is not a
+ * hypothetical: a book is now laid out faster than its position is read back.
+ *
+ * This runs again every time more of a book arrives - a book is laid out a run
+ * at a time, and each run makes it longer - so it moves the reader only where
+ * they are not already. Without that, a book still being measured would snap
+ * back to the top of the page every time it grew, under the finger of somebody
+ * scrolling through it.
+ */
+@Composable
+private fun FollowPlaceAcrossLayout(
+    book: PaginatedBook,
+    listState: LazyListState,
+    openedAt: ReadingProgress?,
+) {
+    var place by remember { mutableStateOf<BookPlace?>(null) }
+
+    LaunchedEffect(book, openedAt) {
+        // Nothing to follow and nowhere to go until both the book and the place
+        // it is being opened at are known.
+        if (book.pages.isEmpty() || openedAt == null) return@LaunchedEffect
+
+        val target = place?.let(book::pageOf) ?: book.openingPage(openedAt)
+
+        if (target != listState.firstVisibleItemIndex) listState.scrollToItem(target)
+
+        // Only once the reader has been put where they belong, so that the
+        // scroll this effect just did is not mistaken for one of theirs.
+        snapshotFlow { listState.firstVisibleItemIndex }
+            .collect { place = book.placeOf(it) }
+    }
 }
 
 /**
@@ -221,78 +225,4 @@ private fun ReportPages(book: PaginatedBook, onPagesChange: (PaginatedBook) -> U
     val report by rememberUpdatedState(onPagesChange)
 
     LaunchedEffect(book) { report(book) }
-}
-
-/**
- * One sheet of the book: a page's worth of paper, and what is set on it.
- *
- * Given the height rather than taking the height its text needs, unlike the
- * blocks inside it. A page whose paper stopped where its words did would be a
- * scrolling list of ragged cards, and the number in the toolbar would be
- * counting something the reader cannot see the edges of.
- */
-@Composable
-private fun PageSheet(
-    number: Int,
-    of: Int,
-    size: DpSize,
-    color: Color,
-    content: @Composable (textHeight: Dp) -> Unit,
-) {
-    Box(
-        modifier = Modifier
-            .width(size.width)
-            .height(size.height)
-            .shadow(elevation = LukiaElevation.page)
-            .background(color)
-            // Text set larger than the page was cut for - which is what a pinch
-            // in progress is - stops at the edge of the sheet rather than
-            // running over the one below.
-            .clipToBounds()
-            .padding(SheetPadding)
-            // Unlike a rendered page there is real text behind this, so the
-            // description says where in the book it is and leaves the reading to
-            // the text itself.
-            .semantics { contentDescription = "Page $number of $of" },
-    ) {
-        content(size.height - SheetPadding * 2)
-    }
-}
-
-/**
- * Keeps the reader where they were when the book is laid out again.
- *
- * A page number does not survive a re-layout: the same place in a book set one
- * step larger is a different page, and a hundred pages further into a long one.
- * What is followed instead is the place - the block at the top of the page they
- * were on - which is a fact about the book rather than about this layout of it.
- * Without this, changing the type size would move the reader to somewhere else
- * in the book, which is the one thing a settings panel must never do.
- *
- * The first layout has no place to go back to, so it goes to [openAt] instead:
- * where the book was left off, as a fraction, because the page count it was
- * stored against was a different window's.
- */
-@Composable
-private fun FollowPlaceAcrossLayout(
-    book: PaginatedBook,
-    listState: LazyListState,
-    openAt: Float?,
-) {
-    var place by remember { mutableStateOf<Pair<Int, Int>?>(null) }
-
-    LaunchedEffect(book, openAt) {
-        if (book.pages.isEmpty()) return@LaunchedEffect
-
-        val target = place
-            ?.let { (section, block) -> book.pageOf(section, block) }
-            ?: openAt?.let { ((it * book.pageCount).toInt() - 1).coerceIn(0, book.pages.lastIndex) }
-
-        if (target != null) listState.scrollToItem(target)
-
-        // Only once the reader has been put where they belong, so that the
-        // scroll this effect just did is not mistaken for one of theirs.
-        snapshotFlow { listState.firstVisibleItemIndex }
-            .collect { place = book.placeOf(it) }
-    }
 }

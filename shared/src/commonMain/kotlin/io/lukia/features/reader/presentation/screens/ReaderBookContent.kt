@@ -254,7 +254,7 @@ internal fun ReaderContent(
                             onPagesChange = { paginated = it },
                             translateOnScreen = translateOnScreen,
                             gestures = gestures,
-                            openAt = initialPosition?.fraction,
+                            openedAt = initialPosition,
                         )
                     }
                 }

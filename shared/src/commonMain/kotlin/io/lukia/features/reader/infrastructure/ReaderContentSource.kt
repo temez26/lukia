@@ -27,7 +27,7 @@ import io.lukia.features.reader.infrastructure.text.reflow.storedReflow
  * [path] is always a working copy in app storage, never the file the user
  * imported.
  */
-internal fun openReaderContent(type: DocumentType, path: String): ReaderContent? = when (type) {
+internal suspend fun openReaderContent(type: DocumentType, path: String): ReaderContent? = when (type) {
     // Kept apart from the rest: a PDF is opened by the platform's own renderer
     // against the file on disk, and is the only format here never held whole in
     // memory.

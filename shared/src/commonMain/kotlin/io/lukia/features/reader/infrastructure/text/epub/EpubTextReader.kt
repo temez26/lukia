@@ -1,6 +1,7 @@
 package io.lukia.features.reader.infrastructure.text.epub
 
 import io.lukia.core.infrastructure.archive.decodePercentEncoding
+import io.lukia.core.infrastructure.epub.EpubManifestItem
 import io.lukia.core.infrastructure.epub.EpubPackage
 import io.lukia.features.reader.domain.ReflowableContent
 import io.lukia.features.reader.domain.outline.OutlineEntry
@@ -13,6 +14,9 @@ import io.lukia.features.reader.infrastructure.text.html.HtmlContent
 import io.lukia.features.reader.infrastructure.text.html.htmlContent
 import io.lukia.features.reader.infrastructure.text.sectionStarts
 import io.lukia.features.reader.infrastructure.text.withSectionHeadings
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 
 /**
  * The media types a spine item has to be for there to be anything to read in it.
@@ -44,10 +48,28 @@ private val ReadableMediaTypes = setOf(
  * [sectionStarts], the same rule every undivided format gets, and its anchors
  * are what put the table of contents back on the right sections.
  *
+ * The files are read at the same time as each other and assembled in the order
+ * the spine states. Reading one is decompressing it, decoding whatever encoding
+ * it was written in, and parsing the markup - the most expensive thing done to a
+ * book before it is measured, and a book is dozens of files of it. Nothing in
+ * one file depends on another, and the archive they come out of is read-only
+ * once it has been indexed, so there is nothing to divide but the work.
+ *
+ * Assembled in reading order all the same. Which file finished first is a fact
+ * about the device; which order they are read in is the book.
+ *
+ * Read whole before the reader is shown any of it, which was measured against
+ * the alternative and is the faster of the two. Handing chapters over as they
+ * were parsed, so that the first could be measured while the rest were still
+ * being read, sounds like the shorter wait and is not: parsing and measuring
+ * both use every core there is, so running them at the same time only takes
+ * cores away from the measuring - which is the half the reader is actually
+ * waiting on. Two full-speed passes beat two half-speed ones.
+ *
  * Returns null when the file is not an EPUB this can make sense of, which the
  * caller turns into a format the reader cannot open rather than an empty book.
  */
-internal fun readEpub(epubBytes: ByteArray): ReflowableContent? {
+internal suspend fun readEpub(epubBytes: ByteArray): ReflowableContent? {
     val epub = EpubPackage.open(epubBytes) ?: return null
 
     val sections = mutableListOf<TextSection>()
@@ -59,19 +81,20 @@ internal fun readEpub(epubBytes: ByteArray): ReflowableContent? {
      */
     val files = mutableMapOf<String, FileSections>()
 
-    epub.readingOrder
-        .filter { it.mediaType in ReadableMediaTypes }
-        .forEach { item ->
-            val html = epub.read(item.path)?.let(::decodeText) ?: return@forEach
+    val read = coroutineScope {
+        epub.readingOrder
+            .filter { it.mediaType in ReadableMediaTypes }
+            .map { item -> async { item to epub.contentOf(item) } }
+            .awaitAll()
+    }
 
-            val content = htmlContent(html) { source ->
-                epub.read(epub.resolveFrom(item.path, source))
-            }
+    read.forEach { (item, content) ->
+        // A file that holds nothing gets no section, which is what the table of
+        // contents is told by there being no entry for it in [files].
+        if (content == null || content.blocks.isEmpty()) return@forEach
 
-            if (content.blocks.isEmpty()) return@forEach
-
-            files[item.path] = sections.append(content)
-        }
+        files[item.path] = sections.append(content)
+    }
 
     if (sections.isEmpty()) return null
 
@@ -83,6 +106,18 @@ internal fun readEpub(epubBytes: ByteArray): ReflowableContent? {
         // none of its own - see [withSectionHeadings].
         outline = contents.withSectionHeadings(sections),
     )
+}
+
+/**
+ * One file of the book as blocks, or null where there is nothing readable in it.
+ *
+ * The images it names are pulled out of the archive as it is parsed, which is
+ * why this needs the package and not only the bytes.
+ */
+private fun EpubPackage.contentOf(item: EpubManifestItem): HtmlContent? {
+    val html = read(item.path)?.let(::decodeText) ?: return null
+
+    return htmlContent(html) { source -> read(resolveFrom(item.path, source)) }
 }
 
 /** Where one file of the book ended up once it was laid out as sections. */
