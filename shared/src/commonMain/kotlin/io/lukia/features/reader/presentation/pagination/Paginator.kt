@@ -107,8 +107,21 @@ private class Breather {
     }
 }
 
-/** About a frame: long enough that handing over costs nothing, short enough not to be seen. */
-private val BREATH = 8.milliseconds
+/**
+ * A small part of a frame rather than a whole one.
+ *
+ * What is felt as a stutter is a frame that came late, and a frame comes late by
+ * however long the thread was busy when it was due. So this is the size of the
+ * delay the measuring can impose on a page being scrolled onto the screen, and
+ * wants to be short against the sixteen milliseconds a frame has - not close to
+ * half of it. Scrolling a reflowable book is itself most of a frame's work,
+ * since the pages coming into view are being set as they arrive.
+ *
+ * The cost of a shorter one is the handing over itself, which is a trip through
+ * the run loop and some tens of microseconds - about a percent of the measuring
+ * at this size, and nothing where the measuring has a thread to itself.
+ */
+private val BREATH = 2.milliseconds
 
 /**
  * Fills one page at a time, and remembers where each section began.
