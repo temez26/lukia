@@ -102,14 +102,30 @@ fun stateSwapIn(durationMillis: Int = LukiaMotion.StandardMillis): EnterTransiti
  * moves sideways when a panel gets taller, so nothing here should draw as
  * though it does.
  *
- * The fade is what keeps a half-height row from being briefly readable in a
- * space too short to hold it.
+ * [LukiaMotion.LargeMillis] rather than the standard duration, because what
+ * opens here is not menu-sized. Seventeen languages are some seven hundred
+ * points of rows, and seven hundred points in [LukiaMotion.StandardMillis] is
+ * three thousand a second - fast enough that the eye reads it as the panel
+ * jumping to a new height rather than as a list opening. This is what that
+ * duration is for.
+ *
+ * The fade is shorter than the growth on purpose. It keeps a half-height row
+ * from being briefly readable in a space too short to hold it, and finishing
+ * first means the rows are solid while the space around them is still settling -
+ * one movement to watch rather than two ending together.
  */
 fun disclosureIn(): EnterTransition = expandVertically(
-    animationSpec = tween(LukiaMotion.StandardMillis, easing = LukiaMotion.Standard),
+    animationSpec = tween(LukiaMotion.LargeMillis, easing = LukiaMotion.Standard),
     expandFrom = Alignment.Top,
 ) + fadeIn(animationSpec = tween(LukiaMotion.StandardMillis, easing = LukiaMotion.Standard))
 
+/**
+ * Closing again, at the pace anything leaving gets.
+ *
+ * Not the [LukiaMotion.LargeMillis] its entrance took: a list is collapsed by
+ * somebody who has just chosen from it and wants the panel back, and the height
+ * it gives up is height they have stopped looking at.
+ */
 fun disclosureOut(): ExitTransition = shrinkVertically(
     animationSpec = tween(LukiaMotion.ExitMillis, easing = LukiaMotion.Exit),
     shrinkTowards = Alignment.Top,

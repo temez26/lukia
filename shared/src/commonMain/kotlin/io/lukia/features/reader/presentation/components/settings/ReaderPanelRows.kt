@@ -31,6 +31,7 @@ import io.lukia.shared.presentation.components.controls.hoverHighlight
 import io.lukia.shared.presentation.components.icons.DisclosureChevron
 import io.lukia.shared.presentation.theme.LocalLukiaMetrics
 import io.lukia.shared.presentation.theme.LukiaAlpha
+import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.Space
 
 // The rows a reader panel is built from, as opposed to the labelled controls in
@@ -92,8 +93,13 @@ internal fun PanelDisclosureRow(
     val interactionSource = remember { MutableInteractionSource() }
     val metrics = LocalLukiaMetrics.current
     val shape = MaterialTheme.shapes.small
+    // On the app's own curve rather than the default spring, which settles at a
+    // rate nothing else here uses: the mark and the list under it are one
+    // gesture, and two clocks running at once is most of what made opening the
+    // list feel unresolved.
     val turn by animateFloatAsState(
         targetValue = if (expanded) HalfTurn else 0f,
+        animationSpec = LukiaMotion.standard(),
         label = "panelDisclosure",
     )
 
