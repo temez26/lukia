@@ -27,10 +27,11 @@ import io.lukia.features.reader.domain.text.TextSection
  * or a page being scrolled past is not a reason to lay a book out again.
  *
  * The measuring happens off the main thread, on as many of them as the device
- * has to spare, and arrives in pieces - see [paginateProgressively]. What comes
- * back first is a true beginning of the book rather than the whole of it, which
- * is what lets somebody start reading a long book while its later chapters are
- * still being measured. The previous layout stays on screen until the new one
+ * has to spare and the platform's text stack allows, and arrives in pieces - see
+ * [paginateProgressively] and [maxParallelMeasurers]. What comes back first is a
+ * true beginning of the book rather than the whole of it, which is what lets
+ * somebody start reading a long book while its later chapters are still being
+ * measured. The previous layout stays on screen until the new one
  * has reached the page being read, because blanking a page somebody is looking
  * at would be a worse answer than a page that is briefly a line too long.
  *
@@ -60,7 +61,9 @@ internal fun rememberPagination(
     // One measurer per worker rather than one for the book. A TextMeasurer keeps
     // a cache of what it has laid out and is not written to be shared between
     // threads, so measuring a book on four of them through one would be a race
-    // over that cache rather than four times the speed.
+    // over that cache rather than four times the speed. Where the platform only
+    // allows one worker this is a list of one, which is the same measurer the
+    // book has always been laid out through.
     val measurers = remember(workerCount, fontFamilyResolver, density, layoutDirection) {
         List(workerCount) { TextMeasurer(fontFamilyResolver, density, layoutDirection) }
     }

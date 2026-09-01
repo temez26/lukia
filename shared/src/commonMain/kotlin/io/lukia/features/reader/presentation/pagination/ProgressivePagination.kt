@@ -29,11 +29,15 @@ import kotlin.time.TimeSource
  * book they opened to read the first line of.
  *
  * So the book is cut into runs that lay out independently - see [chunkStarts] -
- * the runs are measured at the same time as each other, and what comes out of
- * here is the beginning of the book, then more of it, then all of it. Every one
- * of those is a real book as far as anything above is concerned: its pages are
- * the pages that book will have, and only how many there turn out to be is still
- * moving.
+ * and what comes out of here is the beginning of the book, then more of it, then
+ * all of it. Every one of those is a real book as far as anything above is
+ * concerned: its pages are the pages that book will have, and only how many
+ * there turn out to be is still moving.
+ *
+ * Whether the runs are measured at the same time as each other is the platform's
+ * to say - see [maxParallelMeasurers] - and is the smaller half of this. What
+ * somebody waiting on a book notices is that the first run arrives before the
+ * last one has been started, which is true on one thread as much as on four.
  *
  * The pages themselves are exactly the pages a single pass would have produced.
  * Nothing here changes where a page ends; it changes when the reader is told.
@@ -68,7 +72,7 @@ internal fun paginateProgressively(
 }.flowOn(Dispatchers.Default)
 
 /**
- * Sets every run of the book being measured at once.
+ * Sets every run of the book going, to be measured as a measurer comes free.
  *
  * Which measurer a run gets is settled by where the run is in the book rather
  * than by whoever is free, so that a re-layout asks the same measurer about the
@@ -154,15 +158,12 @@ private suspend fun FlowCollector<PaginatedBook>.emitInOrder(
 /**
  * How many runs are measured at once.
  *
- * One per core, capped, for the reasons `readersFor` is capped: a phone that has
- * eight of them does not have eight cores' worth of thermal headroom, and every
- * worker holds a measurer and the layouts it has cached. Past a handful the book
- * is not measured meaningfully sooner and the reader's battery notices.
+ * One per core, up to what the platform's text stack allows two threads to do at
+ * the same time - which on everything Compose draws with Skia is one. See
+ * [maxParallelMeasurers].
  */
 internal fun paginationWorkers(): Int =
-    availableProcessors().coerceIn(1, MAX_PAGINATION_WORKERS)
-
-private const val MAX_PAGINATION_WORKERS = 4
+    availableProcessors().coerceIn(1, maxParallelMeasurers())
 
 /** How often a growing book is worth handing over while it grows. */
 private val PUBLISH_INTERVAL = 150.milliseconds
