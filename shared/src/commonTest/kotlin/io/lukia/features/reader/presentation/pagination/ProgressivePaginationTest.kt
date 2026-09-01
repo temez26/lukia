@@ -2,6 +2,7 @@ package io.lukia.features.reader.presentation.pagination
 
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -32,7 +33,9 @@ class ProgressivePaginationTest {
     @Test
     fun aBookLaidOutARunAtATimeHasTheSamePagesAsOneLaidOutInOneGo() = runTest {
         val whole = paginate(book, CharacterHeights, PAGE_HEIGHT)
-        val progressive = paginateProgressively(book, PAGE_HEIGHT, workers).toList().last()
+        val progressive = paginateProgressively(book, PAGE_HEIGHT, workers, EmptyCoroutineContext)
+            .toList()
+            .last()
 
         assertEquals(whole.pageCount, progressive.pageCount)
         assertEquals(whole.places(), progressive.places())
@@ -42,7 +45,9 @@ class ProgressivePaginationTest {
     @Test
     fun everySectionOpensOnTheSamePage() = runTest {
         val whole = paginate(book, CharacterHeights, PAGE_HEIGHT)
-        val progressive = paginateProgressively(book, PAGE_HEIGHT, workers).toList().last()
+        val progressive = paginateProgressively(book, PAGE_HEIGHT, workers, EmptyCoroutineContext)
+            .toList()
+            .last()
 
         book.indices.forEach { section ->
             assertEquals(whole.pageOf(section), progressive.pageOf(section), "section $section")
@@ -56,7 +61,7 @@ class ProgressivePaginationTest {
      */
     @Test
     fun everyBookHandedOverIsABeginningOfTheFinishedOne() = runTest {
-        val laid = paginateProgressively(book, PAGE_HEIGHT, workers).toList()
+        val laid = paginateProgressively(book, PAGE_HEIGHT, workers, EmptyCoroutineContext).toList()
         val whole = laid.last()
 
         laid.forEach { partial ->
@@ -70,7 +75,7 @@ class ProgressivePaginationTest {
     /** Only the last one is the whole book, and it says so. */
     @Test
     fun onlyTheFinishedBookCallsItselfComplete() = runTest {
-        val laid = paginateProgressively(book, PAGE_HEIGHT, workers).toList()
+        val laid = paginateProgressively(book, PAGE_HEIGHT, workers, EmptyCoroutineContext).toList()
 
         assertTrue(laid.last().complete)
         laid.dropLast(1).forEach { assertFalse(it.complete) }
@@ -83,7 +88,9 @@ class ProgressivePaginationTest {
      */
     @Test
     fun theBookOnlyEverGetsLonger() = runTest {
-        val counts = paginateProgressively(book, PAGE_HEIGHT, workers).toList().map { it.pageCount }
+        val counts = paginateProgressively(book, PAGE_HEIGHT, workers, EmptyCoroutineContext)
+            .toList()
+            .map { it.pageCount }
 
         assertEquals(counts.sorted(), counts)
     }
@@ -97,7 +104,7 @@ class ProgressivePaginationTest {
         val unnamed = List(10) { chapter(null, *Array(30) { filler(40) }) }
 
         val measured = paginate(unnamed, CharacterHeights, PAGE_HEIGHT)
-        val laid = paginateProgressively(unnamed, PAGE_HEIGHT, workers).toList()
+        val laid = paginateProgressively(unnamed, PAGE_HEIGHT, workers, EmptyCoroutineContext).toList()
 
         assertEquals(measured.places(), laid.last().places())
         assertTrue(laid.all { it.places() == measured.places() }, "one run, one set of pages")
@@ -105,7 +112,7 @@ class ProgressivePaginationTest {
 
     @Test
     fun aBookWithNothingInItIsAnEmptyBook() = runTest {
-        val laid = paginateProgressively(sections = emptyList(), pageHeightPx = PAGE_HEIGHT, sizesPerWorker = workers)
+        val laid = paginateProgressively(emptyList(), PAGE_HEIGHT, workers, EmptyCoroutineContext)
 
         assertEquals(0, laid.toList().single().pageCount)
     }
@@ -113,7 +120,7 @@ class ProgressivePaginationTest {
     /** A window with no height to it is not one to lay a book out for. */
     @Test
     fun aBookIsNotLaidOutForAWindowWithNoRoomInIt() = runTest {
-        val laid = paginateProgressively(book, pageHeightPx = 0, sizesPerWorker = workers)
+        val laid = paginateProgressively(book, pageHeightPx = 0, sizesPerWorker = workers, EmptyCoroutineContext)
 
         assertEquals(0, laid.toList().single().pageCount)
     }
@@ -124,8 +131,9 @@ class ProgressivePaginationTest {
      */
     @Test
     fun oneWorkerLaysOutTheSameBookAsFour() = runTest {
-        val alone = paginateProgressively(book, PAGE_HEIGHT, listOf(CharacterHeights)).toList()
-        val together = paginateProgressively(book, PAGE_HEIGHT, workers).toList()
+        val alone = paginateProgressively(book, PAGE_HEIGHT, listOf(CharacterHeights), EmptyCoroutineContext)
+            .toList()
+        val together = paginateProgressively(book, PAGE_HEIGHT, workers, EmptyCoroutineContext).toList()
 
         assertEquals(together.last().places(), alone.last().places())
     }
