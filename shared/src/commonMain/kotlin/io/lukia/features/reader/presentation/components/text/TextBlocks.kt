@@ -2,6 +2,7 @@ package io.lukia.features.reader.presentation.components.text
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -19,13 +20,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.decodeToImageBitmap
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -200,6 +205,12 @@ internal fun CodeBlock(block: TextBlock.Code, style: TextStyle) {
  * [maxHeight] is how tall it may be drawn, which on a paginated book is the page
  * it was put on. A plate taller than the page is scaled down to fit rather than
  * running off the bottom of it, so an illustration is always seen whole.
+ *
+ * A press lifts it out of the page at the size of the window - see
+ * [FigureViewer]. Every rule above is about fitting a picture into a column of
+ * prose, and a diagram or a table that has been fitted into one is often no
+ * longer readable; this is the way to look at it properly without turning every
+ * other picture in the book up to match.
  */
 @Composable
 internal fun FigureBlock(
@@ -212,6 +223,8 @@ internal fun FigureBlock(
             runCatching { block.bytes.decodeToImageBitmap() }.getOrNull()
         }
     }
+
+    var lookingCloser by remember(block) { mutableStateOf(false) }
 
     image?.let { bitmap ->
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
@@ -231,7 +244,21 @@ internal fun FigureBlock(
                         } else {
                             Modifier.heightIn(max = maxHeight)
                         },
-                    ),
+                    )
+                    .pointerHoverIcon(PointerIcon.Hand)
+                    // Innermost, so the press is caught over the illustration
+                    // rather than over the strip of page it is centred in - and
+                    // consumed there, so it is not also the tap that turns the
+                    // page out from under it.
+                    .clickable(onClickLabel = "Look closer") { lookingCloser = true },
+            )
+        }
+
+        if (lookingCloser) {
+            FigureViewer(
+                image = bitmap,
+                description = block.description,
+                onDismiss = { lookingCloser = false },
             )
         }
     }
