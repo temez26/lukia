@@ -50,6 +50,19 @@ object LukiaMotion {
     /** Screen-sized moves, where the distance travelled needs the extra time. */
     const val LargeMillis = 340
 
+    /**
+     * A list unfolding to a height greater than the surface holding it - see
+     * [disclosureIn].
+     *
+     * Longer than [LargeMillis], which is not a mistake and not a flourish. A
+     * screen pushing over another travels its whole distance in front of the
+     * reader; a list opening inside a capped, scrolling panel spends much of its
+     * travel below the panel's bottom edge, so only the part that fits is
+     * actually watched. Timed like a screen push, what the reader sees is over
+     * in half of it.
+     */
+    const val UnfoldMillis = 520
+
     /** What an exit gets when its entrance took [StandardMillis]. */
     const val ExitMillis = 160
 
@@ -102,12 +115,12 @@ fun stateSwapIn(durationMillis: Int = LukiaMotion.StandardMillis): EnterTransiti
  * moves sideways when a panel gets taller, so nothing here should draw as
  * though it does.
  *
- * [LukiaMotion.LargeMillis] rather than the standard duration, because what
- * opens here is not menu-sized. Seventeen languages are some seven hundred
- * points of rows, and seven hundred points in [LukiaMotion.StandardMillis] is
- * three thousand a second - fast enough that the eye reads it as the panel
- * jumping to a new height rather than as a list opening. This is what that
- * duration is for.
+ * [LukiaMotion.UnfoldMillis] rather than any of the durations a menu or a screen
+ * gets, because this is neither. Seventeen languages are some seven hundred
+ * points of rows opening inside a panel capped at five hundred and sixty, so a
+ * good half of the growth happens below the panel's bottom edge where nobody is
+ * watching it - and a clock set by the whole distance spends only half of itself
+ * on the part that can be seen.
  *
  * The fade is shorter than the growth on purpose. It keeps a half-height row
  * from being briefly readable in a space too short to hold it, and finishing
@@ -115,21 +128,23 @@ fun stateSwapIn(durationMillis: Int = LukiaMotion.StandardMillis): EnterTransiti
  * one movement to watch rather than two ending together.
  */
 fun disclosureIn(): EnterTransition = expandVertically(
-    animationSpec = tween(LukiaMotion.LargeMillis, easing = LukiaMotion.Standard),
+    animationSpec = tween(LukiaMotion.UnfoldMillis, easing = LukiaMotion.Standard),
     expandFrom = Alignment.Top,
-) + fadeIn(animationSpec = tween(LukiaMotion.StandardMillis, easing = LukiaMotion.Standard))
+) + fadeIn(animationSpec = tween(LukiaMotion.LargeMillis, easing = LukiaMotion.Standard))
 
 /**
- * Closing again, at the pace anything leaving gets.
+ * Closing again, quicker than it opened but in proportion to it.
  *
- * Not the [LukiaMotion.LargeMillis] its entrance took: a list is collapsed by
- * somebody who has just chosen from it and wants the panel back, and the height
- * it gives up is height they have stopped looking at.
+ * [LukiaMotion.ExitMillis] is what an entrance of [LukiaMotion.StandardMillis]
+ * leaves at - two thirds of it - and the same two thirds of an unfold is
+ * [LukiaMotion.LargeMillis]. Held to the ratio rather than to the constant,
+ * because a list that takes half a second to open and is gone in a sixth reads
+ * as having been snatched away rather than closed.
  */
 fun disclosureOut(): ExitTransition = shrinkVertically(
-    animationSpec = tween(LukiaMotion.ExitMillis, easing = LukiaMotion.Exit),
+    animationSpec = tween(LukiaMotion.LargeMillis, easing = LukiaMotion.Exit),
     shrinkTowards = Alignment.Top,
-) + softFadeOut()
+) + softFadeOut(LukiaMotion.StandardMillis)
 
 /**
  * A sheet or bar entering from the top edge of its container, used by the
