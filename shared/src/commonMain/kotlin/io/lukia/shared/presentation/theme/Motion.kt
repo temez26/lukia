@@ -8,11 +8,14 @@ import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.ui.Alignment
 
 /**
  * The app's motion vocabulary.
@@ -89,6 +92,28 @@ fun stateSwapIn(durationMillis: Int = LukiaMotion.StandardMillis): EnterTransiti
             animationSpec = tween(durationMillis, easing = LukiaMotion.Standard),
             initialScale = 0.97f,
         )
+
+/**
+ * A list opening underneath the row that disclosed it - see `PanelDisclosureRow`.
+ *
+ * Height only, and downwards. Left to itself `AnimatedVisibility` grows a child
+ * from its bottom end, which uncovers the list from its top left corner and
+ * reads as a list being dragged diagonally out of the row above it. Nothing
+ * moves sideways when a panel gets taller, so nothing here should draw as
+ * though it does.
+ *
+ * The fade is what keeps a half-height row from being briefly readable in a
+ * space too short to hold it.
+ */
+fun disclosureIn(): EnterTransition = expandVertically(
+    animationSpec = tween(LukiaMotion.StandardMillis, easing = LukiaMotion.Standard),
+    expandFrom = Alignment.Top,
+) + fadeIn(animationSpec = tween(LukiaMotion.StandardMillis, easing = LukiaMotion.Standard))
+
+fun disclosureOut(): ExitTransition = shrinkVertically(
+    animationSpec = tween(LukiaMotion.ExitMillis, easing = LukiaMotion.Exit),
+    shrinkTowards = Alignment.Top,
+) + softFadeOut()
 
 /**
  * A sheet or bar entering from the top edge of its container, used by the

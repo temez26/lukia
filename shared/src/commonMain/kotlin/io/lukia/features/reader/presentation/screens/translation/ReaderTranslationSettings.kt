@@ -24,6 +24,8 @@ import io.lukia.shared.presentation.components.surface.LukiaDivider
 import io.lukia.shared.presentation.components.surface.SectionLabel
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
+import io.lukia.shared.presentation.theme.disclosureIn
+import io.lukia.shared.presentation.theme.disclosureOut
 
 /**
  * Translating, at the top of the reader's own settings panel.
@@ -187,7 +189,11 @@ private fun TargetLanguageSetting(
         inset = inset,
     )
 
-    AnimatedVisibility(visible = expanded) {
+    AnimatedVisibility(
+        visible = expanded,
+        enter = disclosureIn(),
+        exit = disclosureOut(),
+    ) {
         ChoiceList(
             options = TargetLanguage.entries,
             selected = preferences.targetLanguage,
