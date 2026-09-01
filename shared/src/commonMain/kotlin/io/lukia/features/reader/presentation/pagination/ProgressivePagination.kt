@@ -3,7 +3,6 @@ package io.lukia.features.reader.presentation.pagination
 import io.lukia.core.infrastructure.availableProcessors
 import io.lukia.features.reader.domain.text.TextSection
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -16,6 +15,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
 
@@ -34,10 +34,11 @@ import kotlin.time.TimeSource
  * concerned: its pages are the pages that book will have, and only how many
  * there turn out to be is still moving.
  *
- * Whether the runs are measured at the same time as each other is the platform's
- * to say - see [maxParallelMeasurers] - and is the smaller half of this. What
- * somebody waiting on a book notices is that the first run arrives before the
- * last one has been started, which is true on one thread as much as on four.
+ * Where the runs are measured, and whether any two of them are measured at the
+ * same time, is the platform's to say - see [measuringContext] - and is the
+ * smaller half of this. What somebody waiting on a book notices is that the
+ * first run arrives before the last one has been started, which is true on one
+ * thread as much as on four.
  *
  * The pages themselves are exactly the pages a single pass would have produced.
  * Nothing here changes where a page ends; it changes when the reader is told.
@@ -52,6 +53,13 @@ internal fun paginateProgressively(
     sections: List<TextSection>,
     pageHeightPx: Int,
     sizesPerWorker: List<BlockSizes>,
+    /**
+     * Where the measuring happens, which is the platform's to say - see
+     * [measuringContext]. Named rather than assumed so that a test can measure a
+     * book on the thread it is already running on, which the main one, held by a
+     * test that is waiting for the book, could not do.
+     */
+    context: CoroutineContext = measuringContext(),
 ): Flow<PaginatedBook> = flow {
     if (sections.isEmpty() || pageHeightPx <= 0 || sizesPerWorker.isEmpty()) {
         emit(PaginatedBook.Empty)
@@ -69,7 +77,7 @@ internal fun paginateProgressively(
 
         emitInOrder(runs)
     }
-}.flowOn(Dispatchers.Default)
+}.flowOn(context)
 
 /**
  * Sets every run of the book going, to be measured as a measurer comes free.

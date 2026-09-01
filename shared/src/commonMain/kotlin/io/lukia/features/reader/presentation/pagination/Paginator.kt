@@ -2,6 +2,9 @@ package io.lukia.features.reader.presentation.pagination
 
 import io.lukia.features.reader.domain.text.TextBlock
 import io.lukia.features.reader.domain.text.TextSection
+import kotlinx.coroutines.yield
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.TimeSource
 
 /**
  * Lays a reflowable book out as pages that each fit the window.
@@ -23,7 +26,17 @@ internal fun paginate(
 ): PaginatedBook {
     if (sections.isEmpty() || pageHeightPx <= 0) return PaginatedBook.Empty
 
-    val chunk = paginateChunk(sections, sizes, pageHeightPx, firstSection = 0)
+    val builder = PageBuilder(sizes, pageHeightPx)
+
+    // The same walk as [paginateChunk] without the breathing, which is the whole
+    // difference between the two: this one is not sharing a thread with anybody.
+    sections.forEachIndexed { index, section ->
+        builder.startSection(index, newPage = section.title != null)
+
+        section.blocks.forEachIndexed { blockIndex, block -> builder.add(blockIndex, block) }
+    }
+
+    val chunk = builder.build()
 
     return PaginatedBook(pages = chunk.pages, sectionPages = chunk.sectionPages)
 }
@@ -42,13 +55,14 @@ internal fun paginate(
  * able to say which section of the book its blocks came from, not which section
  * of the run.
  */
-internal fun paginateChunk(
+internal suspend fun paginateChunk(
     sections: List<TextSection>,
     sizes: BlockSizes,
     pageHeightPx: Int,
     firstSection: Int,
 ): PaginatedChunk {
     val builder = PageBuilder(sizes, pageHeightPx)
+    val breather = Breather()
 
     sections.forEachIndexed { index, section ->
         // A chapter opens a page. A section with no name of its own is not a
@@ -59,11 +73,42 @@ internal fun paginateChunk(
 
         section.blocks.forEachIndexed { blockIndex, block ->
             builder.add(blockIndex, block)
+            breather.breathe()
         }
     }
 
     return builder.build()
 }
+
+/**
+ * Gives the thread back every so often.
+ *
+ * A run is measured on the thread the app draws on wherever the platform allows
+ * text to be laid out on no other - see [measuringContext] - and a chapter
+ * measured there in one go is a chapter's worth of frames not drawn. A book with
+ * no chapter breaks to cut at is one run and one freeze, which is why this is
+ * inside the walk over the blocks rather than between the runs.
+ *
+ * On a clock rather than on a count of blocks, because how long a block takes to
+ * measure is a fact about the device and the block rather than about the book: a
+ * paragraph and a page of preformatted code are not the same work. Where the
+ * measuring has a thread to itself this costs a comparison per block and yields
+ * to nobody.
+ */
+private class Breather {
+
+    private var since = TimeSource.Monotonic.markNow()
+
+    suspend fun breathe() {
+        if (since.elapsedNow() < BREATH) return
+
+        since = TimeSource.Monotonic.markNow()
+        yield()
+    }
+}
+
+/** About a frame: long enough that handing over costs nothing, short enough not to be seen. */
+private val BREATH = 8.milliseconds
 
 /**
  * Fills one page at a time, and remembers where each section began.
