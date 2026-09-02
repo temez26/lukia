@@ -1,5 +1,8 @@
 package io.lukia.features.library.infrastructure.importing.cover
 
+import io.lukia.core.domain.diagnostics.DiagnosticArea
+import io.lukia.core.domain.diagnostics.Diagnostics
+import io.lukia.core.domain.diagnostics.warn
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.infrastructure.shrinkCoverImage
 
@@ -38,12 +41,32 @@ internal const val MaxStoredCoverBytes = 1_000_000
  * only the words - so they have no branch here rather than a branch that always
  * fails.
  */
-internal fun extractCover(type: DocumentType, documentBytes: ByteArray): ByteArray? = when (type) {
-    DocumentType.PDF -> runCatching { renderPdfCover(documentBytes) }.getOrNull()
-    DocumentType.EPUB -> runCatching { extractEpubCover(documentBytes) }.getOrNull()
-    DocumentType.DOCX -> runCatching { extractDocxCover(documentBytes) }.getOrNull()
-    DocumentType.TEXT, DocumentType.MARKDOWN, DocumentType.UNKNOWN -> null
-}?.let(::asStoredCover)
+internal fun extractCover(
+    type: DocumentType,
+    documentBytes: ByteArray,
+    diagnostics: Diagnostics = Diagnostics.None,
+): ByteArray? {
+    val rendered = when (type) {
+        DocumentType.PDF -> runCatching { renderPdfCover(documentBytes) }
+        DocumentType.EPUB -> runCatching { extractEpubCover(documentBytes) }
+        DocumentType.DOCX -> runCatching { extractDocxCover(documentBytes) }
+        DocumentType.TEXT, DocumentType.MARKDOWN, DocumentType.UNKNOWN -> return null
+    }
+
+    return rendered
+        .onFailure {
+            // The format and the throwable's type. A cover is the one part of a
+            // book that is a picture of its title, so nothing out of it travels.
+            diagnostics.warn(
+                area = DiagnosticArea.Import,
+                event = "cover-extraction-failed",
+                detail = type.name,
+                cause = it,
+            )
+        }
+        .getOrNull()
+        ?.let { asStoredCover(it, diagnostics) }
+}
 
 /**
  * A cover as the library keeps it: shrunk to [MaxStoredCoverEdge], and given up
@@ -55,8 +78,22 @@ internal fun extractCover(type: DocumentType, documentBytes: ByteArray): ByteArr
  * is what keeps that out of the database, out of every read of the library, and
  * out of the row-size limit above.
  */
-private fun asStoredCover(cover: ByteArray): ByteArray? {
-    val stored = runCatching { shrinkCoverImage(cover, MaxStoredCoverEdge) }.getOrNull() ?: cover
+private fun asStoredCover(cover: ByteArray, diagnostics: Diagnostics): ByteArray? {
+    val stored = runCatching { shrinkCoverImage(cover, MaxStoredCoverEdge) }
+        .onFailure {
+            // A size in kilobytes says which of the two ways this ends: an image
+            // no decoder recognised, or artwork large enough that failing to
+            // shrink it means storing no cover at all.
+            diagnostics.warn(
+                area = DiagnosticArea.Import,
+                event = "cover-shrink-failed",
+                detail = "${cover.size / BytesPerKilobyte} KB",
+                cause = it,
+            )
+        }
+        .getOrNull() ?: cover
 
     return stored.takeIf { it.size <= MaxStoredCoverBytes }
 }
+
+private const val BytesPerKilobyte = 1024

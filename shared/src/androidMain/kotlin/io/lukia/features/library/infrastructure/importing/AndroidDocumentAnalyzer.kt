@@ -3,6 +3,7 @@ package io.lukia.features.library.infrastructure.importing
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
+import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.domain.document.PickedDocument
@@ -10,6 +11,7 @@ import io.lukia.features.library.domain.DocumentAnalyzer
 
 class AndroidDocumentAnalyzer(
     private val context: Context,
+    private val diagnostics: Diagnostics = Diagnostics.None,
 ) : DocumentAnalyzer {
 
     override suspend fun analyze(
@@ -56,7 +58,7 @@ class AndroidDocumentAnalyzer(
             runCatching {
                 resolver.openInputStream(uri)?.use { it.readBytes() }
             }.getOrNull()
-                ?.let { extractContents(type, it) }
+                ?.let { extractContents(type, it, diagnostics) }
                 ?: DocumentContents.Empty
         }
 

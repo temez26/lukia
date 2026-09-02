@@ -19,7 +19,7 @@ import org.koin.dsl.module
 val platformModule = module {
 
     single<DocumentAnalyzer> {
-        IOSDocumentAnalyzer()
+        IOSDocumentAnalyzer(get())
     }
 
     single<IncomingDocumentStore> {

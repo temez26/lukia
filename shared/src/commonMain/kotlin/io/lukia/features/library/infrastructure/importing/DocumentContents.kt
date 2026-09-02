@@ -1,5 +1,6 @@
 package io.lukia.features.library.infrastructure.importing
 
+import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.core.domain.document.BookMetadata
 import io.lukia.core.domain.document.CoverImage
 import io.lukia.core.domain.document.DocumentType
@@ -31,8 +32,12 @@ internal class DocumentContents(
  * A book with no cover and no metadata is still a book, and refusing it would
  * help nobody.
  */
-internal fun extractContents(type: DocumentType, documentBytes: ByteArray): DocumentContents =
+internal fun extractContents(
+    type: DocumentType,
+    documentBytes: ByteArray,
+    diagnostics: Diagnostics = Diagnostics.None,
+): DocumentContents =
     DocumentContents(
-        coverImage = extractCover(type, documentBytes)?.let(::CoverImage),
-        metadata = extractMetadata(type, documentBytes),
+        coverImage = extractCover(type, documentBytes, diagnostics)?.let(::CoverImage),
+        metadata = extractMetadata(type, documentBytes, diagnostics),
     )
