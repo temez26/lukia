@@ -13,6 +13,7 @@ import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.AppErrorException
+import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.Translator
@@ -70,6 +71,7 @@ private fun String.takesEffort(): Boolean = !contains("haiku", ignoreCase = true
 class AnthropicTranslator(
     private val client: HttpClient,
     private val settings: TranslationSettingsRepository,
+    private val diagnostics: Diagnostics = Diagnostics.None,
     private val json: Json = Json { ignoreUnknownKeys = true },
 ) : Translator {
 
@@ -90,7 +92,7 @@ class AnthropicTranslator(
         var stopReason: String? = null
         var reportedFailure: String? = null
 
-        translating(configured) {
+        translating(configured, diagnostics) {
             client.preparePost("${configured.baseUrl.trimEnd('/')}/messages") {
                 translationTimeouts(configured)
 

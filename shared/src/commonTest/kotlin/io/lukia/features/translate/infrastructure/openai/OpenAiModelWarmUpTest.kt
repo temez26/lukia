@@ -122,7 +122,7 @@ class OpenAiModelWarmUpTest {
             install(HttpTimeout)
         }
 
-        return OpenAiModelWarmUp(client, settings, json)
+        return OpenAiModelWarmUp(client, settings, json = json)
     }
 
     private suspend fun OpenAiModelWarmUp.failure(): AppError =

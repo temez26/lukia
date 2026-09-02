@@ -13,6 +13,7 @@ import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.AppErrorException
+import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.Translator
@@ -66,6 +67,7 @@ private val SHAPE_INSTRUCTION = """
 class OpenAiTranslator(
     private val client: HttpClient,
     private val settings: TranslationSettingsRepository,
+    private val diagnostics: Diagnostics = Diagnostics.None,
     private val json: Json = Json { ignoreUnknownKeys = true },
 ) : Translator {
 
@@ -98,7 +100,7 @@ class OpenAiTranslator(
         // Why the model stopped, from whichever chunk carried it.
         var finishReason: String? = null
 
-        translating(configured) {
+        translating(configured, diagnostics) {
             client.preparePost("${configured.baseUrl.trimEnd('/')}/chat/completions") {
                 translationTimeouts(configured)
 

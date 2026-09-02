@@ -10,6 +10,7 @@ import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.AppErrorException
+import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.features.translate.domain.provider.ModelWarmUp
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import io.lukia.features.translate.infrastructure.translating
@@ -39,6 +40,7 @@ private const val WARM_UP_PROMPT = "Hi"
 class OpenAiModelWarmUp(
     private val client: HttpClient,
     private val settings: TranslationSettingsRepository,
+    private val diagnostics: Diagnostics = Diagnostics.None,
     private val json: Json = Json { ignoreUnknownKeys = true },
 ) : ModelWarmUp {
 
@@ -53,7 +55,7 @@ class OpenAiModelWarmUp(
             )
         }
 
-        val response = translating(configured) {
+        val response = translating(configured, diagnostics) {
             client.post("${configured.baseUrl.trimEnd('/')}/chat/completions") {
                 translationTimeouts(configured)
 
