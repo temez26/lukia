@@ -81,6 +81,7 @@ internal fun ComposeUiTest.setReader(
     translationConfigured: Boolean = false,
     bulkTranslation: BulkTranslation = BulkTranslation.Default,
     wordInquiry: WordInquiry? = null,
+    translationNotes: Boolean = true,
     /**
      * How wide the window is, or null for whatever the test host gives - which
      * is a desktop-sized one. Only the tests that care where a control lives
@@ -101,6 +102,7 @@ internal fun ComposeUiTest.setReader(
                 translationConfigured = translationConfigured,
                 bulkTranslation = bulkTranslation,
                 wordInquiry = wordInquiry,
+                translationNotes = translationNotes,
                 onBack = {},
                 onRetry = {},
                 onSettingsChange = {},

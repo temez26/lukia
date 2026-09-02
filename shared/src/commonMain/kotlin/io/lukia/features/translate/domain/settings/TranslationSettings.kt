@@ -58,6 +58,21 @@ data class TranslationSettings(
     private val googleKey: String? = null,
     val gestures: TranslationGestures = TranslationGestures.Default,
     /**
+     * Whether the translator's asides are set under the paragraph they belong
+     * to - a remark about an ambiguous word, a dictionary's other senses.
+     *
+     * On, because for most of this app's life they were the only place those
+     * senses could be read at all. They have somewhere better to be now: holding
+     * a word opens every sense it has, at length and out of the way of the
+     * prose - see [io.lukia.features.reader.presentation.translation.WordInquiry]
+     * - and a reader who has found that would rather have their page back.
+     *
+     * Never covers a failure. A passage marked as translated with nothing to
+     * show and no reason given is a reader wondering what happened, and that is
+     * not an aside about the text.
+     */
+    val notes: Boolean = true,
+    /**
      * Whether the reader has asked for the two ways of translating more of the
      * book than they pointed at. Off until they do - see [BulkTranslation].
      */
@@ -170,6 +185,8 @@ data class TranslationSettings(
     fun withGestures(gestures: TranslationGestures): TranslationSettings =
         copy(gestures = gestures)
 
+    fun withNotes(notes: Boolean): TranslationSettings = copy(notes = notes)
+
     fun withBulkTranslation(bulk: BulkTranslation): TranslationSettings =
         copy(bulkTranslation = bulk)
 
@@ -214,6 +231,7 @@ data class TranslationSettings(
             customWordSiteUrl: String? = null,
             googleKey: String? = null,
             gestures: TranslationGestures = TranslationGestures.Default,
+            notes: Boolean = true,
             bulkTranslation: BulkTranslation = BulkTranslation.Default,
         ) = TranslationSettings(
             targetLanguage = targetLanguage,
@@ -227,6 +245,7 @@ data class TranslationSettings(
             customWordSiteUrl = customWordSiteUrl,
             googleKey = googleKey,
             gestures = gestures,
+            notes = notes,
             bulkTranslation = bulkTranslation,
         )
     }
@@ -239,8 +258,6 @@ data class TranslationSettings(
     fun storedBaseUrls(): Map<TranslationProvider, String> = baseUrls
 
     fun storedTimeouts(): Map<TranslationProvider, Int> = timeouts
-
-    fun storedGoogleKey(): String = googleKey.orEmpty()
 }
 
 /** Blank and absent are the same thing: a field cleared to nothing is not a value. */

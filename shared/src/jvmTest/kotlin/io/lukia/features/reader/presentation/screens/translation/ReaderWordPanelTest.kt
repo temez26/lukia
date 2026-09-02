@@ -1,6 +1,7 @@
 package io.lukia.features.reader.presentation.screens.translation
 
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runComposeUiTest
 import io.lukia.core.domain.AppError
@@ -10,6 +11,7 @@ import io.lukia.features.reader.presentation.translation.WordOnThePage
 import io.lukia.features.reader.presentation.translation.WordSiteLink
 import io.lukia.features.translate.domain.lookup.WordEntry
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 /**
  * What holding an already-answered word opens: everything else that word means,
@@ -97,6 +99,48 @@ class ReaderWordPanelTest {
         onNodeWithText("The translation service did not answer.").assertExists()
         onNodeWithText("Try again").assertExists()
         onNodeWithText("Open in Google").assertExists()
+        onNodeWithText("valas").assertExists()
+    }
+
+    /**
+     * A reader whose word lookup *is* the dictionary gets one failure, not two.
+     *
+     * The service that could not answer the word in the paragraph is the same
+     * service this panel just asked, and it comes back with the same sentence -
+     * printed in both places it reads as two things having gone wrong.
+     */
+    @Test
+    fun oneFailureFromOneServiceIsSaidOnce() = runComposeUiTest {
+        val reason = "No dictionary entry for “whale”."
+
+        setReader(
+            wordInquiry = inquiry(
+                entry = UiState.Failure(AppError.Unexpected(reason)),
+                onThePage = WordOnThePage.Failed(reason),
+            ),
+        )
+
+        assertEquals(
+            1,
+            onAllNodesWithText(reason).fetchSemanticsNodes().size,
+            "the same failure was printed twice",
+        )
+    }
+
+    /**
+     * A model that refused the word while the dictionary answered it is the case
+     * this panel exists for, and the reason is what makes sense of the button
+     * offering to ask again.
+     */
+    @Test
+    fun aDifferentFailureIsStillWorthSaying() = runComposeUiTest {
+        setReader(
+            wordInquiry = inquiry(
+                onThePage = WordOnThePage.Failed("Your API key was refused."),
+            ),
+        )
+
+        onNodeWithText("Your API key was refused.").assertExists()
         onNodeWithText("valas").assertExists()
     }
 

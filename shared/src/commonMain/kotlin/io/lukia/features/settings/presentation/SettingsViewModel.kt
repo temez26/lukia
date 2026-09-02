@@ -242,18 +242,28 @@ class SettingsViewModel(
     }
 
     /**
-     * Whether the reader is offered translating a screenful at a time, and
-     * whether it keeps going as they scroll. See [BulkTranslation] for why these
-     * are off until asked for.
+     * Whether the translator's asides are set under the paragraph they belong to.
+     *
+     * Worth turning off now that a word's senses have somewhere better to be -
+     * see [io.lukia.features.reader.presentation.translation.WordInquiry]. Not an
+     * [edit]: where a note is drawn says nothing about whether the translator
+     * works.
      */
-    fun setTranslateOnScreen(enabled: Boolean) = setBulk { copy(onScreen = enabled) }
+    fun setNotes(notes: Boolean) {
+        translation.update(translation.settings.value.withNotes(notes))
+    }
 
-    fun setTranslateAsYouRead(enabled: Boolean) = setBulk { copy(asYouRead = enabled) }
-
-    private fun setBulk(change: BulkTranslation.() -> BulkTranslation) {
-        val current = translation.settings.value
-
-        translation.update(current.withBulkTranslation(current.bulkTranslation.change()))
+    /**
+     * Whether the reader is offered translating a screenful at a time, and
+     * whether it keeps going as they scroll. See [BulkTranslation] for why both
+     * are off until asked for.
+     *
+     * Both at once rather than one function each, for the reason [setGestures]
+     * takes both of its: two ways of writing one value is one more than there
+     * should be.
+     */
+    fun setBulkTranslation(bulk: BulkTranslation) {
+        translation.update(translation.settings.value.withBulkTranslation(bulk))
     }
 
     fun setApiKey(key: String) = edit { withApiKey(key) }

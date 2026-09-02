@@ -106,6 +106,17 @@ private fun GestureSection(
             }
 
             SettingsToggle(
+                label = "Notes under the paragraph",
+                detail = "The translator's asides, set small under the text they " +
+                    "belong to: a remark about an ambiguous word, a dictionary's " +
+                    "other senses. Turn them off to keep the page as the book set " +
+                    "it — holding a word still opens everything it means. Why a " +
+                    "passage could not be translated is always shown.",
+                checked = translation.notes,
+                onChange = actions.onNotesChange,
+            )
+
+            SettingsToggle(
                 label = "Hold a word again for more about it",
                 detail = "Once a word has been looked up, holding it opens every " +
                     "sense a dictionary has for it and a way through to " +
@@ -149,7 +160,11 @@ private fun TranslatingAheadSection(
                 detail = "Adds a button that translates every sentence you " +
                     "can see, once.",
                 checked = translation.bulkTranslation.onScreen,
-                onChange = actions.onTranslateOnScreenChange,
+                onChange = {
+                    actions.onBulkTranslationChange(
+                        translation.bulkTranslation.copy(onScreen = it),
+                    )
+                },
             )
 
             BetaToggle(
@@ -158,7 +173,11 @@ private fun TranslatingAheadSection(
                     "scrolls into view until you turn it off. This is the " +
                     "expensive one.",
                 checked = translation.bulkTranslation.asYouRead,
-                onChange = actions.onTranslateAsYouReadChange,
+                onChange = {
+                    actions.onBulkTranslationChange(
+                        translation.bulkTranslation.copy(asYouRead = it),
+                    )
+                },
             )
         }
     }

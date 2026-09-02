@@ -6,6 +6,7 @@ import io.lukia.core.domain.storage.SettingsStore
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.features.translate.application.TranslatePassageUseCase
+import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.provider.FakeTranslator
 import io.lukia.features.translate.domain.provider.ModelCatalogue
 import io.lukia.features.translate.domain.provider.ModelWarmUp
@@ -94,7 +95,7 @@ class SettingsViewModelGesturesTest {
 
         assertFalse(translation.settings.value.bulkTranslation.any)
 
-        viewModel(store, translation).setTranslateOnScreen(true)
+        viewModel(store, translation).setBulkTranslation(BulkTranslation(onScreen = true))
 
         assertTrue(translation.settings.value.bulkTranslation.onScreen)
         assertFalse(translation.settings.value.bulkTranslation.asYouRead)
@@ -106,7 +107,7 @@ class SettingsViewModelGesturesTest {
         val secrets = FakeSecretStore()
 
         viewModel(store, TranslationSettingsRepository(store, secrets))
-            .setTranslateAsYouRead(true)
+            .setBulkTranslation(BulkTranslation(asYouRead = true))
 
         val reopened = TranslationSettingsRepository(store, secrets).settings.value
 

@@ -109,6 +109,15 @@ internal fun ReaderTranslationSettings(
             inset = inset,
         )
 
+        // Next to the row above it because the two are the same trade made in
+        // opposite directions: what a word has to say, in the page or out of it.
+        PanelSwitchRow(
+            label = "Notes under the paragraph",
+            checked = preferences.notes,
+            onChange = preferences.onNotesChange,
+            inset = inset,
+        )
+
         LukiaDivider(
             inset = inset,
             endInset = inset,

@@ -59,6 +59,10 @@ class TranslationSettingsRepository(
             customWordSiteUrl = store.getString(KEY_WORD_SITE_URL)?.takeIf { it.isNotBlank() },
             googleKey = secrets.getSecret(KEY_GOOGLE_KEY)?.takeIf { it.isNotBlank() },
             gestures = readGestures(defaults.gestures),
+            // On unless it says otherwise, like the word panel and unlike the
+            // bulk flags: an install that has never heard of this setting kept
+            // showing notes, and should go on doing so.
+            notes = store.getString(KEY_NOTES)?.equals("false", ignoreCase = true) != true,
             bulkTranslation = BulkTranslation(
                 onScreen = store.readFlag(KEY_TRANSLATE_ON_SCREEN),
                 asYouRead = store.readFlag(KEY_TRANSLATE_AS_YOU_READ),
@@ -78,8 +82,9 @@ class TranslationSettingsRepository(
         store.putString(KEY_WORD_LOOKUP, settings.wordLookup.name)
         store.putString(KEY_WORD_SITE, settings.wordSite.name)
         store.putString(KEY_WORD_SITE_URL, settings.customWordSiteUrl.orEmpty())
-        secrets.putSecret(KEY_GOOGLE_KEY, settings.storedGoogleKey())
+        secrets.putSecret(KEY_GOOGLE_KEY, settings.googleApiKey.orEmpty())
         writeGestures(settings.gestures)
+        store.putString(KEY_NOTES, settings.notes.toString())
 
         store.putString(KEY_TRANSLATE_ON_SCREEN, settings.bulkTranslation.onScreen.toString())
         store.putString(KEY_TRANSLATE_AS_YOU_READ, settings.bulkTranslation.asYouRead.toString())
@@ -182,6 +187,7 @@ class TranslationSettingsRepository(
         const val KEY_WORD_SITE = "translation.wordSite"
         const val KEY_WORD_SITE_URL = "translation.wordSite.url"
         const val KEY_GOOGLE_KEY = "translation.googleApiKey"
+        const val KEY_NOTES = "translation.notes"
         const val KEY_TAP = "translation.gesture.tap"
         const val KEY_LONG_PRESS = "translation.gesture.longPress"
         const val KEY_WORD_DETAILS = "translation.gesture.wordDetails"

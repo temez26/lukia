@@ -163,6 +163,24 @@ class TranslationSettingsRepositoryTest {
         assertFalse(reopened.gestures.wordDetails)
     }
 
+    /**
+     * On unless it says otherwise, like the word panel: an install upgraded from
+     * a build that never heard of this kept showing notes and should go on doing
+     * so.
+     */
+    @Test
+    fun notesUnderTheParagraphAreOnUntilTheyAreTurnedOff() {
+        val store = FakeSettingsStore()
+
+        assertTrue(TranslationSettingsRepository(store, secrets).settings.value.notes)
+
+        TranslationSettingsRepository(store, secrets).update(
+            TranslationSettings().withNotes(false),
+        )
+
+        assertFalse(TranslationSettingsRepository(store, secrets).settings.value.notes)
+    }
+
     @Test
     fun aGestureTurnedOffStaysOff() {
         val store = FakeSettingsStore()

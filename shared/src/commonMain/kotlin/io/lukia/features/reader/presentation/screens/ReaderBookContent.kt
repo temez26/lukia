@@ -91,6 +91,8 @@ internal fun ReaderContent(
     bulkTranslation: BulkTranslation = BulkTranslation.Default,
     /** The one word the reader has held to ask about properly, if any. */
     wordInquiry: WordInquiry? = null,
+    /** Whether the translator's asides are set under the paragraphs they belong to. */
+    translationNotes: Boolean = true,
     /** How this book is being read, and what became of asking for it as text. */
     layout: ReaderLayoutUi = ReaderLayoutUi(),
     onBack: () -> Unit,
@@ -108,6 +110,7 @@ internal fun ReaderContent(
     onTranslationsVisibleChange: (Boolean) -> Unit = {},
     onTargetLanguageChange: (TargetLanguage) -> Unit = {},
     onTranslationGesturesChange: (TranslationGestures) -> Unit = {},
+    onTranslationNotesChange: (Boolean) -> Unit = {},
     /** What is written on a page of a fixed-layout document, read when one is looked at. */
     sentencesOnPage: suspend (index: Int) -> List<PageSentence> = { emptyList() },
     renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?,
@@ -129,14 +132,19 @@ internal fun ReaderContent(
     val translationPreferences = ReaderTranslationPreferences(
         targetLanguage = targetLanguage,
         gestures = gestures,
+        notes = translationNotes,
         onTargetLanguageChange = onTargetLanguageChange,
         onGesturesChange = onTranslationGesturesChange,
+        onNotesChange = onTranslationNotesChange,
     )
 
     // Filed by where each translation belongs, once per change, so that a
     // sentence changing state reaches the block or the page it is on and no
-    // further. See BookTranslations.
-    val translated = remember(translations) { BookTranslations.of(translations) }
+    // further. See BookTranslations, which is also where the translator's asides
+    // are dropped for a reader who has turned them off.
+    val translated = remember(translations, translationNotes) {
+        BookTranslations.of(translations, translationNotes)
+    }
 
     // The reader wears its own theme; the rest of the app keeps following the
     // system. Everything inside - the glass chrome, the type, the panel - picks

@@ -43,6 +43,10 @@ val ReaderViewModel.targetLanguage: StateFlow<TargetLanguage>
 val ReaderViewModel.translationConfigured: StateFlow<Boolean>
     get() = translation.configured
 
+/** Whether the translator's asides are set under the paragraphs they belong to. */
+val ReaderViewModel.translationNotes: StateFlow<Boolean>
+    get() = translation.notes
+
 /** The one word the reader has stopped on to ask about properly, if any. */
 val ReaderViewModel.wordInquiry: StateFlow<WordInquiry?>
     get() = translation.words.inquiry
@@ -173,6 +177,10 @@ fun ReaderViewModel.setTargetLanguage(language: TargetLanguage) {
 
 fun ReaderViewModel.setTranslationGestures(gestures: TranslationGestures) {
     translation.setGestures(gestures)
+}
+
+fun ReaderViewModel.setTranslationNotes(notes: Boolean) {
+    translation.setNotes(notes)
 }
 
 /** What to ask the translator for, given where the reader is in the book. */

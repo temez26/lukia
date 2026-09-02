@@ -123,6 +123,22 @@ internal class ReaderTranslations(
         )
 
     /**
+     * Whether the translator's asides are set under the paragraph they belong to.
+     *
+     * A flow like the gestures beside it, so turning them off puts the page back
+     * at once rather than on the next book - and so a reader who has just been
+     * given three senses of a word they did not want three senses of can stop it
+     * from where they are reading.
+     */
+    val notes: StateFlow<Boolean> = settings.settings
+        .map { it.notes }
+        .stateIn(
+            scope = scope,
+            started = SharingStarted.Eagerly,
+            initialValue = settings.settings.value.notes,
+        )
+
+    /**
      * Whether there is anything set up to translate with.
      *
      * The reader needs this to decide whether to offer the controls at all: a
@@ -172,6 +188,10 @@ internal class ReaderTranslations(
 
     fun setGestures(gestures: TranslationGestures) {
         settings.update(settings.settings.value.withGestures(gestures))
+    }
+
+    fun setNotes(notes: Boolean) {
+        settings.update(settings.settings.value.withNotes(notes))
     }
 
     /** A passage the reader pointed at. */

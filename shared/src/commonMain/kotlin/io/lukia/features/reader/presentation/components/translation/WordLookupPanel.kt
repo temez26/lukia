@@ -186,9 +186,9 @@ private fun WordLookupActions(
         // Why the reader is looking at this panel rather than at a translation,
         // said before the button that offers to try again - a reason to press it
         // or to reach for the site instead.
-        (inquiry.onThePage as? WordOnThePage.Failed)?.let { failed ->
+        inquiry.unansweredFor()?.let { reason ->
             Text(
-                text = failed.message,
+                text = reason,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.error,
             )
@@ -219,6 +219,25 @@ private fun WordLookupActions(
             }
         }
     }
+}
+
+/**
+ * Why the word on the page has no translation, or null when saying so would be
+ * saying it twice.
+ *
+ * A reader whose word lookup *is* the dictionary gets one failure, not two: the
+ * service that could not answer the word in the paragraph is the same service
+ * this panel just asked, and it comes back with the same sentence. Printed in
+ * both places it reads as two things having gone wrong.
+ *
+ * Anything else is worth saying. A model that refused the word while the
+ * dictionary answered it is the case this panel exists for, and the reason is
+ * what makes sense of the button offering to ask again.
+ */
+private fun WordInquiry.unansweredFor(): String? {
+    val failed = (onThePage as? WordOnThePage.Failed)?.message ?: return null
+
+    return failed.takeIf { it != (entry as? UiState.Failure)?.error?.displayShortMessage() }
 }
 
 /** What the one button that touches the page behind the panel offers to do. */
