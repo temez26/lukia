@@ -28,6 +28,7 @@ import kotlinx.serialization.json.Json
 internal fun wiktionaryDictionary(
     engine: MockEngine,
     language: TargetLanguage = TargetLanguage.Finnish,
+    cache: WiktionaryPageCache = RememberingPages(),
 ): WiktionaryDictionary {
     val json = Json { ignoreUnknownKeys = true }
 
@@ -41,7 +42,25 @@ internal fun wiktionaryDictionary(
         install(HttpTimeout)
     }
 
-    return WiktionaryDictionary(WiktionaryPages(client, settings, json))
+    return WiktionaryDictionary(WiktionaryPages(client, settings, cache, json))
+}
+
+/**
+ * The page cache these tests run against, which remembers everything and trims
+ * nothing.
+ *
+ * A real one for the tests that are not about caching, so that what they see is
+ * what the app does - and a countable one for the tests that are.
+ */
+internal class RememberingPages : WiktionaryPageCache {
+
+    private val pages = mutableMapOf<Pair<String, String>, CachedPage>()
+
+    override suspend fun get(wiki: String, title: String): CachedPage? = pages[wiki to title]
+
+    override suspend fun put(wiki: String, title: String, extract: String?) {
+        pages[wiki to title] = extract?.let { CachedPage.Text(it) } ?: CachedPage.NoSuchPage
+    }
 }
 
 /** The same page whatever is asked for. */

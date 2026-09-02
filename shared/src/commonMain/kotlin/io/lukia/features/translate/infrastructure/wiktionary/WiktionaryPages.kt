@@ -50,6 +50,7 @@ private const val FALLBACK_WIKI = "en"
 internal class WiktionaryPages(
     private val client: HttpClient,
     private val settings: TranslationSettingsRepository,
+    private val cache: WiktionaryPageCache,
     private val json: Json = Json { ignoreUnknownKeys = true },
 ) {
 
@@ -131,8 +132,37 @@ internal class WiktionaryPages(
      * The page for one word on one wiki, or null when that wiki has none for it -
      * which is an answer rather than a failure, and is why there is a second wiki
      * to try.
+     *
+     * Asked of the wiki only where nobody has asked before. One word can be four
+     * requests - the reader's wiki and the English one, each for the word and
+     * again for the word it turns out to be a form of - and the reader who holds
+     * it, reads the panel, closes it and holds it again was making all of them
+     * twice. Both answers are kept, the page and the absence of one, because a
+     * word missing from the reader's own wiki is the case that costs two
+     * requests rather than one.
+     *
+     * What is asked of the wiki itself, and what becomes of the answer, is
+     * [fetch]'s.
      */
-    private suspend fun page(word: String, wiki: String): String? {
+    private suspend fun page(word: String, wiki: String): String? =
+        when (val known = cache.get(wiki, word)) {
+            is CachedPage.Text -> known.extract
+            CachedPage.NoSuchPage -> null
+            null -> fetch(word, wiki)
+        }
+
+    /**
+     * The page as the wiki itself gives it, remembered on the way past.
+     *
+     * A request that fails outright is not remembered. What fails there is a
+     * network or a wiki having a bad minute, and a remembered failure would be a
+     * word that could never be looked up again without clearing storage - the
+     * same reasoning as
+     * [io.lukia.features.translate.infrastructure.CachingTranslator]. A wiki
+     * that answers "there is no such page" has not failed, and that answer is
+     * kept like any other.
+     */
+    private suspend fun fetch(word: String, wiki: String): String? {
         val response = client.get("https://$wiki.wiktionary.org/w/api.php") {
             translationTimeouts(settings.settings.value)
 
@@ -152,7 +182,7 @@ internal class WiktionaryPages(
 
         if (!response.status.isSuccess()) return null
 
-        return response.extract()
+        return response.extract().also { cache.put(wiki, word, it) }
     }
 
     /** The page's own text, or null where the wiki has no page under that title. */
