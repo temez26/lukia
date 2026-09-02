@@ -34,7 +34,7 @@ val readerModule = module {
     }
 
     single {
-        OpenDocumentUseCase(get(), get())
+        OpenDocumentUseCase(get(), get(), get())
     }
 
     // A single instance: reader settings are one shared, live value, so a change

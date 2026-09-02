@@ -1,5 +1,8 @@
 package io.lukia.features.reader.infrastructure.pdf
 
+import io.lukia.core.domain.diagnostics.DiagnosticArea
+import io.lukia.core.domain.diagnostics.Diagnostics
+import io.lukia.core.domain.diagnostics.warn
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.features.reader.domain.ReflowableContent
 import io.lukia.features.reader.domain.page.DocumentPages
@@ -47,16 +50,32 @@ internal suspend fun readPdfAsText(
      * does.
      */
     alongside: List<PageContent> = emptyList(),
+    diagnostics: Diagnostics = Diagnostics.None,
     onProgress: (TextExtraction) -> Unit = {},
 ): ReflowableContent? {
     val pageCount = pages.pageCount
+
+    // Counted and recorded once for the book rather than once per page. A file
+    // that fails on one page usually fails on all of them, and an entry each
+    // would push everything else out of the record while saying no more than
+    // this does - a reader reporting blank pages needs to know how many.
+    var unreadable = 0
 
     val read = readPages(
         readers = listOf(pages) + alongside,
         pageSizes = pages.pageSizes,
         pageCount = pageCount,
         onProgress = onProgress,
+        onUnreadable = { unreadable++ },
     )
+
+    if (unreadable > 0) {
+        diagnostics.warn(
+            area = DiagnosticArea.Reading,
+            event = "pdf-pages-unreadable",
+            detail = "$unreadable of $pageCount",
+        )
+    }
 
     val figures = PdfFigures()
 
@@ -108,6 +127,7 @@ private suspend fun readPages(
     pageSizes: List<PageSize>,
     pageCount: Int,
     onProgress: (TextExtraction) -> Unit,
+    onUnreadable: () -> Unit,
 ): List<List<TextBlock>> = coroutineScope {
     val counted = Mutex()
     var read = 0
@@ -120,10 +140,14 @@ private suspend fun readPages(
 
         async {
             (from until until).map { page ->
-                reader.blocksOn(page, pageSizes).also {
-                    // Counted rather than reported by whoever reached it, since
-                    // several readers are somewhere in the book at once and no
-                    // one of them knows how far the rest have got.
+                // Both of these are held under the same lock, and for the same
+                // reason: several readers are somewhere in the book at once and
+                // no one of them knows what the rest have reached or dropped.
+                reader.blocksOn(
+                    index = page,
+                    pageSizes = pageSizes,
+                    onUnreadable = { counted.withLock(action = onUnreadable) },
+                ).also {
                     counted.withLock { onProgress(TextExtraction(++read, pageCount)) }
                 }
             }
@@ -132,14 +156,21 @@ private suspend fun readPages(
 }
 
 /** One page read back as the things written and drawn on it. */
-private suspend fun PageContent.blocksOn(index: Int, pageSizes: List<PageSize>): List<TextBlock> {
+private suspend fun PageContent.blocksOn(
+    index: Int,
+    pageSizes: List<PageSize>,
+    onUnreadable: suspend () -> Unit,
+): List<TextBlock> {
     // A page that cannot be read costs the reader that page rather than the
     // book, exactly as a page that cannot be drawn does.
-    val glyphs = runCatchingApp { pageText(index) }.getOrNull().orEmpty()
-    val drawn = runCatchingApp { pageImages(index) }.getOrNull().orEmpty()
+    val glyphs = runCatchingApp { pageText(index) }.getOrNull()
+    val drawn = runCatchingApp { pageImages(index) }.getOrNull()
+
+    if (glyphs == null || drawn == null) onUnreadable()
+
     val size = pageSizes.getOrElse(index) { PageSize(width = 0f, height = 0f) }
 
-    return pdfPageBlocks(glyphs, drawn, size)
+    return pdfPageBlocks(glyphs.orEmpty(), drawn.orEmpty(), size)
 }
 
 /**

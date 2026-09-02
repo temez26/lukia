@@ -1,5 +1,6 @@
 package io.lukia.features.reader.infrastructure.text
 
+import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.features.reader.domain.ReflowableContent
 import io.lukia.features.reader.domain.text.Emphasis
 import io.lukia.features.reader.domain.text.TextBlock
@@ -21,8 +22,11 @@ import io.lukia.features.reader.domain.text.TextRun
  * indented code are read as the plain text they are, which is what they look
  * like anyway.
  */
-internal fun readMarkdown(bytes: ByteArray): ReflowableContent {
-    val blocks = markdownBlocks(decodeText(bytes))
+internal fun readMarkdown(
+    bytes: ByteArray,
+    diagnostics: Diagnostics = Diagnostics.None,
+): ReflowableContent {
+    val blocks = markdownBlocks(decodeText(bytes, diagnostics))
     val sectioned = sectionText(blocks)
 
     return ReflowableContent(sections = sectioned.sections, outline = sectioned.outline)

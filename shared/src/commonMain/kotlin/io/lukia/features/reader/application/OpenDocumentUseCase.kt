@@ -2,6 +2,7 @@ package io.lukia.features.reader.application
 
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.asFailure
+import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.domain.reading.PdfLayout
@@ -25,6 +26,7 @@ import kotlinx.coroutines.withContext
 class OpenDocumentUseCase(
     private val libraryRepository: LibraryRepository,
     private val documentWorkspace: DocumentWorkspace,
+    private val diagnostics: Diagnostics = Diagnostics.None,
     /** Injectable so tests can open documents deterministically. */
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
@@ -58,7 +60,7 @@ class OpenDocumentUseCase(
             // `.docx` that is not a Word document is not a different failure to
             // the reader than a format it never supported.
             val content = documentInfo.asText(workingCopy.path, layout, onProgress)
-                ?: openReaderContent(documentInfo.type, workingCopy.path)
+                ?: openReaderContent(documentInfo.type, workingCopy.path, diagnostics)
                 ?: return@withContext AppError.FormatNotReadable.asFailure()
 
             // A document that opened but has nothing in it would otherwise show
@@ -96,6 +98,6 @@ class OpenDocumentUseCase(
     ): ReaderContent? {
         if (!layout.asText || type != DocumentType.PDF) return null
 
-        return openPdfAsText(path, onProgress)
+        return openPdfAsText(path, diagnostics, onProgress)
     }
 }
