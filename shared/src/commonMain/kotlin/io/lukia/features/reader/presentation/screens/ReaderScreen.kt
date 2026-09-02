@@ -8,19 +8,25 @@ import androidx.compose.ui.unit.dp
 import io.lukia.features.reader.presentation.ReaderViewModel
 import io.lukia.features.reader.presentation.components.chrome.readerToolbarHeight
 import io.lukia.features.reader.presentation.translation.bulkTranslation
+import io.lukia.features.reader.presentation.translation.onInquiredWordActioned
+import io.lukia.features.reader.presentation.translation.onPassageHold
 import io.lukia.features.reader.presentation.translation.onPassageSelected
 import io.lukia.features.reader.presentation.translation.onPassagesRequested
 import io.lukia.features.reader.presentation.translation.onTranslateOnScreen
+import io.lukia.features.reader.presentation.translation.onWordInquiryDismissed
 import io.lukia.features.reader.presentation.translation.setContinuousTranslation
 import io.lukia.features.reader.presentation.translation.setTargetLanguage
 import io.lukia.features.reader.presentation.translation.setTranslationGestures
+import io.lukia.features.reader.presentation.translation.setTranslationNotes
 import io.lukia.features.reader.presentation.translation.setTranslationsVisible
 import io.lukia.features.reader.presentation.translation.shownTranslations
 import io.lukia.features.reader.presentation.translation.targetLanguage
 import io.lukia.features.reader.presentation.translation.translateOnScreen
 import io.lukia.features.reader.presentation.translation.translationConfigured
 import io.lukia.features.reader.presentation.translation.translationGestures
+import io.lukia.features.reader.presentation.translation.translationNotes
 import io.lukia.features.reader.presentation.translation.translations
+import io.lukia.features.reader.presentation.translation.wordInquiry
 import io.lukia.shared.presentation.theme.Space
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -56,6 +62,8 @@ fun ReaderScreen(
     val gestures by viewModel.translationGestures.collectAsState()
     val targetLanguage by viewModel.targetLanguage.collectAsState()
     val bulkTranslation by viewModel.bulkTranslation.collectAsState()
+    val wordInquiry by viewModel.wordInquiry.collectAsState()
+    val translationNotes by viewModel.translationNotes.collectAsState()
     val pdfLayout by viewModel.pdfLayout.collectAsState()
     val layoutOffered by viewModel.layoutOffered.collectAsState()
     val textExtraction by viewModel.textExtraction.collectAsState()
@@ -73,6 +81,8 @@ fun ReaderScreen(
         gestures = gestures,
         targetLanguage = targetLanguage,
         bulkTranslation = bulkTranslation,
+        wordInquiry = wordInquiry,
+        translationNotes = translationNotes,
         layout = ReaderLayoutUi(
             layout = pdfLayout,
             offered = layoutOffered,
@@ -86,12 +96,16 @@ fun ReaderScreen(
         onSettingsChange = viewModel::updateSettings,
         onPageSettled = viewModel::onPageSettled,
         onPassageSelected = viewModel::onPassageSelected,
+        onPassageHold = viewModel::onPassageHold,
         onPassagesRequested = viewModel::onPassagesRequested,
+        onWordInquiryDismiss = viewModel::onWordInquiryDismissed,
+        onInquiredWordAction = viewModel::onInquiredWordActioned,
         onTranslateOnScreen = viewModel::onTranslateOnScreen,
         onContinuousTranslationChange = viewModel::setContinuousTranslation,
         onTranslationsVisibleChange = viewModel::setTranslationsVisible,
         onTargetLanguageChange = viewModel::setTargetLanguage,
         onTranslationGesturesChange = viewModel::setTranslationGestures,
+        onTranslationNotesChange = viewModel::setTranslationNotes,
         sentencesOnPage = viewModel::sentencesOn,
         renderPage = viewModel::page,
     )

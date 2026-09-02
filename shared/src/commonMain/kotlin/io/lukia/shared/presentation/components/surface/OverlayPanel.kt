@@ -48,7 +48,7 @@ private const val MaxHeightFraction = 0.88f
  * Draws nothing at all once closed and settled, so callers can leave it in the
  * tree unconditionally.
  *
- * [trailing] is for a second control opposite the close button - a book's actions
+ * [leading] is for a second control opposite the close button - a book's actions
  * menu, say. Anything that must draw *above* the panel, such as the dimming
  * behind an open menu, belongs in a box around this rather than inside it.
  */
@@ -58,7 +58,7 @@ fun OverlayPanel(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
     widthCap: Dp = Dp.Unspecified,
-    trailing: (@Composable () -> Unit)? = null,
+    leading: (@Composable () -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     val progress = rememberPopoverProgress(visible, label = "overlayPanel")
@@ -115,12 +115,18 @@ fun OverlayPanel(
                 // A plus turned on its side, which is the close mark the library
                 // bar's button already turns into - one shape for "close this"
                 // throughout the app.
+                //
+                // At the trailing corner, where the platforms this app runs on
+                // put the way out of a sheet, and where a thumb already is on a
+                // phone. Everything else in the panel is read from the leading
+                // edge, so the one control that is not part of the reading sits
+                // out of the way of it.
                 LukiaIconButton(
                     label = "Close",
                     onClick = onDismiss,
                     modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(start = dimens.screenPadding, top = Space.lg),
+                        .align(Alignment.TopEnd)
+                        .padding(end = dimens.screenPadding, top = Space.lg),
                     variant = IconButtonVariant.Glass,
                 ) { tint, glyph ->
                     PlusGlyph(
@@ -129,13 +135,13 @@ fun OverlayPanel(
                     )
                 }
 
-                if (trailing != null) {
+                if (leading != null) {
                     Box(
                         modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(end = dimens.screenPadding, top = Space.lg),
+                            .align(Alignment.TopStart)
+                            .padding(start = dimens.screenPadding, top = Space.lg),
                     ) {
-                        trailing()
+                        leading()
                     }
                 }
             }

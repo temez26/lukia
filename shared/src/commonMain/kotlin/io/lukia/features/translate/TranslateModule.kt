@@ -1,8 +1,10 @@
 package io.lukia.features.translate
 
+import io.lukia.features.translate.application.LookUpWordUseCase
 import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.TranslationCache
 import io.lukia.features.translate.domain.Translator
+import io.lukia.features.translate.domain.lookup.WordDictionary
 import io.lukia.features.translate.domain.provider.ModelCatalogue
 import io.lukia.features.translate.domain.provider.ModelWarmUp
 import io.lukia.features.translate.domain.text.PassageUnit
@@ -18,6 +20,8 @@ import io.lukia.features.translate.infrastructure.openai.OpenAiModelCatalogue
 import io.lukia.features.translate.infrastructure.openai.OpenAiModelWarmUp
 import io.lukia.features.translate.infrastructure.openai.OpenAiTranslator
 import io.lukia.features.translate.infrastructure.translationHttpClient
+import io.lukia.features.translate.infrastructure.wiktionary.WiktionaryDictionary
+import io.lukia.features.translate.infrastructure.wiktionary.WiktionaryPages
 import io.lukia.features.translate.infrastructure.wiktionary.WiktionaryTranslator
 import org.koin.dsl.module
 
@@ -32,6 +36,20 @@ val translateModule = module {
     // Passages already paid for, kept between runs of the app.
     single<TranslationCache> {
         SqlTranslationCache(get())
+    }
+
+    // The wikis behind both dictionary answers - the line that goes over a word
+    // and the whole entry the reader opens. One of these rather than two, so
+    // that asking the same question twice is not two ways of asking it.
+    single {
+        WiktionaryPages(get(), get())
+    }
+
+    // What answers when a line over the word was not enough. Bound to the port
+    // rather than to the class, so the reader's panel never learns which
+    // dictionary it is reading.
+    single<WordDictionary> {
+        WiktionaryDictionary(get())
     }
 
     // Which of these speaks is a setting, read per request. Everything above
@@ -59,7 +77,7 @@ val translateModule = module {
             lookup = { settings.settings.value.wordLookup },
             translator = configured,
             google = GoogleTranslator(get(), settings),
-            dictionary = WiktionaryTranslator(get(), settings),
+            dictionary = WiktionaryTranslator(get()),
         )
 
         CoalescingTranslator(
@@ -84,6 +102,10 @@ val translateModule = module {
 
     single {
         TranslatePassageUseCase(get())
+    }
+
+    single {
+        LookUpWordUseCase(get())
     }
 
     // Only a server the reader points at themselves is worth asking what it can

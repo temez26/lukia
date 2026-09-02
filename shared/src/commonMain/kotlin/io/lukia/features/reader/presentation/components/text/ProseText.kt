@@ -36,9 +36,6 @@ import io.lukia.features.reader.presentation.components.translation.TranslatorsR
 import io.lukia.features.reader.presentation.translation.TRANSLATE_SETTLE_MILLIS
 import io.lukia.features.reader.presentation.translation.TranslateOnScreen
 import io.lukia.features.translate.domain.settings.TranslationGestures
-import io.lukia.features.translate.domain.text.PassageUnit
-import io.lukia.features.translate.domain.text.Sentence
-import io.lukia.features.translate.domain.text.Word
 import io.lukia.features.translate.domain.text.splitIntoSentences
 import io.lukia.features.translate.domain.text.words
 import io.lukia.features.translate.presentation.SentenceTranslations
@@ -170,6 +167,12 @@ internal fun ProseText(
 
     val currentGestures by rememberUpdatedState(gestures)
 
+    // Read at the moment of the hold rather than keyed into the gesture
+    // handler: which words have been answered changes with every translation
+    // that lands, and rebuilding the handler for each of them would tear down
+    // a pointer input the reader may have a finger on.
+    val currentTranslations by rememberUpdatedState(translations)
+
     // What the book wrote here, which is what a point in the drawn paragraph is
     // answered against - see ProsePassages.
     val passages = remember(sentences, words) { ProsePassages(sentences, words) }
@@ -190,8 +193,15 @@ internal fun ProseText(
             // it to fall through to.
             onLongPress = { position ->
                 currentActions.act(
-                    passages.at(currentGestures.longPress, position, layout, currentDrawn),
+                    passages.held(
+                        position = position,
+                        layout = layout,
+                        drawn = currentDrawn,
+                        translations = currentTranslations,
+                        gestures = currentGestures,
+                    ),
                     paragraph,
+                    held = true,
                 )
             },
             onChrome = { currentActions.onElsewhere() },
@@ -256,94 +266,6 @@ internal fun ProseText(
         TranslatorsRemarks(sentences, words, translations, style)
     }
 }
-
-/** What one gesture landed on, once it is known what that gesture asks for. */
-private sealed interface Pointed {
-
-    data class AtWord(val sentence: Sentence, val word: Word) : Pointed
-
-    data class AtSentence(val sentence: Sentence) : Pointed
-
-    data object AtParagraph : Pointed
-}
-
-/**
- * What one paragraph of the book is made of, and how a point in it becomes a
- * passage.
- *
- * The sentences and words are the ones the *book* wrote; where each of them
- * ended up in the paragraph as it is currently drawn is [ParagraphText]'s to
- * answer, and the two are brought together only here.
- */
-private class ProsePassages(
-    private val sentences: List<Sentence>,
-    private val words: List<Word>,
-) {
-
-    /**
-     * What the reader pointed at, for the unit the gesture is set to - or null
-     * when the gesture reached nothing at all.
-     *
-     * A gesture that is turned off reaches nothing rather than falling back to
-     * something narrower: off is off, and a long press that quietly translated a
-     * sentence because the word under it could not be found would be exactly the
-     * kind of thing that setting exists to stop.
-     *
-     * The one place a gesture does not get what it asked for is a word it cannot
-     * find - the punctuation between two words belongs to neither - and there it
-     * gets nothing, not the sentence around it.
-     */
-    fun at(
-        unit: PassageUnit?,
-        position: Offset,
-        layout: TextLayoutResult?,
-        drawn: ParagraphText,
-    ): Pointed? {
-        if (unit == null) return null
-
-        val offset = layout?.getOffsetForPosition(position) ?: return null
-        val pointed = drawn.sentenceAt(offset) ?: return null
-
-        // A paragraph translated whole has none of its own sentences left on the
-        // page - it is one span, filed under WHOLE_BLOCK - so a gesture inside it
-        // is a gesture on the paragraph, whatever unit it was set to. Without
-        // this, a tap meant to put the book's own words back looked up sentence
-        // -1, found nothing, and was read as a tap on the page.
-        if (pointed == WHOLE_BLOCK) return Pointed.AtParagraph
-
-        val sentence = sentences.getOrNull(pointed) ?: return null
-
-        return when (unit) {
-            PassageUnit.Paragraph -> Pointed.AtParagraph
-
-            PassageUnit.Sentence -> Pointed.AtSentence(sentence)
-
-            PassageUnit.Word -> drawn.wordAt(offset)
-                ?.let { words.at(it) }
-                ?.let { Pointed.AtWord(sentence, it) }
-        }
-    }
-}
-
-/**
- * Carries out what the reader asked of this block, and says whether they asked
- * anything - which is what decides whether the gesture was answered by the text
- * or is one of the two that bring the chrome back.
- */
-private fun BlockActions.act(pointed: Pointed?, paragraph: String): Boolean {
-    when (pointed) {
-        null -> return false
-        Pointed.AtParagraph -> onParagraph(paragraph)
-        is Pointed.AtSentence -> onSentence(pointed.sentence, paragraph)
-        is Pointed.AtWord -> onWord(pointed.sentence, pointed.word, paragraph)
-    }
-
-    return true
-}
-
-/** The word the book wrote at a place in the paragraph as it is currently drawn. */
-private fun List<Word>.at(drawn: ParagraphText.DrawnWord): Word? =
-    firstOrNull { it.sentenceIndex == drawn.sentenceIndex && it.index == drawn.span.index }
 
 /** Whether any part of this is inside the window it is being drawn in. */
 private fun LayoutCoordinates.isOnScreen(): Boolean {

@@ -52,7 +52,7 @@ val readerModule = module {
     // What the reader needs to translate with, minus the one thing only the
     // ViewModel has - see ReaderTranslationsFactory.
     single {
-        ReaderTranslationsFactory(get(), get())
+        ReaderTranslationsFactory(get(), get(), get())
     }
 
     viewModel { (location: String) ->

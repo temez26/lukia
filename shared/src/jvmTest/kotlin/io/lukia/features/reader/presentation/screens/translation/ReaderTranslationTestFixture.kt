@@ -33,6 +33,7 @@ import io.lukia.features.reader.domain.text.TextRun
 import io.lukia.features.reader.domain.text.TextSection
 import io.lukia.features.reader.presentation.screens.ReaderContent
 import io.lukia.features.reader.presentation.translation.TranslateOnScreen
+import io.lukia.features.reader.presentation.translation.WordInquiry
 import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationGestures
@@ -70,6 +71,7 @@ internal fun SemanticsNodeInteraction.doubleClickFirstWords() =
 internal fun ComposeUiTest.setReader(
     translations: () -> Map<TextAnchor, PassageTranslation> = { emptyMap() },
     onPassageSelected: (PassageSelection) -> Unit = {},
+    onPassageHold: (PassageSelection) -> Unit = {},
     onPassagesRequested: (List<PassageSelection>) -> Unit = {},
     translateOnScreen: () -> TranslateOnScreen = { TranslateOnScreen.Idle },
     gestures: TranslationGestures = TranslationGestures.Default,
@@ -78,6 +80,12 @@ internal fun ComposeUiTest.setReader(
     onTargetLanguageChange: (TargetLanguage) -> Unit = {},
     translationConfigured: Boolean = false,
     bulkTranslation: BulkTranslation = BulkTranslation.Default,
+    /**
+     * Read inside the composition rather than captured, like the translations
+     * above - so a test can take the word away and watch the panel leave.
+     */
+    wordInquiry: () -> WordInquiry? = { null },
+    translationNotes: Boolean = true,
     /**
      * How wide the window is, or null for whatever the test host gives - which
      * is a desktop-sized one. Only the tests that care where a control lives
@@ -97,10 +105,13 @@ internal fun ComposeUiTest.setReader(
                 targetLanguage = targetLanguage,
                 translationConfigured = translationConfigured,
                 bulkTranslation = bulkTranslation,
+                wordInquiry = wordInquiry(),
+                translationNotes = translationNotes,
                 onBack = {},
                 onRetry = {},
                 onSettingsChange = {},
                 onPassageSelected = onPassageSelected,
+                onPassageHold = onPassageHold,
                 onPassagesRequested = onPassagesRequested,
                 onTargetLanguageChange = onTargetLanguageChange,
                 onTranslationGesturesChange = onTranslationGesturesChange,

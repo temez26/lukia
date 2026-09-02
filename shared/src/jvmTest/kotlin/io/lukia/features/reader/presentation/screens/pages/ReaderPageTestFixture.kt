@@ -139,6 +139,7 @@ internal fun ComposeUiTest.setPageReader(
     sentences: List<PageSentence>,
     translations: () -> Map<TextAnchor, PassageTranslation> = { emptyMap() },
     onPassageSelected: (PassageSelection) -> Unit = {},
+    onPassageHold: (PassageSelection) -> Unit = {},
     gestures: TranslationGestures = TranslationGestures.Default,
 ) {
     setContent {
@@ -152,6 +153,7 @@ internal fun ComposeUiTest.setPageReader(
                 onRetry = {},
                 onSettingsChange = {},
                 onPassageSelected = onPassageSelected,
+                onPassageHold = onPassageHold,
                 gestures = gestures,
                 sentencesOnPage = { sentences },
                 renderPage = { _, _ -> null },

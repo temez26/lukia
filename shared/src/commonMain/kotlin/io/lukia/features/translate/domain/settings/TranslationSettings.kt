@@ -1,6 +1,7 @@
 package io.lukia.features.translate.domain.settings
 
 import io.lukia.features.translate.domain.BulkTranslation
+import io.lukia.features.translate.domain.lookup.WordSite
 import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.provider.isAllowedTranslationEndpoint
 import io.lukia.features.translate.domain.text.WordLookup
@@ -33,6 +34,22 @@ data class TranslationSettings(
      */
     val wordLookup: WordLookup = WordLookup.Default,
     /**
+     * Where the reader is sent when a line over the word is not enough. Not per
+     * provider for the same reason as above, and not part of [wordLookup]
+     * either: one chooses who answers inside the book and this chooses where the
+     * reader goes to read more - see [WordSite].
+     */
+    val wordSite: WordSite = WordSite.Default,
+    /**
+     * The reader's own address, which only [WordSite.Custom] has one of.
+     *
+     * Not private, unlike the values above it: those are per provider and are
+     * read through accessors that pick the current one, while this is one value
+     * that means the same thing to everybody - and unlike a key, there is nothing
+     * about it worth keeping out of reach.
+     */
+    val customWordSiteUrl: String? = null,
+    /**
      * The Cloud Translation key, when the reader has one. Kept apart from the
      * per-provider keys above because Google is not one of them - it never
      * answers about a sentence - and giving it a slot in that map would mean
@@ -40,6 +57,21 @@ data class TranslationSettings(
      */
     private val googleKey: String? = null,
     val gestures: TranslationGestures = TranslationGestures.Default,
+    /**
+     * Whether the translator's asides are set under the paragraph they belong
+     * to - a remark about an ambiguous word, a dictionary's other senses.
+     *
+     * On, because for most of this app's life they were the only place those
+     * senses could be read at all. They have somewhere better to be now: holding
+     * a word opens every sense it has, at length and out of the way of the
+     * prose - see [io.lukia.features.reader.presentation.translation.WordInquiry]
+     * - and a reader who has found that would rather have their page back.
+     *
+     * Never covers a failure. A passage marked as translated with nothing to
+     * show and no reason given is a reader wondering what happened, and that is
+     * not an aside about the text.
+     */
+    val notes: Boolean = true,
     /**
      * Whether the reader has asked for the two ways of translating more of the
      * book than they pointed at. Off until they do - see [BulkTranslation].
@@ -98,6 +130,20 @@ data class TranslationSettings(
     val looksUpWordsElsewhere: Boolean
         get() = wordLookup != WordLookup.Translator
 
+    /**
+     * The address to open a word at, before the word is written into it, or null
+     * when the reader has chosen [WordSite.Custom] and not yet said where.
+     *
+     * Resolved here rather than at the button, so that "which site" and "the
+     * address of a custom one" are one answer to whoever asks. See
+     * [io.lukia.features.translate.domain.lookup.urlFor] for the other half.
+     */
+    val wordSiteUrlTemplate: String?
+        get() = when (wordSite) {
+            WordSite.Custom -> customWordSiteUrl?.trim()?.takeIf { it.isNotEmpty() }
+            else -> wordSite.urlTemplate
+        }
+
     /** True once there is enough here to actually ask for a translation. */
     val isConfigured: Boolean
         get() = (!provider.requiresKey || apiKey != null) && isEndpointAllowed
@@ -128,11 +174,18 @@ data class TranslationSettings(
 
     fun withWordLookup(lookup: WordLookup): TranslationSettings = copy(wordLookup = lookup)
 
+    fun withWordSite(site: WordSite): TranslationSettings = copy(wordSite = site)
+
+    fun withCustomWordSiteUrl(url: String): TranslationSettings =
+        copy(customWordSiteUrl = url.takeIf { it.isNotBlank() })
+
     fun withGoogleApiKey(key: String): TranslationSettings =
         copy(googleKey = key.takeIf { it.isNotBlank() })
 
     fun withGestures(gestures: TranslationGestures): TranslationSettings =
         copy(gestures = gestures)
+
+    fun withNotes(notes: Boolean): TranslationSettings = copy(notes = notes)
 
     fun withBulkTranslation(bulk: BulkTranslation): TranslationSettings =
         copy(bulkTranslation = bulk)
@@ -174,8 +227,11 @@ data class TranslationSettings(
             baseUrls: Map<TranslationProvider, String>,
             timeouts: Map<TranslationProvider, Int> = emptyMap(),
             wordLookup: WordLookup = WordLookup.Default,
+            wordSite: WordSite = WordSite.Default,
+            customWordSiteUrl: String? = null,
             googleKey: String? = null,
             gestures: TranslationGestures = TranslationGestures.Default,
+            notes: Boolean = true,
             bulkTranslation: BulkTranslation = BulkTranslation.Default,
         ) = TranslationSettings(
             targetLanguage = targetLanguage,
@@ -185,8 +241,11 @@ data class TranslationSettings(
             baseUrls = baseUrls,
             timeouts = timeouts,
             wordLookup = wordLookup,
+            wordSite = wordSite,
+            customWordSiteUrl = customWordSiteUrl,
             googleKey = googleKey,
             gestures = gestures,
+            notes = notes,
             bulkTranslation = bulkTranslation,
         )
     }
@@ -199,8 +258,6 @@ data class TranslationSettings(
     fun storedBaseUrls(): Map<TranslationProvider, String> = baseUrls
 
     fun storedTimeouts(): Map<TranslationProvider, Int> = timeouts
-
-    fun storedGoogleKey(): String = googleKey.orEmpty()
 }
 
 /** Blank and absent are the same thing: a field cleared to nothing is not a value. */

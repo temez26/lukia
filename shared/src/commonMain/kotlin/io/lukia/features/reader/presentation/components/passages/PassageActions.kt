@@ -19,9 +19,22 @@ internal class PassageActions(
     /** A tap: the sentence under the finger. */
     val onSentence: (blockIndex: Int, sentence: Sentence, paragraph: String) -> Unit =
         { _, _, _ -> },
-    /** A long press: the single word under it. */
-    val onWord: (blockIndex: Int, sentence: Sentence, word: Word, paragraph: String) -> Unit =
-        { _, _, _, _ -> },
+    /**
+     * The single word under the finger, and whether the gesture that reached it
+     * was a hold.
+     *
+     * The gesture is carried rather than resolved here because what a hold means
+     * depends on something no block knows: a word that has already been answered
+     * opens what else it means, and a word that has not is asked about like any
+     * other passage. Only the session can tell those apart.
+     */
+    val onWord: (
+        blockIndex: Int,
+        sentence: Sentence,
+        word: Word,
+        paragraph: String,
+        held: Boolean,
+    ) -> Unit = { _, _, _, _, _ -> },
     /** The whole paragraph, as one passage. */
     val onParagraph: (blockIndex: Int, paragraph: String) -> Unit = { _, _ -> },
     /** Everything in a block, when the reader asks for what is on screen. */
@@ -34,7 +47,9 @@ internal class PassageActions(
     /** The same actions, with the block already named. */
     fun forBlock(blockIndex: Int) = BlockActions(
         onSentence = { sentence, paragraph -> onSentence(blockIndex, sentence, paragraph) },
-        onWord = { sentence, word, paragraph -> onWord(blockIndex, sentence, word, paragraph) },
+        onWord = { sentence, word, paragraph, held ->
+            onWord(blockIndex, sentence, word, paragraph, held)
+        },
         onParagraph = { paragraph -> onParagraph(blockIndex, paragraph) },
         onBlock = { sentences, paragraph -> onBlock(blockIndex, sentences, paragraph) },
         onElsewhere = onElsewhere,
@@ -51,7 +66,7 @@ internal val NoBlockActions = PassageActions.None.forBlock(0)
 /** [PassageActions] once it knows which block it belongs to. */
 internal class BlockActions(
     val onSentence: (Sentence, paragraph: String) -> Unit,
-    val onWord: (Sentence, Word, paragraph: String) -> Unit,
+    val onWord: (Sentence, Word, paragraph: String, held: Boolean) -> Unit,
     val onParagraph: (paragraph: String) -> Unit,
     val onBlock: (List<Sentence>, paragraph: String) -> Unit,
     val onElsewhere: () -> Unit,

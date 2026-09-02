@@ -55,8 +55,10 @@ internal class ReaderTranslationUi(
 internal class ReaderTranslationPreferences(
     val targetLanguage: TargetLanguage,
     val gestures: TranslationGestures,
+    val notes: Boolean,
     val onTargetLanguageChange: (TargetLanguage) -> Unit,
     val onGesturesChange: (TranslationGestures) -> Unit,
+    val onNotesChange: (Boolean) -> Unit,
 )
 
 /**

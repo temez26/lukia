@@ -37,14 +37,26 @@ class BookTranslations private constructor(
          * Files the session's passages by where each of them is. One pass over
          * the whole map, done once when it changes, rather than a search of it
          * per page and per paragraph on screen.
+         *
+         * [notes] is where the translator's asides are dropped when the reader
+         * has turned them off, rather than at each of the several places that
+         * draw one - a paragraph's remarks, a panel over a page. Free here,
+         * because this already walks every passage; and it is the one pass both
+         * kinds of book are filed by, so neither can disagree with the other
+         * about what the setting meant.
          */
-        fun of(passages: Map<TextAnchor, PassageTranslation>): BookTranslations {
+        fun of(
+            passages: Map<TextAnchor, PassageTranslation>,
+            notes: Boolean = true,
+        ): BookTranslations {
             if (passages.isEmpty()) return None
 
             val pages = mutableMapOf<Int, PassageBuilder>()
             val sections = mutableMapOf<Int, MutableMap<Int, PassageBuilder>>()
 
-            passages.forEach { (anchor, state) ->
+            passages.forEach { (anchor, passage) ->
+                val state = if (notes) passage else passage.withoutNote()
+
                 when (anchor) {
                     is TextAnchor.Page ->
                         pages
@@ -68,6 +80,22 @@ class BookTranslations private constructor(
         }
     }
 }
+
+/**
+ * The same passage with nothing under it, for a reader who has turned the
+ * translator's asides off.
+ *
+ * Only ever a finished translation. A failure's reason is not an aside about the
+ * text - a passage marked as translated with nothing to show and no reason given
+ * is a reader wondering what happened - and a passage still arriving has said
+ * nothing yet.
+ */
+private fun PassageTranslation.withoutNote(): PassageTranslation =
+    if (this is PassageTranslation.Ready && translation.note != null) {
+        copy(translation = translation.copy(note = null))
+    } else {
+        this
+    }
 
 /**
  * One block's translations while they are being gathered.

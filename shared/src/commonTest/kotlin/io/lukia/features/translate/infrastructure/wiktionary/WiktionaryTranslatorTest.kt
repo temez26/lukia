@@ -191,6 +191,26 @@ sauna
         assertEquals(listOf("en.wiktionary.org"), asked)
     }
 
+    /**
+     * The in-line lookup follows a pointer too, and it matters most here: a
+     * `monikkomuoto sanasta value` written over `values` in the middle of a
+     * paragraph is a worse answer than leaving the book's own word alone.
+     */
+    @Test
+    fun aWordThatIsOnlyAFormOfAnotherIsTranslatedAsThatOther() = runTest {
+        val translator = translator(
+            answers { request ->
+                if (request.url.parameters["titles"] == "values") {
+                    respondJson(FORM_OF)
+                } else {
+                    respondJson(VALUE_ENTRY)
+                }
+            },
+        )
+
+        assertEquals("arvo", translator.translate(request(text = "values")).text)
+    }
+
     @Test
     fun aWordInNoDictionaryAtAllSaysSo() = runTest {
         val translator = translator(answers { respondJson(MISSING_PAGE) })
@@ -214,7 +234,7 @@ sauna
             install(HttpTimeout)
         }
 
-        return WiktionaryTranslator(client, settings, json)
+        return WiktionaryTranslator(WiktionaryPages(client, settings, json))
     }
 
     private fun request(
@@ -261,6 +281,17 @@ support in decline
 == Ranska ==
 soutien
 "}]}}
+        """
+
+        /** A page that is only a pointer at another word, as a wiki writes one. */
+        const val FORM_OF = """
+            {"query": {"pages": [{"title": "values", "extract":
+            "== Englanti ==\n=== Substantiivi ===\nmonikkomuoto sanasta value\n"}]}}
+        """
+
+        const val VALUE_ENTRY = """
+            {"query": {"pages": [{"title": "value", "extract":
+            "== Englanti ==\n=== Substantiivi ===\narvo\nhinta\n"}]}}
         """
 
         /** A wiki says "there is no such page" rather than failing to answer. */

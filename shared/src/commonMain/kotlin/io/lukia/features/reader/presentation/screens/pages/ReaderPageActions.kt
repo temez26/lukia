@@ -34,10 +34,12 @@ internal fun rememberPageActions(
     sections: List<TextSection>,
     onToggleChrome: () -> Unit,
     onPassageSelected: (PassageSelection) -> Unit,
+    onPassageHold: (PassageSelection) -> Unit,
     onPassagesRequested: (List<PassageSelection>) -> Unit,
 ): (PageBlock) -> BlockActions {
     val toggleChrome = rememberUpdatedState(onToggleChrome)
     val selected = rememberUpdatedState(onPassageSelected)
+    val held = rememberUpdatedState(onPassageHold)
     val requested = rememberUpdatedState(onPassagesRequested)
 
     return remember(page, sections) {
@@ -46,6 +48,7 @@ internal fun rememberPageActions(
                 chapterTitle = sections.getOrNull(pageBlock.sectionIndex)?.title,
                 toggleChrome = toggleChrome,
                 selected = selected,
+                held = held,
                 requested = requested,
             )
         }
@@ -58,6 +61,7 @@ private fun PageBlock.passageActions(
     chapterTitle: String?,
     toggleChrome: State<() -> Unit>,
     selected: State<(PassageSelection) -> Unit>,
+    held: State<(PassageSelection) -> Unit>,
     requested: State<(List<PassageSelection>) -> Unit>,
 ): BlockActions {
     fun sentenceOf(sentence: Sentence, paragraph: String) = selection(
@@ -74,17 +78,21 @@ private fun PageBlock.passageActions(
         // A word travels with the paragraph around it, exactly as a sentence
         // does. On its own it is a dictionary entry; what makes it a reading is
         // the clause it was taken out of.
-        onWord = { _, sentence, word, paragraph ->
-            selected.value(
-                selection(
-                    chapterTitle = chapterTitle,
-                    sentenceIndex = sentence.index,
-                    passage = word.text,
-                    paragraph = paragraph,
-                    unit = PassageUnit.Word,
-                    wordIndex = word.index,
-                ),
+        //
+        // A held word goes to whoever can tell whether it has been answered
+        // already, which is what decides between asking about it and opening
+        // what else it means - see ReaderViewModel.onPassageHold.
+        onWord = { _, sentence, word, paragraph, wasHeld ->
+            val selection = selection(
+                chapterTitle = chapterTitle,
+                sentenceIndex = sentence.index,
+                passage = word.text,
+                paragraph = paragraph,
+                unit = PassageUnit.Word,
+                wordIndex = word.index,
             )
+
+            if (wasHeld) held.value(selection) else selected.value(selection)
         },
 
         // A paragraph is its own context, so it travels without one: there is

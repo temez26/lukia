@@ -1,5 +1,6 @@
 package io.lukia.features.reader.presentation.translation
 
+import io.lukia.features.translate.application.LookUpWordUseCase
 import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.TranslationRequest
@@ -7,6 +8,7 @@ import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.domain.text.TextAnchor
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
+import io.lukia.features.translate.presentation.PassageSelection
 import io.lukia.features.translate.presentation.PassageTranslation
 import io.lukia.features.translate.presentation.TranslationSession
 import kotlinx.coroutines.CoroutineScope
@@ -31,9 +33,16 @@ import kotlinx.coroutines.flow.stateIn
  */
 internal class ReaderTranslations(
     translatePassage: TranslatePassageUseCase,
+    lookUpWord: LookUpWordUseCase,
     private val settings: TranslationSettingsRepository,
     scope: CoroutineScope,
 ) {
+
+    /**
+     * The one word the reader has stopped on to ask about properly, if any. Its
+     * own thing rather than another field here - see [ReaderWordLookup].
+     */
+    val words = ReaderWordLookup(lookUpWord, settings, scope)
 
     /**
      * Every sentence translated while this book is open. Tied to the ViewModel's
@@ -114,6 +123,22 @@ internal class ReaderTranslations(
         )
 
     /**
+     * Whether the translator's asides are set under the paragraph they belong to.
+     *
+     * A flow like the gestures beside it, so turning them off puts the page back
+     * at once rather than on the next book - and so a reader who has just been
+     * given three senses of a word they did not want three senses of can stop it
+     * from where they are reading.
+     */
+    val notes: StateFlow<Boolean> = settings.settings
+        .map { it.notes }
+        .stateIn(
+            scope = scope,
+            started = SharingStarted.Eagerly,
+            initialValue = settings.settings.value.notes,
+        )
+
+    /**
      * Whether there is anything set up to translate with.
      *
      * The reader needs this to decide whether to offer the controls at all: a
@@ -165,9 +190,35 @@ internal class ReaderTranslations(
         settings.update(settings.settings.value.withGestures(gestures))
     }
 
+    fun setNotes(notes: Boolean) {
+        settings.update(settings.settings.value.withNotes(notes))
+    }
+
     /** A passage the reader pointed at. */
     fun onPassageTapped(anchor: TextAnchor, request: () -> TranslationRequest) {
         session.onPassageTapped(anchor, request)
+    }
+
+    /**
+     * A word the reader held rather than tapped, having already looked it up.
+     *
+     * Only a word, and only one that has an answer on the page: everything else
+     * a hold can land on already means something, and taking those over would be
+     * changing what the reader set their gestures to.
+     */
+    fun openWordInquiry(
+        selection: PassageSelection,
+        onThePage: WordOnThePage,
+        sourceLanguage: String?,
+    ) {
+        words.open(selection, onThePage, sourceLanguage)
+    }
+
+    /** Which word the open panel is about, for whoever can build it a request. */
+    val inquiredWord: PassageSelection? get() = words.selection
+
+    fun dismissWordInquiry() {
+        words.dismiss()
     }
 
     /**
@@ -226,6 +277,7 @@ internal class ReaderTranslations(
      */
     fun clear() {
         session.clear()
+        words.dismiss()
         _onScreen.value = TranslateOnScreen.Idle
     }
 }
@@ -244,9 +296,10 @@ internal class ReaderTranslations(
  */
 class ReaderTranslationsFactory(
     private val translatePassage: TranslatePassageUseCase,
+    private val lookUpWord: LookUpWordUseCase,
     private val settings: TranslationSettingsRepository,
 ) {
 
     internal fun create(scope: CoroutineScope): ReaderTranslations =
-        ReaderTranslations(translatePassage, settings, scope)
+        ReaderTranslations(translatePassage, lookUpWord, settings, scope)
 }

@@ -21,7 +21,11 @@ import io.lukia.features.reader.domain.outline.ReaderOutline
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import io.lukia.features.reader.infrastructure.SqlReadingProgressRepository
 import io.lukia.features.reader.presentation.translation.ReaderTranslationsFactory
+import io.lukia.features.translate.application.LookUpWordUseCase
 import io.lukia.features.translate.application.TranslatePassageUseCase
+import io.lukia.features.translate.domain.Translator
+import io.lukia.features.translate.domain.lookup.WordDictionary
+import io.lukia.features.translate.domain.lookup.WordEntry
 import io.lukia.features.translate.domain.provider.FakeTranslator
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import kotlinx.coroutines.CoroutineDispatcher
@@ -190,6 +194,8 @@ abstract class ReaderViewModelTestCase {
         document: DocumentInfo,
         /** Supplied where a test cares what new books are set to open as. */
         settings: ReaderSettingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
+        /** Supplied where a test cares what becomes of a passage it asks about. */
+        translations: ReaderTranslationsFactory = testTranslations(),
     ) = ReaderViewModel(
         location = document.document.location,
         openDocumentUseCase = OpenDocumentUseCase(
@@ -200,7 +206,7 @@ abstract class ReaderViewModelTestCase {
         settingsRepository = settings,
         reading = BookReadingFactory(progress, FakeReadingSessionRepository()),
         layoutRepository = layouts,
-        translations = testTranslations(),
+        translations = translations,
         // Inline, because the outline is read beside the open book rather than
         // as part of it: on a dispatcher of its own it is work no test can wait
         // for, and a reopened book leaves two of them running at once.
@@ -214,9 +220,18 @@ abstract class ReaderViewModelTestCase {
      */
     protected open val sentenceDispatcher: CoroutineDispatcher = Dispatchers.Unconfined
 
-    /** A translator that answers, wired the way the app wires the real one. */
-    protected fun testTranslations() = ReaderTranslationsFactory(
-        TranslatePassageUseCase(FakeTranslator()),
+    /**
+     * A translator wired the way the app wires the real one.
+     *
+     * [translator] is the one thing a test about translating wants to replace:
+     * what becomes of a passage - answered, failed, still arriving - is decided
+     * entirely by what is behind this.
+     */
+    protected fun testTranslations(
+        translator: Translator = FakeTranslator(),
+    ) = ReaderTranslationsFactory(
+        TranslatePassageUseCase(translator),
+        LookUpWordUseCase(WordDictionary { word, _ -> WordEntry(word, listOf("a sense")) }),
         TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()),
     )
 

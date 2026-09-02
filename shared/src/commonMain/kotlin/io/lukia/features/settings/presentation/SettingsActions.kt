@@ -2,9 +2,11 @@ package io.lukia.features.settings.presentation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import io.lukia.features.translate.domain.BulkTranslation
+import io.lukia.features.translate.domain.lookup.WordSite
 import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.settings.TargetLanguage
-import io.lukia.features.translate.domain.text.PassageUnit
+import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.domain.text.WordLookup
 
 /**
@@ -45,15 +47,16 @@ data class ProviderActions(
     val onTestConnection: () -> Unit = {},
     val onWordLookupChange: (WordLookup) -> Unit = {},
     val onGoogleApiKeyChange: (String) -> Unit = {},
+    val onWordSiteChange: (WordSite) -> Unit = {},
+    val onWordSiteUrlChange: (String) -> Unit = {},
 )
 
 /** Everything the Translating group can ask for. See [ProviderActions]. */
 data class TranslatingActions(
     val onTargetLanguageChange: (TargetLanguage) -> Unit = {},
-    val onTapGestureChange: (PassageUnit?) -> Unit = {},
-    val onLongPressGestureChange: (PassageUnit?) -> Unit = {},
-    val onTranslateOnScreenChange: (Boolean) -> Unit = {},
-    val onTranslateAsYouReadChange: (Boolean) -> Unit = {},
+    val onGesturesChange: (TranslationGestures) -> Unit = {},
+    val onNotesChange: (Boolean) -> Unit = {},
+    val onBulkTranslationChange: (BulkTranslation) -> Unit = {},
 )
 
 /**
@@ -79,6 +82,8 @@ fun rememberProviderActions(viewModel: SettingsViewModel): ProviderActions =
             onTestConnection = viewModel::testConnection,
             onWordLookupChange = viewModel::setWordLookup,
             onGoogleApiKeyChange = viewModel::setGoogleApiKey,
+            onWordSiteChange = viewModel::setWordSite,
+            onWordSiteUrlChange = viewModel::setWordSiteUrl,
         )
     }
 
@@ -88,9 +93,8 @@ fun rememberTranslatingActions(viewModel: SettingsViewModel): TranslatingActions
     remember(viewModel) {
         TranslatingActions(
             onTargetLanguageChange = viewModel::setTargetLanguage,
-            onTapGestureChange = viewModel::setTapGesture,
-            onLongPressGestureChange = viewModel::setLongPressGesture,
-            onTranslateOnScreenChange = viewModel::setTranslateOnScreen,
-            onTranslateAsYouReadChange = viewModel::setTranslateAsYouRead,
+            onGesturesChange = viewModel::setGestures,
+            onNotesChange = viewModel::setNotes,
+            onBulkTranslationChange = viewModel::setBulkTranslation,
         )
     }

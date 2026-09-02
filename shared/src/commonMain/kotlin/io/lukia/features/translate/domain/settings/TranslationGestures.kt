@@ -23,6 +23,23 @@ import io.lukia.features.translate.domain.text.PassageUnit
 data class TranslationGestures(
     val tap: PassageUnit? = PassageUnit.Sentence,
     val longPress: PassageUnit? = PassageUnit.Word,
+    /**
+     * Whether holding a word that has already been looked up opens what else it
+     * means - every sense a dictionary has for it, and a way through to a site
+     * about it.
+     *
+     * Its own setting rather than something [longPress] implies, because the two
+     * are not the same question. A reader who has set their hold to the sentence
+     * has said what they want translated; they have said nothing about whether a
+     * word they already looked up should be able to tell them more. Tied to the
+     * unit, that reader could never reach any of it - which is exactly what
+     * happened before this existed.
+     *
+     * So it applies whatever the hold is set to, including off, and it applies
+     * only to a word that has an answer on the page already. A word nobody has
+     * asked about is not a word with more to say.
+     */
+    val wordDetails: Boolean = true,
 ) {
 
     /** Whether anything at all happens when the reader points at the book. */

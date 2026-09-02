@@ -81,7 +81,8 @@ private fun GestureSection(
     SettingsSection(
         title = "Pointing at the book",
         footnote = "Each does one thing, always. Doing it again on the same " +
-            "passage puts the book’s own words back.",
+            "passage puts the book’s own words back - except on a word you have " +
+            "looked up, where holding opens more about it instead.",
         groupColor = groupColor,
         modifier = modifier,
     ) {
@@ -89,16 +90,43 @@ private fun GestureSection(
             LabelledField(label = "Tap") {
                 GestureControl(
                     selected = translation.gestures.tap,
-                    onSelect = actions.onTapGestureChange,
+                    onSelect = {
+                        actions.onGesturesChange(translation.gestures.copy(tap = it))
+                    },
                 )
             }
 
             LabelledField(label = "Press and hold") {
                 GestureControl(
                     selected = translation.gestures.longPress,
-                    onSelect = actions.onLongPressGestureChange,
+                    onSelect = {
+                        actions.onGesturesChange(translation.gestures.copy(longPress = it))
+                    },
                 )
             }
+
+            SettingsToggle(
+                label = "Notes under the paragraph",
+                detail = "The translator's asides, set small under the text they " +
+                    "belong to: a remark about an ambiguous word, a dictionary's " +
+                    "other senses. Turn them off to keep the page as the book set " +
+                    "it — holding a word still opens everything it means. Why a " +
+                    "passage could not be translated is always shown.",
+                checked = translation.notes,
+                onChange = actions.onNotesChange,
+            )
+
+            SettingsToggle(
+                label = "Hold a word again for more about it",
+                detail = "Once a word has been looked up, holding it opens every " +
+                    "sense a dictionary has for it and a way through to " +
+                    "${translation.wordSite.label}. Works whatever the hold above " +
+                    "is set to.",
+                checked = translation.gestures.wordDetails,
+                onChange = {
+                    actions.onGesturesChange(translation.gestures.copy(wordDetails = it))
+                },
+            )
         }
     }
 }
@@ -132,7 +160,11 @@ private fun TranslatingAheadSection(
                 detail = "Adds a button that translates every sentence you " +
                     "can see, once.",
                 checked = translation.bulkTranslation.onScreen,
-                onChange = actions.onTranslateOnScreenChange,
+                onChange = {
+                    actions.onBulkTranslationChange(
+                        translation.bulkTranslation.copy(onScreen = it),
+                    )
+                },
             )
 
             BetaToggle(
@@ -141,7 +173,11 @@ private fun TranslatingAheadSection(
                     "scrolls into view until you turn it off. This is the " +
                     "expensive one.",
                 checked = translation.bulkTranslation.asYouRead,
-                onChange = actions.onTranslateAsYouReadChange,
+                onChange = {
+                    actions.onBulkTranslationChange(
+                        translation.bulkTranslation.copy(asYouRead = it),
+                    )
+                },
             )
         }
     }

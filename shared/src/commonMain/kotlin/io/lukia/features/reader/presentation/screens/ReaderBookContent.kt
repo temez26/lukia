@@ -27,6 +27,7 @@ import io.lukia.features.reader.domain.outline.ReaderOutline
 import io.lukia.features.reader.domain.page.PageSentence
 import io.lukia.features.reader.presentation.KeepScreenAwake
 import io.lukia.features.reader.presentation.components.chrome.ReaderNotice
+import io.lukia.features.reader.presentation.components.translation.WordLookupPanel
 import io.lukia.features.reader.presentation.pagination.PaginatedBook
 import io.lukia.features.reader.presentation.pagination.onPages
 import io.lukia.features.reader.presentation.screens.input.readerCommands
@@ -41,6 +42,7 @@ import io.lukia.features.reader.presentation.theme.ReaderTheming
 import io.lukia.features.reader.presentation.theme.readerPageStyle
 import io.lukia.features.reader.presentation.translation.ShownTranslations
 import io.lukia.features.reader.presentation.translation.TranslateOnScreen
+import io.lukia.features.reader.presentation.translation.WordInquiry
 import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationGestures
@@ -87,6 +89,10 @@ internal fun ReaderContent(
     targetLanguage: TargetLanguage = TargetLanguage.Default,
     /** Which of the two ways of translating more than one passage are offered at all. */
     bulkTranslation: BulkTranslation = BulkTranslation.Default,
+    /** The one word the reader has held to ask about properly, if any. */
+    wordInquiry: WordInquiry? = null,
+    /** Whether the translator's asides are set under the paragraphs they belong to. */
+    translationNotes: Boolean = true,
     /** How this book is being read, and what became of asking for it as text. */
     layout: ReaderLayoutUi = ReaderLayoutUi(),
     onBack: () -> Unit,
@@ -94,12 +100,17 @@ internal fun ReaderContent(
     onSettingsChange: (ReaderSettings) -> Unit,
     onPageSettled: (pageIndex: Int, pageCount: Int) -> Unit = { _, _ -> },
     onPassageSelected: (PassageSelection) -> Unit = {},
+    /** A hold on a word already answered, which opens what else it means. */
+    onPassageHold: (PassageSelection) -> Unit = {},
     onPassagesRequested: (List<PassageSelection>) -> Unit = {},
+    onWordInquiryDismiss: () -> Unit = {},
+    onInquiredWordAction: () -> Unit = {},
     onTranslateOnScreen: () -> Unit = {},
     onContinuousTranslationChange: (Boolean) -> Unit = {},
     onTranslationsVisibleChange: (Boolean) -> Unit = {},
     onTargetLanguageChange: (TargetLanguage) -> Unit = {},
     onTranslationGesturesChange: (TranslationGestures) -> Unit = {},
+    onTranslationNotesChange: (Boolean) -> Unit = {},
     /** What is written on a page of a fixed-layout document, read when one is looked at. */
     sentencesOnPage: suspend (index: Int) -> List<PageSentence> = { emptyList() },
     renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?,
@@ -121,14 +132,19 @@ internal fun ReaderContent(
     val translationPreferences = ReaderTranslationPreferences(
         targetLanguage = targetLanguage,
         gestures = gestures,
+        notes = translationNotes,
         onTargetLanguageChange = onTargetLanguageChange,
         onGesturesChange = onTranslationGesturesChange,
+        onNotesChange = onTranslationNotesChange,
     )
 
     // Filed by where each translation belongs, once per change, so that a
     // sentence changing state reaches the block or the page it is on and no
-    // further. See BookTranslations.
-    val translated = remember(translations) { BookTranslations.of(translations) }
+    // further. See BookTranslations, which is also where the translator's asides
+    // are dropped for a reader who has turned them off.
+    val translated = remember(translations, translationNotes) {
+        BookTranslations.of(translations, translationNotes)
+    }
 
     // The reader wears its own theme; the rest of the app keeps following the
     // system. Everything inside - the glass chrome, the type, the panel - picks
@@ -234,6 +250,7 @@ internal fun ReaderContent(
                             onToggleChrome = chrome::toggleChrome,
                             onPageScaleChange = { onSettingsChange(settings.withPageScale(it)) },
                             onPassageSelected = onPassageSelected,
+                            onPassageHold = onPassageHold,
                             onPassagesRequested = onPassagesRequested,
                             translateOnScreen = translateOnScreen,
                             gestures = gestures,
@@ -250,6 +267,7 @@ internal fun ReaderContent(
                             onToggleChrome = chrome::toggleChrome,
                             onSettingsChange = onSettingsChange,
                             onPassageSelected = onPassageSelected,
+                            onPassageHold = onPassageHold,
                             onPassagesRequested = onPassagesRequested,
                             onPagesChange = { paginated = it },
                             translateOnScreen = translateOnScreen,
@@ -303,6 +321,15 @@ internal fun ReaderContent(
                     translationSection = {
                         ReaderTranslationSettings(translationUi, translationPreferences)
                     },
+                )
+
+                // Over the panels and the chrome alike: it was opened from the
+                // page, it dims what is behind it, and nothing in the chrome is
+                // reachable while the reader is reading about one word.
+                WordLookupPanel(
+                    inquiry = wordInquiry,
+                    onDismiss = onWordInquiryDismiss,
+                    onAction = onInquiredWordAction,
                 )
 
                 // Over everything, because it is about the book somebody is

@@ -73,7 +73,7 @@ fun BookDetailOverlay(
             // With the menu open this closes the menu instead: dismissing the
             // panel out from under an open menu would take two decisions at once.
             onDismiss = { if (menuExpanded) menuExpanded = false else onDismiss() },
-            trailing = {
+            leading = {
                 LukiaIconButton(
                     label = "Book actions",
                     onClick = { menuExpanded = true },

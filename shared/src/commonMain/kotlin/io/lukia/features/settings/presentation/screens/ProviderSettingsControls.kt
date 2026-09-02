@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.Color
 import io.lukia.features.settings.presentation.ProviderActions
 import io.lukia.features.settings.presentation.ProviderState
 import io.lukia.features.settings.presentation.components.SettingsTextField
+import io.lukia.features.translate.domain.lookup.WordSite
 import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.features.translate.domain.text.WordLookup
@@ -27,9 +28,10 @@ import io.lukia.shared.presentation.theme.Space
  * connection test - is machinery, and a reader who only wants to change which
  * language they read into should never have to scroll past it.
  *
- * Two services rather than one, because a single word and a whole sentence are
+ * Three groups rather than one, because a single word and a whole sentence are
  * different questions: a dictionary answers the first well and cannot answer the
- * second at all.
+ * second at all - and neither of them answers the third, which is where somebody
+ * goes to read properly about a word they have stopped on.
  */
 @Composable
 internal fun ProviderSettings(
@@ -50,6 +52,13 @@ internal fun ProviderSettings(
         )
 
         WordLookupSection(
+            translation = translation,
+            actions = actions,
+            groupColor = groupColor,
+            modifier = Modifier.padding(top = dimens.sectionSpacing),
+        )
+
+        WordSiteSection(
             translation = translation,
             actions = actions,
             groupColor = groupColor,
@@ -214,6 +223,51 @@ private fun WordLookupSection(
                         onValueChange = actions.onGoogleApiKeyChange,
                         placeholder = "Public endpoint",
                         secret = true,
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Where the reader goes when the line over the word was not enough.
+ *
+ * A list rather than a row of segments, because a choice here carries a line
+ * saying what is at the other end - these are other people's websites, and their
+ * names alone do not say which is a dictionary and which is a translator.
+ */
+@Composable
+private fun WordSiteSection(
+    translation: TranslationSettings,
+    actions: ProviderActions,
+    groupColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    SettingsSection(
+        title = "Reading more about a word",
+        footnote = "Holding a word you have already looked up opens what else it " +
+            "means, and a way through to this site with the word already in it.",
+        groupColor = groupColor,
+        modifier = modifier,
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
+            ChoiceList(
+                options = WordSite.entries,
+                selected = translation.wordSite,
+                label = { it.label },
+                detail = { it.footnote },
+                onSelect = actions.onWordSiteChange,
+            )
+
+            // Only where it does anything - the same reasoning as the Google key
+            // above. Every other choice here already knows its own address.
+            if (translation.wordSite == WordSite.Custom) {
+                LabelledField(label = "Address") {
+                    SettingsTextField(
+                        value = translation.wordSiteUrlTemplate.orEmpty(),
+                        onValueChange = actions.onWordSiteUrlChange,
+                        placeholder = "https://example.org/search?q={word}",
                     )
                 }
             }

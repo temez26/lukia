@@ -55,6 +55,7 @@ internal fun TextPageList(
     onToggleChrome: () -> Unit,
     onSettingsChange: (ReaderSettings) -> Unit,
     onPassageSelected: (PassageSelection) -> Unit,
+    onPassageHold: (PassageSelection) -> Unit,
     onPassagesRequested: (List<PassageSelection>) -> Unit,
     onPagesChange: (PaginatedBook) -> Unit,
     translateOnScreen: TranslateOnScreen,
@@ -131,6 +132,7 @@ internal fun TextPageList(
                         sections = sections,
                         onToggleChrome = onToggleChrome,
                         onPassageSelected = onPassageSelected,
+                        onPassageHold = onPassageHold,
                         onPassagesRequested = onPassagesRequested,
                     )
                 },

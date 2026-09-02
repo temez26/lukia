@@ -32,16 +32,22 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalTestApi::class)
 class ReaderWordLookupTest {
 
+    /**
+     * A hold on a word is raised as a hold rather than as a plain selection, and
+     * what it turns into is settled where the answers are kept: a word nobody has
+     * looked up yet is asked about, and one that has been offers what else it
+     * means - see ReaderViewModel.onPassageHold.
+     */
     @Test
     fun holdingAWordAsksAboutThatWord() = runComposeUiTest {
-        var selected: PassageSelection? = null
+        var held: PassageSelection? = null
 
-        setReader(onPassageSelected = { selected = it })
+        setReader(onPassageHold = { held = it })
         onNodeWithText(opening, substring = true).performTouchInput {
             longClick(Offset(4f, 4f))
         }
 
-        val selection = assertNotNull(selected, "no word was selected")
+        val selection = assertNotNull(held, "no word was selected")
         assertEquals("Call", selection.passage)
         assertEquals(TextAnchor.Section(0, 0, 0, wordIndex = 0), selection.anchor)
     }
@@ -49,14 +55,14 @@ class ReaderWordLookupTest {
     /** A word travels with the paragraph around it, exactly as a sentence does. */
     @Test
     fun aWordArrivesWithTheParagraphAroundIt() = runComposeUiTest {
-        var selected: PassageSelection? = null
+        var held: PassageSelection? = null
 
-        setReader(onPassageSelected = { selected = it })
+        setReader(onPassageHold = { held = it })
         onNodeWithText(opening, substring = true).performTouchInput {
             longClick(Offset(4f, 4f))
         }
 
-        assertEquals("$opening $second", assertNotNull(selected).surroundingText)
+        assertEquals("$opening $second", assertNotNull(held).surroundingText)
     }
 
     /** One translated word stands in its sentence, and the sentence stays the book's. */
@@ -146,31 +152,6 @@ class ReaderWordLookupTest {
         assertEquals(TextAnchor.Section(0, 0, 0), assertNotNull(selected).anchor)
     }
 
-    /** Which is also how a translated word is put back: the gesture that asked. */
-    @Test
-    fun holdingATranslatedWordAsksAboutThatWordAgain() = runComposeUiTest {
-        var selected: PassageSelection? = null
-
-        setReader(
-            translations = {
-                mapOf(
-                    TextAnchor.Section(0, 0, 0, wordIndex = 0) to
-                        PassageTranslation.Ready(Translation("Kutsukaa")),
-                )
-            },
-            onPassageSelected = { selected = it },
-        )
-
-        onNodeWithText("Kutsukaa me Ishmael.", substring = true).performTouchInput {
-            longClick(Offset(4f, 4f))
-        }
-
-        assertEquals(
-            TextAnchor.Section(0, 0, 0, wordIndex = 0),
-            assertNotNull(selected).anchor,
-        )
-    }
-
     /** A gesture set to the paragraph asks about all of it, as one passage. */
     @Test
     fun aGestureSetToTheParagraphAsksAboutTheWholeBlock() = runComposeUiTest {
@@ -212,9 +193,11 @@ class ReaderWordLookupTest {
     @Test
     fun aGestureTurnedOffAsksForNothing() = runComposeUiTest {
         var selected: PassageSelection? = null
+        var held: PassageSelection? = null
 
         setReader(
             onPassageSelected = { selected = it },
+            onPassageHold = { held = it },
             gestures = TranslationGestures(tap = null, longPress = null),
         )
 
@@ -222,6 +205,7 @@ class ReaderWordLookupTest {
         onNodeWithText(opening, substring = true).performTouchInput { longClick(Offset(4f, 4f)) }
 
         assertNull(selected, "a gesture that was turned off still translated something")
+        assertNull(held, "a gesture that was turned off still opened a word")
     }
 
     /** A word nobody has touched is part of its sentence, and a tap still means that. */

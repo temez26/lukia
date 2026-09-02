@@ -1,11 +1,13 @@
 package io.lukia.features.reader.presentation.translation
 
 import io.lukia.core.presentation.dataOrNull
+import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.presentation.ReaderViewModel
 import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationGestures
+import io.lukia.features.translate.domain.text.PassageUnit
 import io.lukia.features.translate.domain.text.TextAnchor
 import io.lukia.features.translate.presentation.PassageSelection
 import io.lukia.features.translate.presentation.PassageTranslation
@@ -41,11 +43,97 @@ val ReaderViewModel.targetLanguage: StateFlow<TargetLanguage>
 val ReaderViewModel.translationConfigured: StateFlow<Boolean>
     get() = translation.configured
 
+/** Whether the translator's asides are set under the paragraphs they belong to. */
+val ReaderViewModel.translationNotes: StateFlow<Boolean>
+    get() = translation.notes
+
+/** The one word the reader has stopped on to ask about properly, if any. */
+val ReaderViewModel.wordInquiry: StateFlow<WordInquiry?>
+    get() = translation.words.inquiry
+
 /** A passage the reader pointed at. */
 fun ReaderViewModel.onPassageSelected(selection: PassageSelection) {
     val document = uiState.value.dataOrNull ?: return
 
     translation.onPassageTapped(selection.anchor) { requestFor(document, selection) }
+}
+
+/**
+ * A passage the reader held rather than tapped.
+ *
+ * A hold on a word that has already been answered opens what else that word
+ * means; a hold on anything else is the gesture the reader set it to, unchanged.
+ * The split is here rather than in the page, because whether a word has an
+ * answer is something the session knows and the text on screen does not.
+ *
+ * Three things have to hold, and everything else falls through to the gesture:
+ * the reader has asked to be offered this at all - see
+ * [io.lukia.features.translate.domain.settings.TranslationGestures.wordDetails] -
+ * it is a word, and something has already become of it.
+ *
+ * A failure counts. It used to fall through and quietly ask the same service
+ * again, which is the one thing least likely to help: a word the reader's own
+ * translator could not answer is exactly the word they want to take somewhere
+ * else. So it opens the panel too, where the dictionary is read, the site is
+ * offered, and asking again is one of the things on offer rather than the only
+ * thing the gesture can do.
+ *
+ * A word still arriving is the one state left out - it has nothing more to say
+ * yet, and it is about to.
+ */
+fun ReaderViewModel.onPassageHold(selection: PassageSelection) {
+    val onThePage = translation.passages.value[selection.anchor].onThePage()
+
+    if (!translation.gestures.value.wordDetails ||
+        selection.unit != PassageUnit.Word ||
+        onThePage == null
+    ) {
+        return onPassageSelected(selection)
+    }
+
+    translation.openWordInquiry(
+        selection = selection,
+        onThePage = onThePage,
+        // What the document said it is written in, for the sites that take a
+        // language pair. The book rather than the passage: nothing here reads
+        // well enough to tell a quoted line of French from the English around it.
+        sourceLanguage = uiState.value.dataOrNull?.info?.metadata?.language,
+    )
+}
+
+/** The reader is done with the word, and the page underneath is unchanged. */
+fun ReaderViewModel.onWordInquiryDismissed() {
+    translation.dismissWordInquiry()
+}
+
+/**
+ * Does whatever the panel offered to do about the word on the page, and closes.
+ *
+ * One entry point for all three, because they are one gesture underneath: a tap
+ * on a passage puts it back, brings it forward, or asks again, decided by what
+ * has become of it - see
+ * [io.lukia.features.translate.presentation.TranslationSession.onPassageTapped].
+ * The panel's button is that tap, reached from a panel instead of from the page.
+ */
+fun ReaderViewModel.onInquiredWordActioned() {
+    val selection = translation.inquiredWord ?: return
+    val document = uiState.value.dataOrNull ?: return
+
+    translation.onPassageTapped(selection.anchor) { requestFor(document, selection) }
+    translation.dismissWordInquiry()
+}
+
+/**
+ * What a passage the reader held is doing on the page, or null when it is not
+ * something the panel has anything to offer about.
+ */
+private fun PassageTranslation?.onThePage(): WordOnThePage? = when (this) {
+    is PassageTranslation.Ready ->
+        if (showingOriginal) WordOnThePage.Original else WordOnThePage.Translated
+
+    is PassageTranslation.Failed -> WordOnThePage.Failed(error.displayShortMessage())
+
+    null, is PassageTranslation.Loading -> null
 }
 
 /**
@@ -89,6 +177,10 @@ fun ReaderViewModel.setTargetLanguage(language: TargetLanguage) {
 
 fun ReaderViewModel.setTranslationGestures(gestures: TranslationGestures) {
     translation.setGestures(gestures)
+}
+
+fun ReaderViewModel.setTranslationNotes(notes: Boolean) {
+    translation.setNotes(notes)
 }
 
 /** What to ask the translator for, given where the reader is in the book. */

@@ -68,19 +68,22 @@ enum class SettingsArea(val title: String) {
 }
 
 /**
- * A switch for something that is not finished, and says so.
+ * A switch for one setting, with the sentence that says what it does under it.
  *
- * The label carries the word rather than the section, because these sit beside
- * each other and a reader turning one on is being told about that one. What the
- * beta actually means - slow, and it spends money a screenful at a time - is in
- * the detail underneath, where somebody deciding will read it.
+ * The detail is not optional. Everything on this screen that is on or off is
+ * something whose name alone does not settle whether you want it, which is why
+ * these are switches with prose rather than rows in a list.
+ *
+ * [badge] is for a mark beside the label - see [BetaToggle], which is this
+ * wearing one.
  */
 @Composable
-internal fun BetaToggle(
+internal fun SettingsToggle(
     label: String,
     detail: String,
     checked: Boolean,
     onChange: (Boolean) -> Unit,
+    badge: (@Composable () -> Unit)? = null,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Space.xs)) {
         Row(
@@ -95,7 +98,7 @@ internal fun BetaToggle(
                     color = MaterialTheme.colorScheme.onSurface,
                 )
 
-                BetaBadge(modifier = Modifier.padding(start = Space.sm))
+                badge?.invoke()
             }
 
             Switch(checked = checked, onCheckedChange = onChange)
@@ -106,6 +109,26 @@ internal fun BetaToggle(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+    }
+}
+
+/**
+ * A switch for something that is not finished, and says so.
+ *
+ * The label carries the word rather than the section, because these sit beside
+ * each other and a reader turning one on is being told about that one. What the
+ * beta actually means - slow, and it spends money a screenful at a time - is in
+ * the detail underneath, where somebody deciding will read it.
+ */
+@Composable
+internal fun BetaToggle(
+    label: String,
+    detail: String,
+    checked: Boolean,
+    onChange: (Boolean) -> Unit,
+) {
+    SettingsToggle(label = label, detail = detail, checked = checked, onChange = onChange) {
+        BetaBadge(modifier = Modifier.padding(start = Space.sm))
     }
 }
 
