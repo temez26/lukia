@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.toSize
 import io.lukia.features.reader.domain.text.TextRun
 import io.lukia.features.reader.presentation.components.chrome.detectReaderTaps
 import io.lukia.features.reader.presentation.components.passages.BlockActions
+import io.lukia.features.reader.presentation.components.passages.WordGesture
 import io.lukia.features.reader.presentation.components.passages.drawPassageMarks
 import io.lukia.features.reader.presentation.components.passages.passageMarkColors
 import io.lukia.features.reader.presentation.components.passages.passageMarkStyles
@@ -36,6 +37,7 @@ import io.lukia.features.reader.presentation.components.translation.TranslatorsR
 import io.lukia.features.reader.presentation.translation.TRANSLATE_SETTLE_MILLIS
 import io.lukia.features.reader.presentation.translation.TranslateOnScreen
 import io.lukia.features.translate.domain.settings.TranslationGestures
+import io.lukia.features.translate.domain.text.PassageUnit
 import io.lukia.features.translate.domain.text.splitIntoSentences
 import io.lukia.features.translate.domain.text.words
 import io.lukia.features.translate.presentation.SentenceTranslations
@@ -188,10 +190,10 @@ internal fun ProseText(
                     paragraph,
                 )
             },
-            // Nothing for a long press that asks for nothing: holding a finger
-            // on the page has never meant anything else, so there is nothing for
-            // it to fall through to.
-            onLongPress = { position ->
+            // Nothing for a hold that asks for nothing: holding a finger on the
+            // page has never meant anything else, so there is nothing for it to
+            // fall through to.
+            onHold = { position ->
                 currentActions.act(
                     passages.held(
                         position = position,
@@ -201,7 +203,18 @@ internal fun ProseText(
                         gestures = currentGestures,
                     ),
                     paragraph,
-                    held = true,
+                    WordGesture.Held,
+                )
+            },
+            // Always the word, whatever the hold is set to and whether or not it
+            // has been translated. The question this gesture asks is about the
+            // word rather than about the passage it sits in, and it is the same
+            // question every time.
+            onQuestion = { position ->
+                currentActions.act(
+                    passages.at(PassageUnit.Word, position, layout, currentDrawn),
+                    paragraph,
+                    WordGesture.Questioned,
                 )
             },
             onChrome = { currentActions.onElsewhere() },

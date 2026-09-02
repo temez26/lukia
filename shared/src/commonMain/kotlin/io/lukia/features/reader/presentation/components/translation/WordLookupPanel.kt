@@ -181,6 +181,7 @@ private fun WordInquiry.unansweredFor(): String? {
 
 /** What the one button that touches the page behind the panel offers to do. */
 private fun WordOnThePage.label(): String = when (this) {
+    WordOnThePage.Untouched -> "Translate it"
     WordOnThePage.Translated -> "Show the original"
     WordOnThePage.Original -> "Show the translation"
     is WordOnThePage.Failed -> "Try again"

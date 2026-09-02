@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.Dp
 import io.lukia.features.reader.domain.page.PageSentence
 import io.lukia.features.reader.domain.page.PageSize
 import io.lukia.features.reader.presentation.components.chrome.detectReaderTaps
+import io.lukia.features.reader.presentation.components.passages.WordGesture
 import io.lukia.features.reader.presentation.components.translation.PageTranslationOverlay
 import io.lukia.features.reader.presentation.translation.TRANSLATE_SETTLE_MILLIS
 import io.lukia.features.reader.presentation.translation.TranslateOnScreen
@@ -63,6 +64,7 @@ internal fun DocumentPage(
     onToggleChrome: () -> Unit,
     onPassageSelected: (PassageSelection) -> Unit,
     onPassageHold: (PassageSelection) -> Unit,
+    onPassageInquiry: (PassageSelection) -> Unit,
     onPassagesRequested: (List<PassageSelection>) -> Unit,
     translateOnScreen: TranslateOnScreen,
     gestures: TranslationGestures,
@@ -127,6 +129,7 @@ internal fun DocumentPage(
                 gestures = gestures,
                 onSelect = onPassageSelected,
                 onHold = onPassageHold,
+                onQuestion = onPassageInquiry,
                 onChrome = onToggleChrome,
             ),
     ) {
@@ -155,9 +158,10 @@ internal fun DocumentPage(
             onTranslationPointedAt = { x, y, held ->
                 answer(
                     selection = passages.translationAt(x, y, translations),
-                    held = held,
+                    gesture = if (held) WordGesture.Held else WordGesture.Tapped,
                     onSelected = onPassageSelected,
                     onHold = onPassageHold,
+                    onQuestion = onPassageInquiry,
                 )
             },
         )
@@ -225,6 +229,7 @@ private fun Modifier.passageTaps(
     gestures: TranslationGestures,
     onSelect: (PassageSelection) -> Unit,
     onHold: (PassageSelection) -> Unit,
+    onQuestion: (PassageSelection) -> Unit,
     onChrome: () -> Unit,
 ): Modifier {
     val currentPassages by rememberUpdatedState(passages)
@@ -233,10 +238,11 @@ private fun Modifier.passageTaps(
     val currentGestures by rememberUpdatedState(gestures)
     val currentOnSelected by rememberUpdatedState(onSelect)
     val currentOnHold by rememberUpdatedState(onHold)
+    val currentOnQuestion by rememberUpdatedState(onQuestion)
     val currentOnChrome by rememberUpdatedState(onChrome)
 
     return pointerInput(pageIndex) {
-        fun select(position: Offset, unit: PassageUnit?, held: Boolean): Boolean =
+        fun select(position: Offset, unit: PassageUnit?, gesture: WordGesture): Boolean =
             // Back out of the drawn page into the file's own space, which is
             // where the sentences know they are.
             answer(
@@ -246,40 +252,56 @@ private fun Modifier.passageTaps(
                     unit = unit,
                     translations = currentTranslations,
                 ),
-                held = held,
+                gesture = gesture,
                 onSelected = currentOnSelected,
                 onHold = currentOnHold,
+                onQuestion = currentOnQuestion,
             )
 
         detectReaderTaps(
             // A tap that reached no words - a margin, a figure, a page with no
             // text layer at all - or one the reader has set to do nothing is one
             // of the two taps that bring the chrome back.
-            onTap = { position -> select(position, currentGestures.tap, held = false) },
-            onLongPress = { position -> select(position, currentGestures.longPress, held = true) },
+            onTap = { position -> select(position, currentGestures.tap, WordGesture.Tapped) },
+            onHold = { position ->
+                select(position, currentGestures.longPress, WordGesture.Held)
+            },
+            // Always the word, whatever the hold is set to - the question this
+            // gesture asks is about the word rather than about the passage.
+            onQuestion = { position ->
+                select(position, PassageUnit.Word, WordGesture.Questioned)
+            },
             onChrome = { currentOnChrome() },
         )
     }
 }
 
 /**
- * Hands a passage the reader pointed at to whichever of the two is meant, and
+ * Hands a passage the reader pointed at to whichever of the three is meant, and
  * says whether they pointed at anything.
  *
  * A held word goes to whoever can tell whether it has been answered already,
  * which is what decides between asking about it and opening what else it means -
- * see `ReaderViewModel.onPassageHold`. Everything else is the gesture the reader
- * set it to, unchanged.
+ * see `ReaderViewModel.onPassageHold`. A questioned one goes straight to what it
+ * means, answered or not. Everything else is the gesture the reader set it to,
+ * unchanged.
  */
 private fun answer(
     selection: PassageSelection?,
-    held: Boolean,
+    gesture: WordGesture,
     onSelected: (PassageSelection) -> Unit,
     onHold: (PassageSelection) -> Unit,
+    onQuestion: (PassageSelection) -> Unit,
 ): Boolean {
     if (selection == null) return false
 
-    if (held && selection.unit == PassageUnit.Word) onHold(selection) else onSelected(selection)
+    val word = selection.unit == PassageUnit.Word
+
+    when {
+        gesture == WordGesture.Held && word -> onHold(selection)
+        gesture == WordGesture.Questioned && word -> onQuestion(selection)
+        else -> onSelected(selection)
+    }
 
     return true
 }

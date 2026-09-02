@@ -102,6 +102,8 @@ internal fun ReaderContent(
     onPassageSelected: (PassageSelection) -> Unit = {},
     /** A hold on a word already answered, which opens what else it means. */
     onPassageHold: (PassageSelection) -> Unit = {},
+    /** The second mouse button on a word, which opens what it means either way. */
+    onPassageInquiry: (PassageSelection) -> Unit = {},
     onPassagesRequested: (List<PassageSelection>) -> Unit = {},
     onWordInquiryDismiss: () -> Unit = {},
     onInquiredWordAction: () -> Unit = {},
@@ -251,6 +253,7 @@ internal fun ReaderContent(
                             onPageScaleChange = { onSettingsChange(settings.withPageScale(it)) },
                             onPassageSelected = onPassageSelected,
                             onPassageHold = onPassageHold,
+                            onPassageInquiry = onPassageInquiry,
                             onPassagesRequested = onPassagesRequested,
                             translateOnScreen = translateOnScreen,
                             gestures = gestures,
@@ -268,6 +271,7 @@ internal fun ReaderContent(
                             onSettingsChange = onSettingsChange,
                             onPassageSelected = onPassageSelected,
                             onPassageHold = onPassageHold,
+                            onPassageInquiry = onPassageInquiry,
                             onPassagesRequested = onPassagesRequested,
                             onPagesChange = { paginated = it },
                             translateOnScreen = translateOnScreen,

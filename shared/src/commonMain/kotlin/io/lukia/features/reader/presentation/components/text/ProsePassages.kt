@@ -3,6 +3,7 @@ package io.lukia.features.reader.presentation.components.text
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.TextLayoutResult
 import io.lukia.features.reader.presentation.components.passages.BlockActions
+import io.lukia.features.reader.presentation.components.passages.WordGesture
 import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.domain.text.PassageUnit
 import io.lukia.features.translate.domain.text.Sentence
@@ -147,13 +148,13 @@ internal fun ProsePassages.held(
 internal fun BlockActions.act(
     pointed: Pointed?,
     paragraph: String,
-    held: Boolean = false,
+    gesture: WordGesture = WordGesture.Tapped,
 ): Boolean {
     when (pointed) {
         null -> return false
         Pointed.AtParagraph -> onParagraph(paragraph)
         is Pointed.AtSentence -> onSentence(pointed.sentence, paragraph)
-        is Pointed.AtWord -> onWord(pointed.sentence, pointed.word, paragraph, held)
+        is Pointed.AtWord -> onWord(pointed.sentence, pointed.word, paragraph, gesture)
     }
 
     return true

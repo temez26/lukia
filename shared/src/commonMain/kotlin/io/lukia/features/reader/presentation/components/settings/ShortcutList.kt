@@ -13,13 +13,17 @@ import androidx.compose.ui.unit.Dp
 import io.lukia.shared.presentation.theme.Space
 
 /**
- * What the keys do.
+ * What the keys do, and the one thing the mouse does that nothing else says.
  *
  * Shortcuts nobody can find are shortcuts nobody has. The bar's own controls
  * carry theirs in a tooltip, but turning pages has no button to hang one off -
  * and this is the panel a reader opens when they want to know how the reader
  * works. Only in the wide layout, since only the windows with room for it have
  * keyboards.
+ *
+ * Which is also why the second mouse button is listed here among the keys rather
+ * than beside the gesture settings: it does what a press and hold does, and it
+ * exists for the machines that have no finger to hold anything with.
  */
 @Composable
 internal fun ShortcutList(reflowable: Boolean, inset: Dp) {
@@ -33,6 +37,7 @@ internal fun ShortcutList(reflowable: Boolean, inset: Dp) {
         (if (reflowable) "Larger, smaller" else "Wider, narrower") to "+  −  0",
         "Contents, settings" to "C  T",
         "Close book" to "Esc",
+        "More about a word" to "Two-finger press",
     )
 
     shortcuts.forEach { (action, keys) ->
