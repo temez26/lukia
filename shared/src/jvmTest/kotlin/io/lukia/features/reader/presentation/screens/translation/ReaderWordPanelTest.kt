@@ -1,5 +1,8 @@
 package io.lukia.features.reader.presentation.screens.translation
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
@@ -26,7 +29,7 @@ class ReaderWordPanelTest {
 
     @Test
     fun theWordAndEverySenseOfItAreShown() = runComposeUiTest {
-        setReader(wordInquiry = inquiry())
+        setReader(wordInquiry = { inquiry() })
 
         onNodeWithText("whale").assertExists()
         onNodeWithText("valas").assertExists()
@@ -35,7 +38,7 @@ class ReaderWordPanelTest {
 
     @Test
     fun theChosenSiteIsOfferedByName() = runComposeUiTest {
-        setReader(wordInquiry = inquiry())
+        setReader(wordInquiry = { inquiry() })
 
         onNodeWithText("Open in Google").assertExists()
     }
@@ -46,7 +49,7 @@ class ReaderWordPanelTest {
      */
     @Test
     fun aSiteWithNowhereToOpenIsNotOffered() = runComposeUiTest {
-        setReader(wordInquiry = inquiry(site = null))
+        setReader(wordInquiry = { inquiry(site = null) })
 
         onNodeWithText("Open in", substring = true).assertDoesNotExist()
     }
@@ -58,14 +61,14 @@ class ReaderWordPanelTest {
      */
     @Test
     fun theBooksOwnWordIsOneOfTheThingsOffered() = runComposeUiTest {
-        setReader(wordInquiry = inquiry())
+        setReader(wordInquiry = { inquiry() })
 
         onNodeWithText("Show the original").assertExists()
     }
 
     @Test
     fun aWordAlreadyBackToTheBooksIsOfferedItsTranslation() = runComposeUiTest {
-        setReader(wordInquiry = inquiry(onThePage = WordOnThePage.Original))
+        setReader(wordInquiry = { inquiry(onThePage = WordOnThePage.Original) })
 
         onNodeWithText("Show the translation").assertExists()
     }
@@ -74,9 +77,11 @@ class ReaderWordPanelTest {
     @Test
     fun aWordWithNoEntryStillOffersTheSite() = runComposeUiTest {
         setReader(
-            wordInquiry = inquiry(
-                entry = UiState.Failure(AppError.Unexpected("No dictionary entry for “whale”.")),
-            ),
+            wordInquiry = {
+                inquiry(
+                    entry = UiState.Failure(AppError.Unexpected("No dictionary entry for “whale”.")),
+                )
+            },
         )
 
         onNodeWithText("No dictionary entry", substring = true).assertExists()
@@ -91,9 +96,11 @@ class ReaderWordPanelTest {
     @Test
     fun aWordThatCouldNotBeLookedUpSaysWhyAndOffersAnotherGo() = runComposeUiTest {
         setReader(
-            wordInquiry = inquiry(
-                onThePage = WordOnThePage.Failed("The translation service did not answer."),
-            ),
+            wordInquiry = {
+                inquiry(
+                    onThePage = WordOnThePage.Failed("The translation service did not answer."),
+                )
+            },
         )
 
         onNodeWithText("The translation service did not answer.").assertExists()
@@ -114,10 +121,12 @@ class ReaderWordPanelTest {
         val reason = "No dictionary entry for “whale”."
 
         setReader(
-            wordInquiry = inquiry(
-                entry = UiState.Failure(AppError.Unexpected(reason)),
-                onThePage = WordOnThePage.Failed(reason),
-            ),
+            wordInquiry = {
+                inquiry(
+                    entry = UiState.Failure(AppError.Unexpected(reason)),
+                    onThePage = WordOnThePage.Failed(reason),
+                )
+            },
         )
 
         assertEquals(
@@ -135,9 +144,11 @@ class ReaderWordPanelTest {
     @Test
     fun aDifferentFailureIsStillWorthSaying() = runComposeUiTest {
         setReader(
-            wordInquiry = inquiry(
-                onThePage = WordOnThePage.Failed("Your API key was refused."),
-            ),
+            wordInquiry = {
+                inquiry(
+                    onThePage = WordOnThePage.Failed("Your API key was refused."),
+                )
+            },
         )
 
         onNodeWithText("Your API key was refused.").assertExists()
@@ -152,9 +163,11 @@ class ReaderWordPanelTest {
     @Test
     fun theFormTheEntryWasFoundUnderIsShownWhenItDiffers() = runComposeUiTest {
         setReader(
-            wordInquiry = inquiry(
-                entry = UiState.Success(WordEntry("value", listOf("arvo"))),
-            ),
+            wordInquiry = {
+                inquiry(
+                    entry = UiState.Success(WordEntry("value", listOf("arvo"))),
+                )
+            },
         )
 
         onNodeWithText("Looked up under “value”").assertExists()
@@ -162,9 +175,35 @@ class ReaderWordPanelTest {
 
     @Test
     fun theFormIsNotShownWhenItIsTheWordThatWasHeld() = runComposeUiTest {
-        setReader(wordInquiry = inquiry())
+        setReader(wordInquiry = { inquiry() })
 
         onNodeWithText("Looked up under", substring = true).assertDoesNotExist()
+    }
+
+    /**
+     * The panel leaves with the word still in it.
+     *
+     * Without that it empties the instant the word goes: the surface loses every
+     * line it was sized by, drops to the height of its own padding, and only then
+     * begins to fade - which reads as the box collapsing rather than closing.
+     *
+     * The clock is held so the closing can be looked at halfway through, which is
+     * the only moment this is a question at all.
+     */
+    @Test
+    fun theWordIsStillInThePanelWhileItCloses() = runComposeUiTest {
+        var open by mutableStateOf(true)
+
+        setReader(wordInquiry = { inquiry().takeIf { open } })
+
+        onNodeWithText("whale").assertExists()
+
+        mainClock.autoAdvance = false
+        open = false
+        mainClock.advanceTimeByFrame()
+
+        onNodeWithText("whale").assertExists()
+        onNodeWithText("valas").assertExists()
     }
 
     private fun inquiry(

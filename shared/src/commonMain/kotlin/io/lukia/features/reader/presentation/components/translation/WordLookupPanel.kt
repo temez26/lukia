@@ -12,6 +12,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
@@ -56,15 +60,24 @@ internal fun WordLookupPanel(
 ) {
     val dimens = LocalLukiaDimens.current
 
+    // Held through the closing animation so the panel goes out with the word
+    // still in it - see BookDetailOverlay, which closes the same way.
+    //
+    // Without this the panel empties the instant the word goes and the fade runs
+    // on nothing: the surface loses every line it was sized by, drops to the
+    // height of its own padding, and only then begins to leave. What that reads
+    // as is the box collapsing rather than closing.
+    var lastShown by remember { mutableStateOf<WordInquiry?>(null) }
+
+    if (inquiry != null) lastShown = inquiry
+
+    val shown = inquiry ?: lastShown ?: return
+
     OverlayPanel(
         visible = inquiry != null,
         onDismiss = onDismiss,
         modifier = modifier,
     ) {
-        // Held after it goes, so the panel fades out with the word still in it
-        // rather than emptying first and then fading.
-        val shown = inquiry ?: return@OverlayPanel
-
         Column(
             verticalArrangement = Arrangement.spacedBy(Space.lg),
             modifier = Modifier

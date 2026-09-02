@@ -80,7 +80,11 @@ internal fun ComposeUiTest.setReader(
     onTargetLanguageChange: (TargetLanguage) -> Unit = {},
     translationConfigured: Boolean = false,
     bulkTranslation: BulkTranslation = BulkTranslation.Default,
-    wordInquiry: WordInquiry? = null,
+    /**
+     * Read inside the composition rather than captured, like the translations
+     * above - so a test can take the word away and watch the panel leave.
+     */
+    wordInquiry: () -> WordInquiry? = { null },
     translationNotes: Boolean = true,
     /**
      * How wide the window is, or null for whatever the test host gives - which
@@ -101,7 +105,7 @@ internal fun ComposeUiTest.setReader(
                 targetLanguage = targetLanguage,
                 translationConfigured = translationConfigured,
                 bulkTranslation = bulkTranslation,
-                wordInquiry = wordInquiry,
+                wordInquiry = wordInquiry(),
                 translationNotes = translationNotes,
                 onBack = {},
                 onRetry = {},
