@@ -8,6 +8,7 @@ import io.lukia.features.reader.domain.text.TextSection
 import io.lukia.features.reader.presentation.components.passages.BlockActions
 import io.lukia.features.reader.presentation.components.passages.NoBlockActions
 import io.lukia.features.reader.presentation.components.passages.PassageActions
+import io.lukia.features.reader.presentation.components.passages.WordGesture
 import io.lukia.features.reader.presentation.pagination.PageBlock
 import io.lukia.features.reader.presentation.pagination.TextPage
 import io.lukia.features.translate.domain.MAX_TRANSLATABLE_CHARS
@@ -35,21 +36,22 @@ internal fun rememberPageActions(
     onToggleChrome: () -> Unit,
     onPassageSelected: (PassageSelection) -> Unit,
     onPassageHold: (PassageSelection) -> Unit,
+    onPassageInquiry: (PassageSelection) -> Unit,
     onPassagesRequested: (List<PassageSelection>) -> Unit,
 ): (PageBlock) -> BlockActions {
-    val toggleChrome = rememberUpdatedState(onToggleChrome)
-    val selected = rememberUpdatedState(onPassageSelected)
-    val held = rememberUpdatedState(onPassageHold)
-    val requested = rememberUpdatedState(onPassagesRequested)
+    val answering = PageCallbacks(
+        toggleChrome = rememberUpdatedState(onToggleChrome),
+        selected = rememberUpdatedState(onPassageSelected),
+        held = rememberUpdatedState(onPassageHold),
+        inquiry = rememberUpdatedState(onPassageInquiry),
+        requested = rememberUpdatedState(onPassagesRequested),
+    )
 
     return remember(page, sections) {
         val byBlock = page.blocks.associateWith { pageBlock ->
             pageBlock.passageActions(
                 chapterTitle = sections.getOrNull(pageBlock.sectionIndex)?.title,
-                toggleChrome = toggleChrome,
-                selected = selected,
-                held = held,
-                requested = requested,
+                answering = answering,
             )
         }
 
@@ -57,12 +59,24 @@ internal fun rememberPageActions(
     }
 }
 
+/**
+ * Everywhere a page can send what the reader pointed at.
+ *
+ * One value rather than five arguments because they always travel together and
+ * always come from the same place. Each is read through [rememberUpdatedState],
+ * so remembering these does not pin the reader of a moment ago.
+ */
+private class PageCallbacks(
+    val toggleChrome: State<() -> Unit>,
+    val selected: State<(PassageSelection) -> Unit>,
+    val held: State<(PassageSelection) -> Unit>,
+    val inquiry: State<(PassageSelection) -> Unit>,
+    val requested: State<(List<PassageSelection>) -> Unit>,
+)
+
 private fun PageBlock.passageActions(
     chapterTitle: String?,
-    toggleChrome: State<() -> Unit>,
-    selected: State<(PassageSelection) -> Unit>,
-    held: State<(PassageSelection) -> Unit>,
-    requested: State<(List<PassageSelection>) -> Unit>,
+    answering: PageCallbacks,
 ): BlockActions {
     fun sentenceOf(sentence: Sentence, paragraph: String) = selection(
         chapterTitle = chapterTitle,
@@ -73,7 +87,7 @@ private fun PageBlock.passageActions(
     )
 
     return PassageActions(
-        onSentence = { _, sentence, paragraph -> selected.value(sentenceOf(sentence, paragraph)) },
+        onSentence = { _, sentence, paragraph -> answering.selected.value(sentenceOf(sentence, paragraph)) },
 
         // A word travels with the paragraph around it, exactly as a sentence
         // does. On its own it is a dictionary entry; what makes it a reading is
@@ -81,8 +95,9 @@ private fun PageBlock.passageActions(
         //
         // A held word goes to whoever can tell whether it has been answered
         // already, which is what decides between asking about it and opening
-        // what else it means - see ReaderViewModel.onPassageHold.
-        onWord = { _, sentence, word, paragraph, wasHeld ->
+        // what else it means - see ReaderViewModel.onPassageHold. A questioned
+        // one is asking what it means whatever has become of it.
+        onWord = { _, sentence, word, paragraph, gesture ->
             val selection = selection(
                 chapterTitle = chapterTitle,
                 sentenceIndex = sentence.index,
@@ -92,13 +107,17 @@ private fun PageBlock.passageActions(
                 wordIndex = word.index,
             )
 
-            if (wasHeld) held.value(selection) else selected.value(selection)
+            when (gesture) {
+                WordGesture.Tapped -> answering.selected.value(selection)
+                WordGesture.Held -> answering.held.value(selection)
+                WordGesture.Questioned -> answering.inquiry.value(selection)
+            }
         },
 
         // A paragraph is its own context, so it travels without one: there is
         // nothing around it left to send that is not already in it.
         onParagraph = { _, paragraph ->
-            selected.value(
+            answering.selected.value(
                 selection(
                     chapterTitle = chapterTitle,
                     sentenceIndex = null,
@@ -112,10 +131,10 @@ private fun PageBlock.passageActions(
         // A screenful, asked for as the paragraphs it is made of rather than as
         // every sentence in them - see bulkPassages.
         onBlock = { _, sentences, paragraph ->
-            requested.value(bulkPassages(chapterTitle, sentences, paragraph))
+            answering.requested.value(bulkPassages(chapterTitle, sentences, paragraph))
         },
 
-        onElsewhere = { toggleChrome.value() },
+        onElsewhere = { answering.toggleChrome.value() },
     ).forBlock(blockIndex)
 }
 

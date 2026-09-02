@@ -1,0 +1,55 @@
+-- Wiki pages already read, so that one word is fetched once however often it is
+-- asked about.
+--
+-- Behind both dictionary answers - the line that goes over a word in the book
+-- and the whole entry the reader opens - and behind following an inflected word
+-- to the word it is a form of, which is a second page for every one of them. A
+-- reader who opens the same word's panel twice was making the same two requests
+-- twice, and Wikimedia rate-limits a client that asks too often.
+--
+-- `extract` is null where the wiki has no page under that title, which is an
+-- answer worth remembering rather than a failure: a word missing from a reader's
+-- own wiki is looked up on the English one every single time otherwise, so the
+-- miss costs two requests and not one.
+--
+-- Keyed by the wiki as well as the title because they are different pages. The
+-- Finnish Wiktionary's `skill` is written in Finnish and the English one's is
+-- not, and a cache that forgot which it read would hand a Finnish reader an
+-- English definition.
+--
+-- `usedAt` counts uses rather than telling the time, exactly as
+-- `translation_cache` does - see `TranslationCache.sq` for why.
+CREATE TABLE wiktionary_page (
+    wiki TEXT NOT NULL,
+    title TEXT NOT NULL,
+    extract TEXT,
+    usedAt INTEGER NOT NULL,
+    PRIMARY KEY (wiki, title)
+);
+
+-- What trimming orders by. Without it, every trim is a scan of the whole table.
+CREATE INDEX wiktionary_page_usedAt ON wiktionary_page(usedAt);
+
+selectPage:
+SELECT extract FROM wiktionary_page WHERE wiki = ? AND title = ?;
+
+put:
+INSERT OR REPLACE INTO wiktionary_page(wiki, title, extract, usedAt)
+VALUES (?, ?, ?, (SELECT COALESCE(MAX(usedAt), 0) + 1 FROM wiktionary_page));
+
+touch:
+UPDATE wiktionary_page
+SET usedAt = (SELECT COALESCE(MAX(usedAt), 0) + 1 FROM wiktionary_page)
+WHERE wiki = ? AND title = ?;
+
+count:
+SELECT count(*) FROM wiktionary_page;
+
+trimLeastRecentlyUsed:
+DELETE FROM wiktionary_page
+WHERE rowid IN (
+    SELECT rowid FROM wiktionary_page ORDER BY usedAt LIMIT :count
+);
+
+clear:
+DELETE FROM wiktionary_page;

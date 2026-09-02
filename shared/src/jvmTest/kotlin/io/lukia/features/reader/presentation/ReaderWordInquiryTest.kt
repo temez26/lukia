@@ -4,6 +4,7 @@ import io.lukia.core.domain.AppError
 import io.lukia.core.domain.AppErrorException
 import io.lukia.features.reader.presentation.translation.WordOnThePage
 import io.lukia.features.reader.presentation.translation.onPassageHold
+import io.lukia.features.reader.presentation.translation.onPassageInquiry
 import io.lukia.features.reader.presentation.translation.onPassageSelected
 import io.lukia.features.reader.presentation.translation.translations
 import io.lukia.features.reader.presentation.translation.wordInquiry
@@ -88,6 +89,43 @@ class ReaderWordInquiryTest : ReaderViewModelTestCase() {
         viewModel.translations.first { it[word.anchor] is PassageTranslation.Ready }
 
         assertNull(viewModel.wordInquiry.value, "an untouched word opened a panel")
+    }
+
+    /**
+     * And the gesture that asks outright opens the same panel on that same
+     * untouched word, which is the difference between the two.
+     *
+     * The bug this was reported for: a reader on a laptop pressed two fingers on
+     * an ordinary word and nothing happened, because a hold's first job is
+     * translating and nothing had become of that word yet. This gesture has no
+     * setting behind it and one job.
+     */
+    @Test
+    fun aQuestionedWordOpensWhateverHasBecomeOfIt() = runTest {
+        val viewModel = readerWith(AnsweringTranslator)
+
+        viewModel.onPassageInquiry(word)
+
+        val inquiry = assertNotNull(viewModel.wordInquiry.value, "the question opened nothing")
+
+        assertEquals("Ishmael", inquiry.word)
+        assertEquals(WordOnThePage.Untouched, inquiry.onThePage)
+    }
+
+    /** And on one that has been translated, it says so, as a hold would. */
+    @Test
+    fun aQuestionedWordThatIsTranslatedSaysSo() = runTest {
+        val viewModel = readerWith(AnsweringTranslator)
+
+        viewModel.onPassageSelected(word)
+        viewModel.translations.first { it[word.anchor] is PassageTranslation.Ready }
+
+        viewModel.onPassageInquiry(word)
+
+        assertEquals(
+            WordOnThePage.Translated,
+            assertNotNull(viewModel.wordInquiry.value).onThePage,
+        )
     }
 
     private suspend fun readerWith(translator: Translator): ReaderViewModel {

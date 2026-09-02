@@ -39,13 +39,20 @@ class LookUpWordUseCase(
  * The entry with nothing empty in it, or a failure when that leaves nothing at
  * all - a dictionary that answered with blank lines has failed without saying
  * so, the same reasoning as a translation that came back blank.
+ *
+ * A word with no senses and a form is not nothing. What the reader held is an
+ * inflection of a word the dictionary has no page for, and saying which
+ * inflection is the whole of what this panel can offer them - see
+ * [WordEntry.form].
  */
 private fun WordEntry.withRealSenses(): Result<WordEntry> {
-    val real = senses.map { it.trim() }.filter { it.isNotEmpty() }
+    val real = meanings
+        .map { meaning -> meaning.copy(senses = meaning.senses.map { it.trim() }.filter { it.isNotEmpty() }) }
+        .filter { it.senses.isNotEmpty() }
 
-    if (real.isEmpty()) {
+    if (real.isEmpty() && form.isNullOrBlank()) {
         return AppError.Unexpected("No dictionary entry for “$word”.").asFailure()
     }
 
-    return Result.success(copy(senses = real))
+    return Result.success(copy(meanings = real))
 }

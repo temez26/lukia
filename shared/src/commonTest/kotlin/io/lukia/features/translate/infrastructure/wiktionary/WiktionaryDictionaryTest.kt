@@ -1,23 +1,9 @@
 package io.lukia.features.translate.infrastructure.wiktionary
 
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.mock.MockEngine
-import io.ktor.client.engine.mock.respond
-import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.request.HttpRequestData
-import io.ktor.http.ContentType
-import io.ktor.http.headersOf
-import io.ktor.serialization.kotlinx.json.json
 import io.lukia.core.domain.AppError
-import io.lukia.core.domain.storage.FakeSecretStore
-import io.lukia.core.domain.storage.FakeSettingsStore
 import io.lukia.core.domain.toAppError
 import io.lukia.features.translate.domain.settings.TargetLanguage
-import io.lukia.features.translate.domain.settings.TranslationSettings
-import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -27,15 +13,17 @@ import kotlin.test.assertTrue
  *
  * The same pages [WiktionaryTranslator] reads and a different amount of them,
  * which is the only thing separating the two - so what is worth holding here is
- * that the entry is not cut to the three senses the reader sees in the book.
+ * that the entry is not cut to what a paragraph can carry: every sense, every
+ * part of speech the word has, and the words the page lists beside them.
+ *
+ * Which word an entry is followed to is [WiktionaryFormsTest]'s.
  */
 class WiktionaryDictionaryTest {
 
-    private val json = Json { ignoreUnknownKeys = true }
-
     @Test
     fun everySenseTheEntryHasComesBack() = runTest {
-        val entry = dictionary(answers(MANY_SENSES)).define("set", TargetLanguage.Finnish)
+        val entry = wiktionaryDictionary(respondingWith(MANY_SENSES))
+            .define("set", TargetLanguage.Finnish)
 
         assertEquals(
             listOf("asettaa", "laittaa", "sarja", "joukko", "kiinteä"),
@@ -46,144 +34,132 @@ class WiktionaryDictionaryTest {
     /** More than the three a word in a paragraph can carry - see WiktionaryTranslator. */
     @Test
     fun theEntryIsNotCutToWhatFitsOverAWord() = runTest {
-        val entry = dictionary(answers(MANY_SENSES)).define("set", TargetLanguage.Finnish)
+        val entry = wiktionaryDictionary(respondingWith(MANY_SENSES))
+            .define("set", TargetLanguage.Finnish)
 
         assertTrue(entry.senses.size > 3, "the entry was cut to ${entry.senses.size} senses")
     }
 
     @Test
     fun theWordItIsAboutComesBackWithIt() = runTest {
-        val entry = dictionary(answers(MANY_SENSES)).define("  set  ", TargetLanguage.Finnish)
+        val entry = wiktionaryDictionary(respondingWith(MANY_SENSES))
+            .define("  set  ", TargetLanguage.Finnish)
 
         assertEquals("set", entry.word)
     }
 
     /**
-     * The case that made the dictionary useless on real prose. A book is written
-     * in inflected words, and the Finnish Wiktionary's page for `values` is not a
-     * definition at all - it says `monikkomuoto sanasta value`, which tells
-     * somebody who wanted `arvo` only that they have more looking up to do.
+     * The bug that made the dictionary look broken on perfectly ordinary words.
+     *
+     * A Wiktionary title is case sensitive in a way a Wikipedia title is not:
+     * `talo` has a page and `Talo` has the proper noun's or none at all. So every
+     * word that happened to open a sentence came back as a word no dictionary had
+     * ever heard of, while the entry sat there under the same letters in lower
+     * case.
      */
     @Test
-    fun aPageThatOnlySaysWhichWordThisIsAFormOfFollowsToThatWord() = runTest {
+    fun aWordThatOpenedASentenceIsLookedUpInLowerCaseToo() = runTest {
         val asked = mutableListOf<String>()
-        val dictionary = dictionary(
-            answering { request ->
-                asked += request.url.parameters["titles"].orEmpty()
+        val dictionary = wiktionaryDictionary(
+            responding { request ->
+                val title = request.url.parameters["titles"].orEmpty()
+                asked += title
 
-                if (request.url.parameters["titles"] == "values") FORM_OF else VALUE_ENTRY
+                if (title == "talo") TALO_ENTRY else MISSING_PAGE
             },
         )
 
-        val entry = dictionary.define("values", TargetLanguage.Finnish)
+        val entry = dictionary.define("Talo", TargetLanguage.Finnish)
 
-        assertEquals(listOf("arvo", "hinta"), entry.senses)
-        assertEquals(listOf("values", "value"), asked)
-    }
-
-    /** And it says which word it answered under, since that is not the one asked. */
-    @Test
-    fun theWordItAnsweredUnderComesBackWithIt() = runTest {
-        val dictionary = dictionary(
-            answering { request ->
-                if (request.url.parameters["titles"] == "values") FORM_OF else VALUE_ENTRY
-            },
-        )
-
-        assertEquals("value", dictionary.define("values", TargetLanguage.Finnish).word)
+        assertEquals(listOf("asuinrakennus"), entry.senses)
+        assertEquals(listOf("Talo", "talo"), asked)
     }
 
     /**
-     * Followed once and no further, and only when there is something at the other
-     * end: a base form with no entry of its own leaves the word's own page
-     * standing, which is a poor answer and better than none.
+     * A word is not one word. `mean` is an adjective that is `ilkeä`, a noun that
+     * is `keskiarvo` and a verb that is `tarkoittaa`, and which one a sentence
+     * meant is settled by the sentence - so an entry that keeps one of them has
+     * thrown the answer away two times in three.
      */
     @Test
-    fun aBaseFormWithNoEntryLeavesWhatTheWordsOwnPageSaid() = runTest {
-        val dictionary = dictionary(
-            answering { request ->
-                if (request.url.parameters["titles"] == "values") FORM_OF else MISSING_PAGE
-            },
+    fun everyPartOfSpeechTheWordHasComesBack() = runTest {
+        val entry = wiktionaryDictionary(respondingWith(MEAN_ENTRY))
+            .define("mean", TargetLanguage.Finnish)
+
+        assertEquals(
+            listOf("Adjektiivi", "Substantiivi", "Verbi"),
+            entry.meanings.map { it.partOfSpeech },
         )
+    }
 
-        val entry = dictionary.define("values", TargetLanguage.Finnish)
+    @Test
+    fun eachPartOfSpeechKeepsItsOwnSenses() = runTest {
+        val entry = wiktionaryDictionary(respondingWith(MEAN_ENTRY))
+            .define("mean", TargetLanguage.Finnish)
 
-        assertEquals("values", entry.word)
-        assertEquals(listOf("monikkomuoto sanasta value"), entry.senses)
+        assertEquals(listOf("tarkoittaa, merkitä"), entry.meanings.last().senses)
     }
 
     /**
-     * A definition is not a pointer. Following the last word of every two-word
-     * sense would send a reader from `value` to `hinta`.
+     * The next language along is a different word that happens to be spelled the
+     * same, and its senses are not this word's.
      */
     @Test
-    fun anEntryThatDefinesTheWordIsNotFollowedAnywhere() = runTest {
-        val asked = mutableListOf<String>()
-        val dictionary = dictionary(
-            answering { request ->
-                asked += request.url.parameters["titles"].orEmpty()
-                VALUE_ENTRY
+    fun anotherLanguagesPartOfSpeechIsNotOneOfThem() = runTest {
+        val entry = wiktionaryDictionary(respondingWith(MEAN_ENTRY))
+            .define("mean", TargetLanguage.Finnish)
+
+        assertTrue(entry.senses.none { it.contains("mear") }, entry.senses.toString())
+    }
+
+    /**
+     * The English Wiktionary opens an entry with how the word sounds, and read as
+     * a definition that is what ends up over the word in the book.
+     */
+    @Test
+    fun aPronunciationIsNotWhatTheWordMeans() = runTest {
+        val dictionary = wiktionaryDictionary(
+            responding { request ->
+                if (request.url.parameters["titles"] == "skills") PLURAL_OF else SKILL_ENTRY
             },
         )
 
-        assertEquals("value", dictionary.define("value", TargetLanguage.Finnish).word)
-        assertEquals(listOf("value"), asked)
+        val entry = dictionary.define("skills", TargetLanguage.Finnish)
+
+        assertTrue(entry.senses.none { it.contains("IPA") }, entry.senses.toString())
+    }
+
+    /**
+     * And the words the entry lists beside its senses, which are what somebody
+     * learning the language looks up next.
+     */
+    @Test
+    fun theWordsListedBesideTheEntryComeBack() = runTest {
+        val entry = wiktionaryDictionary(respondingWith(SKILL_ENTRY))
+            .define("skill", TargetLanguage.Finnish)
+
+        assertEquals(listOf("talent", "skilled", "motor skill"), entry.related)
+    }
+
+    /** The next language's section is beside this entry rather than part of it. */
+    @Test
+    fun anotherLanguagesSectionIsNotListedAsRelated() = runTest {
+        val entry = wiktionaryDictionary(respondingWith(SKILL_ENTRY))
+            .define("skill", TargetLanguage.Finnish)
+
+        assertTrue(entry.related.none { it == "adresse" }, entry.related.toString())
     }
 
     @Test
     fun aWordInNoDictionaryAtAllSaysSo() = runTest {
         val failure = runCatching {
-            dictionary(answers(MISSING_PAGE)).define("set", TargetLanguage.English)
+            wiktionaryDictionary(respondingWith(MISSING_PAGE))
+                .define("set", TargetLanguage.English)
         }.exceptionOrNull()?.toAppError() as? AppError.Unexpected
 
         assertTrue(
             failure?.cause.orEmpty().contains("No dictionary entry"),
             failure?.cause.orEmpty(),
         )
-    }
-
-    private fun dictionary(engine: MockEngine): WiktionaryDictionary {
-        val settings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()).apply {
-            update(TranslationSettings(targetLanguage = TargetLanguage.Finnish))
-        }
-
-        val client = HttpClient(engine) {
-            expectSuccess = false
-            install(ContentNegotiation) { json(json) }
-            install(HttpTimeout)
-        }
-
-        return WiktionaryDictionary(WiktionaryPages(client, settings, json))
-    }
-
-    private fun answers(body: String) = answering { body }
-
-    private fun answering(body: (HttpRequestData) -> String) = MockEngine { request ->
-        respond(
-            content = body(request),
-            headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
-        )
-    }
-
-    private companion object {
-
-        /** One language's section with more senses than fit over a word. */
-        const val MANY_SENSES = """
-            {"query": {"pages": [{"title": "set", "extract":
-            "== Englanti ==\n=== Verbi ===\nasettaa\nlaittaa\nsarja\njoukko\nkiinteä\n"}]}}
-        """
-
-        const val MISSING_PAGE = """{"query": {"pages": [{"title": "set", "missing": true}]}}"""
-
-        /** A page that is only a pointer, as a wiki really writes one. */
-        const val FORM_OF = """
-            {"query": {"pages": [{"title": "values", "extract":
-            "== Englanti ==\n=== Substantiivi ===\nmonikkomuoto sanasta value\n"}]}}
-        """
-
-        const val VALUE_ENTRY = """
-            {"query": {"pages": [{"title": "value", "extract":
-            "== Englanti ==\n=== Substantiivi ===\narvo\nhinta\n"}]}}
-        """
     }
 }

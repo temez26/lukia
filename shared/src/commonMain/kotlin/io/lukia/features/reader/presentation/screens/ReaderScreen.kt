@@ -10,6 +10,7 @@ import io.lukia.features.reader.presentation.components.chrome.readerToolbarHeig
 import io.lukia.features.reader.presentation.translation.bulkTranslation
 import io.lukia.features.reader.presentation.translation.onInquiredWordActioned
 import io.lukia.features.reader.presentation.translation.onPassageHold
+import io.lukia.features.reader.presentation.translation.onPassageInquiry
 import io.lukia.features.reader.presentation.translation.onPassageSelected
 import io.lukia.features.reader.presentation.translation.onPassagesRequested
 import io.lukia.features.reader.presentation.translation.onTranslateOnScreen
@@ -64,10 +65,6 @@ fun ReaderScreen(
     val bulkTranslation by viewModel.bulkTranslation.collectAsState()
     val wordInquiry by viewModel.wordInquiry.collectAsState()
     val translationNotes by viewModel.translationNotes.collectAsState()
-    val pdfLayout by viewModel.pdfLayout.collectAsState()
-    val layoutOffered by viewModel.layoutOffered.collectAsState()
-    val textExtraction by viewModel.textExtraction.collectAsState()
-    val noTextLayer by viewModel.noTextLayer.collectAsState()
 
     ReaderContent(
         uiState = uiState,
@@ -83,20 +80,14 @@ fun ReaderScreen(
         bulkTranslation = bulkTranslation,
         wordInquiry = wordInquiry,
         translationNotes = translationNotes,
-        layout = ReaderLayoutUi(
-            layout = pdfLayout,
-            offered = layoutOffered,
-            converting = textExtraction,
-            noTextLayer = noTextLayer,
-            onLayoutChange = viewModel::setPdfLayout,
-            onNoticeDismiss = viewModel::dismissNoTextLayerNotice,
-        ),
+        layout = readerLayout(viewModel),
         onBack = onBack,
         onRetry = viewModel::retry,
         onSettingsChange = viewModel::updateSettings,
         onPageSettled = viewModel::onPageSettled,
         onPassageSelected = viewModel::onPassageSelected,
         onPassageHold = viewModel::onPassageHold,
+        onPassageInquiry = viewModel::onPassageInquiry,
         onPassagesRequested = viewModel::onPassagesRequested,
         onWordInquiryDismiss = viewModel::onWordInquiryDismissed,
         onInquiredWordAction = viewModel::onInquiredWordActioned,
@@ -108,5 +99,30 @@ fun ReaderScreen(
         onTranslationNotesChange = viewModel::setTranslationNotes,
         sentencesOnPage = viewModel::sentencesOn,
         renderPage = viewModel::page,
+    )
+}
+
+/**
+ * How this book is being laid out, and what became of asking for it as text.
+ *
+ * Gathered here rather than beside the twenty other things the screen collects,
+ * because all six of them are about one question and only [ReaderLayoutUi] ever
+ * asks it - so reading them where the screen reads everything else buries what
+ * the screen is doing.
+ */
+@Composable
+private fun readerLayout(viewModel: ReaderViewModel): ReaderLayoutUi {
+    val pdfLayout by viewModel.pdfLayout.collectAsState()
+    val layoutOffered by viewModel.layoutOffered.collectAsState()
+    val textExtraction by viewModel.textExtraction.collectAsState()
+    val noTextLayer by viewModel.noTextLayer.collectAsState()
+
+    return ReaderLayoutUi(
+        layout = pdfLayout,
+        offered = layoutOffered,
+        converting = textExtraction,
+        noTextLayer = noTextLayer,
+        onLayoutChange = viewModel::setPdfLayout,
+        onNoticeDismiss = viewModel::dismissNoTextLayerNotice,
     )
 }

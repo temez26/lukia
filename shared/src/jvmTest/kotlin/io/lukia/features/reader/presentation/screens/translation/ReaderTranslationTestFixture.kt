@@ -15,7 +15,9 @@ import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.rightClick
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.document.BookMetadata
@@ -63,6 +65,10 @@ internal fun SemanticsNodeInteraction.clickFirstWords() =
 internal fun SemanticsNodeInteraction.doubleClickFirstWords() =
     performTouchInput { doubleClick(Offset(4f, 4f)) }
 
+/** The second mouse button, which is two fingers on a laptop's trackpad. */
+internal fun SemanticsNodeInteraction.secondButtonOnFirstWords() =
+    performMouseInput { rightClick(Offset(4f, 4f)) }
+
 /**
  * The translations are read inside the composition rather than captured, so
  * a test can change them and watch the paragraph follow - which is what
@@ -72,6 +78,7 @@ internal fun ComposeUiTest.setReader(
     translations: () -> Map<TextAnchor, PassageTranslation> = { emptyMap() },
     onPassageSelected: (PassageSelection) -> Unit = {},
     onPassageHold: (PassageSelection) -> Unit = {},
+    onPassageInquiry: (PassageSelection) -> Unit = {},
     onPassagesRequested: (List<PassageSelection>) -> Unit = {},
     translateOnScreen: () -> TranslateOnScreen = { TranslateOnScreen.Idle },
     gestures: TranslationGestures = TranslationGestures.Default,
@@ -112,6 +119,7 @@ internal fun ComposeUiTest.setReader(
                 onSettingsChange = {},
                 onPassageSelected = onPassageSelected,
                 onPassageHold = onPassageHold,
+                onPassageInquiry = onPassageInquiry,
                 onPassagesRequested = onPassagesRequested,
                 onTargetLanguageChange = onTargetLanguageChange,
                 onTranslationGesturesChange = onTranslationGesturesChange,

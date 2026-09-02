@@ -7,10 +7,14 @@
 -- every sentence they had already looked at.
 --
 -- `cacheKey` is a hash of everything that decides the answer - the passage, the
--- language wanted, the book around it, and which model was asked. See
--- `translationCacheKey`. A hash rather than the text itself because the text
--- includes the paragraph the passage sits in, which would make this table an
--- expensive second copy of the books it is about.
+-- language wanted, which model was asked, and the book around it where that
+-- model reads the book at all. See `translationCacheKey`. A dictionary and
+-- Google are handed the word and nothing else, so their rows are not filed under
+-- a book and one lookup answers every book on the shelf.
+--
+-- A hash rather than the text itself because the text can include the paragraph
+-- the passage sits in, which would make this table an expensive second copy of
+-- the books it is about.
 --
 -- `usedAt` counts uses rather than telling the time: it is one past the highest
 -- in the table, stamped whenever an entry is written or read back. That makes

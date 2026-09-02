@@ -6,7 +6,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -21,10 +20,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -43,6 +40,7 @@ import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.controls.ReadingProgressOverlay
 import io.lukia.shared.presentation.components.controls.focusRing
 import io.lukia.shared.presentation.components.controls.hoverLift
+import io.lukia.shared.presentation.components.controls.menuGesture
 import io.lukia.shared.presentation.components.controls.rememberHoverFraction
 import io.lukia.shared.presentation.components.cover.BookCover
 import io.lukia.shared.presentation.components.cover.FavoriteBadge
@@ -251,36 +249,28 @@ private fun Modifier.bookCardGestures(
     revealIndex: Int,
     onClick: () -> Unit,
     onMenuRequest: () -> Unit,
-): Modifier {
-    val haptics = LocalHapticFeedback.current
-
-    return this
-        // Raised above its neighbours while it is lifted, so the deepened shadow
-        // is not painted over by the next cell in the row.
-        .zIndex(if (hover > 0f) 1f else 0f)
-        .launchReveal(reveal, index = revealIndex)
-        .hoverLift(
-            interactionSource = interactionSource,
-            fraction = hover,
-            lift = 4.dp,
-            hoveredScale = 1.03f,
-            pressedScale = 0.97f,
-        )
-        .pointerHoverIcon(PointerIcon.Hand)
-        .combinedClickable(
-            interactionSource = interactionSource,
-            indication = null,
-            onClick = onClick,
-            onLongClickLabel = "Book actions",
-            onLongClick = {
-                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                onMenuRequest()
-            },
-        )
-        // Leaves the cover's shadow somewhere to fall inside the cell rather
-        // than straight onto the neighbouring one.
-        .padding(Space.xs)
-}
+): Modifier = this
+    // Raised above its neighbours while it is lifted, so the deepened shadow
+    // is not painted over by the next cell in the row.
+    .zIndex(if (hover > 0f) 1f else 0f)
+    .launchReveal(reveal, index = revealIndex)
+    .hoverLift(
+        interactionSource = interactionSource,
+        fraction = hover,
+        lift = 4.dp,
+        hoveredScale = 1.03f,
+        pressedScale = 0.97f,
+    )
+    .pointerHoverIcon(PointerIcon.Hand)
+    .menuGesture(
+        interactionSource = interactionSource,
+        onClick = onClick,
+        onMenu = onMenuRequest,
+        menuLabel = "Book actions",
+    )
+    // Leaves the cover's shadow somewhere to fall inside the cell rather
+    // than straight onto the neighbouring one.
+    .padding(Space.xs)
 
 /**
  * What is written under the cover: the title, what kind of file it is and how

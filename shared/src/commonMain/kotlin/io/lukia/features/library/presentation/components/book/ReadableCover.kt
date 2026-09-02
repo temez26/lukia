@@ -3,7 +3,6 @@ package io.lukia.features.library.presentation.components.book
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
@@ -22,10 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -33,6 +30,7 @@ import androidx.compose.ui.unit.Dp
 import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.shared.presentation.components.controls.ReadingProgressOverlay
 import io.lukia.shared.presentation.components.controls.focusRing
+import io.lukia.shared.presentation.components.controls.menuGesture
 import io.lukia.shared.presentation.components.controls.rememberHoverFraction
 import io.lukia.shared.presentation.components.cover.BookCover
 import io.lukia.shared.presentation.components.cover.CoverArtSource
@@ -82,7 +80,6 @@ internal fun ReadableCover(
     width: Dp,
     modifier: Modifier = Modifier,
 ) {
-    val haptics = LocalHapticFeedback.current
     val interactionSource = remember { MutableInteractionSource() }
     val hover = rememberHoverFraction(interactionSource)
     val focused by interactionSource.collectIsFocusedAsState()
@@ -103,18 +100,14 @@ internal fun ReadableCover(
         modifier = modifier
             .width(width)
             .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default)
-            .combinedClickable(
+            .menuGesture(
                 interactionSource = interactionSource,
-                indication = null,
+                onClick = onRead,
+                onMenu = onLongPress,
+                menuLabel = "Book actions",
+                clickLabel = "Read $title",
                 enabled = enabled,
                 role = Role.Button,
-                onClickLabel = "Read $title",
-                onClick = onRead,
-                onLongClickLabel = "Book actions",
-                onLongClick = {
-                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onLongPress()
-                },
             )
             .focusRing(interactionSource, shape)
             .semantics { contentDescription = title },

@@ -1,7 +1,6 @@
 package io.lukia.features.library.presentation.components.book
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,6 +36,7 @@ import io.lukia.features.library.presentation.model.LibraryBook
 import io.lukia.shared.presentation.components.controls.ReadingProgressBar
 import io.lukia.shared.presentation.components.controls.focusRing
 import io.lukia.shared.presentation.components.controls.hoverHighlight
+import io.lukia.shared.presentation.components.controls.menuGesture
 import io.lukia.shared.presentation.components.cover.BookCover
 import io.lukia.shared.presentation.components.cover.FavoriteBadge
 import io.lukia.shared.presentation.components.surface.StatusBadge
@@ -96,12 +96,11 @@ internal fun BookRow(
             .hoverHighlight(interactionSource, shape)
             .focusRing(interactionSource, shape)
             .pointerHoverIcon(PointerIcon.Hand)
-            .combinedClickable(
+            .menuGesture(
                 interactionSource = interactionSource,
-                indication = null,
                 onClick = selection?.onToggle ?: onClick,
-                onLongClickLabel = longClickLabel,
-                onLongClick = selection?.onToggle ?: onMenuRequest,
+                onMenu = selection?.onToggle ?: onMenuRequest,
+                menuLabel = longClickLabel,
             )
             .padding(Space.sm),
     ) {

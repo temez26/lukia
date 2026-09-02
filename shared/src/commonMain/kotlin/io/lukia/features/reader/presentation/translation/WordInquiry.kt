@@ -45,6 +45,18 @@ data class WordInquiry(
 @Immutable
 sealed interface WordOnThePage {
 
+    /**
+     * Nothing has happened to it: the book's own word is there because nobody
+     * has asked about it yet.
+     *
+     * Reached only by the gesture that asks what a word means outright - the
+     * second mouse button, two fingers on a trackpad - which is a question about
+     * the word rather than a request to translate the page. A hold cannot arrive
+     * here: its first job is translating, and it opens this panel only once that
+     * has happened.
+     */
+    data object Untouched : WordOnThePage
+
     /** The translation is standing where the word was. */
     data object Translated : WordOnThePage
 

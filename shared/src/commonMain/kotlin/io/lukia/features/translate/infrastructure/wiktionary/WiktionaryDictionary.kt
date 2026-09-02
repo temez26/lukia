@@ -34,12 +34,22 @@ internal class WiktionaryDictionary(
     private val pages: WiktionaryPages,
 ) : WordDictionary {
 
+    /**
+     * An entry that says only what form the word is has still answered, which is
+     * why nothing here asks for a sense.
+     *
+     * That is the one thing the panel exists to show and the one thing that
+     * cannot go over a word in the book - see
+     * [io.lukia.features.translate.domain.lookup.WordEntry.form]. Refusing it
+     * here would leave the reader holding a word to be told twice that it could
+     * not be translated, with the answer thrown away in between.
+     */
     override suspend fun define(word: String, targetLanguage: TargetLanguage): WordEntry {
         val term = word.trim()
 
         val entry = pages.entryFor(term, targetLanguage, MAX_SENSES)
 
-        if (entry == null || entry.senses.isEmpty()) {
+        if (entry == null || (entry.hasNoMeaning && entry.form == null)) {
             throw AppErrorException(AppError.Unexpected("No dictionary entry for “$term”."))
         }
 

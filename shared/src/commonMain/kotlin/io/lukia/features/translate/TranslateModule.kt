@@ -2,6 +2,7 @@ package io.lukia.features.translate
 
 import io.lukia.features.translate.application.LookUpWordUseCase
 import io.lukia.features.translate.application.TranslatePassageUseCase
+import io.lukia.features.translate.domain.CacheIdentity
 import io.lukia.features.translate.domain.TranslationCache
 import io.lukia.features.translate.domain.Translator
 import io.lukia.features.translate.domain.lookup.WordDictionary
@@ -20,7 +21,9 @@ import io.lukia.features.translate.infrastructure.openai.OpenAiModelCatalogue
 import io.lukia.features.translate.infrastructure.openai.OpenAiModelWarmUp
 import io.lukia.features.translate.infrastructure.openai.OpenAiTranslator
 import io.lukia.features.translate.infrastructure.translationHttpClient
+import io.lukia.features.translate.infrastructure.wiktionary.SqlWiktionaryPageCache
 import io.lukia.features.translate.infrastructure.wiktionary.WiktionaryDictionary
+import io.lukia.features.translate.infrastructure.wiktionary.WiktionaryPageCache
 import io.lukia.features.translate.infrastructure.wiktionary.WiktionaryPages
 import io.lukia.features.translate.infrastructure.wiktionary.WiktionaryTranslator
 import org.koin.dsl.module
@@ -38,11 +41,18 @@ val translateModule = module {
         SqlTranslationCache(get())
     }
 
+    // Wiki pages already read, kept between runs of the app. Free to ask for and
+    // still worth keeping: one word can be four requests, and Wikimedia limits
+    // how often it will answer a client that has no key.
+    single<WiktionaryPageCache> {
+        SqlWiktionaryPageCache(get())
+    }
+
     // The wikis behind both dictionary answers - the line that goes over a word
     // and the whole entry the reader opens. One of these rather than two, so
     // that asking the same question twice is not two ways of asking it.
     single {
-        WiktionaryPages(get(), get())
+        WiktionaryPages(get(), get(), get())
     }
 
     // What answers when a line over the word was not enough. Bound to the port
@@ -87,13 +97,21 @@ val translateModule = module {
                 // Named per request, because a word and a sentence do not go to
                 // the same place - a cache filing both under the translator's
                 // name would answer one with the other.
-                translatorIdentity = { request ->
+                //
+                // And only a translator that is handed the book is filed under
+                // it. A dictionary and Google get the word and the language and
+                // nothing else, so `values` is the same answer in every book on
+                // the shelf and is fetched once for all of them.
+                answering = { request ->
                     val current = settings.settings.value
 
                     if (request.unit == PassageUnit.Word && current.looksUpWordsElsewhere) {
-                        "word/${current.wordLookup.name}"
+                        CacheIdentity("word/${current.wordLookup.name}", readsTheBook = false)
                     } else {
-                        "${current.provider.name}/${current.model}"
+                        CacheIdentity(
+                            translator = "${current.provider.name}/${current.model}",
+                            readsTheBook = true,
+                        )
                     }
                 },
             ),

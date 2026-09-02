@@ -64,6 +64,100 @@ class ReaderWordHoldTest {
     }
 
     /**
+     * The second mouse button asks a question of its own, and it is not the
+     * hold's.
+     *
+     * A trackpad has no finger to hold anything down with - or rather it has
+     * one, and holding it there for half a second is a thing somebody does once
+     * and then stops doing. Two fingers on the pad is what every desktop already
+     * means "tell me about this" with, so it asks at once and it asks about the
+     * word rather than about whatever the hold is set to.
+     */
+    @Test
+    fun theSecondMouseButtonAsksAboutTheWordRatherThanHoldingIt() = runComposeUiTest {
+        var questioned: PassageSelection? = null
+        var held: PassageSelection? = null
+
+        setReader(
+            translations = {
+                mapOf(
+                    TextAnchor.Section(0, 0, 0, wordIndex = 0) to
+                        PassageTranslation.Ready(Translation("Kutsukaa")),
+                )
+            },
+            onPassageHold = { held = it },
+            onPassageInquiry = { questioned = it },
+        )
+
+        onNodeWithText("Kutsukaa me Ishmael.", substring = true).secondButtonOnFirstWords()
+
+        assertEquals(
+            TextAnchor.Section(0, 0, 0, wordIndex = 0),
+            assertNotNull(questioned).anchor,
+        )
+        assertNull(held)
+    }
+
+    /**
+     * The bug this gesture was reported for. A hold opens the panel only on a
+     * word that has already been answered, because its first job is translating
+     * - and a reader on a laptop pressing two fingers on an ordinary word got
+     * nothing at all, since nothing had become of that word yet.
+     */
+    @Test
+    fun anUntouchedWordIsStillAskedAbout() = runComposeUiTest {
+        var questioned: PassageSelection? = null
+
+        setReader(onPassageInquiry = { questioned = it })
+
+        onNodeWithText("Call me Ishmael.", substring = true).secondButtonOnFirstWords()
+
+        assertEquals("Call", assertNotNull(questioned).passage)
+    }
+
+    /**
+     * And it asks about the word even where the hold is set to the sentence.
+     * What this gesture asks is about the word under it, always.
+     */
+    @Test
+    fun theSecondMouseButtonAsksAboutTheWordWhateverTheHoldIsSetTo() = runComposeUiTest {
+        var questioned: PassageSelection? = null
+
+        setReader(
+            gestures = TranslationGestures(longPress = PassageUnit.Sentence),
+            onPassageInquiry = { questioned = it },
+        )
+
+        onNodeWithText("Call me Ishmael.", substring = true).secondButtonOnFirstWords()
+
+        assertEquals(PassageUnit.Word, assertNotNull(questioned).unit)
+    }
+
+    /**
+     * And it is not also the tap it is made of. A press that asked what a word
+     * means and put the book's own word back on the way would be one gesture
+     * doing two things.
+     */
+    @Test
+    fun theSecondMouseButtonIsNotAlsoATap() = runComposeUiTest {
+        var selected: PassageSelection? = null
+
+        setReader(
+            translations = {
+                mapOf(
+                    TextAnchor.Section(0, 0, 0, wordIndex = 0) to
+                        PassageTranslation.Ready(Translation("Kutsukaa")),
+                )
+            },
+            onPassageSelected = { selected = it },
+        )
+
+        onNodeWithText("Kutsukaa me Ishmael.", substring = true).secondButtonOnFirstWords()
+
+        assertNull(selected)
+    }
+
+    /**
      * The point of the setting: what else a word means is reachable however the
      * hold is set.
      *
