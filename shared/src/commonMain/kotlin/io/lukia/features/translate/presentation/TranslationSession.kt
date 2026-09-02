@@ -118,15 +118,30 @@ class TranslationSession(
             // request. It is somebody wondering whether the first one landed.
             is PassageTranslation.Loading -> Unit
 
-            is PassageTranslation.Ready -> put(
-                anchor,
-                current.copy(showingOriginal = !current.showingOriginal),
-            )
+            is PassageTranslation.Ready -> flip(anchor)
 
             // A failure is not a state worth keeping. Tapping it is how the
             // reader retries, so it behaves exactly as the first tap did.
             null, is PassageTranslation.Failed -> fetch(anchor, request(), waitsItsTurn = false)
         }
+    }
+
+    /**
+     * Puts one passage back to the book's own words, or forward to its
+     * translation again.
+     *
+     * What a second gesture on an answered passage has always done, named so
+     * that something other than a gesture can ask for it: the reader can now
+     * hold a word to open what else it means, and the way back to the book's own
+     * word went with it into that panel.
+     *
+     * Only a passage with an answer. One still arriving and one that failed have
+     * nothing to flip between.
+     */
+    fun flip(anchor: TextAnchor) {
+        val current = kept[anchor] as? PassageTranslation.Ready ?: return
+
+        put(anchor, current.copy(showingOriginal = !current.showingOriginal))
     }
 
     /**

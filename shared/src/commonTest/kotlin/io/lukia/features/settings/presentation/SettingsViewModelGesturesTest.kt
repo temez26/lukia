@@ -9,6 +9,7 @@ import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.provider.FakeTranslator
 import io.lukia.features.translate.domain.provider.ModelCatalogue
 import io.lukia.features.translate.domain.provider.ModelWarmUp
+import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.domain.text.PassageUnit
 import io.lukia.features.translate.domain.text.WordLookup
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
@@ -34,7 +35,9 @@ class SettingsViewModelGesturesTest {
         val store = FakeSettingsStore()
         val translation = TranslationSettingsRepository(store, FakeSecretStore())
 
-        viewModel(store, translation).setTapGesture(PassageUnit.Paragraph)
+        viewModel(store, translation).setGestures(
+            TranslationGestures(tap = PassageUnit.Paragraph, longPress = PassageUnit.Word),
+        )
 
         assertEquals(PassageUnit.Paragraph, translation.settings.value.gestures.tap)
         // And the other one is left exactly as it was.
@@ -46,7 +49,9 @@ class SettingsViewModelGesturesTest {
         val store = FakeSettingsStore()
         val translation = TranslationSettingsRepository(store, FakeSecretStore())
 
-        viewModel(store, translation).setLongPressGesture(PassageUnit.Sentence)
+        viewModel(store, translation).setGestures(
+            TranslationGestures(tap = PassageUnit.Sentence, longPress = PassageUnit.Sentence),
+        )
 
         assertEquals(PassageUnit.Sentence, translation.settings.value.gestures.longPress)
         assertEquals(PassageUnit.Sentence, translation.settings.value.gestures.tap)
@@ -57,7 +62,7 @@ class SettingsViewModelGesturesTest {
         val store = FakeSettingsStore()
         val translation = TranslationSettingsRepository(store, FakeSecretStore())
 
-        viewModel(store, translation).setTapGesture(null)
+        viewModel(store, translation).setGestures(TranslationGestures(tap = null))
 
         assertNull(translation.settings.value.gestures.tap)
     }
@@ -69,8 +74,10 @@ class SettingsViewModelGesturesTest {
         val translation = TranslationSettingsRepository(store, FakeSecretStore())
         val settings = viewModel(store, translation)
 
-        settings.setTapGesture(PassageUnit.Word)
-        settings.setLongPressGesture(PassageUnit.Paragraph)
+        settings.setGestures(TranslationGestures(tap = PassageUnit.Word))
+        settings.setGestures(
+            TranslationGestures(tap = PassageUnit.Word, longPress = PassageUnit.Paragraph),
+        )
 
         assertEquals(PassageUnit.Word, translation.settings.value.gestures.tap)
         assertEquals(PassageUnit.Paragraph, translation.settings.value.gestures.longPress)

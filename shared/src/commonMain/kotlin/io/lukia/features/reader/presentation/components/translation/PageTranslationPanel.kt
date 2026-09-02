@@ -91,7 +91,7 @@ internal fun TranslationPanel(
     tint: Color,
     scale: Float,
     pageColor: Color,
-    onTap: () -> Unit,
+    onPointedAt: (held: Boolean) -> Unit,
 ) {
     val density = LocalDensity.current
 
@@ -118,11 +118,16 @@ internal fun TranslationPanel(
     Column(
         modifier = Modifier
             .offset(x = left - Bleed, y = top - Bleed)
-            // A hold means the same as a tap here. Once the words underneath are
-            // covered there is nothing else in this rectangle to ask about, so
-            // there is no second thing for a second gesture to mean.
+            // A tap puts the page's own words back; a hold on a covered word
+            // opens what else it means. The two are told apart here rather than
+            // outside, because on a page that is a picture the panel is most of
+            // what the reader can actually reach - the word underneath it is
+            // covered, so a gesture aimed at the word lands here instead.
             .pointerInput(Unit) {
-                detectTapGestures(onTap = { onTap() }, onLongPress = { onTap() })
+                detectTapGestures(
+                    onTap = { onPointedAt(false) },
+                    onLongPress = { onPointedAt(true) },
+                )
             }
             // At least as wide as what it replaces, and free to be wider.
             //

@@ -214,7 +214,7 @@ sauna
             install(HttpTimeout)
         }
 
-        return WiktionaryTranslator(client, settings, json)
+        return WiktionaryTranslator(WiktionaryPages(client, settings, json))
     }
 
     private fun request(

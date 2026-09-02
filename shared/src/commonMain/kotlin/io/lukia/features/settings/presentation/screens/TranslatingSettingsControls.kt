@@ -81,7 +81,8 @@ private fun GestureSection(
     SettingsSection(
         title = "Pointing at the book",
         footnote = "Each does one thing, always. Doing it again on the same " +
-            "passage puts the book’s own words back.",
+            "passage puts the book’s own words back - except on a word you have " +
+            "looked up, where holding opens more about it instead.",
         groupColor = groupColor,
         modifier = modifier,
     ) {
@@ -89,16 +90,32 @@ private fun GestureSection(
             LabelledField(label = "Tap") {
                 GestureControl(
                     selected = translation.gestures.tap,
-                    onSelect = actions.onTapGestureChange,
+                    onSelect = {
+                        actions.onGesturesChange(translation.gestures.copy(tap = it))
+                    },
                 )
             }
 
             LabelledField(label = "Press and hold") {
                 GestureControl(
                     selected = translation.gestures.longPress,
-                    onSelect = actions.onLongPressGestureChange,
+                    onSelect = {
+                        actions.onGesturesChange(translation.gestures.copy(longPress = it))
+                    },
                 )
             }
+
+            SettingsToggle(
+                label = "Hold a word again for more about it",
+                detail = "Once a word has been looked up, holding it opens every " +
+                    "sense a dictionary has for it and a way through to " +
+                    "${translation.wordSite.label}. Works whatever the hold above " +
+                    "is set to.",
+                checked = translation.gestures.wordDetails,
+                onChange = {
+                    actions.onGesturesChange(translation.gestures.copy(wordDetails = it))
+                },
+            )
         }
     }
 }

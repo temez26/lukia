@@ -1,5 +1,6 @@
 package io.lukia.features.reader.presentation.translation
 
+import io.lukia.features.translate.application.LookUpWordUseCase
 import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.TranslationRequest
@@ -31,9 +32,16 @@ import kotlinx.coroutines.flow.stateIn
  */
 internal class ReaderTranslations(
     translatePassage: TranslatePassageUseCase,
+    lookUpWord: LookUpWordUseCase,
     private val settings: TranslationSettingsRepository,
     scope: CoroutineScope,
 ) {
+
+    /**
+     * The one word the reader has stopped on to ask about properly, if any. Its
+     * own thing rather than another field here - see [ReaderWordLookup].
+     */
+    val words = ReaderWordLookup(lookUpWord, settings, scope)
 
     /**
      * Every sentence translated while this book is open. Tied to the ViewModel's
@@ -171,6 +179,34 @@ internal class ReaderTranslations(
     }
 
     /**
+     * A word the reader held rather than tapped, having already looked it up.
+     *
+     * Only a word, and only one that has an answer on the page: everything else
+     * a hold can land on already means something, and taking those over would be
+     * changing what the reader set their gestures to.
+     */
+    fun openWordInquiry(
+        anchor: TextAnchor,
+        word: String,
+        showingOriginal: Boolean,
+        sourceLanguage: String?,
+    ) {
+        words.open(anchor, word, showingOriginal, sourceLanguage)
+    }
+
+    /**
+     * Puts the book's own word back, or the translation over it again, and closes
+     * the panel that asked.
+     *
+     * The panel is what holding a word now opens, so this is where the flip that
+     * a second hold used to do has moved to - see [TranslationSession.flip].
+     */
+    fun flipInquiredWord() {
+        words.anchor?.let(session::flip)
+        words.dismiss()
+    }
+
+    /**
      * A passage the reader asked for rather than tapped, so one they have already
      * flipped back to the original stays as they left it and a failure is not
      * retried behind their back - see
@@ -226,6 +262,7 @@ internal class ReaderTranslations(
      */
     fun clear() {
         session.clear()
+        words.dismiss()
         _onScreen.value = TranslateOnScreen.Idle
     }
 }
@@ -244,9 +281,10 @@ internal class ReaderTranslations(
  */
 class ReaderTranslationsFactory(
     private val translatePassage: TranslatePassageUseCase,
+    private val lookUpWord: LookUpWordUseCase,
     private val settings: TranslationSettingsRepository,
 ) {
 
     internal fun create(scope: CoroutineScope): ReaderTranslations =
-        ReaderTranslations(translatePassage, settings, scope)
+        ReaderTranslations(translatePassage, lookUpWord, settings, scope)
 }

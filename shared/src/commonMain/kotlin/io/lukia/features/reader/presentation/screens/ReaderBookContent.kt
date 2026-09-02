@@ -27,6 +27,7 @@ import io.lukia.features.reader.domain.outline.ReaderOutline
 import io.lukia.features.reader.domain.page.PageSentence
 import io.lukia.features.reader.presentation.KeepScreenAwake
 import io.lukia.features.reader.presentation.components.chrome.ReaderNotice
+import io.lukia.features.reader.presentation.components.translation.WordLookupPanel
 import io.lukia.features.reader.presentation.pagination.PaginatedBook
 import io.lukia.features.reader.presentation.pagination.onPages
 import io.lukia.features.reader.presentation.screens.input.readerCommands
@@ -41,6 +42,7 @@ import io.lukia.features.reader.presentation.theme.ReaderTheming
 import io.lukia.features.reader.presentation.theme.readerPageStyle
 import io.lukia.features.reader.presentation.translation.ShownTranslations
 import io.lukia.features.reader.presentation.translation.TranslateOnScreen
+import io.lukia.features.reader.presentation.translation.WordInquiry
 import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationGestures
@@ -87,6 +89,8 @@ internal fun ReaderContent(
     targetLanguage: TargetLanguage = TargetLanguage.Default,
     /** Which of the two ways of translating more than one passage are offered at all. */
     bulkTranslation: BulkTranslation = BulkTranslation.Default,
+    /** The one word the reader has held to ask about properly, if any. */
+    wordInquiry: WordInquiry? = null,
     /** How this book is being read, and what became of asking for it as text. */
     layout: ReaderLayoutUi = ReaderLayoutUi(),
     onBack: () -> Unit,
@@ -94,7 +98,11 @@ internal fun ReaderContent(
     onSettingsChange: (ReaderSettings) -> Unit,
     onPageSettled: (pageIndex: Int, pageCount: Int) -> Unit = { _, _ -> },
     onPassageSelected: (PassageSelection) -> Unit = {},
+    /** A hold on a word already answered, which opens what else it means. */
+    onPassageHold: (PassageSelection) -> Unit = {},
     onPassagesRequested: (List<PassageSelection>) -> Unit = {},
+    onWordInquiryDismiss: () -> Unit = {},
+    onInquiredWordFlip: () -> Unit = {},
     onTranslateOnScreen: () -> Unit = {},
     onContinuousTranslationChange: (Boolean) -> Unit = {},
     onTranslationsVisibleChange: (Boolean) -> Unit = {},
@@ -234,6 +242,7 @@ internal fun ReaderContent(
                             onToggleChrome = chrome::toggleChrome,
                             onPageScaleChange = { onSettingsChange(settings.withPageScale(it)) },
                             onPassageSelected = onPassageSelected,
+                            onPassageHold = onPassageHold,
                             onPassagesRequested = onPassagesRequested,
                             translateOnScreen = translateOnScreen,
                             gestures = gestures,
@@ -250,6 +259,7 @@ internal fun ReaderContent(
                             onToggleChrome = chrome::toggleChrome,
                             onSettingsChange = onSettingsChange,
                             onPassageSelected = onPassageSelected,
+                            onPassageHold = onPassageHold,
                             onPassagesRequested = onPassagesRequested,
                             onPagesChange = { paginated = it },
                             translateOnScreen = translateOnScreen,
@@ -303,6 +313,15 @@ internal fun ReaderContent(
                     translationSection = {
                         ReaderTranslationSettings(translationUi, translationPreferences)
                     },
+                )
+
+                // Over the panels and the chrome alike: it was opened from the
+                // page, it dims what is behind it, and nothing in the chrome is
+                // reachable while the reader is reading about one word.
+                WordLookupPanel(
+                    inquiry = wordInquiry,
+                    onDismiss = onWordInquiryDismiss,
+                    onFlip = onInquiredWordFlip,
                 )
 
                 // Over everything, because it is about the book somebody is

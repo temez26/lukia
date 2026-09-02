@@ -13,13 +13,13 @@ import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.TranslationContext
 import io.lukia.features.translate.domain.TranslationRequest
+import io.lukia.features.translate.domain.lookup.WordSite
 import io.lukia.features.translate.domain.provider.ModelCatalogue
 import io.lukia.features.translate.domain.provider.ModelWarmUp
 import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.domain.settings.TranslationSettings
-import io.lukia.features.translate.domain.text.PassageUnit
 import io.lukia.features.translate.domain.text.WordLookup
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import kotlinx.coroutines.Job
@@ -215,10 +215,31 @@ class SettingsViewModel(
         translation.update(translation.settings.value.withGoogleApiKey(key))
     }
 
-    /** What a tap asks for, or nothing at all when the reader turns it off. */
-    fun setTapGesture(unit: PassageUnit?) = setGestures { copy(tap = unit) }
+    /**
+     * Where the reader is sent when a line over the word was not enough - see
+     * [WordSite]. Not an [edit] for the same reason as the word lookup above:
+     * nothing about somebody else's website says whether this app's translator
+     * works.
+     */
+    fun setWordSite(site: WordSite) {
+        translation.update(translation.settings.value.withWordSite(site))
+    }
 
-    fun setLongPressGesture(unit: PassageUnit?) = setGestures { copy(longPress = unit) }
+    fun setWordSiteUrl(url: String) {
+        translation.update(translation.settings.value.withCustomWordSiteUrl(url))
+    }
+
+    /**
+     * What a tap and a press-and-hold ask for, or nothing at all when the reader
+     * turns one off.
+     *
+     * Both at once rather than one function each, because that is how the
+     * reader's own panel already sets them - and two ways of writing the same
+     * setting is one more than there should be.
+     */
+    fun setGestures(gestures: TranslationGestures) {
+        translation.update(translation.settings.value.withGestures(gestures))
+    }
 
     /**
      * Whether the reader is offered translating a screenful at a time, and
@@ -235,15 +256,14 @@ class SettingsViewModel(
         translation.update(current.withBulkTranslation(current.bulkTranslation.change()))
     }
 
-    private fun setGestures(change: TranslationGestures.() -> TranslationGestures) {
-        val current = translation.settings.value
-
-        translation.update(current.withGestures(current.gestures.change()))
-    }
-
     fun setApiKey(key: String) = edit { withApiKey(key) }
 
-    fun setBaseUrl(url: String) = edit { withBaseUrl(url) }
+    /**
+     * Private, because nothing outside should write the address without also
+     * throwing away a catalogue read off the old one - which is what
+     * [onBaseUrlEdited] is, and is the only way in.
+     */
+    private fun setBaseUrl(url: String) = edit { withBaseUrl(url) }
 
     /**
      * Asks the configured server what it can run.

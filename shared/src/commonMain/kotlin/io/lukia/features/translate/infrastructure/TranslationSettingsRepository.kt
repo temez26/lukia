@@ -5,6 +5,7 @@ import io.lukia.core.domain.storage.SettingsStore
 import io.lukia.core.infrastructure.PersistedSettings
 import io.lukia.core.infrastructure.readEnum
 import io.lukia.features.translate.domain.BulkTranslation
+import io.lukia.features.translate.domain.lookup.WordSite
 import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationGestures
@@ -54,6 +55,8 @@ class TranslationSettingsRepository(
             baseUrls = readPerProvider(KEY_BASE_URL),
             timeouts = readTimeouts(),
             wordLookup = store.readEnum(KEY_WORD_LOOKUP, WordLookup.entries, defaults.wordLookup),
+            wordSite = store.readEnum(KEY_WORD_SITE, WordSite.entries, defaults.wordSite),
+            customWordSiteUrl = store.getString(KEY_WORD_SITE_URL)?.takeIf { it.isNotBlank() },
             googleKey = secrets.getSecret(KEY_GOOGLE_KEY)?.takeIf { it.isNotBlank() },
             gestures = readGestures(defaults.gestures),
             bulkTranslation = BulkTranslation(
@@ -73,6 +76,8 @@ class TranslationSettingsRepository(
         writePerProvider(KEY_TIMEOUT, settings.storedTimeouts().mapValues { it.value.toString() })
 
         store.putString(KEY_WORD_LOOKUP, settings.wordLookup.name)
+        store.putString(KEY_WORD_SITE, settings.wordSite.name)
+        store.putString(KEY_WORD_SITE_URL, settings.customWordSiteUrl.orEmpty())
         secrets.putSecret(KEY_GOOGLE_KEY, settings.storedGoogleKey())
         writeGestures(settings.gestures)
 
@@ -123,6 +128,11 @@ class TranslationSettingsRepository(
     private fun readGestures(defaults: TranslationGestures) = TranslationGestures(
         tap = readGesture(KEY_TAP, defaults.tap),
         longPress = readGesture(KEY_LONG_PRESS, defaults.longPress),
+        // On unless it says otherwise, unlike the flags below: this one costs
+        // nothing and is the only way to reach what a word means beyond the one
+        // line that fits over it, so an install that has never heard of it
+        // should still offer it.
+        wordDetails = store.getString(KEY_WORD_DETAILS)?.equals("false", ignoreCase = true) != true,
     )
 
     private fun readGesture(key: String, default: PassageUnit?): PassageUnit? {
@@ -136,6 +146,7 @@ class TranslationSettingsRepository(
     private fun writeGestures(gestures: TranslationGestures) {
         store.putString(KEY_TAP, gestures.tap?.name.orEmpty())
         store.putString(KEY_LONG_PRESS, gestures.longPress?.name.orEmpty())
+        store.putString(KEY_WORD_DETAILS, gestures.wordDetails.toString())
     }
 
     /** Off unless it says otherwise, which is what makes these off on a fresh install. */
@@ -168,9 +179,12 @@ class TranslationSettingsRepository(
         const val KEY_BASE_URL = "translation.baseUrl"
         const val KEY_TIMEOUT = "translation.timeoutSeconds"
         const val KEY_WORD_LOOKUP = "translation.wordLookup"
+        const val KEY_WORD_SITE = "translation.wordSite"
+        const val KEY_WORD_SITE_URL = "translation.wordSite.url"
         const val KEY_GOOGLE_KEY = "translation.googleApiKey"
         const val KEY_TAP = "translation.gesture.tap"
         const val KEY_LONG_PRESS = "translation.gesture.longPress"
+        const val KEY_WORD_DETAILS = "translation.gesture.wordDetails"
         const val KEY_TRANSLATE_ON_SCREEN = "translation.bulk.onScreen"
         const val KEY_TRANSLATE_AS_YOU_READ = "translation.bulk.asYouRead"
     }

@@ -21,7 +21,10 @@ import io.lukia.features.reader.domain.outline.ReaderOutline
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import io.lukia.features.reader.infrastructure.SqlReadingProgressRepository
 import io.lukia.features.reader.presentation.translation.ReaderTranslationsFactory
+import io.lukia.features.translate.application.LookUpWordUseCase
 import io.lukia.features.translate.application.TranslatePassageUseCase
+import io.lukia.features.translate.domain.lookup.WordDictionary
+import io.lukia.features.translate.domain.lookup.WordEntry
 import io.lukia.features.translate.domain.provider.FakeTranslator
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import kotlinx.coroutines.CoroutineDispatcher
@@ -217,6 +220,7 @@ abstract class ReaderViewModelTestCase {
     /** A translator that answers, wired the way the app wires the real one. */
     protected fun testTranslations() = ReaderTranslationsFactory(
         TranslatePassageUseCase(FakeTranslator()),
+        LookUpWordUseCase(WordDictionary { word, _ -> WordEntry(word, listOf("a sense")) }),
         TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()),
     )
 

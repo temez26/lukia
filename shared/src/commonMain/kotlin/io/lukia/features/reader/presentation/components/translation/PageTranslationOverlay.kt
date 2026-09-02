@@ -61,7 +61,7 @@ internal fun PageTranslationOverlay(
      * back meant hunting for whatever was left uncovered. A single word was
      * nearly impossible: its panel is several times the size of the word.
      */
-    onTranslationPointedAt: (x: Float, y: Float) -> Unit = { _, _ -> },
+    onTranslationPointedAt: (x: Float, y: Float, held: Boolean) -> Unit = { _, _, _ -> },
 ) {
     val colors = MaterialTheme.colorScheme
 
@@ -147,7 +147,9 @@ internal fun PageTranslationOverlay(
                     // The passage it stands for, named by a point the page will
                     // recognise as inside it - which is anywhere in the first
                     // of the rectangles it covers.
-                    onTap = { onTranslationPointedAt(passage.middle.x, passage.middle.y) },
+                    onPointedAt = { held ->
+                        onTranslationPointedAt(passage.middle.x, passage.middle.y, held)
+                    },
                 )
             }
         }

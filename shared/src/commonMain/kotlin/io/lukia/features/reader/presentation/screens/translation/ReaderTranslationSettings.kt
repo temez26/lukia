@@ -96,6 +96,19 @@ internal fun ReaderTranslationSettings(
             )
         }
 
+        // Under the hold rather than beside it, because it is about that gesture
+        // - and a switch rather than a fourth segment in the control above,
+        // because it is not one of the things a hold can ask for. It is what a
+        // hold does on a word that has already answered, whatever it is set to.
+        PanelSwitchRow(
+            label = "Hold again for more about a word",
+            checked = preferences.gestures.wordDetails,
+            onChange = {
+                preferences.onGesturesChange(preferences.gestures.copy(wordDetails = it))
+            },
+            inset = inset,
+        )
+
         LukiaDivider(
             inset = inset,
             endInset = inset,

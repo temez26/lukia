@@ -2,6 +2,7 @@ package io.lukia.features.translate.infrastructure
 
 import io.lukia.core.domain.storage.FakeSecretStore
 import io.lukia.core.domain.storage.FakeSettingsStore
+import io.lukia.features.translate.domain.lookup.WordSite
 import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationGestures
@@ -77,6 +78,51 @@ class TranslationSettingsRepositoryTest {
         assertTrue(reopened.looksUpWordsElsewhere)
     }
 
+    /**
+     * Where the reader goes to read more about a word, which is a different
+     * setting from who answers about one inside the book.
+     */
+    @Test
+    fun whereAWordIsReadAboutIsThereTheNextTimeTheAppOpens() {
+        val store = FakeSettingsStore()
+
+        TranslationSettingsRepository(store, secrets).update(
+            TranslationSettings().withWordSite(WordSite.Sanakirja),
+        )
+
+        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+
+        assertEquals(WordSite.Sanakirja, reopened.wordSite)
+        assertEquals(WordSite.Sanakirja.urlTemplate, reopened.wordSiteUrlTemplate)
+    }
+
+    /** A site of the reader's own is only ever theirs, so its address is stored too. */
+    @Test
+    fun aCustomSitesAddressIsThereTheNextTimeTheAppOpens() {
+        val store = FakeSettingsStore()
+
+        TranslationSettingsRepository(store, secrets).update(
+            TranslationSettings()
+                .withWordSite(WordSite.Custom)
+                .withCustomWordSiteUrl("https://example.org/{word}"),
+        )
+
+        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+
+        assertEquals("https://example.org/{word}", reopened.wordSiteUrlTemplate)
+    }
+
+    /**
+     * A custom site nobody has given an address for has nowhere to open, which
+     * is what the reader's panel reads to decide whether to offer the button.
+     */
+    @Test
+    fun aCustomSiteWithNoAddressHasNowhereToOpen() {
+        val settings = TranslationSettings().withWordSite(WordSite.Custom)
+
+        assertNull(settings.wordSiteUrlTemplate)
+    }
+
     @Test
     fun whatTheGesturesDoIsThereTheNextTimeTheAppOpens() {
         val store = FakeSettingsStore()
@@ -94,6 +140,29 @@ class TranslationSettingsRepositoryTest {
     }
 
     /** Off has to survive too, and it is not the same as never having been set. */
+
+    /**
+     * On unless it says otherwise, unlike everything else that is off by default:
+     * this costs nothing, and an install upgraded from a build that never heard
+     * of it should still offer it.
+     */
+    @Test
+    fun holdingAWordForMoreAboutItIsOnUntilItIsTurnedOff() {
+        val store = FakeSettingsStore()
+
+        assertTrue(
+            TranslationSettingsRepository(store, secrets).settings.value.gestures.wordDetails,
+        )
+
+        TranslationSettingsRepository(store, secrets).update(
+            TranslationSettings().withGestures(TranslationGestures(wordDetails = false)),
+        )
+
+        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+
+        assertFalse(reopened.gestures.wordDetails)
+    }
+
     @Test
     fun aGestureTurnedOffStaysOff() {
         val store = FakeSettingsStore()

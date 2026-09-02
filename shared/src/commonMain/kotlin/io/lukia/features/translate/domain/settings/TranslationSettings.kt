@@ -1,6 +1,7 @@
 package io.lukia.features.translate.domain.settings
 
 import io.lukia.features.translate.domain.BulkTranslation
+import io.lukia.features.translate.domain.lookup.WordSite
 import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.provider.isAllowedTranslationEndpoint
 import io.lukia.features.translate.domain.text.WordLookup
@@ -32,6 +33,22 @@ data class TranslationSettings(
      * it is a choice between providers, not a setting one of them has.
      */
     val wordLookup: WordLookup = WordLookup.Default,
+    /**
+     * Where the reader is sent when a line over the word is not enough. Not per
+     * provider for the same reason as above, and not part of [wordLookup]
+     * either: one chooses who answers inside the book and this chooses where the
+     * reader goes to read more - see [WordSite].
+     */
+    val wordSite: WordSite = WordSite.Default,
+    /**
+     * The reader's own address, which only [WordSite.Custom] has one of.
+     *
+     * Not private, unlike the values above it: those are per provider and are
+     * read through accessors that pick the current one, while this is one value
+     * that means the same thing to everybody - and unlike a key, there is nothing
+     * about it worth keeping out of reach.
+     */
+    val customWordSiteUrl: String? = null,
     /**
      * The Cloud Translation key, when the reader has one. Kept apart from the
      * per-provider keys above because Google is not one of them - it never
@@ -98,6 +115,20 @@ data class TranslationSettings(
     val looksUpWordsElsewhere: Boolean
         get() = wordLookup != WordLookup.Translator
 
+    /**
+     * The address to open a word at, before the word is written into it, or null
+     * when the reader has chosen [WordSite.Custom] and not yet said where.
+     *
+     * Resolved here rather than at the button, so that "which site" and "the
+     * address of a custom one" are one answer to whoever asks. See
+     * [io.lukia.features.translate.domain.lookup.urlFor] for the other half.
+     */
+    val wordSiteUrlTemplate: String?
+        get() = when (wordSite) {
+            WordSite.Custom -> customWordSiteUrl?.trim()?.takeIf { it.isNotEmpty() }
+            else -> wordSite.urlTemplate
+        }
+
     /** True once there is enough here to actually ask for a translation. */
     val isConfigured: Boolean
         get() = (!provider.requiresKey || apiKey != null) && isEndpointAllowed
@@ -127,6 +158,11 @@ data class TranslationSettings(
         copy(timeouts = timeouts + (provider to seconds.coerceIn(TimeoutSecondsRange)))
 
     fun withWordLookup(lookup: WordLookup): TranslationSettings = copy(wordLookup = lookup)
+
+    fun withWordSite(site: WordSite): TranslationSettings = copy(wordSite = site)
+
+    fun withCustomWordSiteUrl(url: String): TranslationSettings =
+        copy(customWordSiteUrl = url.takeIf { it.isNotBlank() })
 
     fun withGoogleApiKey(key: String): TranslationSettings =
         copy(googleKey = key.takeIf { it.isNotBlank() })
@@ -174,6 +210,8 @@ data class TranslationSettings(
             baseUrls: Map<TranslationProvider, String>,
             timeouts: Map<TranslationProvider, Int> = emptyMap(),
             wordLookup: WordLookup = WordLookup.Default,
+            wordSite: WordSite = WordSite.Default,
+            customWordSiteUrl: String? = null,
             googleKey: String? = null,
             gestures: TranslationGestures = TranslationGestures.Default,
             bulkTranslation: BulkTranslation = BulkTranslation.Default,
@@ -185,6 +223,8 @@ data class TranslationSettings(
             baseUrls = baseUrls,
             timeouts = timeouts,
             wordLookup = wordLookup,
+            wordSite = wordSite,
+            customWordSiteUrl = customWordSiteUrl,
             googleKey = googleKey,
             gestures = gestures,
             bulkTranslation = bulkTranslation,
