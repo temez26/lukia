@@ -1,11 +1,15 @@
 package io.lukia.features.reader.presentation.components.translation
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -20,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.displayShortMessage
@@ -32,7 +37,10 @@ import io.lukia.shared.presentation.components.controls.LukiaButton
 import io.lukia.shared.presentation.components.surface.OverlayPanel
 import io.lukia.shared.presentation.components.surface.OverlayPanelTopClearance
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.Space
+import io.lukia.shared.presentation.theme.softFadeOut
+import io.lukia.shared.presentation.theme.stateSwapIn
 
 /**
  * Everything else the reader can ask about a word they have already looked up.
@@ -92,7 +100,7 @@ internal fun WordLookupPanel(
         ) {
             WordHeading(inquiry = shown)
 
-            WordSenses(state = shown.entry)
+            WordSenses(state = shown.entry, modifier = Modifier.fillMaxWidth())
 
             WordLookupActions(inquiry = shown, onDismiss = onDismiss, onAction = onAction)
         }
@@ -131,14 +139,57 @@ private fun WordHeading(inquiry: WordInquiry) {
 }
 
 /**
+ * How much room the entry is given before there is one.
+ *
+ * The panel opens on a word and then waits on a wiki, so what it has to show at
+ * the moment it arrives is a line saying so. Given only that line it opened as a
+ * sliver and leapt to full height a moment later, which reads as two things
+ * happening rather than one.
+ *
+ * About the three senses a short entry comes back with, so it opens at roughly
+ * the size it will settle at. A longer entry still grows into place, and that
+ * growth is animated rather than snapped - see [WordSenses].
+ */
+private val SensesMinHeight: Dp = 76.dp
+
+/**
  * Every sense the dictionary has, numbered.
  *
  * Numbered because that is what makes it read as an entry rather than as a
  * paragraph: the whole reason somebody opened this is that a word had more than
  * one meaning, and a run of sentences does not say where one ends.
+ *
+ * The answer cross-dissolves in over the line that was waiting for it, on the
+ * app's own swap - the same one every screen uses to trade a loading state for
+ * its content - while the height it needs is eased into rather than jumped to.
+ * Together those are what make the entry arrive in the panel rather than replace
+ * it.
  */
 @Composable
-private fun WordSenses(state: UiState<WordEntry>) {
+private fun WordSenses(state: UiState<WordEntry>, modifier: Modifier = Modifier) {
+    AnimatedContent(
+        targetState = state,
+        modifier = modifier
+            .heightIn(min = SensesMinHeight)
+            .animateContentSize(animationSpec = LukiaMotion.standard()),
+        transitionSpec = { (stateSwapIn() togetherWith softFadeOut()) using null },
+        // Only the case matters: an entry whose senses changed is the same
+        // answer, and nothing here changes one twice.
+        contentKey = { current ->
+            when (current) {
+                is UiState.Loading -> "loading"
+                is UiState.Failure -> "failure"
+                is UiState.Success -> "success"
+            }
+        },
+        label = "wordSenses",
+    ) { current ->
+        WordSensesContent(state = current)
+    }
+}
+
+@Composable
+private fun WordSensesContent(state: UiState<WordEntry>) {
     when (state) {
         is UiState.Loading -> Text(
             text = "Looking it up…",
