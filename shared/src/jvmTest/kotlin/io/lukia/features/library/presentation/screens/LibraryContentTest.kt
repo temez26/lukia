@@ -12,11 +12,11 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.performMouseInput
+import androidx.compose.ui.test.rightClick
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -109,9 +109,14 @@ class LibraryContentTest {
         }
     }
 
-    /** Opens one book's actions the way a long press on its card does. */
+    /**
+     * Opens one book's actions the way the machine these tests run on does it -
+     * the second mouse button, which on a laptop is two fingers on the trackpad.
+     * The press and hold that does the same on a phone is not offered here, and
+     * that is the point of [io.lukia.shared.presentation.components.controls.menuGesture].
+     */
     private fun ComposeUiTest.openBookMenu(title: String) {
-        onNodeWithText(title).performTouchInput { longClick() }
+        onNodeWithText(title).performMouseInput { rightClick() }
     }
 
     /** Presses a chip or a menu row by the words on it. */

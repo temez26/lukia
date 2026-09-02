@@ -1,7 +1,6 @@
 package io.lukia.features.library.presentation.components.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,10 +14,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
@@ -30,6 +27,7 @@ import io.lukia.features.library.presentation.model.LibraryBook
 import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.shared.presentation.components.controls.ReadingProgressOverlay
 import io.lukia.shared.presentation.components.controls.focusRing
+import io.lukia.shared.presentation.components.controls.menuGesture
 import io.lukia.shared.presentation.components.controls.scaleOnPress
 import io.lukia.shared.presentation.components.cover.BookCover
 import io.lukia.shared.presentation.components.cover.FavoriteBadge
@@ -72,21 +70,16 @@ internal fun HomeBookCard(
     val title = document.displayTitle()
     val interactionSource = remember { MutableInteractionSource() }
     val coverShape = MaterialTheme.shapes.medium
-    val haptics = LocalHapticFeedback.current
 
     Column(
         modifier = modifier
             .width(width)
-            .combinedClickable(
+            .menuGesture(
                 interactionSource = interactionSource,
-                indication = null,
-                onClickLabel = "Read",
                 onClick = { actions.onOpen(book) },
-                onLongClickLabel = "Book actions",
-                onLongClick = {
-                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onMenuExpandedChange(true)
-                },
+                onMenu = { onMenuExpandedChange(true) },
+                menuLabel = "Book actions",
+                clickLabel = "Read",
             )
             .scaleOnPress(interactionSource, pressedScale = 0.96f)
             .pointerHoverIcon(PointerIcon.Hand)
