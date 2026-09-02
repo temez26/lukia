@@ -102,7 +102,7 @@ internal fun ReaderContent(
     onPassageHold: (PassageSelection) -> Unit = {},
     onPassagesRequested: (List<PassageSelection>) -> Unit = {},
     onWordInquiryDismiss: () -> Unit = {},
-    onInquiredWordFlip: () -> Unit = {},
+    onInquiredWordAction: () -> Unit = {},
     onTranslateOnScreen: () -> Unit = {},
     onContinuousTranslationChange: (Boolean) -> Unit = {},
     onTranslationsVisibleChange: (Boolean) -> Unit = {},
@@ -321,7 +321,7 @@ internal fun ReaderContent(
                 WordLookupPanel(
                     inquiry = wordInquiry,
                     onDismiss = onWordInquiryDismiss,
-                    onFlip = onInquiredWordFlip,
+                    onAction = onInquiredWordAction,
                 )
 
                 // Over everything, because it is about the book somebody is

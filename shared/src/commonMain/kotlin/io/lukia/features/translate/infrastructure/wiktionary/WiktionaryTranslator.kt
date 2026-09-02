@@ -39,7 +39,8 @@ internal class WiktionaryTranslator(
     ): Translation {
         val word = request.text.trim()
 
-        val senses = pages.entry(word, request.targetLanguage)?.senses(word, MAX_SENSES)
+        val entry = pages.entryFor(word, request.targetLanguage, MAX_SENSES)
+        val senses = entry?.senses
 
         if (senses.isNullOrEmpty()) {
             throw AppErrorException(AppError.Unexpected("No dictionary entry for “$word”."))

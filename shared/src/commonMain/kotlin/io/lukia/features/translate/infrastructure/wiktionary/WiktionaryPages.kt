@@ -6,6 +6,7 @@ import io.ktor.client.request.parameter
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.isSuccess
+import io.lukia.features.translate.domain.lookup.WordEntry
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import io.lukia.features.translate.infrastructure.translating
@@ -52,8 +53,43 @@ internal class WiktionaryPages(
     private val json: Json = Json { ignoreUnknownKeys = true },
 ) {
 
+    /**
+     * What a wiki has to say about one word, with a page that only says which
+     * word it is a form of followed to the word itself.
+     *
+     * That last part is most of what makes this useful on real prose. A book is
+     * written in inflected words, and a wiki's page for one of them is often not
+     * a definition: `values` answers `monikkomuoto sanasta value` and nothing
+     * else, which tells a reader who wanted `arvo` only that they have more
+     * looking up to do. See [baseForm].
+     *
+     * Followed once and no further. A chain of pointers is not a thing wikis
+     * write, and a lookup that could walk one would be a lookup that could loop.
+     * If the base form turns out to have no entry either, what the word's own
+     * page said stands - a poor answer, and better than none.
+     *
+     * [WordEntry.word] is the word actually defined, which is not always the one
+     * that was asked about. Whoever shows it can say so.
+     */
+    suspend fun entryFor(
+        word: String,
+        targetLanguage: TargetLanguage,
+        limit: Int,
+    ): WordEntry? {
+        val term = word.trim()
+        val senses = entry(term, targetLanguage)?.senses(term, limit) ?: return null
+
+        val base = senses.baseForm(term) ?: return WordEntry(term, senses)
+
+        val defined = entry(base, targetLanguage)
+            ?.senses(base, limit)
+            ?.takeIf { it.isNotEmpty() }
+
+        return if (defined == null) WordEntry(term, senses) else WordEntry(base, defined)
+    }
+
     /** The page for [word], as one run of text, or null where no wiki has one. */
-    suspend fun entry(word: String, targetLanguage: TargetLanguage): String? {
+    private suspend fun entry(word: String, targetLanguage: TargetLanguage): String? {
         val reader = targetLanguage.tag.substringBefore('-')
 
         return translating(settings.settings.value) {

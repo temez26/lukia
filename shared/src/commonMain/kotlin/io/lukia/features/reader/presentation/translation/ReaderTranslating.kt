@@ -1,6 +1,7 @@
 package io.lukia.features.reader.presentation.translation
 
 import io.lukia.core.presentation.dataOrNull
+import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.presentation.ReaderViewModel
 import io.lukia.features.translate.domain.BulkTranslation
@@ -64,24 +65,31 @@ fun ReaderViewModel.onPassageSelected(selection: PassageSelection) {
  * Three things have to hold, and everything else falls through to the gesture:
  * the reader has asked to be offered this at all - see
  * [io.lukia.features.translate.domain.settings.TranslationGestures.wordDetails] -
- * it is a word, and it has an answer already. A word still arriving has nothing
- * more to say yet, and one that failed is retried by the hold exactly as it
- * always was.
+ * it is a word, and something has already become of it.
+ *
+ * A failure counts. It used to fall through and quietly ask the same service
+ * again, which is the one thing least likely to help: a word the reader's own
+ * translator could not answer is exactly the word they want to take somewhere
+ * else. So it opens the panel too, where the dictionary is read, the site is
+ * offered, and asking again is one of the things on offer rather than the only
+ * thing the gesture can do.
+ *
+ * A word still arriving is the one state left out - it has nothing more to say
+ * yet, and it is about to.
  */
 fun ReaderViewModel.onPassageHold(selection: PassageSelection) {
-    val answered = translation.passages.value[selection.anchor]
+    val onThePage = translation.passages.value[selection.anchor].onThePage()
 
     if (!translation.gestures.value.wordDetails ||
         selection.unit != PassageUnit.Word ||
-        answered !is PassageTranslation.Ready
+        onThePage == null
     ) {
         return onPassageSelected(selection)
     }
 
     translation.openWordInquiry(
-        anchor = selection.anchor,
-        word = selection.passage,
-        showingOriginal = answered.showingOriginal,
+        selection = selection,
+        onThePage = onThePage,
         // What the document said it is written in, for the sites that take a
         // language pair. The book rather than the passage: nothing here reads
         // well enough to tell a quoted line of French from the English around it.
@@ -91,16 +99,37 @@ fun ReaderViewModel.onPassageHold(selection: PassageSelection) {
 
 /** The reader is done with the word, and the page underneath is unchanged. */
 fun ReaderViewModel.onWordInquiryDismissed() {
-    translation.words.dismiss()
+    translation.dismissWordInquiry()
 }
 
 /**
- * Puts the book's own word back, or the translation over it again - which is
- * what a second hold on the word used to do before a hold opened the panel this
- * is a button in.
+ * Does whatever the panel offered to do about the word on the page, and closes.
+ *
+ * One entry point for all three, because they are one gesture underneath: a tap
+ * on a passage puts it back, brings it forward, or asks again, decided by what
+ * has become of it - see
+ * [io.lukia.features.translate.presentation.TranslationSession.onPassageTapped].
+ * The panel's button is that tap, reached from a panel instead of from the page.
  */
-fun ReaderViewModel.onInquiredWordFlipped() {
-    translation.flipInquiredWord()
+fun ReaderViewModel.onInquiredWordActioned() {
+    val selection = translation.inquiredWord ?: return
+    val document = uiState.value.dataOrNull ?: return
+
+    translation.onPassageTapped(selection.anchor) { requestFor(document, selection) }
+    translation.dismissWordInquiry()
+}
+
+/**
+ * What a passage the reader held is doing on the page, or null when it is not
+ * something the panel has anything to offer about.
+ */
+private fun PassageTranslation?.onThePage(): WordOnThePage? = when (this) {
+    is PassageTranslation.Ready ->
+        if (showingOriginal) WordOnThePage.Original else WordOnThePage.Translated
+
+    is PassageTranslation.Failed -> WordOnThePage.Failed(error.displayShortMessage())
+
+    null, is PassageTranslation.Loading -> null
 }
 
 /**

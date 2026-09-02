@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.reader.presentation.translation.WordInquiry
+import io.lukia.features.reader.presentation.translation.WordOnThePage
 import io.lukia.features.translate.domain.lookup.WordEntry
 import io.lukia.shared.presentation.components.controls.ButtonSize
 import io.lukia.shared.presentation.components.controls.ButtonVariant
@@ -50,7 +51,7 @@ import io.lukia.shared.presentation.theme.Space
 internal fun WordLookupPanel(
     inquiry: WordInquiry?,
     onDismiss: () -> Unit,
-    onFlip: () -> Unit,
+    onAction: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val dimens = LocalLukiaDimens.current
@@ -76,15 +77,42 @@ internal fun WordLookupPanel(
                     end = dimens.screenPadding,
                 ),
         ) {
-            Text(
-                text = shown.word,
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
+            WordHeading(inquiry = shown)
 
             WordSenses(state = shown.entry)
 
-            WordLookupActions(inquiry = shown, onDismiss = onDismiss, onFlip = onFlip)
+            WordLookupActions(inquiry = shown, onDismiss = onDismiss, onAction = onAction)
+        }
+    }
+}
+
+/**
+ * The word, and the form the dictionary answered under when that is a different
+ * one.
+ *
+ * A book is written in inflected words, and a wiki's page for one of them often
+ * only says which word it is a form of - so the entry that comes back is the
+ * base form's. Saying so is worth a line: a reader who held `values` and is
+ * being shown the senses of `value` should be able to see that, both to trust
+ * the answer and because knowing the base form is half of learning the word.
+ */
+@Composable
+private fun WordHeading(inquiry: WordInquiry) {
+    val defined = (inquiry.entry as? UiState.Success)?.data?.word
+
+    Column {
+        Text(
+            text = inquiry.word,
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+
+        if (defined != null && !defined.equals(inquiry.word, ignoreCase = true)) {
+            Text(
+                text = "Looked up under “$defined”",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
@@ -150,34 +178,54 @@ private fun WordSenses(state: UiState<WordEntry>) {
 private fun WordLookupActions(
     inquiry: WordInquiry,
     onDismiss: () -> Unit,
-    onFlip: () -> Unit,
+    onAction: () -> Unit,
 ) {
     val links = LocalUriHandler.current
 
-    FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(Space.sm),
-        verticalArrangement = Arrangement.spacedBy(Space.sm),
-        modifier = Modifier.fillMaxWidth().padding(top = TopGutter),
-    ) {
-        LukiaButton(
-            label = if (inquiry.showingOriginal) "Show the translation" else "Show the original",
-            onClick = onFlip,
-            variant = ButtonVariant.Secondary,
-            size = ButtonSize.Compact,
-        )
+    Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+        // Why the reader is looking at this panel rather than at a translation,
+        // said before the button that offers to try again - a reason to press it
+        // or to reach for the site instead.
+        (inquiry.onThePage as? WordOnThePage.Failed)?.let { failed ->
+            Text(
+                text = failed.message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
 
-        inquiry.site?.let { site ->
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(Space.sm),
+            verticalArrangement = Arrangement.spacedBy(Space.sm),
+            modifier = Modifier.fillMaxWidth().padding(top = TopGutter),
+        ) {
             LukiaButton(
-                label = "Open in ${site.label}",
-                onClick = {
-                    links.openUri(site.url)
-                    onDismiss()
-                },
+                label = inquiry.onThePage.label(),
+                onClick = onAction,
                 variant = ButtonVariant.Secondary,
                 size = ButtonSize.Compact,
             )
+
+            inquiry.site?.let { site ->
+                LukiaButton(
+                    label = "Open in ${site.label}",
+                    onClick = {
+                        links.openUri(site.url)
+                        onDismiss()
+                    },
+                    variant = ButtonVariant.Secondary,
+                    size = ButtonSize.Compact,
+                )
+            }
         }
     }
+}
+
+/** What the one button that touches the page behind the panel offers to do. */
+private fun WordOnThePage.label(): String = when (this) {
+    WordOnThePage.Translated -> "Show the original"
+    WordOnThePage.Original -> "Show the translation"
+    is WordOnThePage.Failed -> "Try again"
 }
 
 /** A step down from the entry, so the buttons read as what to do about it. */

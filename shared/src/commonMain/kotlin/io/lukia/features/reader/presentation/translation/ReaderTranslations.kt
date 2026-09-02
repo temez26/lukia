@@ -8,6 +8,7 @@ import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.domain.text.TextAnchor
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
+import io.lukia.features.translate.presentation.PassageSelection
 import io.lukia.features.translate.presentation.PassageTranslation
 import io.lukia.features.translate.presentation.TranslationSession
 import kotlinx.coroutines.CoroutineScope
@@ -186,23 +187,17 @@ internal class ReaderTranslations(
      * changing what the reader set their gestures to.
      */
     fun openWordInquiry(
-        anchor: TextAnchor,
-        word: String,
-        showingOriginal: Boolean,
+        selection: PassageSelection,
+        onThePage: WordOnThePage,
         sourceLanguage: String?,
     ) {
-        words.open(anchor, word, showingOriginal, sourceLanguage)
+        words.open(selection, onThePage, sourceLanguage)
     }
 
-    /**
-     * Puts the book's own word back, or the translation over it again, and closes
-     * the panel that asked.
-     *
-     * The panel is what holding a word now opens, so this is where the flip that
-     * a second hold used to do has moved to - see [TranslationSession.flip].
-     */
-    fun flipInquiredWord() {
-        words.anchor?.let(session::flip)
+    /** Which word the open panel is about, for whoever can build it a request. */
+    val inquiredWord: PassageSelection? get() = words.selection
+
+    fun dismissWordInquiry() {
         words.dismiss()
     }
 

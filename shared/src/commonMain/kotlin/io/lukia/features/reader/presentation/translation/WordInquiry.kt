@@ -25,18 +25,44 @@ data class WordInquiry(
     val word: String,
     /** What the dictionary has to say, as it arrives. */
     val entry: UiState<WordEntry>,
-    /**
-     * Whether the book's own word is what is on the page underneath this.
-     *
-     * Carried so the panel can offer putting it back, which is what holding the
-     * word used to do on its own. Nothing is lost by moving it in here - it is
-     * one press either way - and what is gained is that the gesture no longer
-     * has to mean two things depending on what happened last.
-     */
-    val showingOriginal: Boolean,
+    /** What the word is doing on the page underneath this. */
+    val onThePage: WordOnThePage,
     /** Where the reader can go to read more, or null when no site is set up. */
     val site: WordSiteLink? = null,
 )
+
+/**
+ * What has become of the word on the page, which is what the panel can offer to
+ * do about it.
+ *
+ * The three are what holding a word used to do on its own, gathered into one
+ * place because the hold now opens this panel instead: a translated word could
+ * be put back, a word put back could be brought forward again, and one that
+ * failed could be asked about again. Nothing is lost by moving them in here -
+ * each is one press either way - and what is gained is that the gesture no
+ * longer means three things depending on what happened last.
+ */
+@Immutable
+sealed interface WordOnThePage {
+
+    /** The translation is standing where the word was. */
+    data object Translated : WordOnThePage
+
+    /** The reader has put the book's own word back. */
+    data object Original : WordOnThePage
+
+    /**
+     * Looking it up failed, and [message] says why.
+     *
+     * The reason a failure opens this panel at all rather than quietly asking
+     * again. A word the reader's own service could not answer is exactly the
+     * word they want to take somewhere else, and asking the same service a
+     * second time is the one thing least likely to help - so the dictionary is
+     * read, the site is offered, and asking again is one of the things on the
+     * panel rather than the only thing the gesture can do.
+     */
+    data class Failed(val message: String) : WordOnThePage
+}
 
 /** A site and the address the word is already written into. */
 @Immutable

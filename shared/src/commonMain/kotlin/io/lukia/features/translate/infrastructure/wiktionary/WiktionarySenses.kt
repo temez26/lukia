@@ -88,3 +88,50 @@ private fun String.fallbackSenses(limit: Int): List<String> = lineSequence()
     .distinct()
     .take(limit)
     .toList()
+
+/**
+ * How short a word may be and still be followed to.
+ *
+ * Two, because `go`, `be` and `do` are the base forms most often arrived at from
+ * an inflection - `goes`, `been`, `did` - and a floor of three would miss every
+ * one of them. The safety is not the length but [baseForm]'s other rule: the
+ * word being looked up has to begin with this one.
+ */
+private const val MIN_BASE_LENGTH = 2
+
+/**
+ * The word this entry only points at, or null when it defines something itself.
+ *
+ * A wiki's page for an inflected form is often not a definition at all. Looking
+ * up `values` on the Finnish Wiktionary answers `monikkomuoto sanasta value` -
+ * "plural of value" - which is a fact about grammar and no help whatsoever to
+ * somebody who wanted to know it means `arvo`. The reader is then told what
+ * their word is a form of, and left to look that up themselves.
+ *
+ * Two rules find it, and they are deliberately narrow, because following the
+ * wrong word is worse than not following at all:
+ *
+ *  - It is a phrase rather than a definition, and the word it points at is the
+ *    last of them. Every language writes this the same way round -
+ *    `plural of value`, `monikkomuoto sanasta value`, `böjningsform av värde` -
+ *    while a translation of a word is usually a word.
+ *  - The word being looked up begins with it. That is what makes `values` follow
+ *    to `value` and `running` to `run`, and what stops a two-word sense from
+ *    being read as a pointer at whatever it happens to end with.
+ *
+ * Irregular forms - `went`, `better` - fail the second rule and are left alone,
+ * which is the right way to be wrong here.
+ */
+internal fun List<String>.baseForm(word: String): String? {
+    val first = firstOrNull()?.trim() ?: return null
+
+    if (!first.contains(' ')) return null
+
+    val candidate = first.substringAfterLast(' ').trim { !it.isLetterOrDigit() }
+
+    if (candidate.length < MIN_BASE_LENGTH || candidate.equals(word, ignoreCase = true)) {
+        return null
+    }
+
+    return candidate.takeIf { word.startsWith(it, ignoreCase = true) }
+}

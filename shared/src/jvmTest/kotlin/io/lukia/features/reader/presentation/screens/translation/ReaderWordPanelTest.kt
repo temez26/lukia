@@ -6,6 +6,7 @@ import androidx.compose.ui.test.runComposeUiTest
 import io.lukia.core.domain.AppError
 import io.lukia.core.presentation.UiState
 import io.lukia.features.reader.presentation.translation.WordInquiry
+import io.lukia.features.reader.presentation.translation.WordOnThePage
 import io.lukia.features.reader.presentation.translation.WordSiteLink
 import io.lukia.features.translate.domain.lookup.WordEntry
 import kotlin.test.Test
@@ -62,7 +63,7 @@ class ReaderWordPanelTest {
 
     @Test
     fun aWordAlreadyBackToTheBooksIsOfferedItsTranslation() = runComposeUiTest {
-        setReader(wordInquiry = inquiry(showingOriginal = true))
+        setReader(wordInquiry = inquiry(onThePage = WordOnThePage.Original))
 
         onNodeWithText("Show the translation").assertExists()
     }
@@ -80,11 +81,53 @@ class ReaderWordPanelTest {
         onNodeWithText("Open in Google").assertExists()
     }
 
+    /**
+     * A word whose lookup failed is why the panel opens at all for one - the
+     * service that could not answer it is the last thing worth asking again, and
+     * everything else here still works.
+     */
+    @Test
+    fun aWordThatCouldNotBeLookedUpSaysWhyAndOffersAnotherGo() = runComposeUiTest {
+        setReader(
+            wordInquiry = inquiry(
+                onThePage = WordOnThePage.Failed("The translation service did not answer."),
+            ),
+        )
+
+        onNodeWithText("The translation service did not answer.").assertExists()
+        onNodeWithText("Try again").assertExists()
+        onNodeWithText("Open in Google").assertExists()
+        onNodeWithText("valas").assertExists()
+    }
+
+    /**
+     * A book is written in inflected words, and a wiki's page for one of them
+     * often only says which word it is a form of - so the entry that comes back
+     * is the base form's, and saying so is what lets the reader trust it.
+     */
+    @Test
+    fun theFormTheEntryWasFoundUnderIsShownWhenItDiffers() = runComposeUiTest {
+        setReader(
+            wordInquiry = inquiry(
+                entry = UiState.Success(WordEntry("value", listOf("arvo"))),
+            ),
+        )
+
+        onNodeWithText("Looked up under “value”").assertExists()
+    }
+
+    @Test
+    fun theFormIsNotShownWhenItIsTheWordThatWasHeld() = runComposeUiTest {
+        setReader(wordInquiry = inquiry())
+
+        onNodeWithText("Looked up under", substring = true).assertDoesNotExist()
+    }
+
     private fun inquiry(
         entry: UiState<WordEntry> = UiState.Success(
             WordEntry("whale", listOf("valas", "valaskala")),
         ),
-        showingOriginal: Boolean = false,
+        onThePage: WordOnThePage = WordOnThePage.Translated,
         site: WordSiteLink? = WordSiteLink(
             label = "Google",
             url = "https://translate.google.com/?text=whale",
@@ -92,7 +135,7 @@ class ReaderWordPanelTest {
     ) = WordInquiry(
         word = "whale",
         entry = entry,
-        showingOriginal = showingOriginal,
+        onThePage = onThePage,
         site = site,
     )
 }

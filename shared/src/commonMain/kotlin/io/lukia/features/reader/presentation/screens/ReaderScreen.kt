@@ -8,7 +8,7 @@ import androidx.compose.ui.unit.dp
 import io.lukia.features.reader.presentation.ReaderViewModel
 import io.lukia.features.reader.presentation.components.chrome.readerToolbarHeight
 import io.lukia.features.reader.presentation.translation.bulkTranslation
-import io.lukia.features.reader.presentation.translation.onInquiredWordFlipped
+import io.lukia.features.reader.presentation.translation.onInquiredWordActioned
 import io.lukia.features.reader.presentation.translation.onPassageHold
 import io.lukia.features.reader.presentation.translation.onPassageSelected
 import io.lukia.features.reader.presentation.translation.onPassagesRequested
@@ -95,7 +95,7 @@ fun ReaderScreen(
         onPassageHold = viewModel::onPassageHold,
         onPassagesRequested = viewModel::onPassagesRequested,
         onWordInquiryDismiss = viewModel::onWordInquiryDismissed,
-        onInquiredWordFlip = viewModel::onInquiredWordFlipped,
+        onInquiredWordAction = viewModel::onInquiredWordActioned,
         onTranslateOnScreen = viewModel::onTranslateOnScreen,
         onContinuousTranslationChange = viewModel::setContinuousTranslation,
         onTranslationsVisibleChange = viewModel::setTranslationsVisible,

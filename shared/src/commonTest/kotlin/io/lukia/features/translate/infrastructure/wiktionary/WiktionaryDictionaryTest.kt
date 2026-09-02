@@ -5,6 +5,7 @@ import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.HttpRequestData
 import io.ktor.http.ContentType
 import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
@@ -57,6 +58,78 @@ class WiktionaryDictionaryTest {
         assertEquals("set", entry.word)
     }
 
+    /**
+     * The case that made the dictionary useless on real prose. A book is written
+     * in inflected words, and the Finnish Wiktionary's page for `values` is not a
+     * definition at all - it says `monikkomuoto sanasta value`, which tells
+     * somebody who wanted `arvo` only that they have more looking up to do.
+     */
+    @Test
+    fun aPageThatOnlySaysWhichWordThisIsAFormOfFollowsToThatWord() = runTest {
+        val asked = mutableListOf<String>()
+        val dictionary = dictionary(
+            answering { request ->
+                asked += request.url.parameters["titles"].orEmpty()
+
+                if (request.url.parameters["titles"] == "values") FORM_OF else VALUE_ENTRY
+            },
+        )
+
+        val entry = dictionary.define("values", TargetLanguage.Finnish)
+
+        assertEquals(listOf("arvo", "hinta"), entry.senses)
+        assertEquals(listOf("values", "value"), asked)
+    }
+
+    /** And it says which word it answered under, since that is not the one asked. */
+    @Test
+    fun theWordItAnsweredUnderComesBackWithIt() = runTest {
+        val dictionary = dictionary(
+            answering { request ->
+                if (request.url.parameters["titles"] == "values") FORM_OF else VALUE_ENTRY
+            },
+        )
+
+        assertEquals("value", dictionary.define("values", TargetLanguage.Finnish).word)
+    }
+
+    /**
+     * Followed once and no further, and only when there is something at the other
+     * end: a base form with no entry of its own leaves the word's own page
+     * standing, which is a poor answer and better than none.
+     */
+    @Test
+    fun aBaseFormWithNoEntryLeavesWhatTheWordsOwnPageSaid() = runTest {
+        val dictionary = dictionary(
+            answering { request ->
+                if (request.url.parameters["titles"] == "values") FORM_OF else MISSING_PAGE
+            },
+        )
+
+        val entry = dictionary.define("values", TargetLanguage.Finnish)
+
+        assertEquals("values", entry.word)
+        assertEquals(listOf("monikkomuoto sanasta value"), entry.senses)
+    }
+
+    /**
+     * A definition is not a pointer. Following the last word of every two-word
+     * sense would send a reader from `value` to `hinta`.
+     */
+    @Test
+    fun anEntryThatDefinesTheWordIsNotFollowedAnywhere() = runTest {
+        val asked = mutableListOf<String>()
+        val dictionary = dictionary(
+            answering { request ->
+                asked += request.url.parameters["titles"].orEmpty()
+                VALUE_ENTRY
+            },
+        )
+
+        assertEquals("value", dictionary.define("value", TargetLanguage.Finnish).word)
+        assertEquals(listOf("value"), asked)
+    }
+
     @Test
     fun aWordInNoDictionaryAtAllSaysSo() = runTest {
         val failure = runCatching {
@@ -83,9 +156,11 @@ class WiktionaryDictionaryTest {
         return WiktionaryDictionary(WiktionaryPages(client, settings, json))
     }
 
-    private fun answers(body: String) = MockEngine {
+    private fun answers(body: String) = answering { body }
+
+    private fun answering(body: (HttpRequestData) -> String) = MockEngine { request ->
         respond(
-            content = body,
+            content = body(request),
             headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
         )
     }
@@ -99,5 +174,16 @@ class WiktionaryDictionaryTest {
         """
 
         const val MISSING_PAGE = """{"query": {"pages": [{"title": "set", "missing": true}]}}"""
+
+        /** A page that is only a pointer, as a wiki really writes one. */
+        const val FORM_OF = """
+            {"query": {"pages": [{"title": "values", "extract":
+            "== Englanti ==\n=== Substantiivi ===\nmonikkomuoto sanasta value\n"}]}}
+        """
+
+        const val VALUE_ENTRY = """
+            {"query": {"pages": [{"title": "value", "extract":
+            "== Englanti ==\n=== Substantiivi ===\narvo\nhinta\n"}]}}
+        """
     }
 }

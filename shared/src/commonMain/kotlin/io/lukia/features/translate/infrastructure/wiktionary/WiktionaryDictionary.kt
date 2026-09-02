@@ -37,12 +37,12 @@ internal class WiktionaryDictionary(
     override suspend fun define(word: String, targetLanguage: TargetLanguage): WordEntry {
         val term = word.trim()
 
-        val senses = pages.entry(term, targetLanguage)?.senses(term, MAX_SENSES)
+        val entry = pages.entryFor(term, targetLanguage, MAX_SENSES)
 
-        if (senses.isNullOrEmpty()) {
+        if (entry == null || entry.senses.isEmpty()) {
             throw AppErrorException(AppError.Unexpected("No dictionary entry for “$term”."))
         }
 
-        return WordEntry(word = term, senses = senses)
+        return entry
     }
 }

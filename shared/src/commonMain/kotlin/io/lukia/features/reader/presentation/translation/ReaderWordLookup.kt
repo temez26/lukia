@@ -5,8 +5,8 @@ import io.lukia.core.presentation.UiState
 import io.lukia.features.translate.application.LookUpWordUseCase
 import io.lukia.features.translate.domain.lookup.urlFor
 import io.lukia.features.translate.domain.settings.TranslationSettings
-import io.lukia.features.translate.domain.text.TextAnchor
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
+import io.lukia.features.translate.presentation.PassageSelection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,10 +39,14 @@ internal class ReaderWordLookup(
     val inquiry: StateFlow<WordInquiry?> = _inquiry.asStateFlow()
 
     /**
-     * Which passage the open inquiry is about - for putting the book's own word
-     * back, which is the one thing the panel does to the page behind it.
+     * Which passage the open inquiry is about - for the one thing the panel does
+     * to the page behind it, which is whatever [WordOnThePage] says is available.
+     *
+     * The whole selection rather than its anchor, because asking a failed word
+     * again needs the paragraph around it built into a request, exactly as the
+     * gesture that first asked did.
      */
-    var anchor: TextAnchor? = null
+    var selection: PassageSelection? = null
         private set
 
     private var asking: Job? = null
@@ -53,20 +57,20 @@ internal class ReaderWordLookup(
      * which is what those sites do with it anyway.
      */
     fun open(
-        anchor: TextAnchor,
-        word: String,
-        showingOriginal: Boolean,
+        selection: PassageSelection,
+        onThePage: WordOnThePage,
         sourceLanguage: String?,
     ) {
         asking?.cancel()
 
         val current = settings.settings.value
+        val word = selection.passage
 
-        this.anchor = anchor
+        this.selection = selection
         _inquiry.value = WordInquiry(
             word = word,
             entry = UiState.Loading,
-            showingOriginal = showingOriginal,
+            onThePage = onThePage,
             site = current.linkFor(word, sourceLanguage),
         )
 
@@ -85,7 +89,7 @@ internal class ReaderWordLookup(
     fun dismiss() {
         asking?.cancel()
         asking = null
-        anchor = null
+        selection = null
         _inquiry.value = null
     }
 }
