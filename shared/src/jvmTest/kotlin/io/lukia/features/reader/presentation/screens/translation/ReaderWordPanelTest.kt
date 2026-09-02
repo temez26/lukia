@@ -13,6 +13,7 @@ import io.lukia.features.reader.presentation.translation.WordInquiry
 import io.lukia.features.reader.presentation.translation.WordOnThePage
 import io.lukia.features.reader.presentation.translation.WordSiteLink
 import io.lukia.features.translate.domain.lookup.WordEntry
+import io.lukia.features.translate.domain.lookup.WordMeaning
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -165,12 +166,77 @@ class ReaderWordPanelTest {
         setReader(
             wordInquiry = {
                 inquiry(
-                    entry = UiState.Success(WordEntry("value", listOf("arvo"))),
+                    entry = UiState.Success(WordEntry("value", meaning("arvo"))),
                 )
             },
         )
 
         onNodeWithText("Looked up under “value”").assertExists()
+    }
+
+    /**
+     * And in the wiki's own words where it had any. `monikkomuoto sanasta value`
+     * is the half of the answer that cannot go over the word in the book, and the
+     * half somebody learning the language held the word for.
+     */
+    @Test
+    fun whatFormTheHeldWordIsShownAsThePageWroteIt() = runComposeUiTest {
+        setReader(
+            wordInquiry = { inquiry(word = "whales", entry = UiState.Success(formEntry)) },
+        )
+
+        onNodeWithText("monikkomuoto sanasta whale").assertExists()
+        onNodeWithText("valas").assertExists()
+    }
+
+    /** With the word the senses actually belong to said where the senses are. */
+    @Test
+    fun theWordTheSensesBelongToIsNamedAboveThem() = runComposeUiTest {
+        setReader(
+            wordInquiry = { inquiry(word = "whales", entry = UiState.Success(formEntry)) },
+        )
+
+        onNodeWithText("Substantiivi").assertExists()
+    }
+
+    /** What the entry lists beside its senses is what to look up next. */
+    @Test
+    fun theWordsListedBesideTheEntryAreShown() = runComposeUiTest {
+        setReader(
+            wordInquiry = { inquiry(word = "whales", entry = UiState.Success(formEntry)) },
+        )
+
+        onNodeWithText("Related words").assertExists()
+        onNodeWithText("valaanpyynti").assertExists()
+    }
+
+    /**
+     * A word held because it had no direct translation is being told why one line
+     * up, in the form the wiki gave it. Printing the direction that got the reader
+     * here would be the panel telling them to open the panel.
+     */
+    @Test
+    fun theDirectionIntoThisPanelIsNotRepeatedInsideIt() = runComposeUiTest {
+        val direction = "No direct translation — hold the word for more about it."
+
+        setReader(
+            wordInquiry = {
+                inquiry(
+                    word = "whales",
+                    entry = UiState.Success(
+                        WordEntry(
+                            word = "whales",
+                            meanings = emptyList(),
+                            form = "monikkomuoto sanasta whale",
+                        ),
+                    ),
+                    onThePage = WordOnThePage.Failed(direction),
+                )
+            },
+        )
+
+        onNodeWithText(direction).assertDoesNotExist()
+        onNodeWithText("monikkomuoto sanasta whale").assertExists()
     }
 
     @Test
@@ -206,9 +272,23 @@ class ReaderWordPanelTest {
         onNodeWithText("valas").assertExists()
     }
 
+    private fun meaning(vararg senses: String) = listOf(WordMeaning(null, senses.toList()))
+
+    /** An entry arrived at through a form, with everything its page carried. */
+    private val formEntry = WordEntry(
+        word = "whale",
+        meanings = listOf(
+            WordMeaning("Substantiivi", listOf("valas", "valaskala")),
+            WordMeaning("Verbi", listOf("valaanpyyntiin lähteä")),
+        ),
+        form = "monikkomuoto sanasta whale",
+        related = listOf("valaanpyynti"),
+    )
+
     private fun inquiry(
+        word: String = "whale",
         entry: UiState<WordEntry> = UiState.Success(
-            WordEntry("whale", listOf("valas", "valaskala")),
+            WordEntry("whale", meaning("valas", "valaskala")),
         ),
         onThePage: WordOnThePage = WordOnThePage.Translated,
         site: WordSiteLink? = WordSiteLink(
@@ -216,7 +296,7 @@ class ReaderWordPanelTest {
             url = "https://translate.google.com/?text=whale",
         ),
     ) = WordInquiry(
-        word = "whale",
+        word = word,
         entry = entry,
         onThePage = onThePage,
         site = site,

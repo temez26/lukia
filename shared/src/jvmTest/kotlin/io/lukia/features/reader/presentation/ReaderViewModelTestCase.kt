@@ -26,6 +26,7 @@ import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.Translator
 import io.lukia.features.translate.domain.lookup.WordDictionary
 import io.lukia.features.translate.domain.lookup.WordEntry
+import io.lukia.features.translate.domain.lookup.WordMeaning
 import io.lukia.features.translate.domain.provider.FakeTranslator
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import kotlinx.coroutines.CoroutineDispatcher
@@ -231,7 +232,7 @@ abstract class ReaderViewModelTestCase {
         translator: Translator = FakeTranslator(),
     ) = ReaderTranslationsFactory(
         TranslatePassageUseCase(translator),
-        LookUpWordUseCase(WordDictionary { word, _ -> WordEntry(word, listOf("a sense")) }),
+        LookUpWordUseCase(WordDictionary { word, _ -> WordEntry(word, listOf(WordMeaning(null, listOf("a sense")))) }),
         TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()),
     )
 

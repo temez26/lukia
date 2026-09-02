@@ -192,6 +192,62 @@ sauna
     }
 
     /**
+     * One word stands where one word stood.
+     *
+     * A dictionary writes a sense the way a dictionary does - `taito, kyky,
+     * kyvykkyys` - and all three of those spliced into the middle of a sentence
+     * is not something anybody can read. The rest are in the panel, which has
+     * room for them.
+     */
+    @Test
+    fun onlyOneReadingOfTheSenseGoesOverTheWord() = runTest {
+        val translator = translator(answers { respondJson(SKILL_ENTRY) })
+
+        assertEquals("taito", translator.translate(request(text = "skill")).text)
+    }
+
+    /** And the field a sense belongs to is not part of the word either. */
+    @Test
+    fun theQualifierOnASenseIsNotPutOverTheWord() = runTest {
+        val entry = """{"query": {"pages": [{"title": "mean", "extract":
+            "== Englanti ==
+=== Substantiivi ===
+(matematiikka, tilastotiede) keskiarvo
+"}]}}"""
+        val translator = translator(answers { respondJson(entry) })
+
+        assertEquals("keskiarvo", translator.translate(request(text = "mean")).text)
+    }
+
+    /**
+     * Which reading it is cannot be the right one, and is not trying to be. A
+     * word has as many meanings as it has parts of speech and this is handed one
+     * word and no sentence - so what goes on the page is the page's own first
+     * answer, and the parts of speech it is not go under the paragraph.
+     */
+    @Test
+    fun theOtherPartsOfSpeechAreOfferedAsARemark() = runTest {
+        val translator = translator(answers { respondJson(SKILL_ENTRY) })
+
+        val note = translator.translate(request(text = "skill")).note.orEmpty()
+
+        assertTrue(note.contains("osata"), note)
+    }
+
+    /**
+     * And they are offered before a second synonym of the first, since that is
+     * the difference the reader cannot see from the word on the page.
+     */
+    @Test
+    fun anotherPartOfSpeechComesBeforeAnotherWordForTheSameOne() = runTest {
+        val translator = translator(answers { respondJson(SKILL_ENTRY) })
+
+        val note = translator.translate(request(text = "skill")).note.orEmpty()
+
+        assertEquals("osata", note)
+    }
+
+    /**
      * The in-line lookup follows a pointer too, and it matters most here: a
      * `monikkomuoto sanasta value` written over `values` in the middle of a
      * paragraph is a worse answer than leaving the book's own word alone.
@@ -209,6 +265,32 @@ sauna
         )
 
         assertEquals("arvo", translator.translate(request(text = "values")).text)
+    }
+
+    /**
+     * And where there is nothing at the other end of the pointer, grammar still
+     * does not go over the word.
+     *
+     * `monikkomuoto sanasta value` spliced into a sentence is worse than leaving
+     * the book's own word alone: it is not a translation, it is not readable in
+     * place of one, and it is the one thing the panel is good at showing. So what
+     * goes under the paragraph is the way into the panel.
+     */
+    @Test
+    fun aFormWithNoBaseEntryIsNotPutOverTheWord() = runTest {
+        val translator = translator(
+            answers { request ->
+                if (request.url.parameters["titles"] == "values") {
+                    respondJson(FORM_OF)
+                } else {
+                    respondJson(MISSING_PAGE)
+                }
+            },
+        )
+
+        val error = translator.failure(request(text = "values")) as AppError.Unexpected
+
+        assertTrue(error.cause.orEmpty().contains("hold the word"), error.cause.orEmpty())
     }
 
     @Test
@@ -282,20 +364,6 @@ support in decline
 soutien
 "}]}}
         """
-
-        /** A page that is only a pointer at another word, as a wiki writes one. */
-        const val FORM_OF = """
-            {"query": {"pages": [{"title": "values", "extract":
-            "== Englanti ==\n=== Substantiivi ===\nmonikkomuoto sanasta value\n"}]}}
-        """
-
-        const val VALUE_ENTRY = """
-            {"query": {"pages": [{"title": "value", "extract":
-            "== Englanti ==\n=== Substantiivi ===\narvo\nhinta\n"}]}}
-        """
-
-        /** A wiki says "there is no such page" rather than failing to answer. */
-        const val MISSING_PAGE = """{"query": {"pages": [{"title": "whale", "missing": true}]}}"""
     }
 }
 

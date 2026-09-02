@@ -41,7 +41,7 @@ private const val FALLBACK_WIKI = "en"
  * Its own type rather than part of the translator that first needed it, because
  * two things now ask this question of the same wikis: a word being translated in
  * the line it sits on, and the whole entry the reader asked to see. What differs
- * between them is how much of the page they keep - see [senses] - and that is
+ * between them is how much of the page they keep - see [reading] - and that is
  * not a reason to fetch it two ways.
  *
  * Nothing here is configured and nothing is charged. It also never sees the
@@ -65,8 +65,13 @@ internal class WiktionaryPages(
      *
      * Followed once and no further. A chain of pointers is not a thing wikis
      * write, and a lookup that could walk one would be a lookup that could loop.
-     * If the base form turns out to have no entry either, what the word's own
-     * page said stands - a poor answer, and better than none.
+     *
+     * What the word's own page said becomes [WordEntry.form] either way - the
+     * grammar is worth keeping whether or not the base form answered, and it is
+     * the one thing that explains why the reader is being shown a word they did
+     * not hold. A base form with no entry of its own therefore leaves an entry
+     * with a form and no senses, which is an answer rather than a failure: it
+     * has somewhere to go, which is the panel, and nowhere to go on the page.
      *
      * [WordEntry.word] is the word actually defined, which is not always the one
      * that was asked about. Whoever shows it can say so.
@@ -77,27 +82,48 @@ internal class WiktionaryPages(
         limit: Int,
     ): WordEntry? {
         val term = word.trim()
-        val senses = entry(term, targetLanguage)?.senses(term, limit) ?: return null
+        val own = entry(term, targetLanguage)?.reading(term, limit) ?: return null
+        val base = own.senses.baseForm(term) ?: return own.asEntry(term)
 
-        val base = senses.baseForm(term) ?: return WordEntry(term, senses)
-
+        val form = own.senses.first()
         val defined = entry(base, targetLanguage)
-            ?.senses(base, limit)
-            ?.takeIf { it.isNotEmpty() }
+            ?.reading(base, limit)
+            ?.takeIf { it.senses.isNotEmpty() }
 
-        return if (defined == null) WordEntry(term, senses) else WordEntry(base, defined)
+        return if (defined == null) {
+            own.withoutTheForm().asEntry(term, form)
+        } else {
+            defined.asEntry(base, form)
+        }
     }
 
-    /** The page for [word], as one run of text, or null where no wiki has one. */
+    /**
+     * The page for [word], as one run of text, or null where no wiki has one.
+     *
+     * Asked under the word as the book spelled it and then under its lower case,
+     * because a Wiktionary title is case sensitive in a way a Wikipedia title is
+     * not: `juoksi` has a page and `Juoksi` has none, so a word that happened to
+     * open a sentence was reported as a word no dictionary had ever heard of.
+     * The word as written is asked first even so - `Rooma` and `rooma` are
+     * different words, and the one the book capitalised is the one it meant.
+     *
+     * The reader's own wiki is exhausted before the English one is opened, since
+     * a Finnish reader would rather have the Finnish page for a word than the
+     * English page for the same word.
+     */
     private suspend fun entry(word: String, targetLanguage: TargetLanguage): String? {
         val reader = targetLanguage.tag.substringBefore('-')
 
+        // Short-circuited rather than looked up and discarded: a reader whose own
+        // language is the fallback has one wiki to ask, and asking it twice to
+        // throw the second answer away is a request nobody wanted.
+        val wikis = listOf(reader, FALLBACK_WIKI).distinct()
+        val titles = listOf(word, word.lowercase()).distinct()
+
         return translating(settings.settings.value) {
-            // Short-circuited rather than looked up and discarded: a reader whose
-            // own language is the fallback has one wiki to ask, and asking it
-            // twice to throw the second answer away is a request nobody wanted.
-            page(word, reader)
-                ?: if (reader == FALLBACK_WIKI) null else page(word, FALLBACK_WIKI)
+            wikis.firstNotNullOfOrNull { wiki ->
+                titles.firstNotNullOfOrNull { title -> page(title, wiki) }
+            }
         }
     }
 
@@ -149,3 +175,30 @@ internal class WiktionaryPages(
 
 private fun JsonObject.isMissing(): Boolean =
     this["missing"]?.jsonPrimitive?.content?.equals("true", ignoreCase = true) == true
+
+/**
+ * The reading of one page as the entry the rest of the app sees, said once
+ * rather than at each of the three places [WiktionaryPages.entryFor] can end.
+ */
+private fun WiktionaryReading.asEntry(word: String, form: String? = null): WordEntry = WordEntry(
+    word = word,
+    meanings = meanings,
+    form = form,
+    related = related,
+)
+
+/**
+ * The reading with the line that was only a pointer taken out of it.
+ *
+ * Reached when the base form it pointed at has no page of its own, and what is
+ * left has to be the entry without the grammar: the grammar has somewhere of its
+ * own to go - see [WordEntry.form] - and printed in both places it reads as a
+ * meaning of the word, which is the one thing it is not.
+ */
+private fun WiktionaryReading.withoutTheForm(): WiktionaryReading = copy(
+    meanings = meanings
+        .mapIndexed { index, meaning ->
+            if (index == 0) meaning.copy(senses = meaning.senses.drop(1)) else meaning
+        }
+        .filter { it.senses.isNotEmpty() },
+)

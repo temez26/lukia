@@ -1,64 +1,139 @@
 package io.lukia.features.translate.infrastructure.wiktionary
 
+import io.lukia.features.translate.domain.lookup.WordMeaning
+
 /**
- * The senses in a page of a Wiktionary, out of the text of the whole page.
+ * How many other words an entry may hand back with itself.
+ *
+ * A page's derived terms and compounds run to whole columns on a common word,
+ * and past a dozen they stop being a list somebody reads and become a list they
+ * scroll past.
+ */
+private const val MAX_RELATED = 12
+
+/**
+ * How many parts of speech are worth keeping.
+ *
+ * `mean` is four sections in one language and that is close to the worst a real
+ * page gets. The ceiling is here so that a page nothing else caught - a stub
+ * with a heading every other line - cannot hand back a panel nobody can read.
+ */
+private const val MAX_MEANINGS = 6
+
+/** One language's part of a page, read: what the word means and what it points at. */
+internal data class WiktionaryReading(
+    val meanings: List<WordMeaning>,
+    val related: List<String>,
+) {
+
+    /** Every sense of every part of speech, in the order the page listed them. */
+    val senses: List<String>
+        get() = meanings.flatMap { it.senses }
+}
+
+/**
+ * What one Wiktionary page actually says about [word].
  *
  * A page is every language that spells the word this way, each with its parts of
  * speech, its senses, and after them its inflections, its derived terms and its
- * references - and the query API hands all of it over as one run of text. What
- * has to come out of that is the first few things the word actually means.
+ * references. What has to come out of it is one language's worth of that.
  *
- * Three rules do it, and the second two were learned the hard way from a page
- * that put `support (monikko supports)` on the page in place of the sentence and
- * left `kannatus` as a footnote:
+ * One language and all of its parts of speech, which is the split that matters.
+ * `mean` is an adjective that is `ilkeä`, a noun that is `keskiarvo` and a verb
+ * that is `tarkoittaa`, and which one a sentence meant is settled by the
+ * sentence - so a dictionary that keeps one of them has thrown away the answer
+ * two times in three. The next language along is different: a word spelled the
+ * same way in Spanish is not this word at all, and mixing the two would hand
+ * back the Finnish for a French homograph.
  *
- *  - A heading is scaffolding. They are asked for with their markup still on, so
- *    a heading is a line inside `=` signs and a sense is a line that is not.
- *  - A line that opens with the word being looked up is not a meaning of it. That
- *    is the headword and its inflections, and further down it is the derived
- *    terms - `support in decline` is a phrase the entry lists, not a sense.
- *  - Once senses have started, the next heading ends them. Otherwise a word
- *    spelled the same way in three languages hands back one sense from each, and
- *    the reader gets the Finnish for a word out of the French section.
+ * Three rules find the senses inside that, and the last two were learned the
+ * hard way from a page that put `support (monikko supports)` on the page in
+ * place of the sentence and left `kannatus` as a footnote:
  *
- * Deliberately still not an attempt to find the right language's section. Which
- * language the word belongs to is what the reader is looking it up to find out,
- * the headings naming it are written in the wiki's own language rather than in a
- * code this could match, and a wrong guess would throw away the only entry the
- * page had.
+ *  - Only a section that could hold senses at all. A pronunciation read as a
+ *    definition is how `IPA(key): /skɪlz/` ends up over a word - see
+ *    [WikiSection.Kind.Aside].
+ *  - A line that opens with the word being looked up is not a meaning of it.
+ *    That is the headword and its inflections, and further down it is the
+ *    derived terms - `support in decline` is a phrase the entry lists, not a
+ *    sense.
+ *  - Where the language ends, the entry ends. See [languageLevel].
  *
- * [limit] is what separates the two things that ask this. A word being replaced
- * in the line it sits on can only carry a few senses before the paragraph stops
- * being readable; a reader who opened the entry on purpose asked for the entry.
+ * [limit] is how many senses one part of speech may keep, and it is what
+ * separates the two things that ask this. A word being replaced in the line it
+ * sits on can only carry a few before the paragraph stops being readable; a
+ * reader who opened the entry on purpose asked for the entry.
  */
-internal fun String.senses(word: String, limit: Int): List<String> {
-    val senses = mutableListOf<String>()
-
-    for (raw in lineSequence()) {
-        val line = raw.trim()
-
-        if (line.isEmpty()) continue
-
-        if (line.startsWith("=")) {
-            // The heading that opens the next thing, once there is something to
-            // have finished.
-            if (senses.isNotEmpty()) break
-
-            continue
-        }
-
-        if (line.isScaffoldingFor(word)) continue
-
-        if (line !in senses) senses += line
-        if (senses.size == limit) break
-    }
+internal fun String.reading(word: String, limit: Int): WiktionaryReading {
+    val sections = sections()
+    val index = sections.indexOfFirst { it.holdsSensesOf(word) }
 
     // A word whose entry is nothing but its own headword - a loanword, a name -
-    // would come back with nothing at all under the rules above. Its own line is
-    // a poor answer and it is better than telling the reader there is no entry
-    // when the page is right there.
-    return senses.ifEmpty { fallbackSenses(limit) }
+    // has no section the rules above would take. Its own line is a poor answer
+    // and it is better than telling the reader there is no entry when the page
+    // is right there.
+    if (index < 0) {
+        return WiktionaryReading(
+            meanings = listOf(WordMeaning(null, sections.anythingAtAll(limit))),
+            related = emptyList(),
+        )
+    }
+
+    val entry = sections.oneLanguageFrom(index)
+
+    return WiktionaryReading(
+        meanings = entry.meanings(word, limit),
+        related = entry.related(),
+    )
 }
+
+/**
+ * The sections belonging to the language the senses were found in.
+ *
+ * A wiki gives each language a heading of its own and files everything about the
+ * word underneath it, so the language boundary is the shallowest heading the
+ * page uses - `== Englanti ==` against the `=== Verbi ===` and
+ * `==== Etymologia ====` nested in it. Taken from the page rather than assumed,
+ * because the section the senses came from can be nested arbitrarily deep: the
+ * English Wiktionary buries its parts of speech under numbered etymologies.
+ */
+private fun List<WikiSection>.oneLanguageFrom(index: Int): List<WikiSection> {
+    val boundary = languageLevel()
+
+    return listOf(this[index]) + drop(index + 1).takeWhile { it.level > boundary }
+}
+
+/** The shallowest heading on the page, which is the one that names a language. */
+private fun List<WikiSection>.languageLevel(): Int =
+    filter { it.level > 0 }.minOfOrNull { it.level } ?: 0
+
+private fun List<WikiSection>.meanings(word: String, limit: Int): List<WordMeaning> = asSequence()
+    .filter { it.holdsSensesOf(word) }
+    .take(MAX_MEANINGS)
+    .map { WordMeaning(it.title.takeIf { title -> title.isNotEmpty() }, it.senses(word).take(limit)) }
+    .toList()
+
+private fun List<WikiSection>.related(): List<String> = asSequence()
+    .filter { it.kind == WikiSection.Kind.Related }
+    .flatMap { it.lines }
+    .distinct()
+    .take(MAX_RELATED)
+    .toList()
+
+private fun WikiSection.holdsSensesOf(word: String): Boolean =
+    kind == WikiSection.Kind.Senses && senses(word).isNotEmpty()
+
+/** What this section says the word means, with the entry's own furniture dropped. */
+private fun WikiSection.senses(word: String): List<String> =
+    lines.filterNot { it.isScaffoldingFor(word) }.distinct()
+
+/** Whatever the page has, for an entry the rules above leave empty. */
+private fun List<WikiSection>.anythingAtAll(limit: Int): List<String> = asSequence()
+    .filter { it.kind != WikiSection.Kind.Aside }
+    .flatMap { it.lines }
+    .distinct()
+    .take(limit)
+    .toList()
 
 /**
  * Whether this line is part of the entry rather than part of what the word
@@ -78,60 +153,4 @@ private fun String.isScaffoldingFor(word: String): Boolean {
     val next = getOrNull(word.length) ?: return true
 
     return !next.isLetterOrDigit()
-}
-
-/** Whatever the page has, for an entry the rules above leave empty. */
-private fun String.fallbackSenses(limit: Int): List<String> = lineSequence()
-    .map { it.trim() }
-    .filter { it.isNotEmpty() }
-    .filterNot { it.startsWith("=") }
-    .distinct()
-    .take(limit)
-    .toList()
-
-/**
- * How short a word may be and still be followed to.
- *
- * Two, because `go`, `be` and `do` are the base forms most often arrived at from
- * an inflection - `goes`, `been`, `did` - and a floor of three would miss every
- * one of them. The safety is not the length but [baseForm]'s other rule: the
- * word being looked up has to begin with this one.
- */
-private const val MIN_BASE_LENGTH = 2
-
-/**
- * The word this entry only points at, or null when it defines something itself.
- *
- * A wiki's page for an inflected form is often not a definition at all. Looking
- * up `values` on the Finnish Wiktionary answers `monikkomuoto sanasta value` -
- * "plural of value" - which is a fact about grammar and no help whatsoever to
- * somebody who wanted to know it means `arvo`. The reader is then told what
- * their word is a form of, and left to look that up themselves.
- *
- * Two rules find it, and they are deliberately narrow, because following the
- * wrong word is worse than not following at all:
- *
- *  - It is a phrase rather than a definition, and the word it points at is the
- *    last of them. Every language writes this the same way round -
- *    `plural of value`, `monikkomuoto sanasta value`, `böjningsform av värde` -
- *    while a translation of a word is usually a word.
- *  - The word being looked up begins with it. That is what makes `values` follow
- *    to `value` and `running` to `run`, and what stops a two-word sense from
- *    being read as a pointer at whatever it happens to end with.
- *
- * Irregular forms - `went`, `better` - fail the second rule and are left alone,
- * which is the right way to be wrong here.
- */
-internal fun List<String>.baseForm(word: String): String? {
-    val first = firstOrNull()?.trim() ?: return null
-
-    if (!first.contains(' ')) return null
-
-    val candidate = first.substringAfterLast(' ').trim { !it.isLetterOrDigit() }
-
-    if (candidate.length < MIN_BASE_LENGTH || candidate.equals(word, ignoreCase = true)) {
-        return null
-    }
-
-    return candidate.takeIf { word.startsWith(it, ignoreCase = true) }
 }
