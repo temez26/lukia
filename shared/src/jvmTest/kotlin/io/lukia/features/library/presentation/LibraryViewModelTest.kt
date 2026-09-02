@@ -46,10 +46,7 @@ class LibraryViewModelTest : MainDispatcherTest() {
     fun aLibraryReadThatFailsBecomesAFailureState() = runTest {
         val viewModel = createViewModel(ThrowingLibraryRepository())
 
-        assertEquals(
-            UiState.Failure(AppError.Unexpected("library read blew up")),
-            viewModel.uiState.value,
-        )
+        assertEquals(UiState.Failure(AppError.Unexpected()), viewModel.uiState.value)
     }
 
     @Test
@@ -105,7 +102,7 @@ class LibraryViewModelTest : MainDispatcherTest() {
 
         viewModel.refreshDocument(documentInfo)
 
-        assertEquals("analysis blew up", viewModel.message.value)
+        assertEquals("Something went wrong", viewModel.message.value)
         assertEquals(UiState.Success(listOf(documentInfo)), viewModel.uiState.value)
     }
 

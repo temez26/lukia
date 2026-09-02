@@ -19,15 +19,21 @@ class AppErrorTest {
 
     /** The point of the catch-all: nothing escapes without a shape the UI knows. */
     @Test
-    fun anUnknownThrowableBecomesUnexpectedCarryingItsMessage() {
-        val error = IllegalStateException("disk on fire").toAppError()
-
-        assertEquals(AppError.Unexpected("disk on fire"), error)
+    fun anUnknownThrowableBecomesUnexpected() {
+        assertEquals(AppError.Unexpected(), IllegalStateException().toAppError())
     }
 
+    /**
+     * The message belongs to whoever wrote the code that threw, and
+     * `AppErrorDisplay` would put it in front of a reader - as a file path with
+     * their own name in it, on the desktop. Dropped here so that only prose
+     * written for a reader can reach the field it is shown from.
+     */
     @Test
-    fun aThrowableWithoutAMessageStillNarrows() {
-        assertEquals(AppError.Unexpected(null), IllegalStateException().toAppError())
+    fun anUnknownThrowableLeavesItsOwnMessageBehind() {
+        val error = IllegalStateException("disk on fire").toAppError()
+
+        assertEquals(AppError.Unexpected(), error)
     }
 
     @Test
@@ -39,7 +45,7 @@ class AppErrorTest {
     fun runCatchingAppCapturesAFailure() {
         val result = runCatchingApp { error("nope") }
 
-        assertEquals(AppError.Unexpected("nope"), result.exceptionOrNull()?.toAppError())
+        assertEquals(AppError.Unexpected(), result.exceptionOrNull()?.toAppError())
     }
 
     /**

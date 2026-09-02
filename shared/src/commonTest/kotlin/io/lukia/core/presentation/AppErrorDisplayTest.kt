@@ -31,13 +31,13 @@ class AppErrorDisplayTest {
     }
 
     @Test
-    fun anUnexpectedErrorShowsItsCause() {
+    fun anUnexpectedErrorShowsItsExplanation() {
         assertEquals("boom", AppError.Unexpected("boom").displayMessage())
         assertEquals("boom", AppError.Unexpected("boom").displayShortMessage())
     }
 
     @Test
-    fun anUnexpectedErrorWithoutACauseFallsBackToGenericWording() {
+    fun anUnexpectedErrorWithoutAnExplanationFallsBackToGenericWording() {
         val error = AppError.Unexpected(null)
 
         assertEquals("An unexpected error occurred.", error.displayMessage())

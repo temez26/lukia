@@ -115,10 +115,10 @@ class AnthropicTranslatorTest {
         val translator = translator(MockEngine { throw HttpRequestTimeoutException(it) })
 
         val error = translator.failureFor(request()) as AppError.Unexpected
-        val cause = error.cause.orEmpty()
+        val explanation = error.explanation.orEmpty()
 
-        assertTrue(cause.contains("did not answer"), cause)
-        assertTrue(cause.contains("Settings"), cause)
+        assertTrue(explanation.contains("did not answer"), explanation)
+        assertTrue(explanation.contains("Settings"), explanation)
     }
 
     @Test

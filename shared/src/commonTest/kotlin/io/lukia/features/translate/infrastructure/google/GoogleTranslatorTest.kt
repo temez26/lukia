@@ -124,7 +124,7 @@ class GoogleTranslatorTest {
 
         val error = translator.failure() as AppError.Unexpected
 
-        assertTrue(error.cause.orEmpty().contains("Cloud Translation key"), error.cause.orEmpty())
+        assertTrue(error.explanation.orEmpty().contains("Cloud Translation key"), error.explanation.orEmpty())
     }
 
     /** A key the service will not take says so in its own words. */

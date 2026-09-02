@@ -68,7 +68,7 @@ class LibraryImportTest : MainDispatcherTest() {
 
         viewModel.importDocuments(listOf(TestDocuments.pdf(location = "/test/book.pdf")))
 
-        assertEquals("analysis blew up", viewModel.message.value)
+        assertEquals("Something went wrong", viewModel.message.value)
         assertFalse(viewModel.isImporting.value)
     }
 

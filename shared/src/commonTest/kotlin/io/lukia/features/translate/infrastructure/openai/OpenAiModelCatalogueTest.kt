@@ -110,7 +110,7 @@ class OpenAiModelCatalogueTest {
 
         val error = catalogue.failure() as AppError.Unexpected
 
-        assertTrue(error.cause.orEmpty().contains("http://localhost:1234/v1"), error.cause.orEmpty())
+        assertTrue(error.explanation.orEmpty().contains("http://localhost:1234/v1"), error.explanation.orEmpty())
     }
 
     /** Pointing at the wrong path is the next commonest. */
@@ -120,7 +120,7 @@ class OpenAiModelCatalogueTest {
 
         val error = catalogue.failure() as AppError.Unexpected
 
-        assertTrue(error.cause.orEmpty().contains("/v1"), error.cause.orEmpty())
+        assertTrue(error.explanation.orEmpty().contains("/v1"), error.explanation.orEmpty())
     }
 
     /**
@@ -133,7 +133,7 @@ class OpenAiModelCatalogueTest {
 
         val error = catalogue.failure() as AppError.Unexpected
 
-        assertTrue(error.cause.orEmpty().contains("no models loaded"), error.cause.orEmpty())
+        assertTrue(error.explanation.orEmpty().contains("no models loaded"), error.explanation.orEmpty())
     }
 
     /** Nothing is asked of a public address over plain HTTP, catalogue included. */

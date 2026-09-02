@@ -158,8 +158,8 @@ class WiktionaryDictionaryTest {
         }.exceptionOrNull()?.toAppError() as? AppError.Unexpected
 
         assertTrue(
-            failure?.cause.orEmpty().contains("No dictionary entry"),
-            failure?.cause.orEmpty(),
+            failure?.explanation.orEmpty().contains("No dictionary entry"),
+            failure?.explanation.orEmpty(),
         )
     }
 }

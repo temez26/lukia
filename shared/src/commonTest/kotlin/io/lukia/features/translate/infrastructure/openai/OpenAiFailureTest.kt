@@ -30,7 +30,7 @@ class OpenAiFailureTest {
 
         val error = translator.failureFor(request()) as AppError.Unexpected
 
-        assertTrue(error.cause.orEmpty().contains("http://localhost:1234/v1"), error.cause.orEmpty())
+        assertTrue(error.explanation.orEmpty().contains("http://localhost:1234/v1"), error.explanation.orEmpty())
     }
 
     @Test
@@ -38,7 +38,7 @@ class OpenAiFailureTest {
         val translator = translator(answers { respondJson("{}", HttpStatusCode.Unauthorized) })
 
         val error = translator.failureFor(request()) as AppError.Unexpected
-        assertTrue(error.cause.orEmpty().contains("Settings"), error.cause.orEmpty())
+        assertTrue(error.explanation.orEmpty().contains("Settings"), error.explanation.orEmpty())
     }
 
     /** Pointing at the wrong path is the commonest mistake with a local server. */
@@ -52,7 +52,7 @@ class OpenAiFailureTest {
         )
 
         val error = translator.failureFor(request()) as AppError.Unexpected
-        assertTrue(error.cause.orEmpty().contains("/v1"), error.cause.orEmpty())
+        assertTrue(error.explanation.orEmpty().contains("/v1"), error.explanation.orEmpty())
     }
 
     /** A server that does not have the model says so better than this code could. */
@@ -92,8 +92,8 @@ class OpenAiFailureTest {
 
         val error = translator.failureFor(request()) as AppError.Unexpected
 
-        assertTrue(error.cause.orEmpty().contains("out of API credit"), error.cause.orEmpty())
-        assertTrue(!error.cause.orEmpty().contains("Try again in a moment"), error.cause.orEmpty())
+        assertTrue(error.explanation.orEmpty().contains("out of API credit"), error.explanation.orEmpty())
+        assertTrue(!error.explanation.orEmpty().contains("Try again in a moment"), error.explanation.orEmpty())
     }
 
     /** A real rate limit still reads as one, in the service's own words. */
@@ -120,7 +120,7 @@ class OpenAiFailureTest {
         val translator = translator(answers { respondJson("{}", HttpStatusCode.TooManyRequests) })
 
         val error = translator.failureFor(request()) as AppError.Unexpected
-        assertTrue(error.cause.orEmpty().contains("Try again"), error.cause.orEmpty())
+        assertTrue(error.explanation.orEmpty().contains("Try again"), error.explanation.orEmpty())
     }
 
     /**
@@ -135,9 +135,9 @@ class OpenAiFailureTest {
         )
 
         val error = translator.failureFor(request()) as AppError.Unexpected
-        val cause = error.cause.orEmpty()
+        val explanation = error.explanation.orEmpty()
 
-        assertTrue(cause.contains("gpt-4o"), cause)
-        assertTrue(cause.contains("thinking"), cause)
+        assertTrue(explanation.contains("gpt-4o"), explanation)
+        assertTrue(explanation.contains("thinking"), explanation)
     }
 }
