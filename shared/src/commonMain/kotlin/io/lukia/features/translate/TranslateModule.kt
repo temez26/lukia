@@ -2,6 +2,7 @@ package io.lukia.features.translate
 
 import io.lukia.features.translate.application.LookUpWordUseCase
 import io.lukia.features.translate.application.TranslatePassageUseCase
+import io.lukia.features.translate.domain.CacheIdentity
 import io.lukia.features.translate.domain.TranslationCache
 import io.lukia.features.translate.domain.Translator
 import io.lukia.features.translate.domain.lookup.WordDictionary
@@ -87,13 +88,21 @@ val translateModule = module {
                 // Named per request, because a word and a sentence do not go to
                 // the same place - a cache filing both under the translator's
                 // name would answer one with the other.
-                translatorIdentity = { request ->
+                //
+                // And only a translator that is handed the book is filed under
+                // it. A dictionary and Google get the word and the language and
+                // nothing else, so `values` is the same answer in every book on
+                // the shelf and is fetched once for all of them.
+                answering = { request ->
                     val current = settings.settings.value
 
                     if (request.unit == PassageUnit.Word && current.looksUpWordsElsewhere) {
-                        "word/${current.wordLookup.name}"
+                        CacheIdentity("word/${current.wordLookup.name}", readsTheBook = false)
                     } else {
-                        "${current.provider.name}/${current.model}"
+                        CacheIdentity(
+                            translator = "${current.provider.name}/${current.model}",
+                            readsTheBook = true,
+                        )
                     }
                 },
             ),

@@ -31,15 +31,42 @@ interface TranslationCache {
 value class TranslationCacheKey(val value: String)
 
 /**
- * The key for one request, which is a hash of everything that decides the
- * answer.
+ * Who would be asked about a passage, and whether the book it came out of
+ * changes what they would say.
  *
- * Everything: the passage, the language wanted, the book it came out of, the
- * text around it, and [translator] - which is the provider and model that would
- * be asked. Leave any of them out and the cache starts answering a question
- * nobody asked. Switching between two models to compare them is a real thing
- * readers do, and a cache that ignored the model would hand them the same
- * sentence twice and prove nothing.
+ * The second half is what lets one word be paid for once. A model is handed the
+ * paragraph and the title and uses both - "he drew his piece" is a weapon or a
+ * chess move depending on them - so its answer belongs to the passage in that
+ * book and nowhere else. A dictionary and Google are handed the word and the
+ * language and nothing else whatsoever: their answer for `values` is the same
+ * answer in every paragraph of every book on the shelf, and keyed by the book it
+ * would be fetched again for each of them.
+ *
+ * Read per request rather than settled once, because which of the two answers a
+ * word is a setting the reader can change with the book open - see
+ * [io.lukia.features.translate.domain.text.WordLookup].
+ */
+data class CacheIdentity(
+    /** Who would be asked, as "provider/model" - see [TranslationProvider]. */
+    val translator: String,
+    val readsTheBook: Boolean,
+)
+
+/**
+ * The key for one request, which is a hash of everything that decides the
+ * answer - and of nothing that does not.
+ *
+ * The passage, the language wanted, and who would be asked, always. Leave any of
+ * those out and the cache starts answering a question nobody asked: switching
+ * between two models to compare them is a real thing readers do, and a cache
+ * that ignored the model would hand them the same sentence twice and prove
+ * nothing.
+ *
+ * The book and the paragraph only for whoever reads them. That is the whole of
+ * how a word looked up in one book is already answered in the next - see
+ * [CacheIdentity]. Putting them in regardless was not merely wasteful: it filed
+ * a dictionary's answer under the paragraph it happened to be read in, so the
+ * same word four pages later was a fresh lookup with an identical answer.
  *
  * Hashed rather than stored whole because the surrounding text is up to a page
  * of the book: keyed by the text itself, the cache would be a slow second copy
@@ -48,19 +75,19 @@ value class TranslationCacheKey(val value: String)
  */
 fun translationCacheKey(
     request: TranslationRequest,
-    /** Who would be asked, as "provider/model" - see [TranslationProvider]. */
-    translator: String,
+    identity: CacheIdentity,
 ): TranslationCacheKey {
-    val identity = buildString {
-        append(translator).append(SEPARATOR)
+    val fingerprint = buildString {
+        append(identity.translator).append(SEPARATOR)
         append(request.targetLanguage.name).append(SEPARATOR)
         append(request.text.trim()).append(SEPARATOR)
-        request.context.appendTo(this)
+
+        if (identity.readsTheBook) request.context.appendTo(this)
     }.encodeToByteArray()
 
     return TranslationCacheKey(
-        identity.fnv1a(FIRST_OFFSET, FIRST_PRIME, reversed = false).hex() +
-            identity.fnv1a(SECOND_OFFSET, SECOND_PRIME, reversed = true).hex(),
+        fingerprint.fnv1a(FIRST_OFFSET, FIRST_PRIME, reversed = false).hex() +
+            fingerprint.fnv1a(SECOND_OFFSET, SECOND_PRIME, reversed = true).hex(),
     )
 }
 

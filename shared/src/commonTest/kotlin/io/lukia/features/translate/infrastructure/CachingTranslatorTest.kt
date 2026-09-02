@@ -1,5 +1,6 @@
 package io.lukia.features.translate.infrastructure
 
+import io.lukia.features.translate.domain.CacheIdentity
 import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.domain.TranslationCache
 import io.lukia.features.translate.domain.TranslationCacheKey
@@ -47,7 +48,7 @@ class CachingTranslatorTest {
         val translator = CachingTranslator(
             translator = { _, _ -> Translation("Kutsukaa minua.", note = "A remark about a word.") },
             cache = cache,
-            translatorIdentity = { "Anthropic/claude" },
+            answering = { CacheIdentity("Anthropic/claude", readsTheBook = true) },
         )
 
         translator.translate(request())
@@ -68,12 +69,85 @@ class CachingTranslatorTest {
                 Translation("Kutsukaa minua Ismaeliksi.")
             },
             cache = cache,
-            translatorIdentity = { "Anthropic/$model" },
+            answering = { CacheIdentity("Anthropic/$model", readsTheBook = true) },
         )
 
         translator.translate(request())
         model = "claude-b"
         translator.translate(request())
+
+        assertEquals(2, asked.size)
+    }
+
+    /**
+     * One word, paid for once, wherever it is read.
+     *
+     * A dictionary and Google are handed the word and the language and nothing
+     * else - so `values` in Moby-Dick and `values` in Middlemarch are not two
+     * questions, and keying them by the book made them two lookups with one
+     * answer. Which on a language that inflects everything is most of the words
+     * in the book, over again in every book.
+     */
+    @Test
+    fun aWordAnsweredWithoutTheBookIsAskedOnceForEveryBook() = runTest {
+        val asked = mutableListOf<String>()
+
+        val translator = CachingTranslator(
+            translator = { request, _ ->
+                asked += request.text
+                Translation("arvo")
+            },
+            cache = InMemoryCache(),
+            answering = { CacheIdentity("word/Wiktionary", readsTheBook = false) },
+        )
+
+        translator.translate(request(text = "values", book = "Moby-Dick"))
+        val second = translator.translate(request(text = "values", book = "Middlemarch"))
+
+        assertEquals("arvo", second.text)
+        assertEquals(listOf("values"), asked)
+    }
+
+    /** And the paragraph it sits in does not make it a second word either. */
+    @Test
+    fun aWordAnsweredWithoutTheBookIgnoresTheParagraphAroundIt() = runTest {
+        val asked = mutableListOf<String>()
+
+        val translator = CachingTranslator(
+            translator = { request, _ ->
+                asked += request.text
+                Translation("arvo")
+            },
+            cache = InMemoryCache(),
+            answering = { CacheIdentity("word/Wiktionary", readsTheBook = false) },
+        )
+
+        translator.translate(request(text = "values", around = "He drew his piece."))
+        translator.translate(request(text = "values", around = "She left at noon."))
+
+        assertEquals(listOf("values"), asked)
+    }
+
+    /**
+     * A model is the other way round, and deliberately: it is handed the
+     * paragraph and uses it, so the same word in another one is another
+     * question and has to be asked again.
+     */
+    @Test
+    fun aPassageAnsweredWithTheBookIsAskedAgainInAnother() = runTest {
+        val asked = mutableListOf<String>()
+
+        val translator = CachingTranslator(
+            translator = { request, _ ->
+                asked += request.text
+                Translation("ase")
+            },
+            cache = InMemoryCache(),
+            answering = { CacheIdentity("Anthropic/claude", readsTheBook = true) },
+        )
+
+        translator.translate(request(text = "piece", around = "He drew his piece."))
+        translator.translate(request(text = "piece", around = "She played a piece."))
 
         assertEquals(2, asked.size)
     }
@@ -105,7 +179,7 @@ class CachingTranslatorTest {
                 if (attempt == 1) throw RuntimeException("no network") else Translation("Second time.")
             },
             cache = cache,
-            translatorIdentity = { "Anthropic/claude" },
+            answering = { CacheIdentity("Anthropic/claude", readsTheBook = true) },
         )
 
         assertFailsWith<RuntimeException> { translator.translate(request()) }
@@ -120,13 +194,17 @@ class CachingTranslatorTest {
             Translation("Kutsukaa minua Ismaeliksi.")
         },
         cache = InMemoryCache(),
-        translatorIdentity = { "Anthropic/claude" },
+        answering = { CacheIdentity("Anthropic/claude", readsTheBook = true) },
     )
 
-    private fun request(text: String = passage) = TranslationRequest(
+    private fun request(
+        text: String = passage,
+        book: String = "Moby-Dick",
+        around: String? = null,
+    ) = TranslationRequest(
         text = text,
         targetLanguage = TargetLanguage.Finnish,
-        context = TranslationContext(bookTitle = "Moby-Dick"),
+        context = TranslationContext(bookTitle = book, surroundingText = around),
     )
 
     /** What is stored is the point here, not how. See `SqlTranslationCacheTest`. */

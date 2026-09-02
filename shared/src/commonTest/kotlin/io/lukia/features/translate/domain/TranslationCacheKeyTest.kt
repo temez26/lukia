@@ -25,8 +25,8 @@ class TranslationCacheKeyTest {
     /** The whole point: a hash written to disk has to mean the same next time. */
     @Test
     fun theKeyIsMadeOfNothingButWhatIsPassedIn() {
-        val first = translationCacheKey(request(), translator = "Anthropic/claude")
-        val second = translationCacheKey(request(), translator = "Anthropic/claude")
+        val first = translationCacheKey(request(), reading("Anthropic/claude"))
+        val second = translationCacheKey(request(), reading("Anthropic/claude"))
 
         assertEquals(first.value, second.value)
     }
@@ -52,8 +52,8 @@ class TranslationCacheKeyTest {
     @Test
     fun anotherModelIsADifferentKey() {
         assertNotEquals(
-            translationCacheKey(request(), translator = "Anthropic/claude-a"),
-            translationCacheKey(request(), translator = "Anthropic/claude-b"),
+            translationCacheKey(request(), reading("Anthropic/claude-a")),
+            translationCacheKey(request(), reading("Anthropic/claude-b")),
         )
     }
 
@@ -100,8 +100,55 @@ class TranslationCacheKeyTest {
         assertEquals(32, key(request()).length)
     }
 
+    /**
+     * The word looked up where the book cannot change the answer - a dictionary
+     * or Google, which are handed the word and the language and nothing else.
+     */
+    @Test
+    fun aWordLookedUpWithoutTheBookIsTheSameKeyInEveryBook() {
+        val here = TranslationContext(bookTitle = "Moby-Dick", surroundingText = "He drew his piece.")
+        val there = TranslationContext(bookTitle = "Middlemarch", surroundingText = "She left.")
+
+        assertEquals(
+            translationCacheKey(request(context = here), blind("word/Wiktionary")),
+            translationCacheKey(request(context = there), blind("word/Wiktionary")),
+        )
+    }
+
+    /** And it is still not the same key as another word, or another language. */
+    @Test
+    fun aWordLookedUpWithoutTheBookIsStillItsOwnWord() {
+        assertNotEquals(
+            translationCacheKey(request(), blind("word/Wiktionary")),
+            translationCacheKey(request(text = "whale"), blind("word/Wiktionary")),
+        )
+
+        assertNotEquals(
+            translationCacheKey(request(), blind("word/Wiktionary")),
+            translationCacheKey(request(language = TargetLanguage.Spanish), blind("word/Wiktionary")),
+        )
+    }
+
+    /**
+     * And a dictionary's answer is not handed to a model, which was asked a
+     * different question and read the paragraph to answer it.
+     */
+    @Test
+    fun theSameWordAskedOfTwoServicesIsTwoKeys() {
+        assertNotEquals(
+            translationCacheKey(request(), blind("word/Wiktionary")),
+            translationCacheKey(request(), reading("word/Google")),
+        )
+    }
+
     private fun key(request: TranslationRequest): String =
-        translationCacheKey(request, translator = "Anthropic/claude").value
+        translationCacheKey(request, reading("Anthropic/claude")).value
+
+    /** Someone who is handed the book and uses it. */
+    private fun reading(translator: String) = CacheIdentity(translator, readsTheBook = true)
+
+    /** Someone who is handed the word and nothing else. */
+    private fun blind(translator: String) = CacheIdentity(translator, readsTheBook = false)
 
     private fun request(
         text: String = passage,
