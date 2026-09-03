@@ -19,6 +19,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.lukia.resources.Res
+import io.lukia.resources.action_close
+import io.lukia.resources.action_close_panel
 import io.lukia.shared.presentation.components.controls.IconButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.icons.PlusGlyph
@@ -29,6 +32,7 @@ import io.lukia.shared.presentation.components.menu.rememberPopoverProgress
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.LukiaElevation
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /** Room at the top of a panel for the controls that float over its content. */
 internal val OverlayPanelTopClearance: Dp = 52.dp
@@ -81,7 +85,7 @@ fun OverlayPanel(
         ActionMenuScrim(
             visible = visible,
             onDismiss = onDismiss,
-            label = "Close this panel",
+            label = stringResource(Res.string.action_close_panel),
         )
 
         // Measured against the window rather than fixed, so the panel stays a
@@ -122,7 +126,7 @@ fun OverlayPanel(
                 // edge, so the one control that is not part of the reading sits
                 // out of the way of it.
                 LukiaIconButton(
-                    label = "Close",
+                    label = stringResource(Res.string.action_close),
                     onClick = onDismiss,
                     modifier = Modifier
                         .align(Alignment.TopEnd)

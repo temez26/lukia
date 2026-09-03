@@ -2,11 +2,19 @@ package io.lukia.shared.presentation.components.menu
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import io.lukia.resources.Res
+import io.lukia.resources.menu_book_details
+import io.lukia.resources.menu_delete_from_library
+import io.lukia.resources.menu_favourite
+import io.lukia.resources.menu_refresh_details
+import io.lukia.resources.menu_select_books
+import io.lukia.resources.menu_unfavourite
 import io.lukia.shared.presentation.components.icons.CheckGlyph
 import io.lukia.shared.presentation.components.icons.HeartGlyph
 import io.lukia.shared.presentation.components.icons.InfoGlyph
 import io.lukia.shared.presentation.components.icons.RefreshGlyph
 import io.lukia.shared.presentation.components.icons.TrashGlyph
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Actions for one book, hanging under whatever opened it - a card in the library
@@ -41,7 +49,7 @@ fun BookActionsMenu(
     ) {
         if (onShowDetails != null) {
             MenuRow(
-                label = "Book Details",
+                label = stringResource(Res.string.menu_book_details),
                 icon = { tint, glyph -> InfoGlyph(tint = tint, modifier = glyph) },
                 onClick = {
                     onDismissRequest()
@@ -53,7 +61,7 @@ fun BookActionsMenu(
         }
 
         MenuRow(
-            label = if (isFavorite) "Remove from Favourites" else "Add to Favourites",
+            label = stringResource(if (isFavorite) Res.string.menu_unfavourite else Res.string.menu_favourite),
             icon = { tint, glyph ->
                 HeartGlyph(tint = tint, filled = isFavorite, modifier = glyph)
             },
@@ -71,7 +79,7 @@ fun BookActionsMenu(
         // it was opened from.
         if (onSelectBooks != null) {
             MenuRow(
-                label = "Select Books",
+                label = stringResource(Res.string.menu_select_books),
                 icon = { tint, glyph -> CheckGlyph(tint = tint, modifier = glyph) },
                 onClick = {
                     onDismissRequest()
@@ -83,7 +91,7 @@ fun BookActionsMenu(
         }
 
         MenuRow(
-            label = "Refresh Details",
+            label = stringResource(Res.string.menu_refresh_details),
             icon = { tint, glyph -> RefreshGlyph(tint = tint, modifier = glyph) },
             onClick = {
                 onDismissRequest()
@@ -94,7 +102,7 @@ fun BookActionsMenu(
         MenuSeparator()
 
         MenuRow(
-            label = "Delete from Library",
+            label = stringResource(Res.string.menu_delete_from_library),
             tint = MaterialTheme.colorScheme.error,
             icon = { tint, glyph -> TrashGlyph(tint = tint, modifier = glyph) },
             onClick = {

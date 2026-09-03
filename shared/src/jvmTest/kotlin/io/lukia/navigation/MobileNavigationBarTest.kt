@@ -15,6 +15,8 @@ import androidx.compose.ui.unit.dp
 import io.lukia.shared.presentation.theme.LukiaTheme
 import io.lukia.shared.presentation.theme.MinTouchTarget
 import io.lukia.shared.presentation.theme.Space
+import kotlinx.coroutines.runBlocking
+import org.jetbrains.compose.resources.getString
 import kotlin.test.Test
 
 /**
@@ -49,7 +51,7 @@ class MobileNavigationBarTest {
 
         // Set beside its mark rather than under it - which is the shape both
         // platforms give a tab bar on a screen this short.
-        onNodeWithContentDescription("Library").assertHeightIsEqualTo(MinTouchTarget)
+        onNodeWithContentDescription(nameOf(MobileTab.Library)).assertHeightIsEqualTo(MinTouchTarget)
     }
 
     @Test
@@ -59,7 +61,7 @@ class MobileNavigationBarTest {
         // The room comes out of the padding around the mark, never out of the
         // target: Apple's floor holds at every window the app opens in.
         MobileTab.entries.forEach { tab ->
-            onNodeWithContentDescription(tab.label).assertHeightIsAtLeast(MinTouchTarget)
+            onNodeWithContentDescription(nameOf(tab)).assertHeightIsAtLeast(MinTouchTarget)
         }
     }
 
@@ -70,9 +72,16 @@ class MobileNavigationBarTest {
         // Dropping the labels is the other way to save the height, and the wrong
         // one: it asks the reader to learn what a house means in this app.
         MobileTab.entries.forEach { tab ->
-            onNodeWithContentDescription(tab.label).assertIsDisplayed()
+            onNodeWithContentDescription(nameOf(tab)).assertIsDisplayed()
         }
     }
+
+    /**
+     * A tab's name as the bar announces it. Read out of the resources rather
+     * than written here again, so the test asserts that the bar shows the name
+     * the app holds rather than that two English tables agree.
+     */
+    private fun nameOf(tab: MobileTab): String = runBlocking { getString(tab.label) }
 
     private fun ComposeUiTest.setBar(window: Pair<Dp, Dp>) {
         setContent {

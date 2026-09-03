@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Every word the app says, in the language it was written in.
+
+    One file rather than one per feature: the resource generator is scoped to the
+    Gradle module and `shared` is one module, so a file per feature is not
+    something it can be told to produce. Ownership is carried by the key prefix
+    instead - `nav_`, `menu_`, `state_`, `action_`, and a prefix per feature as
+    each one moves across - which also makes a feature that has fallen behind a
+    translation visible in a diff.
+
+    Keys say what the string is for, not what it says. `action_close` survives
+    somebody deciding the button should read "Done"; `action_close_this_panel`
+    would not.
+
+    A translation is a sibling directory - `values-fi/strings.xml` - and nothing
+    else. Nothing here is looked up by its English text.
+-->
+<resources>
+
+    <!-- The bottom tab bar. -->
+    <string name="nav_home">Home</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_library">Library</string>
+
+    <!-- Controls that appear on more than one screen. -->
+    <string name="action_cancel">Cancel</string>
+    <string name="action_close">Close</string>
+    <string name="action_close_panel">Close this panel</string>
+    <string name="state_loading">Loading</string>
+
+    <!-- The actions one book offers, wherever it is shown. -->
+    <string name="menu_book_details">Book Details</string>
+    <string name="menu_favourite">Add to Favourites</string>
+    <string name="menu_unfavourite">Remove from Favourites</string>
+    <string name="menu_select_books">Select Books</string>
+    <string name="menu_refresh_details">Refresh Details</string>
+    <string name="menu_delete_from_library">Delete from Library</string>
+
+</resources>

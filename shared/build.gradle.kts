@@ -17,6 +17,18 @@ composeCompiler {
     )
 }
 
+/**
+ * The generated `Res` class the app reads its words out of.
+ *
+ * Internal, because a feature's public surface is its screen and its navigation
+ * entry - see CODING_STYLE.md. Nothing outside `shared` asks for a string, and a
+ * `Res` on the compile classpath of every app module is an invitation to.
+ */
+compose.resources {
+    publicResClass = false
+    packageOfResClass = "io.lukia.resources"
+}
+
 sqldelight {
     databases {
         create("LukiaDatabase") {

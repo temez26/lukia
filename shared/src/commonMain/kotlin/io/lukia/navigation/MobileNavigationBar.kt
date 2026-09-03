@@ -38,6 +38,7 @@ import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.MinTouchTarget
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.isShortWindow
+import org.jetbrains.compose.resources.stringResource
 
 /** The bar itself, above whatever the system reserves below it. */
 private val BarContentHeight: Dp = 52.dp
@@ -162,6 +163,10 @@ private fun RowScope.TabItem(
         label = "tabTint",
     )
 
+    // Read before the modifier chain: `semantics` is not a composable
+    // scope, and the same word serves the spoken name and the visible label.
+    val name = stringResource(tab.label)
+
     val target = Modifier
         .weight(1f)
         .height(if (inline) MinTouchTarget else MinTouchTarget + Space.md)
@@ -179,7 +184,7 @@ private fun RowScope.TabItem(
         // rather than Material's `NavigationBarItem`, so nothing else says
         // the bar is a set of tabs rather than three unrelated controls.
         .semantics(mergeDescendants = true) {
-            contentDescription = tab.label
+            contentDescription = name
             this.selected = selected
         }
 
@@ -191,7 +196,7 @@ private fun RowScope.TabItem(
         ) {
             tab.icon(tint, Modifier.size(InlineTabIconSize))
 
-            TabLabel(tab = tab, selected = selected, tint = tint)
+            TabLabel(name = name, selected = selected, tint = tint)
         }
     } else {
         Column(
@@ -201,15 +206,15 @@ private fun RowScope.TabItem(
         ) {
             tab.icon(tint, Modifier.size(TabIconSize))
 
-            TabLabel(tab = tab, selected = selected, tint = tint)
+            TabLabel(name = name, selected = selected, tint = tint)
         }
     }
 }
 
 @Composable
-private fun TabLabel(tab: MobileTab, selected: Boolean, tint: Color) {
+private fun TabLabel(name: String, selected: Boolean, tint: Color) {
     Text(
-        text = tab.label,
+        text = name,
         style = MaterialTheme.typography.labelSmall,
         // The selected tab's name thickens along with its colour. Colour
         // alone is not something everybody can read.
