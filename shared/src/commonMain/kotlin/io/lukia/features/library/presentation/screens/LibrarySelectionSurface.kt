@@ -27,7 +27,13 @@ import io.lukia.features.library.presentation.sessions.startSelecting
 import io.lukia.features.library.presentation.sessions.stopSelecting
 import io.lukia.features.library.presentation.sessions.toggleAllSelected
 import io.lukia.features.library.presentation.sessions.toggleSelected
+import io.lukia.resources.Res
+import io.lukia.resources.action_delete
+import io.lukia.resources.library_delete_confirm_message
+import io.lukia.resources.library_delete_confirm_title
 import io.lukia.shared.presentation.components.surface.ConfirmDialog
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * The selection mode's state and the view model's answers to it, in one value.
@@ -115,9 +121,13 @@ internal fun BoxScope.LibrarySelectionSurface(
 
     ConfirmDialog(
         visible = confirming,
-        title = "Delete ${ui.selection.subject} from your library?",
-        message = "The files stay where they are on disk.",
-        confirmLabel = "Delete",
+        title = pluralStringResource(
+            Res.plurals.library_delete_confirm_title,
+            ui.selection.count,
+            ui.selection.count,
+        ),
+        message = stringResource(Res.string.library_delete_confirm_message),
+        confirmLabel = stringResource(Res.string.action_delete),
         destructive = true,
         onConfirm = ui.onDelete,
         onDismissRequest = { confirming = false },

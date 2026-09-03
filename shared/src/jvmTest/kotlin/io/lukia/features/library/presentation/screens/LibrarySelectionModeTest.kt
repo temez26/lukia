@@ -27,6 +27,7 @@ import io.lukia.core.domain.document.PickedDocument
 import io.lukia.core.presentation.UiState
 import io.lukia.features.library.domain.LibraryLayout
 import io.lukia.features.library.presentation.model.BulkAction
+import io.lukia.features.library.presentation.model.BulkOperation
 import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.library.presentation.model.LibrarySelection
 import io.lukia.features.library.presentation.model.LibraryUpkeep
@@ -265,7 +266,7 @@ class LibrarySelectionModeTest {
     fun aRunningActionSaysHowFarThroughItIs() = runComposeUiTest {
         setLibrary(
             initial = LibrarySelection(active = true, locations = setOf("/a", "/b", "/c")),
-            running = BulkAction(label = "Refreshing", completed = 1, total = 3),
+            running = BulkAction(operation = BulkOperation.Refresh, completed = 1, total = 3),
         )
 
         onNodeWithText("Refreshing 1 of 3…").assertIsDisplayed()

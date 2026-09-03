@@ -20,12 +20,28 @@ data class LibrarySelection(
 
     operator fun contains(location: String): Boolean = location in locations
 
-    /** How a bulk action should read: "8 books", or the one book by itself. */
-    val subject: String get() = if (count == 1) "1 book" else "$count books"
-
     companion object {
         val None = LibrarySelection()
     }
+}
+
+/**
+ * The one thing a bulk action is doing, which is what both the bar running above
+ * the shelf and the report afterwards are about.
+ *
+ * An enum rather than the word: the report used to choose its verb by matching
+ * the English label the bar was showing, so translating the bar would have
+ * changed what the report said, silently and in the other direction.
+ *
+ * [Favourite] and [Unfavourite] are one action to the code and two to the
+ * reader, which is why they are two entries with one use case behind them.
+ */
+enum class BulkOperation {
+    Refresh,
+    Favourite,
+    Unfavourite,
+    Reset,
+    Delete,
 }
 
 /**
@@ -36,9 +52,7 @@ data class LibrarySelection(
  * gives no way to tell a slow job from a stuck one.
  */
 data class BulkAction(
-    val label: String,
+    val operation: BulkOperation,
     val completed: Int,
     val total: Int,
-) {
-    val message: String get() = "$label $completed of $total…"
-}
+)

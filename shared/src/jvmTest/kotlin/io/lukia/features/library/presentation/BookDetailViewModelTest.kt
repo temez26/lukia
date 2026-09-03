@@ -19,6 +19,7 @@ import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.domain.DocumentAnalyzer
 import io.lukia.features.library.domain.LibraryRepository
+import io.lukia.features.library.presentation.model.LibraryMessage
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -133,7 +134,7 @@ class BookDetailViewModelTest : MainDispatcherTest() {
             1024L,
             (viewModel.uiState.value as UiState.Success).data.document.sizeBytes,
         )
-        assertEquals("Details refreshed", viewModel.message.value)
+        assertEquals(LibraryMessage.DetailsRefreshed, viewModel.message.value)
     }
 
     /** A file that can no longer be read must not take the book off the screen. */
@@ -157,7 +158,7 @@ class BookDetailViewModelTest : MainDispatcherTest() {
         )
         // The reader is told, and not with the analyzer's own words - which name
         // the file, and on a desktop name the person whose folder it sits in.
-        assertEquals("Something went wrong", viewModel.message.value)
+        assertEquals(LibraryMessage.Failed(AppError.Unexpected()), viewModel.message.value)
     }
 
     private fun pdfDocumentInfo() = DocumentInfo(

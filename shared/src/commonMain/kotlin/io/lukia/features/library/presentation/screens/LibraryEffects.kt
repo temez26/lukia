@@ -7,6 +7,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import io.lukia.core.infrastructure.AppCommand
 import io.lukia.core.infrastructure.AppCommands
+import io.lukia.features.library.presentation.model.LibraryMessage
+import io.lukia.features.library.presentation.model.displayText
 import org.koin.compose.koinInject
 
 /**
@@ -19,7 +21,7 @@ import org.koin.compose.koinInject
  */
 @Composable
 internal fun LibraryEffects(
-    message: String?,
+    message: LibraryMessage?,
     snackbarHostState: SnackbarHostState,
     onRefresh: () -> Unit,
     onClearMessage: () -> Unit,
@@ -38,10 +40,15 @@ internal fun LibraryEffects(
         refresh()
     }
 
+    // Put into words here rather than in the effect below: `LaunchedEffect` is
+    // a coroutine rather than a composition, and a string resource needs the
+    // composition it is read in.
+    val notice = message?.displayText()
+
     // Cleared once it has been seen, so the same notice is not shown again the
     // next time anything about the library changes.
-    LaunchedEffect(message) {
-        message?.let {
+    LaunchedEffect(notice) {
+        notice?.let {
             snackbarHostState.showSnackbar(it)
             clear()
         }

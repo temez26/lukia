@@ -26,6 +26,8 @@
     <!-- Controls that appear on more than one screen. -->
     <string name="action_cancel">Cancel</string>
     <string name="action_close">Close</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_done">Done</string>
     <string name="action_close_panel">Close this panel</string>
     <string name="state_loading">Loading</string>
 
@@ -36,5 +38,62 @@
     <string name="menu_select_books">Select Books</string>
     <string name="menu_refresh_details">Refresh Details</string>
     <string name="menu_delete_from_library">Delete from Library</string>
+
+    <!--
+        The library's own notices. Every one is a whole sentence: the counts are
+        arguments, never something glued on at the call site, and the verb of a
+        bulk report belongs to its own string rather than being swapped into a
+        shared frame.
+    -->
+    <string name="library_details_refreshed">Details refreshed</string>
+
+    <plurals name="library_already_in_library">
+        <item quantity="one">Already in your library</item>
+        <item quantity="other">All %1$d already in your library</item>
+    </plurals>
+
+    <string name="library_imported_with_existing">Imported %1$d, %2$d already added</string>
+    <string name="library_imported_with_failures">Imported %1$d, %2$d skipped</string>
+    <string name="library_imported_mixed">Imported %1$d, %2$d already added, %3$d skipped</string>
+
+    <plurals name="library_bulk_refreshed">
+        <item quantity="one">1 book refreshed</item>
+        <item quantity="other">%1$d books refreshed</item>
+    </plurals>
+    <plurals name="library_bulk_updated">
+        <item quantity="one">1 book updated</item>
+        <item quantity="other">%1$d books updated</item>
+    </plurals>
+    <plurals name="library_bulk_reset">
+        <item quantity="one">1 book set back to unread</item>
+        <item quantity="other">%1$d books set back to unread</item>
+    </plurals>
+    <plurals name="library_bulk_deleted">
+        <item quantity="one">1 book removed from your library</item>
+        <item quantity="other">%1$d books removed from your library</item>
+    </plurals>
+
+    <!-- Wraps a bulk report where some books could not be reached. -->
+    <plurals name="library_bulk_skipped">
+        <item quantity="one">%1$s, 1 skipped</item>
+        <item quantity="other">%1$s, %2$d skipped</item>
+    </plurals>
+
+    <!-- The bar over the shelf while books are being picked, and while one runs. -->
+    <string name="library_select_books">Select books</string>
+    <string name="library_select_all">Select All</string>
+    <string name="library_deselect_all">Deselect All</string>
+    <string name="library_selected_count">%1$d selected</string>
+    <string name="library_bulk_running_refresh">Refreshing %1$d of %2$d\u2026</string>
+    <string name="library_bulk_running_favourite">Favouriting %1$d of %2$d\u2026</string>
+    <string name="library_bulk_running_unfavourite">Unfavouriting %1$d of %2$d\u2026</string>
+    <string name="library_bulk_running_reset">Resetting %1$d of %2$d\u2026</string>
+    <string name="library_bulk_running_delete">Deleting %1$d of %2$d\u2026</string>
+
+    <string name="library_delete_confirm_message">The files stay where they are on disk.</string>
+    <plurals name="library_delete_confirm_title">
+        <item quantity="one">Delete 1 book from your library?</item>
+        <item quantity="other">Delete %1$d books from your library?</item>
+    </plurals>
 
 </resources>

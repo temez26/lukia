@@ -7,12 +7,12 @@ import io.lukia.core.domain.runCatchingApp
 import io.lukia.core.domain.toAppError
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
-import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.library.application.BookDetails
 import io.lukia.features.library.application.GetDocumentDetailsUseCase
 import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
+import io.lukia.features.library.presentation.model.LibraryMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,8 +34,8 @@ class BookDetailViewModel(
      * reason the library keeps its own apart: a re-reading that failed must not
      * take a book off the screen that is still perfectly readable.
      */
-    private val _message = MutableStateFlow<String?>(null)
-    val message: StateFlow<String?> = _message.asStateFlow()
+    private val _message = MutableStateFlow<LibraryMessage?>(null)
+    val message: StateFlow<LibraryMessage?> = _message.asStateFlow()
 
     init {
         load()
@@ -86,9 +86,9 @@ class BookDetailViewModel(
     fun refreshDocument() {
         viewModelScope.launch {
             runCatchingApp { refreshDocumentUseCase(location).getOrThrow() }
-                .onFailure { _message.value = it.toAppError().displayShortMessage() }
+                .onFailure { _message.value = LibraryMessage.Failed(it.toAppError()) }
                 .onSuccess {
-                    _message.value = "Details refreshed"
+                    _message.value = LibraryMessage.DetailsRefreshed
                     load()
                 }
         }

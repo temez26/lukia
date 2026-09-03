@@ -15,11 +15,19 @@ import androidx.compose.ui.text.font.FontWeight
 import io.lukia.features.library.presentation.components.toolbar.libraryNavBarHeight
 import io.lukia.features.library.presentation.model.BulkAction
 import io.lukia.features.library.presentation.model.LibrarySelection
+import io.lukia.features.library.presentation.model.displayText
+import io.lukia.resources.Res
+import io.lukia.resources.action_done
+import io.lukia.resources.library_deselect_all
+import io.lukia.resources.library_select_all
+import io.lukia.resources.library_select_books
+import io.lukia.resources.library_selected_count
 import io.lukia.shared.presentation.components.controls.ButtonSize
 import io.lukia.shared.presentation.components.controls.ButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaButton
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * The bar that takes the shelf's place while books are being picked.
@@ -54,7 +62,9 @@ internal fun LibrarySelectionBar(
             .padding(horizontal = dimens.screenPadding),
     ) {
         LukiaButton(
-            label = if (allSelected) "Deselect All" else "Select All",
+            label = stringResource(
+                if (allSelected) Res.string.library_deselect_all else Res.string.library_select_all,
+            ),
             onClick = onToggleAll,
             variant = ButtonVariant.Ghost,
             size = ButtonSize.Compact,
@@ -63,7 +73,7 @@ internal fun LibrarySelectionBar(
         Text(
             // While something is running the count is not the news - how far
             // through it is, is.
-            text = running?.message ?: selectionTitle(selection),
+            text = running?.displayText() ?: selectionTitle(selection),
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onBackground,
@@ -71,7 +81,7 @@ internal fun LibrarySelectionBar(
         )
 
         LukiaButton(
-            label = "Done",
+            label = stringResource(Res.string.action_done),
             onClick = onFinish,
             variant = ButtonVariant.Ghost,
             size = ButtonSize.Compact,
@@ -80,5 +90,9 @@ internal fun LibrarySelectionBar(
     }
 }
 
-private fun selectionTitle(selection: LibrarySelection): String =
-    if (selection.isEmpty) "Select books" else "${selection.count} selected"
+@Composable
+private fun selectionTitle(selection: LibrarySelection): String = if (selection.isEmpty) {
+    stringResource(Res.string.library_select_books)
+} else {
+    stringResource(Res.string.library_selected_count, selection.count)
+}

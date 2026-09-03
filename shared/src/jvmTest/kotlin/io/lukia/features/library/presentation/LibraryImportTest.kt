@@ -6,8 +6,8 @@ import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.domain.document.TestDocuments
 import io.lukia.core.presentation.UiState
-import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.library.TypeFromExtensionAnalyzer
+import io.lukia.features.library.presentation.model.LibraryMessage
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -49,7 +49,7 @@ class LibraryImportTest : MainDispatcherTest() {
 
         assertEquals(emptyList(), viewModel.documents())
         assertEquals(
-            AppError.UnsupportedFileType.displayShortMessage(),
+            LibraryMessage.Failed(AppError.UnsupportedFileType),
             viewModel.message.value,
         )
     }
@@ -68,7 +68,7 @@ class LibraryImportTest : MainDispatcherTest() {
 
         viewModel.importDocuments(listOf(TestDocuments.pdf(location = "/test/book.pdf")))
 
-        assertEquals("Something went wrong", viewModel.message.value)
+        assertEquals(LibraryMessage.Failed(AppError.Unexpected()), viewModel.message.value)
         assertFalse(viewModel.isImporting.value)
     }
 
@@ -136,7 +136,10 @@ class LibraryImportTest : MainDispatcherTest() {
         viewModel.importFolder(booksFolder)
 
         assertEquals(1, viewModel.documents().size)
-        assertEquals("Imported 1, 1 skipped", viewModel.message.value)
+        assertEquals(
+            LibraryMessage.Imported(imported = 1, alreadyInLibrary = 0, failed = 1),
+            viewModel.message.value,
+        )
     }
 
     /**
@@ -154,7 +157,7 @@ class LibraryImportTest : MainDispatcherTest() {
 
         viewModel.importFolder(booksFolder)
 
-        assertEquals("Already in your library", viewModel.message.value)
+        assertEquals(LibraryMessage.AlreadyInLibrary(1), viewModel.message.value)
     }
 
     /** Nothing counts a batch of one, so nothing should show a count for it. */
@@ -200,7 +203,7 @@ class LibraryImportTest : MainDispatcherTest() {
 
         viewModel.importFolder(booksFolder)
 
-        assertEquals(AppError.EmptyFolder.displayShortMessage(), viewModel.message.value)
+        assertEquals(LibraryMessage.Failed(AppError.EmptyFolder), viewModel.message.value)
     }
 
     @Test

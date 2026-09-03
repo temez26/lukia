@@ -20,8 +20,10 @@ data class ImportProgress(
  * more thing to dismiss. A notice is only earned when some of what was chosen
  * did not arrive, and it always leads with the count that did - "0 imported" is
  * the sentence that explains an unchanged library.
+ *
+ * The counts travel rather than the words for them - see [LibraryMessage].
  */
-fun ImportSummary.notice(): String? {
+fun ImportSummary.notice(): LibraryMessage? {
     if (failed == 0 && alreadyInLibrary == 0) {
         return null
     }
@@ -30,16 +32,12 @@ fun ImportSummary.notice(): String? {
     // already have, and a count would only invite them to work out that this is
     // what happened.
     if (failed == 0 && imported == 0) {
-        return if (alreadyInLibrary == 1) {
-            "Already in your library"
-        } else {
-            "All $alreadyInLibrary already in your library"
-        }
+        return LibraryMessage.AlreadyInLibrary(alreadyInLibrary)
     }
 
-    return buildList {
-        add("Imported $imported")
-        if (alreadyInLibrary > 0) add("$alreadyInLibrary already added")
-        if (failed > 0) add("$failed skipped")
-    }.joinToString(", ")
+    return LibraryMessage.Imported(
+        imported = imported,
+        alreadyInLibrary = alreadyInLibrary,
+        failed = failed,
+    )
 }

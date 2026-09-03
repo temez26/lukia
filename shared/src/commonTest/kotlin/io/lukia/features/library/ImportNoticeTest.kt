@@ -1,6 +1,7 @@
 package io.lukia.features.library
 
 import io.lukia.features.library.application.ImportSummary
+import io.lukia.features.library.presentation.model.LibraryMessage
 import io.lukia.features.library.presentation.model.notice
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -13,27 +14,29 @@ class ImportNoticeTest {
         assertNull(ImportSummary(imported = 3, alreadyInLibrary = 0, failed = 0).notice())
     }
 
+    /**
+     * One book and four are the same outcome with a different count. Whether
+     * that count is spoken - "Already in your library" against "All 4 already
+     * in your library" - is the plural resource's decision, not this one's.
+     */
     @Test
-    fun oneBookAlreadyHeldSaysSoWithoutACount() {
+    fun booksAlreadyHeldAreReportedByCount() {
         assertEquals(
-            "Already in your library",
+            LibraryMessage.AlreadyInLibrary(1),
             ImportSummary(imported = 0, alreadyInLibrary = 1, failed = 0).notice(),
         )
-    }
 
-    @Test
-    fun severalBooksAlreadyHeldAreCounted() {
         assertEquals(
-            "All 4 already in your library",
+            LibraryMessage.AlreadyInLibrary(4),
             ImportSummary(imported = 0, alreadyInLibrary = 4, failed = 0).notice(),
         )
     }
 
-    /** "0 imported" is the sentence that explains an unchanged library. */
+    /** The count that did arrive travels even when it is nought. */
     @Test
     fun aFailureAlwaysLeadsWithWhatDidArrive() {
         assertEquals(
-            "Imported 0, 1 skipped",
+            LibraryMessage.Imported(imported = 0, alreadyInLibrary = 0, failed = 1),
             ImportSummary(imported = 0, alreadyInLibrary = 0, failed = 1).notice(),
         )
     }
@@ -41,7 +44,7 @@ class ImportNoticeTest {
     @Test
     fun aMixedImportReportsEveryOutcome() {
         assertEquals(
-            "Imported 5, 2 already added, 1 skipped",
+            LibraryMessage.Imported(imported = 5, alreadyInLibrary = 2, failed = 1),
             ImportSummary(imported = 5, alreadyInLibrary = 2, failed = 1).notice(),
         )
     }

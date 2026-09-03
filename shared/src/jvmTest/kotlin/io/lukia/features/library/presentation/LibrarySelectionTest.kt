@@ -5,6 +5,8 @@ import io.lukia.core.domain.document.BookMetadata
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.reading.FakeReadingProgressRepository
 import io.lukia.core.domain.reading.ReadingProgress
+import io.lukia.features.library.presentation.model.BulkOperation
+import io.lukia.features.library.presentation.model.LibraryMessage
 import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.library.presentation.sessions.deleteSelected
 import io.lukia.features.library.presentation.sessions.resetProgressOnSelected
@@ -145,7 +147,10 @@ class LibrarySelectionTest : MainDispatcherTest() {
 
         viewModel.deleteSelected()
 
-        assertEquals("1 book removed from your library", viewModel.message.value)
+        assertEquals(
+            LibraryMessage.BulkDone(operation = BulkOperation.Delete, done = 1, failed = 0),
+            viewModel.message.value,
+        )
     }
 
     @Test
