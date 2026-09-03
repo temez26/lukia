@@ -18,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
+import io.lukia.core.domain.AppError
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.reader.presentation.translation.WordInquiry
@@ -122,9 +123,9 @@ private fun WordLookupActions(
         // Why the reader is looking at this panel rather than at a translation,
         // said before the button that offers to try again - a reason to press it
         // or to reach for the site instead.
-        inquiry.unansweredFor()?.let { reason ->
+        inquiry.unansweredBy()?.let { reason ->
             Text(
-                text = reason,
+                text = reason.displayShortMessage(),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.error,
             )
@@ -171,12 +172,15 @@ private fun WordLookupActions(
  * the wiki gave it, and repeating the direction that got them here would be the
  * panel telling somebody to open the panel.
  */
-private fun WordInquiry.unansweredFor(): String? {
-    val failed = (onThePage as? WordOnThePage.Failed)?.message ?: return null
+private fun WordInquiry.unansweredBy(): AppError? {
+    val failed = (onThePage as? WordOnThePage.Failed)?.error ?: return null
 
     if ((entry as? UiState.Success)?.data?.form != null) return null
 
-    return failed.takeIf { it != (entry as? UiState.Failure)?.error?.displayShortMessage() }
+    // The failures themselves, rather than the sentences they would print as.
+    // Two services that went wrong in different ways sometimes say the same
+    // thing, and only one of those is a repetition worth hiding.
+    return failed.takeIf { it != (entry as? UiState.Failure)?.error }
 }
 
 /** What the one button that touches the page behind the panel offers to do. */

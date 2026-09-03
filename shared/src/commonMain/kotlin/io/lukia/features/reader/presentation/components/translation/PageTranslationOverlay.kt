@@ -136,9 +136,13 @@ internal fun PageTranslationOverlay(
                     // Measured from the shortest of the passage's lines, which is
                     // one line - not the block they add up to. See below.
                     glyphHeight = passage.quads.minOf { it.height },
-                    text = shown.text,
+                    text = shown.words(),
                     detail = shown.detail,
-                    textColor = if (shown.failed) colors.error else colors.onSurface,
+                    textColor = if (shown is PanelContent.Failure) {
+                        colors.error
+                    } else {
+                        colors.onSurface
+                    },
                     tint = markColors.of(
                         passage.state.markStyle() ?: PassageMarkStyle.Translated,
                     ),

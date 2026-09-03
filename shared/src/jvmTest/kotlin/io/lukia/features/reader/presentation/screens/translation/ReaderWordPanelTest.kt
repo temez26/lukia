@@ -99,12 +99,12 @@ class ReaderWordPanelTest {
         setReader(
             wordInquiry = {
                 inquiry(
-                    onThePage = WordOnThePage.Failed("The translation service did not answer."),
+                    onThePage = WordOnThePage.Failed(AppError.TranslationFailed),
                 )
             },
         )
 
-        onNodeWithText("The translation service did not answer.").assertExists()
+        onNodeWithText("The translation service did not answer. Try again.").assertExists()
         onNodeWithText("Try again").assertExists()
         onNodeWithText("Open in Google").assertExists()
         onNodeWithText("valas").assertExists()
@@ -125,7 +125,7 @@ class ReaderWordPanelTest {
             wordInquiry = {
                 inquiry(
                     entry = UiState.Failure(AppError.Unexpected(reason)),
-                    onThePage = WordOnThePage.Failed(reason),
+                    onThePage = WordOnThePage.Failed(AppError.Unexpected(reason)),
                 )
             },
         )
@@ -147,7 +147,7 @@ class ReaderWordPanelTest {
         setReader(
             wordInquiry = {
                 inquiry(
-                    onThePage = WordOnThePage.Failed("Your API key was refused."),
+                    onThePage = WordOnThePage.Failed(AppError.Unexpected("Your API key was refused.")),
                 )
             },
         )
@@ -230,7 +230,7 @@ class ReaderWordPanelTest {
                             form = "monikkomuoto sanasta whale",
                         ),
                     ),
-                    onThePage = WordOnThePage.Failed(direction),
+                    onThePage = WordOnThePage.Failed(AppError.Unexpected(direction)),
                 )
             },
         )
