@@ -12,9 +12,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import io.lukia.resources.Res
+import io.lukia.resources.home_browse_by_category
 import io.lukia.shared.presentation.components.controls.LukiaChip
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * The subjects the library's own books declare, as a way into each of them.
@@ -38,7 +41,7 @@ internal fun HomeCategoryRow(
 
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
-            text = "Browse by Category",
+            text = stringResource(Res.string.home_browse_by_category),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onBackground,

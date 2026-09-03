@@ -30,11 +30,15 @@ import io.lukia.features.library.presentation.model.HomeMenu
 import io.lukia.features.library.presentation.model.HomeRow
 import io.lukia.features.library.presentation.model.HomeShelf
 import io.lukia.features.library.presentation.model.LibraryQuery
+import io.lukia.features.library.presentation.model.displayTitle
 import io.lukia.features.library.presentation.sessions.HomeBookActions
+import io.lukia.resources.Res
+import io.lukia.resources.home_see_all
 import io.lukia.shared.presentation.components.controls.hoverHighlight
 import io.lukia.shared.presentation.components.icons.DisclosureChevron
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * How much larger a cover is drawn on the row a reader came back for than on
@@ -83,7 +87,7 @@ internal fun HomeShelfRow(
 
     Column(modifier = modifier.fillMaxWidth()) {
         RowHeader(
-            title = row.shelf.title,
+            title = row.shelf.displayTitle(),
             onSeeAll = { onSeeAll(row.shelf.seeAll()) },
             modifier = Modifier.padding(horizontal = dimens.screenPadding),
         )
@@ -164,7 +168,7 @@ private fun RowHeader(
                 .padding(horizontal = Space.xs, vertical = Space.xxs),
         ) {
             Text(
-                text = "See All",
+                text = stringResource(Res.string.home_see_all),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary,
             )

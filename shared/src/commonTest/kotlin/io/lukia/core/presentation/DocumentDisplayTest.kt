@@ -38,43 +38,6 @@ class DocumentDisplayTest {
     }
 
     @Test
-    fun displayTypeMapsKnownTypes() {
-        val pdf = DocumentInfo(
-            document = TestDocuments.pdf(location = "/test/book.pdf"),
-            type = DocumentType.PDF,
-            exists = true,
-            sizeBytes = 1024L,
-        )
-        val epub = DocumentInfo(
-            document = TestDocuments.epub(location = "/test/book.epub"),
-            type = DocumentType.EPUB,
-            exists = true,
-            sizeBytes = 1024L,
-        )
-
-        assertEquals("PDF", pdf.displayType())
-        assertEquals("EPUB", epub.displayType())
-    }
-
-    /**
-     * Named for what a reader would call the thing rather than for its
-     * extension: "Word" is what the file is, where "DOCX" is how it is stored.
-     */
-    @Test
-    fun displayTypeNamesTheWordProcessedFormats() {
-        assertEquals("Word", ofType(DocumentType.DOCX).displayType())
-        assertEquals("Text", ofType(DocumentType.TEXT).displayType())
-        assertEquals("Markdown", ofType(DocumentType.MARKDOWN).displayType())
-    }
-
-    private fun ofType(type: DocumentType) = DocumentInfo(
-        document = TestDocuments.pdf(location = "/test/book"),
-        type = type,
-        exists = true,
-        sizeBytes = 1024L,
-    )
-
-    @Test
     fun formattedSizeDelegatesToFormatFileSize() {
         val documentInfo = DocumentInfo(
             document = TestDocuments.pdf(location = "/test/book.pdf"),

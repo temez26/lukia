@@ -27,11 +27,14 @@ import io.lukia.features.library.application.BookDetails
 import io.lukia.features.library.presentation.components.book.ReadableCover
 import io.lukia.features.library.presentation.model.progressLabel
 import io.lukia.features.library.presentation.model.readActionLabel
+import io.lukia.resources.Res
+import io.lukia.resources.book_missing_file
 import io.lukia.shared.presentation.components.cover.FavoriteBadge
 import io.lukia.shared.presentation.components.cover.rememberBookCover
 import io.lukia.shared.presentation.components.surface.StatusBadge
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /** Vertical room reserved so content starts clear of the floating back control. */
 private val TopChromeClearance: Dp = 68.dp
@@ -156,7 +159,7 @@ internal fun BookDetailBody(
 
             if (!document.exists) {
                 StatusBadge(
-                    text = "This file is no longer available",
+                    text = stringResource(Res.string.book_missing_file),
                     modifier = Modifier.padding(top = Space.lg),
                 )
             }

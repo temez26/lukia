@@ -27,6 +27,19 @@ import io.lukia.core.presentation.languageName
 import io.lukia.core.presentation.publishedYear
 import io.lukia.features.library.application.BookDetails
 import io.lukia.features.library.presentation.model.lengthLabel
+import io.lukia.resources.Res
+import io.lukia.resources.book_about
+import io.lukia.resources.book_format
+import io.lukia.resources.book_information
+import io.lukia.resources.book_isbn
+import io.lukia.resources.book_language
+import io.lukia.resources.book_length
+import io.lukia.resources.book_less
+import io.lukia.resources.book_more
+import io.lukia.resources.book_published
+import io.lukia.resources.book_publisher
+import io.lukia.resources.book_size
+import io.lukia.resources.book_subjects
 import io.lukia.shared.presentation.components.controls.ButtonSize
 import io.lukia.shared.presentation.components.controls.ButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaButton
@@ -37,6 +50,7 @@ import io.lukia.shared.presentation.components.surface.LukiaDivider
 import io.lukia.shared.presentation.components.surface.SectionLabel
 import io.lukia.shared.presentation.components.surface.StatusBadge
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /** How much of a blurb is shown before it is folded away behind "More". */
 private const val CollapsedDescriptionLines = 5
@@ -67,7 +81,7 @@ internal fun DescriptionSection(
     var overflows by remember(description) { mutableStateOf(false) }
 
     Column(modifier = modifier.fillMaxWidth()) {
-        SectionLabel(text = "About")
+        SectionLabel(text = stringResource(Res.string.book_about))
 
         Text(
             text = description,
@@ -88,7 +102,9 @@ internal fun DescriptionSection(
 
         if (overflows || expanded) {
             LukiaButton(
-                label = if (expanded) "Less" else "More",
+                label = stringResource(
+                    if (expanded) Res.string.book_less else Res.string.book_more,
+                ),
                 onClick = { expanded = !expanded },
                 variant = ButtonVariant.Ghost,
                 size = ButtonSize.Compact,
@@ -120,17 +136,17 @@ internal fun InformationCard(
     val metadata = document.metadata
 
     val rows = buildList {
-        metadata?.publisher?.let { add("Publisher" to it) }
-        metadata?.publishedYear()?.let { add("Published" to it) }
-        metadata?.languageName()?.let { add("Language" to it) }
-        details.lengthLabel()?.let { add("Length" to it) }
-        add("Format" to document.displayType())
-        add("Size" to document.formattedSize())
-        metadata?.identifier?.let { add("ISBN" to it) }
+        metadata?.publisher?.let { add(stringResource(Res.string.book_publisher) to it) }
+        metadata?.publishedYear()?.let { add(stringResource(Res.string.book_published) to it) }
+        metadata?.languageName()?.let { add(stringResource(Res.string.book_language) to it) }
+        details.lengthLabel()?.let { add(stringResource(Res.string.book_length) to it) }
+        add(stringResource(Res.string.book_format) to document.displayType())
+        add(stringResource(Res.string.book_size) to document.formattedSize())
+        metadata?.identifier?.let { add(stringResource(Res.string.book_isbn) to it) }
     }
 
     Column(modifier = modifier.fillMaxWidth()) {
-        SectionLabel(text = "Information")
+        SectionLabel(text = stringResource(Res.string.book_information))
 
         GroupCard(
             color = color,
@@ -194,7 +210,7 @@ internal fun SubjectSection(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        SectionLabel(text = "Subjects")
+        SectionLabel(text = stringResource(Res.string.book_subjects))
 
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(Space.sm),

@@ -25,6 +25,17 @@ import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.library.presentation.model.LibrarySort
 import io.lukia.features.library.presentation.model.OpenMenu
 import io.lukia.features.library.presentation.model.displayName
+import io.lukia.resources.Res
+import io.lukia.resources.filter_all_authors
+import io.lukia.resources.filter_all_categories
+import io.lukia.resources.filter_all_formats
+import io.lukia.resources.filter_all_languages
+import io.lukia.resources.filter_author
+import io.lukia.resources.filter_category
+import io.lukia.resources.filter_clear
+import io.lukia.resources.filter_favourites
+import io.lukia.resources.filter_format
+import io.lukia.resources.filter_language
 import io.lukia.shared.presentation.components.controls.LukiaChip
 import io.lukia.shared.presentation.components.icons.HeartGlyph
 import io.lukia.shared.presentation.components.icons.LayoutGlyph
@@ -33,6 +44,7 @@ import io.lukia.shared.presentation.components.menu.AnchoredMenu
 import io.lukia.shared.presentation.components.menu.MenuRow
 import io.lukia.shared.presentation.components.menu.MenuSeparator
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * How tall a chip's menu may grow before it scrolls.
@@ -75,7 +87,7 @@ internal fun LibraryFilterBar(
     ) {
         if (facets.hasFavourites) {
             LukiaChip(
-                label = "Favourites",
+                label = stringResource(Res.string.filter_favourites),
                 selected = query.favouritesOnly,
                 onClick = { onQueryChange(query.copy(favouritesOnly = !query.favouritesOnly)) },
                 icon = { tint, glyph ->
@@ -86,8 +98,8 @@ internal fun LibraryFilterBar(
 
         ValueChip(
             facet = LibraryFacet.Format,
-            name = "Format",
-            anyLabel = "All formats",
+            name = stringResource(Res.string.filter_format),
+            anyLabel = stringResource(Res.string.filter_all_formats),
             options = facets.formats.map { it.displayName() },
             selectedIndex = facets.formats.indexOf(query.format).takeIf { it >= 0 },
             onSelect = { index -> onQueryChange(query.copy(format = index?.let(facets.formats::get))) },
@@ -97,8 +109,8 @@ internal fun LibraryFilterBar(
 
         ValueChip(
             facet = LibraryFacet.Category,
-            name = "Category",
-            anyLabel = "All categories",
+            name = stringResource(Res.string.filter_category),
+            anyLabel = stringResource(Res.string.filter_all_categories),
             options = facets.categories,
             selectedIndex = facets.categories.indexOf(query.category).takeIf { it >= 0 },
             onSelect = { index ->
@@ -110,8 +122,8 @@ internal fun LibraryFilterBar(
 
         ValueChip(
             facet = LibraryFacet.Author,
-            name = "Author",
-            anyLabel = "All authors",
+            name = stringResource(Res.string.filter_author),
+            anyLabel = stringResource(Res.string.filter_all_authors),
             options = facets.authors,
             selectedIndex = facets.authors.indexOf(query.author).takeIf { it >= 0 },
             onSelect = { index ->
@@ -123,8 +135,8 @@ internal fun LibraryFilterBar(
 
         ValueChip(
             facet = LibraryFacet.Language,
-            name = "Language",
-            anyLabel = "All languages",
+            name = stringResource(Res.string.filter_language),
+            anyLabel = stringResource(Res.string.filter_all_languages),
             // Shown as languages rather than as the tags they are stored as:
             // `fi` is a filter nobody recognises and Finnish is one everybody does.
             options = facets.languages.map { languageName(it) ?: it.uppercase() },
@@ -154,7 +166,7 @@ internal fun LibraryFilterBar(
         // beside filters that are all off is a control that does nothing.
         if (query.isRefined) {
             LukiaChip(
-                label = "Clear",
+                label = stringResource(Res.string.filter_clear),
                 selected = false,
                 onClick = { onQueryChange(query.cleared()) },
             )
@@ -225,7 +237,7 @@ private fun SortChip(
 ) {
     ChipMenu(
         facet = LibraryFacet.Sort,
-        label = sort.label,
+        label = sort.displayName(),
         // Never filled in: a library is always in some order, so an order is not
         // a narrowing of it and marking it as one would leave a chip permanently
         // lit beside the filters that are actually on.
@@ -238,7 +250,7 @@ private fun SortChip(
             if (index > 0) MenuSeparator()
 
             MenuRow(
-                label = option.label,
+                label = option.displayName(),
                 selected = option == sort,
                 onClick = {
                     dismiss()

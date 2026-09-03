@@ -33,6 +33,10 @@ import io.lukia.core.presentation.formattedSize
 import io.lukia.features.library.presentation.components.selection.CardSelection
 import io.lukia.features.library.presentation.components.selection.SelectionMark
 import io.lukia.features.library.presentation.model.LibraryBook
+import io.lukia.resources.Res
+import io.lukia.resources.book_format_and_size
+import io.lukia.resources.book_progress_percent
+import io.lukia.resources.book_unavailable
 import io.lukia.shared.presentation.components.controls.ReadingProgressBar
 import io.lukia.shared.presentation.components.controls.focusRing
 import io.lukia.shared.presentation.components.controls.hoverHighlight
@@ -41,6 +45,7 @@ import io.lukia.shared.presentation.components.cover.BookCover
 import io.lukia.shared.presentation.components.cover.FavoriteBadge
 import io.lukia.shared.presentation.components.surface.StatusBadge
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /** Tall enough to read a jacket by, short enough to fit three times the grid's books. */
 private val RowCoverHeight: Dp = 64.dp
@@ -170,7 +175,11 @@ private fun RowDetails(
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = "${document.displayType()} · ${document.formattedSize()}",
+                text = stringResource(
+                    Res.string.book_format_and_size,
+                    document.displayType(),
+                    document.formattedSize(),
+                ),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
@@ -178,9 +187,15 @@ private fun RowDetails(
 
             // Only for a book somebody has started. A bar at nothing on every
             // unread row would turn a shelf into a progress report.
-            progress?.fraction?.let { fraction ->
+            // Read out before the check rather than inside a `let`: the format
+            // wants the whole percentage and cannot be handed a null, and the
+            // two are non-null together - see `ReadingProgress.percent`.
+            val fraction = progress?.fraction
+            val percent = progress?.percent
+
+            if (fraction != null && percent != null) {
                 Text(
-                    text = " · ${progress.percent}%",
+                    text = stringResource(Res.string.book_progress_percent, percent),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
@@ -198,7 +213,7 @@ private fun RowDetails(
         }
 
         if (!document.exists) {
-            StatusBadge(text = "Unavailable")
+            StatusBadge(text = stringResource(Res.string.book_unavailable))
         }
     }
 }

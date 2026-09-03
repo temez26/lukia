@@ -23,9 +23,15 @@ import androidx.compose.ui.unit.dp
 import io.lukia.features.library.presentation.components.search.LibrarySearchField
 import io.lukia.features.library.presentation.components.search.searchFieldHeight
 import io.lukia.features.library.presentation.sessions.LibraryShelfUi
+import io.lukia.resources.Res
+import io.lukia.resources.library_title
+import io.lukia.resources.search_n_books
+import io.lukia.resources.search_title
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.isWideWindow
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 
 /** Breathing room above and below the bar's contents. */
 private val NavBarVerticalPadding: Dp = Space.sm
@@ -56,11 +62,12 @@ internal fun libraryNavBarHeight(): Dp = searchFieldHeight() + NavBarVerticalPad
  *
  * It counts what is actually searchable, so a filter narrows it too.
  */
-private fun searchPlaceholder(searchableCount: Int): String = when {
+@Composable
+private fun searchPlaceholder(searchableCount: Int): String {
     // Nothing to search, and "Search 0 books" would be a strange way to say so.
-    searchableCount <= 0 -> "Search"
-    searchableCount == 1 -> "Search 1 book"
-    else -> "Search $searchableCount books"
+    if (searchableCount <= 0) return stringResource(Res.string.search_title)
+
+    return pluralStringResource(Res.plurals.search_n_books, searchableCount, searchableCount)
 }
 
 /**
@@ -216,7 +223,7 @@ private fun RowScope.SearchSlot(
 @Composable
 private fun RowScope.TitleSlot() {
     Text(
-        text = "Library",
+        text = stringResource(Res.string.library_title),
         style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.onBackground,
         maxLines = 1,

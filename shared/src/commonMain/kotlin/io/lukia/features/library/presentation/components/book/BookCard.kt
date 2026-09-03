@@ -35,6 +35,10 @@ import io.lukia.features.library.presentation.components.selection.CardSelection
 import io.lukia.features.library.presentation.components.selection.SelectionMark
 import io.lukia.features.library.presentation.components.selection.jiggleAngle
 import io.lukia.features.library.presentation.model.LibraryBook
+import io.lukia.resources.Res
+import io.lukia.resources.book_actions
+import io.lukia.resources.book_format_and_size
+import io.lukia.resources.book_unavailable
 import io.lukia.shared.presentation.components.controls.IconButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.controls.ReadingProgressOverlay
@@ -53,6 +57,7 @@ import io.lukia.shared.presentation.theme.LocalLukiaMetrics
 import io.lukia.shared.presentation.theme.LukiaElevation
 import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * One book in the library grid.
@@ -296,7 +301,11 @@ private fun BookCardCaption(
         )
 
         Text(
-            text = "${document.displayType()} · ${document.formattedSize()}",
+            text = stringResource(
+                Res.string.book_format_and_size,
+                document.displayType(),
+                document.formattedSize(),
+            ),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
@@ -306,7 +315,7 @@ private fun BookCardCaption(
 
         if (!document.exists) {
             StatusBadge(
-                text = "Unavailable",
+                text = stringResource(Res.string.book_unavailable),
                 modifier = Modifier.padding(top = Space.sm),
             )
         }
@@ -331,7 +340,7 @@ private fun MenuTrigger(
         modifier = modifier,
     ) {
         LukiaIconButton(
-            label = "Book actions",
+            label = stringResource(Res.string.book_actions),
             onClick = onClick,
             variant = IconButtonVariant.Filled,
             tint = MaterialTheme.colorScheme.onSurface,

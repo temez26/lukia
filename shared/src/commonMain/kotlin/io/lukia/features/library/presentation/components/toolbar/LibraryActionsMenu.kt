@@ -10,6 +10,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import io.lukia.features.library.presentation.sessions.LibraryShelfUi
+import io.lukia.resources.Res
+import io.lukia.resources.library_actions
+import io.lukia.resources.library_add_folder
+import io.lukia.resources.library_close_menu
+import io.lukia.resources.library_duplicates
+import io.lukia.resources.library_import_books
+import io.lukia.resources.library_missing_files
+import io.lukia.resources.library_settings
+import io.lukia.resources.menu_select_books
 import io.lukia.shared.presentation.components.controls.IconButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.icons.AlertGlyph
@@ -23,6 +32,7 @@ import io.lukia.shared.presentation.components.menu.AnchoredMenu
 import io.lukia.shared.presentation.components.menu.MenuRow
 import io.lukia.shared.presentation.components.menu.MenuSeparator
 import io.lukia.shared.presentation.theme.LukiaMotion
+import org.jetbrains.compose.resources.stringResource
 
 // Everything the library can do that is not about one book, and the rows that
 // offer it. Apart from the bar that opens it - see [LibraryNavBar] - because the
@@ -45,7 +55,7 @@ internal fun ColumnScope.ImportMenuRows(
     onImportFolder: () -> Unit,
 ) {
     MenuRow(
-        label = "Import Books",
+        label = stringResource(Res.string.library_import_books),
         icon = { tint, glyph -> PlusGlyph(tint = tint, modifier = glyph) },
         onClick = {
             onDismissRequest()
@@ -56,7 +66,7 @@ internal fun ColumnScope.ImportMenuRows(
     MenuSeparator()
 
     MenuRow(
-        label = "Add Folder",
+        label = stringResource(Res.string.library_add_folder),
         icon = { tint, glyph -> FolderGlyph(tint = tint, modifier = glyph) },
         onClick = {
             onDismissRequest()
@@ -90,7 +100,7 @@ internal fun LibraryMenu(
         // Also here, and not only on a book: reaching a shelf-wide mode by
         // holding down one particular book is a way in nobody finds by looking.
         MenuRow(
-            label = "Select Books",
+            label = stringResource(Res.string.menu_select_books),
             icon = { tint, glyph -> CheckGlyph(tint = tint, modifier = glyph) },
             onClick = {
                 onDismissRequest()
@@ -103,7 +113,7 @@ internal fun LibraryMenu(
         UpkeepMenuRows(shelf = shelf, onDismissRequest = onDismissRequest)
 
         MenuRow(
-            label = "Settings",
+            label = stringResource(Res.string.library_settings),
             icon = { tint, glyph -> GearGlyph(tint = tint, modifier = glyph) },
             onClick = {
                 onDismissRequest()
@@ -130,7 +140,7 @@ private fun UpkeepMenuRows(
 
     if (upkeep.missing.isNotEmpty()) {
         MenuRow(
-            label = "Missing Files (${upkeep.missing.size})",
+            label = stringResource(Res.string.library_missing_files, upkeep.missing.size),
             icon = { tint, glyph -> AlertGlyph(tint = tint, modifier = glyph) },
             onClick = {
                 onDismissRequest()
@@ -143,7 +153,7 @@ private fun UpkeepMenuRows(
 
     if (upkeep.duplicates.isNotEmpty()) {
         MenuRow(
-            label = "Duplicates (${upkeep.duplicates.size})",
+            label = stringResource(Res.string.library_duplicates, upkeep.duplicates.size),
             icon = { tint, glyph -> CopyGlyph(tint = tint, modifier = glyph) },
             onClick = {
                 onDismissRequest()
@@ -177,7 +187,9 @@ internal fun MenuButton(
     )
 
     LukiaIconButton(
-        label = if (expanded) "Close menu" else "Library actions",
+        label = stringResource(
+            if (expanded) Res.string.library_close_menu else Res.string.library_actions,
+        ),
         onClick = onClick,
         variant = IconButtonVariant.Filled,
     ) { tint, glyph ->

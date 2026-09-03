@@ -8,14 +8,14 @@ package io.lukia.features.library.presentation.model
  * else here is a view onto it, and none of them is stored: an ordering is how
  * someone is looking at their books this minute, not a property of the books.
  */
-enum class LibrarySort(val label: String) {
-    Added("Date added"),
-    RecentlyAdded("Recently added"),
-    Title("Title A–Z"),
-    TitleReversed("Title Z–A"),
-    Author("Author A–Z"),
-    LastRead("Recently read"),
-    Largest("Largest first"),
+enum class LibrarySort {
+    Added,
+    RecentlyAdded,
+    Title,
+    TitleReversed,
+    Author,
+    LastRead,
+    Largest,
 }
 
 /**

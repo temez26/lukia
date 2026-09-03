@@ -16,6 +16,8 @@ import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.features.library.application.BookDetails
 import io.lukia.features.library.presentation.screens.BookDetailBody
+import io.lukia.resources.Res
+import io.lukia.resources.book_actions
 import io.lukia.shared.presentation.components.controls.IconButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.icons.EllipsisGlyph
@@ -24,6 +26,7 @@ import io.lukia.shared.presentation.components.menu.BookActionsMenu
 import io.lukia.shared.presentation.components.surface.OverlayPanel
 import io.lukia.shared.presentation.components.surface.OverlayPanelTopClearance
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Smaller than the cover on the detail screen. A panel is a glance, and a cover
@@ -75,7 +78,7 @@ fun BookDetailOverlay(
             onDismiss = { if (menuExpanded) menuExpanded = false else onDismiss() },
             leading = {
                 LukiaIconButton(
-                    label = "Book actions",
+                    label = stringResource(Res.string.book_actions),
                     onClick = { menuExpanded = true },
                     variant = IconButtonVariant.Glass,
                 ) { tint, glyph ->

@@ -9,6 +9,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import io.lukia.resources.Res
+import io.lukia.resources.selection_delete
+import io.lukia.resources.selection_favourite
+import io.lukia.resources.selection_mark_unread
+import io.lukia.resources.selection_refresh
+import io.lukia.resources.selection_unfavourite
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.icons.HeartGlyph
 import io.lukia.shared.presentation.components.icons.OpenBookGlyph
@@ -17,6 +23,7 @@ import io.lukia.shared.presentation.components.icons.TrashGlyph
 import io.lukia.shared.presentation.components.surface.GlassSurface
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * What can be done to the books that have been picked.
@@ -55,13 +62,15 @@ internal fun LibrarySelectionActions(
             modifier = Modifier.fillMaxWidth().padding(Space.xs),
         ) {
             LukiaIconButton(
-                label = "Refresh details",
+                label = stringResource(Res.string.selection_refresh),
                 onClick = onRefresh,
                 enabled = enabled,
             ) { tint, glyph -> RefreshGlyph(tint = tint, modifier = glyph) }
 
             LukiaIconButton(
-                label = if (anyFavorite) "Remove from favourites" else "Add to favourites",
+                label = stringResource(
+                    if (anyFavorite) Res.string.selection_unfavourite else Res.string.selection_favourite,
+                ),
                 onClick = onToggleFavorite,
                 enabled = enabled,
             ) { tint, glyph ->
@@ -69,13 +78,13 @@ internal fun LibrarySelectionActions(
             }
 
             LukiaIconButton(
-                label = "Mark as unread",
+                label = stringResource(Res.string.selection_mark_unread),
                 onClick = onResetProgress,
                 enabled = enabled,
             ) { tint, glyph -> OpenBookGlyph(tint = tint, modifier = glyph) }
 
             LukiaIconButton(
-                label = "Delete from library",
+                label = stringResource(Res.string.selection_delete),
                 onClick = onDelete,
                 enabled = enabled,
                 tint = MaterialTheme.colorScheme.error,

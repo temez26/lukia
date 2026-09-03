@@ -24,10 +24,13 @@ import io.lukia.features.library.presentation.model.HomeRow
 import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.features.library.presentation.sessions.LibraryShelfUi
+import io.lukia.resources.Res
+import io.lukia.resources.home_title
 import io.lukia.shared.presentation.components.launch.LaunchReveal
 import io.lukia.shared.presentation.components.launch.launchReveal
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /** Clears the last row of the tab bar the screen scrolls up to. */
 private val HomeBottomPadding: Dp = 24.dp
@@ -139,7 +142,7 @@ internal fun HomeHeader(
         modifier = modifier.fillMaxWidth(),
     ) {
         Text(
-            text = "Home",
+            text = stringResource(Res.string.home_title),
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.weight(1f),

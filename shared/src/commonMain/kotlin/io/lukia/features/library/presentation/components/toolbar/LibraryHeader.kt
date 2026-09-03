@@ -26,6 +26,7 @@ import io.lukia.features.library.presentation.model.ImportProgress
 import io.lukia.features.library.presentation.model.LibraryFacets
 import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.library.presentation.model.OpenMenu
+import io.lukia.features.library.presentation.model.displayName
 import io.lukia.shared.presentation.components.controls.SegmentedControl
 import io.lukia.shared.presentation.components.launch.LaunchReveal
 import io.lukia.shared.presentation.components.launch.launchReveal
@@ -79,7 +80,7 @@ internal fun LibraryHeader(
             SegmentedControl(
                 options = facets.shelves,
                 selected = query.shelf,
-                label = { it.label },
+                label = { it.displayName() },
                 onSelect = { onQueryChange(query.copy(shelf = it)) },
                 modifier = Modifier
                     .then(

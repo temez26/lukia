@@ -13,10 +13,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.library.presentation.components.book.ImportBookCard
 import io.lukia.features.library.presentation.model.ImportProgress
+import io.lukia.resources.Res
+import io.lukia.resources.library_empty_message
+import io.lukia.resources.library_empty_title
 import io.lukia.shared.presentation.components.launch.LaunchReveal
 import io.lukia.shared.presentation.components.launch.launchReveal
 import io.lukia.shared.presentation.components.surface.EmptyState
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import org.jetbrains.compose.resources.stringResource
 
 /** The lone import card on an empty screen, at about a grid cell's width. */
 private val EmptyStateCoverWidth: Dp = 116.dp
@@ -65,10 +69,10 @@ internal fun LibraryEmptyState(
         // No heading of its own: there is nothing here to head, and "Your library
         // is empty" below is a better one than the word "Library" would be.
         EmptyState(
-            title = "Your library is empty",
+            title = stringResource(Res.string.library_empty_title),
             // With no explicit button here, the copy has to carry the affordance
             // for the tappable cover above.
-            message = "Choose the cover to add a PDF, EPUB, Word or text file.",
+            message = stringResource(Res.string.library_empty_message),
             modifier = Modifier
                 .align(Alignment.Center)
                 .launchReveal(reveal, index = 1),

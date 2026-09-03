@@ -1,6 +1,17 @@
 package io.lukia.features.library.presentation.model
 
+import androidx.compose.runtime.Composable
 import io.lukia.features.library.application.BookDetails
+import io.lukia.resources.Res
+import io.lukia.resources.book_length_pages
+import io.lukia.resources.book_progress_finished
+import io.lukia.resources.book_progress_not_started
+import io.lukia.resources.book_progress_page_of
+import io.lukia.resources.book_read_again
+import io.lukia.resources.book_read_continue
+import io.lukia.resources.book_read_start
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * How long the book is, once that is known.
@@ -16,10 +27,11 @@ import io.lukia.features.library.application.BookDetails
  * is how long the book was in the window it was last read in rather than a
  * property of the file - which is also why it changes when the type size does.
  */
+@Composable
 fun BookDetails.lengthLabel(): String? {
     val count = progress?.pageCount?.takeIf { it > 0 } ?: return null
 
-    return if (count == 1) "1 page" else "$count pages"
+    return pluralStringResource(Res.plurals.book_length_pages, count, count)
 }
 
 /**
@@ -35,15 +47,21 @@ fun BookDetails.lengthLabel(): String? {
  * shown the moment they open the book. Two screens saying the same thing about
  * the same book should say it the same way.
  */
-fun BookDetails.progressLabel(): String = when {
-    isFinished -> "Finished"
-    progress?.pageNumber != null -> "Page ${progress.pageNumber} of ${progress.pageCount}"
-    else -> "Not started"
+@Composable
+fun BookDetails.progressLabel(): String {
+    val page = progress?.pageNumber
+
+    return when {
+        isFinished -> stringResource(Res.string.book_progress_finished)
+        page != null -> stringResource(Res.string.book_progress_page_of, page, progress.pageCount)
+        else -> stringResource(Res.string.book_progress_not_started)
+    }
 }
 
 /** What pressing the cover would do, which depends on whether it has been started. */
+@Composable
 fun BookDetails.readActionLabel(): String = when {
-    isInProgress -> "Continue reading"
-    isFinished -> "Read again"
-    else -> "Start reading"
+    isInProgress -> stringResource(Res.string.book_read_continue)
+    isFinished -> stringResource(Res.string.book_read_again)
+    else -> stringResource(Res.string.book_read_start)
 }
