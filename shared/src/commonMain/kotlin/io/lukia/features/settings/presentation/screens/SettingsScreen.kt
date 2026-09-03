@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.settings.domain.AppSettings
+import io.lukia.features.settings.presentation.DiagnosticsGroup
 import io.lukia.features.settings.presentation.ProviderActions
 import io.lukia.features.settings.presentation.ProviderState
 import io.lukia.features.settings.presentation.SettingsViewModel
@@ -54,6 +55,7 @@ fun SettingsScreen(
         translatingActions = rememberTranslatingActions(viewModel),
         providerActions = rememberProviderActions(viewModel),
         onBack = onBack,
+        diagnostics = { DiagnosticsGroup() },
     )
 }
 
@@ -77,6 +79,8 @@ fun SettingsContent(
     providerState: ProviderState = ProviderState(),
     translatingActions: TranslatingActions = TranslatingActions(),
     providerActions: ProviderActions = ProviderActions(),
+    /** The diagnostics group - see `SettingsBody`. Absent leaves it off the page. */
+    diagnostics: (@Composable () -> Unit)? = null,
 ) {
     val dimens = LocalLukiaDimens.current
 
@@ -104,6 +108,7 @@ fun SettingsContent(
                 translatingActions = translatingActions,
                 providerActions = providerActions,
                 modifier = Modifier.fillMaxSize(),
+                diagnostics = diagnostics,
             )
 
             LukiaIconButton(

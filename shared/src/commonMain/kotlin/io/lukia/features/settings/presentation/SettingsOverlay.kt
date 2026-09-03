@@ -64,5 +64,6 @@ private fun SettingsPanelBody(viewModel: SettingsViewModel = koinViewModel()) {
         // A step away from the panel it sits on, rather than from the window
         // background the screen version sits on.
         groupColor = MaterialTheme.colorScheme.surfaceVariant,
+        diagnostics = { DiagnosticsGroup(groupColor = MaterialTheme.colorScheme.surfaceVariant) },
     )
 }
