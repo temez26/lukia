@@ -17,7 +17,17 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import io.lukia.features.stats.domain.ReadingStats
+import io.lukia.resources.Res
+import io.lukia.resources.stats_figure_and_label
+import io.lukia.resources.stats_tile_books
+import io.lukia.resources.stats_tile_favourites
+import io.lukia.resources.stats_tile_finished
+import io.lukia.resources.stats_tile_not_started
+import io.lukia.resources.stats_tile_pages_read
+import io.lukia.resources.stats_tile_reading
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 
 /** One number worth showing, and what it counts. */
 @Immutable
@@ -33,18 +43,38 @@ internal data class StatTile(val value: String, val label: String)
  *
  * Pages are in there because they are the one figure that grows on an evening
  * when no book was started or finished, which is most evenings.
+ *
+ * The two labels that follow their own count are plural resources rather than a
+ * one-or-many `if`. English has two forms and picks between them on a boolean;
+ * Polish has three and Arabic six, and none of them is reachable that way.
  */
+@Composable
 internal fun ReadingStats.tiles(): List<StatTile> = listOf(
-    StatTile(value = booksReading.toString(), label = "Reading"),
-    StatTile(value = booksFinished.toString(), label = "Finished"),
-    StatTile(value = pagesRead.toString(), label = pluralise(pagesRead, "Page read", "Pages read")),
-    StatTile(value = booksUnread.toString(), label = "Not started"),
-    StatTile(value = favourites.toString(), label = "Favourites"),
-    StatTile(value = booksInLibrary.toString(), label = pluralise(booksInLibrary, "Book", "Books")),
+    StatTile(
+        value = booksReading.toString(),
+        label = stringResource(Res.string.stats_tile_reading),
+    ),
+    StatTile(
+        value = booksFinished.toString(),
+        label = stringResource(Res.string.stats_tile_finished),
+    ),
+    StatTile(
+        value = pagesRead.toString(),
+        label = pluralStringResource(Res.plurals.stats_tile_pages_read, pagesRead),
+    ),
+    StatTile(
+        value = booksUnread.toString(),
+        label = stringResource(Res.string.stats_tile_not_started),
+    ),
+    StatTile(
+        value = favourites.toString(),
+        label = stringResource(Res.string.stats_tile_favourites),
+    ),
+    StatTile(
+        value = booksInLibrary.toString(),
+        label = pluralStringResource(Res.plurals.stats_tile_books, booksInLibrary),
+    ),
 )
-
-private fun pluralise(count: Int, one: String, many: String): String =
-    if (count == 1) one else many
 
 /**
  * The figures laid out in a grid of [columns], padded so the last row lines up
@@ -103,10 +133,12 @@ internal fun StatFigure(
     modifier: Modifier = Modifier,
     style: TextStyle = MaterialTheme.typography.headlineSmall,
 ) {
+    // Read before the modifier chain: `clearAndSetSemantics` is not a
+    // composable scope.
+    val spoken = stringResource(Res.string.stats_figure_and_label, value, label)
+
     Column(
-        modifier = modifier.clearAndSetSemantics {
-            contentDescription = "$value $label"
-        },
+        modifier = modifier.clearAndSetSemantics { contentDescription = spoken },
     ) {
         Text(
             text = value,

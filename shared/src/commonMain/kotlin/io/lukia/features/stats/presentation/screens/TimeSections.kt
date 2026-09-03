@@ -21,11 +21,25 @@ import io.lukia.features.stats.presentation.components.StatFigure
 import io.lukia.features.stats.presentation.readingTime
 import io.lukia.features.stats.presentation.readingTimeOrDash
 import io.lukia.features.stats.presentation.streakLine
+import io.lukia.resources.Res
+import io.lukia.resources.stats_all_time
+import io.lukia.resources.stats_best_day
+import io.lukia.resources.stats_daily_average
+import io.lukia.resources.stats_longest_run
+import io.lukia.resources.stats_longest_run_spoken
+import io.lukia.resources.stats_sittings
+import io.lukia.resources.stats_this_week
+import io.lukia.resources.stats_this_week_footnote
+import io.lukia.resources.stats_time_read
+import io.lukia.resources.stats_today
+import io.lukia.resources.stats_today_spoken
 import io.lukia.shared.presentation.components.surface.BadgeTone
 import io.lukia.shared.presentation.components.surface.GroupSection
 import io.lukia.shared.presentation.components.surface.LukiaDivider
 import io.lukia.shared.presentation.components.surface.StatusBadge
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * The week so far: what today is worth, the shape of the seven days around it,
@@ -44,10 +58,9 @@ internal fun ThisWeekSection(
     if (habits.isEmpty) return
 
     GroupSection(
-        title = "This week",
+        title = stringResource(Res.string.stats_this_week),
         color = groupColor,
-        footnote = "Counted while a book is open and being turned, " +
-            "and only from the day this app started keeping track.",
+        footnote = stringResource(Res.string.stats_this_week_footnote),
         modifier = modifier,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Space.xl)) {
@@ -80,15 +93,17 @@ private fun TodayHeadline(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier.fillMaxWidth(),
     ) {
+        // Read before the modifier chain: `clearAndSetSemantics` is not a
+        // composable scope.
+        val spoken = stringResource(Res.string.stats_today_spoken, readingTime(habits.todayMs))
+
         Column(
             modifier = Modifier
                 .weight(1f)
-                .clearAndSetSemantics {
-                    contentDescription = "Today: ${readingTime(habits.todayMs)}"
-                },
+                .clearAndSetSemantics { contentDescription = spoken },
         ) {
             Text(
-                text = "Today",
+                text = stringResource(Res.string.stats_today),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -131,14 +146,14 @@ private fun WeekTotals(
     ) {
         StatFigure(
             value = readingTimeOrDash(habits.weekMs),
-            label = "This week",
+            label = stringResource(Res.string.stats_this_week),
             modifier = Modifier.weight(1f),
             style = MaterialTheme.typography.titleMedium,
         )
 
         StatFigure(
             value = readingTimeOrDash(habits.dailyAverageMs),
-            label = "Daily average",
+            label = stringResource(Res.string.stats_daily_average),
             modifier = Modifier.weight(1f),
             style = MaterialTheme.typography.titleMedium,
         )
@@ -160,26 +175,33 @@ internal fun AllTimeSection(
 ) {
     if (habits.isEmpty) return
 
-    GroupSection(title = "All time", color = groupColor, modifier = modifier) {
+    GroupSection(
+        title = stringResource(Res.string.stats_all_time),
+        color = groupColor,
+        modifier = modifier,
+    ) {
         Column(verticalArrangement = Arrangement.spacedBy(Space.xl)) {
             Row(horizontalArrangement = Arrangement.spacedBy(Space.lg)) {
                 StatFigure(
                     value = readingTimeOrDash(habits.totalMs),
-                    label = "Time read",
+                    label = stringResource(Res.string.stats_time_read),
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.titleMedium,
                 )
 
                 StatFigure(
                     value = habits.sittings.toString(),
-                    label = if (habits.sittings == 1) "Sitting" else "Sittings",
+                    label = pluralStringResource(
+                        Res.plurals.stats_sittings,
+                        habits.sittings,
+                    ),
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.titleMedium,
                 )
 
                 StatFigure(
                     value = readingTimeOrDash(habits.longestDayMs),
-                    label = "Best day",
+                    label = stringResource(Res.string.stats_best_day),
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.titleMedium,
                 )
@@ -204,15 +226,19 @@ private fun BestRunRow(
     days: Int,
     modifier: Modifier = Modifier,
 ) {
+    // Read before the modifier chain: `clearAndSetSemantics` is not a
+    // composable scope.
+    val run = stringResource(Res.string.stats_longest_run_spoken, streakLine(days))
+
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
-            .clearAndSetSemantics { contentDescription = "Longest run: ${streakLine(days)}" },
+            .clearAndSetSemantics { contentDescription = run },
     ) {
         Text(
-            text = "Longest run",
+            text = stringResource(Res.string.stats_longest_run),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

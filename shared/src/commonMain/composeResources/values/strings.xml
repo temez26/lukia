@@ -527,4 +527,77 @@
     <string name="settings_nothing_recorded">Nothing recorded yet. Use the app as you did when it went wrong, then come back.</string>
     <string name="settings_showing_last">Showing the last %1$d of %2$d. Copy takes all of them.</string>
 
+    <!-- The statistics page. -->
+    <string name="stats_entry">Your reading</string>
+    <string name="stats_title">Reading</string>
+    <string name="stats_footnote">Counted on this device, and kept here.</string>
+
+    <!--
+        A stretch of reading. Four whole forms rather than a number with a unit
+        stuck on: where the unit goes, and whether it takes a space, is not the
+        same in every language.
+    -->
+    <string name="stats_time_none">None yet</string>
+    <string name="stats_time_under_a_minute">Under a minute</string>
+    <string name="stats_time_minutes">%1$dm</string>
+    <string name="stats_time_hours">%1$dh</string>
+    <string name="stats_time_hours_minutes">%1$dh %2$dm</string>
+    <!-- The same figure where a dash reads better than a sentence. -->
+    <string name="stats_time_dash">\u2014</string>
+
+    <string name="stats_tile_reading">Reading</string>
+    <string name="stats_tile_finished">Finished</string>
+    <string name="stats_tile_not_started">Not started</string>
+    <string name="stats_tile_favourites">Favourites</string>
+    <plurals name="stats_tile_pages_read">
+        <item quantity="one">Page read</item>
+        <item quantity="other">Pages read</item>
+    </plurals>
+    <plurals name="stats_tile_books">
+        <item quantity="one">Book</item>
+        <item quantity="other">Books</item>
+    </plurals>
+    <!-- A figure and the word under it, announced as one phrase. -->
+    <string name="stats_figure_and_label">%1$s %2$s</string>
+
+    <string name="stats_this_week">This week</string>
+    <string name="stats_this_week_footnote">Counted while a book is open and being turned, and only from the day this app started keeping track.</string>
+    <string name="stats_today">Today</string>
+    <string name="stats_daily_average">Daily average</string>
+    <string name="stats_all_time">All time</string>
+    <string name="stats_time_read">Time read</string>
+    <string name="stats_best_day">Best day</string>
+    <string name="stats_longest_run">Longest run</string>
+    <plurals name="stats_sittings">
+        <item quantity="one">Sitting</item>
+        <item quantity="other">Sittings</item>
+    </plurals>
+    <!--
+        A run of days, said as a sentence. Nought is its own string rather than a
+        plural form: "No run going" is a different thing to say, not a different
+        way of counting, and somebody who has not opened a book today has not
+        failed at anything.
+    -->
+    <string name="stats_no_run">No run going</string>
+    <plurals name="stats_days_in_a_row">
+        <item quantity="one">1 day in a row</item>
+        <item quantity="other">%1$d days in a row</item>
+    </plurals>
+    <string name="stats_today_spoken">Today: %1$s</string>
+    <string name="stats_longest_run_spoken">Longest run: %1$s</string>
+    <!-- One bar of the week chart, for a screen reader. -->
+    <string name="stats_day_spoken">%1$s: %2$s</string>
+    <string name="stats_still_to_come">still to come</string>
+
+    <string name="stats_your_library">Your library</string>
+    <string name="stats_nothing_to_count">Nothing to count yet. Import a book and this fills in as you read.</string>
+    <string name="stats_share_read">%1$d% of your library read</string>
+    <string name="stats_recently_read">Recently read</string>
+    <string name="stats_opened">Opened</string>
+    <plurals name="stats_finished_pages">
+        <item quantity="one">Finished \u00B7 1 page</item>
+        <item quantity="other">Finished \u00B7 %1$d pages</item>
+    </plurals>
+    <string name="stats_page_of_percent">Page %1$d of %2$d \u00B7 %3$d%</string>
+
 </resources>

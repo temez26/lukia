@@ -26,6 +26,10 @@ import androidx.compose.ui.unit.sp
 import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.core.presentation.displayTitle
 import io.lukia.features.stats.domain.ReadingActivity
+import io.lukia.resources.Res
+import io.lukia.resources.stats_finished_pages
+import io.lukia.resources.stats_opened
+import io.lukia.resources.stats_page_of_percent
 import io.lukia.shared.presentation.components.controls.ReadingProgressBar
 import io.lukia.shared.presentation.components.controls.focusRing
 import io.lukia.shared.presentation.components.controls.hoverHighlight
@@ -33,6 +37,8 @@ import io.lukia.shared.presentation.components.cover.BookCover
 import io.lukia.shared.presentation.components.cover.rememberBookCover
 import io.lukia.shared.presentation.components.surface.LukiaDivider
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 
 private val ActivityCoverHeight: Dp = 56.dp
 
@@ -160,11 +166,27 @@ private fun ActivityDetails(
  * long the document was - says only that it has been opened, rather than
  * inventing a page count to divide by.
  */
+@Composable
 private fun progressLine(progress: ReadingProgress): String {
-    val page = progress.pageNumber ?: return "Opened"
+    val page = progress.pageNumber
+    val percent = progress.percent
+
+    // The two are set together or not at all - see `ReadingProgress.percent` -
+    // and a format cannot be handed a null, so the pairing is written down.
+    if (page == null || percent == null) return stringResource(Res.string.stats_opened)
 
     return when {
-        progress.isFinished -> "Finished · ${progress.pageCount} pages"
-        else -> "Page $page of ${progress.pageCount} · ${progress.percent}%"
+        progress.isFinished -> pluralStringResource(
+            Res.plurals.stats_finished_pages,
+            progress.pageCount,
+            progress.pageCount,
+        )
+
+        else -> stringResource(
+            Res.string.stats_page_of_percent,
+            page,
+            progress.pageCount,
+            percent,
+        )
     }
 }
