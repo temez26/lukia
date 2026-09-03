@@ -3,6 +3,7 @@ package io.lukia.features.settings.presentation.screens
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -94,6 +95,13 @@ internal fun SettingsBody(
      * a raised surface, and in the dark theme the background is true black.
      */
     groupColor: Color = MaterialTheme.colorScheme.surface,
+    /**
+     * The diagnostics group, which is not one of the four and does not switch
+     * with them - see `DiagnosticsSettings`. A slot rather than more parameters
+     * because it is the one group here with a view model of its own, and this
+     * body has to stay composable without a dependency graph behind it.
+     */
+    diagnostics: (@Composable () -> Unit)? = null,
 ) {
     val dimens = LocalLukiaDimens.current
     val scroll = rememberScrollState()
@@ -153,6 +161,12 @@ internal fun SettingsBody(
                     groupColor = groupColor,
                     modifier = Modifier.padding(top = dimens.sectionSpacing),
                 )
+            }
+
+            // Outside the crossfade, so it stays put while the groups change
+            // above it. It belongs to the page rather than to any one group.
+            diagnostics?.let {
+                Box(modifier = Modifier.padding(top = dimens.sectionSpacing)) { it() }
             }
         }
 
