@@ -32,10 +32,14 @@ import io.lukia.features.stats.domain.DayReading
 import io.lukia.features.stats.presentation.dayLabel
 import io.lukia.features.stats.presentation.dayName
 import io.lukia.features.stats.presentation.readingTime
+import io.lukia.resources.Res
+import io.lukia.resources.stats_day_spoken
+import io.lukia.resources.stats_still_to_come
 import io.lukia.shared.presentation.theme.LocalMotionStyle
 import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.afterScreenChange
+import org.jetbrains.compose.resources.stringResource
 
 /** How tall the tallest bar stands. Enough to read a shape from, not a wall. */
 private val ChartHeight: Dp = 104.dp
@@ -144,11 +148,13 @@ private fun DayColumn(
     growth: Float,
     modifier: Modifier = Modifier,
 ) {
+    // Read before the modifier chain: `clearAndSetSemantics` is not a
+    // composable scope.
+    val spoken = stringResource(Res.string.stats_day_spoken, dayName(day.date), day.spoken())
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.clearAndSetSemantics {
-            contentDescription = "${dayName(day.date)}: ${day.spoken()}"
-        },
+        modifier = modifier.clearAndSetSemantics { contentDescription = spoken },
     ) {
         DayBar(day = day, share = share, growth = growth)
 
@@ -235,7 +241,8 @@ private fun DayLabel(
 }
 
 /** What a day is worth saying out loud, which "None yet" is not on a Friday to come. */
+@Composable
 private fun DayReading.spoken(): String = when {
-    isFuture -> "still to come"
+    isFuture -> stringResource(Res.string.stats_still_to_come)
     else -> readingTime(durationMs)
 }

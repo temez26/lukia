@@ -17,10 +17,16 @@ import io.lukia.features.stats.domain.ReadingStats
 import io.lukia.features.stats.presentation.components.RecentReadingList
 import io.lukia.features.stats.presentation.components.StatTileGrid
 import io.lukia.features.stats.presentation.components.tiles
+import io.lukia.resources.Res
+import io.lukia.resources.stats_nothing_to_count
+import io.lukia.resources.stats_recently_read
+import io.lukia.resources.stats_share_read
+import io.lukia.resources.stats_your_library
 import io.lukia.shared.presentation.components.controls.ReadingProgressBar
 import io.lukia.shared.presentation.components.surface.GroupSection
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.isWideWindow
+import org.jetbrains.compose.resources.stringResource
 
 /** The overall bar, drawn heavier than the hairline a row carries. */
 private val LibraryBarHeight: Dp = 8.dp
@@ -38,14 +44,18 @@ internal fun LibrarySection(
     groupColor: Color,
     modifier: Modifier = Modifier,
 ) {
-    GroupSection(title = "Your library", color = groupColor, modifier = modifier) {
+    GroupSection(
+        title = stringResource(Res.string.stats_your_library),
+        color = groupColor,
+        modifier = modifier,
+    ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(Space.xl),
         ) {
             if (stats.isEmpty) {
                 Text(
-                    text = "Nothing to count yet. Import a book and this fills in as you read.",
+                    text = stringResource(Res.string.stats_nothing_to_count),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -79,7 +89,10 @@ private fun LibraryProgress(
         Text(
             // Floored, and never rounded up to a hundred: a library with one
             // book left in it has not been finished.
-            text = "${(fraction * 100).toInt().coerceIn(0, 100)}% of your library read",
+            text = stringResource(
+                Res.string.stats_share_read,
+                (fraction * 100).toInt().coerceIn(0, 100),
+            ),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = Space.md),
@@ -104,7 +117,7 @@ internal fun ActivitySection(
     if (activity.isEmpty()) return
 
     GroupSection(
-        title = "Recently read",
+        title = stringResource(Res.string.stats_recently_read),
         color = groupColor,
         // The rows carry their own vertical padding, so the card asks for none.
         padding = 0.dp,

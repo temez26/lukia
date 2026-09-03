@@ -1,6 +1,19 @@
 package io.lukia.features.stats.presentation
 
+import androidx.compose.runtime.Composable
+import io.lukia.core.infrastructure.weekdayName
+import io.lukia.resources.Res
+import io.lukia.resources.stats_days_in_a_row
+import io.lukia.resources.stats_no_run
+import io.lukia.resources.stats_time_dash
+import io.lukia.resources.stats_time_hours
+import io.lukia.resources.stats_time_hours_minutes
+import io.lukia.resources.stats_time_minutes
+import io.lukia.resources.stats_time_none
+import io.lukia.resources.stats_time_under_a_minute
 import kotlinx.datetime.LocalDate
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 
 /** Milliseconds in the units this reads out in. */
 private const val MillisPerMinute = 60_000L
@@ -15,9 +28,6 @@ private const val MinutesPerHour = 60L
  */
 private const val HoursPastWhichMinutesStopMattering = 10
 
-/** How much of a weekday's name fits under a bar of the chart - see [dayLabel]. */
-private const val DayLabelLetters = 3
-
 /**
  * A stretch of reading, as somebody would say it.
  *
@@ -28,22 +38,28 @@ private const val DayLabelLetters = 3
  *
  * Hours drop the minutes past ten hours - "12h" says as much as "12h 04m" and is
  * half as much to read on a row that already carries three of these.
+ *
+ * Four whole forms rather than a number with a unit stuck on: where the unit
+ * goes, and whether it takes a space, is not the same in every language.
  */
+@Composable
 internal fun readingTime(millis: Long): String {
-    if (millis <= 0) return "None yet"
+    if (millis <= 0) return stringResource(Res.string.stats_time_none)
 
     val minutes = millis / MillisPerMinute
 
-    if (minutes < 1) return "Under a minute"
+    if (minutes < 1) return stringResource(Res.string.stats_time_under_a_minute)
 
     val hours = minutes / MinutesPerHour
     val rest = minutes % MinutesPerHour
 
     return when {
-        hours <= 0 -> "${minutes}m"
-        hours >= HoursPastWhichMinutesStopMattering -> "${hours}h"
-        rest == 0L -> "${hours}h"
-        else -> "${hours}h ${rest}m"
+        hours <= 0 -> stringResource(Res.string.stats_time_minutes, minutes)
+        hours >= HoursPastWhichMinutesStopMattering ->
+            stringResource(Res.string.stats_time_hours, hours)
+
+        rest == 0L -> stringResource(Res.string.stats_time_hours, hours)
+        else -> stringResource(Res.string.stats_time_hours_minutes, hours, rest)
     }
 }
 
@@ -55,38 +71,39 @@ internal fun readingTime(millis: Long): String {
  * as a nought, which on a row of statistics is the difference between "you have
  * not read today" and "you failed today".
  */
-internal fun readingTimeOrDash(millis: Long): String =
-    if (millis <= 0) "—" else readingTime(millis)
+@Composable
+internal fun readingTimeOrDash(millis: Long): String = if (millis <= 0) {
+    stringResource(Res.string.stats_time_dash)
+} else {
+    readingTime(millis)
+}
 
 /**
  * A day, as the label under one bar of the chart.
  *
- * Three letters rather than one. Seven single letters spell out T and T and S
- * and S, so a week reads as a row with two pairs of identical labels in it and
- * gives no clue which Tuesday is which - which is exactly the moment a chart
- * stops looking ordered. Three letters fit across the narrowest window this app
- * runs in and each one names a day on sight.
- *
- * Taken from the day's own name rather than from a table of translations this
- * app does not have - the rest of its chrome is in English too, and a lookup
- * that only ever answers in one language is a lookup pretending to be more.
+ * The platform's own abbreviation rather than the first three letters of the
+ * full name. Truncating is right for English and wrong almost everywhere else:
+ * an abbreviation is not always a prefix, and a script with no three-letter form
+ * has none to cut. What each platform gives back is what its own calendars show.
  */
-internal fun dayLabel(date: LocalDate): String = dayName(date).take(DayLabelLetters)
+internal fun dayLabel(date: LocalDate): String =
+    weekdayName(date.dayOfWeek, abbreviated = true)
 
 /** The day spelled out, for the sentence a screen reader is given. */
 internal fun dayName(date: LocalDate): String =
-    date.dayOfWeek.name.lowercase().replaceFirstChar { it.uppercaseChar() }
+    weekdayName(date.dayOfWeek, abbreviated = false)
 
 /**
  * How many days in a row, said as a sentence rather than as a number with a
  * label under it.
  *
- * "1 day" rather than "1 days", and "No run going" rather than a zero - a nought
- * beside the word "streak" reads as a failure, and somebody who has not opened a
- * book today has not failed at anything.
+ * Nought is its own string rather than a plural form: "No run going" is a
+ * different thing to say rather than a different way of counting, and somebody
+ * who has not opened a book today has not failed at anything.
  */
-internal fun streakLine(days: Int): String = when (days) {
-    0 -> "No run going"
-    1 -> "1 day in a row"
-    else -> "$days days in a row"
+@Composable
+internal fun streakLine(days: Int): String = if (days <= 0) {
+    stringResource(Res.string.stats_no_run)
+} else {
+    pluralStringResource(Res.plurals.stats_days_in_a_row, days, days)
 }

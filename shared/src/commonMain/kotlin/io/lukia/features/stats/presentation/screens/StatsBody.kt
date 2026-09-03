@@ -22,12 +22,17 @@ import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.displayMessage
 import io.lukia.core.presentation.displayTitle
 import io.lukia.features.stats.domain.ReadingSummary
+import io.lukia.resources.Res
+import io.lukia.resources.action_try_again
+import io.lukia.resources.stats_footnote
+import io.lukia.resources.stats_title
 import io.lukia.shared.presentation.components.state.ErrorState
 import io.lukia.shared.presentation.components.state.LoadingState
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.softFadeOut
 import io.lukia.shared.presentation.theme.stateSwapIn
+import org.jetbrains.compose.resources.stringResource
 
 /** Vertical room reserved so content starts clear of the floating back control. */
 private val TopChromeClearance: Dp = 68.dp
@@ -133,7 +138,7 @@ private fun CountedContent(
             is UiState.Failure -> ErrorState(
                 title = state.error.displayTitle(),
                 message = state.error.displayMessage(),
-                actionLabel = "Try again",
+                actionLabel = stringResource(Res.string.action_try_again),
                 onAction = actions.onRetry,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -204,13 +209,13 @@ private fun StatsSections(
 private fun StatsTitle(modifier: Modifier = Modifier) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
-            text = "Reading",
+            text = stringResource(Res.string.stats_title),
             style = MaterialTheme.typography.displaySmall,
             color = MaterialTheme.colorScheme.onBackground,
         )
 
         Text(
-            text = "Counted on this device, and kept here.",
+            text = stringResource(Res.string.stats_footnote),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = Space.xs),

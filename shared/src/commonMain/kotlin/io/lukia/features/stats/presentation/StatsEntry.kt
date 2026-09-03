@@ -6,9 +6,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import io.lukia.resources.Res
+import io.lukia.resources.stats_entry
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.icons.GlyphWeight
 import io.lukia.shared.presentation.components.icons.glyphStrokeWidth
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * The way in to the reading statistics: a mark on the library's bar.
@@ -27,7 +30,7 @@ fun StatsButton(
     modifier: Modifier = Modifier,
 ) {
     LukiaIconButton(
-        label = "Your reading",
+        label = stringResource(Res.string.stats_entry),
         onClick = onClick,
         modifier = modifier,
     ) { tint, glyph ->
