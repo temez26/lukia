@@ -15,12 +15,19 @@ import io.lukia.features.reader.presentation.translation.TranslateOnScreen
 import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationGestures
+import io.lukia.resources.Res
+import io.lukia.resources.reader_hide_translations
+import io.lukia.resources.reader_keep_translating
+import io.lukia.resources.reader_show_translations
+import io.lukia.resources.reader_stop_translating
+import io.lukia.resources.reader_translate_on_screen
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.controls.ShortcutTooltip
 import io.lukia.shared.presentation.components.icons.TranslateGlyph
 import io.lukia.shared.presentation.components.icons.TranslateOnwardsGlyph
 import io.lukia.shared.presentation.components.icons.TranslationsShownGlyph
 import io.lukia.shared.presentation.theme.isWideWindow
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * What the toolbar needs to know about translating, gathered so the bar takes it
@@ -108,14 +115,26 @@ internal fun TranslationControls(
     onContinuousChange: (Boolean) -> Unit,
     onVisibleChange: (Boolean) -> Unit,
 ) {
+    // Each read once and used twice: the tooltip and the button it wraps say
+    // the same thing, and a resource read twice is a resource that can drift.
+    val onwards = stringResource(
+        if (continuous) Res.string.reader_stop_translating else Res.string.reader_keep_translating,
+    )
+    val shownLabel = stringResource(
+        if (shown.visible) Res.string.reader_hide_translations else Res.string.reader_show_translations,
+    )
+
     // Not there at all until the reader has asked for them in Settings. These
     // two are the ones that spend a screenful at a time - see BulkTranslation -
     // and a button that can do that sitting in the bar of a reading app is a
     // button somebody presses to find out what it does.
     if (offered.onScreen) {
-        ShortcutTooltip(description = "Translate what is on screen", shortcut = "R") {
+        ShortcutTooltip(
+            description = stringResource(Res.string.reader_translate_on_screen),
+            shortcut = "R",
+        ) {
             LukiaIconButton(
-                label = "Translate what is on screen",
+                label = stringResource(Res.string.reader_translate_on_screen),
                 onClick = onTranslateOnScreen,
             ) { tint, glyph ->
                 TranslateGlyph(tint = tint, modifier = glyph)
@@ -125,19 +144,11 @@ internal fun TranslationControls(
 
     if (offered.asYouRead) {
         ShortcutTooltip(
-            description = if (continuous) {
-                "Stop translating as you read"
-            } else {
-                "Keep translating as you read"
-            },
+            description = onwards,
             shortcut = "E",
         ) {
             LukiaIconButton(
-                label = if (continuous) {
-                    "Stop translating as you read"
-                } else {
-                    "Keep translating as you read"
-                },
+                label = onwards,
                 onClick = { onContinuousChange(!continuous) },
                 tint = if (continuous) {
                     MaterialTheme.colorScheme.primary
@@ -154,11 +165,11 @@ internal fun TranslationControls(
     // there from the start - where the reader will look for it - but does nothing
     // until there is something for it to do.
     ShortcutTooltip(
-        description = if (shown.visible) "Hide the translations" else "Show the translations",
+        description = shownLabel,
         shortcut = "H",
     ) {
         LukiaIconButton(
-            label = if (shown.visible) "Hide the translations" else "Show the translations",
+            label = shownLabel,
             onClick = { onVisibleChange(!shown.visible) },
             enabled = shown.any,
             tint = if (shown.visible) {

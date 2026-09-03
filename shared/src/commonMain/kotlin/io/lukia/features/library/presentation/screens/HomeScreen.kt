@@ -26,10 +26,13 @@ import io.lukia.features.library.presentation.pickers.rememberPlatformFilePicker
 import io.lukia.features.library.presentation.pickers.rememberPlatformFolderPicker
 import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.features.library.presentation.sessions.LibraryShelfUi
+import io.lukia.resources.Res
+import io.lukia.resources.action_try_again
 import io.lukia.shared.presentation.components.launch.rememberLaunchReveal
 import io.lukia.shared.presentation.components.menu.ActionMenuScrim
 import io.lukia.shared.presentation.components.state.LoadingState
 import io.lukia.shared.presentation.components.state.UiStateContent
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -167,7 +170,7 @@ internal fun HomeContent(
     ) { paddingValues ->
         UiStateContent(
             state = uiState,
-            actionLabel = "Try again",
+            actionLabel = stringResource(Res.string.action_try_again),
             onAction = onRetry,
             modifier = Modifier
                 .fillMaxSize()

@@ -26,8 +26,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.reader.presentation.percentThrough
+import io.lukia.resources.Res
+import io.lukia.resources.reader_percent
+import io.lukia.resources.reader_percent_read
+import io.lukia.resources.reader_percent_start
 import io.lukia.shared.presentation.components.surface.GlassSurface
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /** Thick enough to read as a bar rather than a rule, inside chrome of its own. */
 private val TrackHeight: Dp = 4.dp
@@ -78,6 +83,9 @@ internal fun ReaderReadingStatus(
 
     val percent = percentThrough(position, pageCount)
 
+    // Read before the modifier chain: `semantics` is not a composable scope.
+    val spoken = stringResource(Res.string.reader_percent_read, percent)
+
     GlassSurface(
         shape = MaterialTheme.shapes.large,
         modifier = modifier.fillMaxWidth(),
@@ -95,10 +103,10 @@ internal fun ReaderReadingStatus(
                 // and a reader scrolling through a chapter does not want each
                 // one read out. The pages themselves carry the position.
                 .semantics(mergeDescendants = true) {
-                    contentDescription = "$percent percent read"
+                    contentDescription = spoken
                 },
         ) {
-            Marker(text = "0", emphasised = false)
+            Marker(text = stringResource(Res.string.reader_percent_start), emphasised = false)
 
             ProgressTrack(
                 // From the page rather than from the rounded figure beside it, so
@@ -110,7 +118,7 @@ internal fun ReaderReadingStatus(
                     .padding(horizontal = Space.lg),
             )
 
-            Marker(text = "$percent%", emphasised = true)
+            Marker(text = stringResource(Res.string.reader_percent, percent), emphasised = true)
         }
     }
 }

@@ -17,8 +17,11 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.lukia.resources.Res
+import io.lukia.resources.reader_percent
 import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Thickness of the bar welded along the bottom edge of a cover.
@@ -132,7 +135,7 @@ fun ReadingProgressBadge(
             .padding(horizontal = Space.sm, vertical = Space.xxs),
     ) {
         Text(
-            text = "$percent%",
+            text = stringResource(Res.string.reader_percent, percent),
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface,

@@ -28,6 +28,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.reader.domain.outline.ReaderOutline
 import io.lukia.features.reader.presentation.percentThrough
+import io.lukia.resources.Res
+import io.lukia.resources.reader_page_x_of_y
+import io.lukia.resources.reader_page_x_of_y_percent
+import io.lukia.resources.reader_percent
 import io.lukia.shared.presentation.components.menu.DismissOnBack
 import io.lukia.shared.presentation.components.menu.popoverTransition
 import io.lukia.shared.presentation.components.menu.rememberPopoverProgress
@@ -37,6 +41,7 @@ import io.lukia.shared.presentation.components.surface.LukiaDivider
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.isWideWindow
+import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
 
 /** Grows out of the control it hangs from, matching the other reader panels. */
@@ -157,6 +162,14 @@ private fun PositionScrubber(
 
     val percent = percentThrough(shown, pageCount)
 
+    // Read before the modifier chain: `semantics` is not a composable scope.
+    val spoken = stringResource(
+        Res.string.reader_page_x_of_y_percent,
+        shown,
+        pageCount,
+        percent,
+    )
+
     Column(modifier = Modifier.padding(horizontal = inset)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -167,11 +180,11 @@ private fun PositionScrubber(
                 // separately, "1%" follows "Page 1 of 100" as a label with no
                 // subject and means nothing at all.
                 .semantics(mergeDescendants = true) {
-                    contentDescription = "Page $shown of $pageCount, $percent percent through"
+                    contentDescription = spoken
                 },
         ) {
             Text(
-                text = "Page $shown of $pageCount",
+                text = stringResource(Res.string.reader_page_x_of_y, shown, pageCount),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -179,7 +192,7 @@ private fun PositionScrubber(
             // How far in, which the page number alone does not say: page 120 is
             // a different place in a pamphlet than in a doorstop.
             Text(
-                text = "$percent%",
+                text = stringResource(Res.string.reader_percent, percent),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

@@ -16,6 +16,16 @@ import io.lukia.features.reader.presentation.components.settings.PanelSwitchRow
 import io.lukia.features.reader.presentation.components.settings.SettingGroup
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.presentation.GestureControl
+import io.lukia.resources.Res
+import io.lukia.resources.reader_gesture_long_press
+import io.lukia.resources.reader_gesture_tap
+import io.lukia.resources.reader_hold_again
+import io.lukia.resources.reader_notes_under_paragraph
+import io.lukia.resources.reader_show_translations
+import io.lukia.resources.reader_translate_as_you_read
+import io.lukia.resources.reader_translate_into
+import io.lukia.resources.reader_translate_this_page
+import io.lukia.resources.reader_translation
 import io.lukia.shared.presentation.components.controls.ButtonVariant
 import io.lukia.shared.presentation.components.controls.ChoiceDensity
 import io.lukia.shared.presentation.components.controls.ChoiceList
@@ -26,6 +36,7 @@ import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.disclosureIn
 import io.lukia.shared.presentation.theme.disclosureOut
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Translating, at the top of the reader's own settings panel.
@@ -63,7 +74,7 @@ internal fun ReaderTranslationSettings(
 
     Column(modifier = modifier.fillMaxWidth()) {
         SectionLabel(
-            text = "Translation",
+            text = stringResource(Res.string.reader_translation),
             modifier = Modifier.padding(start = inset, end = inset, bottom = Space.sm),
         )
 
@@ -80,14 +91,22 @@ internal fun ReaderTranslationSettings(
         // words in them, and the wide layout's control column cuts "Sentence"
         // and "Paragraph" to stubs - a control whose choices cannot be read is
         // worse than a row that does not line up with the ones below it.
-        SettingGroup(label = "Tap", wide = false, inset = inset) {
+        SettingGroup(
+            label = stringResource(Res.string.reader_gesture_tap),
+            wide = false,
+            inset = inset,
+        ) {
             GestureControl(
                 selected = preferences.gestures.tap,
                 onSelect = { preferences.onGesturesChange(preferences.gestures.copy(tap = it)) },
             )
         }
 
-        SettingGroup(label = "Press and hold", wide = false, inset = inset) {
+        SettingGroup(
+            label = stringResource(Res.string.reader_gesture_long_press),
+            wide = false,
+            inset = inset,
+        ) {
             GestureControl(
                 selected = preferences.gestures.longPress,
                 onSelect = {
@@ -101,7 +120,7 @@ internal fun ReaderTranslationSettings(
         // because it is not one of the things a hold can ask for. It is what a
         // hold does on a word that has already answered, whatever it is set to.
         PanelSwitchRow(
-            label = "Hold again for more about a word",
+            label = stringResource(Res.string.reader_hold_again),
             checked = preferences.gestures.wordDetails,
             onChange = {
                 preferences.onGesturesChange(preferences.gestures.copy(wordDetails = it))
@@ -112,7 +131,7 @@ internal fun ReaderTranslationSettings(
         // Next to the row above it because the two are the same trade made in
         // opposite directions: what a word has to say, in the page or out of it.
         PanelSwitchRow(
-            label = "Notes under the paragraph",
+            label = stringResource(Res.string.reader_notes_under_paragraph),
             checked = preferences.notes,
             onChange = preferences.onNotesChange,
             inset = inset,
@@ -151,7 +170,7 @@ private fun ReaderTranslationSessionControls(
     // wherever it is reached from.
     if (translation.offered.onScreen) {
         LukiaButton(
-            label = "Translate this page",
+            label = stringResource(Res.string.reader_translate_this_page),
             onClick = translation.onTranslateOnScreen,
             variant = ButtonVariant.Secondary,
             modifier = Modifier
@@ -162,7 +181,7 @@ private fun ReaderTranslationSessionControls(
 
     if (translation.offered.asYouRead) {
         PanelSwitchRow(
-            label = "Translate as you read",
+            label = stringResource(Res.string.reader_translate_as_you_read),
             checked = translation.onScreen.continuous,
             onChange = translation.onContinuousChange,
             inset = inset,
@@ -173,7 +192,7 @@ private fun ReaderTranslationSessionControls(
     // there from the start - where the reader will look for it - but does
     // nothing until there is something for it to do.
     PanelSwitchRow(
-        label = "Show translations",
+        label = stringResource(Res.string.reader_show_translations),
         checked = translation.shown.visible,
         onChange = translation.onVisibleChange,
         inset = inset,
@@ -204,7 +223,7 @@ private fun TargetLanguageSetting(
     var expanded by remember { mutableStateOf(false) }
 
     PanelDisclosureRow(
-        label = "Translate into",
+        label = stringResource(Res.string.reader_translate_into),
         value = preferences.targetLanguage.endonym,
         expanded = expanded,
         onClick = { expanded = !expanded },

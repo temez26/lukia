@@ -50,8 +50,12 @@ import io.lukia.features.translate.domain.text.TextAnchor
 import io.lukia.features.translate.presentation.BookTranslations
 import io.lukia.features.translate.presentation.PassageSelection
 import io.lukia.features.translate.presentation.PassageTranslation
+import io.lukia.resources.Res
+import io.lukia.resources.action_try_again
+import io.lukia.resources.reader_pdf_no_text
 import io.lukia.shared.presentation.components.state.UiStateContent
 import io.lukia.shared.presentation.theme.isWideWindow
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Stateless half of the screen. Split out so the layout can be rendered without
@@ -237,7 +241,7 @@ internal fun ReaderContent(
                     // Opening can fail on something worth a second attempt - a
                     // copy that could not be written, a file being read as it is
                     // moved.
-                    actionLabel = "Try again",
+                    actionLabel = stringResource(Res.string.action_try_again),
                     onAction = onRetry,
                     modifier = Modifier.fillMaxSize(),
                 ) { openDocument ->
@@ -339,8 +343,7 @@ internal fun ReaderContent(
                 // Over everything, because it is about the book somebody is
                 // looking at rather than about anything in the chrome.
                 ReaderNotice(
-                    text = "This PDF has no text in it to re-set - its pages are " +
-                        "pictures. Showing it as pages.",
+                    text = stringResource(Res.string.reader_pdf_no_text),
                     visible = layout.noTextLayer,
                     onDismiss = layout.onNoticeDismiss,
                     modifier = Modifier.align(Alignment.BottomCenter),

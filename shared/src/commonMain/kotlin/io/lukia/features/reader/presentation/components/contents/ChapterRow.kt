@@ -40,6 +40,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.reader.presentation.ChapterRow
+import io.lukia.resources.Res
+import io.lukia.resources.reader_hide_sections_of
+import io.lukia.resources.reader_show_sections_of
 import io.lukia.shared.presentation.components.controls.focusRing
 import io.lukia.shared.presentation.components.controls.hoverHighlight
 import io.lukia.shared.presentation.components.icons.DisclosureChevron
@@ -48,6 +51,7 @@ import io.lukia.shared.presentation.theme.LocalLukiaMetrics
 import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /** Indent per level of nesting. One step is the width of the disclosure control. */
 private val LevelIndent: Dp = 16.dp
@@ -213,7 +217,10 @@ private fun DisclosureToggle(
         label = "chapterDisclosure",
     )
 
-    val label = if (collapsed) "Show sections of $title" else "Hide sections of $title"
+    val label = stringResource(
+        if (collapsed) Res.string.reader_show_sections_of else Res.string.reader_hide_sections_of,
+        title,
+    )
     val interactionSource = remember { MutableInteractionSource() }
     val shape = MaterialTheme.shapes.extraSmall
 

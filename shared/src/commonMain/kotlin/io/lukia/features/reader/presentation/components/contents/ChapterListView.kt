@@ -25,11 +25,16 @@ import io.lukia.features.reader.domain.outline.ReaderOutline
 import io.lukia.features.reader.presentation.chapterRows
 import io.lukia.features.reader.presentation.collapsibleIndices
 import io.lukia.features.reader.presentation.currentEntryIndex
+import io.lukia.resources.Res
+import io.lukia.resources.reader_chapters
+import io.lukia.resources.reader_collapse_all
+import io.lukia.resources.reader_expand_all
 import io.lukia.shared.presentation.components.controls.ButtonSize
 import io.lukia.shared.presentation.components.controls.ButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaButton
 import io.lukia.shared.presentation.components.surface.SectionLabel
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 // The book's own table of contents, as rows the reader can walk and open.
 // Split from the panel that holds it because the panel is about getting
@@ -158,11 +163,13 @@ private fun ChaptersHeader(
             // carries padding of its own; matching them would double it.
             .padding(start = inset, end = inset - Space.md, bottom = Space.xxs),
     ) {
-        SectionLabel(text = "Chapters")
+        SectionLabel(text = stringResource(Res.string.reader_chapters))
 
         if (collapseAll != null) {
             LukiaButton(
-                label = if (collapseAll) "Collapse all" else "Expand all",
+                label = stringResource(
+                    if (collapseAll) Res.string.reader_collapse_all else Res.string.reader_expand_all,
+                ),
                 onClick = onToggleAll,
                 variant = ButtonVariant.Ghost,
                 size = ButtonSize.Compact,

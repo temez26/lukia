@@ -20,6 +20,10 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
+import io.lukia.resources.Res
+import io.lukia.resources.filter_clear
+import io.lukia.resources.search_forget
+import io.lukia.resources.search_recent
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.controls.hoverHighlight
 import io.lukia.shared.presentation.components.icons.ClearGlyph
@@ -27,6 +31,7 @@ import io.lukia.shared.presentation.components.icons.SearchGlyph
 import io.lukia.shared.presentation.components.surface.SectionLabel
 import io.lukia.shared.presentation.theme.LocalLukiaMetrics
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * What has been searched for before, offered while the field is empty.
@@ -55,7 +60,10 @@ internal fun RecentSearches(
                 .fillMaxWidth()
                 .padding(bottom = Space.sm),
         ) {
-            SectionLabel(text = "Recent Searches", modifier = Modifier.weight(1f))
+            SectionLabel(
+                text = stringResource(Res.string.search_recent),
+                modifier = Modifier.weight(1f),
+            )
 
             ClearAll(onClick = onClear)
         }
@@ -121,7 +129,7 @@ private fun RecentSearchRow(
         )
 
         LukiaIconButton(
-            label = "Forget $term",
+            label = stringResource(Res.string.search_forget, term),
             onClick = onForget,
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             size = metrics.iconButtonSmall,
@@ -150,7 +158,7 @@ private fun ClearAll(
     val shape = MaterialTheme.shapes.extraSmall
 
     Text(
-        text = "Clear",
+        text = stringResource(Res.string.filter_clear),
         style = MaterialTheme.typography.labelMedium,
         color = MaterialTheme.colorScheme.primary,
         modifier = modifier

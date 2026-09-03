@@ -37,6 +37,8 @@ import io.lukia.features.library.presentation.model.LibraryFacets
 import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.library.presentation.model.OpenMenu
 import io.lukia.features.library.presentation.sessions.LibraryShelfUi
+import io.lukia.resources.Res
+import io.lukia.resources.action_try_again
 import io.lukia.shared.presentation.components.launch.rememberLaunchReveal
 import io.lukia.shared.presentation.components.menu.ActionMenuScrim
 import io.lukia.shared.presentation.components.state.LoadingState
@@ -46,6 +48,7 @@ import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.isWideWindow
 import io.lukia.shared.presentation.theme.softFadeOut
 import io.lukia.shared.presentation.theme.stateSwapIn
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * How far the grid scrolls before the compact bar has fully separated itself from
@@ -177,7 +180,7 @@ fun LibraryContent(
                     // left-aligns the grid instead of centring it.
                     UiStateContent(
                         state = uiState,
-                        actionLabel = "Try again",
+                        actionLabel = stringResource(Res.string.action_try_again),
                         onAction = onRetry,
                         modifier = Modifier
                             // Capped first, then filled, so wide desktop windows keep

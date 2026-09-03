@@ -37,8 +37,11 @@ import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.domain.text.PassageUnit
 import io.lukia.features.translate.presentation.PassageSelection
 import io.lukia.features.translate.presentation.SentenceTranslations
+import io.lukia.resources.Res
+import io.lukia.resources.reader_page_x_of_y
 import io.lukia.shared.presentation.theme.LukiaElevation
 import kotlinx.coroutines.delay
+import org.jetbrains.compose.resources.stringResource
 
 // One page of a fixed-layout document, drawn and answered for on its own - see
 // ReaderPageList for the list these sit in.
@@ -109,6 +112,9 @@ internal fun DocumentPage(
     // one is far too much to do again on every tap.
     val passages = remember(index, sentences) { PagePassages(index, sentences) }
 
+    // Read before the modifier chain: `semantics` is not a composable scope.
+    val spoken = stringResource(Res.string.reader_page_x_of_y, index + 1, pageCount)
+
     TranslateWhatIsOnThisPage(passages, translateOnScreen, onPassagesRequested)
 
     Box(
@@ -120,7 +126,7 @@ internal fun DocumentPage(
             // A page is a picture with no text behind it, so this is the only
             // thing a screen reader can be told about it. Without it the whole
             // document is silence.
-            .semantics { contentDescription = "Page ${index + 1} of $pageCount" }
+            .semantics { contentDescription = spoken }
             .passageTaps(
                 pageIndex = index,
                 passages = passages,

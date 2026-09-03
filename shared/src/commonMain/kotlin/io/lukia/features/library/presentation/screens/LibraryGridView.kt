@@ -34,11 +34,17 @@ import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.library.presentation.model.LibrarySelection
 import io.lukia.features.library.presentation.model.LibraryShelf
 import io.lukia.features.library.presentation.model.OpenMenu
+import io.lukia.resources.Res
+import io.lukia.resources.library_no_matches_filtered
+import io.lukia.resources.library_no_matches_filtered_term
+import io.lukia.resources.library_no_matches_term
+import io.lukia.resources.library_no_results_title
 import io.lukia.shared.presentation.components.launch.LaunchReveal
 import io.lukia.shared.presentation.components.menu.BookActionsMenu
 import io.lukia.shared.presentation.components.surface.EmptyState
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /** Clears the last row of the bottom edge. */
 private val GridBottomPadding: Dp = 24.dp
@@ -229,12 +235,13 @@ private fun NoMatchesNotice(query: LibraryQuery) {
             .padding(top = 40.dp),
     ) {
         EmptyState(
-            title = "No Results",
+            title = stringResource(Res.string.library_no_results_title),
             message = when {
-                trimmed.isEmpty() -> "Nothing in your library matches every filter you have set."
+                trimmed.isEmpty() -> stringResource(Res.string.library_no_matches_filtered)
                 query.isRefined || query.shelf != LibraryShelf.All ->
-                    "Nothing matching “$trimmed” is left once your filters are applied."
-                else -> "No books match “$trimmed”."
+                    stringResource(Res.string.library_no_matches_filtered_term, trimmed)
+
+                else -> stringResource(Res.string.library_no_matches_term, trimmed)
             },
         )
     }

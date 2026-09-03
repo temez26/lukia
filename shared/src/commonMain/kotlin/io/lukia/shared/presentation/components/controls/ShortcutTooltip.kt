@@ -10,8 +10,11 @@ import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import io.lukia.resources.Res
+import io.lukia.resources.shortcut_tooltip
 import io.lukia.shared.presentation.theme.LocalWindowWidthClass
 import io.lukia.shared.presentation.theme.WindowWidthClass
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * What a control does, and the key that does it, on hover.
@@ -43,7 +46,7 @@ fun ShortcutTooltip(
         tooltip = {
             PlainTooltip {
                 Text(
-                    text = "$description  $shortcut",
+                    text = stringResource(Res.string.shortcut_tooltip, description, shortcut),
                     style = MaterialTheme.typography.labelSmall,
                 )
             }

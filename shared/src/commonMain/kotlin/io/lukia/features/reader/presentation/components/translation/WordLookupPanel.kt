@@ -25,7 +25,11 @@ import io.lukia.features.reader.presentation.translation.WordInquiry
 import io.lukia.features.reader.presentation.translation.WordOnThePage
 import io.lukia.features.translate.presentation.displayName
 import io.lukia.resources.Res
+import io.lukia.resources.action_try_again
 import io.lukia.resources.reader_open_in_site
+import io.lukia.resources.word_show_original
+import io.lukia.resources.word_show_translation
+import io.lukia.resources.word_translate_it
 import io.lukia.shared.presentation.components.controls.ButtonSize
 import io.lukia.shared.presentation.components.controls.ButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaButton
@@ -191,11 +195,12 @@ private fun WordInquiry.unansweredBy(): AppError? {
 }
 
 /** What the one button that touches the page behind the panel offers to do. */
+@Composable
 private fun WordOnThePage.label(): String = when (this) {
-    WordOnThePage.Untouched -> "Translate it"
-    WordOnThePage.Translated -> "Show the original"
-    WordOnThePage.Original -> "Show the translation"
-    is WordOnThePage.Failed -> "Try again"
+    WordOnThePage.Untouched -> stringResource(Res.string.word_translate_it)
+    WordOnThePage.Translated -> stringResource(Res.string.word_show_original)
+    WordOnThePage.Original -> stringResource(Res.string.word_show_translation)
+    is WordOnThePage.Failed -> stringResource(Res.string.action_try_again)
 }
 
 /** A step down from the entry, so the buttons read as what to do about it. */

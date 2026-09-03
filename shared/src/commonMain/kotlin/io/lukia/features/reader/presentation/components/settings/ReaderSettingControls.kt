@@ -30,12 +30,18 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.lukia.features.reader.domain.ReaderSettings
+import io.lukia.resources.Res
+import io.lukia.resources.reader_decrease_text_size
+import io.lukia.resources.reader_increase_text_size
+import io.lukia.resources.reader_percent
+import io.lukia.resources.reader_text_size_percent
 import io.lukia.shared.presentation.components.controls.focusRing
 import io.lukia.shared.presentation.components.controls.hoverHighlight
 import io.lukia.shared.presentation.components.surface.SectionLabel
 import io.lukia.shared.presentation.theme.LocalLukiaMetrics
 import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * What a control gets in the wide layout. Fixed rather than a weight, so every
@@ -150,6 +156,9 @@ internal fun TextSizeStepper(
 ) {
     val metrics = LocalLukiaMetrics.current
 
+    // Read before the modifier chain: `semantics` is not a composable scope.
+    val spoken = stringResource(Res.string.reader_text_size_percent, settings.textScalePercent)
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -163,13 +172,13 @@ internal fun TextSizeStepper(
     ) {
         StepperButton(
             symbolSize = 12.sp,
-            label = "Decrease text size",
+            label = stringResource(Res.string.reader_decrease_text_size),
             enabled = enabled && settings.canReduceText,
             onClick = { onSettingsChange(settings.withSmallerText()) },
         )
 
         Text(
-            text = "${settings.textScalePercent}%",
+            text = stringResource(Res.string.reader_percent, settings.textScalePercent),
             style = MaterialTheme.typography.labelSmall,
             textAlign = TextAlign.Center,
             maxLines = 1,
@@ -178,12 +187,12 @@ internal fun TextSizeStepper(
             ),
             modifier = Modifier
                 .weight(1f)
-                .semantics { contentDescription = "Text size ${settings.textScalePercent} percent" },
+                .semantics { contentDescription = spoken },
         )
 
         StepperButton(
             symbolSize = 17.sp,
-            label = "Increase text size",
+            label = stringResource(Res.string.reader_increase_text_size),
             enabled = enabled && settings.canEnlargeText,
             onClick = { onSettingsChange(settings.withLargerText()) },
         )

@@ -36,6 +36,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import io.lukia.resources.Res
+import io.lukia.resources.search_clear
+import io.lukia.resources.search_your_library
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.controls.focusRing
 import io.lukia.shared.presentation.components.icons.ClearGlyph
@@ -45,6 +48,7 @@ import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.isWideWindow
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * How tall the field is in this window. Read by the bar around it, which is
@@ -99,6 +103,9 @@ internal fun LibrarySearchField(
     val interactionSource = remember { MutableInteractionSource() }
     val shape = MaterialTheme.shapes.small
 
+    // Read before the modifier chain: `semantics` is not a composable scope.
+    val spoken = stringResource(Res.string.search_your_library)
+
     BasicTextField(
         value = query,
         onValueChange = onQueryChange,
@@ -128,7 +135,7 @@ internal fun LibrarySearchField(
             // losing focus rather than moving it.
             .focusRing(interactionSource, shape)
             .pointerHoverIcon(PointerIcon.Text)
-            .semantics { contentDescription = "Search your library" },
+            .semantics { contentDescription = spoken },
         decorationBox = { textField ->
             SearchFieldDecoration(
                 query = query,
@@ -220,7 +227,7 @@ private fun ClearButton(
             scaleOut(LukiaMotion.quick(), targetScale = 0.7f),
     ) {
         LukiaIconButton(
-            label = "Clear search",
+            label = stringResource(Res.string.search_clear),
             onClick = onClick,
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             size = size,

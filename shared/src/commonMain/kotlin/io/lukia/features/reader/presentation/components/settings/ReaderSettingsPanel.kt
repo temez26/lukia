@@ -31,6 +31,22 @@ import io.lukia.features.reader.domain.ReadingWidth
 import io.lukia.features.reader.domain.TextAlignment
 import io.lukia.features.reader.presentation.displayName
 import io.lukia.getPlatform
+import io.lukia.resources.Res
+import io.lukia.resources.reader_keep_screen_awake
+import io.lukia.resources.reader_note_fixed_layout
+import io.lukia.resources.reader_note_fixed_layout_switchable
+import io.lukia.resources.reader_note_pdf_as_text
+import io.lukia.resources.reader_section_keyboard
+import io.lukia.resources.reader_section_page
+import io.lukia.resources.reader_section_text_and_images
+import io.lukia.resources.reader_setting_alignment
+import io.lukia.resources.reader_setting_image_size
+import io.lukia.resources.reader_setting_layout
+import io.lukia.resources.reader_setting_line_spacing
+import io.lukia.resources.reader_setting_page_width
+import io.lukia.resources.reader_setting_text_size
+import io.lukia.resources.reader_setting_theme
+import io.lukia.resources.reader_setting_typeface
 import io.lukia.shared.presentation.components.controls.SegmentedControl
 import io.lukia.shared.presentation.components.menu.DismissOnBack
 import io.lukia.shared.presentation.components.menu.popoverTransition
@@ -41,6 +57,7 @@ import io.lukia.shared.presentation.components.surface.LukiaDivider
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.isWideWindow
+import org.jetbrains.compose.resources.stringResource
 
 /** Grows out of the control it hangs from, matching the book actions menu. */
 private val PanelTransformOrigin = TransformOrigin(1f, 0f)
@@ -140,13 +157,21 @@ internal fun ReaderSettingsPanel(
             // Empty until there is something set up to translate with.
             translationSection()
 
-            SectionHeading(label = "Page", wide = wide, inset = inset)
+            SectionHeading(
+                label = stringResource(Res.string.reader_section_page),
+                wide = wide,
+                inset = inset,
+            )
 
             // First, because it is the one setting here that changes what the
             // reader is looking at rather than how it looks: everything below
             // acts on the book this chooses.
             if (layout != null) {
-                SettingGroup(label = "Layout", wide = wide, inset = inset) {
+                SettingGroup(
+                    label = stringResource(Res.string.reader_setting_layout),
+                    wide = wide,
+                    inset = inset,
+                ) {
                     SegmentedControl(
                         options = PdfLayout.entries,
                         selected = layout,
@@ -157,14 +182,17 @@ internal fun ReaderSettingsPanel(
 
                 if (layout.asText) {
                     PanelNote(
-                        text = "The words and pictures of the PDF, re-set by this " +
-                            "app. Its own page layout is not kept.",
+                        text = stringResource(Res.string.reader_note_pdf_as_text),
                         inset = inset,
                     )
                 }
             }
 
-            SettingGroup(label = "Theme", wide = wide, inset = inset) {
+            SettingGroup(
+                label = stringResource(Res.string.reader_setting_theme),
+                wide = wide,
+                inset = inset,
+            ) {
                 SegmentedControl(
                     options = ReaderTheme.entries,
                     selected = settings.theme,
@@ -176,7 +204,11 @@ internal fun ReaderSettingsPanel(
             // Shown as percentages rather than names: with five steps that
             // run past the width of the window, "125%" says what "Larger"
             // cannot.
-            SettingGroup(label = "Page width", wide = wide, inset = inset) {
+            SettingGroup(
+                label = stringResource(Res.string.reader_setting_page_width),
+                wide = wide,
+                inset = inset,
+            ) {
                 SegmentedControl(
                     options = ReadingWidth.entries,
                     // Nothing is selected when a pinch has left the page
@@ -193,7 +225,7 @@ internal fun ReaderSettingsPanel(
             // read. Absent altogether where a screen does not lock itself.
             if (keepAwakeOffered) {
                 PanelSwitchRow(
-                    label = "Keep the screen awake",
+                    label = stringResource(Res.string.reader_keep_screen_awake),
                     checked = settings.keepScreenAwake,
                     onChange = { onSettingsChange(settings.copy(keepScreenAwake = it)) },
                     inset = inset,
@@ -207,7 +239,7 @@ internal fun ReaderSettingsPanel(
             )
 
             SectionHeading(
-                label = "Text and images",
+                label = stringResource(Res.string.reader_section_text_and_images),
                 wide = wide,
                 inset = inset,
                 enabled = typographyEnabled,
@@ -217,15 +249,19 @@ internal fun ReaderSettingsPanel(
             // whether by eye or by screen reader.
             if (!typographyEnabled) {
                 PanelNote(
-                    text = "These apply to reflowable books - this one carries " +
-                        "its own fixed layout." +
-                        if (layout == null) "" else " Read it as text to use them.",
+                    text = stringResource(
+                        if (layout == null) {
+                            Res.string.reader_note_fixed_layout
+                        } else {
+                            Res.string.reader_note_fixed_layout_switchable
+                        },
+                    ),
                     inset = inset,
                 )
             }
 
             SettingGroup(
-                label = "Text size",
+                label = stringResource(Res.string.reader_setting_text_size),
                 wide = wide,
                 inset = inset,
                 enabled = typographyEnabled,
@@ -238,7 +274,7 @@ internal fun ReaderSettingsPanel(
             }
 
             SettingGroup(
-                label = "Line spacing",
+                label = stringResource(Res.string.reader_setting_line_spacing),
                 wide = wide,
                 inset = inset,
                 enabled = typographyEnabled,
@@ -253,7 +289,7 @@ internal fun ReaderSettingsPanel(
             }
 
             SettingGroup(
-                label = "Alignment",
+                label = stringResource(Res.string.reader_setting_alignment),
                 wide = wide,
                 inset = inset,
                 enabled = typographyEnabled,
@@ -268,7 +304,7 @@ internal fun ReaderSettingsPanel(
             }
 
             SettingGroup(
-                label = "Typeface",
+                label = stringResource(Res.string.reader_setting_typeface),
                 wide = wide,
                 inset = inset,
                 enabled = typographyEnabled,
@@ -285,7 +321,7 @@ internal fun ReaderSettingsPanel(
             // Last of the reflowable settings: it is the one somebody reaches
             // for after the type is comfortable and a diagram still is not.
             SettingGroup(
-                label = "Image size",
+                label = stringResource(Res.string.reader_setting_image_size),
                 wide = wide,
                 inset = inset,
                 enabled = typographyEnabled,
@@ -305,7 +341,11 @@ internal fun ReaderSettingsPanel(
                     endInset = inset,
                     modifier = Modifier.padding(vertical = Space.md),
                 )
-                SectionHeading(label = "Keyboard", wide = true, inset = inset)
+                SectionHeading(
+                    label = stringResource(Res.string.reader_section_keyboard),
+                    wide = true,
+                    inset = inset,
+                )
                 ShortcutList(reflowable = typographyEnabled, inset = inset)
             }
         }

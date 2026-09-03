@@ -33,13 +33,13 @@ private const val AlmostDoneFraction = 0.7f
  * Every row is a sample. None of them is the whole of anything, which is why
  * each carries a way through to the library tab showing all of it.
  */
-enum class HomeShelf(val title: String) {
-    Recent("Recent"),
-    RecentlyAdded("Recently Added"),
-    AlmostDone("Almost Done"),
-    Unread("Unread"),
-    Favorites("Favorites"),
-    Finished("Finished"),
+enum class HomeShelf {
+    Recent,
+    RecentlyAdded,
+    AlmostDone,
+    Unread,
+    Favorites,
+    Finished,
     ;
 
     /**

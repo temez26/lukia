@@ -28,10 +28,17 @@ import io.lukia.features.library.presentation.components.book.BookRow
 import io.lukia.features.library.presentation.components.search.LibrarySearchField
 import io.lukia.features.library.presentation.components.search.RecentSearches
 import io.lukia.features.library.presentation.model.LibraryBook
+import io.lukia.resources.Res
+import io.lukia.resources.library_no_matches_term
+import io.lukia.resources.library_no_results_title
+import io.lukia.resources.search_empty_message
+import io.lukia.resources.search_empty_title
+import io.lukia.resources.search_placeholder
 import io.lukia.shared.presentation.components.surface.EmptyState
 import io.lukia.shared.presentation.components.surface.SectionLabel
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 /** Clears the last result of the tab bar the list scrolls up to. */
@@ -122,7 +129,7 @@ internal fun SearchContent(
             LibrarySearchField(
                 query = term,
                 onQueryChange = onTermChange,
-                placeholder = "Search by title or author",
+                placeholder = stringResource(Res.string.search_placeholder),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = dimens.screenPadding, vertical = Space.md),
@@ -166,8 +173,8 @@ private fun SearchBody(
 ) {
     when {
         term.isNotBlank() && results.isEmpty() -> SearchNotice(
-            title = "No Results",
-            message = "No books match “${term.trim()}”.",
+            title = stringResource(Res.string.library_no_results_title),
+            message = stringResource(Res.string.library_no_matches_term, term.trim()),
         )
 
         term.isNotBlank() -> SearchResults(
@@ -186,8 +193,8 @@ private fun SearchBody(
         )
 
         else -> SearchNotice(
-            title = "Search Your Library",
-            message = "Type a title or an author to find a book.",
+            title = stringResource(Res.string.search_empty_title),
+            message = stringResource(Res.string.search_empty_message),
         )
     }
 }

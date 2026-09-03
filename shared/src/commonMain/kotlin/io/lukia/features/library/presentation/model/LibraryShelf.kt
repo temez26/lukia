@@ -12,11 +12,11 @@ package io.lukia.features.library.presentation.model
  * Deliberately a closed set: these are the segments of a control the reader can
  * see, and a segmented control with an open-ended number of options is not one.
  */
-enum class LibraryShelf(val label: String) {
-    All("All"),
-    Reading("Reading"),
-    Unread("Unread"),
-    Finished("Finished"),
+enum class LibraryShelf {
+    All,
+    Reading,
+    Unread,
+    Finished,
     ;
 
     fun matches(book: LibraryBook): Boolean = when (this) {

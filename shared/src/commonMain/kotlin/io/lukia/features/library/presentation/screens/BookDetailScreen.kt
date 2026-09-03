@@ -24,6 +24,10 @@ import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.library.application.BookDetails
 import io.lukia.features.library.presentation.BookDetailViewModel
 import io.lukia.features.library.presentation.model.displayText
+import io.lukia.resources.Res
+import io.lukia.resources.action_go_back
+import io.lukia.resources.action_try_again
+import io.lukia.resources.book_actions
 import io.lukia.shared.presentation.components.controls.IconButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.icons.BackChevron
@@ -33,6 +37,7 @@ import io.lukia.shared.presentation.components.menu.BookActionsMenu
 import io.lukia.shared.presentation.components.state.UiStateContent
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -122,7 +127,7 @@ fun BookDetailContent(
                 // A document that failed to load may simply have been removed,
                 // but a read that blew up can be worth a second attempt - so the
                 // way out of the failure is a retry rather than a way back.
-                actionLabel = "Try again",
+                actionLabel = stringResource(Res.string.action_try_again),
                 onAction = onRetry,
                 modifier = Modifier.fillMaxSize(),
             ) { details ->
@@ -145,7 +150,7 @@ fun BookDetailContent(
             // Floats above the scrolling content: this is the piece that most
             // wants the glass treatment, since content passes underneath it.
             LukiaIconButton(
-                label = "Go back",
+                label = stringResource(Res.string.action_go_back),
                 onClick = onBack,
                 modifier = Modifier
                     .align(Alignment.TopStart)
@@ -165,7 +170,7 @@ fun BookDetailContent(
                         .padding(end = dimens.screenPadding, top = Space.lg),
                 ) {
                     LukiaIconButton(
-                        label = "Book actions",
+                        label = stringResource(Res.string.book_actions),
                         onClick = { menuExpanded = true },
                         variant = IconButtonVariant.Glass,
                     ) { tint, glyph ->

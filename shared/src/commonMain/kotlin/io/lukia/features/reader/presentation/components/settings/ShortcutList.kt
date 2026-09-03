@@ -10,7 +10,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import io.lukia.resources.Res
+import io.lukia.resources.shortcut_close_book
+import io.lukia.resources.shortcut_close_book_keys
+import io.lukia.resources.shortcut_panels
+import io.lukia.resources.shortcut_panels_keys
+import io.lukia.resources.shortcut_resize_fixed
+import io.lukia.resources.shortcut_resize_keys
+import io.lukia.resources.shortcut_resize_reflowable
+import io.lukia.resources.shortcut_scroll
+import io.lukia.resources.shortcut_scroll_keys
+import io.lukia.resources.shortcut_start_end
+import io.lukia.resources.shortcut_start_end_keys
+import io.lukia.resources.shortcut_turn_page
+import io.lukia.resources.shortcut_turn_page_keys
+import io.lukia.resources.shortcut_word_details
+import io.lukia.resources.shortcut_word_details_keys
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * What the keys do, and the one thing the mouse does that nothing else says.
@@ -28,16 +45,28 @@ import io.lukia.shared.presentation.theme.Space
 @Composable
 internal fun ShortcutList(reflowable: Boolean, inset: Dp) {
     val shortcuts = listOf(
-        "Turn page" to "Space  PgDn  PgUp",
-        "Scroll" to "↑  ↓",
-        "Start, end" to "Home  End",
+        stringResource(Res.string.shortcut_turn_page) to
+            stringResource(Res.string.shortcut_turn_page_keys),
+        stringResource(Res.string.shortcut_scroll) to
+            stringResource(Res.string.shortcut_scroll_keys),
+        stringResource(Res.string.shortcut_start_end) to
+            stringResource(Res.string.shortcut_start_end_keys),
         // Named for what the keys do rather than for the setting they move, so
         // the panel does not carry the words "Page width" twice - and what they
         // do depends on the book, since there is no widening a re-set page.
-        (if (reflowable) "Larger, smaller" else "Wider, narrower") to "+  −  0",
-        "Contents, settings" to "C  T",
-        "Close book" to "Esc",
-        "More about a word" to "Two-finger press",
+        stringResource(
+            if (reflowable) {
+                Res.string.shortcut_resize_reflowable
+            } else {
+                Res.string.shortcut_resize_fixed
+            },
+        ) to stringResource(Res.string.shortcut_resize_keys),
+        stringResource(Res.string.shortcut_panels) to
+            stringResource(Res.string.shortcut_panels_keys),
+        stringResource(Res.string.shortcut_close_book) to
+            stringResource(Res.string.shortcut_close_book_keys),
+        stringResource(Res.string.shortcut_word_details) to
+            stringResource(Res.string.shortcut_word_details_keys),
     )
 
     shortcuts.forEach { (action, keys) ->
