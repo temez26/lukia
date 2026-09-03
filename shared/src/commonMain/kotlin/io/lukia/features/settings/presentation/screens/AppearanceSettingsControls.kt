@@ -32,12 +32,22 @@ import io.lukia.core.domain.AppTheme
 import io.lukia.core.presentation.displayDetail
 import io.lukia.core.presentation.displayName
 import io.lukia.features.settings.domain.AppSettings
+import io.lukia.resources.Res
+import io.lukia.resources.settings_accent
+import io.lukia.resources.settings_accent_footnote
+import io.lukia.resources.settings_appearance
+import io.lukia.resources.settings_appearance_footnote
+import io.lukia.resources.settings_motion
+import io.lukia.resources.settings_motion_footnote
+import io.lukia.resources.settings_palette
+import io.lukia.resources.settings_palette_footnote
 import io.lukia.shared.presentation.components.controls.ChoiceList
 import io.lukia.shared.presentation.components.controls.SegmentedControl
 import io.lukia.shared.presentation.components.icons.CheckGlyph
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.accentSwatchColor
+import org.jetbrains.compose.resources.stringResource
 
 private val SwatchSize: Dp = 30.dp
 
@@ -69,11 +79,11 @@ internal fun AppearanceSettings(
 
     Column(modifier = modifier.fillMaxWidth()) {
         SettingsSection(
-            title = "Appearance",
+            title = stringResource(Res.string.settings_appearance),
             // Named for what it does rather than what it is called, since
             // "System" is the only option whose meaning is not obvious from the
             // word alone.
-            footnote = "System follows your device’s light and dark setting.",
+            footnote = stringResource(Res.string.settings_appearance_footnote),
             groupColor = groupColor,
         ) {
             SegmentedControl(
@@ -85,8 +95,8 @@ internal fun AppearanceSettings(
         }
 
         SettingsSection(
-            title = "Palette",
-            footnote = "What the app’s surfaces are made of. Light and dark both follow it.",
+            title = stringResource(Res.string.settings_palette),
+            footnote = stringResource(Res.string.settings_palette_footnote),
             groupColor = groupColor,
             modifier = Modifier.padding(top = dimens.sectionSpacing),
         ) {
@@ -100,9 +110,8 @@ internal fun AppearanceSettings(
         }
 
         SettingsSection(
-            title = "Accent",
-            footnote = "Used for reading progress, chosen rows and anything that acts. " +
-                "Theme follows the palette.",
+            title = stringResource(Res.string.settings_accent),
+            footnote = stringResource(Res.string.settings_accent_footnote),
             groupColor = groupColor,
             modifier = Modifier.padding(top = dimens.sectionSpacing),
         ) {
@@ -138,13 +147,12 @@ private fun MotionSection(
     modifier: Modifier = Modifier,
 ) {
     SettingsSection(
-        title = "Motion",
+        title = stringResource(Res.string.settings_motion),
         // Says what the setting reaches, because it does not reach everything: a
         // button still shrinks under a finger on every one of these, and
         // promising otherwise would be a promise the app breaks the first time
         // somebody presses something.
-        footnote = "How the app moves when it opens and when screens change. " +
-            "Buttons and controls respond the same way whichever you choose.",
+        footnote = stringResource(Res.string.settings_motion_footnote),
         groupColor = groupColor,
         modifier = modifier,
     ) {

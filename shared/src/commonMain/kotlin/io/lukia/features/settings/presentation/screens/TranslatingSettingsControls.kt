@@ -12,9 +12,27 @@ import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.features.translate.presentation.GestureControl
 import io.lukia.features.translate.presentation.displayName
+import io.lukia.resources.Res
+import io.lukia.resources.reader_gesture_long_press
+import io.lukia.resources.reader_gesture_tap
+import io.lukia.resources.reader_keep_translating
+import io.lukia.resources.reader_notes_under_paragraph
+import io.lukia.resources.reader_translate_into
+import io.lukia.resources.reader_translate_on_screen
+import io.lukia.resources.settings_as_you_read_detail
+import io.lukia.resources.settings_hold_again
+import io.lukia.resources.settings_hold_again_detail
+import io.lukia.resources.settings_notes_detail
+import io.lukia.resources.settings_on_screen_detail
+import io.lukia.resources.settings_pointing_at_the_book
+import io.lukia.resources.settings_pointing_footnote
+import io.lukia.resources.settings_translate_into_footnote
+import io.lukia.resources.settings_translating_ahead
+import io.lukia.resources.settings_translating_ahead_footnote
 import io.lukia.shared.presentation.components.controls.ChoiceList
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * What is translated, when, and into what.
@@ -38,9 +56,8 @@ internal fun TranslatingSettings(
 
     Column(modifier = modifier.fillMaxWidth()) {
         SettingsSection(
-            title = "Translate into",
-            footnote = "Tap a sentence while reading to translate it, and " +
-                "tap it again for the original.",
+            title = stringResource(Res.string.reader_translate_into),
+            footnote = stringResource(Res.string.settings_translate_into_footnote),
             groupColor = groupColor,
             padding = Space.xs,
         ) {
@@ -80,15 +97,13 @@ private fun GestureSection(
     modifier: Modifier = Modifier,
 ) {
     SettingsSection(
-        title = "Pointing at the book",
-        footnote = "Each does one thing, always. Doing it again on the same " +
-            "passage puts the book’s own words back - except on a word you have " +
-            "looked up, where holding opens more about it instead.",
+        title = stringResource(Res.string.settings_pointing_at_the_book),
+        footnote = stringResource(Res.string.settings_pointing_footnote),
         groupColor = groupColor,
         modifier = modifier,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
-            LabelledField(label = "Tap") {
+            LabelledField(label = stringResource(Res.string.reader_gesture_tap)) {
                 GestureControl(
                     selected = translation.gestures.tap,
                     onSelect = {
@@ -97,7 +112,7 @@ private fun GestureSection(
                 )
             }
 
-            LabelledField(label = "Press and hold") {
+            LabelledField(label = stringResource(Res.string.reader_gesture_long_press)) {
                 GestureControl(
                     selected = translation.gestures.longPress,
                     onSelect = {
@@ -107,22 +122,18 @@ private fun GestureSection(
             }
 
             SettingsToggle(
-                label = "Notes under the paragraph",
-                detail = "The translator's asides, set small under the text they " +
-                    "belong to: a remark about an ambiguous word, a dictionary's " +
-                    "other senses. Turn them off to keep the page as the book set " +
-                    "it — holding a word still opens everything it means. Why a " +
-                    "passage could not be translated is always shown.",
+                label = stringResource(Res.string.reader_notes_under_paragraph),
+                detail = stringResource(Res.string.settings_notes_detail),
                 checked = translation.notes,
                 onChange = actions.onNotesChange,
             )
 
             SettingsToggle(
-                label = "Hold a word again for more about it",
-                detail = "Once a word has been looked up, holding it opens every " +
-                    "sense a dictionary has for it and a way through to " +
-                    "${translation.wordSite.displayName()}. Works whatever the hold above " +
-                    "is set to.",
+                label = stringResource(Res.string.settings_hold_again),
+                detail = stringResource(
+                    Res.string.settings_hold_again_detail,
+                    translation.wordSite.displayName(),
+                ),
                 checked = translation.gestures.wordDetails,
                 onChange = {
                     actions.onGesturesChange(translation.gestures.copy(wordDetails = it))
@@ -147,19 +158,15 @@ private fun TranslatingAheadSection(
     modifier: Modifier = Modifier,
 ) {
     SettingsSection(
-        title = "Translating ahead",
-        footnote = "Both are new, and both are slow and expensive: they " +
-            "translate a screenful at a time rather than the passage you " +
-            "pointed at. Off until you ask for them, and hidden from the " +
-            "reader entirely while they are.",
+        title = stringResource(Res.string.settings_translating_ahead),
+        footnote = stringResource(Res.string.settings_translating_ahead_footnote),
         groupColor = groupColor,
         modifier = modifier,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
             BetaToggle(
-                label = "Translate what is on screen",
-                detail = "Adds a button that translates every sentence you " +
-                    "can see, once.",
+                label = stringResource(Res.string.reader_translate_on_screen),
+                detail = stringResource(Res.string.settings_on_screen_detail),
                 checked = translation.bulkTranslation.onScreen,
                 onChange = {
                     actions.onBulkTranslationChange(
@@ -169,10 +176,8 @@ private fun TranslatingAheadSection(
             )
 
             BetaToggle(
-                label = "Keep translating as you read",
-                detail = "Adds a button that goes on translating whatever " +
-                    "scrolls into view until you turn it off. This is the " +
-                    "expensive one.",
+                label = stringResource(Res.string.reader_keep_translating),
+                detail = stringResource(Res.string.settings_as_you_read_detail),
                 checked = translation.bulkTranslation.asYouRead,
                 onChange = {
                     actions.onBulkTranslationChange(

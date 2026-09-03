@@ -18,9 +18,25 @@ import io.lukia.features.reader.domain.ReadingWidth
 import io.lukia.features.reader.domain.TextAlignment
 import io.lukia.features.reader.presentation.components.settings.TextSizeStepper
 import io.lukia.features.reader.presentation.displayName
+import io.lukia.resources.Res
+import io.lukia.resources.reader_setting_alignment
+import io.lukia.resources.reader_setting_image_size
+import io.lukia.resources.reader_setting_line_spacing
+import io.lukia.resources.reader_setting_page_width
+import io.lukia.resources.reader_setting_text_size
+import io.lukia.resources.reader_setting_theme
+import io.lukia.resources.reader_setting_typeface
+import io.lukia.resources.settings_opening_a_pdf
+import io.lukia.resources.settings_opening_a_pdf_as_pages
+import io.lukia.resources.settings_opening_a_pdf_as_text
+import io.lukia.resources.settings_text_and_images
+import io.lukia.resources.settings_text_and_images_footnote
+import io.lukia.resources.settings_the_page
+import io.lukia.resources.settings_the_page_footnote
 import io.lukia.shared.presentation.components.controls.SegmentedControl
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * How a book is set: the surface it is drawn on, the type it is set in, and what
@@ -71,14 +87,13 @@ private fun PageSection(
     modifier: Modifier = Modifier,
 ) {
     SettingsSection(
-        title = "The page",
-        footnote = "What every book opens as. The reader's own panel changes the " +
-            "same settings with a book in front of you.",
+        title = stringResource(Res.string.settings_the_page),
+        footnote = stringResource(Res.string.settings_the_page_footnote),
         groupColor = groupColor,
         modifier = modifier,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
-            LabelledField(label = "Theme") {
+            LabelledField(label = stringResource(Res.string.reader_setting_theme)) {
                 SegmentedControl(
                     options = ReaderTheme.entries,
                     selected = reader.theme,
@@ -89,7 +104,7 @@ private fun PageSection(
 
             // Percentages rather than names, as in the panel: the last two run
             // past the width of the window, and "125%" says what "Larger" cannot.
-            LabelledField(label = "Page width") {
+            LabelledField(label = stringResource(Res.string.reader_setting_page_width)) {
                 SegmentedControl(
                     options = ReadingWidth.entries,
                     // Nothing is selected when a pinch in the reader has left the
@@ -118,9 +133,8 @@ private fun TypeSection(
     modifier: Modifier = Modifier,
 ) {
     SettingsSection(
-        title = "Text and images",
-        footnote = "These apply to reflowable books. A PDF read as its own pages " +
-            "had its type set when the file was made, and none of this reaches it.",
+        title = stringResource(Res.string.settings_text_and_images),
+        footnote = stringResource(Res.string.settings_text_and_images_footnote),
         groupColor = groupColor,
         modifier = modifier,
     ) {
@@ -129,7 +143,7 @@ private fun TypeSection(
             // almost like it. Text size is the setting most often changed and the
             // one people recognise by shape, and two of them drifting apart would
             // be worse than this page reaching across to the reader for it.
-            LabelledField(label = "Text size") {
+            LabelledField(label = stringResource(Res.string.reader_setting_text_size)) {
                 TextSizeStepper(
                     settings = reader,
                     enabled = true,
@@ -137,7 +151,7 @@ private fun TypeSection(
                 )
             }
 
-            LabelledField(label = "Line spacing") {
+            LabelledField(label = stringResource(Res.string.reader_setting_line_spacing)) {
                 SegmentedControl(
                     options = LineSpacing.entries,
                     selected = reader.lineSpacing,
@@ -146,7 +160,7 @@ private fun TypeSection(
                 )
             }
 
-            LabelledField(label = "Alignment") {
+            LabelledField(label = stringResource(Res.string.reader_setting_alignment)) {
                 SegmentedControl(
                     options = TextAlignment.entries,
                     selected = reader.alignment,
@@ -155,7 +169,7 @@ private fun TypeSection(
                 )
             }
 
-            LabelledField(label = "Typeface") {
+            LabelledField(label = stringResource(Res.string.reader_setting_typeface)) {
                 SegmentedControl(
                     options = ReaderTypeface.entries,
                     selected = reader.typeface,
@@ -164,7 +178,7 @@ private fun TypeSection(
                 )
             }
 
-            LabelledField(label = "Image size") {
+            LabelledField(label = stringResource(Res.string.reader_setting_image_size)) {
                 SegmentedControl(
                     options = FigureSize.entries,
                     selected = reader.figureSize,
@@ -185,15 +199,14 @@ private fun PdfSection(
     modifier: Modifier = Modifier,
 ) {
     SettingsSection(
-        title = "Opening a PDF",
-        footnote = if (reader.defaultPdfLayout.asText) {
-            "New PDFs are re-set by this app - its type at the size you asked " +
-                "for, and translations in the paragraph rather than over the " +
-                "page. A scan with no text in it opens as its own pages anyway."
-        } else {
-            "New PDFs open as the file's maker laid them out. Any of them can " +
-                "still be read as text from the reader's own panel."
-        },
+        title = stringResource(Res.string.settings_opening_a_pdf),
+        footnote = stringResource(
+            if (reader.defaultPdfLayout.asText) {
+                Res.string.settings_opening_a_pdf_as_text
+            } else {
+                Res.string.settings_opening_a_pdf_as_pages
+            },
+        ),
         groupColor = groupColor,
         modifier = modifier,
     ) {

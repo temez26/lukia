@@ -43,8 +43,14 @@ sealed interface ConnectionTest {
 
     data object Trying : ConnectionTest
 
-    /** Carries what came back, so the reader can see it really translated. */
-    data class Worked(val sample: String) : ConnectionTest
+    /**
+     * Carries both halves, so the reader can see it really translated.
+     *
+     * [sent] as well as [sample] because the row shows the pair, and a screen
+     * that held its own copy of the sentence would be showing what it believed
+     * was asked rather than what was.
+     */
+    data class Worked(val sent: String, val sample: String) : ConnectionTest
 
     data class Failed(val error: AppError) : ConnectionTest
 }
@@ -345,7 +351,7 @@ class SettingsViewModel(
             )
 
             _connectionTest.value = translatePassage(request).fold(
-                onSuccess = { ConnectionTest.Worked(it.text) },
+                onSuccess = { ConnectionTest.Worked(sent = SAMPLE_SENTENCE, sample = it.text) },
                 onFailure = { ConnectionTest.Failed(it.toAppError()) },
             )
         }
