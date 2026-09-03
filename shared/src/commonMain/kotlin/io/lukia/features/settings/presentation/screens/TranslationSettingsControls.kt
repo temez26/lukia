@@ -15,6 +15,7 @@ import io.lukia.features.settings.presentation.ConnectionTest
 import io.lukia.features.settings.presentation.ModelReadiness
 import io.lukia.features.settings.presentation.components.SettingsTextField
 import io.lukia.features.translate.domain.provider.TranslationProvider
+import io.lukia.features.translate.presentation.displayName
 import io.lukia.shared.presentation.components.controls.ButtonVariant
 import io.lukia.shared.presentation.components.controls.ChoiceList
 import io.lukia.shared.presentation.components.controls.LukiaButton
@@ -203,9 +204,10 @@ internal fun ConnectionTestRow(
  * What is worth saying under each provider's settings - which is different for
  * each, because what can go wrong with each is different.
  */
+@Composable
 internal fun TranslationProvider.footnote(): String = when (this) {
     TranslationProvider.Anthropic, TranslationProvider.OpenAi ->
-        "Your key is stored on this device and sent only to $label, with the " +
+        "Your key is stored on this device and sent only to ${displayName()}, with the " +
             "sentence you tapped and what the book says about itself."
 
     TranslationProvider.Local ->

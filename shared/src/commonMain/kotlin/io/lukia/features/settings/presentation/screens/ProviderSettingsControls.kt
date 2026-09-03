@@ -14,6 +14,8 @@ import io.lukia.features.translate.domain.lookup.WordSite
 import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.features.translate.domain.text.WordLookup
+import io.lukia.features.translate.presentation.displayFootnote
+import io.lukia.features.translate.presentation.displayName
 import io.lukia.shared.presentation.components.controls.ChoiceList
 import io.lukia.shared.presentation.components.controls.SegmentedControl
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
@@ -89,7 +91,7 @@ private fun TranslationServiceSection(
             SegmentedControl(
                 options = TranslationProvider.entries,
                 selected = translation.provider,
-                label = { it.label },
+                label = { it.displayName() },
                 onSelect = actions.onProviderChange,
             )
 
@@ -200,7 +202,7 @@ private fun WordLookupSection(
 ) {
     SettingsSection(
         title = "Looking up a word",
-        footnote = translation.wordLookup.footnote,
+        footnote = translation.wordLookup.displayFootnote(),
         groupColor = groupColor,
         modifier = modifier,
     ) {
@@ -208,7 +210,7 @@ private fun WordLookupSection(
             SegmentedControl(
                 options = WordLookup.entries,
                 selected = translation.wordLookup,
-                label = { it.label },
+                label = { it.displayName() },
                 onSelect = actions.onWordLookupChange,
             )
 
@@ -255,8 +257,8 @@ private fun WordSiteSection(
             ChoiceList(
                 options = WordSite.entries,
                 selected = translation.wordSite,
-                label = { it.label },
-                detail = { it.footnote },
+                label = { it.displayName() },
+                detail = { it.displayFootnote() },
                 onSelect = actions.onWordSiteChange,
             )
 

@@ -24,6 +24,7 @@ import io.lukia.features.library.presentation.model.LibraryFacets
 import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.library.presentation.model.LibrarySort
 import io.lukia.features.library.presentation.model.OpenMenu
+import io.lukia.features.library.presentation.model.displayName
 import io.lukia.shared.presentation.components.controls.LukiaChip
 import io.lukia.shared.presentation.components.icons.HeartGlyph
 import io.lukia.shared.presentation.components.icons.LayoutGlyph
@@ -307,7 +308,7 @@ private fun LayoutChip(
 ) {
     ChipMenu(
         facet = LibraryFacet.Layout,
-        label = layout.label,
+        label = layout.displayName(),
         selected = false,
         icon = { tint, glyph -> LayoutGlyph(tint = tint, list = layout == LibraryLayout.List, modifier = glyph) },
         openMenu = openMenu,
@@ -317,7 +318,7 @@ private fun LayoutChip(
             if (index > 0) MenuSeparator()
 
             MenuRow(
-                label = option.label,
+                label = option.displayName(),
                 selected = option == layout,
                 onClick = {
                     dismiss()

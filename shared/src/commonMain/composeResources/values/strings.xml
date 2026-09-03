@@ -116,4 +116,100 @@
     <string name="error_unexpected_title">Something went wrong</string>
     <string name="error_unexpected_message">An unexpected error occurred.</string>
 
+    <!--
+        The app's own choices, named. These used to be fields on the enums
+        themselves - and two of them were the enum constant's name, rendered
+        straight to the screen - which is why there was nothing here to translate
+        and why renaming a constant changed the UI.
+    -->
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+
+    <string name="palette_crisp">Crisp</string>
+    <string name="palette_crisp_detail">White cards on grey, true black at night.</string>
+    <string name="palette_paper">Paper</string>
+    <string name="palette_paper_detail">Warm paper and ink, easy on the eyes for long sittings.</string>
+    <string name="palette_slate">Slate</string>
+    <string name="palette_slate_detail">Cool neutral greys and flat, quiet chrome.</string>
+
+    <string name="accent_themed">Theme</string>
+    <string name="accent_blue">Blue</string>
+    <string name="accent_violet">Violet</string>
+    <string name="accent_green">Green</string>
+    <string name="accent_amber">Amber</string>
+    <string name="accent_rose">Rose</string>
+    <string name="accent_graphite">Graphite</string>
+
+    <string name="motion_calm">Calm</string>
+    <string name="motion_calm_detail">Quick cross-fades. Nothing springs, slides or sparkles.</string>
+    <string name="motion_standard">Standard</string>
+    <string name="motion_standard_detail">A short opening, and screens that move the way you sent them.</string>
+    <string name="motion_playful">Playful</string>
+    <string name="motion_playful_detail">A longer opening, springier settling, and further to travel.</string>
+
+    <!-- How a PDF is put on the screen. -->
+    <string name="pdf_layout_original">Original</string>
+    <string name="pdf_layout_text">Text</string>
+
+    <!-- The reading surface, as the settings panel and the settings screen name it. -->
+    <string name="reader_theme_light">Light</string>
+    <string name="reader_theme_sepia">Sepia</string>
+    <string name="reader_theme_dark">Dark</string>
+    <string name="reader_typeface_serif">Serif</string>
+    <string name="reader_typeface_sans">Sans</string>
+    <string name="reader_alignment_ragged">Ragged</string>
+    <string name="reader_alignment_justified">Justified</string>
+    <string name="reader_spacing_tight">Tight</string>
+    <string name="reader_spacing_normal">Normal</string>
+    <string name="reader_spacing_relaxed">Relaxed</string>
+    <string name="reader_figure_small">Small</string>
+    <string name="reader_figure_normal">Normal</string>
+    <string name="reader_figure_large">Large</string>
+    <string name="reader_figure_fill">Fill</string>
+    <!-- A page width, as the share of the window it takes. -->
+    <!--
+        A bare "%" rather than an escaped "%%": Compose Resources does not
+        read "%%" as an escape and would print both signs. Verified against
+        `ReaderChromeTest.theLargerPageWidthsAreOffered`.
+    -->
+    <string name="reader_width_percent">%1$d%</string>
+
+    <!-- How the shelf is laid out. -->
+    <string name="library_layout_grid">Grid</string>
+    <string name="library_layout_list">List</string>
+
+    <!--
+        Translation choices. Four of these name a company or a website rather
+        than a thing - Anthropic, OpenAI, Google, Wiktionary, Sanakirja - and are
+        here so the picker reads from one place, not because they want
+        translating. Leave them as they are.
+    -->
+    <string name="gesture_off">Off</string>
+    <string name="passage_unit_word">Word</string>
+    <string name="passage_unit_sentence">Sentence</string>
+    <string name="passage_unit_paragraph">Paragraph</string>
+
+    <string name="provider_anthropic">Anthropic</string>
+    <string name="provider_openai">OpenAI</string>
+    <string name="provider_local">Local</string>
+
+    <string name="word_lookup_translator">Translator</string>
+    <string name="word_lookup_translator_footnote">Words go to the same service as sentences, with the paragraph around them - so the answer is the sense the book meant.</string>
+    <string name="word_lookup_google">Google</string>
+    <string name="word_lookup_google_footnote">Fast and free, and it never sees the book - only the word. Add a Cloud Translation key below to use Google's supported API rather than the public endpoint.</string>
+    <string name="word_lookup_dictionary">Dictionary</string>
+    <string name="word_lookup_dictionary_footnote">Wiktionary's own entry for the word: every sense it has, rather than the one sense something guessed at. Free, and nothing to set up.</string>
+
+    <!-- The button that leaves the app for the reader's chosen site. -->
+    <string name="reader_open_in_site">Open in %1$s</string>
+    <string name="word_site_google">Google</string>
+    <string name="word_site_google_footnote">Google Translate, with the word already in the box - so the alternatives and the reverse lookup are one tap away.</string>
+    <string name="word_site_wiktionary">Wiktionary</string>
+    <string name="word_site_wiktionary_footnote">The whole entry as Wiktionary lays it out: every language that spells the word this way, its inflections and its examples.</string>
+    <string name="word_site_sanakirja">Sanakirja</string>
+    <string name="word_site_sanakirja_footnote">sanakirja.org, which is worth the trip for the Nordic languages in particular. Opens on the pair you are reading.</string>
+    <string name="word_site_custom">Custom</string>
+    <string name="word_site_custom_footnote">Any site with a searchable address. Write {word} where the word goes, and {to} or {from} for the languages if the site takes them.</string>
+
 </resources>

@@ -190,10 +190,15 @@ class OpenAiTranslator(
             // reason.
             HttpStatusCode.TooManyRequests -> readError().let { reported ->
                 when {
+                    // Unnamed, because naming it would mean holding the
+                    // service's own name in the domain for one sentence written
+                    // here, where no string resource can be read. The reader is
+                    // looking at the settings for the one service they have
+                    // configured, so "your account" is not ambiguous.
                     reported?.isOutOfCredit == true -> AppError.Unexpected(
-                        "Your ${configured.provider.label} account is out of API credit. " +
-                            "API billing is separate from any subscription - add credit in " +
-                            "your account's billing settings.",
+                        "Your account is out of API credit. API billing is separate " +
+                            "from any subscription - add credit in your account's " +
+                            "billing settings.",
                     )
 
                     reported?.message != null -> AppError.Unexpected(reported.message)

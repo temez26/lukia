@@ -12,7 +12,7 @@ package io.lukia.features.library.domain
  * The choice is remembered, because it follows how big somebody's library is
  * rather than what they are doing this minute.
  */
-enum class LibraryLayout(val label: String) {
-    Grid("Grid"),
-    List("List"),
+enum class LibraryLayout {
+    Grid,
+    List,
 }

@@ -8,8 +8,9 @@ package io.lukia.core.domain
  * following the system is a preference, not a law - a reader who wants the app
  * dark on a light phone should be able to say so.
  *
- * The names double as the labels shown on the settings screen, which is why they
- * read as words rather than as constants.
+ * What each is called on the settings screen lives in `ThemeChoicesDisplay.kt`,
+ * not here: a name is something the reader reads, and this file is read by the
+ * code that stores the setting.
  */
 enum class AppTheme {
     System,
@@ -28,19 +29,18 @@ enum class AppTheme {
  * Named for what they look like rather than for where they came from. Two of them
  * are modelled on other reading apps, and a reader choosing between "Readest" and
  * "Readwise" would be choosing between two words that describe nothing; a reader
- * choosing between paper and slate already knows what they are getting. [detail]
- * is the second line under each on the settings screen.
+ * choosing between paper and slate already knows what they are getting.
  */
-enum class AppPalette(val title: String, val detail: String) {
+enum class AppPalette {
 
     /** Apple's system colours: white cards on grey, true black at night. */
-    Crisp("Crisp", "White cards on grey, true black at night."),
+    Crisp,
 
     /** Warm paper and ink, the way a book-shaped app usually looks. */
-    Paper("Paper", "Warm paper and ink, easy on the eyes for long sittings."),
+    Paper,
 
     /** Cool neutral greys, flatter chrome, one confident accent. */
-    Slate("Slate", "Cool neutral greys and flat, quiet chrome."),
+    Slate,
 }
 
 /**
@@ -55,14 +55,14 @@ enum class AppPalette(val title: String, val detail: String) {
  * palette brings with it, so picking a palette gets its whole look rather than
  * its surfaces with somebody else's highlight.
  */
-enum class AppAccent(val title: String) {
-    Themed("Theme"),
-    Blue("Blue"),
-    Violet("Violet"),
-    Green("Green"),
-    Amber("Amber"),
-    Rose("Rose"),
-    Graphite("Graphite"),
+enum class AppAccent {
+    Themed,
+    Blue,
+    Violet,
+    Green,
+    Amber,
+    Rose,
+    Graphite,
 }
 
 /**
@@ -78,17 +78,15 @@ enum class AppAccent(val title: String) {
  * [Standard] is the default and is what the app was designed around. The other
  * two turn the same motion down and up rather than replacing it, so an app on
  * [Calm] is still recognisably this app.
- *
- * [detail] is the second line under each on the settings screen.
  */
-enum class AppMotion(val title: String, val detail: String) {
+enum class AppMotion {
 
     /** For a reader who would rather the app got out of the way. */
-    Calm("Calm", "Quick cross-fades. Nothing springs, slides or sparkles."),
+    Calm,
 
     /** What everything here was tuned to. */
-    Standard("Standard", "A short opening, and screens that move the way you sent them."),
+    Standard,
 
     /** For a reader who wants to see it work. */
-    Playful("Playful", "A longer opening, springier settling, and further to travel."),
+    Playful,
 }

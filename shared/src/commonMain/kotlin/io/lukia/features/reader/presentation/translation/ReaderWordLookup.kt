@@ -112,5 +112,5 @@ private fun TranslationSettings.linkFor(word: String, sourceLanguage: String?): 
         sourceLanguage = sourceLanguage,
     ) ?: return null
 
-    return WordSiteLink(label = wordSite.label, url = url)
+    return WordSiteLink(site = wordSite, url = url)
 }

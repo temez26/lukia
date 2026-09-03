@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.semantics.Role
@@ -56,7 +57,12 @@ private val TrackPadding: Dp = 2.dp
 fun <T> SegmentedControl(
     options: List<T>,
     selected: T?,
-    label: (T) -> String,
+    /**
+     * Composable, because what a choice is called is a string resource and a
+     * resource is read from a composition. See the display mappers beside each
+     * feature's own choices.
+     */
+    label: @Composable (T) -> String,
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
@@ -107,40 +113,63 @@ fun <T> SegmentedControl(
 
         Row(modifier = Modifier.fillMaxWidth()) {
             options.forEach { option ->
-                val isSelected = option == selected
-                val interactionSource = remember { MutableInteractionSource() }
-
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .width(segmentWidth)
-                        .fillMaxHeight()
-                        .clip(pillShape)
-                        .hoverHighlight(interactionSource, pillShape)
-                        .focusRing(interactionSource, pillShape)
-                        .selectable(
-                            selected = isSelected,
-                            enabled = enabled,
-                            interactionSource = interactionSource,
-                            indication = null,
-                            role = Role.RadioButton,
-                            onClick = { onSelect(option) },
-                        )
-                        .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default),
-                ) {
-                    Text(
-                        text = label(option),
-                        style = MaterialTheme.typography.labelSmall,
-                        textAlign = TextAlign.Center,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                        color = MaterialTheme.colorScheme.onSurface.copy(
-                            alpha = if (enabled) 1f else LukiaAlpha.Disabled,
-                        ),
-                    )
-                }
+                Segment(
+                    text = label(option),
+                    width = segmentWidth,
+                    shape = pillShape,
+                    selected = option == selected,
+                    enabled = enabled,
+                    onClick = { onSelect(option) },
+                )
             }
         }
+    }
+}
+
+/**
+ * One segment: its word, its target and its hover and focus treatment. The pill
+ * behind the chosen one is drawn by [SegmentedControl] rather than here, because
+ * it travels between segments and belongs to none of them.
+ */
+@Composable
+private fun Segment(
+    text: String,
+    width: Dp,
+    shape: Shape,
+    selected: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .width(width)
+            .fillMaxHeight()
+            .clip(shape)
+            .hoverHighlight(interactionSource, shape)
+            .focusRing(interactionSource, shape)
+            .selectable(
+                selected = selected,
+                enabled = enabled,
+                interactionSource = interactionSource,
+                indication = null,
+                role = Role.RadioButton,
+                onClick = onClick,
+            )
+            .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default),
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+            color = MaterialTheme.colorScheme.onSurface.copy(
+                alpha = if (enabled) 1f else LukiaAlpha.Disabled,
+            ),
+        )
     }
 }

@@ -13,7 +13,16 @@ import io.lukia.core.domain.AppAccent
 import io.lukia.core.domain.AppPalette
 import io.lukia.core.domain.AppTheme
 import io.lukia.features.settings.domain.AppSettings
+import io.lukia.resources.Res
+import io.lukia.resources.accent_green
+import io.lukia.resources.palette_crisp
+import io.lukia.resources.palette_crisp_detail
+import io.lukia.resources.palette_paper
+import io.lukia.resources.palette_paper_detail
+import io.lukia.resources.palette_slate
+import io.lukia.resources.palette_slate_detail
 import io.lukia.shared.presentation.theme.LukiaTheme
+import io.lukia.shared.words
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -44,9 +53,12 @@ class AppearanceSettingsTest {
     fun everyPaletteIsOfferedByNameAndBySomethingAboutIt() = runComposeUiTest {
         setAppearance()
 
-        AppPalette.entries.forEach { palette ->
-            onNodeWithText(palette.title).assertIsDisplayed()
-            onNodeWithText(palette.detail).assertIsDisplayed()
+        // Named by resource rather than by walking the enum: what a palette
+        // is called now lives in `ThemeChoicesDisplay.kt`, whose exhaustive
+        // `when` is what fails when a palette is added without copy.
+        PaletteWords.forEach { (name, detail) ->
+            onNodeWithText(words(name)).assertIsDisplayed()
+            onNodeWithText(words(detail)).assertIsDisplayed()
         }
     }
 
@@ -54,7 +66,7 @@ class AppearanceSettingsTest {
     fun choosingAPaletteReportsIt() = runComposeUiTest {
         setAppearance()
 
-        onNodeWithText(AppPalette.Slate.title).performClick()
+        onNodeWithText(words(Res.string.palette_slate)).performClick()
 
         assertEquals(AppPalette.Slate, chosen?.palette)
     }
@@ -67,7 +79,7 @@ class AppearanceSettingsTest {
     fun choosingAnAccentReportsIt() = runComposeUiTest {
         setAppearance()
 
-        onNodeWithContentDescription(AppAccent.Green.title).performClick()
+        onNodeWithContentDescription(words(Res.string.accent_green)).performClick()
 
         assertEquals(AppAccent.Green, chosen?.accent)
     }
@@ -79,5 +91,13 @@ class AppearanceSettingsTest {
         onNodeWithText("Dark").performClick()
 
         assertEquals(AppTheme.Dark, chosen?.theme)
+    }
+    private companion object {
+        /** Each palette's name and the line under it, in the order they appear. */
+        val PaletteWords = listOf(
+            Res.string.palette_crisp to Res.string.palette_crisp_detail,
+            Res.string.palette_paper to Res.string.palette_paper_detail,
+            Res.string.palette_slate to Res.string.palette_slate_detail,
+        )
     }
 }

@@ -11,6 +11,7 @@ import io.lukia.features.settings.presentation.TranslatingActions
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.features.translate.presentation.GestureControl
+import io.lukia.features.translate.presentation.displayName
 import io.lukia.shared.presentation.components.controls.ChoiceList
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
@@ -120,7 +121,7 @@ private fun GestureSection(
                 label = "Hold a word again for more about it",
                 detail = "Once a word has been looked up, holding it opens every " +
                     "sense a dictionary has for it and a way through to " +
-                    "${translation.wordSite.label}. Works whatever the hold above " +
+                    "${translation.wordSite.displayName()}. Works whatever the hold above " +
                     "is set to.",
                 checked = translation.gestures.wordDetails,
                 onChange = {

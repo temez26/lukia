@@ -2,7 +2,10 @@ package io.lukia.features.translate.presentation
 
 import androidx.compose.runtime.Composable
 import io.lukia.features.translate.domain.text.PassageUnit
+import io.lukia.resources.Res
+import io.lukia.resources.gesture_off
 import io.lukia.shared.presentation.components.controls.SegmentedControl
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * What one gesture asks for, including nothing at all.
@@ -25,7 +28,7 @@ fun GestureControl(
     SegmentedControl(
         options = GestureChoices,
         selected = selected,
-        label = { it?.label ?: "Off" },
+        label = { it?.displayName() ?: stringResource(Res.string.gesture_off) },
         onSelect = onSelect,
     )
 }

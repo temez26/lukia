@@ -14,6 +14,7 @@ import io.lukia.features.reader.presentation.translation.WordOnThePage
 import io.lukia.features.reader.presentation.translation.WordSiteLink
 import io.lukia.features.translate.domain.lookup.WordEntry
 import io.lukia.features.translate.domain.lookup.WordMeaning
+import io.lukia.features.translate.domain.lookup.WordSite
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -292,7 +293,7 @@ class ReaderWordPanelTest {
         ),
         onThePage: WordOnThePage = WordOnThePage.Translated,
         site: WordSiteLink? = WordSiteLink(
-            label = "Google",
+            site = WordSite.GoogleTranslate,
             url = "https://translate.google.com/?text=whale",
         ),
     ) = WordInquiry(
