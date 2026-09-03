@@ -99,6 +99,13 @@ the nearest whole release above it. `IPHONEOS_DEPLOYMENT_TARGET` lives in
 See [CODING_STYLE.md](CODING_STYLE.md) for the full guide - size limits, naming, Compose
 conventions, correctness rules, and how the baselines for existing violations work.
 
+## Diagnostics
+
+See [DIAGNOSTICS.md](DIAGNOSTICS.md) for what the app records when something goes
+wrong, what it must never record, and where a call belongs. Nothing is collected
+unless the reader turns it on, and nothing leaves the device unless they copy it
+out themselves.
+
 ## Contributing
 
 See our [Guidelines](CONTRIBUTING.md) for details on how to submit changes, write clear PR titles, and structure your commits.

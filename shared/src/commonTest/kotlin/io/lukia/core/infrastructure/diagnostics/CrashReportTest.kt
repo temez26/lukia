@@ -1,5 +1,6 @@
 package io.lukia.core.infrastructure.diagnostics
 
+import io.lukia.LukiaVersion
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -17,6 +18,31 @@ class CrashReportTest {
 
         assertTrue(report.lines().first().contains("1970-01-01"), report.lines().first())
         assertTrue(report.lines().first().contains("Java 21"), report.lines().first())
+    }
+
+    /**
+     * A crash is read weeks later, against a build that has moved on. Without
+     * the version there is no telling whether it is still worth chasing.
+     */
+    @Test
+    fun theHeaderNamesTheVersionOfTheAppThatCrashed() {
+        val report = crashReport(
+            failure = IllegalStateException("boom"),
+            entries = emptyList(),
+            platformName = "Android 34",
+            at = Instant.fromEpochMilliseconds(0),
+            appVersion = "2.3.1",
+        )
+
+        assertTrue(report.lines().first().startsWith("Lukia 2.3.1 crash"), report.lines().first())
+    }
+
+    @Test
+    fun theVersionDefaultsToTheOneTheAppWasBuiltAs() {
+        assertTrue(
+            report(IllegalStateException("boom")).lines().first().contains(LukiaVersion),
+            report(IllegalStateException("boom")).lines().first(),
+        )
     }
 
     @Test

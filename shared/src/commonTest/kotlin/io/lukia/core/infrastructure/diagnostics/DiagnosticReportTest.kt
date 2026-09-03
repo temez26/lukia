@@ -1,5 +1,6 @@
 package io.lukia.core.infrastructure.diagnostics
 
+import io.lukia.LukiaVersion
 import io.lukia.core.domain.diagnostics.DiagnosticArea
 import io.lukia.core.domain.diagnostics.DiagnosticEntry
 import io.lukia.core.domain.diagnostics.DiagnosticLevel
@@ -49,6 +50,30 @@ class DiagnosticReportTest {
 
         assertTrue(header.contains("Android 34"), header)
         assertTrue(header.contains("2 entries"), header)
+    }
+
+    /**
+     * The version is what tells a bug that is still there from one already
+     * fixed, and it is the one thing in a report nobody can supply afterwards -
+     * a reader does not know which build they are on.
+     */
+    @Test
+    fun theHeaderNamesTheVersionOfTheAppThatWroteIt() {
+        val report = diagnosticReport(
+            entries = listOf(entry(event = "one")),
+            platformName = "Android 34",
+            appVersion = "2.3.1",
+        )
+
+        assertTrue(report.lines().first().startsWith("Lukia 2.3.1"), report.lines().first())
+    }
+
+    /** The default is the version the build was made from, not a literal typed here. */
+    @Test
+    fun theVersionDefaultsToTheOneTheAppWasBuiltAs() {
+        val report = diagnosticReport(listOf(entry(event = "one")), platformName = "Java 21")
+
+        assertTrue(report.lines().first().contains(LukiaVersion), report.lines().first())
     }
 
     @Test

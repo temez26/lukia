@@ -28,7 +28,8 @@ compose.desktop {
             // Applications folder and the window list. The reverse-DNS id belongs
             // to the JVM package, not to the thing a reader launches.
             packageName = "Lukia"
-            packageVersion = "1.0.0"
+            // One source for all three builds - see `lukia.version` in gradle.properties.
+            packageVersion = providers.gradleProperty("lukia.version").get()
 
             // jlink keeps only the modules it can prove are used, and nothing in the bytecode
             // points at these: the SQLite JDBC driver reaches java.sql through DriverManager,
