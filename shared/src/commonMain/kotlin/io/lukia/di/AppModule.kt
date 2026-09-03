@@ -9,6 +9,7 @@ import io.lukia.core.infrastructure.diagnostics.DiagnosticBuffer
 import io.lukia.core.infrastructure.diagnostics.RecordingDiagnostics
 import io.lukia.features.library.libraryModule
 import io.lukia.features.reader.readerModule
+import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.features.settings.settingsModule
 import io.lukia.features.stats.statsModule
 import io.lukia.features.translate.translateModule
@@ -57,8 +58,17 @@ val commonModule = module {
         DiagnosticBuffer()
     }
 
+    // Gated on the reader's own setting, read per entry rather than bound once:
+    // the graph hands out one of these for the life of the process, so anything
+    // holding a reference would otherwise keep whichever answer was true when
+    // it was built.
     single<Diagnostics> {
-        RecordingDiagnostics(get())
+        val settings: AppSettingsRepository = get()
+
+        RecordingDiagnostics(
+            buffer = get(),
+            enabled = { settings.settings.value.diagnostics },
+        )
     }
 
     includes(

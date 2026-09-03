@@ -37,6 +37,8 @@ class AppSettingsRepository(
             palette = store.readEnum(KEY_PALETTE, AppPalette.entries, defaults.palette),
             accent = store.readEnum(KEY_ACCENT, AppAccent.entries, defaults.accent),
             motion = store.readEnum(KEY_MOTION, AppMotion.entries, defaults.motion),
+            diagnostics = store.getString(KEY_DIAGNOSTICS)?.toBooleanStrictOrNull()
+                ?: defaults.diagnostics,
         )
     }
 
@@ -45,6 +47,7 @@ class AppSettingsRepository(
         store.putString(KEY_PALETTE, settings.palette.name)
         store.putString(KEY_ACCENT, settings.accent.name)
         store.putString(KEY_MOTION, settings.motion.name)
+        store.putString(KEY_DIAGNOSTICS, settings.diagnostics.toString())
     }
 
     private companion object {
@@ -52,5 +55,6 @@ class AppSettingsRepository(
         const val KEY_PALETTE = "app.palette"
         const val KEY_ACCENT = "app.accent"
         const val KEY_MOTION = "app.motion"
+        const val KEY_DIAGNOSTICS = "app.diagnostics"
     }
 }
