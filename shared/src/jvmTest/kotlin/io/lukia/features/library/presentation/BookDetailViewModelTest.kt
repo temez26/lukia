@@ -56,10 +56,7 @@ class BookDetailViewModelTest : MainDispatcherTest() {
             repository = ThrowingLibraryRepository(),
         )
 
-        assertEquals(
-            UiState.Failure(AppError.Unexpected("detail read blew up")),
-            viewModel.uiState.value,
-        )
+        assertEquals(UiState.Failure(AppError.Unexpected()), viewModel.uiState.value)
     }
 
     @Test
@@ -158,7 +155,9 @@ class BookDetailViewModelTest : MainDispatcherTest() {
             documentInfo,
             (viewModel.uiState.value as UiState.Success).data.document,
         )
-        assertEquals("File does not exist: /test/book.pdf", viewModel.message.value)
+        // The reader is told, and not with the analyzer's own words - which name
+        // the file, and on a desktop name the person whose folder it sits in.
+        assertEquals("Something went wrong", viewModel.message.value)
     }
 
     private fun pdfDocumentInfo() = DocumentInfo(

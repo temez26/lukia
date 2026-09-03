@@ -104,11 +104,11 @@ class OpenAiTranslatorTest {
         )
 
         val error = translator.failureFor(request()) as AppError.Unexpected
-        val cause = error.cause.orEmpty()
+        val explanation = error.explanation.orEmpty()
 
-        assertTrue(cause.contains("qwen2.5-7b-instruct"), cause)
-        assertTrue(cause.contains("still loading"), cause)
-        assertTrue(!cause.contains("server is running"), cause)
+        assertTrue(explanation.contains("qwen2.5-7b-instruct"), explanation)
+        assertTrue(explanation.contains("still loading"), explanation)
+        assertTrue(!explanation.contains("server is running"), explanation)
     }
 
     @Test

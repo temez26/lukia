@@ -100,7 +100,7 @@ class OpenAiModelWarmUpTest {
 
         val error = warmUp.failure() as AppError.Unexpected
 
-        assertTrue(error.cause.orEmpty().contains("still loading"), error.cause.orEmpty())
+        assertTrue(error.explanation.orEmpty().contains("still loading"), error.explanation.orEmpty())
     }
 
     private fun warmUp(

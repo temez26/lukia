@@ -290,7 +290,7 @@ sauna
 
         val error = translator.failure(request(text = "values")) as AppError.Unexpected
 
-        assertTrue(error.cause.orEmpty().contains("hold the word"), error.cause.orEmpty())
+        assertTrue(error.explanation.orEmpty().contains("hold the word"), error.explanation.orEmpty())
     }
 
     @Test
@@ -299,7 +299,7 @@ sauna
 
         val error = translator.failure() as AppError.Unexpected
 
-        assertTrue(error.cause.orEmpty().contains("No dictionary entry"), error.cause.orEmpty())
+        assertTrue(error.explanation.orEmpty().contains("No dictionary entry"), error.explanation.orEmpty())
     }
 
     private fun translator(

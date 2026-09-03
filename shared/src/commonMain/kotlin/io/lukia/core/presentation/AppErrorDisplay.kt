@@ -26,10 +26,11 @@ fun AppError.displayMessage(): String = when (this) {
     AppError.TranslationUnavailable ->
         "Choose a language to translate into in Settings, and add a translation service."
     AppError.TranslationFailed -> "The translation service did not answer. Try again."
-    // The underlying message is worth showing when there is one: for an
-    // unforeseen failure it is the only clue either the user or a bug report
-    // will have.
-    is AppError.Unexpected -> cause ?: "An unexpected error occurred."
+    // Shown as written, because everything that reaches this field was written
+    // to be read - see `AppError.Unexpected`. A failure nobody foresaw arrives
+    // with nothing here and says so plainly, rather than handing the reader a
+    // decoder's own words.
+    is AppError.Unexpected -> explanation ?: "An unexpected error occurred."
 }
 
 /**
@@ -37,6 +38,6 @@ fun AppError.displayMessage(): String = when (this) {
  * the pair is too long for a transient strip.
  */
 fun AppError.displayShortMessage(): String = when (this) {
-    is AppError.Unexpected -> cause ?: displayTitle()
+    is AppError.Unexpected -> explanation ?: displayTitle()
     else -> displayMessage()
 }

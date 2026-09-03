@@ -117,7 +117,7 @@ class TranslationSessionTest {
         runCurrent()
 
         assertEquals(
-            AppError.Unexpected("no network"),
+            AppError.Unexpected(),
             (session.passages.value[anchor] as PassageTranslation.Failed).error,
         )
     }

@@ -285,7 +285,7 @@ class OpenAiRequestTest {
 
         val error = translator.failureFor(request()) as AppError.Unexpected
 
-        assertTrue(error.cause.orEmpty().contains("plain HTTP"), error.cause.orEmpty())
+        assertTrue(error.explanation.orEmpty().contains("plain HTTP"), error.explanation.orEmpty())
         assertTrue(!asked, "a passage was sent in the clear")
     }
 

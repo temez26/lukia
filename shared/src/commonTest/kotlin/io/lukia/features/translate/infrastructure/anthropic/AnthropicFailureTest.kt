@@ -18,7 +18,7 @@ class AnthropicFailureTest {
         val translator = translator(answers { respondJson("{}", HttpStatusCode.Unauthorized) })
 
         val error = translator.failureFor(request()) as AppError.Unexpected
-        assertTrue(error.cause.orEmpty().contains("Settings"), error.cause.orEmpty())
+        assertTrue(error.explanation.orEmpty().contains("Settings"), error.explanation.orEmpty())
     }
 
     @Test
@@ -26,7 +26,7 @@ class AnthropicFailureTest {
         val translator = translator(answers { respondJson("{}", HttpStatusCode.TooManyRequests) })
 
         val error = translator.failureFor(request()) as AppError.Unexpected
-        assertTrue(error.cause.orEmpty().contains("Try again"), error.cause.orEmpty())
+        assertTrue(error.explanation.orEmpty().contains("Try again"), error.explanation.orEmpty())
     }
 
     @Test
@@ -36,7 +36,7 @@ class AnthropicFailureTest {
         )
 
         val error = translator.failureFor(request()) as AppError.Unexpected
-        assertTrue(error.cause.orEmpty().contains("unavailable"), error.cause.orEmpty())
+        assertTrue(error.explanation.orEmpty().contains("unavailable"), error.explanation.orEmpty())
     }
 
     /** Anything else, the service explains better than this app can. */

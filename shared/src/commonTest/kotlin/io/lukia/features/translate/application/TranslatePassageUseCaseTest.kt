@@ -90,7 +90,7 @@ class TranslatePassageUseCaseTest {
         val result = useCase(request(text = "word ".repeat(1000)))
 
         assertTrue(result.isFailure)
-        assertTrue((result.errorOrNull() as AppError.Unexpected).cause!!.contains("too long"))
+        assertTrue((result.errorOrNull() as AppError.Unexpected).explanation!!.contains("too long"))
     }
 
     /** A translator that throws is narrowed here rather than escaping upwards. */
@@ -98,7 +98,7 @@ class TranslatePassageUseCaseTest {
     fun aFailingTranslatorBecomesAnAppError() = runTest {
         val useCase = TranslatePassageUseCase { throw RuntimeException("no network") }
 
-        assertEquals(AppError.Unexpected("no network"), useCase(request()).errorOrNull())
+        assertEquals(AppError.Unexpected(), useCase(request()).errorOrNull())
     }
 
     private fun request(text: String = "Call me Ishmael.") = TranslationRequest(
