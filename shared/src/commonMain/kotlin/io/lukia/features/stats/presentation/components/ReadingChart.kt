@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.stats.domain.DayReading
@@ -220,6 +221,12 @@ private fun DayLabel(
     Text(
         text = dayLabel(day.date),
         style = MaterialTheme.typography.labelSmall,
+        // A guard rather than an expectation. Most languages abbreviate a
+        // weekday to two or three characters, but the label is whatever the
+        // platform's calendar says, and a column a seventh of a phone wide has
+        // no room to be surprised in.
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
         fontWeight = if (marked || day.hasReading) FontWeight.SemiBold else FontWeight.Normal,
         color = when {
             marked -> MaterialTheme.colorScheme.onPrimary

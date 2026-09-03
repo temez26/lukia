@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,6 +26,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -86,10 +88,15 @@ internal fun SettingGroup(
                     alpha = if (enabled) 1f else LukiaAlpha.Disabled,
                 ),
                 maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
 
-            Box(modifier = Modifier.width(WideControlWidth)) {
+            // A floor rather than a fixed width. Five segments reading "Tight",
+            // "Normal" and "Relaxed" fit 224dp in English and not in every
+            // language, and a control given exactly that much has nowhere to
+            // grow into - the label beside it does, because it is weighted.
+            Box(modifier = Modifier.widthIn(min = WideControlWidth)) {
                 control()
             }
         }

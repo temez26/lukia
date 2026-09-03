@@ -29,6 +29,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
@@ -182,6 +183,11 @@ fun MenuRow(
             style = MaterialTheme.typography.bodyMedium,
             color = tint,
             maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            // Yields to the tick beside it rather than pushing it off the row:
+            // the menu is as wide as its widest label, and a label longer than
+            // the menu can hold has to give the ground back.
+            modifier = Modifier.weight(1f, fill = false),
         )
 
         if (selected) {

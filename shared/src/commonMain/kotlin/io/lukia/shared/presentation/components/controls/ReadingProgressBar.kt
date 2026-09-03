@@ -13,9 +13,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.lukia.resources.Res
 import io.lukia.resources.reader_percent
@@ -103,8 +105,22 @@ fun ReadingProgressBar(
             .height(ReadingProgressBarHeight)
             .drawBehind {
                 drawRect(color = trackColor)
+
+                // Offset in a mirrored layout rather than drawn from the
+                // canvas's left in both. A reader whose device is set to Arabic
+                // reads the page numbers beside this from the right, and a bar
+                // that went on filling the other way showed progress running
+                // backwards. `DrawScope` knows the direction; nothing has to be
+                // passed in for it.
+                val start = if (layoutDirection == LayoutDirection.Rtl) {
+                    size.width * (1f - filled)
+                } else {
+                    0f
+                }
+
                 drawRect(
                     color = fillColor,
+                    topLeft = Offset(x = start, y = 0f),
                     size = Size(width = size.width * filled, height = size.height),
                 )
             },

@@ -183,6 +183,10 @@ private fun RowDetails(
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
+                // Yields to the percentage after it, which is the shorter of the
+                // two and the one a reader is actually scanning down the row for.
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f, fill = false),
             )
 
             // Only for a book somebody has started. A bar at nothing on every

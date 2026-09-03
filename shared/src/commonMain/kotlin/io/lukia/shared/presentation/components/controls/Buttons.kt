@@ -28,6 +28,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import io.lukia.shared.presentation.components.surface.GlassSurface
 import io.lukia.shared.presentation.theme.HairlineWidth
@@ -170,11 +171,16 @@ fun LukiaButton(
             Spacer(modifier = Modifier.width(Space.md))
         }
 
+        // Ellipsised rather than clipped. A button held to one line will meet
+        // a label it cannot hold in some language, and a word cut mid-letter
+        // reads as a rendering fault where three dots read as a label that
+        // did not fit.
         Text(
             text = label,
             style = textStyle,
             color = tint,
             maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
