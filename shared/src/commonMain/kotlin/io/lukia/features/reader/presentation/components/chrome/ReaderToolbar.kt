@@ -33,6 +33,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import io.lukia.features.reader.domain.outline.OutlineEntry
 import io.lukia.features.reader.presentation.currentEntryIndex
+import io.lukia.resources.Res
+import io.lukia.resources.reader_close_book
+import io.lukia.resources.reader_close_the_book
+import io.lukia.resources.reader_contents
+import io.lukia.resources.reader_page_of_count
+import io.lukia.resources.shortcut_close_book_keys
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.controls.ShortcutTooltip
 import io.lukia.shared.presentation.components.controls.focusRing
@@ -44,6 +50,7 @@ import io.lukia.shared.presentation.theme.LocalLukiaMetrics
 import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.isWideWindow
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * How tall the toolbar is, and so how much room the page below it has to leave.
@@ -151,8 +158,14 @@ private const val CENTER_SHARE = 0.5f
 /** Leaving the book, which is the one control every window has room for. */
 @Composable
 private fun CloseBookButton(onBack: () -> Unit) {
-    ShortcutTooltip(description = "Close the book", shortcut = "Esc") {
-        LukiaIconButton(label = "Close book", onClick = onBack) { tint, glyph ->
+    ShortcutTooltip(
+        description = stringResource(Res.string.reader_close_the_book),
+        shortcut = stringResource(Res.string.shortcut_close_book_keys),
+    ) {
+        LukiaIconButton(
+            label = stringResource(Res.string.reader_close_book),
+            onClick = onBack,
+        ) { tint, glyph ->
             BackChevron(tint = tint, modifier = glyph)
         }
     }
@@ -225,7 +238,10 @@ internal fun PageIndicatorButton(
     val metrics = LocalLukiaMetrics.current
     val shape = MaterialTheme.shapes.small
 
-    ShortcutTooltip(description = "Contents", shortcut = "C") {
+    ShortcutTooltip(
+        description = stringResource(Res.string.reader_contents),
+        shortcut = "C",
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -299,7 +315,7 @@ private fun RowScope.PageIndicatorLabel(chapter: String?, current: Int, pageCoun
     }
 
     Text(
-        text = "$current / $pageCount",
+        text = stringResource(Res.string.reader_page_of_count, current, pageCount),
         style = MaterialTheme.typography.labelMedium,
         fontWeight = FontWeight.SemiBold,
         color = MaterialTheme.colorScheme.onSurface,

@@ -339,4 +339,105 @@
     <string name="selection_mark_unread">Mark as unread</string>
     <string name="selection_delete">Delete from library</string>
 
+    <!-- The bar over the book, and what it says about where the reader is. -->
+    <string name="reader_close_book">Close book</string>
+    <string name="reader_close_the_book">Close the book</string>
+    <string name="reader_contents">Contents</string>
+    <string name="reader_reading_settings">Reading settings</string>
+    <!-- The page indicator: the page in hand, and how many there are. -->
+    <string name="reader_page_of_count">%1$d / %2$d</string>
+    <string name="reader_page_x_of_y">Page %1$d of %2$d</string>
+    <string name="reader_page_x_of_y_percent">Page %1$d of %2$d, %3$d percent through</string>
+    <string name="reader_percent_read">%1$d percent read</string>
+    <string name="reader_percent">%1$d%</string>
+    <!-- The nought at the start of the progress track. -->
+    <string name="reader_percent_start">0</string>
+
+    <!-- The contents panel. -->
+    <string name="reader_chapters">Chapters</string>
+    <string name="reader_collapse_all">Collapse all</string>
+    <string name="reader_expand_all">Expand all</string>
+    <string name="reader_show_sections_of">Show sections of %1$s</string>
+    <string name="reader_hide_sections_of">Hide sections of %1$s</string>
+
+    <!-- The settings panel over the book. -->
+    <string name="reader_section_page">Page</string>
+    <string name="reader_section_text_and_images">Text and images</string>
+    <string name="reader_section_keyboard">Keyboard</string>
+    <string name="reader_setting_layout">Layout</string>
+    <string name="reader_setting_theme">Theme</string>
+    <string name="reader_setting_page_width">Page width</string>
+    <string name="reader_setting_text_size">Text size</string>
+    <string name="reader_setting_line_spacing">Line spacing</string>
+    <string name="reader_setting_alignment">Alignment</string>
+    <string name="reader_setting_typeface">Typeface</string>
+    <string name="reader_setting_image_size">Image size</string>
+    <string name="reader_keep_screen_awake">Keep the screen awake</string>
+    <string name="reader_note_pdf_as_text">The words and pictures of the PDF, re-set by this app. Its own page layout is not kept.</string>
+    <!--
+        Two sentences rather than one with an optional tail: the second is only
+        offered where there is a layout to switch, and a language that would put
+        it first has nowhere to do that if it arrives glued on.
+    -->
+    <string name="reader_note_fixed_layout">These apply to reflowable books - this one carries its own fixed layout.</string>
+    <string name="reader_note_fixed_layout_switchable">These apply to reflowable books - this one carries its own fixed layout. Read it as text to use them.</string>
+    <string name="reader_decrease_text_size">Decrease text size</string>
+    <string name="reader_increase_text_size">Increase text size</string>
+    <string name="reader_text_size_percent">Text size %1$d percent</string>
+    <!-- A setting and what it is set to, announced as one phrase. -->
+    <string name="reader_setting_and_value">%1$s. %2$s</string>
+    <string name="reader_close_the_list">Close the list</string>
+    <string name="reader_choose">Choose</string>
+
+    <!--
+        The keyboard shortcuts. The right-hand column names keys as they are
+        printed on them; a translator should change those only where the key
+        itself is named differently on that language's keyboards.
+    -->
+    <string name="shortcut_turn_page">Turn page</string>
+    <string name="shortcut_turn_page_keys">Space  PgDn  PgUp</string>
+    <string name="shortcut_scroll">Scroll</string>
+    <string name="shortcut_scroll_keys">\u2191  \u2193</string>
+    <string name="shortcut_start_end">Start, end</string>
+    <string name="shortcut_start_end_keys">Home  End</string>
+    <string name="shortcut_resize_reflowable">Larger, smaller</string>
+    <string name="shortcut_resize_fixed">Wider, narrower</string>
+    <string name="shortcut_resize_keys">+  \u2212  0</string>
+    <string name="shortcut_panels">Contents, settings</string>
+    <string name="shortcut_panels_keys">C  T</string>
+    <string name="shortcut_close_book">Close book</string>
+    <string name="shortcut_close_book_keys">Esc</string>
+    <string name="shortcut_word_details">More about a word</string>
+    <string name="shortcut_word_details_keys">Two-finger press</string>
+    <!-- A tooltip: what the control does, then the key that does it. -->
+    <string name="shortcut_tooltip">%1$s  %2$s</string>
+
+    <!-- Asking about a word. -->
+    <string name="word_looked_up_under">Looked up under \u201C%1$s\u201D</string>
+    <string name="word_looking_it_up">Looking it up\u2026</string>
+    <string name="word_no_meaning">That is all the dictionary has - no meaning is listed for it.</string>
+    <string name="word_sense_number">%1$d.</string>
+    <string name="word_related">Related words</string>
+    <string name="word_translate_it">Translate it</string>
+    <string name="word_show_original">Show the original</string>
+    <string name="word_show_translation">Show the translation</string>
+
+    <!-- Translating, from the panel over the book. -->
+    <string name="reader_translation">Translation</string>
+    <string name="reader_gesture_tap">Tap</string>
+    <string name="reader_gesture_long_press">Press and hold</string>
+    <string name="reader_hold_again">Hold again for more about a word</string>
+    <string name="reader_notes_under_paragraph">Notes under the paragraph</string>
+    <string name="reader_translate_this_page">Translate this page</string>
+    <string name="reader_translate_as_you_read">Translate as you read</string>
+    <string name="reader_keep_translating">Keep translating as you read</string>
+    <string name="reader_stop_translating">Stop translating as you read</string>
+    <string name="reader_show_translations">Show translations</string>
+    <string name="reader_hide_translations">Hide the translations</string>
+    <string name="reader_translate_on_screen">Translate what is on screen</string>
+    <string name="reader_translate_into">Translate into</string>
+
+    <!-- A PDF with nothing in it to re-set. -->
+    <string name="reader_pdf_no_text">This PDF has no text in it to re-set - its pages are pictures. Showing it as pages.</string>
+
 </resources>

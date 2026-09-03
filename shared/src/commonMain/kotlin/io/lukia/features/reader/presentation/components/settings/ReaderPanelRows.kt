@@ -26,6 +26,10 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import io.lukia.resources.Res
+import io.lukia.resources.reader_choose
+import io.lukia.resources.reader_close_the_list
+import io.lukia.resources.reader_setting_and_value
 import io.lukia.shared.presentation.components.controls.focusRing
 import io.lukia.shared.presentation.components.controls.hoverHighlight
 import io.lukia.shared.presentation.components.icons.DisclosureChevron
@@ -33,6 +37,7 @@ import io.lukia.shared.presentation.theme.LocalLukiaMetrics
 import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 // The rows a reader panel is built from, as opposed to the labelled controls in
 // ReaderSettingControls: a setting that is on or off, and one whose choices are
@@ -93,6 +98,14 @@ internal fun PanelDisclosureRow(
     val interactionSource = remember { MutableInteractionSource() }
     val metrics = LocalLukiaMetrics.current
     val shape = MaterialTheme.shapes.small
+
+    // Read before the modifier chain: neither `semantics` nor `clickable` is
+    // a composable scope.
+    val spoken = stringResource(Res.string.reader_setting_and_value, label, value)
+    val press = stringResource(
+        if (expanded) Res.string.reader_close_the_list else Res.string.reader_choose,
+    )
+
     // On the app's own curve rather than the default spring, which settles at a
     // rate nothing else here uses: the mark and the list under it are one
     // gesture, and two clocks running at once is most of what made opening the
@@ -120,11 +133,11 @@ internal fun PanelDisclosureRow(
                 interactionSource = interactionSource,
                 indication = null,
                 role = Role.Button,
-                onClickLabel = if (expanded) "Close the list" else "Choose",
+                onClickLabel = press,
                 onClick = onClick,
             )
             .padding(horizontal = Space.xs, vertical = Space.sm)
-            .semantics { contentDescription = "$label. $value" },
+            .semantics { contentDescription = spoken },
     ) {
         Text(
             text = label,

@@ -36,8 +36,11 @@ import io.lukia.features.reader.presentation.screens.chromeHeight
 import io.lukia.features.reader.presentation.translation.TranslateOnScreen
 import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.presentation.BookTranslations
+import io.lukia.resources.Res
+import io.lukia.resources.reader_page_x_of_y
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.LukiaElevation
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * The paper a reflowable book is set on, and the gestures that go with it.
@@ -192,6 +195,9 @@ private fun PageSheet(
     color: Color,
     content: @Composable (textHeight: Dp) -> Unit,
 ) {
+    // Read before the modifier chain: `semantics` is not a composable scope.
+    val spoken = stringResource(Res.string.reader_page_x_of_y, number, of)
+
     Box(
         modifier = Modifier
             .width(size.width)
@@ -206,7 +212,7 @@ private fun PageSheet(
             // Unlike a rendered page there is real text behind this, so the
             // description says where in the book it is and leaves the reading to
             // the text itself.
-            .semantics { contentDescription = "Page $number of $of" },
+            .semantics { contentDescription = spoken },
     ) {
         content(size.height - SheetPadding * 2)
     }

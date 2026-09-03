@@ -17,11 +17,14 @@ import io.lukia.features.reader.presentation.components.settings.TextSettingsGly
 import io.lukia.features.reader.presentation.screens.translation.ReaderTranslationUi
 import io.lukia.features.reader.presentation.screens.translation.TranslationControls
 import io.lukia.features.reader.presentation.screens.translation.inToolbar
+import io.lukia.resources.Res
+import io.lukia.resources.reader_reading_settings
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.controls.ShortcutTooltip
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.topChromeIn
 import io.lukia.shared.presentation.theme.topChromeOut
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * The bar over the book: back, where you are, and what can be done from here.
@@ -97,9 +100,12 @@ internal fun ReaderTopChrome(
                         )
                     }
 
-                    ShortcutTooltip(description = "Reading settings", shortcut = "T") {
+                    ShortcutTooltip(
+                        description = stringResource(Res.string.reader_reading_settings),
+                        shortcut = "T",
+                    ) {
                         LukiaIconButton(
-                            label = "Reading settings",
+                            label = stringResource(Res.string.reader_reading_settings),
                             onClick = chrome::toggleSettings,
                         ) { tint, glyph ->
                             TextSettingsGlyph(tint = tint, modifier = glyph)

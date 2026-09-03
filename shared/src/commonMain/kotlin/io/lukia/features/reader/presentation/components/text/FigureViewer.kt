@@ -38,12 +38,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
+import io.lukia.resources.Res
+import io.lukia.resources.action_close
 import io.lukia.shared.presentation.components.controls.IconButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.icons.PlusGlyph
 import io.lukia.shared.presentation.components.menu.popoverTransition
 import io.lukia.shared.presentation.components.menu.rememberPopoverProgress
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import org.jetbrains.compose.resources.stringResource
 
 /** How dark the book behind the illustration goes. Nearly out: the picture is the point. */
 private const val ViewerScrimAlpha = 0.92f
@@ -140,7 +143,7 @@ internal fun FigureViewer(
             }
 
             LukiaIconButton(
-                label = "Close",
+                label = stringResource(Res.string.action_close),
                 onClick = onDismiss,
                 modifier = Modifier
                     .align(Alignment.TopEnd)

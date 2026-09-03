@@ -21,10 +21,17 @@ import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.reader.presentation.translation.WordInquiry
 import io.lukia.features.translate.domain.lookup.WordEntry
 import io.lukia.features.translate.domain.lookup.WordMeaning
+import io.lukia.resources.Res
+import io.lukia.resources.word_looked_up_under
+import io.lukia.resources.word_looking_it_up
+import io.lukia.resources.word_no_meaning
+import io.lukia.resources.word_related
+import io.lukia.resources.word_sense_number
 import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.softFadeOut
 import io.lukia.shared.presentation.theme.stateSwapIn
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * The word the reader held, and what the page says that word is.
@@ -65,9 +72,12 @@ internal fun WordHeading(inquiry: WordInquiry) {
  * Null when they are the same word, because "looked up under skill" under a
  * heading reading `skill` is a line that says nothing.
  */
+@Composable
 private fun WordEntry.formOf(held: String): String? = when {
     form != null -> form
-    !word.equals(held, ignoreCase = true) -> "Looked up under “$word”"
+    !word.equals(held, ignoreCase = true) ->
+        stringResource(Res.string.word_looked_up_under, word)
+
     else -> null
 }
 
@@ -122,7 +132,7 @@ internal fun WordEntryBody(state: UiState<WordEntry>, modifier: Modifier = Modif
 private fun WordEntryContent(state: UiState<WordEntry>) {
     when (state) {
         is UiState.Loading -> Text(
-            text = "Looking it up…",
+            text = stringResource(Res.string.word_looking_it_up),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -149,7 +159,7 @@ private fun WordEntryDetails(entry: WordEntry) {
             // left to say is that it was the whole answer rather than the start
             // of one.
             Text(
-                text = "That is all the dictionary has - no meaning is listed for it.",
+                text = stringResource(Res.string.word_no_meaning),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -199,7 +209,7 @@ private fun WordSenses(senses: List<String>) {
         senses.forEachIndexed { index, sense ->
             Row(verticalAlignment = Alignment.Top) {
                 Text(
-                    text = "${index + 1}.",
+                    text = stringResource(Res.string.word_sense_number, index + 1),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Medium,
@@ -231,7 +241,7 @@ private fun WordsBeside(words: List<String>) {
         modifier = Modifier.padding(top = Space.xs),
     ) {
         Text(
-            text = "Related words",
+            text = stringResource(Res.string.word_related),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
