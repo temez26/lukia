@@ -52,7 +52,7 @@ val translateModule = module {
     // and the whole entry the reader opens. One of these rather than two, so
     // that asking the same question twice is not two ways of asking it.
     single {
-        WiktionaryPages(get(), get(), get())
+        WiktionaryPages(get(), get(), get(), get())
     }
 
     // What answers when a line over the word was not enough. Bound to the port
@@ -76,8 +76,8 @@ val translateModule = module {
 
         val configured = ConfiguredTranslator(
             provider = { settings.settings.value.provider },
-            anthropic = AnthropicTranslator(get(), settings),
-            openAiCompatible = OpenAiTranslator(get(), settings),
+            anthropic = AnthropicTranslator(get(), settings, get()),
+            openAiCompatible = OpenAiTranslator(get(), settings, get()),
         )
 
         // A single word can go somewhere else entirely, and only a single word:
@@ -86,7 +86,7 @@ val translateModule = module {
         val answering = WordLookupTranslator(
             lookup = { settings.settings.value.wordLookup },
             translator = configured,
-            google = GoogleTranslator(get(), settings),
+            google = GoogleTranslator(get(), settings, get()),
             dictionary = WiktionaryTranslator(get()),
         )
 
@@ -130,14 +130,14 @@ val translateModule = module {
     // run - a hosted service publishes a catalogue that barely changes, while a
     // local one runs whichever file they loaded this morning.
     single<ModelCatalogue> {
-        OpenAiModelCatalogue(get(), get())
+        OpenAiModelCatalogue(get(), get(), get())
     }
 
     // Same reasoning, and the same provider: only a model the reader hosts has
     // to be loaded before it can answer, and only an OpenAI-compatible server
     // can be asked to.
     single<ModelWarmUp> {
-        OpenAiModelWarmUp(get(), get())
+        OpenAiModelWarmUp(get(), get(), get())
     }
 
     // A single, like the other settings: the language chosen on the settings

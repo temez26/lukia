@@ -122,7 +122,7 @@ internal fun translator(
         install(HttpTimeout)
     }
 
-    return OpenAiTranslator(client, settings, json)
+    return OpenAiTranslator(client, settings, json = json)
 }
 
 internal fun request(

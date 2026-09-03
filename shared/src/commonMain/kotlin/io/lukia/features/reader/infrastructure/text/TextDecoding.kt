@@ -1,5 +1,9 @@
 package io.lukia.features.reader.infrastructure.text
 
+import io.lukia.core.domain.diagnostics.DiagnosticArea
+import io.lukia.core.domain.diagnostics.Diagnostics
+import io.lukia.core.domain.diagnostics.warn
+
 /**
  * Bytes as text, decoded the way the file says or - failing that - the way it
  * most likely was.
@@ -16,13 +20,29 @@ package io.lukia.features.reader.infrastructure.text
  * so this is a decision made on the reader's behalf; getting it wrong turns
  * punctuation into noise, and refusing to guess turns the whole file into it.
  */
-internal fun decodeText(bytes: ByteArray): String {
+internal fun decodeText(
+    bytes: ByteArray,
+    diagnostics: Diagnostics = Diagnostics.None,
+): String {
     utf16(bytes)?.let { return it }
 
     val withoutBom = if (bytes.startsWithUtf8Bom()) bytes.copyOfRange(3, bytes.size) else bytes
 
     return runCatching { withoutBom.decodeToString(throwOnInvalidSequence = true) }
-        .getOrElse { withoutBom.decodeWindows1252() }
+        .getOrElse {
+            // The one decision in this file that is a guess, and the one thing
+            // a reader can see went wrong without being able to say why: a book
+            // full of replacement characters looks like a broken app rather
+            // than like a file that never said what encoding it was.
+            diagnostics.warn(
+                area = DiagnosticArea.Reading,
+                event = "text-decode-fallback",
+                detail = "windows-1252, ${bytes.size} bytes",
+                cause = it,
+            )
+
+            withoutBom.decodeWindows1252()
+        }
 }
 
 private fun ByteArray.startsWithUtf8Bom(): Boolean =

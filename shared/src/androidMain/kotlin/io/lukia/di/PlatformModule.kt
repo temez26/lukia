@@ -19,7 +19,7 @@ import org.koin.dsl.module
 val platformModule = module {
 
     single<DocumentAnalyzer> {
-        AndroidDocumentAnalyzer(get())
+        AndroidDocumentAnalyzer(get(), get())
     }
 
     single<IncomingDocumentStore> {

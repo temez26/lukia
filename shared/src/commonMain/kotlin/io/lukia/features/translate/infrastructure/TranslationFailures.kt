@@ -4,6 +4,9 @@ import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.AppErrorException
+import io.lukia.core.domain.diagnostics.DiagnosticArea
+import io.lukia.core.domain.diagnostics.Diagnostics
+import io.lukia.core.domain.diagnostics.failure
 import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.settings.TranslationSettings
 import kotlin.coroutines.cancellation.CancellationException
@@ -77,12 +80,29 @@ private fun TranslationSettings.unreachable(): String = when (provider) {
  * because nothing did.
  */
 @Suppress("TooGenericExceptionCaught")
-internal inline fun <T> translating(settings: TranslationSettings, block: () -> T): T =
+internal inline fun <T> translating(
+    settings: TranslationSettings,
+    diagnostics: Diagnostics,
+    block: () -> T,
+): T =
     try {
         block()
     } catch (cancellation: CancellationException) {
         throw cancellation
     } catch (failure: Throwable) {
+        // Every provider comes through here, so this is the one place the app
+        // has to write a failed request down - and the only detail worth
+        // keeping is which provider it was. Not the address: a local server's
+        // is the reader's own network. Not the prompt or the answer: those are
+        // the book. The throwable's type says the rest, and tells a rejected
+        // key apart from a server that was never there.
+        diagnostics.failure(
+            area = DiagnosticArea.Translation,
+            event = "request-failed",
+            detail = settings.provider.name,
+            cause = failure,
+        )
+
         throw when (failure) {
             is AppErrorException -> failure
             else -> failure.asTranslationFailure(settings)

@@ -97,7 +97,7 @@ internal fun translator(
         install(HttpTimeout)
     }
 
-    return AnthropicTranslator(client, settings, json)
+    return AnthropicTranslator(client, settings, json = json)
 }
 
 internal fun request(

@@ -164,7 +164,7 @@ class GoogleTranslatorTest {
             install(HttpTimeout)
         }
 
-        return GoogleTranslator(client, settings, json)
+        return GoogleTranslator(client, settings, json = json)
     }
 
     private fun request(text: String = "whale") = TranslationRequest(

@@ -6,6 +6,7 @@ import io.ktor.client.request.parameter
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.isSuccess
+import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.features.translate.domain.lookup.WordEntry
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
@@ -51,6 +52,7 @@ internal class WiktionaryPages(
     private val client: HttpClient,
     private val settings: TranslationSettingsRepository,
     private val cache: WiktionaryPageCache,
+    private val diagnostics: Diagnostics = Diagnostics.None,
     private val json: Json = Json { ignoreUnknownKeys = true },
 ) {
 
@@ -121,7 +123,7 @@ internal class WiktionaryPages(
         val wikis = listOf(reader, FALLBACK_WIKI).distinct()
         val titles = listOf(word, word.lowercase()).distinct()
 
-        return translating(settings.settings.value) {
+        return translating(settings.settings.value, diagnostics) {
             wikis.firstNotNullOfOrNull { wiki ->
                 titles.firstNotNullOfOrNull { title -> page(title, wiki) }
             }

@@ -1,5 +1,6 @@
 package io.lukia.features.library.infrastructure.importing
 
+import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.domain.document.PickedDocument
@@ -14,7 +15,9 @@ import platform.Foundation.NSNumber
 import platform.Foundation.NSURL
 
 @OptIn(ExperimentalForeignApi::class)
-class IOSDocumentAnalyzer : DocumentAnalyzer {
+class IOSDocumentAnalyzer(
+    private val diagnostics: Diagnostics = Diagnostics.None,
+) : DocumentAnalyzer {
 
     override suspend fun analyze(
         document: PickedDocument,
@@ -61,7 +64,7 @@ class IOSDocumentAnalyzer : DocumentAnalyzer {
             runCatching {
                 fileManager.contentsAtPath(path)?.toByteArray()
             }.getOrNull()
-                ?.let { extractContents(type, it) }
+                ?.let { extractContents(type, it, diagnostics) }
                 ?: DocumentContents.Empty
         }
 

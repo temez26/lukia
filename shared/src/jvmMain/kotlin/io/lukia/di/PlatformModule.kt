@@ -26,7 +26,7 @@ val platformModule = module {
     }
 
     single<DocumentAnalyzer> {
-        DesktopDocumentAnalyzer()
+        DesktopDocumentAnalyzer(get())
     }
 
     single<IncomingDocumentStore> {

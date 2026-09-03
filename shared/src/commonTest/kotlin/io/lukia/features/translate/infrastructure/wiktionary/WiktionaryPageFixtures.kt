@@ -42,7 +42,7 @@ internal fun wiktionaryDictionary(
         install(HttpTimeout)
     }
 
-    return WiktionaryDictionary(WiktionaryPages(client, settings, cache, json))
+    return WiktionaryDictionary(WiktionaryPages(client, settings, cache, json = json))
 }
 
 /**

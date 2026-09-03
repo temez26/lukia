@@ -1,9 +1,12 @@
 package io.lukia.di
 
+import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.core.infrastructure.AppCommands
 import io.lukia.core.infrastructure.DocumentInbox
 import io.lukia.core.infrastructure.IncomingDocuments
 import io.lukia.core.infrastructure.db.LukiaDatabase
+import io.lukia.core.infrastructure.diagnostics.DiagnosticBuffer
+import io.lukia.core.infrastructure.diagnostics.RecordingDiagnostics
 import io.lukia.features.library.libraryModule
 import io.lukia.features.reader.readerModule
 import io.lukia.features.settings.settingsModule
@@ -43,6 +46,19 @@ val commonModule = module {
     // menu bar to ask from, which is every platform but one.
     single {
         AppCommands()
+    }
+
+    // Where the boundaries write down what they absorbed. One for the process,
+    // because a report is about a run of the app rather than about a screen.
+    //
+    // In memory and nowhere else: nothing reads this yet and nothing can send it
+    // anywhere, which is the point at which it is safe to have it collecting.
+    single {
+        DiagnosticBuffer()
+    }
+
+    single<Diagnostics> {
+        RecordingDiagnostics(get())
     }
 
     includes(

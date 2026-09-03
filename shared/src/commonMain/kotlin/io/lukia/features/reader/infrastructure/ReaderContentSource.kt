@@ -1,5 +1,6 @@
 package io.lukia.features.reader.infrastructure
 
+import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.infrastructure.availableProcessors
 import io.lukia.core.infrastructure.readFileBytes
@@ -27,7 +28,11 @@ import io.lukia.features.reader.infrastructure.text.reflow.storedReflow
  * [path] is always a working copy in app storage, never the file the user
  * imported.
  */
-internal suspend fun openReaderContent(type: DocumentType, path: String): ReaderContent? = when (type) {
+internal suspend fun openReaderContent(
+    type: DocumentType,
+    path: String,
+    diagnostics: Diagnostics = Diagnostics.None,
+): ReaderContent? = when (type) {
     // Kept apart from the rest: a PDF is opened by the platform's own renderer
     // against the file on disk, and is the only format here never held whole in
     // memory.
@@ -35,8 +40,8 @@ internal suspend fun openReaderContent(type: DocumentType, path: String): Reader
 
     DocumentType.EPUB -> readEpub(readFileBytes(path))
     DocumentType.DOCX -> readDocx(readFileBytes(path))
-    DocumentType.TEXT -> readPlainText(readFileBytes(path))
-    DocumentType.MARKDOWN -> readMarkdown(readFileBytes(path))
+    DocumentType.TEXT -> readPlainText(readFileBytes(path), diagnostics)
+    DocumentType.MARKDOWN -> readMarkdown(readFileBytes(path), diagnostics)
 
     DocumentType.UNKNOWN -> null
 }
@@ -69,6 +74,7 @@ internal suspend fun openReaderContent(type: DocumentType, path: String): Reader
  */
 internal suspend fun openPdfAsText(
     path: String,
+    diagnostics: Diagnostics = Diagnostics.None,
     onProgress: (TextExtraction) -> Unit = {},
 ): ReaderContent? {
     storedReflow(path)?.let { return it }
@@ -77,13 +83,13 @@ internal suspend fun openPdfAsText(
     val alongside = readersAlongside(path, readersFor(pages.pageCount) - 1)
 
     val content = try {
-        readPdfAsText(pages, alongside, onProgress)
+        readPdfAsText(pages, alongside, diagnostics, onProgress)
     } finally {
         alongside.forEach { runCatching { it.close() } }
         pages.close()
     }
 
-    return content?.also { storeReflow(path, it) }
+    return content?.also { storeReflow(path, it, diagnostics) }
 }
 
 /**

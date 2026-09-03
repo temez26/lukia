@@ -1,5 +1,6 @@
 package io.lukia.features.reader.infrastructure.text
 
+import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.features.reader.domain.ReflowableContent
 import io.lukia.features.reader.domain.text.TextBlock
 import io.lukia.features.reader.domain.text.TextRun
@@ -19,8 +20,11 @@ import io.lukia.features.reader.domain.text.TextRun
  * separated by blank lines, or they are single long lines, and both come out
  * right.
  */
-internal fun readPlainText(bytes: ByteArray): ReflowableContent {
-    val blocks = decodeText(bytes)
+internal fun readPlainText(
+    bytes: ByteArray,
+    diagnostics: Diagnostics = Diagnostics.None,
+): ReflowableContent {
+    val blocks = decodeText(bytes, diagnostics)
         .splitParagraphs()
         .map { TextBlock.Paragraph(listOf(TextRun(it))) }
 
