@@ -14,7 +14,10 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import io.lukia.resources.Res
+import io.lukia.resources.state_loading
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * The app's one busy indicator. Fills whatever it is given and centres itself,
@@ -30,8 +33,12 @@ fun LoadingState(
     modifier: Modifier = Modifier,
     message: String? = null,
 ) {
+    // Read out of the lambda rather than in it: `semantics` is not a
+    // composable scope, so the fallback has to be resolved before it.
+    val spoken = message ?: stringResource(Res.string.state_loading)
+
     Box(
-        modifier = modifier.semantics { contentDescription = message ?: "Loading" },
+        modifier = modifier.semantics { contentDescription = spoken },
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {

@@ -5,6 +5,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import io.lukia.resources.Res
+import io.lukia.resources.action_cancel
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Asks before something that cannot be taken back.
@@ -54,7 +57,9 @@ fun ConfirmDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismissRequest) { Text("Cancel") }
+            TextButton(onClick = onDismissRequest) {
+                Text(stringResource(Res.string.action_cancel))
+            }
         },
         containerColor = MaterialTheme.colorScheme.surface,
     )
