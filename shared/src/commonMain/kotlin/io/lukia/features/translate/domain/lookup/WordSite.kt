@@ -24,10 +24,7 @@ package io.lukia.features.translate.domain.lookup
  *    none
  */
 enum class WordSite(
-    val label: String,
     val urlTemplate: String,
-    /** What is worth saying under the choice, which differs for each. */
-    val footnote: String,
     /**
      * What this site calls the languages, keyed by the plain language subtag of
      * a BCP 47 tag - `en`, `fi`, `pt`.
@@ -51,24 +48,15 @@ enum class WordSite(
 ) {
 
     GoogleTranslate(
-        label = "Google",
         urlTemplate = "https://translate.google.com/?sl={from}&tl={to}&text={word}&op=translate",
-        footnote = "Google Translate, with the word already in the box - so the " +
-            "alternatives and the reverse lookup are one tap away.",
     ),
 
     Wiktionary(
-        label = "Wiktionary",
         urlTemplate = "https://{to}.wiktionary.org/wiki/{word}",
-        footnote = "The whole entry as Wiktionary lays it out: every language " +
-            "that spells the word this way, its inflections and its examples.",
     ),
 
     Sanakirja(
-        label = "Sanakirja",
         urlTemplate = "https://www.sanakirja.org/search.php?q={word}&l={from}&l2={to}",
-        footnote = "sanakirja.org, which is worth the trip for the Nordic " +
-            "languages in particular. Opens on the pair you are reading.",
         // Numbered rather than named, and the numbers are the site's own: they
         // are the values of the two language menus on its search page and there
         // is nothing to derive them from. The four languages of the picker it
@@ -111,10 +99,7 @@ enum class WordSite(
      * [io.lukia.features.translate.domain.settings.TranslationSettings.wordSiteUrlTemplate].
      */
     Custom(
-        label = "Custom",
         urlTemplate = "",
-        footnote = "Any site with a searchable address. Write {word} where the " +
-            "word goes, and {to} or {from} for the languages if the site takes them.",
     ),
     ;
 

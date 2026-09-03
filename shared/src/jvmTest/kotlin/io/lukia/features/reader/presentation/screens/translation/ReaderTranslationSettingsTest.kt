@@ -12,6 +12,9 @@ import androidx.compose.ui.unit.dp
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.domain.text.PassageUnit
+import io.lukia.resources.Res
+import io.lukia.resources.passage_unit_paragraph
+import io.lukia.shared.words
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -122,7 +125,7 @@ class ReaderTranslationSettingsTest {
         onNodeWithContentDescription("Reading settings").performClick()
         // Both gesture rows offer the same four choices, and the tap is the
         // first of them.
-        onAllNodesWithText(PassageUnit.Paragraph.label)[0].performClick()
+        onAllNodesWithText(words(Res.string.passage_unit_paragraph))[0].performClick()
 
         assertEquals(
             TranslationGestures(tap = PassageUnit.Paragraph, longPress = null),

@@ -11,7 +11,6 @@ package io.lukia.features.translate.domain.provider
  * key is not help.
  */
 enum class TranslationProvider(
-    val label: String,
     /** Where requests go unless the reader says otherwise. */
     val defaultBaseUrl: String,
     /** What is asked for when nothing has been chosen. */
@@ -39,7 +38,6 @@ enum class TranslationProvider(
     val suggestedModels: List<String>,
 ) {
     Anthropic(
-        label = "Anthropic",
         defaultBaseUrl = "https://api.anthropic.com/v1",
         defaultModel = "claude-opus-5",
         requiresKey = true,
@@ -49,7 +47,6 @@ enum class TranslationProvider(
     ),
 
     OpenAi(
-        label = "OpenAI",
         defaultBaseUrl = "https://api.openai.com/v1",
         defaultModel = "gpt-4o",
         requiresKey = true,
@@ -66,7 +63,6 @@ enum class TranslationProvider(
      * reader entirely: it names whichever file they have loaded.
      */
     Local(
-        label = "Local",
         defaultBaseUrl = "http://localhost:1234/v1",
         defaultModel = "local-model",
         requiresKey = false,

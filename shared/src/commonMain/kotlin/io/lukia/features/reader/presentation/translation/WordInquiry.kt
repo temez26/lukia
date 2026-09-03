@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import io.lukia.core.domain.AppError
 import io.lukia.core.presentation.UiState
 import io.lukia.features.translate.domain.lookup.WordEntry
+import io.lukia.features.translate.domain.lookup.WordSite
 
 /**
  * One word the reader has stopped on and asked about properly.
@@ -77,6 +78,12 @@ sealed interface WordOnThePage {
     data class Failed(val error: AppError) : WordOnThePage
 }
 
-/** A site and the address the word is already written into. */
+/**
+ * A site and the address the word is already written into.
+ *
+ * The site rather than its name: this is built where the reader's settings are
+ * read, which is not a composition, and what a site is called is a string
+ * resource - see `TranslationChoicesDisplay.kt`.
+ */
 @Immutable
-data class WordSiteLink(val label: String, val url: String)
+data class WordSiteLink(val site: WordSite, val url: String)

@@ -67,11 +67,11 @@ enum class ChoiceDensity {
 fun <T> ChoiceList(
     options: List<T>,
     selected: T?,
-    label: (T) -> String,
+    label: @Composable (T) -> String,
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
     /** A second line under the label, for a choice whose name is not the whole story. */
-    detail: (T) -> String? = { null },
+    detail: @Composable (T) -> String? = { null },
     /** How much room the rows are given - see [ChoiceDensity]. */
     density: ChoiceDensity = ChoiceDensity.Comfortable,
 ) {

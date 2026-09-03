@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import io.lukia.core.domain.reading.PdfLayout
+import io.lukia.core.presentation.displayName
 import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.domain.LineSpacing
 import io.lukia.features.reader.domain.ReaderSettings
@@ -16,10 +17,10 @@ import io.lukia.features.reader.domain.ReaderTypeface
 import io.lukia.features.reader.domain.ReadingWidth
 import io.lukia.features.reader.domain.TextAlignment
 import io.lukia.features.reader.presentation.components.settings.TextSizeStepper
+import io.lukia.features.reader.presentation.displayName
 import io.lukia.shared.presentation.components.controls.SegmentedControl
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
-import kotlin.math.roundToInt
 
 /**
  * How a book is set: the surface it is drawn on, the type it is set in, and what
@@ -81,7 +82,7 @@ private fun PageSection(
                 SegmentedControl(
                     options = ReaderTheme.entries,
                     selected = reader.theme,
-                    label = { it.name },
+                    label = { it.displayName() },
                     onSelect = { onReaderChange(reader.copy(theme = it)) },
                 )
             }
@@ -94,7 +95,7 @@ private fun PageSection(
                     // Nothing is selected when a pinch in the reader has left the
                     // page between two presets, which is the honest answer.
                     selected = reader.matchingWidth,
-                    label = { "${(it.fraction * 100).roundToInt()}%" },
+                    label = { it.displayName() },
                     onSelect = { onReaderChange(reader.withPageScale(it.fraction)) },
                 )
             }
@@ -140,7 +141,7 @@ private fun TypeSection(
                 SegmentedControl(
                     options = LineSpacing.entries,
                     selected = reader.lineSpacing,
-                    label = { it.name },
+                    label = { it.displayName() },
                     onSelect = { onReaderChange(reader.copy(lineSpacing = it)) },
                 )
             }
@@ -149,7 +150,7 @@ private fun TypeSection(
                 SegmentedControl(
                     options = TextAlignment.entries,
                     selected = reader.alignment,
-                    label = { it.name },
+                    label = { it.displayName() },
                     onSelect = { onReaderChange(reader.copy(alignment = it)) },
                 )
             }
@@ -158,7 +159,7 @@ private fun TypeSection(
                 SegmentedControl(
                     options = ReaderTypeface.entries,
                     selected = reader.typeface,
-                    label = { if (it == ReaderTypeface.Serif) "Serif" else "Sans" },
+                    label = { it.displayName() },
                     onSelect = { onReaderChange(reader.copy(typeface = it)) },
                 )
             }
@@ -167,7 +168,7 @@ private fun TypeSection(
                 SegmentedControl(
                     options = FigureSize.entries,
                     selected = reader.figureSize,
-                    label = { it.name },
+                    label = { it.displayName() },
                     onSelect = { onReaderChange(reader.copy(figureSize = it)) },
                 )
             }
@@ -199,7 +200,7 @@ private fun PdfSection(
         SegmentedControl(
             options = PdfLayout.entries,
             selected = reader.defaultPdfLayout,
-            label = { it.name },
+            label = { it.displayName() },
             onSelect = { onReaderChange(reader.copy(defaultPdfLayout = it)) },
         )
     }

@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.reading.PdfLayout
+import io.lukia.core.presentation.displayName
 import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.domain.LineSpacing
 import io.lukia.features.reader.domain.ReaderSettings
@@ -28,6 +29,7 @@ import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.domain.ReaderTypeface
 import io.lukia.features.reader.domain.ReadingWidth
 import io.lukia.features.reader.domain.TextAlignment
+import io.lukia.features.reader.presentation.displayName
 import io.lukia.getPlatform
 import io.lukia.shared.presentation.components.controls.SegmentedControl
 import io.lukia.shared.presentation.components.menu.DismissOnBack
@@ -39,7 +41,6 @@ import io.lukia.shared.presentation.components.surface.LukiaDivider
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.isWideWindow
-import kotlin.math.roundToInt
 
 /** Grows out of the control it hangs from, matching the book actions menu. */
 private val PanelTransformOrigin = TransformOrigin(1f, 0f)
@@ -149,7 +150,7 @@ internal fun ReaderSettingsPanel(
                     SegmentedControl(
                         options = PdfLayout.entries,
                         selected = layout,
-                        label = { it.name },
+                        label = { it.displayName() },
                         onSelect = onLayoutChange,
                     )
                 }
@@ -167,7 +168,7 @@ internal fun ReaderSettingsPanel(
                 SegmentedControl(
                     options = ReaderTheme.entries,
                     selected = settings.theme,
-                    label = { it.name },
+                    label = { it.displayName() },
                     onSelect = { onSettingsChange(settings.copy(theme = it)) },
                 )
             }
@@ -181,7 +182,7 @@ internal fun ReaderSettingsPanel(
                     // Nothing is selected when a pinch has left the page
                     // between two presets, which is the honest answer.
                     selected = settings.matchingWidth,
-                    label = { "${(it.fraction * 100).roundToInt()}%" },
+                    label = { it.displayName() },
                     onSelect = { onSettingsChange(settings.withPageScale(it.fraction)) },
                 )
             }
@@ -245,7 +246,7 @@ internal fun ReaderSettingsPanel(
                 SegmentedControl(
                     options = LineSpacing.entries,
                     selected = settings.lineSpacing,
-                    label = { it.name },
+                    label = { it.displayName() },
                     enabled = typographyEnabled,
                     onSelect = { onSettingsChange(settings.copy(lineSpacing = it)) },
                 )
@@ -260,7 +261,7 @@ internal fun ReaderSettingsPanel(
                 SegmentedControl(
                     options = TextAlignment.entries,
                     selected = settings.alignment,
-                    label = { it.name },
+                    label = { it.displayName() },
                     enabled = typographyEnabled,
                     onSelect = { onSettingsChange(settings.copy(alignment = it)) },
                 )
@@ -275,7 +276,7 @@ internal fun ReaderSettingsPanel(
                 SegmentedControl(
                     options = ReaderTypeface.entries,
                     selected = settings.typeface,
-                    label = { if (it == ReaderTypeface.Serif) "Serif" else "Sans" },
+                    label = { it.displayName() },
                     enabled = typographyEnabled,
                     onSelect = { onSettingsChange(settings.copy(typeface = it)) },
                 )
@@ -292,7 +293,7 @@ internal fun ReaderSettingsPanel(
                 SegmentedControl(
                     options = FigureSize.entries,
                     selected = settings.figureSize,
-                    label = { it.name },
+                    label = { it.displayName() },
                     enabled = typographyEnabled,
                     onSelect = { onSettingsChange(settings.copy(figureSize = it)) },
                 )

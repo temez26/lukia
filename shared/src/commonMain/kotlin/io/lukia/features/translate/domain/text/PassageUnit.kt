@@ -13,14 +13,14 @@ package io.lukia.features.translate.domain.text
  * [Word] is also the only one a plain dictionary can answer, which is why it is
  * the only one whose provider can be chosen - see [WordLookup].
  */
-enum class PassageUnit(val label: String) {
+enum class PassageUnit {
 
     /** One word, on its own. */
-    Word("Word"),
+    Word,
 
     /** The sentence it sits in. */
-    Sentence("Sentence"),
+    Sentence,
 
     /** The whole paragraph, replaced at once. */
-    Paragraph("Paragraph"),
+    Paragraph,
 }

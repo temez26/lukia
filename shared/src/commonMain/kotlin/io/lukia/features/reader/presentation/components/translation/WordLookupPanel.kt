@@ -23,6 +23,9 @@ import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.reader.presentation.translation.WordInquiry
 import io.lukia.features.reader.presentation.translation.WordOnThePage
+import io.lukia.features.translate.presentation.displayName
+import io.lukia.resources.Res
+import io.lukia.resources.reader_open_in_site
 import io.lukia.shared.presentation.components.controls.ButtonSize
 import io.lukia.shared.presentation.components.controls.ButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaButton
@@ -30,6 +33,7 @@ import io.lukia.shared.presentation.components.surface.OverlayPanel
 import io.lukia.shared.presentation.components.surface.OverlayPanelTopClearance
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Everything else the reader can ask about a word they have already looked up.
@@ -145,7 +149,10 @@ private fun WordLookupActions(
 
             inquiry.site?.let { site ->
                 LukiaButton(
-                    label = "Open in ${site.label}",
+                    label = stringResource(
+                        Res.string.reader_open_in_site,
+                        site.site.displayName(),
+                    ),
                     onClick = {
                         links.openUri(site.url)
                         onDismiss()

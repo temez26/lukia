@@ -29,6 +29,8 @@ import io.lukia.core.domain.AppAccent
 import io.lukia.core.domain.AppMotion
 import io.lukia.core.domain.AppPalette
 import io.lukia.core.domain.AppTheme
+import io.lukia.core.presentation.displayDetail
+import io.lukia.core.presentation.displayName
 import io.lukia.features.settings.domain.AppSettings
 import io.lukia.shared.presentation.components.controls.ChoiceList
 import io.lukia.shared.presentation.components.controls.SegmentedControl
@@ -77,7 +79,7 @@ internal fun AppearanceSettings(
             SegmentedControl(
                 options = AppTheme.entries,
                 selected = settings.theme,
-                label = { it.name },
+                label = { it.displayName() },
                 onSelect = { onChange(settings.copy(theme = it)) },
             )
         }
@@ -91,8 +93,8 @@ internal fun AppearanceSettings(
             ChoiceList(
                 options = AppPalette.entries,
                 selected = settings.palette,
-                label = { it.title },
-                detail = { it.detail },
+                label = { it.displayName() },
+                detail = { it.displayDetail() },
                 onSelect = { onChange(settings.copy(palette = it)) },
             )
         }
@@ -149,8 +151,8 @@ private fun MotionSection(
         ChoiceList(
             options = AppMotion.entries,
             selected = selected,
-            label = { it.title },
-            detail = { it.detail },
+            label = { it.displayName() },
+            detail = { it.displayDetail() },
             onSelect = onSelect,
         )
     }
@@ -179,7 +181,7 @@ private fun AccentSwatches(
         AppAccent.entries.forEach { accent ->
             AccentSwatch(
                 color = accentSwatchColor(accent, darkTheme, palette),
-                label = accent.title,
+                label = accent.displayName(),
                 selected = accent == selected,
                 onSelect = { onSelect(accent) },
             )
