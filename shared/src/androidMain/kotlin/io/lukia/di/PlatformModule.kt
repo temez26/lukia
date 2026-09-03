@@ -39,7 +39,7 @@ val platformModule = module {
     }
 
     single<SqlDriver> {
-        lukiaSqlDriver(get())
+        lukiaSqlDriver(get(), get())
     }
 
     single<FolderScanner> {
