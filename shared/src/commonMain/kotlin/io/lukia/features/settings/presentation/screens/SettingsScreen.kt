@@ -24,11 +24,14 @@ import io.lukia.features.settings.presentation.TranslatingActions
 import io.lukia.features.settings.presentation.rememberProviderActions
 import io.lukia.features.settings.presentation.rememberTranslatingActions
 import io.lukia.features.translate.domain.settings.TranslationSettings
+import io.lukia.resources.Res
+import io.lukia.resources.action_go_back
 import io.lukia.shared.presentation.components.controls.IconButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.icons.BackChevron
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -112,7 +115,7 @@ fun SettingsContent(
             )
 
             LukiaIconButton(
-                label = "Go back",
+                label = stringResource(Res.string.action_go_back),
                 onClick = onBack,
                 modifier = Modifier
                     .align(Alignment.TopStart)

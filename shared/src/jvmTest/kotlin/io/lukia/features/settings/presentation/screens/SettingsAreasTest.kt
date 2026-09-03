@@ -11,7 +11,13 @@ import io.lukia.features.settings.presentation.ProviderActions
 import io.lukia.features.settings.presentation.ProviderState
 import io.lukia.features.settings.presentation.TranslatingActions
 import io.lukia.features.translate.domain.settings.TranslationSettings
+import io.lukia.resources.Res
+import io.lukia.resources.settings_area_appearance
+import io.lukia.resources.settings_area_providers
+import io.lukia.resources.settings_area_reading
+import io.lukia.resources.settings_area_translating
 import io.lukia.shared.presentation.theme.LukiaTheme
+import io.lukia.shared.words
 import kotlin.test.Test
 
 /**
@@ -47,8 +53,20 @@ class SettingsAreasTest {
         }
     }
 
+    /**
+     * Named by resource rather than by the enum: what a section is called now
+     * lives in `SettingsAreaDisplay.kt`, whose exhaustive `when` is what fails
+     * when a section is added without a name.
+     */
     private fun ComposeUiTest.open(area: SettingsArea) {
-        onNodeWithText(area.title).performClick()
+        onNodeWithText(words(area.titleResource())).performClick()
+    }
+
+    private fun SettingsArea.titleResource() = when (this) {
+        SettingsArea.Appearance -> Res.string.settings_area_appearance
+        SettingsArea.Reading -> Res.string.settings_area_reading
+        SettingsArea.Translating -> Res.string.settings_area_translating
+        SettingsArea.Providers -> Res.string.settings_area_providers
     }
 
     @Test

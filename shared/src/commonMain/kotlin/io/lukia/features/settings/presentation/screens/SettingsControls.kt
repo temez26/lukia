@@ -18,8 +18,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.lukia.resources.Res
+import io.lukia.resources.settings_beta
 import io.lukia.shared.presentation.components.surface.GroupSection
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 // The parts a settings page is built from. None of them knows what a setting
 // means - each takes a value, shows it, and reports a change.
@@ -36,15 +39,15 @@ import io.lukia.shared.presentation.theme.Space
  * one asks the reader to think about: what the app looks like, how books are
  * set, what is translated, and last of all who is doing it.
  */
-enum class SettingsArea(val title: String) {
+enum class SettingsArea {
 
-    Appearance("Appearance"),
+    Appearance,
 
     /** How a book is set: its page, its type, and what a PDF opens as. */
-    Reading("Reading"),
+    Reading,
 
     /** What is translated, when, and into what. */
-    Translating("Translating"),
+    Translating,
 
     /**
      * Who answers - the translator, and whatever looks up a single word.
@@ -54,7 +57,7 @@ enum class SettingsArea(val title: String) {
      * about reading. Somebody changing the language they read into should not
      * have to scroll past an API key to reach it.
      */
-    Providers("Providers"),
+    Providers,
     ;
 
     companion object {
@@ -135,7 +138,7 @@ internal fun BetaToggle(
 @Composable
 private fun BetaBadge(modifier: Modifier = Modifier) {
     Text(
-        text = "BETA",
+        text = stringResource(Res.string.settings_beta),
         style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = modifier

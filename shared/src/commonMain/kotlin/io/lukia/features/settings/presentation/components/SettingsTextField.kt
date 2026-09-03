@@ -32,12 +32,17 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.lukia.resources.Res
+import io.lukia.resources.filter_clear
+import io.lukia.resources.settings_hide
+import io.lukia.resources.settings_show
 import io.lukia.shared.presentation.components.controls.IconButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.controls.focusRing
 import io.lukia.shared.presentation.components.icons.ClearGlyph
 import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 private val FieldPadding: Dp = 12.dp
 
@@ -119,7 +124,7 @@ internal fun SettingsTextField(
             if (secret) RevealToggle(revealed = revealed, onToggle = { revealed = !revealed })
 
             LukiaIconButton(
-                label = "Clear",
+                label = stringResource(Res.string.filter_clear),
                 onClick = { onValueChange("") },
                 variant = IconButtonVariant.Plain,
             ) { tint, glyph ->
@@ -142,7 +147,9 @@ private fun RevealToggle(revealed: Boolean, onToggle: () -> Unit) {
     val interactionSource = remember { MutableInteractionSource() }
 
     Text(
-        text = if (revealed) "Hide" else "Show",
+        text = stringResource(
+            if (revealed) Res.string.settings_hide else Res.string.settings_show,
+        ),
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.primary,
         modifier = Modifier

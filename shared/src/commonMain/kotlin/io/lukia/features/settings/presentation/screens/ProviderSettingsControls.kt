@@ -16,10 +16,25 @@ import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.features.translate.domain.text.WordLookup
 import io.lukia.features.translate.presentation.displayFootnote
 import io.lukia.features.translate.presentation.displayName
+import io.lukia.resources.Res
+import io.lukia.resources.settings_address
+import io.lukia.resources.settings_api_key
+import io.lukia.resources.settings_api_key_optional
+import io.lukia.resources.settings_cloud_key
+import io.lukia.resources.settings_looking_up_a_word
+import io.lukia.resources.settings_model
+import io.lukia.resources.settings_none
+import io.lukia.resources.settings_public_endpoint
+import io.lukia.resources.settings_reading_more
+import io.lukia.resources.settings_reading_more_footnote
+import io.lukia.resources.settings_required
+import io.lukia.resources.settings_site_address_example
+import io.lukia.resources.settings_translation_service
 import io.lukia.shared.presentation.components.controls.ChoiceList
 import io.lukia.shared.presentation.components.controls.SegmentedControl
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Who answers, and everything they need to be reachable.
@@ -82,7 +97,7 @@ private fun TranslationServiceSection(
     modifier: Modifier = Modifier,
 ) {
     SettingsSection(
-        title = "Translation service",
+        title = stringResource(Res.string.settings_translation_service),
         footnote = translation.provider.footnote(),
         groupColor = groupColor,
         modifier = modifier,
@@ -125,7 +140,7 @@ private fun ProviderCredentials(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
         if (translation.provider.hasConfigurableEndpoint) {
-            LabelledField(label = "Address") {
+            LabelledField(label = stringResource(Res.string.settings_address)) {
                 SettingsTextField(
                     value = translation.baseUrl,
                     onValueChange = actions.onBaseUrlChange,
@@ -134,19 +149,30 @@ private fun ProviderCredentials(
             }
         }
 
-        val apiKeyLabel =
-            if (translation.provider.requiresKey) "API key" else "API key (optional)"
+        val apiKeyLabel = stringResource(
+            if (translation.provider.requiresKey) {
+                Res.string.settings_api_key
+            } else {
+                Res.string.settings_api_key_optional
+            },
+        )
 
         LabelledField(label = apiKeyLabel) {
             SettingsTextField(
                 value = translation.apiKey.orEmpty(),
                 onValueChange = actions.onApiKeyChange,
-                placeholder = if (translation.provider.requiresKey) "Required" else "None",
+                placeholder = stringResource(
+                    if (translation.provider.requiresKey) {
+                        Res.string.settings_required
+                    } else {
+                        Res.string.settings_none
+                    },
+                ),
                 secret = true,
             )
         }
 
-        LabelledField(label = "Model") {
+        LabelledField(label = stringResource(Res.string.settings_model)) {
             SettingsTextField(
                 value = translation.model,
                 onValueChange = actions.onModelChange,
@@ -201,7 +227,7 @@ private fun WordLookupSection(
     modifier: Modifier = Modifier,
 ) {
     SettingsSection(
-        title = "Looking up a word",
+        title = stringResource(Res.string.settings_looking_up_a_word),
         footnote = translation.wordLookup.displayFootnote(),
         groupColor = groupColor,
         modifier = modifier,
@@ -219,11 +245,11 @@ private fun WordLookupSection(
             // has never heard of one is a field that asks a question with no
             // answer.
             if (translation.wordLookup == WordLookup.Google) {
-                LabelledField(label = "Cloud Translation key (optional)") {
+                LabelledField(label = stringResource(Res.string.settings_cloud_key)) {
                     SettingsTextField(
                         value = translation.googleApiKey.orEmpty(),
                         onValueChange = actions.onGoogleApiKeyChange,
-                        placeholder = "Public endpoint",
+                        placeholder = stringResource(Res.string.settings_public_endpoint),
                         secret = true,
                     )
                 }
@@ -247,9 +273,8 @@ private fun WordSiteSection(
     modifier: Modifier = Modifier,
 ) {
     SettingsSection(
-        title = "Reading more about a word",
-        footnote = "Holding a word you have already looked up opens what else it " +
-            "means, and a way through to this site with the word already in it.",
+        title = stringResource(Res.string.settings_reading_more),
+        footnote = stringResource(Res.string.settings_reading_more_footnote),
         groupColor = groupColor,
         modifier = modifier,
     ) {
@@ -265,11 +290,11 @@ private fun WordSiteSection(
             // Only where it does anything - the same reasoning as the Google key
             // above. Every other choice here already knows its own address.
             if (translation.wordSite == WordSite.Custom) {
-                LabelledField(label = "Address") {
+                LabelledField(label = stringResource(Res.string.settings_address)) {
                     SettingsTextField(
                         value = translation.wordSiteUrlTemplate.orEmpty(),
                         onValueChange = actions.onWordSiteUrlChange,
-                        placeholder = "https://example.org/search?q={word}",
+                        placeholder = stringResource(Res.string.settings_site_address_example),
                     )
                 }
             }

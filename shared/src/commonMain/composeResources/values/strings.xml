@@ -440,4 +440,91 @@
     <!-- A PDF with nothing in it to re-set. -->
     <string name="reader_pdf_no_text">This PDF has no text in it to re-set - its pages are pictures. Showing it as pages.</string>
 
+    <!-- The settings screen itself. -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_area_appearance">Appearance</string>
+    <string name="settings_area_reading">Reading</string>
+    <string name="settings_area_translating">Translating</string>
+    <string name="settings_area_providers">Providers</string>
+    <!-- Marks a setting that is new and known to be rough. -->
+    <string name="settings_beta">BETA</string>
+    <string name="settings_show">Show</string>
+    <string name="settings_hide">Hide</string>
+
+    <!-- What the app looks like. -->
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_appearance_footnote">System follows your device\u2019s light and dark setting.</string>
+    <string name="settings_palette">Palette</string>
+    <string name="settings_palette_footnote">What the app\u2019s surfaces are made of. Light and dark both follow it.</string>
+    <string name="settings_accent">Accent</string>
+    <string name="settings_accent_footnote">Used for reading progress, chosen rows and anything that acts. Theme follows the palette.</string>
+    <string name="settings_motion">Motion</string>
+    <string name="settings_motion_footnote">How the app moves when it opens and when screens change. Buttons and controls respond the same way whichever you choose.</string>
+
+    <!-- How books are set. -->
+    <string name="settings_the_page">The page</string>
+    <string name="settings_the_page_footnote">What every book opens as. The reader's own panel changes the same settings with a book in front of you.</string>
+    <string name="settings_text_and_images">Text and images</string>
+    <string name="settings_text_and_images_footnote">These apply to reflowable books. A PDF read as its own pages had its type set when the file was made, and none of this reaches it.</string>
+    <string name="settings_opening_a_pdf">Opening a PDF</string>
+    <string name="settings_opening_a_pdf_as_text">New PDFs are re-set by this app - its type at the size you asked for, and translations in the paragraph rather than over the page. A scan with no text in it opens as its own pages anyway.</string>
+    <string name="settings_opening_a_pdf_as_pages">New PDFs open as the file's maker laid them out. Any of them can still be read as text from the reader's own panel.</string>
+
+    <!-- What is translated, and when. -->
+    <string name="settings_translate_into_footnote">Tap a sentence while reading to translate it, and tap it again for the original.</string>
+    <string name="settings_pointing_at_the_book">Pointing at the book</string>
+    <string name="settings_pointing_footnote">Each does one thing, always. Doing it again on the same passage puts the book\u2019s own words back - except on a word you have looked up, where holding opens more about it instead.</string>
+    <string name="settings_notes_detail">The translator's asides, set small under the text they belong to: a remark about an ambiguous word, a dictionary's other senses. Turn them off to keep the page as the book set it \u2014 holding a word still opens everything it means. Why a passage could not be translated is always shown.</string>
+    <string name="settings_hold_again">Hold a word again for more about it</string>
+    <string name="settings_hold_again_detail">Once a word has been looked up, holding it opens every sense a dictionary has for it and a way through to %1$s. Works whatever the hold above is set to.</string>
+    <string name="settings_translating_ahead">Translating ahead</string>
+    <string name="settings_translating_ahead_footnote">Both are new, and both are slow and expensive: they translate a screenful at a time rather than the passage you pointed at. Off until you ask for them, and hidden from the reader entirely while they are.</string>
+    <string name="settings_on_screen_detail">Adds a button that translates every sentence you can see, once.</string>
+    <string name="settings_as_you_read_detail">Adds a button that goes on translating whatever scrolls into view until you turn it off. This is the expensive one.</string>
+
+    <!-- Who answers. -->
+    <string name="settings_translation_service">Translation service</string>
+    <string name="settings_address">Address</string>
+    <string name="settings_model">Model</string>
+    <string name="settings_api_key">API key</string>
+    <string name="settings_api_key_optional">API key (optional)</string>
+    <string name="settings_required">Required</string>
+    <string name="settings_none">None</string>
+    <string name="settings_looking_up_a_word">Looking up a word</string>
+    <string name="settings_cloud_key">Cloud Translation key (optional)</string>
+    <string name="settings_public_endpoint">Public endpoint</string>
+    <string name="settings_reading_more">Reading more about a word</string>
+    <string name="settings_reading_more_footnote">Holding a word you have already looked up opens what else it means, and a way through to this site with the word already in it.</string>
+    <string name="settings_site_address_example">https://example.org/search?q={word}</string>
+    <string name="settings_key_footnote_hosted">Your key is stored on this device and sent only to %1$s, with the sentence you tapped and what the book says about itself.</string>
+    <string name="settings_key_footnote_local">Nothing leaves your network. On a phone or tablet, \u201Clocalhost\u201D means the device itself - use the computer\u2019s address on your network instead.</string>
+
+    <!-- Asking a local server what it can do. -->
+    <string name="settings_asking_the_server">Asking the server\u2026</string>
+    <string name="settings_reload_models">Reload models</string>
+    <string name="settings_load_models">Load models from server</string>
+    <string name="settings_loading">Loading\u2026</string>
+    <string name="settings_load_this_model">Load this model now</string>
+    <string name="settings_loading_model">Asking the server to load %1$s. A large model can take a few minutes the first time.</string>
+    <string name="settings_model_ready">%1$s is loaded and answering.</string>
+    <string name="settings_give_up_after">Give up after</string>
+    <string name="settings_seconds">%1$d seconds</string>
+    <string name="settings_testing">Testing\u2026</string>
+    <string name="settings_test_translation">Test translation</string>
+    <!-- The sentence that was sent, and what came back. -->
+    <string name="settings_test_result">\u201C%1$s\u201D became \u201C%2$s\u201D</string>
+
+    <!-- What the app records when something goes wrong. -->
+    <string name="settings_last_crash">Last crash</string>
+    <string name="settings_last_crash_footnote">Kept on this device until you delete it, and never sent anywhere.</string>
+    <string name="settings_crashed">Lukia closed unexpectedly the last time it was open.</string>
+    <string name="settings_copy_whole_report">Copy takes the whole report.</string>
+    <string name="settings_copy_report">Copy report</string>
+    <string name="settings_diagnostics">Diagnostics</string>
+    <string name="settings_diagnostics_footnote">Kept on this device until you copy it, and never sent anywhere. Holds no book text, titles, file names or keys.</string>
+    <string name="settings_record_problems">Record what goes wrong</string>
+    <string name="settings_record_problems_detail">Notes when a cover, a page or a translation could not be read, so a problem you can describe has something behind it. Turning this off clears what was recorded.</string>
+    <string name="settings_nothing_recorded">Nothing recorded yet. Use the app as you did when it went wrong, then come back.</string>
+    <string name="settings_showing_last">Showing the last %1$d of %2$d. Copy takes all of them.</string>
+
 </resources>

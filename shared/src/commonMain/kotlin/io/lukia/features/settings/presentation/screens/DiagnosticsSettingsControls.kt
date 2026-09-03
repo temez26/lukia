@@ -16,10 +16,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import io.lukia.core.domain.diagnostics.DiagnosticEntry
 import io.lukia.core.infrastructure.diagnostics.asReportLine
+import io.lukia.resources.Res
+import io.lukia.resources.action_delete
+import io.lukia.resources.filter_clear
+import io.lukia.resources.settings_copy_report
+import io.lukia.resources.settings_copy_whole_report
+import io.lukia.resources.settings_crashed
+import io.lukia.resources.settings_diagnostics
+import io.lukia.resources.settings_diagnostics_footnote
+import io.lukia.resources.settings_last_crash
+import io.lukia.resources.settings_last_crash_footnote
+import io.lukia.resources.settings_nothing_recorded
+import io.lukia.resources.settings_record_problems
+import io.lukia.resources.settings_record_problems_detail
+import io.lukia.resources.settings_showing_last
 import io.lukia.shared.presentation.components.controls.ButtonSize
 import io.lukia.shared.presentation.components.controls.ButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaButton
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * How many entries the group shows without being asked twice.
@@ -102,14 +117,14 @@ private fun LastCrashSection(
     modifier: Modifier = Modifier,
 ) {
     SettingsSection(
-        title = "Last crash",
-        footnote = "Kept on this device until you delete it, and never sent anywhere.",
+        title = stringResource(Res.string.settings_last_crash),
+        footnote = stringResource(Res.string.settings_last_crash_footnote),
         groupColor = groupColor,
         modifier = modifier,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
             Text(
-                text = "Lukia closed unexpectedly the last time it was open.",
+                text = stringResource(Res.string.settings_crashed),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface,
             )
@@ -118,7 +133,7 @@ private fun LastCrashSection(
 
             if (report.lines().size > ShownCrashLines) {
                 Text(
-                    text = "Copy takes the whole report.",
+                    text = stringResource(Res.string.settings_copy_whole_report),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -129,14 +144,14 @@ private fun LastCrashSection(
                 modifier = Modifier.padding(top = Space.xs),
             ) {
                 LukiaButton(
-                    label = "Copy report",
+                    label = stringResource(Res.string.settings_copy_report),
                     onClick = onCopy,
                     variant = ButtonVariant.Secondary,
                     size = ButtonSize.Compact,
                 )
 
                 LukiaButton(
-                    label = "Delete",
+                    label = stringResource(Res.string.action_delete),
                     onClick = onDiscard,
                     variant = ButtonVariant.Ghost,
                     size = ButtonSize.Compact,
@@ -157,21 +172,18 @@ private fun DiagnosticsRecordSection(
     modifier: Modifier = Modifier,
 ) {
     SettingsSection(
-        title = "Diagnostics",
+        title = stringResource(Res.string.settings_diagnostics),
         // Says where it goes, because that is the whole question somebody has
         // about a setting with this name. Nothing here sends anything: copying
         // is the only way out, and the reader chooses what to paste it into.
-        footnote = "Kept on this device until you copy it, and never sent anywhere. " +
-            "Holds no book text, titles, file names or keys.",
+        footnote = stringResource(Res.string.settings_diagnostics_footnote),
         groupColor = groupColor,
         modifier = modifier,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
             SettingsToggle(
-                label = "Record what goes wrong",
-                detail = "Notes when a cover, a page or a translation could not be read, " +
-                    "so a problem you can describe has something behind it. " +
-                    "Turning this off clears what was recorded.",
+                label = stringResource(Res.string.settings_record_problems),
+                detail = stringResource(Res.string.settings_record_problems_detail),
                 checked = enabled,
                 onChange = onEnabledChange,
             )
@@ -202,8 +214,7 @@ private fun RecordedEntries(
     ) {
         if (entries.isEmpty()) {
             Text(
-                text = "Nothing recorded yet. Use the app as you did when it went wrong, " +
-                    "then come back.",
+                text = stringResource(Res.string.settings_nothing_recorded),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -215,7 +226,11 @@ private fun RecordedEntries(
 
         if (entries.size > ShownEntries) {
             Text(
-                text = "Showing the last $ShownEntries of ${entries.size}. Copy takes all of them.",
+                text = stringResource(
+                    Res.string.settings_showing_last,
+                    ShownEntries,
+                    entries.size,
+                ),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -226,14 +241,14 @@ private fun RecordedEntries(
             modifier = Modifier.padding(top = Space.xs),
         ) {
             LukiaButton(
-                label = "Copy report",
+                label = stringResource(Res.string.settings_copy_report),
                 onClick = onCopy,
                 variant = ButtonVariant.Secondary,
                 size = ButtonSize.Compact,
             )
 
             LukiaButton(
-                label = "Clear",
+                label = stringResource(Res.string.filter_clear),
                 onClick = onClear,
                 variant = ButtonVariant.Ghost,
                 size = ButtonSize.Compact,

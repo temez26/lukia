@@ -16,10 +16,26 @@ import io.lukia.features.settings.presentation.ModelReadiness
 import io.lukia.features.settings.presentation.components.SettingsTextField
 import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.presentation.displayName
+import io.lukia.resources.Res
+import io.lukia.resources.settings_asking_the_server
+import io.lukia.resources.settings_give_up_after
+import io.lukia.resources.settings_key_footnote_hosted
+import io.lukia.resources.settings_key_footnote_local
+import io.lukia.resources.settings_load_models
+import io.lukia.resources.settings_load_this_model
+import io.lukia.resources.settings_loading
+import io.lukia.resources.settings_loading_model
+import io.lukia.resources.settings_model_ready
+import io.lukia.resources.settings_reload_models
+import io.lukia.resources.settings_seconds
+import io.lukia.resources.settings_test_result
+import io.lukia.resources.settings_test_translation
+import io.lukia.resources.settings_testing
 import io.lukia.shared.presentation.components.controls.ButtonVariant
 import io.lukia.shared.presentation.components.controls.ChoiceList
 import io.lukia.shared.presentation.components.controls.LukiaButton
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 // The controls only the translation group has: picking a model off a server,
 // waiting for one to load, a timeout, and testing that any of it works.
@@ -42,11 +58,13 @@ internal fun ServerModels(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
         LukiaButton(
-            label = when (state) {
-                AvailableModels.Loading -> "Asking the server…"
-                is AvailableModels.Loaded -> "Reload models"
-                else -> "Load models from server"
-            },
+            label = stringResource(
+                when (state) {
+                    AvailableModels.Loading -> Res.string.settings_asking_the_server
+                    is AvailableModels.Loaded -> Res.string.settings_reload_models
+                    else -> Res.string.settings_load_models
+                },
+            ),
             onClick = onLoad,
             variant = ButtonVariant.Secondary,
             enabled = state != AvailableModels.Loading,
@@ -92,10 +110,12 @@ internal fun ModelReadinessRow(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
         LukiaButton(
-            label = when (state) {
-                ModelReadiness.Loading -> "Loading…"
-                else -> "Load this model now"
-            },
+            label = stringResource(
+                when (state) {
+                    ModelReadiness.Loading -> Res.string.settings_loading
+                    else -> Res.string.settings_load_this_model
+                },
+            ),
             onClick = onLoad,
             variant = ButtonVariant.Secondary,
             enabled = model.isNotBlank() && state != ModelReadiness.Loading,
@@ -105,14 +125,13 @@ internal fun ModelReadinessRow(
             ModelReadiness.Cold -> Unit
 
             ModelReadiness.Loading -> Text(
-                text = "Asking the server to load $model. A large model can take a few " +
-                    "minutes the first time.",
+                text = stringResource(Res.string.settings_loading_model, model),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             ModelReadiness.Ready -> Text(
-                text = "$model is loaded and answering.",
+                text = stringResource(Res.string.settings_model_ready, model),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -147,14 +166,17 @@ internal fun TimeoutField(
     // them has to show the one now in force rather than what was last typed.
     var typed by remember(provider) { mutableStateOf(seconds.toString()) }
 
-    LabelledField(label = "Give up after") {
+    LabelledField(label = stringResource(Res.string.settings_give_up_after)) {
         SettingsTextField(
             value = typed,
             onValueChange = { entry ->
                 typed = entry.filter { it.isDigit() }.take(4)
                 typed.toIntOrNull()?.let(onChange)
             },
-            placeholder = "${provider.defaultTimeoutSeconds} seconds",
+            placeholder = stringResource(
+                Res.string.settings_seconds,
+                provider.defaultTimeoutSeconds,
+            ),
         )
     }
 }
@@ -176,7 +198,13 @@ internal fun ConnectionTestRow(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
         LukiaButton(
-            label = if (state is ConnectionTest.Trying) "Testing…" else "Test translation",
+            label = stringResource(
+                if (state is ConnectionTest.Trying) {
+                    Res.string.settings_testing
+                } else {
+                    Res.string.settings_test_translation
+                },
+            ),
             onClick = onTest,
             variant = ButtonVariant.Secondary,
             enabled = enabled && state !is ConnectionTest.Trying,
@@ -186,7 +214,13 @@ internal fun ConnectionTestRow(
             ConnectionTest.Untried, ConnectionTest.Trying -> Unit
 
             is ConnectionTest.Worked -> Text(
-                text = "\u201CThe sea was calm that morning.\u201D became \u201C${state.sample}\u201D",
+                // The sentence the translator was actually given rather than
+                // a second copy of it kept here - see `ConnectionTest.Worked`.
+                text = stringResource(
+                    Res.string.settings_test_result,
+                    state.sent,
+                    state.sample,
+                ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -207,10 +241,7 @@ internal fun ConnectionTestRow(
 @Composable
 internal fun TranslationProvider.footnote(): String = when (this) {
     TranslationProvider.Anthropic, TranslationProvider.OpenAi ->
-        "Your key is stored on this device and sent only to ${displayName()}, with the " +
-            "sentence you tapped and what the book says about itself."
+        stringResource(Res.string.settings_key_footnote_hosted, displayName())
 
-    TranslationProvider.Local ->
-        "Nothing leaves your network. On a phone or tablet, \u201Clocalhost\u201D means the " +
-            "device itself - use the computer\u2019s address on your network instead."
+    TranslationProvider.Local -> stringResource(Res.string.settings_key_footnote_local)
 }

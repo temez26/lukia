@@ -32,10 +32,13 @@ import io.lukia.features.settings.presentation.ProviderActions
 import io.lukia.features.settings.presentation.ProviderState
 import io.lukia.features.settings.presentation.TranslatingActions
 import io.lukia.features.translate.domain.settings.TranslationSettings
+import io.lukia.resources.Res
+import io.lukia.resources.settings_title
 import io.lukia.shared.presentation.components.controls.SegmentedControl
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /** Vertical room reserved so content starts clear of the floating back control. */
 private val TopChromeClearance: Dp = 68.dp
@@ -188,7 +191,7 @@ private fun SettingsHeader(
 ) {
     Column(modifier = modifier) {
         Text(
-            text = "Settings",
+            text = stringResource(Res.string.settings_title),
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onBackground,
         )
@@ -196,7 +199,7 @@ private fun SettingsHeader(
         SegmentedControl(
             options = SettingsArea.entries,
             selected = area,
-            label = { it.title },
+            label = { it.displayTitle() },
             onSelect = onAreaChange,
             modifier = Modifier.padding(top = Space.lg),
         )
