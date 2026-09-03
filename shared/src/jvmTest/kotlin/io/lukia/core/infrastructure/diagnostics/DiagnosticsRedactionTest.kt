@@ -74,10 +74,21 @@ class DiagnosticsRedactionTest {
             "${it.area} ${it.event} ${it.detail.orEmpty()} ${it.causeType.orEmpty()}"
         }
 
+        // Both the fields and the report built from them. The report is the
+        // thing that actually leaves the device, and it is assembled by
+        // different code from the fields - so checking the entries alone would
+        // stop guarding the moment the formatter learned to add something.
+        val report = diagnosticReport(entries, platformName = "Android 34")
+
         listOf(Title, Author, FileName, Path, "/", "\\").forEach { secret ->
             assertFalse(
                 recorded.contains(secret),
                 "diagnostics leaked \"$secret\":\n$recorded",
+            )
+
+            assertFalse(
+                report.contains(secret),
+                "the copied report leaked \"$secret\":\n$report",
             )
         }
     }
