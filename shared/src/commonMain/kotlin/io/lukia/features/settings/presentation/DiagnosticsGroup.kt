@@ -28,6 +28,7 @@ internal fun DiagnosticsGroup(
 ) {
     val settings by viewModel.appSettings.collectAsState()
     val entries by viewModel.entries.collectAsState()
+    val lastCrash by viewModel.lastCrash.collectAsState()
 
     // The clipboard is the whole of the export, and deliberately so. The app has
     // no server to send a report to, and giving it one would be a larger change
@@ -42,5 +43,8 @@ internal fun DiagnosticsGroup(
         onCopy = { clipboard.setText(AnnotatedString(viewModel.report())) },
         onClear = viewModel::clear,
         groupColor = groupColor,
+        lastCrash = lastCrash,
+        onCopyCrash = { lastCrash?.let { clipboard.setText(AnnotatedString(it)) } },
+        onDiscardCrash = viewModel::discardCrash,
     )
 }

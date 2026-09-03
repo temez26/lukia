@@ -81,13 +81,13 @@ fun diagnosticReport(entries: List<DiagnosticEntry>, platformName: String): Stri
  * entry in it is from the same afternoon as the one that prompted it. What a
  * reader and a maintainer both need is the gap between two entries.
  */
-private fun kotlin.time.Instant.timeOfDay(): String {
+internal fun kotlin.time.Instant.timeOfDay(): String {
     val local = toLocalDateTime(TimeZone.currentSystemDefault())
 
     return "${local.hour.padded()}:${local.minute.padded()}:${local.second.padded()}"
 }
 
-private fun Int.padded(): String = toString().padStart(2, '0')
+internal fun Int.padded(): String = toString().padStart(2, '0')
 
 /** Held so the events line up down the page, which is what makes them scannable. */
 private const val LevelWidth = 7
