@@ -149,11 +149,15 @@ internal fun StatFigure(
             overflow = TextOverflow.Ellipsis,
         )
 
+        // Two lines rather than one. These sit three to a row on a phone,
+        // which is about 115dp a cell: "Pages read" fits and "Gelesene Seiten"
+        // does not, and a label ellipsised to "Gelesene S…" has lost the word
+        // that says what the figure above it counts.
         Text(
             text = label,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
+            maxLines = 2,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(top = Space.xxs),
         )

@@ -179,10 +179,18 @@ private fun InfoRow(label: String, value: String) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        // Weighted so a long name yields ground instead of taking it. The row
+        // is `SpaceBetween` and the label had no weight at all, so
+        // "Veröffentlichungsjahr" would take the whole row and squeeze the value
+        // it introduces down to nothing. `fill = false` keeps a short label
+        // short, which is what holds the value against the far edge.
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f, fill = false),
         )
         Text(
             text = value,

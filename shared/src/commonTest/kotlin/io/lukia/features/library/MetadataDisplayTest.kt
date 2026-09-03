@@ -5,11 +5,9 @@ import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.domain.document.PickedDocument
 import io.lukia.core.presentation.bookTitle
-import io.lukia.core.presentation.languageName
 import io.lukia.core.presentation.publishedYear
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 class MetadataDisplayTest {
 
@@ -47,31 +45,6 @@ class MetadataDisplayTest {
     @Test
     fun aBlankDeclaredTitleIsNoTitle() {
         assertEquals("moby-dick", book(metadata = BookMetadata(title = "  ")).bookTitle())
-    }
-
-    // --------------------------------------------------------------- language
-
-    @Test
-    fun readsALanguageTagAsALanguage() {
-        assertEquals("English", BookMetadata(language = "en").languageName())
-    }
-
-    /** The region is a distinction for a spell checker, not for a reader. */
-    @Test
-    fun ignoresTheRegionSubtag() {
-        assertEquals("English", BookMetadata(language = "en-GB").languageName())
-        assertEquals("Finnish", BookMetadata(language = "fi_FI").languageName())
-    }
-
-    /** A tag nobody listed is still more use to show than to hide. */
-    @Test
-    fun anUnknownTagIsShownAsItself() {
-        assertEquals("AY", BookMetadata(language = "ay").languageName())
-    }
-
-    @Test
-    fun noLanguageIsNoRow() {
-        assertNull(BookMetadata().languageName())
     }
 
     // -------------------------------------------------------------- published

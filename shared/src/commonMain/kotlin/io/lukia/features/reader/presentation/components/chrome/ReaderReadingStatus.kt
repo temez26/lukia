@@ -18,12 +18,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.lukia.features.reader.presentation.percentThrough
 import io.lukia.resources.Res
@@ -176,7 +178,20 @@ private fun ProgressTrack(fraction: Float, modifier: Modifier = Modifier) {
             .clip(CircleShape)
             .drawBehind {
                 drawRect(color = track)
-                drawRect(color = fill, size = Size(size.width * filled, size.height))
+
+                // Filled from the leading edge rather than from the canvas's
+                // left - see `ReadingProgressBar`, which had the same bug.
+                val start = if (layoutDirection == LayoutDirection.Rtl) {
+                    size.width * (1f - filled)
+                } else {
+                    0f
+                }
+
+                drawRect(
+                    color = fill,
+                    topLeft = Offset(x = start, y = 0f),
+                    size = Size(size.width * filled, size.height),
+                )
             },
     )
 }
