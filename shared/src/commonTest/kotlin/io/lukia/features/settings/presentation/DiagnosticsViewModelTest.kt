@@ -1,8 +1,10 @@
 package io.lukia.features.settings.presentation
 
 import io.lukia.core.domain.diagnostics.DiagnosticArea
+import io.lukia.core.domain.diagnostics.FakeCrashStore
 import io.lukia.core.domain.diagnostics.warn
 import io.lukia.core.domain.storage.FakeSettingsStore
+import io.lukia.core.infrastructure.diagnostics.CrashRecorder
 import io.lukia.core.infrastructure.diagnostics.DiagnosticBuffer
 import io.lukia.core.infrastructure.diagnostics.RecordingDiagnostics
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
@@ -23,7 +25,12 @@ private class Diagnostics {
     val store = FakeSettingsStore()
     val buffer = DiagnosticBuffer()
     val settings = AppSettingsRepository(store)
-    val viewModel = DiagnosticsViewModel(buffer = buffer, settings = settings)
+    val crashes = CrashRecorder(store = FakeCrashStore(), buffer = buffer, platformName = "Java 21")
+    val viewModel = DiagnosticsViewModel(
+        buffer = buffer,
+        settings = settings,
+        crashes = crashes,
+    )
 
     val recorder = RecordingDiagnostics(
         buffer = buffer,

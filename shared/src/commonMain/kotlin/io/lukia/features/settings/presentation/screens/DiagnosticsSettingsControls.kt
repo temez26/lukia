@@ -32,6 +32,15 @@ import io.lukia.shared.presentation.theme.Space
 private const val ShownEntries = 40
 
 /**
+ * How much of a crash report is shown before Copy.
+ *
+ * Enough to see what it is and that it names nothing about the reader - the
+ * header, what it says about itself, and the top of the trace. The rest is more
+ * frames, which nobody reads inside a settings group.
+ */
+private const val ShownCrashLines = 12
+
+/**
  * What the app wrote down, and whether it writes anything down at all.
  *
  * Sits under whichever group is open rather than becoming a fifth one. It is not
@@ -41,6 +50,104 @@ private const val ShownEntries = 40
  */
 @Composable
 internal fun DiagnosticsSettings(
+    enabled: Boolean,
+    entries: List<DiagnosticEntry>,
+    onEnabledChange: (Boolean) -> Unit,
+    onCopy: () -> Unit,
+    onClear: () -> Unit,
+    groupColor: Color,
+    modifier: Modifier = Modifier,
+    /** What the app left behind the last time it died, if it died. */
+    lastCrash: String? = null,
+    onCopyCrash: () -> Unit = {},
+    onDiscardCrash: () -> Unit = {},
+) {
+    Column(modifier = modifier) {
+        // Above the setting, and shown whether or not the setting is on. A
+        // reader who never turned anything on is exactly who this is for, and
+        // finding out the app died is not something to make them go looking for.
+        lastCrash?.let {
+            LastCrashSection(
+                report = it,
+                onCopy = onCopyCrash,
+                onDiscard = onDiscardCrash,
+                groupColor = groupColor,
+                modifier = Modifier.padding(bottom = Space.lg),
+            )
+        }
+
+        DiagnosticsRecordSection(
+            enabled = enabled,
+            entries = entries,
+            onEnabledChange = onEnabledChange,
+            onCopy = onCopy,
+            onClear = onClear,
+            groupColor = groupColor,
+        )
+    }
+}
+
+/**
+ * What the app left behind when it died, for the reader who finds it next time.
+ *
+ * Nothing sent it anywhere and nothing will: it is a file in the app's own
+ * storage, and Copy and Delete are the only two things that can happen to it.
+ */
+@Composable
+private fun LastCrashSection(
+    report: String,
+    onCopy: () -> Unit,
+    onDiscard: () -> Unit,
+    groupColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    SettingsSection(
+        title = "Last crash",
+        footnote = "Kept on this device until you delete it, and never sent anywhere.",
+        groupColor = groupColor,
+        modifier = modifier,
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+            Text(
+                text = "Lukia closed unexpectedly the last time it was open.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+
+            ReportLines(lines = report.lines().take(ShownCrashLines))
+
+            if (report.lines().size > ShownCrashLines) {
+                Text(
+                    text = "Copy takes the whole report.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(Space.sm),
+                modifier = Modifier.padding(top = Space.xs),
+            ) {
+                LukiaButton(
+                    label = "Copy report",
+                    onClick = onCopy,
+                    variant = ButtonVariant.Secondary,
+                    size = ButtonSize.Compact,
+                )
+
+                LukiaButton(
+                    label = "Delete",
+                    onClick = onDiscard,
+                    variant = ButtonVariant.Ghost,
+                    size = ButtonSize.Compact,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DiagnosticsRecordSection(
     enabled: Boolean,
     entries: List<DiagnosticEntry>,
     onEnabledChange: (Boolean) -> Unit,
@@ -104,7 +211,7 @@ private fun RecordedEntries(
             return@Column
         }
 
-        EntryLines(entries = entries.asReversed().take(ShownEntries))
+        ReportLines(lines = entries.asReversed().take(ShownEntries).map { it.asReportLine() })
 
         if (entries.size > ShownEntries) {
             Text(
@@ -143,16 +250,16 @@ private fun RecordedEntries(
  * not scroll sideways, so the scrolling is held inside this.
  */
 @Composable
-private fun EntryLines(entries: List<DiagnosticEntry>, modifier: Modifier = Modifier) {
+private fun ReportLines(lines: List<String>, modifier: Modifier = Modifier) {
     val scroll = rememberScrollState()
 
     Column(
         verticalArrangement = Arrangement.spacedBy(Space.xs),
         modifier = modifier.fillMaxWidth().horizontalScroll(scroll),
     ) {
-        entries.forEach { entry ->
+        lines.forEach { line ->
             Text(
-                text = entry.asReportLine(),
+                text = line,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,

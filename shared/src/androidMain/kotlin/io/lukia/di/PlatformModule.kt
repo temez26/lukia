@@ -1,6 +1,7 @@
 package io.lukia.di
 
 import app.cash.sqldelight.db.SqlDriver
+import io.lukia.core.domain.diagnostics.CrashStore
 import io.lukia.core.domain.document.IncomingDocumentStore
 import io.lukia.core.domain.storage.DocumentWorkspace
 import io.lukia.core.domain.storage.SecretStore
@@ -9,6 +10,7 @@ import io.lukia.core.infrastructure.AndroidDocumentWorkspace
 import io.lukia.core.infrastructure.AndroidIncomingDocumentStore
 import io.lukia.core.infrastructure.AndroidSecretStore
 import io.lukia.core.infrastructure.AndroidSettingsStore
+import io.lukia.core.infrastructure.diagnostics.AndroidCrashStore
 import io.lukia.core.infrastructure.lukiaSqlDriver
 import io.lukia.features.library.domain.DocumentAnalyzer
 import io.lukia.features.library.domain.FolderScanner
@@ -36,6 +38,10 @@ val platformModule = module {
 
     single<SecretStore> {
         AndroidSecretStore(get())
+    }
+
+    single<CrashStore> {
+        AndroidCrashStore(get())
     }
 
     single<SqlDriver> {

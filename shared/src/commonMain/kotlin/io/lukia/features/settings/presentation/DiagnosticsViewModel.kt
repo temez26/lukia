@@ -2,12 +2,15 @@ package io.lukia.features.settings.presentation
 
 import androidx.lifecycle.ViewModel
 import io.lukia.core.domain.diagnostics.DiagnosticEntry
+import io.lukia.core.infrastructure.diagnostics.CrashRecorder
 import io.lukia.core.infrastructure.diagnostics.DiagnosticBuffer
 import io.lukia.core.infrastructure.diagnostics.diagnosticReport
 import io.lukia.features.settings.domain.AppSettings
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
 import io.lukia.getPlatform
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * The diagnostics record, and the one setting that decides whether there is one.
@@ -19,7 +22,19 @@ import kotlinx.coroutines.flow.StateFlow
 class DiagnosticsViewModel(
     private val buffer: DiagnosticBuffer,
     private val settings: AppSettingsRepository,
+    private val crashes: CrashRecorder,
 ) : ViewModel() {
+
+    /**
+     * Read once, when the settings screen is opened rather than when the app
+     * starts: it is one small file and nobody is waiting on it, and reading it
+     * any earlier would be work done on every launch for a screen most readers
+     * never open.
+     */
+    private val _lastCrash = MutableStateFlow(crashes.lastCrash())
+
+    /** What the last death left behind, or null when the app closed properly. */
+    val lastCrash: StateFlow<String?> = _lastCrash.asStateFlow()
 
     val entries: StateFlow<List<DiagnosticEntry>> = buffer.entries
 
@@ -40,6 +55,12 @@ class DiagnosticsViewModel(
     }
 
     fun clear() = buffer.clear()
+
+    /** Deletes the crash file. The reader is the only one who can. */
+    fun discardCrash() {
+        crashes.discard()
+        _lastCrash.value = null
+    }
 
     /** The whole record as text, which is exactly what the reader copies. */
     fun report(): String = diagnosticReport(

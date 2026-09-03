@@ -2,6 +2,8 @@ package io.lukia.di
 
 import app.cash.sqldelight.db.SqlDriver
 import io.ktor.client.HttpClient
+import io.lukia.core.domain.diagnostics.CrashStore
+import io.lukia.core.domain.diagnostics.FakeCrashStore
 import io.lukia.core.domain.reading.ReadingProgressRepository
 import io.lukia.core.domain.storage.DocumentWorkspace
 import io.lukia.core.domain.storage.SecretStore
@@ -46,13 +48,27 @@ class AppGraphTest {
         modules(
             commonModule,
             platformModule,
-            module { single<SqlDriver> { lukiaSqlDriver(databaseFile) } },
+            module {
+                single<SqlDriver> { lukiaSqlDriver(databaseFile) }
+                // Resolving the graph creates what is marked created-at-start,
+                // and the real one installs an uncaught-exception handler in
+                // this JVM and writes into the developer's own Lukia directory.
+                single<CrashStore> { FakeCrashStore() }
+            },
         )
     }.koin
 
     @AfterTest
     fun tearDown() {
         koin.get<SqlDriver>().close()
+
+        // Closing matters beyond tidiness. The modules are top-level values, so
+        // their instance holders are shared by every graph built in this JVM -
+        // and one left holding an instance is one the next graph reuses without
+        // running the definition again, which is a test that passes or fails on
+        // what ran before it.
+        koin.close()
+
         databaseFile.delete()
     }
 

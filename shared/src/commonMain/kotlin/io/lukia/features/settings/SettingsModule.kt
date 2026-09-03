@@ -21,6 +21,6 @@ val settingsModule = module {
     // Apart from `SettingsViewModel`, which is already as long as a file here
     // gets, and shares nothing with this beyond the screen they appear on.
     viewModel {
-        DiagnosticsViewModel(get(), get())
+        DiagnosticsViewModel(get(), get(), get())
     }
 }

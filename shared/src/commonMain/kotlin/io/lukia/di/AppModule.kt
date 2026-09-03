@@ -5,6 +5,7 @@ import io.lukia.core.infrastructure.AppCommands
 import io.lukia.core.infrastructure.DocumentInbox
 import io.lukia.core.infrastructure.IncomingDocuments
 import io.lukia.core.infrastructure.db.LukiaDatabase
+import io.lukia.core.infrastructure.diagnostics.CrashRecorder
 import io.lukia.core.infrastructure.diagnostics.DiagnosticBuffer
 import io.lukia.core.infrastructure.diagnostics.RecordingDiagnostics
 import io.lukia.features.library.libraryModule
@@ -56,6 +57,16 @@ val commonModule = module {
     // anywhere, which is the point at which it is safe to have it collecting.
     single {
         DiagnosticBuffer()
+    }
+
+    // Created eagerly, so the hook is in place from the moment the graph is
+    // built rather than from the first time something asks for one - and a
+    // crash before anything asks is exactly the crash worth catching.
+    //
+    // Here rather than in each platform's entry point, because there are three
+    // of those and a fourth would forget.
+    single(createdAtStart = true) {
+        CrashRecorder(store = get(), buffer = get()).also { it.install() }
     }
 
     // Gated on the reader's own setting, read per entry rather than bound once:
