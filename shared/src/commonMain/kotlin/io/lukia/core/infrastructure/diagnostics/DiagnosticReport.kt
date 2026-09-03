@@ -1,5 +1,6 @@
 package io.lukia.core.infrastructure.diagnostics
 
+import io.lukia.LukiaVersion
 import io.lukia.core.domain.diagnostics.DiagnosticEntry
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -48,12 +49,19 @@ fun DiagnosticEntry.asReportLine(): String = buildString {
  * this are read it down the page and search it - and because there is nowhere
  * for it to go but an issue or a message the reader writes themselves.
  *
- * [platformName] comes from `getPlatform().name`, which is the one piece of
- * context here that is not an entry: half of what makes a report actionable is
- * knowing which of the three builds produced it.
+ * [appVersion] and [platformName] are the only things here that are not entries,
+ * and between them they are half of what makes a report actionable: which build
+ * of the app produced it, on which of the three platforms. Without the version a
+ * maintainer cannot tell a bug that is still there from one already fixed.
  */
-fun diagnosticReport(entries: List<DiagnosticEntry>, platformName: String): String = buildString {
-    append("Lukia diagnostics - ")
+fun diagnosticReport(
+    entries: List<DiagnosticEntry>,
+    platformName: String,
+    appVersion: String = LukiaVersion,
+): String = buildString {
+    append("Lukia ")
+    append(appVersion)
+    append(" diagnostics - ")
     append(platformName)
     append(" - ")
     append(entries.size)

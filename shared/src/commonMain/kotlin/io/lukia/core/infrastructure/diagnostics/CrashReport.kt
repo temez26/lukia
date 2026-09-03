@@ -1,5 +1,6 @@
 package io.lukia.core.infrastructure.diagnostics
 
+import io.lukia.LukiaVersion
 import io.lukia.core.domain.diagnostics.DiagnosticEntry
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -43,8 +44,11 @@ fun crashReport(
     entries: List<DiagnosticEntry>,
     platformName: String,
     at: Instant,
+    appVersion: String = LukiaVersion,
 ): String = buildString {
-    append("Lukia crash - ")
+    append("Lukia ")
+    append(appVersion)
+    append(" crash - ")
     append(platformName)
     append(" - ")
     appendLine(at.dayAndTime())

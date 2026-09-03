@@ -25,6 +25,40 @@ sqldelight {
     }
 }
 
+/**
+ * The app's version, written into common code so a diagnostic report can name it.
+ *
+ * Generated rather than typed out beside the rest of the source: a constant that
+ * has to be kept in step with `gradle.properties` by hand is one that drifts,
+ * and a report naming the wrong version is worse than one naming none.
+ */
+val lukiaVersion = providers.gradleProperty("lukia.version")
+val generatedVersionDir = layout.buildDirectory.dir("generated/version")
+
+val generateLukiaVersion = tasks.register("generateLukiaVersion") {
+    description = "Writes the app version from gradle.properties into common source."
+
+    inputs.property("version", lukiaVersion)
+    outputs.dir(generatedVersionDir)
+
+    val version = lukiaVersion
+    val target = generatedVersionDir
+
+    doLast {
+        val file = target.get().file("io/lukia/LukiaVersion.kt").asFile
+
+        file.parentFile.mkdirs()
+        file.writeText(
+            """
+            package io.lukia
+
+            /** Generated from `lukia.version` in gradle.properties. Do not edit. */
+            internal const val LukiaVersion: String = "${version.get()}"
+            """.trimIndent() + "\n",
+        )
+    }
+}
+
 kotlin {
     listOf(
         iosArm64(),
@@ -84,6 +118,10 @@ kotlin {
             implementation(libs.sqldelight.nativeDriver)
             implementation(libs.ktor.client.darwin)
         }
+        commonMain {
+            kotlin.srcDir(generateLukiaVersion)
+        }
+
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)

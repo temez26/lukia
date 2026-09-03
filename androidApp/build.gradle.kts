@@ -44,7 +44,8 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
-        versionName = "1.0"
+        // One source for all three builds - see `lukia.version` in gradle.properties.
+        versionName = providers.gradleProperty("lukia.version").get()
     }
     packaging {
         resources {
