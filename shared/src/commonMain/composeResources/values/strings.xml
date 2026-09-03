@@ -96,4 +96,24 @@
         <item quantity="other">Delete %1$d books from your library?</item>
     </plurals>
 
+    <!--
+        What each failure is called and what it says. Paired: a title alone is
+        too vague to act on, and the pair is too long for a snackbar - see
+        `AppErrorDisplay.kt`, which chooses between them.
+    -->
+    <string name="error_document_not_found_title">Document not found</string>
+    <string name="error_document_not_found_message">It may have been moved or removed from your library.</string>
+    <string name="error_unsupported_file_title">Unsupported file</string>
+    <string name="error_unsupported_file_message">Lukia can open PDF and EPUB files.</string>
+    <string name="error_format_not_readable_title">Not readable yet</string>
+    <string name="error_format_not_readable_message">Reading EPUB files is not ready yet - PDFs open today.</string>
+    <string name="error_empty_folder_title">Nothing to import</string>
+    <string name="error_empty_folder_message">No books found in this folder or the folders inside it.</string>
+    <string name="error_translation_unavailable_title">Translation is not set up</string>
+    <string name="error_translation_unavailable_message">Choose a language to translate into in Settings, and add a translation service.</string>
+    <string name="error_translation_failed_title">Could not translate that</string>
+    <string name="error_translation_failed_message">The translation service did not answer. Try again.</string>
+    <string name="error_unexpected_title">Something went wrong</string>
+    <string name="error_unexpected_message">An unexpected error occurred.</string>
+
 </resources>

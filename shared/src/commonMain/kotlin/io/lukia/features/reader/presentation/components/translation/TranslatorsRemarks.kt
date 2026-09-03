@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
+import io.lukia.core.domain.AppError
 import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.translate.domain.text.Sentence
 import io.lukia.features.translate.domain.text.Word
@@ -82,13 +83,15 @@ internal fun TranslatorsRemarks(
         modifier = Modifier.padding(top = 6.dp),
     ) {
         remarks.forEach { remark ->
+            val failed = remark is Remark.Failure
+
             Text(
-                text = remark.text,
+                text = remark.words(),
                 style = style.copy(
                     fontSize = style.fontSize * NOTE_SCALE,
                     lineHeight = style.fontSize * NOTE_SCALE * 1.35f,
-                    fontStyle = if (remark.failed) FontStyle.Normal else FontStyle.Italic,
-                    color = if (remark.failed) {
+                    fontStyle = if (failed) FontStyle.Normal else FontStyle.Italic,
+                    color = if (failed) {
                         MaterialTheme.colorScheme.error
                     } else {
                         MaterialTheme.colorScheme.onSurfaceVariant
@@ -111,14 +114,32 @@ internal fun TranslatorsRemarks(
 private fun PassageTranslation?.remark(replaced: String? = null): Remark? = when (this) {
     null, is PassageTranslation.Loading -> null
 
-    is PassageTranslation.Failed -> Remark(error.displayShortMessage(), failed = true)
+    is PassageTranslation.Failed -> Remark.Failure(error)
 
     is PassageTranslation.Ready -> takeIf { !showingOriginal }
         ?.translation
         ?.note
         ?.let { note ->
-            Remark(if (replaced == null) note else "$replaced: $note", failed = false)
+            Remark.Note(if (replaced == null) note else "$replaced: $note")
         }
 }
 
-private data class Remark(val text: String, val failed: Boolean)
+/**
+ * Two cases rather than a string and a flag: the remarks are gathered inside a
+ * [remember], which has no composition to read a string resource from, so a
+ * failure travels as itself and is spelled out where it is drawn.
+ */
+private sealed interface Remark {
+
+    /** The translator's own note, which arrived as words and stays that way. */
+    data class Note(val text: String) : Remark
+
+    /** Nothing came back for this passage, and this is why. */
+    data class Failure(val error: AppError) : Remark
+}
+
+@Composable
+private fun Remark.words(): String = when (this) {
+    is Remark.Note -> text
+    is Remark.Failure -> error.displayShortMessage()
+}

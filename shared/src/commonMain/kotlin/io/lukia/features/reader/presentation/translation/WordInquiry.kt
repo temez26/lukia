@@ -1,6 +1,7 @@
 package io.lukia.features.reader.presentation.translation
 
 import androidx.compose.runtime.Immutable
+import io.lukia.core.domain.AppError
 import io.lukia.core.presentation.UiState
 import io.lukia.features.translate.domain.lookup.WordEntry
 
@@ -64,7 +65,7 @@ sealed interface WordOnThePage {
     data object Original : WordOnThePage
 
     /**
-     * Looking it up failed, and [message] says why.
+     * Looking it up failed, and [error] says why.
      *
      * The reason a failure opens this panel at all rather than quietly asking
      * again. A word the reader's own service could not answer is exactly the
@@ -73,7 +74,7 @@ sealed interface WordOnThePage {
      * read, the site is offered, and asking again is one of the things on the
      * panel rather than the only thing the gesture can do.
      */
-    data class Failed(val message: String) : WordOnThePage
+    data class Failed(val error: AppError) : WordOnThePage
 }
 
 /** A site and the address the word is already written into. */

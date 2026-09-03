@@ -1,7 +1,6 @@
 package io.lukia.features.reader.presentation.translation
 
 import io.lukia.core.presentation.dataOrNull
-import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.presentation.ReaderViewModel
 import io.lukia.features.translate.domain.BulkTranslation
@@ -159,7 +158,7 @@ private fun PassageTranslation?.onThePage(): WordOnThePage? = when (this) {
     is PassageTranslation.Ready ->
         if (showingOriginal) WordOnThePage.Original else WordOnThePage.Translated
 
-    is PassageTranslation.Failed -> WordOnThePage.Failed(error.displayShortMessage())
+    is PassageTranslation.Failed -> WordOnThePage.Failed(error)
 
     null, is PassageTranslation.Loading -> null
 }

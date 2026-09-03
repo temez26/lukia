@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.lukia.core.domain.AppError
 import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.reader.domain.page.TextQuad
 import io.lukia.features.translate.presentation.PassageTranslation
@@ -37,12 +38,33 @@ private val Bleed: Dp = 2.dp
 /** Where the translation is set inside its panel. */
 private val PanelPadding: Dp = 4.dp
 
-/** What a panel over a sentence has to say, if anything. */
-internal data class PanelContent(
-    val text: String,
-    val detail: String?,
-    val failed: Boolean,
-)
+/**
+ * What a panel over a sentence has to say, if anything.
+ *
+ * Two cases rather than a string and a flag, because a failure has no words yet:
+ * [panel] is asked from the page's draw pass as well as from its composition,
+ * and only one of those two can read a string resource. So the failure travels
+ * and [words] spells it out where there is a composition to spell it in.
+ */
+internal sealed interface PanelContent {
+
+    /** The translator's own note under the passage, where it left one. */
+    val detail: String?
+
+    /** Words already to hand: a translation, or as much of one as has arrived. */
+    data class Words(val text: String, override val detail: String?) : PanelContent
+
+    /** Nothing came back, and this is why. */
+    data class Failure(val error: AppError) : PanelContent {
+        override val detail: String? = null
+    }
+}
+
+@Composable
+internal fun PanelContent.words(): String = when (this) {
+    is PanelContent.Words -> text
+    is PanelContent.Failure -> error.displayShortMessage()
+}
 
 /**
  * A failure gets a panel of its own rather than only a red wash.
@@ -57,17 +79,13 @@ internal fun PassageTranslation.panel(): PanelContent? = when (this) {
     // finished one. Until the first words come back there is nothing to cover
     // the original with, and the tint alone says a translation is on its way.
     is PassageTranslation.Loading -> partial?.let {
-        PanelContent(text = it, detail = null, failed = false)
+        PanelContent.Words(text = it, detail = null)
     }
 
-    is PassageTranslation.Failed -> PanelContent(
-        text = error.displayShortMessage(),
-        detail = null,
-        failed = true,
-    )
+    is PassageTranslation.Failed -> PanelContent.Failure(error)
 
     is PassageTranslation.Ready -> takeIf { !showingOriginal }?.let {
-        PanelContent(text = translation.text, detail = translation.note, failed = false)
+        PanelContent.Words(text = translation.text, detail = translation.note)
     }
 }
 
