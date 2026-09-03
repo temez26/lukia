@@ -7,6 +7,8 @@ import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.presentation.model.BulkAction
+import io.lukia.features.library.presentation.model.BulkOperation
+import io.lukia.features.library.presentation.model.LibraryMessage
 import io.lukia.features.library.presentation.model.LibrarySelection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -87,26 +89,28 @@ class LibrarySelectionSession(
      * make sense of - the same thing the single-book action does, done to all of
      * them.
      */
-    fun refresh(onDone: (String) -> Unit) = run(label = "Refreshing", onDone = onDone) { location ->
-        refreshDocumentUseCase(location).getOrThrow()
-    }
+    fun refresh(onDone: (LibraryMessage) -> Unit) =
+        run(operation = BulkOperation.Refresh, onDone = onDone) { location ->
+            refreshDocumentUseCase(location).getOrThrow()
+        }
 
     /**
      * Favourites everything selected, unless all of it already is - in which
      * case this is how a reader takes a whole shelf back off their favourites.
      */
-    fun setFavorite(books: List<DocumentInfo>, onDone: (String) -> Unit) {
+    fun setFavorite(books: List<DocumentInfo>, onDone: (LibraryMessage) -> Unit) {
         val selected = books.filter { it.document.location in _selection.value }
         val favorite = !selected.all { it.isFavorite }
+        val operation = if (favorite) BulkOperation.Favourite else BulkOperation.Unfavourite
 
-        run(label = if (favorite) "Favouriting" else "Unfavouriting", onDone = onDone) { location ->
+        run(operation = operation, onDone = onDone) { location ->
             setFavoriteUseCase(location, favorite)
         }
     }
 
     /** Forgets where the reader had got to, putting the books back to unread. */
-    fun resetProgress(onDone: (String) -> Unit) =
-        run(label = "Resetting", onDone = onDone) { location ->
+    fun resetProgress(onDone: (LibraryMessage) -> Unit) =
+        run(operation = BulkOperation.Reset, onDone = onDone) { location ->
             progressRepository.forget(location)
         }
 
@@ -114,9 +118,10 @@ class LibrarySelectionSession(
      * Drops the books from the library. The files on disk are left alone - see
      * [RemoveDocumentUseCase], which is what this is a loop over.
      */
-    fun delete(onDone: (String) -> Unit) = run(label = "Deleting", onDone = onDone) { location ->
-        removeDocumentUseCase(location)
-    }
+    fun delete(onDone: (LibraryMessage) -> Unit) =
+        run(operation = BulkOperation.Delete, onDone = onDone) { location ->
+            removeDocumentUseCase(location)
+        }
 
     /**
      * Runs [action] over everything selected, counting as it goes, and leaves
@@ -128,8 +133,8 @@ class LibrarySelectionSession(
      * says so.
      */
     private fun run(
-        label: String,
-        onDone: (String) -> Unit,
+        operation: BulkOperation,
+        onDone: (LibraryMessage) -> Unit,
         action: suspend (location: String) -> Unit,
     ) {
         val locations = _selection.value.locations.toList()
@@ -140,7 +145,7 @@ class LibrarySelectionSession(
             var done = 0
             var failed = 0
 
-            _running.value = BulkAction(label = label, completed = 0, total = locations.size)
+            _running.value = BulkAction(operation = operation, completed = 0, total = locations.size)
 
             locations.forEach { location ->
                 runCatchingApp { action(location) }
@@ -153,19 +158,7 @@ class LibrarySelectionSession(
             _running.value = null
             stop()
 
-            onDone(report(label = label, done = done, failed = failed))
+            onDone(LibraryMessage.BulkDone(operation = operation, done = done, failed = failed))
         }
-    }
-
-    private fun report(label: String, done: Int, failed: Int): String {
-        val books = if (done == 1) "1 book" else "$done books"
-        val verb = when (label) {
-            "Refreshing" -> "refreshed"
-            "Deleting" -> "removed from your library"
-            "Resetting" -> "set back to unread"
-            else -> "updated"
-        }
-
-        return if (failed == 0) "$books $verb" else "$books $verb, $failed skipped"
     }
 }

@@ -12,7 +12,6 @@ import io.lukia.core.domain.toAppError
 import io.lukia.core.infrastructure.IncomingDocuments
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
-import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.library.application.GetLibraryDocumentsUseCase
 import io.lukia.features.library.application.ImportDocumentsUseCase
 import io.lukia.features.library.application.ImportFolderUseCase
@@ -25,6 +24,7 @@ import io.lukia.features.library.infrastructure.RecentSearchesRepository
 import io.lukia.features.library.presentation.model.ImportProgress
 import io.lukia.features.library.presentation.model.LibraryBook
 import io.lukia.features.library.presentation.model.LibraryFacets
+import io.lukia.features.library.presentation.model.LibraryMessage
 import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.library.presentation.model.LibraryUpkeep
 import io.lukia.features.library.presentation.model.asLibrary
@@ -102,8 +102,8 @@ class LibraryViewModel(
      * partly. Kept apart from [uiState] on purpose: none of these should blank
      * out a library the user can still read and use.
      */
-    private val _message = MutableStateFlow<String?>(null)
-    val message: StateFlow<String?> = _message.asStateFlow()
+    private val _message = MutableStateFlow<LibraryMessage?>(null)
+    val message: StateFlow<LibraryMessage?> = _message.asStateFlow()
 
     /**
      * Getting books in, and saying how it is going. Held apart - see
@@ -283,7 +283,7 @@ class LibraryViewModel(
 
         viewModelScope.launch {
             runCatchingApp { refreshDocumentUseCase(location).getOrThrow() }
-                .onFailure { _message.value = it.toAppError().displayShortMessage() }
+                .onFailure { _message.value = LibraryMessage.Failed(it.toAppError()) }
                 .onSuccess { refreshed ->
                     // Patched in place rather than re-read, for the reason
                     // favouriting is: one row changing is not a reason to pull
@@ -299,7 +299,7 @@ class LibraryViewModel(
                     // would otherwise never reach the screen.
                     CoverArtCache.forget(location)
 
-                    _message.value = "Details refreshed"
+                    _message.value = LibraryMessage.DetailsRefreshed
                 }
         }
     }
@@ -353,7 +353,7 @@ class LibraryViewModel(
      * patches to apply is more work - and more ways to be wrong - than reading
      * the shelf once.
      */
-    internal fun onBulkDone(message: String) {
+    internal fun onBulkDone(message: LibraryMessage) {
         _message.value = message
 
         loadDocuments()

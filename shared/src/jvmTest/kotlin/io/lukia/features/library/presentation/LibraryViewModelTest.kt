@@ -5,6 +5,7 @@ import io.lukia.core.domain.AppError
 import io.lukia.core.domain.reading.FakeReadingProgressRepository
 import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.core.presentation.UiState
+import io.lukia.features.library.presentation.model.LibraryMessage
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -88,7 +89,7 @@ class LibraryViewModelTest : MainDispatcherTest() {
         viewModel.refreshDocument(documentInfo)
 
         assertEquals(listOf(9999L), viewModel.documents().map { it.sizeBytes })
-        assertEquals("Details refreshed", viewModel.message.value)
+        assertEquals(LibraryMessage.DetailsRefreshed, viewModel.message.value)
     }
 
     /** A file that can no longer be read must not take the library down with it. */
@@ -102,7 +103,7 @@ class LibraryViewModelTest : MainDispatcherTest() {
 
         viewModel.refreshDocument(documentInfo)
 
-        assertEquals("Something went wrong", viewModel.message.value)
+        assertEquals(LibraryMessage.Failed(AppError.Unexpected()), viewModel.message.value)
         assertEquals(UiState.Success(listOf(documentInfo)), viewModel.uiState.value)
     }
 

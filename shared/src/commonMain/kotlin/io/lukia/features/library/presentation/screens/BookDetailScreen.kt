@@ -23,6 +23,7 @@ import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.library.application.BookDetails
 import io.lukia.features.library.presentation.BookDetailViewModel
+import io.lukia.features.library.presentation.model.displayText
 import io.lukia.shared.presentation.components.controls.IconButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.icons.BackChevron
@@ -46,8 +47,12 @@ fun BookDetailScreen(
     val message by viewModel.message.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(message) {
-        message?.let {
+    // Read in the composition, shown from the effect - a string resource needs
+    // the one and the snackbar needs the other.
+    val notice = message?.displayText()
+
+    LaunchedEffect(notice) {
+        notice?.let {
             snackbarHostState.showSnackbar(it)
             viewModel.clearMessage()
         }

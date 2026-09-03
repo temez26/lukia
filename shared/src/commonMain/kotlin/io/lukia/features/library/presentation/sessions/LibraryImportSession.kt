@@ -6,11 +6,11 @@ import io.lukia.core.domain.document.PickedFolder
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.core.domain.toAppError
 import io.lukia.core.infrastructure.IncomingDocuments
-import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.library.application.ImportDocumentsUseCase
 import io.lukia.features.library.application.ImportFolderUseCase
 import io.lukia.features.library.application.ImportSummary
 import io.lukia.features.library.presentation.model.ImportProgress
+import io.lukia.features.library.presentation.model.LibraryMessage
 import io.lukia.features.library.presentation.model.notice
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,7 +35,7 @@ class LibraryImportSession(
     private val incoming: IncomingDocuments,
     private val scope: CoroutineScope,
     private val onImported: () -> Unit,
-    private val onMessage: (String?) -> Unit,
+    private val onMessage: (LibraryMessage?) -> Unit,
 ) {
 
     private val _isImporting = MutableStateFlow(false)
@@ -109,7 +109,7 @@ class LibraryImportSession(
             // getOrThrow re-raises the use case's own failure so that it and
             // an unanticipated throw are both narrowed in the same place.
             runCatchingApp { block().getOrThrow() }
-                .onFailure { onMessage(it.toAppError().displayShortMessage()) }
+                .onFailure { onMessage(LibraryMessage.Failed(it.toAppError())) }
                 .onSuccess { summary ->
                     // A partly imported batch is not a failure - the books
                     // that did come in are usable - so it reports itself as
