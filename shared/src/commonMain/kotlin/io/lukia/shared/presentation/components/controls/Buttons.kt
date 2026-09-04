@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -141,13 +141,32 @@ fun LukiaButton(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
         modifier = modifier
-            .height(height)
+            // Reserves the platform's floor around a button drawn under it -
+            // a Compact one is 38dp, which is under both Apple's 44 and
+            // Material's 48. Draws nothing and reserves nothing under a
+            // pointer; see where the theme provides Material's floor.
+            .minimumInteractiveComponentSize()
+            // A floor rather than a fixed height. At the largest OS font scale
+            // a label set in `labelSmall` is a 32dp line, which a 38dp box with
+            // padding either side cannot hold - and a button whose own words
+            // are clipped is worse than one that grew.
+            .heightIn(min = height)
             .clip(shape)
             .background(container.copy(alpha = container.alpha * alpha), shape)
             // A hairline only where there is no fill to give the button an edge.
+            //
+            // In the outline colour rather than in `outlineVariant`, which is
+            // the divider between two rows of one surface and measures 1.2:1
+            // against it. This is the whole boundary of a control - it is what
+            // says where the button is - so it is held to the 3:1 a boundary
+            // needs, which no separator colour in any palette reaches.
             .then(
                 if (variant == ButtonVariant.Secondary) {
-                    Modifier.border(HairlineWidth, MaterialTheme.colorScheme.outlineVariant, shape)
+                    Modifier.border(
+                        HairlineWidth,
+                        MaterialTheme.colorScheme.onSurface.copy(alpha = LukiaAlpha.Border),
+                        shape,
+                    )
                 } else {
                     Modifier
                 },
