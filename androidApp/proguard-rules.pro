@@ -1,21 +1,38 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# What R8 has to be told, and why. Everything here is a lookup R8 cannot see:
+# a class named in a string, a service file, or a member reached reflectively.
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# A crash note names the class and line it came from - see DIAGNOSTICS.md - so
+# the trace has to survive obfuscation. mapping.txt is kept per release.
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Ktor. translationHttpClient names no engine, so the engine is found through
+# META-INF/services at runtime; R8 drops the container otherwise and every
+# translation fails with "Failed to find HTTP client engine implementation".
+-keep class io.ktor.client.engine.okhttp.OkHttpEngineContainer { *; }
+-keep,allowobfuscation class * implements io.ktor.client.HttpClientEngineContainer
+-dontwarn org.slf4j.**
+-dontwarn org.conscrypt.**
+-dontwarn org.openjsse.**
+-dontwarn org.bouncycastle.**
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# pdfbox-android resolves filters, fonts and COSName constants by name. Broad on
+# purpose: this is the biggest dependency in the app and so the most tempting to
+# shrink, and narrowing it needs a device test to be worth trusting.
+-keep class com.tom_roush.pdfbox.** { *; }
+-keep class com.tom_roush.fontbox.** { *; }
+-keep class com.tom_roush.harmony.** { *; }
+-dontwarn com.tom_roush.**
+-dontwarn javax.naming.**
+
+# kotlinx.serialization. The generated serializers are reached through the
+# companion, which R8 cannot see being used.
+-keepattributes *Annotation*, InnerClasses
+-keep,includedescriptorclasses class io.lukia.**$$serializer { *; }
+-keepclassmembers class io.lukia.** { *** Companion; }
+-keepclasseswithmembers class io.lukia.** {
+    kotlinx.serialization.KSerializer serializer(...);
+}
+
+# SQLDelight needs nothing: its generated code calls straight through, and the
+# driver reaches SQLite through the framework rather than by name.
