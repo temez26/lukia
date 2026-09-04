@@ -15,6 +15,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import io.lukia.core.infrastructure.formatCount
 import io.lukia.features.stats.domain.ReadingHabits
 import io.lukia.features.stats.presentation.components.ReadingChart
 import io.lukia.features.stats.presentation.components.StatFigure
@@ -190,7 +191,7 @@ internal fun AllTimeSection(
                 )
 
                 StatFigure(
-                    value = habits.sittings.toString(),
+                    value = formatCount(habits.sittings),
                     label = pluralStringResource(
                         Res.plurals.stats_sittings,
                         habits.sittings,

@@ -600,4 +600,17 @@
     </plurals>
     <string name="stats_page_of_percent">Page %1$d of %2$d \u00B7 %3$d%</string>
 
+    <!--
+        A file's size: the figure, and the unit after it. Split so a language
+        that puts a space before the unit, or names the unit differently, can
+        say so - French writes octets, so "Ko" and "Mo" rather than "KB" and
+        "MB". The figure itself is formatted by the platform, which is what puts
+        a comma where a decimal point goes.
+    -->
+    <string name="size_bytes">%1$s B</string>
+    <string name="size_kilobytes">%1$s KB</string>
+    <string name="size_megabytes">%1$s MB</string>
+    <string name="size_gigabytes">%1$s GB</string>
+    <string name="size_terabytes">%1$s TB</string>
+
 </resources>

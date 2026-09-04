@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import io.lukia.core.domain.document.BookMetadata
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.infrastructure.formatCount
+import io.lukia.core.infrastructure.formatDecimal
 import io.lukia.resources.Res
 import io.lukia.resources.author_list_last
 import io.lukia.resources.author_list_separator
@@ -13,6 +15,11 @@ import io.lukia.resources.format_markdown
 import io.lukia.resources.format_pdf
 import io.lukia.resources.format_text
 import io.lukia.resources.format_unknown
+import io.lukia.resources.size_bytes
+import io.lukia.resources.size_gigabytes
+import io.lukia.resources.size_kilobytes
+import io.lukia.resources.size_megabytes
+import io.lukia.resources.size_terabytes
 import org.jetbrains.compose.resources.stringResource
 
 fun DocumentInfo.displayTitle(): String {
@@ -43,29 +50,46 @@ fun DocumentType.displayName(): String = when (this) {
     DocumentType.UNKNOWN -> stringResource(Res.string.format_unknown)
 }
 
+@Composable
 fun DocumentInfo.formattedSize(): String = formatFileSize(sizeBytes)
 
+/**
+ * A file's size, in the largest unit that leaves a figure worth reading.
+ *
+ * The figure is formatted by the platform and the unit is a resource around it.
+ * It used to be `"$rounded ${units[unitIndex]}"`, which wrote the decimal point
+ * as a full stop wherever the app ran - "1.5 MB" is "1,5 MB" to most of Europe -
+ * and hung the unit off the number in English word order.
+ *
+ * Kibibytes rather than kilobytes, which is what every file manager the reader
+ * has already looked at this file in will have said.
+ */
+@Composable
 fun formatFileSize(bytes: Long): String {
-    if (bytes < 1024) return "$bytes B"
+    if (bytes < BytesPerStep) {
+        return stringResource(Res.string.size_bytes, formatCount(bytes.toInt()))
+    }
 
-    val units = listOf("KB", "MB", "GB", "TB")
-    var value = bytes / 1024.0
+    var value = bytes / BytesPerStep.toDouble()
     var unitIndex = 0
 
-    while (value >= 1024 && unitIndex < units.lastIndex) {
-        value /= 1024.0
+    while (value >= BytesPerStep && unitIndex < SizeUnits.lastIndex) {
+        value /= BytesPerStep
         unitIndex++
     }
 
-    val rounded = (value * 10).let { kotlin.math.round(it) } / 10
-    val formatted = if (rounded == rounded.toLong().toDouble()) {
-        rounded.toLong().toString()
-    } else {
-        rounded.toString()
-    }
-
-    return "$formatted ${units[unitIndex]}"
+    return stringResource(SizeUnits[unitIndex], formatDecimal(value, fractionDigits = 1))
 }
+
+private const val BytesPerStep = 1024
+
+/** In order, so the loop above steps through them by dividing. */
+private val SizeUnits = listOf(
+    Res.string.size_kilobytes,
+    Res.string.size_megabytes,
+    Res.string.size_gigabytes,
+    Res.string.size_terabytes,
+)
 
 /**
  * What to call the book.
