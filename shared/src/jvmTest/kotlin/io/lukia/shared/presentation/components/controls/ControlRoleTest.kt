@@ -102,8 +102,15 @@ class ControlRoleTest {
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Selected, true))
     }
 
+    /**
+     * A chip is not a button. It is a filter that is on or off, and it was
+     * announced as a button - which named the filter and said nothing at all
+     * about whether the shelf in front of the reader was narrowed by it.
+     * `ControlSemanticsTest` holds the state it now carries; this holds the
+     * role, beside the controls it is easy to be mistaken for.
+     */
     @Test
-    fun chipIsAnnouncedAsAButton() = runComposeUiTest {
+    fun chipIsAnnouncedAsSomethingThatIsOnOrOff() = runComposeUiTest {
         setContent {
             LukiaTheme(darkTheme = false) {
                 LukiaChip(label = "PDF", selected = false, onClick = {})
@@ -112,6 +119,6 @@ class ControlRoleTest {
 
         // Found by its text rather than a description: a chip's label is
         // visible, so it needs no second copy of itself for a screen reader.
-        onNodeWithText("PDF").assert(hasRole(Role.Button))
+        onNodeWithText("PDF").assert(hasRole(Role.Checkbox))
     }
 }

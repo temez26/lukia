@@ -1,14 +1,8 @@
 package io.lukia.features.library.presentation.components.book
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -16,14 +10,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.zIndex
@@ -32,30 +30,26 @@ import io.lukia.core.presentation.displayTitle
 import io.lukia.core.presentation.displayType
 import io.lukia.core.presentation.formattedSize
 import io.lukia.features.library.presentation.components.selection.CardSelection
-import io.lukia.features.library.presentation.components.selection.SelectionMark
 import io.lukia.features.library.presentation.components.selection.jiggleAngle
 import io.lukia.features.library.presentation.model.LibraryBook
 import io.lukia.resources.Res
 import io.lukia.resources.book_actions
+import io.lukia.resources.book_favourited
 import io.lukia.resources.book_format_and_size
 import io.lukia.resources.book_unavailable
-import io.lukia.shared.presentation.components.controls.IconButtonVariant
-import io.lukia.shared.presentation.components.controls.LukiaIconButton
+import io.lukia.resources.reader_percent
+import io.lukia.resources.state_not_selected
+import io.lukia.resources.state_selected
 import io.lukia.shared.presentation.components.controls.ReadingProgressOverlay
 import io.lukia.shared.presentation.components.controls.focusRing
 import io.lukia.shared.presentation.components.controls.hoverLift
 import io.lukia.shared.presentation.components.controls.menuGesture
 import io.lukia.shared.presentation.components.controls.rememberHoverFraction
 import io.lukia.shared.presentation.components.cover.BookCover
-import io.lukia.shared.presentation.components.cover.FavoriteBadge
-import io.lukia.shared.presentation.components.icons.EllipsisGlyph
 import io.lukia.shared.presentation.components.launch.LaunchReveal
 import io.lukia.shared.presentation.components.launch.launchReveal
-import io.lukia.shared.presentation.components.menu.BookActionsMenu
 import io.lukia.shared.presentation.components.surface.StatusBadge
-import io.lukia.shared.presentation.theme.LocalLukiaMetrics
 import io.lukia.shared.presentation.theme.LukiaElevation
-import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 
@@ -74,9 +68,6 @@ import org.jetbrains.compose.resources.stringResource
  * which is what used to make a hovered card look as though its shadow had been
  * cut off square, more visibly the further it lifted.
  */
-/** Big enough to be a target on a phone, small enough not to sit on the artwork. */
-private val SelectionMarkSize: Dp = 24.dp
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun BookCard(
@@ -98,6 +89,7 @@ internal fun BookCard(
 ) {
     val document = book.document
     val title = document.displayTitle()
+
     val interactionSource = remember { MutableInteractionSource() }
     val hover = rememberHoverFraction(interactionSource)
     val coverShape = MaterialTheme.shapes.medium
@@ -106,6 +98,7 @@ internal fun BookCard(
 
     Column(
         modifier = modifier
+            .bookCardSemantics(book = book, title = title, selection = selection)
             .bookCardGestures(
                 interactionSource = interactionSource,
                 hover = hover,
@@ -170,70 +163,47 @@ internal fun BookCard(
 }
 
 /**
- * What is drawn over a cover: what the book already is, and what can be done to
- * it from here.
+ * What the card is, said once for the whole of it.
  *
- * Apart from the card itself because these are its chrome rather than its
- * shape - the card is a cover, a caption and how it answers a press, and this is
- * everything the shelf has hung on it.
+ * A cover, a heart, a tick and a progress bar are four drawn marks and no words.
+ * What a shelf being picked from used to announce was the title and the file's
+ * size - with nothing at all to say whether this book was one of the ones
+ * ticked, and with the heart marking a favourite reachable only by opening the
+ * menu on every cover in turn to read the row that toggles it.
+ *
+ * Merged, because a card is one thing: a title, a format, a size and a badge
+ * read out as four stops is four swipes per book down a shelf of two hundred.
  */
 @Composable
-private fun BoxScope.CoverOverlays(
-    document: DocumentInfo,
-    hover: Float,
-    menuExpanded: Boolean,
+private fun Modifier.bookCardSemantics(
+    book: LibraryBook,
+    title: String,
     selection: CardSelection?,
-    onMenuRequest: () -> Unit,
-    onMenuDismiss: () -> Unit,
-    onToggleFavorite: () -> Unit,
-    onRefresh: () -> Unit,
-    onDelete: () -> Unit,
-    onShowDetails: () -> Unit,
-    onSelectBooks: () -> Unit,
-) {
-    FavoriteBadge(
-        visible = document.isFavorite,
-        modifier = Modifier
-            .align(Alignment.TopStart)
-            .padding(Space.sm),
+): Modifier {
+    val document = book.document
+
+    // Read before the modifier chain: `semantics` is not a composable scope.
+    val state = stringResource(
+        if (selection?.selected == true) Res.string.state_selected else Res.string.state_not_selected,
     )
 
-    if (selection == null) {
-        MenuTrigger(
-            // Any hover at all, so the trigger is on its way in from the
-            // moment the pointer arrives rather than halfway through the
-            // card's own lift.
-            visible = hover > 0f,
-            onClick = onMenuRequest,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(Space.xs),
-        )
-    } else {
-        // Where the menu trigger was: the corner a reader already looks
-        // to for what this card can do.
-        SelectionMark(
-            selected = selection.selected,
-            size = SelectionMarkSize,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(Space.sm),
-        )
-    }
+    val spoken = listOfNotNull(
+        title,
+        stringResource(Res.string.book_favourited).takeIf { document.isFavorite },
+        book.progress?.percent?.let { stringResource(Res.string.reader_percent, it) },
+        stringResource(Res.string.book_unavailable).takeIf { !document.exists },
+    ).joinToString(separator = ". ")
 
-    // Anchored here so the popup hangs off the cover's top-end corner
-    // rather than the caption below it.
-    if (selection == null) {
-        BookActionsMenu(
-            expanded = menuExpanded,
-            isFavorite = document.isFavorite,
-            onToggleFavorite = onToggleFavorite,
-            onRefresh = onRefresh,
-            onDelete = onDelete,
-            onDismissRequest = onMenuDismiss,
-            onShowDetails = onShowDetails,
-            onSelectBooks = onSelectBooks,
-        )
+    return semantics(mergeDescendants = true) {
+        contentDescription = spoken
+
+        // A card that is being picked from is a tick rather than a way into the
+        // book, and has to say so as well as draw so.
+        selection?.let {
+            selected = it.selected
+            role = Role.Checkbox
+            stateDescription = state
+        }
     }
 }
 
@@ -271,7 +241,7 @@ private fun Modifier.bookCardGestures(
         interactionSource = interactionSource,
         onClick = onClick,
         onMenu = onMenuRequest,
-        menuLabel = "Book actions",
+        menuLabel = stringResource(Res.string.book_actions),
     )
     // Leaves the cover's shadow somewhere to fall inside the cell rather
     // than straight onto the neighbouring one.
@@ -318,36 +288,6 @@ private fun BookCardCaption(
                 text = stringResource(Res.string.book_unavailable),
                 modifier = Modifier.padding(top = Space.sm),
             )
-        }
-    }
-}
-
-/** Gives desktop users something visible to aim at for the long-press gesture. */
-@Composable
-private fun MenuTrigger(
-    visible: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val metrics = LocalLukiaMetrics.current
-
-    AnimatedVisibility(
-        visible = visible,
-        enter = fadeIn(LukiaMotion.quick()) +
-            scaleIn(LukiaMotion.quick(), initialScale = 0.8f),
-        exit = fadeOut(LukiaMotion.exit()) +
-            scaleOut(LukiaMotion.exit(), targetScale = 0.8f),
-        modifier = modifier,
-    ) {
-        LukiaIconButton(
-            label = stringResource(Res.string.book_actions),
-            onClick = onClick,
-            variant = IconButtonVariant.Filled,
-            tint = MaterialTheme.colorScheme.onSurface,
-            size = metrics.iconButtonSmall,
-            glyphSize = metrics.iconSmall,
-        ) { tint, glyph ->
-            EllipsisGlyph(tint = tint, modifier = glyph)
         }
     }
 }
