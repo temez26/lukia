@@ -61,14 +61,28 @@ jobs:
         with:
           cache-read-only: true
 
+      # Absent before there is anything to sign for. A rehearsal without the
+      # secret builds an unsigned bundle, which is enough to prove the release
+      # builds; a tag without it is a mistake and stops here.
       - name: Decode the keystore
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-        run: printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+        run: |
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ]; then
+            if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+              echo "::error::ANDROID_KEYSTORE_BASE64 is not set - $GITHUB_REF_NAME would release an unsigned bundle"
+              exit 1
+            fi
+            echo "::warning::No keystore secret. Building unsigned - a rehearsal, not a release."
+            exit 0
+          fi
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
 
+      # ANDROID_KEYSTORE_PATH arrives from the step above, and only if it wrote
+      # a keystore - which is what leaves the build unsigned rather than broken.
       - name: Bundle
         env:
-          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/release.jks
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
