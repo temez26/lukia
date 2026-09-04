@@ -45,7 +45,7 @@ class WesternStringsTest {
     @Test
     fun dutchWritesNoSpaceBeforeThePercentSign() {
         Locale.setDefault(Locale.GERMAN)
-        assertEquals("125 %", runBlocking { getString(Res.string.reader_width_percent, 125) })
+        assertEquals("125\u00A0%", runBlocking { getString(Res.string.reader_width_percent, 125) })
 
         Locale.setDefault(Locale.forLanguageTag("nl"))
         assertEquals("125%", runBlocking { getString(Res.string.reader_width_percent, 125) })
@@ -78,9 +78,9 @@ class WesternStringsTest {
     @Test
     fun frenchMeasuresInOctets() {
         Locale.setDefault(Locale.FRENCH)
-        assertEquals("1,5 ko", composed { formatFileSize(1536L) })
+        assertEquals("1,5\u00A0ko", composed { formatFileSize(1536L) })
 
         Locale.setDefault(Locale.GERMAN)
-        assertEquals("1,5 kB", composed { formatFileSize(1536L) })
+        assertEquals("1,5\u00A0kB", composed { formatFileSize(1536L) })
     }
 }

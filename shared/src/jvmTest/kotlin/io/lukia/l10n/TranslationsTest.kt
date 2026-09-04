@@ -48,6 +48,34 @@ class TranslationsTest {
     }
 
     /**
+     * A quantity outside the six CLDR names is one no language will ever ask
+     * for, so the form it holds can never be shown.
+     *
+     * `other` is required of every plural because it is the only form every
+     * language has, and the one anything unrecognised falls back to. The rest
+     * are optional: English needs two, Polish four, and a language that needs
+     * `few` says so by having it.
+     */
+    @Test
+    fun everyPluralUsesQuantitiesThatExist() {
+        val wrong = (translations() + ("the default file" to defaultStrings)).flatMap { (locale, entries) ->
+            entries.entries.filter { it.value.keys != setOf("") }.mapNotNull { (key, forms) ->
+                val unknown = forms.keys - CldrQuantities
+
+                when {
+                    unknown.isNotEmpty() -> "$locale: $key uses ${unknown.sorted()}, which is not a quantity"
+                    "other" !in forms -> "$locale: $key has no `other`, which every language falls back to"
+                    else -> null
+                }
+            }
+        }
+
+        if (wrong.isNotEmpty()) {
+            fail("A plural names a quantity nothing will ask for:\n" + wrong.sorted().joinToString("\n"))
+        }
+    }
+
+    /**
      * The one that would crash rather than read oddly.
      *
      * A translation may leave an argument out - a plural's singular form often
@@ -93,6 +121,9 @@ private fun Element.formsOrNull(): Map<String, String>? = when (tagName) {
     "plurals" -> childNodes.elements().associate { it.getAttribute("quantity") to it.textContent }
     else -> null
 }
+
+/** The six CLDR plural categories. No language asks for anything else. */
+private val CldrQuantities = setOf("zero", "one", "two", "few", "many", "other")
 
 /** Each `%1$d` or `%2$s` in a string, as its position and its type together. */
 private fun argumentsIn(text: String): List<String> =
