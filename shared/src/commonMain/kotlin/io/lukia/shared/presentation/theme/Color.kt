@@ -4,6 +4,7 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import io.lukia.core.domain.AppAccent
 import io.lukia.core.domain.AppPalette
 
@@ -21,6 +22,16 @@ private class Surfaces(
     /** A recessed fill on a card: a field, a track, a chip. */
     val secondary: Color,
     val label: Color,
+    /**
+     * Everything a screen says that is not its subject: an author under a title,
+     * the value on a settings row, a book's format and size, the words of a
+     * quotation.
+     *
+     * Held to 4.5:1 against all three surfaces above it rather than to a shade
+     * that looked right on white. Apple's own secondaryLabel is 3.4:1 on white
+     * and 2.8:1 on a recessed fill, and this app sets whole quoted paragraphs of
+     * a book in it - see `QuoteBlock`.
+     */
     val secondaryLabel: Color,
     val separator: Color,
 )
@@ -35,7 +46,7 @@ private val CrispLight = Surfaces(
     elevated = Color(0xFFFFFFFF),
     secondary = Color(0xFFE9E9EF),
     label = Color(0xFF1C1C1E),
-    secondaryLabel = Color(0xFF8A8A8E),
+    secondaryLabel = Color(0xFF69696C),
     separator = Color(0xFFC6C6C8),
 )
 
@@ -60,7 +71,7 @@ private val PaperLight = Surfaces(
     elevated = Color(0xFFFDFAF3),
     secondary = Color(0xFFE9E1D3),
     label = Color(0xFF26221D),
-    secondaryLabel = Color(0xFF7D7365),
+    secondaryLabel = Color(0xFF6C6357),
     separator = Color(0xFFDBD1BF),
 )
 
@@ -84,7 +95,7 @@ private val SlateLight = Surfaces(
     elevated = Color(0xFFFFFFFF),
     secondary = Color(0xFFE4E4E7),
     label = Color(0xFF18181B),
-    secondaryLabel = Color(0xFF71717A),
+    secondaryLabel = Color(0xFF65656E),
     separator = Color(0xFFD4D4D8),
 )
 
@@ -98,11 +109,19 @@ private val SlateDark = Surfaces(
 )
 
 /** The paper palette's blue, a shade warmer and deeper than Apple's. */
-private val PaperAccent = Color(0xFF0A6CCF)
+private val PaperAccent = Color(0xFF0964BF)
 private val PaperAccentDark = Color(0xFF6FB2FF)
 
-private val ErrorRed = Color(0xFFFF3B30)
-private val ErrorRedDark = Color(0xFFFF453A)
+/**
+ * Deeper than Apple's systemRed, for the reason the accents are - see [Accents].
+ *
+ * This is not only a fill. It is the colour a failed translation is printed in,
+ * and the colour of the label on a destructive button; Apple's own red carries
+ * 2.7:1 as text on a light surface and 3.6:1 under a white label, both of which
+ * are for a badge rather than for a sentence.
+ */
+private val ErrorRed = Color(0xFFBE1E15)
+private val ErrorRedDark = Color(0xFFFF6961)
 
 /**
  * The colours the app is painted in: one palette's surfaces, at one lightness,
@@ -171,7 +190,7 @@ private fun Surfaces.scheme(darkTheme: Boolean): ColorScheme {
         outline = separator,
         outlineVariant = separator.copy(alpha = if (darkTheme) 0.6f else 0.5f),
         error = if (darkTheme) ErrorRedDark else ErrorRed,
-        onError = Color.White,
+        onError = (if (darkTheme) ErrorRedDark else ErrorRed).readableOn(),
     )
 }
 
@@ -183,9 +202,32 @@ private fun Surfaces.scheme(darkTheme: Boolean): ColorScheme {
  */
 private fun ColorScheme.withAccent(accent: Color, darkTheme: Boolean): ColorScheme = copy(
     primary = accent,
-    onPrimary = Color.White,
+    onPrimary = accent.readableOn(),
     primaryContainer = accent.copy(alpha = if (darkTheme) 0.24f else 0.12f),
     onPrimaryContainer = accent,
     secondary = accent,
-    onSecondary = Color.White,
+    onSecondary = accent.readableOn(),
 )
+
+/**
+ * Black or white, whichever can be read on this colour.
+ *
+ * Every accent used to be labelled in white, which is right for the seven deep
+ * ones a light theme picks and wrong for the seven pale ones a dark theme does:
+ * white on the dark side's green measured 2.0:1, its amber 2.1:1, and a filled
+ * button is the one place in the app where the label has nowhere else to go.
+ *
+ * Decided from the colour rather than from which theme is on, because the two
+ * are not the same question - a palette's own accent, a chosen one and the error
+ * colour all arrive here, and only the colour knows how light it is.
+ */
+private fun Color.readableOn(): Color =
+    if (luminance() > OnColorThreshold) Color.Black else Color.White
+
+/**
+ * Where the swap happens. The app's own colours sit either side of it with room
+ * to spare - the deepest of the pale accents is at 0.29 and the palest of the
+ * deep ones at 0.13 - so this is a boundary between two groups rather than a
+ * line any of them is near.
+ */
+private const val OnColorThreshold = 0.2f

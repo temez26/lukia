@@ -11,21 +11,28 @@ import io.lukia.core.domain.AppPalette
  * no single hue carries text-weight contrast against both. Apple's system
  * colours where Apple has one, pulled a shade darker on the light side where the
  * system colour was chosen for a bar rather than for a word.
+ *
+ * How much darker is measured rather than judged. Every one of these is the
+ * accent colour of a [io.lukia.shared.presentation.components.controls.ButtonVariant.Ghost]
+ * button, which is accent-coloured *text* - so each is held to 4.5:1 against the
+ * palest and the deepest surface of every palette it can be chosen in, which is
+ * `surfaceVariant` in each case. Apple's own systemBlue is 3.3:1 there and was
+ * what the whole app's tinted text was set in.
  */
 internal object Accents {
-    val Blue = Color(0xFF007AFF)
-    val BlueDark = Color(0xFF0A84FF)
+    val Blue = Color(0xFF0061CC)
+    val BlueDark = Color(0xFF2B94FF)
 
     val Violet = Color(0xFF6D46D9)
     val VioletDark = Color(0xFFA98BFF)
 
-    val Green = Color(0xFF1E8E43)
+    val Green = Color(0xFF187437)
     val GreenDark = Color(0xFF30D158)
 
-    val Amber = Color(0xFFB4600A)
+    val Amber = Color(0xFF9A5209)
     val AmberDark = Color(0xFFF0A32A)
 
-    val Rose = Color(0xFFC81E4E)
+    val Rose = Color(0xFFC21D4C)
     val RoseDark = Color(0xFFFF6B8A)
 
     val Graphite = Color(0xFF4B5563)
