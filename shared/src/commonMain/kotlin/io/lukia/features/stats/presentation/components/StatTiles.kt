@@ -16,6 +16,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import io.lukia.core.infrastructure.formatCount
 import io.lukia.features.stats.domain.ReadingStats
 import io.lukia.resources.Res
 import io.lukia.resources.stats_figure_and_label
@@ -51,27 +52,29 @@ internal data class StatTile(val value: String, val label: String)
 @Composable
 internal fun ReadingStats.tiles(): List<StatTile> = listOf(
     StatTile(
-        value = booksReading.toString(),
+        value = formatCount(booksReading),
         label = stringResource(Res.string.stats_tile_reading),
     ),
     StatTile(
-        value = booksFinished.toString(),
+        value = formatCount(booksFinished),
         label = stringResource(Res.string.stats_tile_finished),
     ),
     StatTile(
-        value = pagesRead.toString(),
+        // Grouped, unlike a page number. This is a quantity of pages rather than
+        // a name for one, and a reader two years in has five figures of them.
+        value = formatCount(pagesRead),
         label = pluralStringResource(Res.plurals.stats_tile_pages_read, pagesRead),
     ),
     StatTile(
-        value = booksUnread.toString(),
+        value = formatCount(booksUnread),
         label = stringResource(Res.string.stats_tile_not_started),
     ),
     StatTile(
-        value = favourites.toString(),
+        value = formatCount(favourites),
         label = stringResource(Res.string.stats_tile_favourites),
     ),
     StatTile(
-        value = booksInLibrary.toString(),
+        value = formatCount(booksInLibrary),
         label = pluralStringResource(Res.plurals.stats_tile_books, booksInLibrary),
     ),
 )
