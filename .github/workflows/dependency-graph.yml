@@ -1,0 +1,30 @@
+name: Dependency graph
+
+# A Gradle project has no dependency graph on GitHub until something submits
+# one, and Dependabot's vulnerability alerts read that graph. Without this the
+# alerts are silent - not because there is nothing wrong, but because GitHub
+# cannot see past libs.versions.toml into what those versions actually pull in.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dependency-graph
+  cancel-in-progress: true
+
+jobs:
+  submit:
+    name: Submit the resolved dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: zulu
+          java-version: '21'
+
+      - uses: gradle/actions/dependency-submission@0b6dd653ba04f4f93bf581ec31e66cbd7dcb644d # v4
