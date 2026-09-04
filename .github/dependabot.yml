@@ -1,0 +1,56 @@
+version: 2
+updates:
+  - package-ecosystem: gradle
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    # Grouped by what has to move together. A version catalog hides these
+    # couplings behind a shared version.ref, and one pull request per artifact
+    # would propose combinations that cannot build.
+    groups:
+      # composeCompiler takes its version from `kotlin`, so they cannot part.
+      kotlin:
+        patterns:
+          - "org.jetbrains.kotlin:*"
+          - "org.jetbrains.kotlin.*"
+          - "org.jetbrains.kotlinx:*"
+      compose:
+        patterns:
+          - "org.jetbrains.compose*"
+          - "org.jetbrains.androidx.*"
+      android:
+        patterns:
+          - "com.android.*"
+          - "androidx.*"
+      ktor:
+        patterns:
+          - "io.ktor:*"
+      koin:
+        patterns:
+          - "io.insert-koin:*"
+      sqldelight:
+        patterns:
+          - "app.cash.sqldelight*"
+      static-analysis:
+        patterns:
+          - "io.gitlab.arturbosch.detekt*"
+          - "org.jlleitschuh.gradle.ktlint*"
+          - "io.nlopez.compose.rules:*"
+    ignore:
+      # Held back deliberately: 3.2.0 ships a field whose name contains spaces,
+      # which Android's dexer rejects for any minimum below API 30. The reason
+      # is written beside the version in libs.versions.toml, and Dependabot
+      # cannot read comments - without this it reopens the pull request weekly.
+      - dependency-name: "io.ktor:*"
+        versions: [">=3.2.0"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns:
+          - "*"
