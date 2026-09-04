@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import io.lukia.features.translate.presentation.PassageTranslation
+import io.lukia.shared.presentation.theme.LocalMotionStyle
 
 /**
  * How far the highlight is drawn outside the words it sits behind, sideways -
@@ -186,7 +187,13 @@ internal fun passageMarkColors(): PassageMarkColors = MaterialTheme.colorScheme.
  */
 @Composable
 internal fun passageSweep(active: Boolean): State<Float> {
-    if (!active) return remember { mutableFloatStateOf(0f) }
+    // Still where the app has been asked to move less. The passage keeps its
+    // highlight - which is what says something was asked about and has not come
+    // back yet - and loses only the light travelling along it, which is the part
+    // that runs for as long as the network takes and cannot be stopped.
+    if (!active || !LocalMotionStyle.current.flourishes) {
+        return remember { mutableFloatStateOf(0f) }
+    }
 
     val transition = rememberInfiniteTransition(label = "passage-sweep")
 

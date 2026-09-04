@@ -61,7 +61,13 @@ fun LukiaTheme(
         colorSchemeFor(palette, darkTheme, accent)
     }
     val glassStyle = remember { platformGlassStyle() }
-    val motionStyle = remember(motion) { motionStyleFor(motion) }
+
+    // The device's own answer, which caps the reader's - see [motionFor]. Read
+    // here rather than where each animation is written, because it is one
+    // question about the whole app and the alternative is every composable that
+    // moves asking the platform for itself.
+    val reducesMotion = systemReducesMotion()
+    val motionStyle = remember(motion, reducesMotion) { motionFor(motion, reducesMotion) }
 
     // Measured once at the root so every screen can lay itself out against the
     // real window size instead of assuming a phone. Both axes: a phone in

@@ -25,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.shared.presentation.components.icons.CheckGlyph
+import io.lukia.shared.presentation.theme.LocalMotionStyle
 import io.lukia.shared.presentation.theme.LukiaAlpha
 
 /**
@@ -96,6 +97,13 @@ internal fun SelectionMark(
  * exist at all then - a library of a hundred cards each running a forever
  * animation is a hundred recompositions a frame for a mode nobody is in.
  *
+ * Zero too where the app has been asked to move less. This is the app's one
+ * animation with no end: a hundred covers rocking for as long as somebody takes
+ * to pick their way along a shelf, which is exactly the shape of motion a
+ * vestibular disorder cannot sit through and exactly what a device set to reduce
+ * motion is asking not to see. The bar above still says the shelf is being
+ * picked from, and every cover still wears its own tick.
+ *
  * Handed back as state to be read where the card is drawn, never unwrapped
  * here - the same arrangement as `passageSweep`, and for the same reason. A
  * function that returns a value cannot restart on its own, so reading the
@@ -105,7 +113,9 @@ internal fun SelectionMark(
  */
 @Composable
 internal fun jiggleAngle(active: Boolean, seed: Int): State<Float> {
-    if (!active) return remember { mutableFloatStateOf(0f) }
+    if (!active || !LocalMotionStyle.current.flourishes) {
+        return remember { mutableFloatStateOf(0f) }
+    }
 
     val transition = rememberInfiniteTransition(label = "jiggle")
 
