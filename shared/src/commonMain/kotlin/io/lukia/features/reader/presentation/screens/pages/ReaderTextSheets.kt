@@ -19,7 +19,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
@@ -209,11 +209,12 @@ private fun PageSheet(
             // running over the one below.
             .clipToBounds()
             .padding(SheetPadding)
-            // Unlike a rendered page there is real text behind this, so the
-            // description says where in the book it is and leaves the reading to
-            // the text itself.
-            .semantics { contentDescription = spoken },
+            // One group, so the number below is ordered against the page's own
+            // blocks rather than against every page in the list.
+            .semantics { isTraversalGroup = true },
     ) {
+        PageLabel(spoken)
+
         content(size.height - SheetPadding * 2)
     }
 }
