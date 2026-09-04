@@ -37,12 +37,16 @@ jobs:
         with:
           cache-read-only: ${{ github.event_name == 'pull_request' }}
 
+      # jvmCommonTest runs the common tests and not the platform ones - see
+      # TESTING.md. It still depends on jvmTestClasses, so the platform tests
+      # must go on compiling here; only running them moves to a local machine.
+      #
       # assembleDebug is what compiles androidMain and :androidApp; nothing else
       # in CI touches either. --continue so a failure in one still reports the rest.
       - name: Build and test
         run: >
           ./gradlew --continue
-          :shared:jvmTest
+          :shared:jvmCommonTest
           :androidApp:assembleDebug
           :desktopApp:compileKotlin
 
