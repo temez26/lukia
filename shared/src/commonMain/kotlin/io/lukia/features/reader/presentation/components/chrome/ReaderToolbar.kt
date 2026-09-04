@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -37,7 +37,9 @@ import io.lukia.resources.Res
 import io.lukia.resources.reader_close_book
 import io.lukia.resources.reader_close_the_book
 import io.lukia.resources.reader_contents
+import io.lukia.resources.reader_open_contents
 import io.lukia.resources.reader_page_of_count
+import io.lukia.resources.reader_page_x_of_y
 import io.lukia.resources.shortcut_close_book_keys
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.controls.ShortcutTooltip
@@ -120,7 +122,12 @@ internal fun ReaderToolbar(
                 horizontalArrangement = if (wide) Arrangement.Start else Arrangement.SpaceBetween,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(readerToolbarHeight()),
+                    // A floor, so the bar grows rather than clipping its own
+                    // page number at the largest OS font scale. What the page
+                    // below reserves for it stays [chromeHeight] - a bar that
+                    // has grown overlaps the top of the first sheet by the
+                    // difference, which is the better of the two failures.
+                    .heightIn(min = readerToolbarHeight()),
             ) {
                 val center: @Composable () -> Unit = {
                     Box(modifier = Modifier.widthIn(max = centerWidth)) { centerControl() }
@@ -238,6 +245,10 @@ internal fun PageIndicatorButton(
     val metrics = LocalLukiaMetrics.current
     val shape = MaterialTheme.shapes.small
 
+    // Read before the modifier chain: `semantics` is not a composable scope.
+    val openContents = stringResource(Res.string.reader_open_contents)
+    val place = stringResource(Res.string.reader_page_x_of_y, current, pageCount)
+
     ShortcutTooltip(
         description = stringResource(Res.string.reader_contents),
         shortcut = "C",
@@ -256,9 +267,14 @@ internal fun PageIndicatorButton(
                     interactionSource = interactionSource,
                     indication = null,
                     role = Role.Button,
-                    onClickLabel = "Open contents",
+                    onClickLabel = openContents,
                     onClick = onClick,
                 )
+                // As tall as anything else in the bar. Sized by its own line of
+                // 13sp text this is a 24dp target inside a 44dp toolbar, which
+                // is the one control in the reader that is pressed on purpose
+                // rather than found by accident.
+                .heightIn(min = metrics.controlHeight)
                 .padding(horizontal = Space.md, vertical = Space.xs)
                 // "12 / 348" is a clear enough label to look at and a poor one to
                 // hear, so assistive technology is given the sentence instead.
@@ -267,10 +283,8 @@ internal fun PageIndicatorButton(
                 // announcing each one would talk over a reader scrolling through a
                 // long book. The pages themselves carry the position instead.
                 .semantics {
-                    contentDescription = listOfNotNull(
-                        chapter,
-                        "Page $current of $pageCount",
-                    ).joinToString(separator = ". ")
+                    contentDescription = listOfNotNull(chapter, place)
+                        .joinToString(separator = ". ")
                 },
         ) {
             PageIndicatorLabel(chapter = chapter, current = current, pageCount = pageCount)

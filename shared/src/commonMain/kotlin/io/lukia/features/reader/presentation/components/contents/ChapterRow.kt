@@ -41,6 +41,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.reader.presentation.ChapterRow
 import io.lukia.resources.Res
+import io.lukia.resources.reader_chapter_at_page
+import io.lukia.resources.reader_go_to_chapter
 import io.lukia.resources.reader_hide_sections_of
 import io.lukia.resources.reader_show_sections_of
 import io.lukia.shared.presentation.components.controls.focusRing
@@ -50,6 +52,7 @@ import io.lukia.shared.presentation.theme.HairlineWidth
 import io.lukia.shared.presentation.theme.LocalLukiaMetrics
 import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.LukiaMotion
+import io.lukia.shared.presentation.theme.MinTouchTarget
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 
@@ -57,7 +60,17 @@ import org.jetbrains.compose.resources.stringResource
 private val LevelIndent: Dp = 16.dp
 
 /** The disclosure control, and the space kept for it by rows that have none. */
-private val DisclosureSlot: Dp = 22.dp
+
+/**
+ * How wide the slot holding a row's fold control is.
+ *
+ * The chevron drawn in it is 10dp, and the slot was sized to the chevron - which
+ * made the one control in the contents panel that is pressed rather than read a
+ * 22dp target, under the 24dp floor a pointer target has and half of what a
+ * thumb is given everywhere else in this app. The chevron has not changed size;
+ * the room around it has.
+ */
+private val DisclosureSlot: Dp = MinTouchTarget
 
 /** Room for a four-digit page number, so the column of them is straight. */
 private val PageNumberWidth: Dp = 32.dp
@@ -94,6 +107,14 @@ internal fun ChapterRowItem(
     val markerColor = MaterialTheme.colorScheme.primary
     val metrics = LocalLukiaMetrics.current
     val interactionSource = remember { MutableInteractionSource() }
+
+    // Read before the modifier chain: `semantics` is not a composable scope.
+    val goTo = stringResource(Res.string.reader_go_to_chapter, entry.title)
+    val spoken = stringResource(
+        Res.string.reader_chapter_at_page,
+        entry.title,
+        entry.pageIndex + 1,
+    )
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -137,15 +158,12 @@ internal fun ChapterRowItem(
                 interactionSource = interactionSource,
                 indication = null,
                 role = Role.Button,
-                onClickLabel = "Go to ${entry.title}",
+                onClickLabel = goTo,
                 onClick = onClick,
             )
             .heightIn(min = metrics.rowHeight)
             .padding(start = inset + LevelIndent * entry.level, end = inset)
-            .semantics {
-                contentDescription =
-                    "${entry.title}, page ${entry.pageIndex + 1}"
-            },
+            .semantics { contentDescription = spoken },
     ) {
         if (row.hasChildren) {
             DisclosureToggle(

@@ -28,6 +28,9 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import io.lukia.core.domain.reading.ReadingProgress
+import io.lukia.resources.Res
+import io.lukia.resources.book_actions
+import io.lukia.resources.book_read_title
 import io.lukia.shared.presentation.components.controls.ReadingProgressOverlay
 import io.lukia.shared.presentation.components.controls.focusRing
 import io.lukia.shared.presentation.components.controls.menuGesture
@@ -39,6 +42,7 @@ import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.LukiaElevation
 import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.isWideWindow
+import org.jetbrains.compose.resources.stringResource
 
 /** How far the cover dims behind the read control, at full reveal. */
 private const val ScrimAlpha = 0.42f
@@ -104,8 +108,8 @@ internal fun ReadableCover(
                 interactionSource = interactionSource,
                 onClick = onRead,
                 onMenu = onLongPress,
-                menuLabel = "Book actions",
-                clickLabel = "Read $title",
+                menuLabel = stringResource(Res.string.book_actions),
+                clickLabel = stringResource(Res.string.book_read_title, title),
                 enabled = enabled,
                 role = Role.Button,
             )

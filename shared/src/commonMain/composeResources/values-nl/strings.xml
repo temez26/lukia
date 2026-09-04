@@ -445,4 +445,25 @@
     <string name="size_gigabytes">%1$s GB</string>
     <string name="size_terabytes">%1$s TB</string>
 
+    <string name="state_on">Aan</string>
+    <string name="state_off">Uit</string>
+    <string name="state_selected">Geselecteerd</string>
+    <string name="state_not_selected">Niet geselecteerd</string>
+    <string name="action_dismiss">Sluiten</string>
+    <string name="reader_open_contents">Inhoud openen</string>
+    <string name="reader_go_to_page">Ga naar pagina</string>
+    <string name="reader_go_to_chapter">Ga naar %1$s</string>
+    <string name="reader_chapter_at_page">%1$s, pagina %2$d</string>
+    <string name="reader_translate_this_paragraph">Deze alinea vertalen</string>
+    <string name="reader_restore_this_paragraph">De eigen woorden van het boek tonen</string>
+    <string name="figure_look_closer">Van dichtbij bekijken</string>
+    <string name="figure_close">De illustratie sluiten</string>
+    <string name="figure_illustration">Illustratie</string>
+    <string name="home_see_all_shelf">Alle %1$s tonen</string>
+    <string name="search_for_term">Zoeken naar %1$s</string>
+    <string name="search_clear_recent">Recente zoekopdrachten wissen</string>
+    <string name="book_open_title">%1$s openen</string>
+    <string name="book_read_title">%1$s lezen</string>
+    <string name="book_favourited">Favoriet</string>
+
 </resources>

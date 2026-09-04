@@ -499,4 +499,25 @@
     <string name="size_gigabytes">%1$s\u00A0GB</string>
     <string name="size_terabytes">%1$s\u00A0TB</string>
 
+    <string name="state_on">På</string>
+    <string name="state_off">Av</string>
+    <string name="state_selected">Markerad</string>
+    <string name="state_not_selected">Inte markerad</string>
+    <string name="action_dismiss">Stäng</string>
+    <string name="reader_open_contents">Öppna innehållsförteckningen</string>
+    <string name="reader_go_to_page">Gå till sida</string>
+    <string name="reader_go_to_chapter">Gå till %1$s</string>
+    <string name="reader_chapter_at_page">%1$s, sida %2$d</string>
+    <string name="reader_translate_this_paragraph">Översätt det här stycket</string>
+    <string name="reader_restore_this_paragraph">Visa bokens egna ord</string>
+    <string name="figure_look_closer">Se närmare</string>
+    <string name="figure_close">Stäng illustrationen</string>
+    <string name="figure_illustration">Illustration</string>
+    <string name="home_see_all_shelf">Visa alla %1$s</string>
+    <string name="search_for_term">Sök efter %1$s</string>
+    <string name="search_clear_recent">Rensa senaste sökningarna</string>
+    <string name="book_open_title">Öppna %1$s</string>
+    <string name="book_read_title">Läs %1$s</string>
+    <string name="book_favourited">Favorit</string>
+
 </resources>

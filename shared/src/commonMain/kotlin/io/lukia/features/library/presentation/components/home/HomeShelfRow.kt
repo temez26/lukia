@@ -34,6 +34,7 @@ import io.lukia.features.library.presentation.model.displayTitle
 import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.resources.Res
 import io.lukia.resources.home_see_all
+import io.lukia.resources.home_see_all_shelf
 import io.lukia.shared.presentation.components.controls.hoverHighlight
 import io.lukia.shared.presentation.components.icons.DisclosureChevron
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
@@ -162,7 +163,7 @@ private fun RowHeader(
                     interactionSource = interactionSource,
                     indication = null,
                     role = Role.Button,
-                    onClickLabel = "See all $title",
+                    onClickLabel = stringResource(Res.string.home_see_all_shelf, title),
                     onClick = onSeeAll,
                 )
                 .padding(horizontal = Space.xs, vertical = Space.xxs),

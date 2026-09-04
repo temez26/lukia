@@ -514,4 +514,25 @@
     <string name="size_gigabytes">%1$s\u00A0Gt</string>
     <string name="size_terabytes">%1$s\u00A0Tt</string>
 
+    <string name="state_on">Päällä</string>
+    <string name="state_off">Pois</string>
+    <string name="state_selected">Valittu</string>
+    <string name="state_not_selected">Ei valittu</string>
+    <string name="action_dismiss">Sulje</string>
+    <string name="reader_open_contents">Avaa sisällys</string>
+    <string name="reader_go_to_page">Siirry sivulle</string>
+    <string name="reader_go_to_chapter">Siirry: %1$s</string>
+    <string name="reader_chapter_at_page">%1$s, sivu %2$d</string>
+    <string name="reader_translate_this_paragraph">Käännä tämä kappale</string>
+    <string name="reader_restore_this_paragraph">Näytä kirjan omat sanat</string>
+    <string name="figure_look_closer">Katso tarkemmin</string>
+    <string name="figure_close">Sulje kuva</string>
+    <string name="figure_illustration">Kuva</string>
+    <string name="home_see_all_shelf">Näytä kaikki: %1$s</string>
+    <string name="search_for_term">Hae: %1$s</string>
+    <string name="search_clear_recent">Tyhjennä viimeisimmät haut</string>
+    <string name="book_open_title">Avaa %1$s</string>
+    <string name="book_read_title">Lue %1$s</string>
+    <string name="book_favourited">Suosikki</string>
+
 </resources>

@@ -14,6 +14,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
 import io.lukia.getPlatform
+import io.lukia.resources.Res
+import io.lukia.resources.book_actions
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * The gesture that asks for the menu belonging to whatever is under it.
@@ -41,7 +44,7 @@ fun Modifier.menuGesture(
     interactionSource: MutableInteractionSource,
     onClick: () -> Unit,
     onMenu: () -> Unit,
-    menuLabel: String? = "Actions",
+    menuLabel: String? = stringResource(Res.string.book_actions),
     clickLabel: String? = null,
     enabled: Boolean = true,
     role: Role? = null,

@@ -52,9 +52,13 @@ import io.lukia.features.reader.presentation.theme.headingStyle
 import io.lukia.features.reader.presentation.translation.TranslateOnScreen
 import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.presentation.SentenceTranslations
+import io.lukia.resources.Res
+import io.lukia.resources.figure_illustration
+import io.lukia.resources.figure_look_closer
 import io.lukia.shared.presentation.components.surface.LukiaDivider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.compose.resources.stringResource
 
 // The blocks that are not prose: headings, list items, quotes, code, figures
 // and the breaks between scenes.
@@ -226,11 +230,18 @@ internal fun FigureBlock(
 
     var lookingCloser by remember(block) { mutableStateOf(false) }
 
+    val lookCloser = stringResource(Res.string.figure_look_closer)
+
     image?.let { bitmap ->
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
             Image(
                 bitmap = bitmap,
-                contentDescription = block.description?.takeIf { it.isNotBlank() },
+                // The book's own alt text where it has one. Where it has not,
+                // the picture is still something the reader can press to look
+                // at properly - and an unnamed thing that can be pressed is
+                // announced as a button with no name at all.
+                contentDescription = block.description?.takeIf { it.isNotBlank() }
+                    ?: stringResource(Res.string.figure_illustration),
                 // Fit rather than FillWidth: an illustration bounded on both
                 // measures - by the page it is on as well as by the measure -
                 // has to give way on whichever it meets first.
@@ -250,7 +261,7 @@ internal fun FigureBlock(
                     // rather than over the strip of page it is centred in - and
                     // consumed there, so it is not also the tap that turns the
                     // page out from under it.
-                    .clickable(onClickLabel = "Look closer") { lookingCloser = true },
+                    .clickable(onClickLabel = lookCloser) { lookingCloser = true },
             )
         }
 

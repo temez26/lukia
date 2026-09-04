@@ -445,4 +445,25 @@
     <string name="size_gigabytes">%1$s\u00A0GB</string>
     <string name="size_terabytes">%1$s\u00A0TB</string>
 
+    <string name="state_on">På</string>
+    <string name="state_off">Av</string>
+    <string name="state_selected">Valgt</string>
+    <string name="state_not_selected">Ikke valgt</string>
+    <string name="action_dismiss">Lukk</string>
+    <string name="reader_open_contents">Åpne innholdsfortegnelsen</string>
+    <string name="reader_go_to_page">Gå til side</string>
+    <string name="reader_go_to_chapter">Gå til %1$s</string>
+    <string name="reader_chapter_at_page">%1$s, side %2$d</string>
+    <string name="reader_translate_this_paragraph">Oversett dette avsnittet</string>
+    <string name="reader_restore_this_paragraph">Vis bokens egne ord</string>
+    <string name="figure_look_closer">Se nærmere</string>
+    <string name="figure_close">Lukk illustrasjonen</string>
+    <string name="figure_illustration">Illustrasjon</string>
+    <string name="home_see_all_shelf">Se alle %1$s</string>
+    <string name="search_for_term">Søk etter %1$s</string>
+    <string name="search_clear_recent">Tøm nylige søk</string>
+    <string name="book_open_title">Åpne %1$s</string>
+    <string name="book_read_title">Les %1$s</string>
+    <string name="book_favourited">Favoritt</string>
+
 </resources>

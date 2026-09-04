@@ -13,8 +13,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import io.lukia.resources.Res
+import io.lukia.resources.action_dismiss
 import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.LukiaMotion
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Tap-anywhere-to-dismiss backdrop for an open [AnchoredMenu], which is a
@@ -33,7 +36,7 @@ fun ActionMenuScrim(
     visible: Boolean,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
-    label: String = "Dismiss",
+    label: String = stringResource(Res.string.action_dismiss),
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 

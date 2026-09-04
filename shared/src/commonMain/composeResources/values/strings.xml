@@ -613,4 +613,34 @@
     <string name="size_gigabytes">%1$s GB</string>
     <string name="size_terabytes">%1$s TB</string>
 
+    <!--
+        What a screen reader says about a control the eye reads from its shape.
+
+        Everything here names something that is drawn rather than written: the
+        fill on a set filter, the tick on a picked book, the action a paragraph
+        of a book carries. None of it was translated before, because none of it
+        used to be a string - it was an English sentence spelled out at the call
+        site, which is a language the app does not otherwise speak.
+    -->
+    <string name="state_on">On</string>
+    <string name="state_off">Off</string>
+    <string name="state_selected">Selected</string>
+    <string name="state_not_selected">Not selected</string>
+    <string name="action_dismiss">Dismiss</string>
+    <string name="reader_open_contents">Open contents</string>
+    <string name="reader_go_to_page">Go to page</string>
+    <string name="reader_go_to_chapter">Go to %1$s</string>
+    <string name="reader_chapter_at_page">%1$s, page %2$d</string>
+    <string name="reader_translate_this_paragraph">Translate this paragraph</string>
+    <string name="reader_restore_this_paragraph">Show the book’s own words</string>
+    <string name="figure_look_closer">Look closer</string>
+    <string name="figure_close">Close the illustration</string>
+    <string name="figure_illustration">Illustration</string>
+    <string name="home_see_all_shelf">See all %1$s</string>
+    <string name="search_for_term">Search for %1$s</string>
+    <string name="search_clear_recent">Clear recent searches</string>
+    <string name="book_open_title">Open %1$s</string>
+    <string name="book_read_title">Read %1$s</string>
+    <string name="book_favourited">Favourite</string>
+
 </resources>
