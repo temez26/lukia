@@ -60,11 +60,11 @@ class NordicStringsTest {
             Locale.setDefault(Locale.forLanguageTag(tag))
 
             assertEquals(
-                "125 %",
+                "125\u00A0%",
                 runBlocking { getString(Res.string.reader_width_percent, 125) },
                 tag,
             )
-            assertEquals("1,5 kB", composed { formatFileSize(1536L) }, tag)
+            assertEquals("1,5\u00A0kB", composed { formatFileSize(1536L) }, tag)
         }
     }
 
