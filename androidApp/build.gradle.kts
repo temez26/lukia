@@ -35,6 +35,15 @@ dependencies {
     baselineProfile(project(":baselineprofile"))
 }
 
+/**
+ * Where the release keystore is, when there is one.
+ *
+ * Absent for everyone but the release workflow, and the build stays usable
+ * without it: a local `assembleRelease` produces an unsigned APK rather than
+ * failing on a secret the person running it was never meant to have.
+ */
+val keystorePath = providers.environmentVariable("ANDROID_KEYSTORE_PATH")
+
 android {
     namespace = "io.lukia"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -43,9 +52,18 @@ android {
         applicationId = "io.lukia"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        // One source for all three builds - see `lukia.version` in gradle.properties.
+        // Both from gradle.properties, which is the one place either changes.
+        versionCode = providers.gradleProperty("lukia.versionCode").get().toInt()
         versionName = providers.gradleProperty("lukia.version").get()
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile = keystorePath.orNull?.let(::file)
+            storePassword = providers.environmentVariable("ANDROID_KEYSTORE_PASSWORD").orNull
+            keyAlias = providers.environmentVariable("ANDROID_KEY_ALIAS").orNull
+            keyPassword = providers.environmentVariable("ANDROID_KEY_PASSWORD").orNull
+        }
     }
     packaging {
         resources {
@@ -54,7 +72,12 @@ android {
     }
     buildTypes {
         release {
-            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release").takeIf { keystorePath.isPresent }
+            isMinifyEnabled = true
+            // pdfbox-android reads its fonts, CMaps and glyph lists out of assets
+            // at runtime - see PDFBoxResourceLoader.init in LukiaApplication - and
+            // resource shrinking cannot see a lookup by name.
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
