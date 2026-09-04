@@ -188,3 +188,72 @@ kotlin {
         }
     }
 }
+
+/**
+ * The fully qualified names of the test classes declared in `src/commonTest`.
+ *
+ * There is nothing compiled to read this from: the JVM target compiles
+ * commonTest and jvmTest into one output, so the source tree is the only thing
+ * that still knows which class came from where. A ValueSource rather than a
+ * plain scan, so the configuration cache tracks these files and notices a test
+ * that has just been written.
+ */
+abstract class CommonTestClasses : ValueSource<List<String>, CommonTestClasses.Parameters> {
+
+    interface Parameters : ValueSourceParameters {
+        val sourceDirectory: DirectoryProperty
+    }
+
+    override fun obtain(): List<String> {
+        val directory = parameters.sourceDirectory.get().asFile
+        if (!directory.isDirectory) return emptyList()
+
+        val packageLine = Regex("""^\s*package\s+([\w.]+)""", RegexOption.MULTILINE)
+        val classLine = Regex("""^\s*(?:internal\s+|abstract\s+|open\s+)*class\s+(\w+)""", RegexOption.MULTILINE)
+
+        return directory.walkTopDown()
+            .filter { it.isFile && it.extension == "kt" }
+            .flatMap { file ->
+                val text = file.readText()
+                val packageName = packageLine.find(text)?.groupValues?.get(1)
+                classLine.findAll(text).map { match ->
+                    val className = match.groupValues[1]
+                    if (packageName == null) className else "$packageName.$className"
+                }
+            }
+            .toList()
+    }
+}
+
+private val commonTestClasses = providers.of(CommonTestClasses::class) {
+    parameters.sourceDirectory.set(layout.projectDirectory.dir("src/commonTest"))
+}
+
+private val jvmTestTask = tasks.named<Test>("jvmTest")
+
+/**
+ * The common tests alone, which is what CI runs.
+ *
+ * The platform half of `jvmTest` is 659 tests against 814 common ones, and 30 of
+ * the 31 seconds - almost all of it the 40 Compose UI suites, which want a
+ * display and are the ones most likely to fail on a CI runner for reasons that
+ * have nothing to do with the change under test. They are run locally instead;
+ * see TESTING.md.
+ *
+ * Classpath and class directories come from `jvmTest` rather than being rebuilt
+ * here, so the two cannot drift into running the same code differently.
+ */
+tasks.register<Test>("jvmCommonTest") {
+    group = "verification"
+    description = "Runs the common tests on the JVM, leaving the platform ones out."
+
+    val jvmTest = jvmTestTask.get()
+    testClassesDirs = jvmTest.testClassesDirs
+    classpath = jvmTest.classpath
+
+    filter {
+        // A pattern that matches nothing means a test silently stopped running.
+        isFailOnNoMatchingTests = true
+        commonTestClasses.get().forEach { includeTestsMatching(it) }
+    }
+}

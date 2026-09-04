@@ -1,66 +1,217 @@
 name: CI
+
 on:
   pull_request:
     branches: [dev, main]
+  # Also on push, so the base branch's Gradle cache is ever actually written.
+  # A pull request run may only read that cache; its own writes are scoped to
+  # its branch and no other run can see them.
+  push:
+    branches: [dev, main]
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
-  build-and-test:
+  build:
+    name: JVM tests, Android and desktop compile
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      # Zulu 21 is what gradle/gradle-daemon-jvm.properties asks for. Any other
+      # JDK here leaves Gradle to download that one over the network anyway.
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
-          distribution: temurin
-          java-version: '17'
+          distribution: zulu
+          java-version: '21'
 
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
+      # Validates the wrapper, and caches the configuration cache along with
+      # ~/.gradle - which lives in the project directory and so was missed by
+      # the hand-written cache this replaces.
+      - uses: gradle/actions/setup-gradle@0b6dd653ba04f4f93bf581ec31e66cbd7dcb644d # v4
         with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
 
-      - name: Grant execute permission for Gradlew
-        run: chmod +x gradlew
+      # jvmCommonTest runs the common tests and not the platform ones - see
+      # TESTING.md. It still depends on jvmTestClasses, so the platform tests
+      # must go on compiling here; only running them moves to a local machine.
+      #
+      # assembleDebug is what compiles androidMain and :androidApp; nothing else
+      # in CI touches either. --continue so a failure in one still reports the rest.
+      - name: Build and test
+        run: >
+          ./gradlew --continue
+          :shared:jvmCommonTest
+          :androidApp:assembleDebug
+          :desktopApp:compileKotlin
 
-      - name: Run tests
-        run: ./gradlew :shared:jvmTest
+      - name: Summarise test results
+        if: ${{ !cancelled() }}
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import glob, xml.etree.ElementTree as ET
+          rows, failed = [], []
+          for path in glob.glob("**/build/test-results/**/*.xml", recursive=True):
+              try:
+                  suite = ET.parse(path).getroot()
+              except ET.ParseError:
+                  continue
+              if suite.tag != "testsuite":
+                  continue
+              rows.append((int(suite.get("tests", 0)),
+                           int(suite.get("failures", 0)) + int(suite.get("errors", 0)),
+                           int(suite.get("skipped", 0))))
+              for case in suite.iter("testcase"):
+                  for bad in list(case.findall("failure")) + list(case.findall("error")):
+                      failed.append((f"{case.get('classname')}.{case.get('name')}",
+                                     (bad.get("message") or "").strip()))
+          total = sum(r[0] for r in rows)
+          bad_count = sum(r[1] for r in rows)
+          skipped = sum(r[2] for r in rows)
+          print(f"## Tests\n\n**{total} run \u2014 {bad_count} failed, {skipped} skipped**\n")
+          if failed:
+              print("| Test | Message |")
+              print("| --- | --- |")
+              for name, message in failed[:50]:
+                  clean = message.replace("|", "\\|").replace("\n", " ")[:200]
+                  print(f"| `{name}` | {clean} |")
+              if len(failed) > 50:
+                  print(f"\n_and {len(failed) - 50} more \u2014 see the uploaded report._")
+          PY
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ !cancelled() }}
+        with:
+          name: test-results
+          path: |
+            **/build/reports/tests/**
+            **/build/test-results/**/*.xml
+          if-no-files-found: ignore
+
+  ios:
+    name: iOS compile, link and test
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: zulu
+          java-version: '21'
+
+      # Compose Multiplatform 1.11.1's ui-uikit references UIViewLayoutRegion and
+      # the UIUtilities framework, both of which arrived in the iOS 26 SDK. The
+      # image defaults to an older Xcode, which archives the static framework
+      # happily and then fails to link the test executable on undefined symbols.
+      - name: Use the newest Xcode on the image
+        run: |
+          ls -d /Applications/Xcode*.app || true
+          newest="$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)"
+          if [ -n "$newest" ]; then sudo xcode-select -s "$newest"; fi
+          xcodebuild -version
+          xcodebuild -showsdks | grep -i iphonesimulator || true
+
+      - uses: gradle/actions/setup-gradle@0b6dd653ba04f4f93bf581ec31e66cbd7dcb644d # v4
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+
+      # The test task is the one that proves iOS links: it builds a real
+      # executable. The framework task cannot - `isStatic = true` makes it an
+      # archive, so it never resolves an external symbol - but it is nearly free
+      # on top, and still catches the framework's own configuration.
+      - name: Test and link
+        run: >
+          ./gradlew --continue
+          :shared:iosSimulatorArm64Test
+          :shared:linkDebugFrameworkIosSimulatorArm64
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ !cancelled() }}
+        with:
+          name: ios-test-results
+          path: |
+            shared/build/reports/tests/**
+            shared/build/test-results/**/*.xml
+          if-no-files-found: ignore
 
   lint:
+    name: Coding style
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
-          distribution: temurin
-          java-version: '17'
+          distribution: zulu
+          java-version: '21'
 
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
+      - uses: gradle/actions/setup-gradle@0b6dd653ba04f4f93bf581ec31e66cbd7dcb644d # v4
         with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      - name: Grant execute permission for Gradlew
-        run: chmod +x gradlew
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
 
       # See CODING_STYLE.md. ktlint checks formatting, detekt checks structure and
       # Compose usage, checkFileLength enforces the 400-line limit.
       - name: Check coding style
-        run: ./gradlew ktlintCheck detekt checkFileLength
+        run: ./gradlew --continue ktlintCheck detekt checkFileLength
 
-      - name: Upload detekt report
+      # Puts each detekt finding on the line that caused it in the pull request.
+      # Merged into one file by the detektReportMerge task in build.gradle.kts.
+      - name: Upload detekt SARIF
+        if: ${{ !cancelled() }}
+        uses: github/codeql-action/upload-sarif@5ba2889ada762081db2c4f32a729827dce632c7b # v3
+        with:
+          sarif_file: build/reports/detekt/merged.sarif
+          category: detekt
+        continue-on-error: true
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: failure()
-        uses: actions/upload-artifact@v4
         with:
           name: detekt-report
           path: '**/build/reports/detekt/detekt.html'
           if-no-files-found: ignore
+
+  desktop-package:
+    name: Desktop packaging
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+
+      # jlink keeps only the modules it can prove are used, and the list that
+      # makes up for that lives in desktopApp/build.gradle.kts. It goes stale
+      # when dependencies change and at no other time - so this runs then.
+      - name: Did anything that decides the runtime image change?
+        id: changed
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if git diff --name-only "$BASE_SHA" HEAD \
+             | grep -Eq '^(gradle/libs\.versions\.toml|desktopApp/)'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        if: steps.changed.outputs.run == 'true'
+        with:
+          distribution: zulu
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@0b6dd653ba04f4f93bf581ec31e66cbd7dcb644d # v4
+        if: steps.changed.outputs.run == 'true'
+        with:
+          cache-read-only: true
+
+      - name: Build the runtime image
+        if: steps.changed.outputs.run == 'true'
+        run: ./gradlew :desktopApp:createDistributable

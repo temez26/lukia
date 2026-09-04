@@ -1,5 +1,6 @@
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
+import io.gitlab.arturbosch.detekt.report.ReportMergeTask
 import org.gradle.language.base.plugins.LifecycleBasePlugin
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
 
@@ -105,6 +106,17 @@ abstract class CheckKotlinFileLength : DefaultTask() {
 // Resolved here because the version catalog accessor only exists on the root project.
 val composeDetektRules = libs.detekt.composeRules
 
+/**
+ * One SARIF file for all four modules, which is what CI hands to GitHub.
+ *
+ * Uploaded to code scanning so a finding lands on the line that caused it in the
+ * pull request, rather than inside an HTML report nobody opens. Merged because
+ * the upload takes one file and detekt writes one per module.
+ */
+val detektReportMerge = tasks.register<ReportMergeTask>("detektReportMerge") {
+    output.set(rootProject.layout.buildDirectory.file("reports/detekt/merged.sarif"))
+}
+
 subprojects {
     apply(plugin = "io.gitlab.arturbosch.detekt")
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
@@ -140,9 +152,12 @@ subprojects {
         reports {
             html.required.set(true)
             xml.required.set(false)
-            sarif.required.set(false)
+            // Read by CI, which turns it into annotations on the pull request.
+            sarif.required.set(true)
             md.required.set(false)
         }
+        finalizedBy(detektReportMerge)
+        detektReportMerge.configure { input.from(sarifReportFile) }
     }
 
     val checkFileLength = tasks.register<CheckKotlinFileLength>("checkFileLength") {
