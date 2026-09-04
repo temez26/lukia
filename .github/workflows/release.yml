@@ -3,6 +3,10 @@ name: Release
 on:
   push:
     tags: ['v*']
+  # Build the whole thing on demand without releasing it, so the machinery is
+  # known to work before there is any reason to rely on it. A run started this
+  # way stops after the artifacts - see the publish job.
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -23,17 +27,22 @@ jobs:
       # this is the only thing standing between it and silent drift.
       - name: Compare tag, gradle.properties and Config.xcconfig
         run: |
-          tag="${GITHUB_REF_NAME#v}"
           gradle_version="$(sed -n 's/^lukia\.version=//p' gradle.properties)"
           ios_version="$(sed -n 's/^MARKETING_VERSION=//p' iosApp/Configuration/Config.xcconfig)"
-          echo "tag=$tag  gradle.properties=$gradle_version  Config.xcconfig=$ios_version"
-          if [ "$tag" != "$gradle_version" ]; then
-            echo "::error::tag $tag does not match lukia.version $gradle_version"
+          echo "gradle.properties=$gradle_version  Config.xcconfig=$ios_version"
+          if [ "$gradle_version" != "$ios_version" ]; then
+            echo "::error::lukia.version $gradle_version does not match MARKETING_VERSION $ios_version"
             exit 1
           fi
-          if [ "$tag" != "$ios_version" ]; then
-            echo "::error::tag $tag does not match MARKETING_VERSION $ios_version"
-            exit 1
+          # A run started by hand has no tag to agree with; the two files above
+          # still have to agree with each other.
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            tag="${GITHUB_REF_NAME#v}"
+            echo "tag=$tag"
+            if [ "$tag" != "$gradle_version" ]; then
+              echo "::error::tag $tag does not match lukia.version $gradle_version"
+              exit 1
+            fi
           fi
 
   android:
@@ -126,6 +135,9 @@ jobs:
   publish:
     name: Draft the release
     needs: [android, desktop]
+    # Only a tag publishes. A run started by hand has done its job by now: it
+    # has proved the release builds, and left the artifacts to prove it.
+    if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
     permissions:
       contents: write
