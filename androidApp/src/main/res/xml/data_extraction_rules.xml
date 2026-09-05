@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The same exclusions as backup_rules.xml, in the format Android 12 and above
+    read - see there for why each one is excluded.
+
+    Written out twice rather than shared, because the two answer different
+    questions: a cloud backup goes to Google's servers, and a device transfer
+    goes straight to the reader's next phone over a cable. The same things are
+    excluded from both all the same. A transfer has no quota, but a keystore key
+    does not travel either way, and a library of book files copied across to
+    save re-importing them is not worth the size.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path="documents/" />
+        <exclude domain="file" path="incoming/" />
+        <exclude domain="file" path="last-crash.txt" />
+        <exclude domain="database" path="lukia.db" />
+        <exclude domain="database" path="lukia.db-wal" />
+        <exclude domain="database" path="lukia.db-shm" />
+        <exclude domain="database" path="lukia.db-journal" />
+        <exclude domain="sharedpref" path="io.lukia.secrets.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="documents/" />
+        <exclude domain="file" path="incoming/" />
+        <exclude domain="file" path="last-crash.txt" />
+        <exclude domain="database" path="lukia.db" />
+        <exclude domain="database" path="lukia.db-wal" />
+        <exclude domain="database" path="lukia.db-shm" />
+        <exclude domain="database" path="lukia.db-journal" />
+        <exclude domain="sharedpref" path="io.lukia.secrets.xml" />
+    </device-transfer>
+</data-extraction-rules>

@@ -13,6 +13,7 @@ import io.lukia.core.domain.AppErrorException
 import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.features.translate.domain.provider.ModelWarmUp
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
+import io.lukia.features.translate.infrastructure.refuseCleartextToThePublicInternet
 import io.lukia.features.translate.infrastructure.translating
 import io.lukia.features.translate.infrastructure.translationTimeouts
 import kotlinx.serialization.json.Json
@@ -47,13 +48,7 @@ class OpenAiModelWarmUp(
     override suspend fun warmUp() {
         val configured = settings.settings.value
 
-        if (!configured.isEndpointAllowed) {
-            throw AppErrorException(
-                AppError.Unexpected(
-                    "Translating over plain HTTP is only allowed to your own network.",
-                ),
-            )
-        }
+        configured.refuseCleartextToThePublicInternet()
 
         val response = translating(configured, diagnostics) {
             client.post("${configured.baseUrl.trimEnd('/')}/chat/completions") {

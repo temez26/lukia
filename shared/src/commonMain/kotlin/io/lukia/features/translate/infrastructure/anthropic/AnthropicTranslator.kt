@@ -21,6 +21,7 @@ import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import io.lukia.features.translate.infrastructure.buildTranslationPrompt
 import io.lukia.features.translate.infrastructure.forEachEventPayload
 import io.lukia.features.translate.infrastructure.readStreamedPassage
+import io.lukia.features.translate.infrastructure.refuseCleartextToThePublicInternet
 import io.lukia.features.translate.infrastructure.tokenAllowanceFor
 import io.lukia.features.translate.infrastructure.translating
 import io.lukia.features.translate.infrastructure.translationTimeouts
@@ -87,6 +88,12 @@ class AnthropicTranslator(
         val configured = settings.settings.value
         val key = configured.apiKey?.takeIf { it.isNotBlank() }
             ?: throw AppErrorException(AppError.TranslationUnavailable)
+
+        // Anthropic's address is not one the settings screen offers to change,
+        // so this is a lock on a door nobody has tried - and the check belongs
+        // to whoever is about to send the passage rather than to the screen
+        // that usually decides where it goes.
+        configured.refuseCleartextToThePublicInternet()
 
         val prompt = buildTranslationPrompt(request)
         val answer = StreamedAnswer(onPartial)

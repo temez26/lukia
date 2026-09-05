@@ -10,6 +10,7 @@ import io.lukia.core.domain.AppErrorException
 import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.features.translate.domain.provider.ModelCatalogue
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
+import io.lukia.features.translate.infrastructure.refuseCleartextToThePublicInternet
 import io.lukia.features.translate.infrastructure.translating
 import io.lukia.features.translate.infrastructure.translationTimeouts
 
@@ -31,13 +32,7 @@ class OpenAiModelCatalogue(
     override suspend fun models(): List<String> {
         val configured = settings.settings.value
 
-        if (!configured.isEndpointAllowed) {
-            throw AppErrorException(
-                AppError.Unexpected(
-                    "Translating over plain HTTP is only allowed to your own network.",
-                ),
-            )
-        }
+        configured.refuseCleartextToThePublicInternet()
 
         val response = translating(configured, diagnostics) {
             client.get("${configured.baseUrl.trimEnd('/')}/models") {
