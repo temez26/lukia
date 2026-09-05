@@ -1,5 +1,6 @@
 package io.lukia.features.reader.infrastructure.text
 
+import io.lukia.features.reader.domain.ReflowableContent
 import io.lukia.features.reader.domain.outline.OutlineEntry
 import io.lukia.features.reader.domain.text.TextBlock
 import io.lukia.features.reader.domain.text.TextSection
@@ -56,6 +57,25 @@ internal fun sectionStarts(blocks: List<TextBlock>): List<Int> {
     }
 
     return starts
+}
+
+/**
+ * A flat run of blocks as a book the reader can show.
+ *
+ * The last stage of every format whose text arrives in one piece - DOCX,
+ * Markdown and plain text - which each spelled it out for themselves. How the
+ * blocks come out of the file is what those readers are for; what happens to
+ * them afterwards is one question asked three times.
+ *
+ * A book with nothing in it comes back as an empty book rather than as no book
+ * at all. The two are different things to tell a reader - "there is nothing to
+ * read in this" against "this is not a file I can read" - and which one it is
+ * is settled above, by there being no sections in it.
+ */
+internal fun reflowableFrom(blocks: List<TextBlock>): ReflowableContent {
+    val sectioned = sectionText(blocks)
+
+    return ReflowableContent(sections = sectioned.sections, outline = sectioned.outline)
 }
 
 /**
