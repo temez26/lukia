@@ -58,8 +58,14 @@ sealed interface AppError {
 /**
  * Carries an [AppError] through [Result], whose failure channel is typed to
  * [Throwable]. Not thrown across layers by hand - use [asFailure].
+ *
+ * Open so a feature can attach detail of its own to a failure without core
+ * having to learn what that detail is. Everything here still reads it as an
+ * app error and shows the same words; whoever inside the feature has a decision
+ * to make catches the subclass and asks it - see
+ * `features/translate/infrastructure/TranslationFailure.kt`.
  */
-class AppErrorException(val error: AppError) : Exception(error.toString())
+open class AppErrorException(val error: AppError) : Exception(error.toString())
 
 fun AppError.asFailure(): Result<Nothing> = Result.failure(AppErrorException(this))
 

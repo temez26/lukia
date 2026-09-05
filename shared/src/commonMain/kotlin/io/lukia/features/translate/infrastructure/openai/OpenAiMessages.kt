@@ -20,7 +20,24 @@ import kotlinx.serialization.json.putJsonObject
 internal data class ChatRequest(
     val model: String,
     val messages: List<ChatMessage>,
-    @SerialName("max_tokens") val maxTokens: Int,
+    /**
+     * What a server that has never heard of anything newer is told, and what
+     * every locally hosted one still understands. Null when [maxCompletionTokens]
+     * is sent instead - unset fields are not encoded, and sending both is how a
+     * request gets refused for contradicting itself.
+     */
+    @SerialName("max_tokens") val maxTokens: Int? = null,
+    /**
+     * The same ceiling under the name the hosted service now insists on.
+     *
+     * `max_tokens` is deprecated there and outright rejected by every model that
+     * thinks before it answers - which is now most of what anybody would choose.
+     * A reader who types the name of a current model and gets "unsupported
+     * parameter" back has been failed by this app rather than by their key, so
+     * the hosted service is sent the new name and the servers on people's own
+     * machines go on being sent the one they implement.
+     */
+    @SerialName("max_completion_tokens") val maxCompletionTokens: Int? = null,
     /**
      * Null for a server that does not understand it, which is most of the
      * locally hosted ones. Unset fields are not encoded, so leaving this out is
@@ -58,6 +75,18 @@ internal data class ChatMessage(
 @Serializable
 internal data class ChatChunk(
     val choices: List<StreamChoice> = emptyList(),
+    /**
+     * What a server sends when it accepted the request and then could not
+     * finish it - a model unloaded mid-answer, a context window overrun that
+     * only became apparent once generation started, a proxy losing its upstream.
+     *
+     * It arrives as an ordinary chunk on a stream that has already answered 200,
+     * so a reader of `choices` alone sees a chunk with no text in it and then a
+     * stream that simply ends. That is how these used to reach the reader as
+     * "that was not a translation", which is true and says nothing about the
+     * server having explained itself perfectly clearly.
+     */
+    val error: ChatErrorBody? = null,
 ) {
     val text: String? get() = choices.firstOrNull()?.delta?.content
 
@@ -92,8 +121,39 @@ internal data class ChatErrorBody(
     val isOutOfCredit: Boolean
         get() = type == OUT_OF_CREDIT || code == OUT_OF_CREDIT
 
+    /**
+     * Whether the name in Settings is not a model this server has.
+     *
+     * The commonest mistake with a local server and with a hosted one alike, and
+     * the one that arrives looking most like something else: it is a 404 on the
+     * same path a wrong address would be a 404 on. What tells them apart is that
+     * the server answered and said which thing it could not find.
+     */
+    val isUnknownModel: Boolean
+        get() = code == UNKNOWN_MODEL ||
+            type == UNKNOWN_MODEL ||
+            // Servers people run at home have no code for this and say it in
+            // prose. Both halves are required, because a rate limit names the
+            // model too and is not this.
+            message.orEmpty().let { said ->
+                said.contains(MODEL, ignoreCase = true) &&
+                    MISSING.any { said.contains(it, ignoreCase = true) }
+            }
+
+    /**
+     * Whether more was sent than the model can hold. Not a passage this app
+     * would ever send on its own, but a reader's own server may be running a
+     * model with a very short window.
+     */
+    val isTooLong: Boolean
+        get() = code == TOO_LONG || type == TOO_LONG
+
     private companion object {
         const val OUT_OF_CREDIT = "insufficient_quota"
+        const val UNKNOWN_MODEL = "model_not_found"
+        const val TOO_LONG = "context_length_exceeded"
+        const val MODEL = "model"
+        val MISSING = listOf("not found", "does not exist", "unknown", "no such")
     }
 }
 

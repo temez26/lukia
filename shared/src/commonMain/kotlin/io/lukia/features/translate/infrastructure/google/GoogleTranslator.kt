@@ -2,6 +2,7 @@ package io.lukia.features.translate.infrastructure.google
 
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
+import io.ktor.client.request.headers
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -86,7 +87,12 @@ class GoogleTranslator(
 
         val response = client.post(CLOUD_ENDPOINT) {
             translationTimeouts(configured)
-            parameter("key", key)
+            // A header rather than `?key=`, which the endpoint also accepts.
+            // A query string is the one part of a request that gets written
+            // down by everything it passes - proxies, server logs, a crash
+            // report's copy of the URL - and a key that has been written down
+            // somewhere nobody is watching is a key that has leaked.
+            headers { append("X-Goog-Api-Key", key) }
             contentType(ContentType.Application.Json)
             setBody(
                 CloudRequest(

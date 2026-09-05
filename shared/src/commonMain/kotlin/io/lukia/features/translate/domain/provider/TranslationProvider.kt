@@ -52,7 +52,11 @@ enum class TranslationProvider(
         requiresKey = true,
         hasConfigurableEndpoint = false,
         defaultTimeoutSeconds = 120,
-        suggestedModels = listOf("gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini"),
+        // Newest first. The default stays where it is on purpose: it is what
+        // every reader who has never opened this list is already using, and
+        // moving it would re-ask for every sentence they have already paid for
+        // - the model is part of what a translation is filed under.
+        suggestedModels = listOf("gpt-5", "gpt-5-mini", "gpt-4.1", "gpt-4o", "gpt-4o-mini"),
     ),
 
     /**
