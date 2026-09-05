@@ -96,6 +96,19 @@ internal class PaginatedBook(
     val pageCount: Int get() = pages.size
 
     /**
+     * Whether this book has been laid out far enough to say where [place] is.
+     *
+     * The question [pageOf] cannot answer for itself: a book still being
+     * measured knows nothing about the sections it has not reached, and
+     * clamping those to its last page is right for a contents row - which has
+     * to lead somewhere - and wrong for the reader's own position, which would
+     * be moved to the end of a beginning and then recorded as having been
+     * there. So the two callers are separated here rather than by making
+     * [pageOf] answer differently to each of them.
+     */
+    fun holds(place: BookPlace): Boolean = place.sectionIndex in sectionPages.indices
+
+    /**
      * The page holding a place in the book, for following the reader across a
      * re-layout and for the contents panel, whose entries point at sections.
      *
