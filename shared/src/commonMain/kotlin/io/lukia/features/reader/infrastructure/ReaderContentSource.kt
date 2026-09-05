@@ -35,8 +35,9 @@ internal suspend fun openReaderContent(
 ): ReaderContent? = when (type) {
     // Kept apart from the rest: a PDF is opened by the platform's own renderer
     // against the file on disk, and is the only format here never held whole in
-    // memory.
-    DocumentType.PDF -> PagedContent(openPdfPages(path))
+    // memory. A file the renderer will not have is null exactly as an unreadable
+    // EPUB is, rather than the exception PDF alone used to raise.
+    DocumentType.PDF -> openPdfPages(path)?.let(::PagedContent)
 
     DocumentType.EPUB -> readEpub(readFileBytes(path))
     DocumentType.DOCX -> readDocx(readFileBytes(path))
@@ -79,7 +80,11 @@ internal suspend fun openPdfAsText(
 ): ReaderContent? {
     storedReflow(path)?.let { return it }
 
-    val pages = openPdfPages(path)
+    // A file the renderer will not have is not one to read the words out of
+    // either. Null here is "not as text", and the caller then tries it as pages
+    // and gets the same answer - which is the honest one, and the same one
+    // every other format gives.
+    val pages = openPdfPages(path) ?: return null
     val alongside = readersAlongside(path, readersFor(pages.pageCount) - 1)
 
     val content = try {

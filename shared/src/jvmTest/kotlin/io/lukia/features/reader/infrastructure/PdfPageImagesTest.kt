@@ -29,7 +29,7 @@ class PdfPageImagesTest {
 
     @Test
     fun readsAPicturePlacedOnAPage() = runTest {
-        openPdfPages(bookWithAMarkOnEveryPage(pages = 1).absolutePath).use { pages ->
+        openTestPdf(bookWithAMarkOnEveryPage(pages = 1).absolutePath).use { pages ->
             val images = pages.pageImages(0)
 
             assertEquals(1, images.size)
@@ -48,7 +48,7 @@ class PdfPageImagesTest {
      */
     @Test
     fun aMarkDrawnOnEveryPageIsReadOnce() = runTest {
-        openPdfPages(bookWithAMarkOnEveryPage(pages = 3).absolutePath).use { pages ->
+        openTestPdf(bookWithAMarkOnEveryPage(pages = 3).absolutePath).use { pages ->
             val first = pages.pageImages(0).single().bytes
 
             repeat(2) { page ->
@@ -71,7 +71,7 @@ class PdfPageImagesTest {
             }
         }
 
-        openPdfPages(file.absolutePath).use { pages ->
+        openTestPdf(file.absolutePath).use { pages ->
             val first = pages.pageImages(0).single().bytes
             val second = pages.pageImages(1).single().bytes
 

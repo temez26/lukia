@@ -23,11 +23,21 @@ import java.io.File
 private const val MAX_OUTLINE_DEPTH = 8
 private const val MAX_OUTLINE_ENTRIES = 5000
 
-internal actual fun openPdfPages(path: String): DocumentPages = PdfBoxDocumentPages(path)
+/**
+ * The document is loaded here rather than inside the pages, so that one the rest
+ * of the construction goes on to refuse is closed rather than leaked - see the
+ * expect.
+ */
+internal actual fun openPdfPages(path: String): DocumentPages? {
+    val document = runCatching { Loader.loadPDF(File(path)) }.getOrNull() ?: return null
 
-private class PdfBoxDocumentPages(path: String) : DocumentPages {
+    return runCatching { PdfBoxDocumentPages(document) }.getOrElse {
+        runCatching { document.close() }
+        null
+    }
+}
 
-    private val document: PDDocument = Loader.loadPDF(File(path))
+private class PdfBoxDocumentPages(private val document: PDDocument) : DocumentPages {
     private val renderer = PDFRenderer(document)
 
     /**
@@ -118,7 +128,7 @@ private class PdfBoxDocumentPages(path: String) : DocumentPages {
     }
 
     override suspend fun renderPage(index: Int, targetWidthPx: Int): ImageBitmap? =
-        withContext(Dispatchers.Default) {
+        withContext(Dispatchers.IO) {
             renderLock.withLock {
                 runCatching {
                     val scale = targetWidthPx / pageSizes[index].width

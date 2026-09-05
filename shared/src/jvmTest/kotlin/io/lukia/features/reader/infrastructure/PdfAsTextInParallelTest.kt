@@ -49,14 +49,14 @@ class PdfAsTextInParallelTest {
         val file = book(pages = 40)
 
         val alone = withContext(Dispatchers.Default) {
-            openPdfPages(file.absolutePath).use { readPdfAsText(it) }
+            openTestPdf(file.absolutePath).use { readPdfAsText(it) }
         }
 
         val divided = withContext(Dispatchers.Default) {
             val readers = List(3) { openPdfPageContent(file.absolutePath) }
 
             try {
-                openPdfPages(file.absolutePath).use { readPdfAsText(it, readers) }
+                openTestPdf(file.absolutePath).use { readPdfAsText(it, readers) }
             } finally {
                 readers.forEach { it.close() }
             }
@@ -74,7 +74,7 @@ class PdfAsTextInParallelTest {
             val readers = List(3) { openPdfPageContent(file.absolutePath) }
 
             try {
-                openPdfPages(file.absolutePath).use { readPdfAsText(it, readers) }
+                openTestPdf(file.absolutePath).use { readPdfAsText(it, readers) }
             } finally {
                 readers.forEach { it.close() }
             }
@@ -93,7 +93,7 @@ class PdfAsTextInParallelTest {
     fun aReadingHandleReadsWhatTheDocumentReads() = runBlocking {
         val file = book(pages = 3)
 
-        val throughDocument = openPdfPages(file.absolutePath).use { it.pageText(1) }
+        val throughDocument = openTestPdf(file.absolutePath).use { it.pageText(1) }
         val throughContent: List<*>? =
             openPdfPageContent(file.absolutePath).use { (it as PageContent).pageText(1) }
 
