@@ -90,6 +90,42 @@ object LukiaElevation {
     val panel: Dp = 16.dp
 }
 
+/**
+ * Room a scrolling page leaves around itself for the chrome that floats over it.
+ *
+ * Not spacing, and so not in [Space]: these are the height of something else -
+ * the back control a screen scrolls under, the edge a column must not end hard
+ * against - rather than the gap between two things on the page.
+ *
+ * Here because each of them was written out once per screen. The settings body,
+ * the book detail body and the statistics body each carried a private
+ * `TopChromeClearance` of 68dp under identical documentation, and the library
+ * grid, the search results and the home rows each carried their own 24dp tail.
+ * Three copies of a number is three chances for two screens that scroll under
+ * the same control to stop agreeing about where it ends.
+ */
+object Clearance {
+
+    /** Under the floating back control, before a screen's first content. */
+    val topChrome: Dp = 68.dp
+
+    /** Past the last group of a scrolling column. */
+    val pageBottom: Dp = 32.dp
+
+    /** ...and past the last row of a scrolling list. */
+    val listBottom: Dp = 24.dp
+}
+
+/**
+ * How wide the app sets a sentence that is standing in for a screen.
+ *
+ * One measure for both of the states that occupy an empty screen, since they
+ * take the same slot and are read the same way. `EmptyState` capped at 360dp and
+ * `ErrorState` at 340dp, which is a difference nobody chose and nobody can see
+ * except when a screen shows one after the other.
+ */
+val StateMeasure: Dp = 360.dp
+
 /** How thick a hairline border is, and the ring around a keyboard-focused control. */
 val HairlineWidth: Dp = 1.dp
 val FocusRingWidth: Dp = 2.dp

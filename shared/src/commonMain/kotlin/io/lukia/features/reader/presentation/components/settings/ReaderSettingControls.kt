@@ -1,7 +1,6 @@
 package io.lukia.features.reader.presentation.components.settings
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,9 +18,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -37,8 +33,7 @@ import io.lukia.resources.reader_decrease_text_size
 import io.lukia.resources.reader_increase_text_size
 import io.lukia.resources.reader_percent
 import io.lukia.resources.reader_text_size_percent
-import io.lukia.shared.presentation.components.controls.focusRing
-import io.lukia.shared.presentation.components.controls.hoverHighlight
+import io.lukia.shared.presentation.components.controls.pressable
 import io.lukia.shared.presentation.components.surface.SectionLabel
 import io.lukia.shared.presentation.theme.LocalLukiaMetrics
 import io.lukia.shared.presentation.theme.LukiaAlpha
@@ -175,7 +170,7 @@ internal fun TextSizeStepper(
                 MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (enabled) 1f else 0.5f),
             )
             .height(metrics.controlHeight)
-            .padding(2.dp),
+            .padding(Space.xxs),
     ) {
         StepperButton(
             symbolSize = 12.sp,
@@ -232,16 +227,12 @@ private fun StepperButton(
             .width(52.dp)
             .clip(shape)
             .background(MaterialTheme.colorScheme.surface)
-            .hoverHighlight(interactionSource, shape)
-            .focusRing(interactionSource, shape)
-            .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default)
-            .clickable(
-                enabled = enabled,
+            .pressable(
                 interactionSource = interactionSource,
-                indication = null,
-                role = Role.Button,
+                shape = shape,
                 onClickLabel = label,
                 onClick = onClick,
+                enabled = enabled,
             )
             .semantics { contentDescription = label },
     ) {

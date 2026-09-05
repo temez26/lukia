@@ -16,6 +16,7 @@ import io.lukia.shared.presentation.components.controls.ButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaButton
 import io.lukia.shared.presentation.components.icons.AlertGlyph
 import io.lukia.shared.presentation.theme.Space
+import io.lukia.shared.presentation.theme.StateMeasure
 
 /**
  * The app's one dead-end state: something was asked for and cannot be shown.
@@ -38,7 +39,7 @@ fun ErrorState(
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.widthIn(max = 340.dp),
+            modifier = Modifier.widthIn(max = StateMeasure),
         ) {
             AlertGlyph(
                 // Muted rather than full error red: this is an explanation, not

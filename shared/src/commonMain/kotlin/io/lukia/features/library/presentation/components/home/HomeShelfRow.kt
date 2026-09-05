@@ -1,6 +1,5 @@
 package io.lukia.features.library.presentation.components.home
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,9 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -35,7 +31,7 @@ import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.resources.Res
 import io.lukia.resources.home_see_all
 import io.lukia.resources.home_see_all_shelf
-import io.lukia.shared.presentation.components.controls.hoverHighlight
+import io.lukia.shared.presentation.components.controls.pressable
 import io.lukia.shared.presentation.components.icons.DisclosureChevron
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
@@ -157,12 +153,9 @@ private fun RowHeader(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .clip(shape)
-                .hoverHighlight(interactionSource, shape)
-                .pointerHoverIcon(PointerIcon.Hand)
-                .clickable(
+                .pressable(
                     interactionSource = interactionSource,
-                    indication = null,
-                    role = Role.Button,
+                    shape = shape,
                     onClickLabel = stringResource(Res.string.home_see_all_shelf, title),
                     onClick = onSeeAll,
                 )

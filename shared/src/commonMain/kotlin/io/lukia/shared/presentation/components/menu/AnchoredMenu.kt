@@ -1,6 +1,5 @@
 package io.lukia.shared.presentation.components.menu
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -22,8 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -39,8 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
-import io.lukia.shared.presentation.components.controls.focusRing
-import io.lukia.shared.presentation.components.controls.hoverHighlight
+import io.lukia.shared.presentation.components.controls.pressable
 import io.lukia.shared.presentation.components.icons.CheckGlyph
 import io.lukia.shared.presentation.components.surface.GlassSurface
 import io.lukia.shared.presentation.components.surface.GlassTone
@@ -156,13 +152,9 @@ fun MenuRow(
             .fillMaxWidth()
             // Square, because the row runs the full width of the menu and a
             // rounded highlight inside a square menu leaves gaps at the corners.
-            .hoverHighlight(interactionSource, RectangleShape)
-            .focusRing(interactionSource, RectangleShape)
-            .pointerHoverIcon(PointerIcon.Hand)
-            .clickable(
+            .pressable(
                 interactionSource = interactionSource,
-                indication = null,
-                role = Role.Button,
+                shape = RectangleShape,
                 onClickLabel = label,
                 onClick = onClick,
             )

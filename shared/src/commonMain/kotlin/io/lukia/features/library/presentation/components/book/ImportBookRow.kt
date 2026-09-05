@@ -2,7 +2,6 @@ package io.lukia.features.library.presentation.components.book
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -16,16 +15,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.library.presentation.components.toolbar.ImportMenuRows
 import io.lukia.resources.Res
 import io.lukia.resources.library_import_books
-import io.lukia.shared.presentation.components.controls.focusRing
-import io.lukia.shared.presentation.components.controls.hoverHighlight
+import io.lukia.shared.presentation.components.controls.pressable
 import io.lukia.shared.presentation.components.controls.rememberHoverFraction
 import io.lukia.shared.presentation.components.icons.PlusGlyph
 import io.lukia.shared.presentation.components.launch.LaunchReveal
@@ -35,11 +29,6 @@ import io.lukia.shared.presentation.theme.HairlineWidth
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.graphics.lerp as lerpColor
-
-/** The thumbnail's size, matching the jacket a book's row carries. */
-private val RowSlotWidth: Dp = 44.dp
-
-private val RowSlotHeight: Dp = 64.dp
 
 /**
  * The slot at the end of a library laid out as a list.
@@ -85,13 +74,9 @@ internal fun ImportBookRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(shape)
-                .hoverHighlight(interactionSource, shape)
-                .focusRing(interactionSource, shape)
-                .pointerHoverIcon(PointerIcon.Hand)
-                .clickable(
+                .pressable(
                     interactionSource = interactionSource,
-                    indication = null,
-                    role = Role.Button,
+                    shape = shape,
                     onClickLabel = stringResource(Res.string.library_import_books),
                     onClick = onMenuRequest,
                 )
@@ -102,7 +87,7 @@ internal fun ImportBookRow(
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .size(RowSlotWidth, RowSlotHeight)
+                    .size(RowCoverWidth, RowCoverHeight)
                     .clip(shape)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
                     .border(

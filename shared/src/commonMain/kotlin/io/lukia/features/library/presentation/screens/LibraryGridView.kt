@@ -16,7 +16,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.features.library.domain.LibraryLayout
@@ -42,12 +41,10 @@ import io.lukia.resources.library_no_results_title
 import io.lukia.shared.presentation.components.launch.LaunchReveal
 import io.lukia.shared.presentation.components.menu.BookActionsMenu
 import io.lukia.shared.presentation.components.surface.EmptyState
+import io.lukia.shared.presentation.theme.Clearance
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
-
-/** Clears the last row of the bottom edge. */
-private val GridBottomPadding: Dp = 24.dp
 
 /**
  * The first reveal slots belong to the header: the shelves, the filter row, and
@@ -104,7 +101,7 @@ internal fun LibraryGrid(
             // Content scrolls under the compact bar, so the header has to start
             // clear of where it sits at rest.
             top = libraryNavBarHeight() + Space.md,
-            bottom = GridBottomPadding,
+            bottom = Clearance.listBottom,
         ),
         horizontalArrangement = Arrangement.spacedBy(dimens.gridSpacing),
         verticalArrangement = Arrangement.spacedBy(dimens.gridRowSpacing),

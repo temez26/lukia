@@ -35,16 +35,11 @@ import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.resources.Res
 import io.lukia.resources.settings_title
 import io.lukia.shared.presentation.components.controls.SegmentedControl
+import io.lukia.shared.presentation.theme.Clearance
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
-
-/** Vertical room reserved so content starts clear of the floating back control. */
-private val TopChromeClearance: Dp = 68.dp
-
-/** Room past the last group, so the settings do not end hard against the edge. */
-private val SettingsBottomClearance: Dp = 32.dp
 
 /**
  * The least room a group is given, however little it has to put in it.
@@ -90,8 +85,8 @@ internal fun SettingsBody(
     translatingActions: TranslatingActions,
     providerActions: ProviderActions,
     modifier: Modifier = Modifier,
-    topClearance: Dp = TopChromeClearance,
-    bottomClearance: Dp = SettingsBottomClearance,
+    topClearance: Dp = Clearance.topChrome,
+    bottomClearance: Dp = Clearance.pageBottom,
     /**
      * What a group sits in. It has to contrast with whatever is behind this body,
      * and that differs: the screen lays it on the window background, the panel on

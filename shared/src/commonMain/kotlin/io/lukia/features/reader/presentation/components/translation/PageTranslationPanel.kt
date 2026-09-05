@@ -25,6 +25,7 @@ import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.reader.domain.page.TextQuad
 import io.lukia.features.translate.presentation.PassageTranslation
 import io.lukia.shared.presentation.theme.LukiaMotion
+import io.lukia.shared.presentation.theme.Space
 
 // The translation itself, drawn over the page it replaces - see
 // PageTranslationOverlay for which passages get one.
@@ -188,7 +189,7 @@ internal fun TranslationPanel(
                     lineHeight = textSize,
                     fontStyle = FontStyle.Italic,
                 ),
-                modifier = Modifier.padding(top = 2.dp),
+                modifier = Modifier.padding(top = Space.xxs),
             )
         }
     }

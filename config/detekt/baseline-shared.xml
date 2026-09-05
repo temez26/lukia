@@ -25,7 +25,7 @@
     <ID>CyclomaticComplexMethod:ReaderShortcuts.kt$internal fun readerCommandFor(event: KeyEvent): ReaderCommand?</ID>
     <ID>FunctionNaming:MainViewController.kt$@Suppress("ktlint:standard:function-naming") fun MainViewController()</ID>
     <ID>FunctionOnlyReturningConstant:MinimalPdf.kt$MinimalPdf$private fun emptyContentStream(): String</ID>
-    <ID>LongMethod:BookDetailBody.kt$@Composable internal fun BookDetailBody( details: BookDetails, onRead: () -&gt; Unit, onLongPress: () -&gt; Unit, modifier: Modifier = Modifier, topClearance: Dp = TopChromeClearance, bottomClearance: Dp = DetailBottomClearance, coverWidth: Dp = Dp.Unspecified, /** * What the grouped details sit in. It has to contrast with whatever is behind * this body, and that differs: the screen lays it on the window background, * the panel on a raised surface, and one colour cannot be a step away from * both - in the dark theme especially, where the background is true black. */ infoCardColor: Color = MaterialTheme.colorScheme.surface, )</ID>
+    <ID>LongMethod:BookDetailBody.kt$@Composable internal fun BookDetailBody( details: BookDetails, onRead: () -&gt; Unit, onLongPress: () -&gt; Unit, modifier: Modifier = Modifier, topClearance: Dp = Clearance.topChrome, bottomClearance: Dp = Clearance.pageBottom, coverWidth: Dp = Dp.Unspecified, /** * What the grouped details sit in. It has to contrast with whatever is behind * this body, and that differs: the screen lays it on the window background, * the panel on a raised surface, and one colour cannot be a step away from * both - in the dark theme especially, where the background is true black. */ infoCardColor: Color = MaterialTheme.colorScheme.surface, )</ID>
     <ID>LongMethod:BookDetailScreen.kt$@Composable fun BookDetailContent( uiState: UiState&lt;BookDetails&gt;, onBack: () -&gt; Unit, onRead: () -&gt; Unit, onRetry: () -&gt; Unit, onToggleFavorite: () -&gt; Unit, onRefresh: () -&gt; Unit, onDelete: () -&gt; Unit, /** * Defaulted so this screen still composes without a ViewModel behind it, * which is how it is tested and previewed. */ snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }, )</ID>
     <ID>LongMethod:Buttons.kt$@Composable fun LukiaButton( label: String, onClick: () -&gt; Unit, modifier: Modifier = Modifier, variant: ButtonVariant = ButtonVariant.Primary, size: ButtonSize = ButtonSize.Regular, enabled: Boolean = true, icon: (@Composable (Color, Modifier) -&gt; Unit)? = null, )</ID>
     <ID>LongMethod:ChapterRow.kt$@Composable internal fun ChapterRowItem( row: ChapterRow, inset: Dp, isCurrent: Boolean, onToggle: () -&gt; Unit, onClick: () -&gt; Unit, )</ID>
@@ -58,17 +58,12 @@
     <ID>MagicNumber:AndroidPdfOutlineTest.kt$AndroidPdfOutlineTest$4</ID>
     <ID>MagicNumber:AndroidPdfOutlineTest.kt$AndroidPdfOutlineTest$64</ID>
     <ID>MagicNumber:AndroidPdfOutlineTest.kt$AndroidPdfOutlineTest$8</ID>
-    <ID>MagicNumber:AnthropicTranslator.kt$AnthropicTranslator$500</ID>
     <ID>MagicNumber:ArchivePaths.kt$16</ID>
     <ID>MagicNumber:ArchivePaths.kt$3</ID>
-    <ID>MagicNumber:DocumentDisplay.kt$10</ID>
-    <ID>MagicNumber:DocumentDisplay.kt$1024</ID>
-    <ID>MagicNumber:DocumentDisplay.kt$1024.0</ID>
     <ID>MagicNumber:DocxTextReader.kt$6</ID>
     <ID>MagicNumber:Inflate.kt$0xFF</ID>
     <ID>MagicNumber:Inflate.kt$31</ID>
     <ID>MagicNumber:Inflate.kt$8</ID>
-    <ID>MagicNumber:OpenAiTranslator.kt$OpenAiTranslator$500</ID>
     <ID>MagicNumber:PassageMarks.kt$0.5f</ID>
     <ID>MagicNumber:PdfBytes.kt$10</ID>
     <ID>MagicNumber:PdfBytes.kt$4</ID>
@@ -144,12 +139,9 @@
     <ID>MayBeConst:ReaderTranslationTestFixture.kt$internal val afterword = "No. This paragraph opens with a very short sentence indeed, and then runs on."</ID>
     <ID>MayBeConst:ReaderTranslationTestFixture.kt$internal val second = "Some years ago I went to sea."</ID>
     <ID>MayBeConst:ReaderTranslationTestFixture.kt$internal val translated = "Kutsukaa minua Ismaeliksi."</ID>
-    <ID>ModifierMissing:BookActionsMenu.kt$BookActionsMenu</ID>
     <ID>ModifierMissing:BookDetailScreen.kt$BookDetailContent</ID>
     <ID>ModifierMissing:LibraryContent.kt$LibraryContent</ID>
     <ID>ModifierMissing:LibraryScreen.kt$LibraryScreen</ID>
-    <ID>ModifierMissing:LukiaTheme.kt$LukiaTheme</ID>
-    <ID>ModifierMissing:ShortcutTooltip.kt$ShortcutTooltip</ID>
     <ID>ModifierNotUsedAtRoot:ProseText.kt$modifier = tappable</ID>
     <ID>NestedBlockDepth:DocxMetadataReader.kt$internal fun extractDocxMetadata(docxBytes: ByteArray): BookMetadata?</ID>
     <ID>NestedBlockDepth:DocxTextReader.kt$private fun docxBlocks(xml: String, image: (relationshipId: String) -&gt; ByteArray?): List&lt;TextBlock&gt;</ID>

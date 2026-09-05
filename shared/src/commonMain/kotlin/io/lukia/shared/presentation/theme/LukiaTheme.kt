@@ -50,6 +50,7 @@ internal val LukiaShapes = Shapes(
  */
 @Composable
 fun LukiaTheme(
+    modifier: Modifier = Modifier,
     darkTheme: Boolean = isSystemInDarkTheme(),
     palette: AppPalette = AppPalette.Crisp,
     accent: AppAccent = AppAccent.Themed,
@@ -73,7 +74,7 @@ fun LukiaTheme(
     // real window size instead of assuming a phone. Both axes: a phone in
     // landscape is as wide as a tablet and shorter than anything else the app
     // runs in, and width alone cannot tell those two apart.
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val widthClass = WindowWidthClass.fromWidth(maxWidth)
         val heightClass = WindowHeightClass.fromHeight(maxHeight)
 

@@ -1,7 +1,6 @@
 package io.lukia.features.reader.presentation.components.chrome
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,9 +22,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -43,8 +39,7 @@ import io.lukia.resources.reader_page_x_of_y
 import io.lukia.resources.shortcut_close_book_keys
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.controls.ShortcutTooltip
-import io.lukia.shared.presentation.components.controls.focusRing
-import io.lukia.shared.presentation.components.controls.hoverHighlight
+import io.lukia.shared.presentation.components.controls.pressable
 import io.lukia.shared.presentation.components.icons.BackChevron
 import io.lukia.shared.presentation.components.icons.DisclosureChevron
 import io.lukia.shared.presentation.components.surface.GlassSurface
@@ -260,13 +255,9 @@ internal fun PageIndicatorButton(
                 .background(
                     MaterialTheme.colorScheme.surfaceVariant.copy(alpha = LukiaAlpha.Fill),
                 )
-                .hoverHighlight(interactionSource, shape)
-                .focusRing(interactionSource, shape)
-                .pointerHoverIcon(PointerIcon.Hand)
-                .clickable(
+                .pressable(
                     interactionSource = interactionSource,
-                    indication = null,
-                    role = Role.Button,
+                    shape = shape,
                     onClickLabel = openContents,
                     onClick = onClick,
                 )

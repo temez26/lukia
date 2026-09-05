@@ -13,8 +13,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import io.lukia.features.library.presentation.components.home.HomeCategoryRow
 import io.lukia.features.library.presentation.components.home.HomeShelfRow
 import io.lukia.features.library.presentation.components.toolbar.LibraryMenu
@@ -28,12 +26,10 @@ import io.lukia.resources.Res
 import io.lukia.resources.home_title
 import io.lukia.shared.presentation.components.launch.LaunchReveal
 import io.lukia.shared.presentation.components.launch.launchReveal
+import io.lukia.shared.presentation.theme.Clearance
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
-
-/** Clears the last row of the tab bar the screen scrolls up to. */
-private val HomeBottomPadding: Dp = 24.dp
 
 /** The first reveal slot belongs to the header; the rows follow it down the page. */
 private const val RowRevealOffset = 1
@@ -68,7 +64,7 @@ internal fun HomeRows(
 
     LazyColumn(
         modifier = modifier,
-        contentPadding = PaddingValues(bottom = HomeBottomPadding),
+        contentPadding = PaddingValues(bottom = Clearance.listBottom),
         verticalArrangement = Arrangement.spacedBy(dimens.sectionSpacing),
     ) {
         item(key = "header", contentType = "header") {

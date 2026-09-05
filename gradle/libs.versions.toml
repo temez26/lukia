@@ -29,6 +29,14 @@ koin = "4.2.2"
 # spaces, which Android's dexer rejects for any minimum below API 30.
 ktor = "3.1.3"
 kotlinx-serialization = "1.9.0"
+# An alpha, and the only pre-release dependency the app ships. Nothing in the
+# app needs what the alpha adds - the one experimental Material 3 API used is
+# the tooltip, which every recent release has - but going back is not a version
+# bump either: `TooltipDefaults.rememberTooltipPositionProvider` is the name
+# this line of releases gave it, and an earlier one has it under the old name.
+# So the choice is deliberate rather than free, and the risk is that an alpha
+# may change API between builds. Revisit whenever the stable material3 aligned
+# with `composeMultiplatform` above catches up.
 material3 = "1.11.0-alpha07"
 navigation = "2.9.2"
 pdfbox = "3.0.3"

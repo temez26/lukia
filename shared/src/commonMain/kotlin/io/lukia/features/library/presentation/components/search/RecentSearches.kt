@@ -1,6 +1,5 @@
 package io.lukia.features.library.presentation.components.search
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,9 +15,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import io.lukia.resources.Res
 import io.lukia.resources.filter_clear
@@ -27,7 +23,7 @@ import io.lukia.resources.search_for_term
 import io.lukia.resources.search_forget
 import io.lukia.resources.search_recent
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
-import io.lukia.shared.presentation.components.controls.hoverHighlight
+import io.lukia.shared.presentation.components.controls.pressable
 import io.lukia.shared.presentation.components.icons.ClearGlyph
 import io.lukia.shared.presentation.components.icons.SearchGlyph
 import io.lukia.shared.presentation.components.surface.SectionLabel
@@ -105,12 +101,9 @@ private fun RecentSearchRow(
             .fillMaxWidth()
             .heightIn(min = metrics.rowHeight)
             .clip(shape)
-            .hoverHighlight(interactionSource, shape)
-            .pointerHoverIcon(PointerIcon.Hand)
-            .clickable(
+            .pressable(
                 interactionSource = interactionSource,
-                indication = null,
-                role = Role.Button,
+                shape = shape,
                 onClickLabel = stringResource(Res.string.search_for_term, term),
                 onClick = onClick,
             )
@@ -165,12 +158,9 @@ private fun ClearAll(
         color = MaterialTheme.colorScheme.primary,
         modifier = modifier
             .clip(shape)
-            .hoverHighlight(interactionSource, shape)
-            .pointerHoverIcon(PointerIcon.Hand)
-            .clickable(
+            .pressable(
                 interactionSource = interactionSource,
-                indication = null,
-                role = Role.Button,
+                shape = shape,
                 onClickLabel = stringResource(Res.string.search_clear_recent),
                 onClick = onClick,
             )

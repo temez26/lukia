@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.reader.domain.outline.ReaderOutline
 import io.lukia.features.reader.presentation.percentThrough
+import io.lukia.features.reader.presentation.theme.ReaderPanelWidth
 import io.lukia.resources.Res
 import io.lukia.resources.reader_go_to_page
 import io.lukia.resources.reader_page_x_of_y
@@ -47,9 +48,6 @@ import kotlin.math.roundToInt
 
 /** Grows out of the control it hangs from, matching the other reader panels. */
 private val PanelTransformOrigin = TransformOrigin(0.5f, 0f)
-
-/** A window with room gets a fixed panel, so long chapter titles stay on one line. */
-private val WidePanelWidth: Dp = 380.dp
 
 /** Enough for roughly seven chapters before the list takes over the scrolling. */
 private val CompactListMaxHeight: Dp = 280.dp
@@ -108,7 +106,7 @@ internal fun ReaderContentsPanel(
                 // a four-hundred-page book across 300dp is fourteen pages a
                 // millimetre - and a chapter title has that much more room
                 // before it is cut.
-                .then(if (wide) Modifier.width(WidePanelWidth) else Modifier.fillMaxWidth())
+                .then(if (wide) Modifier.width(ReaderPanelWidth) else Modifier.fillMaxWidth())
                 .padding(vertical = Space.md),
         ) {
             PositionScrubber(

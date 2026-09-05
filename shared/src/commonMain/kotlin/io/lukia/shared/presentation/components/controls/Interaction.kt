@@ -3,6 +3,7 @@ package io.lukia.shared.presentation.components.controls
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -13,6 +14,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.shared.presentation.theme.FocusRingWidth
@@ -154,3 +158,60 @@ fun Modifier.hoverHighlight(
         background(MaterialTheme.colorScheme.onSurface.copy(alpha = alpha), shape)
     }
 }
+
+/**
+ * Everything a control does to show it is being pointed at, focused or pressed,
+ * in the order the app draws them.
+ *
+ * These three always travelled together and were written out separately at every
+ * call site, which is how three of them came to be written out with one missing:
+ * the home shelf's "see all" and both of the recent-search rows had a hover wash
+ * and a pointer cursor and no focus ring at all, so tabbing through the library
+ * landed on them invisibly.
+ *
+ * Separate from [pressable] because a control that toggles or selects rather than
+ * clicks needs the same feedback and its own semantics - see `LukiaChip` and
+ * `SegmentedControl`, which wear this and then declare what pressing them means.
+ */
+@Composable
+fun Modifier.pressFeedback(
+    interactionSource: MutableInteractionSource,
+    shape: Shape,
+    enabled: Boolean = true,
+): Modifier =
+    hoverHighlight(interactionSource, shape)
+        .focusRing(interactionSource, shape)
+        .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default)
+
+/**
+ * A row, a tile or a piece of drawn chrome that behaves as a button.
+ *
+ * [pressFeedback] plus the click itself, with the two things the app's own
+ * `clickable` calls never leave out: no indication, because every control here
+ * draws its own, and [Role.Button], because a `clickable` box announces itself as
+ * text somebody happens to be able to press.
+ *
+ * [onClickLabel] names the action rather than the control - "Open Dune", not
+ * "book" - since it is read after the control's own name.
+ *
+ * Does not clip. What a row clips, and whether it clips at all, belongs with the
+ * background it is clipping: a menu row is square on purpose, and a button clips
+ * before it paints its fill rather than after.
+ */
+@Composable
+fun Modifier.pressable(
+    interactionSource: MutableInteractionSource,
+    shape: Shape,
+    onClickLabel: String,
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+): Modifier =
+    pressFeedback(interactionSource, shape, enabled)
+        .clickable(
+            enabled = enabled,
+            interactionSource = interactionSource,
+            indication = null,
+            role = Role.Button,
+            onClickLabel = onClickLabel,
+            onClick = onClick,
+        )

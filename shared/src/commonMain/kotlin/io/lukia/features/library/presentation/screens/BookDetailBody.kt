@@ -32,15 +32,10 @@ import io.lukia.resources.book_missing_file
 import io.lukia.shared.presentation.components.cover.FavoriteBadge
 import io.lukia.shared.presentation.components.cover.rememberBookCover
 import io.lukia.shared.presentation.components.surface.StatusBadge
+import io.lukia.shared.presentation.theme.Clearance
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
-
-/** Vertical room reserved so content starts clear of the floating back control. */
-private val TopChromeClearance: Dp = 68.dp
-
-/** Room past the last row, so the details do not end hard against the edge. */
-private val DetailBottomClearance: Dp = 32.dp
 
 // The cover, the title and what can be done with the book - everything above
 // the sections that describe it.
@@ -66,8 +61,8 @@ internal fun BookDetailBody(
     onRead: () -> Unit,
     onLongPress: () -> Unit,
     modifier: Modifier = Modifier,
-    topClearance: Dp = TopChromeClearance,
-    bottomClearance: Dp = DetailBottomClearance,
+    topClearance: Dp = Clearance.topChrome,
+    bottomClearance: Dp = Clearance.pageBottom,
     coverWidth: Dp = Dp.Unspecified,
     /**
      * What the grouped details sit in. It has to contrast with whatever is behind
