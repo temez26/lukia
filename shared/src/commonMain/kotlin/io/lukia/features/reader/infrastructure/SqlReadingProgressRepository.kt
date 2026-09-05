@@ -3,14 +3,14 @@ package io.lukia.features.reader.infrastructure
 import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.core.domain.reading.ReadingProgressRepository
 import io.lukia.core.infrastructure.db.LukiaDatabase
+import io.lukia.core.infrastructure.ioDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class SqlReadingProgressRepository(
     database: LukiaDatabase,
     /** Injectable so tests can run against a database deterministically. */
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val dispatcher: CoroutineDispatcher = ioDispatcher(),
 ) : ReadingProgressRepository {
 
     private val positions = database.readingPositionQueries

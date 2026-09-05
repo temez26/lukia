@@ -7,6 +7,7 @@ import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.domain.reading.PdfLayout
 import io.lukia.core.domain.storage.DocumentWorkspace
+import io.lukia.core.infrastructure.ioDispatcher
 import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.reader.domain.ReaderContent
 import io.lukia.features.reader.domain.ReaderDocument
@@ -14,7 +15,6 @@ import io.lukia.features.reader.domain.text.TextExtraction
 import io.lukia.features.reader.infrastructure.openPdfAsText
 import io.lukia.features.reader.infrastructure.openReaderContent
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
@@ -27,8 +27,17 @@ class OpenDocumentUseCase(
     private val libraryRepository: LibraryRepository,
     private val documentWorkspace: DocumentWorkspace,
     private val diagnostics: Diagnostics = Diagnostics.None,
-    /** Injectable so tests can open documents deterministically. */
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    /**
+     * Injectable so tests can open documents deterministically.
+     *
+     * The pool for blocking work rather than the one for arithmetic, which is
+     * what everything under here is: a file copied, a file parsed, and - for a
+     * PDF being read as text - the same file read through as many handles at
+     * once as the device has cores. On the default pool those handles are the
+     * whole of it, so opening one book left nothing to lay out the last one
+     * with.
+     */
+    private val dispatcher: CoroutineDispatcher = ioDispatcher(),
 ) {
     /**
      * Copying a book and reading its structure both run for as long as the file

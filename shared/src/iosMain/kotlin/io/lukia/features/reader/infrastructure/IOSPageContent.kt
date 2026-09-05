@@ -5,6 +5,7 @@ import io.lukia.features.reader.domain.page.PageGlyph
 import io.lukia.features.reader.domain.page.PageImage
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -46,7 +47,7 @@ internal class IOSPageContent(
     private val figures = CoreGraphicsFigureBytes()
 
     override suspend fun pageText(index: Int): List<PageGlyph>? =
-        withContext(Dispatchers.Default) {
+        withContext(Dispatchers.IO) {
             lock.withLock {
                 runCatching { document.pageAtIndex(index.toULong())?.pageGlyphs() }.getOrNull()
             }
@@ -58,7 +59,7 @@ internal class IOSPageContent(
      * [coreGraphicsPageImages].
      */
     override suspend fun pageImages(index: Int): List<PageImage> =
-        withContext(Dispatchers.Default) {
+        withContext(Dispatchers.IO) {
             lock.withLock {
                 runCatching {
                     document.pageAtIndex(index.toULong())
