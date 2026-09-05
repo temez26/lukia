@@ -38,8 +38,8 @@ internal suspend fun openReaderContent(
     // memory.
     DocumentType.PDF -> PagedContent(openPdfPages(path))
 
-    DocumentType.EPUB -> readEpub(readFileBytes(path))
-    DocumentType.DOCX -> readDocx(readFileBytes(path))
+    DocumentType.EPUB -> readEpub(readFileBytes(path), diagnostics)
+    DocumentType.DOCX -> readDocx(readFileBytes(path), diagnostics)
     DocumentType.TEXT -> readPlainText(readFileBytes(path), diagnostics)
     DocumentType.MARKDOWN -> readMarkdown(readFileBytes(path), diagnostics)
 
