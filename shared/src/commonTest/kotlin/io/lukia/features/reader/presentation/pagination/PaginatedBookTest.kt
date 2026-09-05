@@ -2,8 +2,12 @@ package io.lukia.features.reader.presentation.pagination
 
 import io.lukia.features.reader.domain.outline.OutlineEntry
 import io.lukia.features.reader.domain.outline.ReaderOutline
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.test.runTest
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
@@ -154,5 +158,44 @@ class PaginatedBookTest {
     @Test
     fun aBlockThatIsNotThereLandsAtTheStartOfItsSection() {
         assertEquals(book.pageOf(1), book.pageOf(sectionIndex = 1, blockIndex = 99))
+    }
+
+    @Test
+    fun aFinishedBookHoldsEveryPlaceItCanName() {
+        assertTrue(book.pages.indices.map(book::placeOf).all(book::holds))
+    }
+
+    /**
+     * The distinction [holds] exists for. A book still being measured knows
+     * nothing about the chapters it has not reached, and [pageOf] answers for
+     * one of those with its last page - which a contents row needs and the
+     * reader's own position must not be given, or a re-layout would move them
+     * to the end of a beginning and record them as having gone there.
+     */
+    @Test
+    fun aBookStillBeingLaidOutDoesNotHoldAPlaceItHasNotReached() = runTest {
+        val long = List(20) { index -> chapter("Chapter $index", *Array(30) { filler(40) }) }
+
+        val laid = paginateProgressively(
+            sections = long,
+            pageHeightPx = PAGE_HEIGHT,
+            sizesPerWorker = List(4) { CharacterHeights },
+            context = EmptyCoroutineContext,
+        ).toList()
+
+        val lastChapter = BookPlace(sectionIndex = long.lastIndex)
+        val partial = laid.first { !it.complete }
+
+        assertFalse(partial.holds(lastChapter))
+        assertTrue(laid.last().holds(lastChapter))
+
+        // And the answer it would have been given instead, which is what makes
+        // the two worth telling apart at all.
+        assertEquals(partial.pages.lastIndex, partial.pageOf(lastChapter))
+    }
+
+    @Test
+    fun aBookWithNoPagesHoldsNothing() {
+        assertFalse(PaginatedBook.Empty.holds(BookPlace(sectionIndex = 0)))
     }
 }

@@ -63,6 +63,10 @@ internal fun HideChromeWhileScrolling(
  * moves: a fling through a long book passes hundreds of pages nobody saw, and
  * storing each of them would be hundreds of writes to arrive at the one page
  * that mattered.
+ *
+ * [laidOut] is false while a reflowable book is still being measured, and is
+ * what keeps a position from being stored against a length that is still
+ * climbing - see the note on the recording effect below.
  */
 @Composable
 internal fun KeepReadingPosition(
@@ -70,12 +74,27 @@ internal fun KeepReadingPosition(
     document: ReaderDocument?,
     initialPosition: ReadingProgress?,
     pageCount: Int,
+    laidOut: Boolean,
     onPageSettled: (pageIndex: Int, pageCount: Int) -> Unit,
 ) {
     LaunchedEffect(listState, initialPosition, document) {
         if (document?.content !is PagedContent) return@LaunchedEffect
 
         val page = initialPosition?.pageIndex ?: return@LaunchedEffect
+
+        // Only a list that has not been anywhere yet.
+        //
+        // [initialPosition] is where the book *opened* and is deliberately
+        // never moved off that, so this is an instruction to carry out once
+        // rather than a position to keep following. A turned device runs it
+        // again - the composition goes down and the ViewModel stands - and
+        // without this the reader is sent back to where they started, and then
+        // that is stored as where they got to. A list that is already
+        // somewhere has either been scrolled by the reader or has just
+        // restored its own position, and both are a better answer than this
+        // one.
+        if (listState.firstVisibleItemIndex != 0) return@LaunchedEffect
+        if (listState.firstVisibleItemScrollOffset != 0) return@LaunchedEffect
 
         if (page > 0) listState.scrollToItem(page)
     }
@@ -89,8 +108,14 @@ internal fun KeepReadingPosition(
     // which happens after the document arrives - and a reader who opens a book
     // and never scrolls would otherwise have their position recorded against a
     // length of nothing, and so not recorded at all.
-    LaunchedEffect(listState, document, pageCount) {
-        if (document == null) return@LaunchedEffect
+    //
+    // Nothing at all until the book has been measured to the end. A page number
+    // is only a position alongside the count it is one of, and the count of a
+    // book still being laid out is on its way to several times what it says -
+    // so a sitting that ended in that window stored a page four hundred of
+    // sixty, and reopening it read that as two thirds of the way through.
+    LaunchedEffect(listState, document, pageCount, laidOut) {
+        if (document == null || !laidOut) return@LaunchedEffect
 
         snapshotFlow { listState.isScrollInProgress to listState.firstVisibleItemIndex }
             .filter { (scrolling, _) -> !scrolling }

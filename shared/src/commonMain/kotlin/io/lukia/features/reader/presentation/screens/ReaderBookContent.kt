@@ -193,6 +193,10 @@ internal fun ReaderContent(
             document = document,
             initialPosition = initialPosition,
             pageCount = pageCount,
+            // A fixed-layout document is as long as it will ever be the moment
+            // it opens. A reflowable one is only as long as it has been
+            // measured so far, and [pageCount] climbs until it is done.
+            laidOut = document?.content !is ReflowableContent || paginated.complete,
             onPageSettled = onPageSettled,
         )
 

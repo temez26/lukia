@@ -10,6 +10,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
@@ -192,6 +195,13 @@ private fun PaginatedBook.openingPage(openedAt: ReadingProgress): Int {
  * they are not already. Without that, a book still being measured would snap
  * back to the top of the page every time it grew, under the finger of somebody
  * scrolling through it.
+ *
+ * The place is saved rather than merely remembered, because it is the only
+ * record of where the reader is now: [openedAt] is where the book *opened* and
+ * is deliberately never moved off that. A rotation takes the composition down
+ * and leaves the ViewModel standing, so a place held in `remember` came back
+ * null and sent the reader to the page they opened at - discarding the whole
+ * sitting, and then storing that as their position.
  */
 @Composable
 private fun FollowPlaceAcrossLayout(
@@ -199,14 +209,27 @@ private fun FollowPlaceAcrossLayout(
     listState: LazyListState,
     openedAt: ReadingProgress?,
 ) {
-    var place by remember { mutableStateOf<BookPlace?>(null) }
+    var place by rememberSaveable(stateSaver = BookPlaceSaver) {
+        mutableStateOf<BookPlace?>(null)
+    }
 
     LaunchedEffect(book, openedAt) {
         // Nothing to follow and nowhere to go until both the book and the place
         // it is being opened at are known.
         if (book.pages.isEmpty() || openedAt == null) return@LaunchedEffect
 
-        val target = place?.let(book::pageOf) ?: book.openingPage(openedAt)
+        val known = place
+
+        // A book still being measured has no page for a place it has not
+        // reached, and [pageOf] answers for one with its last page - which for
+        // the reader's own position is the end of a beginning. Worse, the
+        // collector below would then record that as where they are, losing the
+        // place before the rest of the book arrived to honour it. A finished
+        // book is clamped as it always was: there the last page is the honest
+        // answer, because the book really is that long now.
+        if (known != null && !book.complete && !book.holds(known)) return@LaunchedEffect
+
+        val target = known?.let(book::pageOf) ?: book.openingPage(openedAt)
 
         if (target != listState.firstVisibleItemIndex) listState.scrollToItem(target)
 
@@ -216,6 +239,19 @@ private fun FollowPlaceAcrossLayout(
             .collect { place = book.placeOf(it) }
     }
 }
+
+/**
+ * A place is two indices into the book, which is all of it that has to survive
+ * the composition being taken down and built again.
+ *
+ * A reader who has not been put anywhere yet saves nothing, and restoring
+ * nothing gives the null this started at - so the state that means "not yet"
+ * comes back as itself without being spelled out.
+ */
+private val BookPlaceSaver: Saver<BookPlace?, Any> = listSaver(
+    save = { place -> place?.let { listOf(it.sectionIndex, it.blockIndex) }.orEmpty() },
+    restore = { saved -> saved.takeIf { it.size == 2 }?.let { BookPlace(it[0], it[1]) } },
+)
 
 /**
  * Tells whoever is counting the pages how many there are now.
