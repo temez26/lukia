@@ -34,7 +34,7 @@ class AndroidPdfOutlineTest {
 
     @Test
     fun readsTheChaptersOutOfTheFile() {
-        openPdfPages(file.absolutePath).use { pages ->
+        openTestPdf(file.absolutePath).use { pages ->
             val outline = assertNotNull(pages.outline, "Android should read an outline")
 
             assertEquals(
@@ -51,7 +51,7 @@ class AndroidPdfOutlineTest {
     /** The pages still come from the platform renderer, as they always did. */
     @Test
     fun stillOpensThePagesThemselves() {
-        openPdfPages(file.absolutePath).use { pages ->
+        openTestPdf(file.absolutePath).use { pages ->
             assertEquals(MinimalPdf.PAGE_COUNT, pages.pageCount)
         }
     }

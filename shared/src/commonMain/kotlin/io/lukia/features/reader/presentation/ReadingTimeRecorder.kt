@@ -1,9 +1,9 @@
 package io.lukia.features.reader.presentation
 
 import io.lukia.core.domain.reading.ReadingSessionRepository
+import io.lukia.core.infrastructure.ioDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
@@ -85,7 +85,7 @@ internal class ReadingTimeRecorder(
     private val location: String,
     private val sessions: ReadingSessionRepository,
     private val scope: CoroutineScope,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val dispatcher: CoroutineDispatcher = ioDispatcher(),
     private val timeSource: TimeSource = TimeSource.Monotonic,
     private val startedAtMillis: () -> Long = { Clock.System.now().toEpochMilliseconds() },
 ) {

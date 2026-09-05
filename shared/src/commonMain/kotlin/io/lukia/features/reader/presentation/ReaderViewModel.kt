@@ -250,8 +250,21 @@ class ReaderViewModel(
      * open, and far too much to do on the thread drawing the pages. Starting it
      * here means it is almost always ready before anyone looks.
      */
+
+    /**
+     * The chapter list being read, so that a book put away can stop it.
+     *
+     * Its own job rather than part of [opening], because it is deliberately not
+     * something the opening waits for - see [loadOutline]. That is also what
+     * made it outlive a reopening: cancelling the opening left this running,
+     * and it came back to publish the abandoned book's chapters over the ones
+     * being read, having gone to a document that had since been closed to get
+     * them.
+     */
+    private var outlining: Job? = null
+
     private fun loadOutline(document: ReaderDocument) {
-        viewModelScope.launch {
+        outlining = viewModelScope.launch {
             val entries = withContext(outlineDispatcher) {
                 runCatchingApp { document.content.outline?.asTableOfContents() }.getOrNull()
             }
@@ -287,7 +300,13 @@ class ReaderViewModel(
         // Cancelling here rather than on the way into [open] is what makes that
         // a property of this code rather than of the dispatcher it happens to
         // be running on.
+        //
+        // The chapter list goes with it. It is not part of the opening - see
+        // [outlining] - so cancelling that alone left it running against a
+        // document about to be closed, to publish its chapters over the book
+        // that replaced it.
         opening?.cancel()
+        outlining?.cancel()
 
         closeDocument()
         translation.clear()

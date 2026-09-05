@@ -3,14 +3,14 @@ package io.lukia.features.reader.infrastructure
 import io.lukia.core.domain.reading.PdfLayout
 import io.lukia.core.domain.reading.PdfLayoutRepository
 import io.lukia.core.infrastructure.db.LukiaDatabase
+import io.lukia.core.infrastructure.ioDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class SqlPdfLayoutRepository(
     database: LukiaDatabase,
     /** Injectable so tests can run against a database deterministically. */
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val dispatcher: CoroutineDispatcher = ioDispatcher(),
 ) : PdfLayoutRepository {
 
     private val layouts = database.readerLayoutQueries

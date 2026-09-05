@@ -64,10 +64,10 @@ internal class AndroidPageContent(private val file: File) : PageContent {
     private val lock = Mutex()
 
     override suspend fun pageText(index: Int): List<PageGlyph>? =
-        withContext(Dispatchers.Default) { lock.withLock { glyphs(index) } }
+        withContext(Dispatchers.IO) { lock.withLock { glyphs(index) } }
 
     override suspend fun pageImages(index: Int): List<PageImage> =
-        withContext(Dispatchers.Default) { lock.withLock { images(index) } }
+        withContext(Dispatchers.IO) { lock.withLock { images(index) } }
 
     private fun glyphs(pageIndex: Int): List<PageGlyph>? {
         val document = document() ?: return null

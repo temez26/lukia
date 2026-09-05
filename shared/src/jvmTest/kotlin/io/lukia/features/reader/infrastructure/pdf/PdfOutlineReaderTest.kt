@@ -3,7 +3,7 @@ package io.lukia.features.reader.infrastructure.pdf
 import io.lukia.core.infrastructure.pdf.ByteArrayPdfSource
 import io.lukia.core.infrastructure.pdf.MinimalPdf
 import io.lukia.features.reader.domain.outline.OutlineEntry
-import io.lukia.features.reader.infrastructure.openPdfPages
+import io.lukia.features.reader.infrastructure.openTestPdf
 import org.apache.pdfbox.pdfwriter.compress.CompressParameters
 import org.apache.pdfbox.pdmodel.PDDestinationNameTreeNode
 import org.apache.pdfbox.pdmodel.PDDocument
@@ -230,7 +230,7 @@ class PdfOutlineReaderTest {
     fun theHandWrittenFixtureIsAValidPdf() {
         val file = File(directory, "fixture.pdf").apply { writeBytes(MinimalPdf.withOutline()) }
 
-        openPdfPages(file.absolutePath).use { pages ->
+        openTestPdf(file.absolutePath).use { pages ->
             assertEquals(MinimalPdf.PAGE_COUNT, pages.pageCount)
             assertEquals(
                 listOf(MinimalPdf.FIRST_CHAPTER_TITLE, MinimalPdf.SECOND_CHAPTER_TITLE),
@@ -285,7 +285,7 @@ class PdfOutlineReaderTest {
                 outline.addLast(document.outlineItem("Index", 7))
             }
 
-            val fromPdfBox = openPdfPages(file.absolutePath).use { it.outline }
+            val fromPdfBox = openTestPdf(file.absolutePath).use { it.outline }
             val fromParser = file.outline()
 
             assertEquals(fromPdfBox, fromParser, "compressed=$compressed")

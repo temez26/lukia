@@ -5,7 +5,9 @@ import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.text.TextAnchor
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,6 +15,9 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.TimeMark
+import kotlin.time.TimeSource
 
 /**
  * How many translated passages one open book keeps.
@@ -53,6 +58,15 @@ private const val MAX_KEPT_PASSAGES = 400
 private const val MAX_AT_ONCE = 2
 
 /**
+ * How often a translation still being written is worth putting on the page.
+ *
+ * Often enough that it reads as text arriving rather than as a page that jumps,
+ * and rare enough that the book's translations are not filed again for every
+ * token - see [TranslationSession.showAsItArrives].
+ */
+private val SHOW_ARRIVING_EVERY = 80.milliseconds
+
+/**
  * Every passage translated while one book is open, and what a tap on each of
  * them now means.
  *
@@ -87,6 +101,24 @@ class TranslationSession(
 
     /** What keeps a whole page's worth of taps from arriving as a whole page of requests. */
     private val inFlight = Semaphore(MAX_AT_ONCE)
+
+    /**
+     * The requests still on their way, so that forgetting the book can stop
+     * them.
+     *
+     * Every one of them ends by putting its answer into [kept], so without this
+     * a translation asked for before a book was put away arrives into the book
+     * that replaced it - anchored at a sentence that may no longer be there.
+     *
+     * A list of jobs rather than a scope of their own, because a scope of their
+     * own is a job nobody ever completes, and anything waiting for the reader's
+     * work to finish waits for that one forever. Held to the same rule as
+     * [kept]: only ever touched from the thread the taps arrive on, which is
+     * what [prune] is for - finished jobs are dropped as new ones are added
+     * rather than as each of them ends, since the end of one happens wherever
+     * it happened to end.
+     */
+    private val asking = mutableListOf<Job>()
 
     private val _passages = MutableStateFlow<Map<TextAnchor, PassageTranslation>>(emptyMap())
     val passages: StateFlow<Map<TextAnchor, PassageTranslation>> = _passages.asStateFlow()
@@ -157,7 +189,9 @@ class TranslationSession(
     private fun fetch(anchor: TextAnchor, request: TranslationRequest, waitsItsTurn: Boolean) {
         put(anchor, PassageTranslation.Loading())
 
-        scope.launch {
+        prune()
+
+        asking += scope.launch {
             // The translation arrives on whatever thread the connection is read
             // on, and [kept] belongs to this one. So the pieces are handed over
             // through a value that can be written from anywhere, and turned back
@@ -165,9 +199,7 @@ class TranslationSession(
             // touching the map from under the taps.
             val arriving = MutableStateFlow<String?>(null)
 
-            val showing = launch {
-                arriving.filterNotNull().collect { put(anchor, PassageTranslation.Loading(it)) }
-            }
+            val showing = launch { arriving.filterNotNull().showAsItArrives(anchor) }
 
             val state = translating(waitsItsTurn) {
                 translate(request) { arriving.value = it }
@@ -218,8 +250,16 @@ class TranslationSession(
     /**
      * Forgets everything translated so far - for when the book underneath is
      * replaced, and the anchors that pointed into it no longer point anywhere.
+     *
+     * What is still on its way is stopped first. Emptying the map alone left
+     * every request in flight to put its answer back into it a moment later, so
+     * a reader who tapped three sentences and then re-opened the book the other
+     * way found them arriving into the new one.
      */
     fun clear() {
+        asking.forEach { it.cancel() }
+        asking.clear()
+
         kept.clear()
         _passages.value = emptyMap()
     }
@@ -227,6 +267,41 @@ class TranslationSession(
     /** Runs the translation, holding a place in the queue only if it has to. */
     private suspend fun <T> translating(waitsItsTurn: Boolean, translate: suspend () -> T): T =
         if (waitsItsTurn) inFlight.withPermit { translate() } else translate()
+
+    /**
+     * Puts a streamed answer on the page as it is written, but no more often
+     * than [SHOW_ARRIVING_EVERY].
+     *
+     * Every piece used to be published, and each one costs far more than it
+     * looks: [put] copies the whole map, and the screen above files every
+     * passage in the book by where it belongs each time that map changes - see
+     * `BookTranslations`. At a token apiece that is the book's translations
+     * rebuilt tens of times a second, on the thread that draws, for the sake of
+     * a word or two of text.
+     *
+     * On a clock rather than on a count of pieces, because how much text a
+     * piece carries is the service's business rather than this one's. The first
+     * goes up at once all the same, because it is the one that tells the reader
+     * the tap landed. The last is not waited for: the finished answer is put
+     * straight afterwards and says everything a final piece would have.
+     */
+    private suspend fun Flow<String>.showAsItArrives(anchor: TextAnchor) {
+        var shown: TimeMark? = null
+
+        collect { text ->
+            val last = shown
+
+            if (last != null && last.elapsedNow() < SHOW_ARRIVING_EVERY) return@collect
+
+            shown = TimeSource.Monotonic.markNow()
+            put(anchor, PassageTranslation.Loading(text))
+        }
+    }
+
+    /** Drops the ones that have already finished, so the list is the ones in flight. */
+    private fun prune() {
+        asking.removeAll { it.isCompleted }
+    }
 
     private fun put(anchor: TextAnchor, state: PassageTranslation) {
         // Removed before it is added so that touching a passage moves it to the

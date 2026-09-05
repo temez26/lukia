@@ -113,7 +113,7 @@ class PdfPageTextTest {
         pages.close()
     }
 
-    private fun openPdf(vararg lines: Pair<String, Float>) = openPdfPages(
+    private fun openPdf(vararg lines: Pair<String, Float>) = openTestPdf(
         File(root, "book-${lines.hashCode()}.pdf").also { file ->
             PDDocument().use { document ->
                 val page = PDPage(PDRectangle.A4)

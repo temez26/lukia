@@ -144,7 +144,7 @@ class PdfKitPageTextTest {
     @Test
     fun everyCharacterOfALineIsGivenTheHeightOfItsType() = runTest {
         val path = write(page { draw(OPENING, size = BODY_SIZE, top = 180.0) })
-        val glyphs = openPdfPages(path).use { it.pageText(0) }
+        val glyphs = openTestPdf(path).use { it.pageText(0) }
 
         NSFileManager.defaultManager.removeItemAtPath(path, null)
         assertNotNull(glyphs)
@@ -157,7 +157,7 @@ class PdfKitPageTextTest {
 
     private suspend fun blocksOf(document: NSData): List<TextBlock> {
         val path = write(document)
-        val content = openPdfPages(path).use { readPdfAsText(it) }
+        val content = openTestPdf(path).use { readPdfAsText(it) }
 
         NSFileManager.defaultManager.removeItemAtPath(path, null)
 

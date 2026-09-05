@@ -50,7 +50,7 @@ internal class PdfBoxPageContent(
     private val figures = PdfFigureBytes()
 
     override suspend fun pageText(index: Int): List<PageGlyph>? =
-        withContext(Dispatchers.Default) {
+        withContext(Dispatchers.IO) {
             lock.withLock {
                 runCatching {
                     val stripper = GlyphStripper().apply {
@@ -75,7 +75,7 @@ internal class PdfBoxPageContent(
      * keeps no list of what is drawn where - see [pdfBoxPageImages].
      */
     override suspend fun pageImages(index: Int): List<PageImage> =
-        withContext(Dispatchers.Default) {
+        withContext(Dispatchers.IO) {
             lock.withLock {
                 runCatching { pdfBoxPageImages(document.getPage(index), figures) }
                     .getOrDefault(emptyList())

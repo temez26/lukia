@@ -3,14 +3,14 @@ package io.lukia.features.reader.infrastructure
 import io.lukia.core.domain.reading.ReadingSession
 import io.lukia.core.domain.reading.ReadingSessionRepository
 import io.lukia.core.infrastructure.db.LukiaDatabase
+import io.lukia.core.infrastructure.ioDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class SqlReadingSessionRepository(
     private val database: LukiaDatabase,
     /** Injectable so tests can run against a database deterministically. */
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val dispatcher: CoroutineDispatcher = ioDispatcher(),
 ) : ReadingSessionRepository {
 
     private val sessions = database.readingSessionQueries

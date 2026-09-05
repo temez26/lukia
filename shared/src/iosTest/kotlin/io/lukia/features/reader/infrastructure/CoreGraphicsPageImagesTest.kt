@@ -40,7 +40,7 @@ class CoreGraphicsPageImagesTest {
     @Test
     fun findsAPictureWhereItWasDrawn() = runTest {
         withTemporaryPdf(pdfDrawing(CGRectMake(50.0, 100.0, 100.0, 80.0))) { path ->
-            val images = openPdfPages(path).use { it.pageImages(0) }
+            val images = openTestPdf(path).use { it.pageImages(0) }
 
             assertEquals(1, images.size)
 
@@ -56,7 +56,7 @@ class CoreGraphicsPageImagesTest {
     @Test
     fun readsThePictureAsAnEncodedImage() = runTest {
         withTemporaryPdf(pdfDrawing(CGRectMake(50.0, 100.0, 100.0, 80.0))) { path ->
-            val bytes = openPdfPages(path).use { it.pageImages(0) }.single().bytes
+            val bytes = openTestPdf(path).use { it.pageImages(0) }.single().bytes
 
             assertTrue(bytes.size > 1, "the picture came back with no bytes")
             assertTrue(bytes.isJpeg() || bytes.isPng(), "the picture is in no format a reader decodes")
@@ -68,7 +68,7 @@ class CoreGraphicsPageImagesTest {
         val grouped = pdfDrawing(CGRectMake(50.0, 100.0, 100.0, 80.0), asGroup = true)
 
         withTemporaryPdf(grouped) { path ->
-            val images = openPdfPages(path).use { it.pageImages(0) }
+            val images = openTestPdf(path).use { it.pageImages(0) }
 
             assertEquals(1, images.size)
 
@@ -86,7 +86,7 @@ class CoreGraphicsPageImagesTest {
         val transparent = pdfDrawing(CGRectMake(50.0, 100.0, 100.0, 80.0), opaque = false)
 
         withTemporaryPdf(transparent) { path ->
-            val bytes = openPdfPages(path).use { it.pageImages(0) }.single().bytes
+            val bytes = openTestPdf(path).use { it.pageImages(0) }.single().bytes
 
             assertTrue(bytes.isPng(), "a picture with transparency was written out as JPEG")
         }
@@ -95,7 +95,7 @@ class CoreGraphicsPageImagesTest {
     @Test
     fun leavesMarksTooSmallToBeIllustrations() = runTest {
         withTemporaryPdf(pdfDrawing(CGRectMake(50.0, 100.0, 10.0, 10.0))) { path ->
-            val images = openPdfPages(path).use { it.pageImages(0) }
+            val images = openTestPdf(path).use { it.pageImages(0) }
 
             assertTrue(images.isEmpty(), "a ten point mark was carried into the text")
         }
@@ -104,7 +104,7 @@ class CoreGraphicsPageImagesTest {
     @Test
     fun aPageThatDrawsNothingHasNoPictures() = runTest {
         withTemporaryPdf(pdfDrawing(null)) { path ->
-            val images = openPdfPages(path).use { it.pageImages(0) }
+            val images = openTestPdf(path).use { it.pageImages(0) }
 
             assertTrue(images.isEmpty())
         }
@@ -121,7 +121,7 @@ class CoreGraphicsPageImagesTest {
     @Test
     fun aMarkDrawnOnEveryPageIsReadOnce() = runTest {
         withTemporaryPdf(pdfWithAMarkOnEveryPage(pages = 3)) { path ->
-            openPdfPages(path).use { pages ->
+            openTestPdf(path).use { pages ->
                 val first = pages.pageImages(0).single().bytes
 
                 repeat(2) { page ->
@@ -150,7 +150,7 @@ class CoreGraphicsPageImagesTest {
         }
 
         withTemporaryPdf(data) { path ->
-            openPdfPages(path).use { pages ->
+            openTestPdf(path).use { pages ->
                 val first = pages.pageImages(0).single().bytes
                 val second = pages.pageImages(1).single().bytes
 

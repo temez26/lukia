@@ -10,6 +10,7 @@ import io.lukia.features.reader.domain.page.PageSize
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -22,7 +23,22 @@ import platform.PDFKit.kPDFDisplayBoxCropBox
 import platform.UIKit.UIImagePNGRepresentation
 import platform.UIKit.UIScreen
 
-internal actual fun openPdfPages(path: String): DocumentPages = IOSDocumentPages(path)
+/**
+ * The document is opened here rather than inside the pages, so that a file
+ * PDFKit will not read comes back as null instead of as a document with no
+ * pages in it - see the expect.
+ */
+internal actual fun openPdfPages(path: String): DocumentPages? {
+    // Caught rather than tested for: PDFKit answers nil for a file it will not
+    // read, and the initialiser is bound here as one that cannot, so nil
+    // arrives as a throw rather than as a null to check.
+    val document = runCatching { PDFDocument(uRL = NSURL.fileURLWithPath(path)) }.getOrNull()
+        ?: return null
+
+    // Nothing to give back by hand if this throws: a PDFKit document is
+    // reference counted, which is why closing these pages is also nothing.
+    return runCatching { IOSDocumentPages(document) }.getOrNull()
+}
 
 /** Guards against an outline that is malformed into a cycle or absurdly deep. */
 private const val MAX_OUTLINE_DEPTH = 8
@@ -34,9 +50,7 @@ private const val MAX_OUTLINE_ENTRIES = 5000
  * free of manual bitmap contexts.
  */
 @OptIn(ExperimentalForeignApi::class)
-private class IOSDocumentPages(path: String) : DocumentPages {
-
-    private val document: PDFDocument = PDFDocument(uRL = NSURL.fileURLWithPath(path))
+private class IOSDocumentPages(private val document: PDFDocument) : DocumentPages {
 
     /** PDFKit does not promise a document is safe to use from two threads. */
     private val renderLock = Mutex()
@@ -121,7 +135,7 @@ private class IOSDocumentPages(path: String) : DocumentPages {
     }
 
     override suspend fun renderPage(index: Int, targetWidthPx: Int): ImageBitmap? =
-        withContext(Dispatchers.Default) {
+        withContext(Dispatchers.IO) {
             renderLock.withLock {
                 runCatching {
                     val page = document.pageAtIndex(index.toULong()) ?: return@runCatching null

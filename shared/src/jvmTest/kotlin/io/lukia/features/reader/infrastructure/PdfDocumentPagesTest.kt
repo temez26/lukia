@@ -11,7 +11,6 @@ import java.io.File
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFails
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -30,7 +29,7 @@ class PdfDocumentPagesTest {
 
     @Test
     fun readsEveryPage() {
-        openPdfPages(pdfFile(pageCount = 3).absolutePath).use { pages ->
+        openTestPdf(pdfFile(pageCount = 3).absolutePath).use { pages ->
             assertEquals(3, pages.pageCount)
             assertEquals(3, pages.pageSizes.size)
         }
@@ -38,7 +37,7 @@ class PdfDocumentPagesTest {
 
     @Test
     fun reportsThePageShape() {
-        openPdfPages(pdfFile(pageCount = 1).absolutePath).use { pages ->
+        openTestPdf(pdfFile(pageCount = 1).absolutePath).use { pages ->
             val page = pages.pageSizes.first()
 
             assertEquals(PDRectangle.A4.width, page.width)
@@ -58,7 +57,7 @@ class PdfDocumentPagesTest {
             document.getPage(0).rotation = 90
         }
 
-        openPdfPages(file.absolutePath).use { pages ->
+        openTestPdf(file.absolutePath).use { pages ->
             val page = pages.pageSizes.first()
 
             assertEquals(PDRectangle.A4.height, page.width)
@@ -69,7 +68,7 @@ class PdfDocumentPagesTest {
 
     @Test
     fun rendersAPageAtTheRequestedWidth() = runTest {
-        openPdfPages(pdfFile(pageCount = 1).absolutePath).use { pages ->
+        openTestPdf(pdfFile(pageCount = 1).absolutePath).use { pages ->
             val rendered = pages.renderPage(index = 0, targetWidthPx = 600)
 
             assertNotNull(rendered)
@@ -82,7 +81,7 @@ class PdfDocumentPagesTest {
 
     @Test
     fun aPageThatIsNotThereRendersAsNothing() = runTest {
-        openPdfPages(pdfFile(pageCount = 1).absolutePath).use { pages ->
+        openTestPdf(pdfFile(pageCount = 1).absolutePath).use { pages ->
             assertNull(pages.renderPage(index = 7, targetWidthPx = 600))
         }
     }
@@ -97,7 +96,7 @@ class PdfDocumentPagesTest {
             )
         }
 
-        openPdfPages(file.absolutePath).use { pages ->
+        openTestPdf(file.absolutePath).use { pages ->
             assertEquals(
                 listOf("Introduction", "The Middle", "The End"),
                 pages.outline?.map { it.title },
@@ -119,7 +118,7 @@ class PdfDocumentPagesTest {
             chapter.addLast(document.outlineItem("Another Section", pageIndex = 2))
         }
 
-        openPdfPages(file.absolutePath).use { pages ->
+        openTestPdf(file.absolutePath).use { pages ->
             assertEquals(
                 listOf(0, 1, 1),
                 pages.outline?.map { it.level },
@@ -150,7 +149,7 @@ class PdfDocumentPagesTest {
             document.outline("Introduction" to 0, "The End" to 5)
         }
 
-        val pages = openPdfPages(file.absolutePath)
+        val pages = openTestPdf(file.absolutePath)
         pages.close()
 
         assertEquals(listOf("Introduction", "The End"), pages.outline?.map { it.title })
@@ -159,16 +158,17 @@ class PdfDocumentPagesTest {
     /** Empty, not null: the document genuinely has no table of contents. */
     @Test
     fun aDocumentWithoutAnOutlineHasNoChapters() {
-        openPdfPages(pdfFile(pageCount = 2).absolutePath).use { pages ->
+        openTestPdf(pdfFile(pageCount = 2).absolutePath).use { pages ->
             assertEquals(emptyList(), pages.outline)
         }
     }
 
+    /** Null rather than a throw, which is how every other format says the same. */
     @Test
     fun aFileThatIsNotAPdfDoesNotOpen() {
         val file = File(directory, "not-a.pdf").apply { writeText("not a pdf") }
 
-        assertFails { openPdfPages(file.absolutePath) }
+        assertNull(openPdfPages(file.absolutePath))
     }
 
     /** Adds a flat outline, one entry per title, pointing at the given pages. */

@@ -16,17 +16,39 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
+import kotlin.concurrent.Volatile
 
-internal actual fun openPdfPages(path: String): DocumentPages = AndroidDocumentPages(path)
+/**
+ * Every handle is opened here rather than inside the document, so that one the
+ * next step refuses is given back rather than leaked - see the expect. A
+ * document whose construction throws part way is never assigned to anything and
+ * so is never closed, and each of these is a file handle the reader does not get
+ * back until the process ends.
+ */
+internal actual fun openPdfPages(path: String): DocumentPages? {
+    val file = File(path)
 
-private class AndroidDocumentPages(path: String) : DocumentPages {
-
-    private val file = File(path)
-
-    private val descriptor: ParcelFileDescriptor =
+    val descriptor = runCatching {
         ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
+    }.getOrNull() ?: return null
 
-    private val renderer = PdfRenderer(descriptor)
+    val renderer = runCatching { PdfRenderer(descriptor) }.getOrElse {
+        runCatching { descriptor.close() }
+        return null
+    }
+
+    return runCatching { AndroidDocumentPages(file, descriptor, renderer) }.getOrElse {
+        runCatching { renderer.close() }
+        runCatching { descriptor.close() }
+        null
+    }
+}
+
+private class AndroidDocumentPages(
+    private val file: File,
+    private val descriptor: ParcelFileDescriptor,
+    private val renderer: PdfRenderer,
+) : DocumentPages {
 
     /**
      * [PdfRenderer] allows one open page at a time and throws on the second, so
@@ -34,6 +56,24 @@ private class AndroidDocumentPages(path: String) : DocumentPages {
      * merely made safe.
      */
     private val renderLock = Mutex()
+
+    /**
+     * Whether the book has been given back.
+     *
+     * Read inside [renderLock], which is what makes it worth having: the reader
+     * asks for several pages as it scrolls and they queue, so a page that was
+     * waiting its turn when the reader left the book would otherwise reach a
+     * renderer that had been closed while it waited. Leaving the book is the
+     * common way to arrive there - the pages ahead are still being drawn.
+     *
+     * It does not cover a page already inside [PdfRenderer.render] when the
+     * book is closed. Closing cannot take the lock, because it happens on the
+     * thread that draws and one page can be most of a second; shutting that
+     * window means a close that can suspend, which is a change to every
+     * platform and to what owns a document.
+     */
+    @Volatile
+    private var closed = false
 
     /**
      * Measured as the document opens, which is where the other platforms measure
@@ -98,18 +138,24 @@ private class AndroidDocumentPages(path: String) : DocumentPages {
     // file a second time with a library that can read it, and a PDF being parsed
     // where it was asked for is a PDF being parsed on the thread that draws.
     override suspend fun pageText(index: Int): List<PageGlyph>? =
-        withContext(Dispatchers.Default) {
-            renderLock.withLock { content.value.pageText(index) }
+        withContext(Dispatchers.IO) {
+            renderLock.withLock {
+                if (closed) null else content.value.pageText(index)
+            }
         }
 
     override suspend fun pageImages(index: Int): List<PageImage> =
-        withContext(Dispatchers.Default) {
-            renderLock.withLock { content.value.pageImages(index) }
+        withContext(Dispatchers.IO) {
+            renderLock.withLock {
+                if (closed) emptyList() else content.value.pageImages(index)
+            }
         }
 
     override suspend fun renderPage(index: Int, targetWidthPx: Int): ImageBitmap? =
-        withContext(Dispatchers.Default) {
+        withContext(Dispatchers.IO) {
             renderLock.withLock {
+                if (closed) return@withLock null
+
                 runCatching {
                     renderer.openPage(index).use { page ->
                         val height = targetWidthPx * page.height / page.width
@@ -139,6 +185,10 @@ private class AndroidDocumentPages(path: String) : DocumentPages {
         }
 
     override fun close() {
+        // Marked before anything is closed, so that a page still queued behind
+        // the lock finds out rather than starting on a renderer that is going.
+        closed = true
+
         runCatching { renderer.close() }
         runCatching { descriptor.close() }
         // Only if it was ever opened: reading a book cover to cover without
