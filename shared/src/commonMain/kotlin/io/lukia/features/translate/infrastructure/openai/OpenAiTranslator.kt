@@ -22,6 +22,7 @@ import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import io.lukia.features.translate.infrastructure.buildTranslationPrompt
 import io.lukia.features.translate.infrastructure.forEachEventPayload
 import io.lukia.features.translate.infrastructure.readStreamedPassage
+import io.lukia.features.translate.infrastructure.refuseCleartextToThePublicInternet
 import io.lukia.features.translate.infrastructure.tokenAllowanceFor
 import io.lukia.features.translate.infrastructure.translating
 import io.lukia.features.translate.infrastructure.translationTimeouts
@@ -83,16 +84,7 @@ class OpenAiTranslator(
             throw AppErrorException(AppError.TranslationUnavailable)
         }
 
-        // Refused here rather than by the platform, so the reason given is the
-        // real one instead of a connection that mysteriously will not open.
-        if (!configured.isEndpointAllowed) {
-            throw AppErrorException(
-                AppError.Unexpected(
-                    "Translating over plain HTTP is only allowed to your own network. " +
-                        "Use https, or an address on this machine.",
-                ),
-            )
-        }
+        configured.refuseCleartextToThePublicInternet()
 
         val hosted = provider == TranslationProvider.OpenAi
         val prompt = buildTranslationPrompt(request)

@@ -87,12 +87,11 @@ data class TranslationSettings(
      * The reader's own key for the current provider. Null when they have not
      * given one, which for a local server is the ordinary case.
      *
-     * Stored as it is typed, in the same place as every other preference -
-     * which on each platform is a file or a preferences store readable by
-     * anything running as the same user. That is honest for a key the reader
-     * pasted in themselves and can revoke, and it is not where a key belongs
-     * long term: the platform keychains are, and moving it there changes how
-     * this one property is read and nothing else.
+     * Held apart from every other setting, in whatever the platform offers for
+     * a secret - the keystore on Android, the keychain on iOS, an owner-only
+     * file on the desktop. See
+     * [io.lukia.core.domain.storage.SecretStore] for what each of those is and
+     * is not worth.
      */
     val apiKey: String?
         get() = keys.entryFor(provider)

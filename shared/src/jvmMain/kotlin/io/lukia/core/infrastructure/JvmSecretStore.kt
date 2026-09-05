@@ -54,15 +54,20 @@ class JvmSecretStore(
      * The file's permissions are set before anything is written to it, so a
      * secret is never briefly on disk in a file the rest of the machine can
      * read.
+     *
+     * Set on every write rather than only at creation. A file that already
+     * exists is not a file that is already restricted: it may have been written
+     * by a build of this app from before these permissions were applied, or
+     * restored from an archive that did not carry them, and a check that skips
+     * it would leave the one case that most needs fixing exactly as it was.
      */
     private fun write() {
         runCatching {
             file.parentFile?.mkdirs()
 
-            if (!file.exists()) {
-                file.createNewFile()
-                file.restrictToOwner()
-            }
+            if (!file.exists()) file.createNewFile()
+
+            file.restrictToOwner()
 
             file.outputStream().use { secrets.store(it, COMMENT) }
         }

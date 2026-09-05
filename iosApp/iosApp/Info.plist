@@ -54,16 +54,50 @@
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Lukia needs this to reach a translation model running on your own computer.</string>
 	<!--
-	    Permits plain HTTP to this device, to .local names and to link-local
-	    addresses, without weakening transport security anywhere else. A server
-	    on the same network is reached by its Bonjour name - my-mac.local - which
-	    macOS publishes by default; a bare 192.168.x address over http is still
-	    refused by the system, and https works everywhere.
+	    Permits plain HTTP to unqualified host names and to .local ones, which is
+	    how a server on the same network is usually reached - my-mac.local, which
+	    macOS publishes by default.
+
+	    It says nothing about numeric addresses, and neither does anything else
+	    here: since iOS 10 transport security does not apply to a request made to
+	    an IP address at all, so http://192.168.1.50 and http://8.8.8.8 are both
+	    requests the system will happily make. What tells those two apart is
+	    `isAllowedTranslationEndpoint` in shared code, which is the only thing
+	    that does - on this platform and on Android both.
 	-->
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<!--
+	    Markdown is the one format the importer accepts that the system has no
+	    identifier for: PDF, EPUB, DOCX and plain text are all Apple's own, and
+	    `net.daringfireball.markdown` is a convention between apps. Declaring it
+	    as imported is what tells iOS that a `.md` file is that type, and so
+	    what puts Lukia behind "Open in" for one - without it the entry above
+	    names a type the device may never have heard of.
+	-->
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>net.daringfireball.markdown</string>
+			<key>UTTypeDescription</key>
+			<string>Markdown Text</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>md</string>
+					<string>markdown</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
 </dict>
 </plist>

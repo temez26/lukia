@@ -39,7 +39,15 @@ kotlinx-serialization = "1.9.0"
 # with `composeMultiplatform` above catches up.
 material3 = "1.11.0-alpha07"
 navigation = "2.9.2"
-pdfbox = "3.0.3"
+# Both of these parse files the app did not write, so both are kept as current
+# as they can be. 3.0.7 is the newest release; the CVEs open against the 3.0.x
+# range are in PDFBox's `examples` artifact, which is not a dependency here.
+pdfbox = "3.0.7"
+# The Android port, and the last release its author made - it tracks PDFBox
+# 2.0.27 and nothing newer is coming. No published CVE affects that version, but
+# it does mean Android sits behind the hardening upstream 2.0.x has had since,
+# which is the reason the reader for PDF text is written against a byte source
+# here rather than handing whole files to a library that will not be patched.
 pdfbox-android = "2.0.27.0"
 sqldelight = "2.3.2"
 

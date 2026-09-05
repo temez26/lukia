@@ -10,9 +10,27 @@ internal class ZipArchiveReader(private val data: ByteArray) {
 
     private val entriesByName: Map<String, ZipEntryInfo> by lazy { readCentralDirectory() }
 
+    /**
+     * Whether the archive as a whole claims to expand to more than
+     * [MAX_ARCHIVE_SIZE], in which case nothing is read out of it at all.
+     *
+     * Asked of the directory once rather than counted down as entries are read.
+     * A running total would be shared mutable state, and the caller that most
+     * needs this cap is the one that reads a book's chapters concurrently -
+     * every one of them would race the others to spend it. The directory
+     * already states what each entry decodes to, so the whole question can be
+     * answered before a single byte is inflated.
+     */
+    private val isBomb: Boolean by lazy {
+        entriesByName.values.sumOf { it.uncompressedSize.coerceAtLeast(0).toLong() } >
+            MAX_ARCHIVE_SIZE
+    }
+
     fun entryNames(): Set<String> = entriesByName.keys
 
     fun readEntry(name: String): ByteArray? {
+        if (isBomb) return null
+
         val entry = entriesByName[name] ?: return null
         return readEntryData(entry)
     }
@@ -119,5 +137,15 @@ internal class ZipArchiveReader(private val data: ByteArray) {
         // `word/document.xml`, which for a book-length document is the whole book as
         // XML in one entry - a limit sized for EPUB chapters would reject real files.
         const val MAX_ENTRY_SIZE = 64 * 1024 * 1024
+
+        // And what everything in the archive may decompress to together, which
+        // is the limit that actually holds. The per-entry one above is no limit
+        // at all on its own: a book is read a chapter at a time and `readEpub`
+        // reads every chapter at once, so an EPUB declaring two hundred entries
+        // of the maximum size would have each of them pass the check
+        // individually and all of them be in memory together. Six hundred
+        // megabytes is far past the largest real book and far short of what a
+        // phone dies of.
+        const val MAX_ARCHIVE_SIZE = 600L * 1024 * 1024
     }
 }

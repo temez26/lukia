@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    What a cloud backup may take, on Android 11 and below. Android 12 and above
+    read data_extraction_rules.xml beside this, which says the same thing in the
+    newer format - both are needed because the app runs from API 23.
+
+    What is left is the settings file, and that is the whole of it: the theme,
+    the reading language, which translation provider is chosen and how long it
+    may take. Small, dull, and genuinely worth carrying to a new phone.
+
+    Everything else is excluded, for reasons that are separate but point the
+    same way.
+
+    The copies of the books, because they are the reader's own files rather than
+    the app's, they are megabytes each, and a backup over the 25 MB quota is not
+    a partial backup - it is no backup at all, so including them would lose the
+    settings too.
+
+    The database, because it holds the passages that have been translated, which
+    are the book itself, and cover images with them. This app's whole claim is
+    that what it reads stays on the device, and a nightly upload of the reader's
+    book to somebody's servers is not that. Backing it up would also restore
+    badly: the shelf and the reading positions are keyed by where each file was,
+    and with the files excluded above they would come back pointing at documents
+    the new device does not have.
+
+    The encrypted secrets, because the key that decrypts them is in this
+    device's keystore and does not travel. Restored elsewhere they are bytes
+    nobody can read, so excluding them means the app asks for the API key again
+    rather than discovering mid-request that it cannot use the one it has.
+
+    The crash report, because it is written for the reader to read once and
+    delete, and has no business outliving the device it was written on.
+-->
+<full-backup-content>
+    <exclude domain="file" path="documents/" />
+    <exclude domain="file" path="incoming/" />
+    <exclude domain="file" path="last-crash.txt" />
+    <exclude domain="database" path="lukia.db" />
+    <exclude domain="database" path="lukia.db-wal" />
+    <exclude domain="database" path="lukia.db-shm" />
+    <exclude domain="database" path="lukia.db-journal" />
+    <exclude domain="sharedpref" path="io.lukia.secrets.xml" />
+</full-backup-content>
