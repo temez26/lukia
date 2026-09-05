@@ -1,5 +1,6 @@
 package io.lukia.features.reader.infrastructure.text.epub
 
+import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.core.infrastructure.archive.decodePercentEncoding
 import io.lukia.core.infrastructure.epub.EpubManifestItem
 import io.lukia.core.infrastructure.epub.EpubPackage
@@ -69,7 +70,10 @@ private val ReadableMediaTypes = setOf(
  * Returns null when the file is not an EPUB this can make sense of, which the
  * caller turns into a format the reader cannot open rather than an empty book.
  */
-internal suspend fun readEpub(epubBytes: ByteArray): ReflowableContent? {
+internal suspend fun readEpub(
+    epubBytes: ByteArray,
+    diagnostics: Diagnostics = Diagnostics.None,
+): ReflowableContent? {
     val epub = EpubPackage.open(epubBytes) ?: return null
 
     val sections = mutableListOf<TextSection>()
@@ -84,7 +88,7 @@ internal suspend fun readEpub(epubBytes: ByteArray): ReflowableContent? {
     val read = coroutineScope {
         epub.readingOrder
             .filter { it.mediaType in ReadableMediaTypes }
-            .map { item -> async { item to epub.contentOf(item) } }
+            .map { item -> async { item to epub.contentOf(item, diagnostics) } }
             .awaitAll()
     }
 
@@ -98,7 +102,8 @@ internal suspend fun readEpub(epubBytes: ByteArray): ReflowableContent? {
 
     if (sections.isEmpty()) return null
 
-    val contents = epub.tableOfContents(files).ifEmpty { sections.headingOutline() }
+    val contents = epub.tableOfContents(files, diagnostics)
+        .ifEmpty { sections.headingOutline() }
 
     return ReflowableContent(
         sections = sections,
@@ -114,8 +119,11 @@ internal suspend fun readEpub(epubBytes: ByteArray): ReflowableContent? {
  * The images it names are pulled out of the archive as it is parsed, which is
  * why this needs the package and not only the bytes.
  */
-private fun EpubPackage.contentOf(item: EpubManifestItem): HtmlContent? {
-    val html = read(item.path)?.let(::decodeText) ?: return null
+private fun EpubPackage.contentOf(
+    item: EpubManifestItem,
+    diagnostics: Diagnostics,
+): HtmlContent? {
+    val html = read(item.path)?.let { decodeText(it, diagnostics) } ?: return null
 
     return htmlContent(html) { source -> read(resolveFrom(item.path, source)) }
 }
@@ -198,12 +206,15 @@ private fun List<TextSection>.headingOutline(): List<OutlineEntry> =
  * the newer form for the sake of older devices, and a book with an empty or
  * malformed `nav` very often has a perfectly good NCX sitting beside it.
  */
-private fun EpubPackage.tableOfContents(files: Map<String, FileSections>): List<OutlineEntry> {
+private fun EpubPackage.tableOfContents(
+    files: Map<String, FileSections>,
+    diagnostics: Diagnostics,
+): List<OutlineEntry> {
     fun placeOf(fromPath: String, href: String): OutlinePlace? =
         files[resolveFrom(fromPath, href)]?.placeOf(href.fragment())
 
     navigationPath?.let { path ->
-        read(path)?.let(::decodeText)?.let { xml ->
+        read(path)?.let { decodeText(it, diagnostics) }?.let { xml ->
             val entries = navigationEntries(xml) { href -> placeOf(path, href) }
 
             if (entries.isNotEmpty()) return entries
@@ -211,7 +222,7 @@ private fun EpubPackage.tableOfContents(files: Map<String, FileSections>): List<
     }
 
     ncxPath?.let { path ->
-        read(path)?.let(::decodeText)?.let { xml ->
+        read(path)?.let { decodeText(it, diagnostics) }?.let { xml ->
             return ncxEntries(xml) { href -> placeOf(path, href) }
         }
     }

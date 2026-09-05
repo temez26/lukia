@@ -28,14 +28,10 @@ internal fun readPlainText(
         .splitParagraphs()
         .map { TextBlock.Paragraph(listOf(TextRun(it))) }
 
-    val sectioned = sectionText(blocks)
-
-    return ReflowableContent(
-        sections = sectioned.sections,
-        // Empty rather than null: plain text genuinely has no chapters to read,
-        // which is a different thing from not being able to look for them.
-        outline = sectioned.outline,
-    )
+    // The outline comes back empty rather than null: plain text genuinely has
+    // no chapters to read, which is a different thing from not being able to
+    // look for them.
+    return reflowableFrom(blocks)
 }
 
 /**
@@ -47,9 +43,7 @@ internal fun readPlainText(
  * anywhere else, since ordinary prose is flush left.
  */
 private fun String.splitParagraphs(): List<String> =
-    replace("\r\n", "\n")
-        .replace('\r', '\n')
-        .split(Regex("\n[ \t]*\n+"))
+    split(Regex("\n[ \t]*\n+"))
         .map { paragraph -> paragraph.unwrap() }
         .filter { it.isNotBlank() }
 
@@ -65,8 +59,42 @@ private fun String.unwrap(): String {
                 return@forEachIndexed
             }
 
-            append(if (KeepsOwnBreak.containsMatchIn(line)) "\n" else " ")
+            when {
+                KeepsOwnBreak.containsMatchIn(line) -> append("\n")
+
+                // A word the writer's editor broke across the wrap is one word,
+                // and joining its halves with a space hands the reader - and a
+                // translator - "exam- ple". The same rule a PDF's lines follow;
+                // it was only ever written down on that side.
+                endsWithBreakingHyphen() -> closeUpSoftHyphen()
+
+                else -> append(" ")
+            }
+
             append(line.trimEnd())
         }
     }.trim()
 }
+
+/**
+ * A soft hyphen is the one that goes: it exists to say where a word *may* be
+ * broken, and once the break has been undone there is nothing left for it to
+ * say. An ordinary hyphen stays, because nothing here can tell "exam-ple" from
+ * "well-known" and dropping one out of the second is the worse mistake.
+ */
+private fun StringBuilder.closeUpSoftHyphen() {
+    if (last() == SOFT_HYPHEN) deleteAt(lastIndex)
+}
+
+private fun StringBuilder.endsWithBreakingHyphen(): Boolean =
+    when (lastOrNull()) {
+        '-', '\u2010', SOFT_HYPHEN -> true
+        else -> false
+    }
+
+/**
+ * Written as an escape rather than as itself, for the reason the Windows-1252
+ * table beside it is: a soft hyphen is invisible, and a constant nobody can
+ * read is one nobody can check.
+ */
+private const val SOFT_HYPHEN = '\u00AD'

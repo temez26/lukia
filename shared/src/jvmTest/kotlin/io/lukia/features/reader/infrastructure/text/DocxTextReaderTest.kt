@@ -166,6 +166,68 @@ class DocxTextReaderTest {
         assertEquals(plate.toList(), figure.bytes.toList())
     }
 
+    /**
+     * Word puts what the author wrote about a picture on the drawing's own
+     * properties rather than on the picture, and it arrives first. Without it a
+     * picture here was announced to a screen reader as "Illustration" even
+     * where its author had said what it was - while the same picture in an EPUB
+     * kept its words.
+     */
+    @Test
+    fun aPictureKeepsWhatItsAuthorSaidItWas() {
+        val body = """
+            <w:p><w:r><w:drawing>
+                <wp:docPr id="1" name="Picture 1" descr="A map of the estuary"/>
+                <a:blip r:embed="rId7"/>
+            </w:drawing></w:r></w:p>
+        """.trimIndent()
+
+        val content = read(
+            body = body,
+            relationships = """<Relationship Id="rId7" Target="media/image1.png"/>""",
+            extra = mapOf("word/media/image1.png" to byteArrayOf(9, 9, 9)),
+        )
+
+        val figure = content!!.blocks().filterIsInstance<TextBlock.Figure>().single()
+
+        assertEquals("A map of the estuary", figure.description)
+    }
+
+    /** And a picture whose author said nothing about it does not borrow the last one's. */
+    @Test
+    fun aDescriptionBelongsToItsOwnDrawing() {
+        val body = """
+            <w:p><w:r><w:drawing>
+                <wp:docPr id="1" descr="A map of the estuary"/>
+                <a:blip r:embed="rId7"/>
+            </w:drawing></w:r></w:p>
+            <w:p><w:r><w:drawing><a:blip r:embed="rId7"/></w:drawing></w:r></w:p>
+        """.trimIndent()
+
+        val content = read(
+            body = body,
+            relationships = """<Relationship Id="rId7" Target="media/image1.png"/>""",
+            extra = mapOf("word/media/image1.png" to byteArrayOf(9, 9, 9)),
+        )
+
+        val figures = content!!.blocks().filterIsInstance<TextBlock.Figure>()
+
+        assertEquals(listOf("A map of the estuary", null), figures.map { it.description })
+    }
+
+    /**
+     * A document with nothing written in it is an empty book, not a file of a
+     * kind this app cannot read - which is what null here used to say, and what
+     * the reader was then told.
+     */
+    @Test
+    fun anEmptyDocumentIsAnEmptyBookRatherThanAnUnreadableFile() {
+        val content = read(body = "")
+
+        assertNotNull(content)
+        assertEquals(0, content.partCount)
+    }
+
     @Test
     fun anArchiveWithNoDocumentPartIsNotAWordDocument() {
         assertNull(readDocx("not a zip at all".encodeToByteArray()))

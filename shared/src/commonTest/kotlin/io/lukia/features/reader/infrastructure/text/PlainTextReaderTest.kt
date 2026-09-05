@@ -76,6 +76,47 @@ class PlainTextReaderTest {
         assertEquals(1200, content.sections.sumOf { it.blocks.size })
     }
 
+    /**
+     * A word the writer's editor broke across the wrap is one word.
+     *
+     * The same rule the PDF reader follows, which had it written down and this
+     * one did not - so the format most likely to be hard-wrapped was the one
+     * that handed the reader, and a translator, "exam- ple".
+     */
+    @Test
+    fun aWordBrokenAcrossTheWrapIsJoinedBackUp() {
+        val content = read("There is nothing extra-\nordinary about this sentence.")
+
+        assertEquals(
+            listOf("There is nothing extra-ordinary about this sentence."),
+            content.paragraphs(),
+        )
+    }
+
+    /**
+     * Except a soft hyphen, which is only ever a note about where a word may be
+     * broken. Once the break has gone there is nothing left for it to say, and
+     * leaving it in puts an invisible character in the middle of a word - which
+     * is a word a search will not find and a translator will not know.
+     */
+    @Test
+    fun aSoftHyphenAtTheWrapGoesWithTheBreak() {
+        val content = read("There is nothing extra\u00AD\nordinary about this sentence.")
+
+        assertEquals(
+            listOf("There is nothing extraordinary about this sentence."),
+            content.paragraphs(),
+        )
+    }
+
+    /** Written on a Windows machine is not a different book. */
+    @Test
+    fun carriageReturnsAreNotPartOfTheText() {
+        val content = read("First paragraph.\r\n\r\nSecond paragraph.\r\n")
+
+        assertEquals(listOf("First paragraph.", "Second paragraph."), content.paragraphs())
+    }
+
     private fun read(source: String) = readPlainText(source.encodeToByteArray())
 
     private fun io.lukia.features.reader.domain.ReflowableContent.paragraphs(): List<String> =

@@ -39,8 +39,8 @@ internal suspend fun openReaderContent(
     // EPUB is, rather than the exception PDF alone used to raise.
     DocumentType.PDF -> openPdfPages(path)?.let(::PagedContent)
 
-    DocumentType.EPUB -> readEpub(readFileBytes(path))
-    DocumentType.DOCX -> readDocx(readFileBytes(path))
+    DocumentType.EPUB -> readEpub(readFileBytes(path), diagnostics)
+    DocumentType.DOCX -> readDocx(readFileBytes(path), diagnostics)
     DocumentType.TEXT -> readPlainText(readFileBytes(path), diagnostics)
     DocumentType.MARKDOWN -> readMarkdown(readFileBytes(path), diagnostics)
 

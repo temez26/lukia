@@ -1,5 +1,6 @@
 package io.lukia.features.reader.infrastructure.text
 
+import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.core.infrastructure.archive.ZipArchiveReader
 import io.lukia.core.infrastructure.archive.resolveArchivePath
 import io.lukia.core.infrastructure.xml.XmlEvent
@@ -35,21 +36,27 @@ private const val DOCUMENT_DIRECTORY = "word"
  * Returns null when the archive holds no document part, which is the one thing
  * that makes a file not a `.docx` at all.
  */
-internal fun readDocx(docxBytes: ByteArray): ReflowableContent? {
+internal fun readDocx(
+    docxBytes: ByteArray,
+    diagnostics: Diagnostics = Diagnostics.None,
+): ReflowableContent? {
     val zip = ZipArchiveReader(docxBytes)
-    val documentXml = zip.readEntry(DOCUMENT_ENTRY)?.let(::decodeText) ?: return null
 
-    val media = zip.relationshipTargets()
+    val documentXml = zip.readEntry(DOCUMENT_ENTRY)
+        ?.let { decodeText(it, diagnostics) }
+        ?: return null
+
+    val media = zip.relationshipTargets(diagnostics)
 
     val blocks = docxBlocks(documentXml) { relationshipId ->
         media[relationshipId]?.let(zip::readEntry)
     }
 
-    if (blocks.isEmpty()) return null
-
-    val sectioned = sectionText(blocks)
-
-    return ReflowableContent(sections = sectioned.sections, outline = sectioned.outline)
+    // A document with nothing written in it is an empty book rather than a file
+    // this cannot read - see [reflowableFrom]. Null here said the second, and a
+    // reader who opened an empty Word document was told their file was of a
+    // kind the app does not support.
+    return reflowableFrom(blocks)
 }
 
 /**
@@ -60,8 +67,10 @@ internal fun readDocx(docxBytes: ByteArray): ReflowableContent? {
  * picture - and an illustrated document would otherwise re-parse it a hundred
  * times over.
  */
-private fun ZipArchiveReader.relationshipTargets(): Map<String, String> {
-    val rels = readEntry(RELATIONSHIPS_ENTRY)?.let(::decodeText) ?: return emptyMap()
+private fun ZipArchiveReader.relationshipTargets(diagnostics: Diagnostics): Map<String, String> {
+    val rels = readEntry(RELATIONSHIPS_ENTRY)
+        ?.let { decodeText(it, diagnostics) }
+        ?: return emptyMap()
 
     return xmlEvents(rels)
         .filterIsInstance<XmlEvent.Open>()
@@ -110,6 +119,13 @@ private fun docxBlocks(xml: String, image: (relationshipId: String) -> ByteArray
     var inRunProperties = false
     var inText = false
 
+    // What the author wrote about the picture, which Word puts on the drawing's
+    // own properties rather than on the picture - and which arrives before it.
+    // Without this a picture in a Word document was announced to a screen reader
+    // as "Illustration" even where its author had said what it was, while the
+    // same picture in an EPUB kept its words.
+    var described: String? = null
+
     // Field instructions and deleted text are both stored as ordinary text and
     // are both invisible in Word - a `PAGEREF` instruction read aloud in the
     // middle of a sentence is not something the author wrote.
@@ -156,12 +172,18 @@ private fun docxBlocks(xml: String, image: (relationshipId: String) -> ByteArray
                 "br" -> paragraph?.runs?.append("\n", emphasis)
                 "tab" -> paragraph?.runs?.append("\t", emphasis)
 
+                "docpr" -> described = event.attributes["descr"]?.trim()?.ifEmpty { null }
+
                 "blip" -> {
                     val bytes = event.attributes["r:embed"]?.let(image)
 
                     if (bytes != null) {
-                        blocks += TextBlock.Figure(bytes = bytes, description = null)
+                        blocks += TextBlock.Figure(bytes = bytes, description = described)
                     }
+
+                    // Spent, whether or not there was a picture to put it on: it
+                    // belongs to this drawing and not to the next one.
+                    described = null
                 }
             }
 
