@@ -16,10 +16,8 @@ class TypeFromExtensionAnalyzer(
 ) : DocumentAnalyzer {
 
     override suspend fun analyze(document: PickedDocument): DocumentInfo {
-        if (document.location in failingLocations) {
-            throw IllegalArgumentException(
-                "File does not exist: ${document.location}",
-            )
+        require(document.location !in failingLocations) {
+            "File does not exist: ${document.location}"
         }
 
         return DocumentInfo(

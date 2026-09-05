@@ -67,9 +67,7 @@ class AndroidDocumentWorkspace(
                 partial.outputStream().use { output -> input.copyTo(output) }
             }
 
-            if (!partial.renameTo(target)) {
-                throw IllegalStateException("Could not store a copy of $source")
-            }
+            check(partial.renameTo(target)) { "Could not store a copy of $source" }
         } finally {
             partial.delete()
         }

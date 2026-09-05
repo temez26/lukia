@@ -6,7 +6,20 @@ import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.IOException
 
+/**
+ * Only the two failures this promises to absorb.
+ *
+ * [PdfRenderer] raises [IOException] for a file it cannot make sense of and
+ * [SecurityException] for one it is not allowed to open - a password-protected
+ * book - and between them that is what "this book has no cover" means here.
+ * Anything else is a fault in this code, and it belongs to `extractCover`, which
+ * is already the boundary: it records what it absorbed against the import before
+ * returning null. A catch-all here would return the same null and write nothing
+ * down, which is why the same file failed silently on Android and desktop while
+ * iOS reported it.
+ */
 internal actual fun renderPdfCover(pdfBytes: ByteArray): ByteArray? {
     val tempFile = File.createTempFile("lukia-cover-", ".pdf")
 
@@ -38,7 +51,9 @@ internal actual fun renderPdfCover(pdfBytes: ByteArray): ByteArray? {
                 }
             }
         }
-    } catch (e: Exception) {
+    } catch (ignored: IOException) {
+        null
+    } catch (ignored: SecurityException) {
         null
     } finally {
         tempFile.delete()

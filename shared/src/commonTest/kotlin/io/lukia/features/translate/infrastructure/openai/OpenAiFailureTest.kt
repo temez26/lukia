@@ -4,7 +4,6 @@ import io.ktor.client.engine.mock.MockEngine
 import io.ktor.http.HttpStatusCode
 import io.lukia.core.domain.AppError
 import io.lukia.features.translate.domain.provider.TranslationProvider
-import io.lukia.features.translate.domain.translate
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

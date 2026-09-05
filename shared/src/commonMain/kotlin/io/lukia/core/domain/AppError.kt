@@ -101,6 +101,10 @@ fun Throwable.toAppError(): AppError = when (this) {
  * what makes sure the rest still reaches the user as an [AppError.Unexpected]
  * rather than dying inside the coroutine.
  */
+// The one place a Throwable is caught on purpose. This is the boundary the rule
+// exists to protect - narrowing it to named types is exactly what it must not do,
+// because what it is for is the failure nobody named.
+@Suppress("TooGenericExceptionCaught")
 inline fun <T> runCatchingApp(block: () -> T): Result<T> = try {
     Result.success(block())
 } catch (cancellation: CancellationException) {

@@ -40,9 +40,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 internal class ThrowingProgressRepository : ReadingProgressRepository {
     override suspend fun progressFor(location: String): ReadingProgress? = null
 
-    override suspend fun allProgress(): Map<String, ReadingProgress> = throw IllegalStateException(
-        "position store blew up",
-    )
+    override suspend fun allProgress(): Map<String, ReadingProgress> = error("position store blew up")
 
     override suspend fun save(location: String, progress: ReadingProgress) = Unit
 
@@ -140,7 +138,7 @@ internal class FakeDocumentAnalyzer(
 internal class ThrowingDocumentAnalyzer : DocumentAnalyzer {
     override suspend fun analyze(
         document: PickedDocument,
-    ): DocumentInfo = throw IllegalStateException("analysis blew up")
+    ): DocumentInfo = error("analysis blew up")
 }
 
 internal class FakeFolderScanner(
@@ -201,7 +199,7 @@ internal class FakeLibraryRepository(
 internal class ThrowingLibraryRepository : LibraryRepository {
     override suspend fun addDocument(document: DocumentInfo) = Unit
 
-    override suspend fun getDocuments(): List<DocumentInfo> = throw IllegalStateException("library read blew up")
+    override suspend fun getDocuments(): List<DocumentInfo> = error("library read blew up")
 
     override suspend fun getDocument(location: String): DocumentInfo? = null
 

@@ -36,6 +36,10 @@ class CoalescingTranslator(
      * thing to show for a sentence that was already halfway translated before
      * they asked about it.
      */
+    // Caught to hand the failure to whoever joined this request and rethrown
+    // immediately, so nothing is absorbed here - narrowing it would leave a
+    // follower waiting forever on the one failure that was not named.
+    @Suppress("TooGenericExceptionCaught")
     override suspend fun translate(
         request: TranslationRequest,
         onPartial: (String) -> Unit,

@@ -9,6 +9,8 @@ import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import io.lukia.resources.Res
 import io.lukia.resources.shortcut_tooltip
@@ -37,8 +39,16 @@ fun ShortcutTooltip(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
+    // The same content is emitted from two different places in the tree - a bare
+    // Box on a touch screen, a TooltipBox where there is a pointer - and a window
+    // dragged across the boundary between them moves it from one to the other.
+    // Made movable so it takes its state with it: without this, resizing a
+    // desktop window past the compact width resets whatever the wrapped control
+    // remembers, because Compose sees the second call site as a different thing.
+    val slot = remember(content) { movableContentOf(content) }
+
     if (LocalWindowWidthClass.current == WindowWidthClass.Compact) {
-        Box(modifier = modifier) { content() }
+        Box(modifier = modifier) { slot() }
         return
     }
 
@@ -57,6 +67,6 @@ fun ShortcutTooltip(
         enableUserInput = true,
         modifier = modifier,
     ) {
-        content()
+        slot()
     }
 }

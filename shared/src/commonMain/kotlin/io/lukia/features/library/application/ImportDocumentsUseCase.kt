@@ -31,6 +31,10 @@ class ImportDocumentsUseCase(
      * and the rest still arrive. Only a batch of one can come back a failure,
      * carrying the reason that single file did not import.
      */
+    // The batch is the boundary: whatever one file's import throws is counted as
+    // that file failing and the rest still arrive, so narrowing this would let an
+    // unnamed failure take the other four hundred books with it.
+    @Suppress("TooGenericExceptionCaught")
     suspend operator fun invoke(
         documents: List<PickedDocument>,
         onProgress: (completed: Int, total: Int) -> Unit = { _, _ -> },
