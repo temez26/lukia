@@ -2,6 +2,8 @@ package io.lukia.features.translate.presentation
 
 import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.domain.text.TextAnchor
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -100,6 +102,35 @@ class TranslationSessionMemoryTest {
         session.tap(anchor)
         runCurrent()
         session.clear()
+
+        assertTrue(session.passages.value.isEmpty())
+    }
+
+    /**
+     * And stops the ones still on their way, rather than only emptying the map
+     * in front of them.
+     *
+     * Every request ends by putting its answer back, so one left running
+     * arrives into whatever book replaced the one it was asked about - and its
+     * anchor points at a sentence that book may not have. A reader who taps
+     * three passages and then presses Try again on a book that would not open
+     * is exactly this.
+     */
+    @Test
+    fun clearingStopsTheRequestsStillOnTheirWay() = runTest {
+        val answer = CompletableDeferred<Translation>()
+        val session = session { answer.await() }
+
+        session.tap(anchor)
+        runCurrent()
+        assertIs<PassageTranslation.Loading>(session.passages.value[anchor])
+
+        session.clear()
+
+        // The book it was asked about has gone; the answer arriving now belongs
+        // to nothing.
+        answer.complete(Translation("Kutsukaa minua Ismaeliksi."))
+        advanceUntilIdle()
 
         assertTrue(session.passages.value.isEmpty())
     }

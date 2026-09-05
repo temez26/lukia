@@ -187,6 +187,36 @@ class TranslationSessionTest {
     }
 
     /**
+     * The first piece goes up at once: it is what tells the reader their tap
+     * landed on something. It has to survive the throttle that keeps the pieces
+     * behind it from filing every translation in the book once per token - see
+     * `showAsItArrives` - which is a throttle that could very easily swallow
+     * the one piece worth showing soonest.
+     */
+    @Test
+    fun theFirstPieceOfAnArrivingAnswerIsShownAtOnce() = runTest {
+        val answer = CompletableDeferred<Translation>()
+        val session = TranslationSession(
+            TranslatePassageUseCase(
+                Translator { _, onPartial ->
+                    onPartial("Kutsukaa")
+                    answer.await()
+                },
+            ),
+            this,
+        )
+
+        session.tap(anchor)
+        runCurrent()
+
+        assertEquals(PassageTranslation.Loading("Kutsukaa"), session.passages.value[anchor])
+
+        // Let it finish, so the request is not left standing when the test ends.
+        answer.complete(Translation("Kutsukaa minua Ismaeliksi."))
+        advanceUntilIdle()
+    }
+
+    /**
      * A piece still in flight must not land on top of the finished answer -
      * which is the one way a streamed translation could end up permanently
      * showing half of itself.
