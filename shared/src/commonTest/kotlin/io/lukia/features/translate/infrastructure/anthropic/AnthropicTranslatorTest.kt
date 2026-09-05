@@ -121,13 +121,87 @@ class AnthropicTranslatorTest {
         assertTrue(explanation.contains("Settings"), explanation)
     }
 
+    /**
+     * A declined request is a perfectly successful stream with nothing in it.
+     * Read as content it is a blank translation; said plainly it is the one
+     * failure here the reader can do something about, by asking about a
+     * different sentence rather than about their key or their connection.
+     */
     @Test
-    fun aDeclinedRequestIsAFailureRatherThanAnEmptyTranslation() = runTest {
+    fun aDeclinedRequestSaysTheModelDeclinedRatherThanThatTranslatingFailed() = runTest {
         val translator = translator(
             answers { respondStream(listOf(stopped("refusal"))) },
         )
 
-        assertEquals(AppError.TranslationFailed, translator.failureFor(request()))
+        val explanation = (translator.failureFor(request()) as AppError.Unexpected)
+            .explanation.orEmpty()
+
+        assertTrue(explanation.contains("would not translate"), explanation)
+    }
+
+    /**
+     * Thinking is charged to the same allowance as the answer and is never
+     * shown, so a model that spent it all reasoning looks from outside exactly
+     * like one still writing - and its half-written JSON used to arrive as
+     * "that was not a translation".
+     */
+    @Test
+    fun aModelThatRanOutOfRoomSaysWhatRanOut() = runTest {
+        val translator = translator(
+            answers {
+                respondStream(
+                    listOf(textDelta("""{"translation": "Kut""")) + stopped("max_tokens"),
+                )
+            },
+        )
+
+        val explanation = (translator.failureFor(request()) as AppError.Unexpected)
+            .explanation.orEmpty()
+
+        assertTrue(explanation.contains("thinking"), explanation)
+        assertTrue(explanation.contains("claude-opus-5"), explanation)
+    }
+
+    /**
+     * A connection dropped mid-answer ends a stream exactly as a finished one
+     * does, and half a JSON object does not parse. Blamed on the model it is
+     * never tried again; named as what it is, it is the one failure here that
+     * asking a second time fixes - see `RetryingTranslator`.
+     */
+    @Test
+    fun anAnswerThatStoppedArrivingSaysSoRatherThanBlamingTheModel() = runTest {
+        val translator = translator(
+            answers { respondStream(listOf(textDelta("""{"translation": "Kut"""))) },
+        )
+
+        val explanation = (translator.failureFor(request()) as AppError.Unexpected)
+            .explanation.orEmpty()
+
+        assertTrue(explanation.contains("stopped arriving"), explanation)
+    }
+
+    /**
+     * The service giving up on a request it had already accepted arrives as an
+     * event on a stream that answered 200, not as a status.
+     */
+    @Test
+    fun aServiceThatGivesUpMidStreamIsQuoted() = runTest {
+        val overloaded = json.encodeToString(
+            buildJsonObject {
+                put("type", "error")
+                put(
+                    "error",
+                    buildJsonObject {
+                        put("type", "overloaded_error")
+                        put("message", "Overloaded")
+                    },
+                )
+            },
+        )
+
+        val translator = translator(answers { respondStream(listOf(overloaded)) })
+
+        assertEquals(AppError.Unexpected("Overloaded"), translator.failureFor(request()))
     }
 
     @Test

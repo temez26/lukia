@@ -55,6 +55,75 @@ class OpenAiFailureTest {
         assertTrue(error.explanation.orEmpty().contains("/v1"), error.explanation.orEmpty())
     }
 
+    /**
+     * The other 404, and the one that used to be reported as the first.
+     *
+     * A server that answered and does not have that model is not a wrong
+     * address, and sending somebody to correct an address that was right all
+     * along is how a working setup gets taken apart looking for a fault that was
+     * one field further down the page.
+     */
+    @Test
+    fun aModelTheServerDoesNotHaveIsNotReportedAsAWrongAddress() = runTest {
+        val translator = translator(
+            answers {
+                respondJson(
+                    """{"error": {"message": "The model `gpt-9` does not exist", "code": "model_not_found"}}""",
+                    HttpStatusCode.NotFound,
+                )
+            },
+        )
+
+        val explanation = (translator.failureFor(request()) as AppError.Unexpected)
+            .explanation.orEmpty()
+
+        assertTrue(explanation.contains("gpt-9"), explanation)
+        assertTrue(!explanation.contains("/v1"), explanation)
+    }
+
+    /**
+     * A server that accepted the request and then gave up on it says so on the
+     * stream, where nothing used to be listening: the chunk carries no text, the
+     * stream ends, and the reader was told their model had not answered with a
+     * translation - which is true and is not what the server said.
+     */
+    @Test
+    fun aServerThatGivesUpMidStreamIsQuotedRatherThanIgnored() = runTest {
+        val translator = translator(
+            answers {
+                respondStream(
+                    listOf(
+                        contentChunk("""{"translation": "Kut"""),
+                        """{"error": {"message": "the model was unloaded", "type": "server_error"}}""",
+                    ),
+                )
+            },
+        )
+
+        assertEquals(
+            AppError.Unexpected("the model was unloaded"),
+            translator.failureFor(request()),
+        )
+    }
+
+    /**
+     * A connection dropped mid-answer ends a stream exactly as a finished one
+     * does. Reported as a malformed answer it reads as the model's fault and is
+     * never tried again; reported as what it is, it is the one failure here that
+     * asking a second time actually fixes - see `RetryingTranslator`.
+     */
+    @Test
+    fun anAnswerThatStoppedArrivingSaysSoRatherThanBlamingTheModel() = runTest {
+        val translator = translator(
+            answers { respondCutStream(listOf(contentChunk("""{"translation": "Kut"""))) },
+        )
+
+        val explanation = (translator.failureFor(request()) as AppError.Unexpected)
+            .explanation.orEmpty()
+
+        assertTrue(explanation.contains("stopped arriving"), explanation)
+    }
+
     /** A server that does not have the model says so better than this code could. */
     @Test
     fun theServersOwnExplanationIsPassedOn() = runTest {

@@ -8,11 +8,14 @@ import io.lukia.features.translate.domain.Translator
 import io.lukia.features.translate.domain.lookup.WordDictionary
 import io.lukia.features.translate.domain.provider.ModelCatalogue
 import io.lukia.features.translate.domain.provider.ModelWarmUp
+import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.features.translate.domain.text.PassageUnit
 import io.lukia.features.translate.infrastructure.CachingTranslator
 import io.lukia.features.translate.infrastructure.CoalescingTranslator
 import io.lukia.features.translate.infrastructure.ConfiguredTranslator
+import io.lukia.features.translate.infrastructure.RetryingTranslator
 import io.lukia.features.translate.infrastructure.SqlTranslationCache
+import io.lukia.features.translate.infrastructure.TRANSLATION_PROMPT_VERSION
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import io.lukia.features.translate.infrastructure.WordLookupTranslator
 import io.lukia.features.translate.infrastructure.anthropic.AnthropicTranslator
@@ -90,9 +93,14 @@ val translateModule = module {
             dictionary = WiktionaryTranslator(get()),
         )
 
+        // Order matters, and is the whole of what this composition decides.
+        // Asking twice at once is answered once; asking a second time is not
+        // asked at all; and only what actually reaches the wire is ever asked
+        // again after a failure - see RetryingTranslator for why retrying sits
+        // under both of the others rather than over them.
         CoalescingTranslator(
             CachingTranslator(
-                translator = answering,
+                translator = RetryingTranslator(answering),
                 cache = get(),
                 // Named per request, because a word and a sentence do not go to
                 // the same place - a cache filing both under the translator's
@@ -109,8 +117,12 @@ val translateModule = module {
                         CacheIdentity("word/${current.wordLookup.name}", readsTheBook = false)
                     } else {
                         CacheIdentity(
-                            translator = "${current.provider.name}/${current.model}",
+                            translator = current.translatorName(),
                             readsTheBook = true,
+                            // The instructions are half the question; an answer
+                            // given to an older wording is an answer to a
+                            // different one - see TRANSLATION_PROMPT_VERSION.
+                            promptVersion = TRANSLATION_PROMPT_VERSION,
                         )
                     }
                 },
@@ -145,4 +157,19 @@ val translateModule = module {
     single {
         TranslationSettingsRepository(get(), get())
     }
+}
+
+/**
+ * Who is being asked, closely enough that nobody else's answer can be mistaken
+ * for theirs.
+ *
+ * The address is part of the name for a server the reader points at themselves
+ * and only for one of those. Two machines on a desk both answering to
+ * `local-model` are two different models with one name, and a cache that knew
+ * only the name would hand one machine's work back as the other's; a hosted
+ * service has one address and putting it in would say nothing.
+ */
+private fun TranslationSettings.translatorName(): String = when {
+    provider.hasConfigurableEndpoint -> "${provider.name}/$model@$baseUrl"
+    else -> "${provider.name}/$model"
 }

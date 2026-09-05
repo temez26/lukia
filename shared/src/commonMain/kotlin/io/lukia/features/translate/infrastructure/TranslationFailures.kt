@@ -2,7 +2,6 @@ package io.lukia.features.translate.infrastructure
 
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
-import io.lukia.core.domain.AppError
 import io.lukia.core.domain.AppErrorException
 import io.lukia.core.domain.diagnostics.DiagnosticArea
 import io.lukia.core.domain.diagnostics.Diagnostics
@@ -26,11 +25,16 @@ import kotlin.coroutines.cancellation.CancellationException
  */
 internal fun Throwable.asTranslationFailure(
     settings: TranslationSettings,
-): AppErrorException = AppErrorException(AppError.Unexpected(settings.explain(this)))
+): AppErrorException = when {
+    isSilence -> TranslationFailureException(
+        kind = TranslationFailureKind.TimedOut,
+        explanation = settings.tooSlow(),
+    )
 
-private fun TranslationSettings.explain(failure: Throwable): String = when {
-    failure.isSilence -> tooSlow()
-    else -> unreachable()
+    else -> TranslationFailureException(
+        kind = TranslationFailureKind.Unreachable,
+        explanation = settings.unreachable(),
+    )
 }
 
 /**

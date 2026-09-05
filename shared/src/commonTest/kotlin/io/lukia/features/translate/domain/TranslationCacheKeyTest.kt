@@ -141,11 +141,35 @@ class TranslationCacheKeyTest {
         )
     }
 
+    /**
+     * The instructions are the other half of the question the model was asked,
+     * so an answer given to a wording this build has since rewritten is an
+     * answer to a question it no longer asks - and a reader who updates the app
+     * would otherwise keep every sentence the old wording produced.
+     */
+    @Test
+    fun aRewrittenPromptIsADifferentKey() {
+        assertNotEquals(
+            translationCacheKey(request(), reading("Anthropic/claude", prompt = "1")),
+            translationCacheKey(request(), reading("Anthropic/claude", prompt = "2")),
+        )
+    }
+
+    /** And a dictionary, which is asked in no words at all, is untouched by it. */
+    @Test
+    fun aLookupThatIsGivenNoInstructionsIsNotFiledUnderThem() {
+        assertEquals(
+            translationCacheKey(request(), blind("word/Wiktionary")),
+            translationCacheKey(request(), blind("word/Wiktionary")),
+        )
+    }
+
     private fun key(request: TranslationRequest): String =
         translationCacheKey(request, reading("Anthropic/claude")).value
 
     /** Someone who is handed the book and uses it. */
-    private fun reading(translator: String) = CacheIdentity(translator, readsTheBook = true)
+    private fun reading(translator: String, prompt: String = "1") =
+        CacheIdentity(translator, readsTheBook = true, promptVersion = prompt)
 
     /** Someone who is handed the word and nothing else. */
     private fun blind(translator: String) = CacheIdentity(translator, readsTheBook = false)

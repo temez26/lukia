@@ -1,7 +1,5 @@
 package io.lukia.features.translate.infrastructure
 
-import io.lukia.core.domain.AppError
-import io.lukia.core.domain.AppErrorException
 import io.lukia.features.translate.domain.Translation
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -28,15 +26,44 @@ internal data class TranslatedPassage(
  * translation would put something into the book that nobody vouched for.
  */
 internal fun readTranslatedPassage(answer: String, json: Json): Translation {
-    val body = answer.enclosedJsonObject() ?: throw AppErrorException(AppError.TranslationFailed)
+    val body = answer.enclosedJsonObject()
+        ?: translationFailed(TranslationFailureKind.NotATranslation)
 
     val passage = runCatching { json.decodeFromString<TranslatedPassage>(body) }
-        .getOrElse { throw AppErrorException(AppError.TranslationFailed) }
+        .getOrElse { translationFailed(TranslationFailureKind.NotATranslation) }
 
     return Translation(
         text = passage.translation.trim(),
         note = passage.note.trim().takeIf { it.isNotEmpty() },
     )
+}
+
+/**
+ * The same, for an answer that arrived a piece at a time and may not have
+ * finished arriving.
+ *
+ * A dropped connection ends a stream exactly as a finished answer does, so
+ * without [endedProperly] half a translation is indistinguishable from all a
+ * model had to say - and the half that parses is the dangerous one, because it
+ * goes into the book looking whole. What is asked here is the cheap version of
+ * that question: an answer that still reads as a translation is taken, and one
+ * that does not is blamed on the stream that stopped rather than on the model,
+ * which is both true and the difference between a failure worth asking again
+ * about and one that never will be.
+ */
+internal fun readStreamedPassage(
+    answer: String,
+    json: Json,
+    endedProperly: Boolean,
+): Translation {
+    if (endedProperly) return readTranslatedPassage(answer, json)
+
+    return runCatching { readTranslatedPassage(answer, json) }.getOrElse {
+        translationFailed(
+            kind = TranslationFailureKind.CutShort,
+            explanation = "The translation stopped arriving partway through. Try again.",
+        )
+    }
 }
 
 /**

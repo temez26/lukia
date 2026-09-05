@@ -51,8 +51,15 @@ internal fun MockEngineScope.ok(
         },
     )
 
-    return respondStream(passage.inThirds().map { textDelta(it) } + stopped(stopReason))
+    return respondStream(
+        passage.inThirds().map { textDelta(it) } + stopped(stopReason) + messageStop(),
+    )
 }
+
+/** The event that closes a finished message, as the service really sends it. */
+internal fun messageStop(): String = json.encodeToString(
+    buildJsonObject { put("type", "message_stop") },
+)
 
 /** One `content_block_delta` carrying part of the answer. */
 internal fun textDelta(text: String): String = json.encodeToString(
@@ -123,11 +130,12 @@ internal fun answers(
 ) = MockEngine { request -> handle(request) }
 
 /**
- * A streamed answer, in the shape both providers send one: a `data:` line per
- * event, a blank line between them, and `[DONE]` to close.
+ * A streamed answer, in the shape this service sends one: a `data:` line per
+ * event and a blank line between them. No `[DONE]` - this one closes with a
+ * `message_stop` event instead, which is what [messageStop] is for.
  */
 internal fun MockEngineScope.respondStream(events: List<String>) = respond(
-    content = events.joinToString("") { "data: $it\n\n" } + "data: [DONE]\n\n",
+    content = events.joinToString("") { "data: $it\n\n" },
     headers = headersOf("Content-Type", ContentType.Text.EventStream.toString()),
 )
 

@@ -154,6 +154,15 @@ internal fun MockRequestHandleScope.respondStream(chunks: List<String>) = respon
     headers = headersOf("Content-Type", ContentType.Text.EventStream.toString()),
 )
 
+/**
+ * A stream that stops rather than ending: no `[DONE]`, no reason for stopping,
+ * exactly as a dropped connection leaves one.
+ */
+internal fun MockRequestHandleScope.respondCutStream(chunks: List<String>) = respond(
+    content = chunks.joinToString("") { "data: $it\n\n" },
+    headers = headersOf("Content-Type", ContentType.Text.EventStream.toString()),
+)
+
 /** Three pieces, so joining them is actually exercised. */
 internal fun String.inThirds(): List<String> = chunked((length + 2) / 3)
 

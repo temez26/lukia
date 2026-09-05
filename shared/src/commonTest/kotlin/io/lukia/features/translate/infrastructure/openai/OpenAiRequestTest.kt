@@ -12,6 +12,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -118,6 +119,45 @@ class OpenAiRequestTest {
             .translate(request(text = LONG_PASSAGE.repeat(50)))
 
         assertTrue(sent.maxTokens() <= 8192, "one passage was allowed ${sent.maxTokens()}")
+    }
+
+    /**
+     * The hosted service deprecated `max_tokens` and its current models reject
+     * it outright, while nearly every server somebody runs at home implements
+     * that name and not the new one. Sending the wrong one is not a degraded
+     * answer, it is a 400 - so which name is used is decided by who is being
+     * asked rather than picked once.
+     */
+    @Test
+    fun theCeilingIsSentUnderTheNameTheServerUnderstands() = runTest {
+        var hosted: HttpRequestData? = null
+        var local: HttpRequestData? = null
+
+        translator(
+            answers {
+                hosted = it
+                ok()
+            },
+        ).translate(request())
+
+        translator(
+            answers {
+                local = it
+                ok()
+            },
+            provider = TranslationProvider.Local,
+            baseUrl = "http://localhost:1234/v1",
+            apiKey = null,
+        ).translate(request())
+
+        assertNotNull(hosted?.jsonBody()?.get("max_completion_tokens"))
+        assertNull(hosted?.jsonBody()?.get("max_tokens"), "the deprecated name was sent as well")
+
+        assertNotNull(local?.jsonBody()?.get("max_tokens"))
+        assertNull(
+            local?.jsonBody()?.get("max_completion_tokens"),
+            "a local server was sent a name most of them do not implement",
+        )
     }
 
     @Test
@@ -303,6 +343,14 @@ private const val LONG_PASSAGE =
         "blackberries. Scattered among the houses and fields were skeletons bleached by " +
         "the sun. Patuxet had been hit with special force. Not a single person remained."
 
-private fun HttpRequestData?.maxTokens(): Int =
-    this?.jsonBody()?.get("max_tokens")?.jsonPrimitive?.content?.toInt()
-        ?: error("no max_tokens was sent")
+/**
+ * The allowance, under whichever of its two names this request used - see
+ * `theCeilingIsSentUnderTheNameTheServerUnderstands` for which is which.
+ */
+private fun HttpRequestData?.maxTokens(): Int {
+    val body = this?.jsonBody()
+
+    return (body?.get("max_completion_tokens") ?: body?.get("max_tokens"))
+        ?.jsonPrimitive?.content?.toInt()
+        ?: error("no token allowance was sent")
+}

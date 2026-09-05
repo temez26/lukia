@@ -58,8 +58,33 @@ class GoogleTranslatorTest {
             sent?.url.toString().startsWith("https://translation.googleapis.com/"),
             sent?.url.toString(),
         )
-        assertTrue(sent?.url.toString().contains("key=google-key"), sent?.url.toString())
+        assertEquals("google-key", sent?.headers?.get("X-Goog-Api-Key"))
         assertEquals("valas", translation.text)
+    }
+
+    /**
+     * And nowhere near the address. A query string is the one part of a request
+     * that everything it passes writes down - proxies, server logs, a crash
+     * report's copy of the URL - and a key written down where nobody is watching
+     * is a key that has leaked.
+     */
+    @Test
+    fun theKeyIsNeverPutInTheAddress() = runTest {
+        var sent: HttpRequestData? = null
+        val translator = translator(
+            answers {
+                sent = it
+                respondJson(CLOUD_ANSWER)
+            },
+            apiKey = "google-key",
+        )
+
+        translator.translate(request())
+
+        assertTrue(
+            !sent?.url.toString().contains("google-key"),
+            "the key was written into the address: ${sent?.url}",
+        )
     }
 
     /** And the public one when there is not. */

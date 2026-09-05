@@ -50,17 +50,31 @@ data class CacheIdentity(
     /** Who would be asked, as "provider/model" - see [TranslationProvider]. */
     val translator: String,
     val readsTheBook: Boolean,
+    /**
+     * Which wording of the instructions the answer was given to, for whoever is
+     * given instructions at all - see
+     * [io.lukia.features.translate.infrastructure.TRANSLATION_PROMPT_VERSION].
+     *
+     * Null for a dictionary and for Google, which are handed a word and no
+     * instructions whatsoever. Their answers do not change when this app changes
+     * its mind about how to ask, so filing them under a version would throw away
+     * a perfectly good lookup at every update.
+     */
+    val promptVersion: String? = null,
 )
 
 /**
  * The key for one request, which is a hash of everything that decides the
  * answer - and of nothing that does not.
  *
- * The passage, the language wanted, and who would be asked, always. Leave any of
- * those out and the cache starts answering a question nobody asked: switching
- * between two models to compare them is a real thing readers do, and a cache
- * that ignored the model would hand them the same sentence twice and prove
- * nothing.
+ * The passage, the language wanted, who would be asked, and - for whoever is
+ * asked in words - which wording they were asked in. Leave any of those out and
+ * the cache starts answering a question nobody asked: switching between two
+ * models to compare them is a real thing readers do, and a cache that ignored
+ * the model would hand them the same sentence twice and prove nothing. The
+ * wording is there for the same reason one update further out: an answer given
+ * to instructions this build has since rewritten is an answer to a question it
+ * no longer asks.
  *
  * The book and the paragraph only for whoever reads them. That is the whole of
  * how a word looked up in one book is already answered in the next - see
@@ -79,6 +93,7 @@ fun translationCacheKey(
 ): TranslationCacheKey {
     val fingerprint = buildString {
         append(identity.translator).append(SEPARATOR)
+        append(identity.promptVersion.orEmpty()).append(SEPARATOR)
         append(request.targetLanguage.name).append(SEPARATOR)
         append(request.text.trim()).append(SEPARATOR)
 
