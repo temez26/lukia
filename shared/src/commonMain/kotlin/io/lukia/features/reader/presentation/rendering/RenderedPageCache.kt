@@ -13,12 +13,17 @@ import kotlinx.coroutines.withContext
  * page is a few megabytes where a zoomed desktop page is twenty. Counting pages
  * would mean choosing a number safe for the largest, which then holds far too
  * little on the smallest. This budget adapts: roughly a dozen pages on a phone,
- * three on a zoomed-in desktop, and about 64 MB either way.
+ * two on a zoomed-in desktop, and about 64 MB either way.
+ *
+ * The budget is the whole of it, with no floor of pages under it. There used to
+ * be one, of three, so that the page being read could not be evicted - but a
+ * count cannot say that where a budget in pixels is the point: three sheets of
+ * a PDF zoomed in on a desktop are seventy megabytes, which is over this budget
+ * rather than under it, and on a phone with little memory to spare that floor
+ * was the ceiling. What actually protects the page being read is that the last
+ * one stored always survives, and the last one stored is the one just asked for.
  */
 private const val MAX_CACHED_PIXELS = 16_000_000
-
-/** Kept regardless of the budget, so the page being read is never evicted. */
-private const val MIN_CACHED_PAGES = 3
 
 /**
  * The pages drawn so far, so that scrolling back over a spread does not draw
@@ -30,9 +35,17 @@ private const val MIN_CACHED_PAGES = 3
  */
 internal class RenderedPageCache {
 
-    private val pages = LinkedHashMap<Int, ImageBitmap>()
+    /**
+     * What is held, behind a reference that is replaced rather than emptied -
+     * see [clear].
+     *
+     * Read once into a local wherever it is used, so that a swap part way
+     * through leaves that use working on the map it started with rather than on
+     * half of two.
+     */
+    private var kept = KeptPages()
+
     private val lock = Mutex()
-    private var cachedWidthPx = 0
 
     /**
      * One gate per page being drawn, so that two callers asking for the same
@@ -85,9 +98,20 @@ internal class RenderedPageCache {
         return rendered
     }
 
+    /**
+     * Forgets every page drawn for the book that is being put away.
+     *
+     * The one thing here that does not run under [lock], because the two places
+     * that call it cannot wait: a book being re-opened the other way, and a
+     * reader leaving one, both settle on the thread that draws. So what it does
+     * instead is swap the whole map for an empty one, which is a single write.
+     * A page part way through being stored on another thread finishes into the
+     * map it started with, which by then is nobody's - where emptying the map
+     * under it was two threads writing to one map, and a crash on any platform
+     * that says so.
+     */
     fun clear() {
-        pages.clear()
-        cachedWidthPx = 0
+        kept = KeptPages()
     }
 
     /** One page's gate, and how many callers are still holding it open. */
@@ -107,31 +131,44 @@ internal class RenderedPageCache {
     }
 
     private suspend fun cached(index: Int, widthPx: Int): ImageBitmap? = lock.withLock {
-        if (cachedWidthPx != widthPx) {
-            pages.clear()
-            cachedWidthPx = widthPx
+        val held = kept
+
+        if (held.widthPx != widthPx) {
+            held.pages.clear()
+            held.widthPx = widthPx
             return@withLock null
         }
 
         // Removing and re-inserting moves the entry to the end of the map, which
         // is what makes eviction least-recently-used rather than oldest-first.
-        pages.remove(index)?.also { pages[index] = it }
+        held.pages.remove(index)?.also { held.pages[index] = it }
     }
 
     private suspend fun store(index: Int, widthPx: Int, page: ImageBitmap) = lock.withLock {
+        val held = kept
+
         // The window resized while this page was rendering, so it is already the
         // wrong size for the cache it would land in.
-        if (cachedWidthPx != widthPx) return@withLock
+        if (held.widthPx != widthPx) return@withLock
 
-        pages[index] = page
+        held.pages[index] = page
 
-        // Least-recently-used out first, until the budget is met - but never
-        // below the handful around the page being read.
-        while (pages.size > MIN_CACHED_PAGES && cachedPixels() > MAX_CACHED_PIXELS) {
-            pages.remove(pages.keys.first())
+        // Least-recently-used out first, until the budget is met. The page just
+        // asked for is the one thing certainly about to be drawn, so it is the
+        // one that stays - counted in pixels rather than in pages, because a
+        // floor of three pages is above the whole budget once each of them is a
+        // zoomed-in sheet of twenty megabytes.
+        while (held.pages.size > 1 && held.pixels() > MAX_CACHED_PIXELS) {
+            held.pages.remove(held.pages.keys.first())
         }
     }
+}
 
-    private fun cachedPixels(): Long =
-        pages.values.sumOf { it.width.toLong() * it.height.toLong() }
+/** One book's drawn pages, and the width every one of them was drawn at. */
+private class KeptPages {
+
+    val pages = LinkedHashMap<Int, ImageBitmap>()
+    var widthPx = 0
+
+    fun pixels(): Long = pages.values.sumOf { it.width.toLong() * it.height.toLong() }
 }

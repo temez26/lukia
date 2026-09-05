@@ -29,7 +29,12 @@ private const val MAX_CACHED_PAGES = 24
  */
 internal class PageSentenceCache {
 
-    private val pages = LinkedHashMap<Int, List<PageSentence>>()
+    /**
+     * Replaced rather than emptied when the book goes - see [clear] - so it is
+     * read once into a local wherever it is used.
+     */
+    private var kept = LinkedHashMap<Int, List<PageSentence>>()
+
     private val lock = Mutex()
 
     /**
@@ -42,6 +47,8 @@ internal class PageSentenceCache {
         val sentences = parse()
 
         return lock.withLock {
+            val pages = kept
+
             pages.getOrPut(index) { sentences }.also {
                 while (pages.size > MAX_CACHED_PAGES) {
                     pages.remove(pages.keys.first())
@@ -50,8 +57,17 @@ internal class PageSentenceCache {
         }
     }
 
+    /**
+     * Forgets the pages read out of the book being put away.
+     *
+     * Swapped rather than emptied, and for the reason
+     * [RenderedPageCache.clear] is: this is called from the thread that draws,
+     * which cannot wait on the lock, while a page may be part way through being
+     * parsed on another. That page finishes into the map it started with, and
+     * that map is by then nobody's.
+     */
     fun clear() {
-        pages.clear()
+        kept = LinkedHashMap()
     }
 
     /**
@@ -60,6 +76,8 @@ internal class PageSentenceCache {
      */
     private suspend fun remembered(index: Int): List<PageSentence>? =
         lock.withLock {
+            val pages = kept
+
             pages.remove(index)?.also { pages[index] = it }
         }
 }
