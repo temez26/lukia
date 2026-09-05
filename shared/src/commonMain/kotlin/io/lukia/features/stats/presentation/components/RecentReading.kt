@@ -27,6 +27,7 @@ import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.core.presentation.displayTitle
 import io.lukia.features.stats.domain.ReadingActivity
 import io.lukia.resources.Res
+import io.lukia.resources.book_open_title
 import io.lukia.resources.stats_finished_pages
 import io.lukia.resources.stats_opened
 import io.lukia.resources.stats_page_of_percent
@@ -96,7 +97,7 @@ private fun ActivityRow(
                 interactionSource = interactionSource,
                 indication = null,
                 role = Role.Button,
-                onClickLabel = "Open $title",
+                onClickLabel = stringResource(Res.string.book_open_title, title),
                 onClick = onClick,
             )
             .padding(vertical = Space.md),

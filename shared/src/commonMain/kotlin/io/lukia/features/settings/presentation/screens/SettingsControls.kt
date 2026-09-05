@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.resources.Res
 import io.lukia.resources.settings_beta
+import io.lukia.shared.presentation.components.controls.toggleRow
 import io.lukia.shared.presentation.components.surface.GroupSection
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
@@ -92,7 +93,10 @@ internal fun SettingsToggle(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth(),
+            // The row is the control, not the switch inside it - see [toggleRow].
+            modifier = Modifier
+                .fillMaxWidth()
+                .toggleRow(label = label, checked = checked, onChange = onChange),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -104,7 +108,7 @@ internal fun SettingsToggle(
                 badge?.invoke()
             }
 
-            Switch(checked = checked, onCheckedChange = onChange)
+            Switch(checked = checked, onCheckedChange = null)
         }
 
         Text(

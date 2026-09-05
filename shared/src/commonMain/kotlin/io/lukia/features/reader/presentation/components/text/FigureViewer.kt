@@ -40,6 +40,7 @@ import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
 import io.lukia.resources.Res
 import io.lukia.resources.action_close
+import io.lukia.resources.figure_close
 import io.lukia.shared.presentation.components.controls.IconButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.icons.PlusGlyph
@@ -117,7 +118,7 @@ internal fun FigureViewer(
                 .clickable(
                     interactionSource = dismissSource,
                     indication = null,
-                    onClickLabel = "Close the illustration",
+                    onClickLabel = stringResource(Res.string.figure_close),
                     onClick = onDismiss,
                 ),
         ) {

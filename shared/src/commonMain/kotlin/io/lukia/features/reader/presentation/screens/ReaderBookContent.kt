@@ -54,6 +54,7 @@ import io.lukia.resources.Res
 import io.lukia.resources.action_try_again
 import io.lukia.resources.reader_pdf_no_text
 import io.lukia.shared.presentation.components.state.UiStateContent
+import io.lukia.shared.presentation.components.surface.behindOverlay
 import io.lukia.shared.presentation.theme.isWideWindow
 import org.jetbrains.compose.resources.stringResource
 
@@ -232,104 +233,120 @@ internal fun ReaderContent(
                     .fillMaxSize()
                     .windowInsetsPadding(WindowInsets.safeDrawing),
             ) {
-                UiStateContent(
-                    state = uiState,
-                    // Reading a PDF's text is the one opening long enough to
-                    // count: the whole file is read before the first page can
-                    // be laid out.
-                    loadingMessage = layout.loadingMessage,
-                    // Opening can fail on something worth a second attempt - a
-                    // copy that could not be written, a file being read as it is
-                    // moved.
-                    actionLabel = stringResource(Res.string.action_try_again),
-                    onAction = onRetry,
-                    modifier = Modifier.fillMaxSize(),
-                ) { openDocument ->
-                    when (val content = openDocument.content) {
-                        is PagedContent -> PageList(
-                            pages = content,
-                            listState = listState,
-                            pageScale = settings.pageScale,
-                            pageColor = pageStyle.pageColor,
-                            pageFilter = pageStyle.pageFilter,
-                            translations = translated,
-                            onToggleChrome = chrome::toggleChrome,
-                            onPageScaleChange = { onSettingsChange(settings.withPageScale(it)) },
-                            onPassageSelected = onPassageSelected,
-                            onPassageHold = onPassageHold,
-                            onPassageInquiry = onPassageInquiry,
-                            onPassagesRequested = onPassagesRequested,
-                            translateOnScreen = translateOnScreen,
-                            gestures = gestures,
-                            sentencesOnPage = sentencesOnPage,
-                            renderPage = renderPage,
-                        )
-
-                        is ReflowableContent -> TextPageList(
-                            sections = content.sections,
-                            listState = listState,
-                            settings = settings,
-                            pageColor = pageStyle.pageColor,
-                            translations = translated,
-                            onToggleChrome = chrome::toggleChrome,
-                            onSettingsChange = onSettingsChange,
-                            onPassageSelected = onPassageSelected,
-                            onPassageHold = onPassageHold,
-                            onPassageInquiry = onPassageInquiry,
-                            onPassagesRequested = onPassagesRequested,
-                            onPagesChange = { paginated = it },
-                            translateOnScreen = translateOnScreen,
-                            gestures = gestures,
-                            openedAt = initialPosition,
-                        )
-                    }
-                }
-
-                // Catches the press that closes an open panel, which is a
-                // non-focusable popup and cannot see it.
+                // Everything the word panel opens over, put out of reach while
+                // it is - see [behindOverlay]. The panel dims the page and its
+                // scrim catches the pointer, which is where its modality used to
+                // stop: Tab walked through the dimming into the chrome behind,
+                // and a screen reader's swipe-next left the panel after its last
+                // button and carried on into the book.
                 //
-                // Under the chrome and over the page, so that reaching straight
-                // from one panel to the other is one press rather than two.
-                // Deliberately not dimmed: the point of these panels is watching
-                // the page change as they are used.
-                if (chrome.panelOpen) {
-                    DismissLayer(onDismiss = chrome::closePanels)
+                // Wrapped rather than given a modifier, for the reason
+                // `LibraryScreen` wraps its own: the panel is a sibling of all
+                // of this, and a composable cannot quieten the ones beside it.
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .behindOverlay(wordInquiry != null),
+                ) {
+                    UiStateContent(
+                        state = uiState,
+                        // Reading a PDF's text is the one opening long enough to
+                        // count: the whole file is read before the first page can
+                        // be laid out.
+                        loadingMessage = layout.loadingMessage,
+                        // Opening can fail on something worth a second attempt - a
+                        // copy that could not be written, a file being read as it is
+                        // moved.
+                        actionLabel = stringResource(Res.string.action_try_again),
+                        onAction = onRetry,
+                        modifier = Modifier.fillMaxSize(),
+                    ) { openDocument ->
+                        when (val content = openDocument.content) {
+                            is PagedContent -> PageList(
+                                pages = content,
+                                listState = listState,
+                                pageScale = settings.pageScale,
+                                pageColor = pageStyle.pageColor,
+                                pageFilter = pageStyle.pageFilter,
+                                translations = translated,
+                                onToggleChrome = chrome::toggleChrome,
+                                onPageScaleChange = { onSettingsChange(settings.withPageScale(it)) },
+                                onPassageSelected = onPassageSelected,
+                                onPassageHold = onPassageHold,
+                                onPassageInquiry = onPassageInquiry,
+                                onPassagesRequested = onPassagesRequested,
+                                translateOnScreen = translateOnScreen,
+                                gestures = gestures,
+                                sentencesOnPage = sentencesOnPage,
+                                renderPage = renderPage,
+                            )
+
+                            is ReflowableContent -> TextPageList(
+                                sections = content.sections,
+                                listState = listState,
+                                settings = settings,
+                                pageColor = pageStyle.pageColor,
+                                translations = translated,
+                                onToggleChrome = chrome::toggleChrome,
+                                onSettingsChange = onSettingsChange,
+                                onPassageSelected = onPassageSelected,
+                                onPassageHold = onPassageHold,
+                                onPassageInquiry = onPassageInquiry,
+                                onPassagesRequested = onPassagesRequested,
+                                onPagesChange = { paginated = it },
+                                translateOnScreen = translateOnScreen,
+                                gestures = gestures,
+                                openedAt = initialPosition,
+                            )
+                        }
+                    }
+
+                    // Catches the press that closes an open panel, which is a
+                    // non-focusable popup and cannot see it.
+                    //
+                    // Under the chrome and over the page, so that reaching straight
+                    // from one panel to the other is one press rather than two.
+                    // Deliberately not dimmed: the point of these panels is watching
+                    // the page change as they are used.
+                    if (chrome.panelOpen) {
+                        DismissLayer(onDismiss = chrome::closePanels)
+                    }
+
+                    ReaderTopChrome(
+                        chrome = chrome,
+                        document = document,
+                        pageCount = pageCount,
+                        outline = pagedOutline,
+                        listState = listState,
+                        translation = translationUi,
+                        onBack = onBack,
+                        modifier = Modifier.align(Alignment.TopCenter),
+                    )
+
+                    // Under the panels and over the page: it is a fact about the
+                    // book rather than a control, and nothing it can be behind ever
+                    // reaches the bottom edge.
+                    ReaderBottomChrome(
+                        chrome = chrome,
+                        pageCount = pageCount,
+                        listState = listState,
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                    )
+
+                    ReaderPanels(
+                        chrome = chrome,
+                        document = document,
+                        pageCount = pageCount,
+                        outline = pagedOutline,
+                        listState = listState,
+                        settings = settings,
+                        layout = layout,
+                        onSettingsChange = onSettingsChange,
+                        translationSection = {
+                            ReaderTranslationSettings(translationUi, translationPreferences)
+                        },
+                    )
                 }
-
-                ReaderTopChrome(
-                    chrome = chrome,
-                    document = document,
-                    pageCount = pageCount,
-                    outline = pagedOutline,
-                    listState = listState,
-                    translation = translationUi,
-                    onBack = onBack,
-                    modifier = Modifier.align(Alignment.TopCenter),
-                )
-
-                // Under the panels and over the page: it is a fact about the
-                // book rather than a control, and nothing it can be behind ever
-                // reaches the bottom edge.
-                ReaderBottomChrome(
-                    chrome = chrome,
-                    pageCount = pageCount,
-                    listState = listState,
-                    modifier = Modifier.align(Alignment.BottomCenter),
-                )
-
-                ReaderPanels(
-                    chrome = chrome,
-                    document = document,
-                    pageCount = pageCount,
-                    outline = pagedOutline,
-                    listState = listState,
-                    settings = settings,
-                    layout = layout,
-                    onSettingsChange = onSettingsChange,
-                    translationSection = {
-                        ReaderTranslationSettings(translationUi, translationPreferences)
-                    },
-                )
 
                 // Over the panels and the chrome alike: it was opened from the
                 // page, it dims what is behind it, and nothing in the chrome is

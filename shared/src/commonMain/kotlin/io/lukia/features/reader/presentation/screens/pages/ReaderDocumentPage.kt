@@ -23,7 +23,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import io.lukia.features.reader.domain.page.PageSentence
@@ -112,9 +112,6 @@ internal fun DocumentPage(
     // one is far too much to do again on every tap.
     val passages = remember(index, sentences) { PagePassages(index, sentences) }
 
-    // Read before the modifier chain: `semantics` is not a composable scope.
-    val spoken = stringResource(Res.string.reader_page_x_of_y, index + 1, pageCount)
-
     TranslateWhatIsOnThisPage(passages, translateOnScreen, onPassagesRequested)
 
     Box(
@@ -123,10 +120,9 @@ internal fun DocumentPage(
             .aspectRatio(pageSize.aspectRatio)
             .shadow(elevation = LukiaElevation.page)
             .background(pageColor)
-            // A page is a picture with no text behind it, so this is the only
-            // thing a screen reader can be told about it. Without it the whole
-            // document is silence.
-            .semantics { contentDescription = spoken }
+            // One group, so what is drawn over the page is ordered against the
+            // page rather than against the rest of the document.
+            .semantics { isTraversalGroup = true }
             .passageTaps(
                 pageIndex = index,
                 passages = passages,
@@ -139,6 +135,8 @@ internal fun DocumentPage(
                 onChrome = onToggleChrome,
             ),
     ) {
+        PageLabel(stringResource(Res.string.reader_page_x_of_y, index + 1, pageCount))
+
         page?.let {
             Image(
                 bitmap = it,

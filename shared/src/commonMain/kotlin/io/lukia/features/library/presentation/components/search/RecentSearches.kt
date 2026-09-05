@@ -22,6 +22,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import io.lukia.resources.Res
 import io.lukia.resources.filter_clear
+import io.lukia.resources.search_clear_recent
+import io.lukia.resources.search_for_term
 import io.lukia.resources.search_forget
 import io.lukia.resources.search_recent
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
@@ -109,7 +111,7 @@ private fun RecentSearchRow(
                 interactionSource = interactionSource,
                 indication = null,
                 role = Role.Button,
-                onClickLabel = "Search for $term",
+                onClickLabel = stringResource(Res.string.search_for_term, term),
                 onClick = onClick,
             )
             .padding(vertical = Space.xs),
@@ -169,7 +171,7 @@ private fun ClearAll(
                 interactionSource = interactionSource,
                 indication = null,
                 role = Role.Button,
-                onClickLabel = "Clear recent searches",
+                onClickLabel = stringResource(Res.string.search_clear_recent),
                 onClick = onClick,
             )
             .padding(horizontal = Space.xs, vertical = Space.xxs),

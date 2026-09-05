@@ -22,6 +22,9 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.toSize
@@ -42,8 +45,12 @@ import io.lukia.features.translate.domain.text.splitIntoSentences
 import io.lukia.features.translate.domain.text.words
 import io.lukia.features.translate.presentation.SentenceTranslations
 import io.lukia.features.translate.presentation.shownText
+import io.lukia.resources.Res
+import io.lukia.resources.reader_restore_this_paragraph
+import io.lukia.resources.reader_translate_this_paragraph
 import io.lukia.shared.presentation.theme.LukiaMotion
 import kotlinx.coroutines.delay
+import org.jetbrains.compose.resources.stringResource
 
 // A paragraph of the book, and everything that happens when the reader points
 // at part of it.
@@ -67,6 +74,14 @@ import kotlinx.coroutines.delay
  * to move. Two animations carry that: the text cross-fades between its two
  * settings, and the block eases into its new height - so the page settles rather
  * than jumping, and the eye can follow the line it was on to where it went.
+ *
+ * Every one of those gestures is a point on the page, and a point on the page is
+ * the one thing a reader working by voice, by switch or by keyboard does not
+ * have. So the paragraph also carries the ask as an action of its own - see
+ * [translationAction]. It is the whole block rather than the sentence under the
+ * finger, because the finger is what named the sentence; the block is the
+ * largest passage that is unambiguous without one, and it is already the unit
+ * the reader's own "translate what is on screen" works in.
  */
 @Composable
 internal fun ProseText(
@@ -221,6 +236,10 @@ internal fun ProseText(
         )
     }
 
+    val translate = translationAction(translations) {
+        currentActions.onParagraph(paragraph)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -268,15 +287,62 @@ internal fun ProseText(
                     measured = it
                     if (paragraphText === currentDrawn) layout = it
                 },
-                modifier = Modifier.drawBehind {
-                    val lines = measured ?: return@drawBehind
+                // The action sits on the words rather than on the block around
+                // them. A screen reader stops on nodes that speak, and the
+                // paragraph is the one that does - an action hung on the column
+                // holding it belongs to a node nothing ever lands on, which is
+                // an action nobody can reach.
+                modifier = Modifier
+                    .semantics { customActions = listOf(translate) }
+                    .drawBehind {
+                        val lines = measured ?: return@drawBehind
 
-                    drawPassageMarks(lines, marks, colors, sweep.value)
-                },
+                        drawPassageMarks(lines, marks, colors, sweep.value)
+                    },
             )
         }
 
         TranslatorsRemarks(sentences, words, translations, style)
+    }
+}
+
+/**
+ * The one thing a paragraph can be asked without pointing at part of it: translate
+ * it, or put the book's own words back.
+ *
+ * One action rather than two, named for what pressing it will do, because that is
+ * what the gesture underneath already is - asking again about a passage that has
+ * been answered is how a reader undoes it, and an action list offering both
+ * directions at once would describe a control the app does not have.
+ *
+ * A custom action rather than a click. A click on a paragraph of a book means
+ * something already - it is how the chrome comes back - and a paragraph that
+ * announced itself as a button would be nine hundred buttons in a chapter.
+ */
+@Composable
+private fun translationAction(
+    translations: SentenceTranslations,
+    onAct: () -> Unit,
+): CustomAccessibilityAction {
+    val label = stringResource(
+        if (translations.block.shownText == null) {
+            Res.string.reader_translate_this_paragraph
+        } else {
+            Res.string.reader_restore_this_paragraph
+        },
+    )
+
+    // Keyed on the label alone. What the action does is read at the moment it is
+    // invoked rather than captured here, for the reason the tap handlers above
+    // are: the lambda is rebuilt on every composition of a paragraph, and a
+    // chapter is hundreds of these being composed as it scrolls past.
+    val current by rememberUpdatedState(onAct)
+
+    return remember(label) {
+        CustomAccessibilityAction(label) {
+            current()
+            true
+        }
     }
 }
 

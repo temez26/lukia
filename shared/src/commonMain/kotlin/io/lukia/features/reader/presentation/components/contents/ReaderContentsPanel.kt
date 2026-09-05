@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import io.lukia.features.reader.domain.outline.ReaderOutline
 import io.lukia.features.reader.presentation.percentThrough
 import io.lukia.resources.Res
+import io.lukia.resources.reader_go_to_page
 import io.lukia.resources.reader_page_x_of_y
 import io.lukia.resources.reader_page_x_of_y_percent
 import io.lukia.resources.reader_percent
@@ -170,6 +171,14 @@ private fun PositionScrubber(
         percent,
     )
 
+    val goToPage = stringResource(Res.string.reader_go_to_page)
+
+    // The page without the percentage beside it. The row above says how far in;
+    // the scrubber's own label says where it would land, and a slider that reads
+    // out a percentage every time it moves is announcing two numbers where the
+    // reader is only moving one of them.
+    val place = stringResource(Res.string.reader_page_x_of_y, shown, pageCount)
+
     Column(modifier = Modifier.padding(horizontal = inset)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -215,11 +224,7 @@ private fun PositionScrubber(
                 ),
                 modifier = Modifier
                     .height(ScrubberHeight)
-                    .semantics {
-                        contentDescription =
-                            "Go to page. " +
-                            "Page $shown of $pageCount"
-                    },
+                    .semantics { contentDescription = "$goToPage. $place" },
             )
         }
     }

@@ -22,6 +22,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.library.presentation.components.toolbar.ImportMenuRows
+import io.lukia.resources.Res
+import io.lukia.resources.library_import_books
 import io.lukia.shared.presentation.components.controls.focusRing
 import io.lukia.shared.presentation.components.controls.hoverHighlight
 import io.lukia.shared.presentation.components.controls.rememberHoverFraction
@@ -31,6 +33,7 @@ import io.lukia.shared.presentation.components.launch.launchReveal
 import io.lukia.shared.presentation.components.menu.AnchoredMenu
 import io.lukia.shared.presentation.theme.HairlineWidth
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.graphics.lerp as lerpColor
 
 /** The thumbnail's size, matching the jacket a book's row carries. */
@@ -89,7 +92,7 @@ internal fun ImportBookRow(
                     interactionSource = interactionSource,
                     indication = null,
                     role = Role.Button,
-                    onClickLabel = "Add books",
+                    onClickLabel = stringResource(Res.string.library_import_books),
                     onClick = onMenuRequest,
                 )
                 // The same inset a book's row is drawn inside, so the two line

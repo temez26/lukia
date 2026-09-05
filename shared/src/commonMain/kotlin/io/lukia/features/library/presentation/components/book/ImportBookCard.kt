@@ -29,6 +29,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import io.lukia.features.library.presentation.components.toolbar.ImportMenuRows
+import io.lukia.resources.Res
+import io.lukia.resources.library_import_books
 import io.lukia.shared.presentation.components.controls.focusRing
 import io.lukia.shared.presentation.components.controls.rememberHoverFraction
 import io.lukia.shared.presentation.components.controls.scaleOnPress
@@ -42,6 +44,7 @@ import io.lukia.shared.presentation.theme.LukiaElevation
 import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.Space
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.graphics.lerp as lerpColor
 
 /** How far the cover swings open, in degrees about its spine. */
@@ -133,7 +136,7 @@ internal fun ImportBookCard(
                         interactionSource = interactionSource,
                         indication = null,
                         role = Role.Button,
-                        onClickLabel = "Add books",
+                        onClickLabel = stringResource(Res.string.library_import_books),
                     ) {
                         scope.launch {
                             openAngle.animateTo(OpenAngle, LukiaMotion.standard())

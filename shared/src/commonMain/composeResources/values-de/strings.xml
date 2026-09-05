@@ -446,4 +446,25 @@
     <string name="size_gigabytes">%1$s\u00A0GB</string>
     <string name="size_terabytes">%1$s\u00A0TB</string>
 
+    <string name="state_on">An</string>
+    <string name="state_off">Aus</string>
+    <string name="state_selected">Ausgewählt</string>
+    <string name="state_not_selected">Nicht ausgewählt</string>
+    <string name="action_dismiss">Schließen</string>
+    <string name="reader_open_contents">Inhalt öffnen</string>
+    <string name="reader_go_to_page">Zu Seite springen</string>
+    <string name="reader_go_to_chapter">Zu %1$s springen</string>
+    <string name="reader_chapter_at_page">%1$s, Seite %2$d</string>
+    <string name="reader_translate_this_paragraph">Diesen Absatz übersetzen</string>
+    <string name="reader_restore_this_paragraph">Den Originaltext zeigen</string>
+    <string name="figure_look_closer">Näher ansehen</string>
+    <string name="figure_close">Illustration schließen</string>
+    <string name="figure_illustration">Illustration</string>
+    <string name="home_see_all_shelf">Alle %1$s anzeigen</string>
+    <string name="search_for_term">Nach %1$s suchen</string>
+    <string name="search_clear_recent">Letzte Suchanfragen löschen</string>
+    <string name="book_open_title">%1$s öffnen</string>
+    <string name="book_read_title">%1$s lesen</string>
+    <string name="book_favourited">Favorit</string>
+
 </resources>

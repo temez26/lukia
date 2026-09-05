@@ -58,6 +58,18 @@ object LukiaAlpha {
 
     /** A chip of chrome laid straight over artwork, which has to stay legible. */
     const val OverArtwork = 0.88f
+
+    /**
+     * The edge of a control that has no fill to mark where it is - the secondary
+     * button, and nothing else so far.
+     *
+     * In the content colour at this strength rather than in `outlineVariant`,
+     * which is what separates two rows of one surface and is deliberately
+     * invisible next to a boundary. A control's own edge is held to 3:1 against
+     * the surface behind it, and this is the lowest opacity that reaches it in
+     * every palette, light and dark.
+     */
+    const val Border = 0.5f
 }
 
 /** Shadow depths. Deliberately shallow: depth here is for ordering, not for drama. */

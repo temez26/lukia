@@ -32,6 +32,7 @@ import io.lukia.resources.reader_close_the_list
 import io.lukia.resources.reader_setting_and_value
 import io.lukia.shared.presentation.components.controls.focusRing
 import io.lukia.shared.presentation.components.controls.hoverHighlight
+import io.lukia.shared.presentation.components.controls.toggleRow
 import io.lukia.shared.presentation.components.icons.DisclosureChevron
 import io.lukia.shared.presentation.theme.LocalLukiaMetrics
 import io.lukia.shared.presentation.theme.LukiaAlpha
@@ -61,8 +62,15 @@ internal fun PanelSwitchRow(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
+        // The row is the control, not the switch inside it - see [toggleRow].
         modifier = Modifier
             .fillMaxWidth()
+            .toggleRow(
+                label = label,
+                checked = checked,
+                onChange = onChange,
+                enabled = enabled,
+            )
             .padding(horizontal = inset, vertical = Space.xs),
     ) {
         Text(
@@ -74,7 +82,7 @@ internal fun PanelSwitchRow(
             modifier = Modifier.weight(1f, fill = false),
         )
 
-        Switch(checked = checked, onCheckedChange = onChange, enabled = enabled)
+        Switch(checked = checked, onCheckedChange = null, enabled = enabled)
     }
 }
 

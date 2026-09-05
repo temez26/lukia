@@ -133,6 +133,15 @@ internal fun ComposeUiTest.setReader(
     // when it has no pages in it yet. Waited for by the page rather than by what
     // is written on it, because half these tests open on a book whose words have
     // already been replaced by their translations.
+    //
+    // Except where the reader opens with the word panel already up. The book
+    // behind an open panel is deliberately out of the accessibility tree - see
+    // `behindOverlay` - so there is no page node to wait for, and waiting for
+    // one would be waiting for the modality to fail. Nothing needs waiting for
+    // there either: the panel is composed in the same frame as the reader, and
+    // it is the only thing those tests read.
+    if (wordInquiry() != null) return
+
     waitUntil {
         onAllNodes(hasContentDescription("Page 1 of ", substring = true))
             .fetchSemanticsNodes()
