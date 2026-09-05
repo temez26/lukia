@@ -44,6 +44,7 @@ import io.lukia.resources.settings_palette_footnote
 import io.lukia.shared.presentation.components.controls.ChoiceList
 import io.lukia.shared.presentation.components.controls.SegmentedControl
 import io.lukia.shared.presentation.components.icons.CheckGlyph
+import io.lukia.shared.presentation.theme.HairlineWidth
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.accentSwatchColor
@@ -218,7 +219,7 @@ private fun AccentSwatch(
             // A hairline, so a swatch the same tone as the card it sits on is
             // still a swatch rather than a hole.
             .border(
-                width = 1.dp,
+                width = HairlineWidth,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
                 shape = CircleShape,
             )

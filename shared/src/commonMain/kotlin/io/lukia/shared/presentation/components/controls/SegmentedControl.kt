@@ -22,8 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -159,8 +157,11 @@ private fun Segment(
             .width(width)
             .fillMaxHeight()
             .clip(shape)
-            .hoverHighlight(interactionSource, shape)
-            .focusRing(interactionSource, shape)
+            .pressFeedback(
+                interactionSource = interactionSource,
+                shape = shape,
+                enabled = enabled,
+            )
             .selectable(
                 selected = selected,
                 enabled = enabled,
@@ -168,8 +169,7 @@ private fun Segment(
                 indication = null,
                 role = Role.RadioButton,
                 onClick = onClick,
-            )
-            .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default),
+            ),
     ) {
         Text(
             text = text,

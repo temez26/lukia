@@ -33,6 +33,21 @@ internal val LukiaTypography = Typography(
         fontWeight = FontWeight.SemiBold,
         letterSpacing = (-0.3).sp,
     ),
+    /**
+     * Title 1 - iOS 20pt.
+     *
+     * Set here rather than left to Material, which was what the statistics
+     * tiles, the home rows and a looked-up word were all wearing: Material's own
+     * `headlineSmall` is 24sp Normal with no tracking, so it landed at the same
+     * size as [Typography.headlineMedium] above, in a different weight, with the
+     * negative tracking the rest of this scale is built on missing.
+     */
+    headlineSmall = TextStyle(
+        fontSize = 20.sp,
+        lineHeight = 25.sp,
+        fontWeight = FontWeight.SemiBold,
+        letterSpacing = (-0.3).sp,
+    ),
     // Title 2 - iOS 22pt
     titleLarge = TextStyle(
         fontSize = 22.sp,

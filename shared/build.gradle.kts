@@ -142,6 +142,10 @@ kotlin {
             // Common-code back/escape handling; ships separately from compose.ui.
             implementation(libs.compose.ui.backhandler)
             implementation(libs.compose.components.resources)
+            // The multiplatform `@Preview`, so the design system's components can
+            // be previewed from common code rather than only through the Android
+            // app that happens to depend on them.
+            implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.androidx.navigation.compose)

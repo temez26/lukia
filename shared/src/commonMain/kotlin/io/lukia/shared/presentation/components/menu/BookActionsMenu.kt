@@ -2,6 +2,7 @@ package io.lukia.shared.presentation.components.menu
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import io.lukia.resources.Res
 import io.lukia.resources.menu_book_details
 import io.lukia.resources.menu_delete_from_library
@@ -40,12 +41,14 @@ fun BookActionsMenu(
     onRefresh: () -> Unit,
     onDelete: () -> Unit,
     onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
     onShowDetails: (() -> Unit)? = null,
     onSelectBooks: (() -> Unit)? = null,
 ) {
     AnchoredMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
+        modifier = modifier,
     ) {
         if (onShowDetails != null) {
             MenuRow(

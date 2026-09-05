@@ -1,6 +1,5 @@
 package io.lukia.features.stats.presentation.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,9 +15,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -32,8 +28,7 @@ import io.lukia.resources.stats_finished_pages
 import io.lukia.resources.stats_opened
 import io.lukia.resources.stats_page_of_percent
 import io.lukia.shared.presentation.components.controls.ReadingProgressBar
-import io.lukia.shared.presentation.components.controls.focusRing
-import io.lukia.shared.presentation.components.controls.hoverHighlight
+import io.lukia.shared.presentation.components.controls.pressable
 import io.lukia.shared.presentation.components.cover.BookCover
 import io.lukia.shared.presentation.components.cover.rememberBookCover
 import io.lukia.shared.presentation.components.surface.LukiaDivider
@@ -90,13 +85,9 @@ private fun ActivityRow(
         modifier = modifier
             .fillMaxWidth()
             .clip(shape)
-            .hoverHighlight(interactionSource, shape)
-            .focusRing(interactionSource, shape)
-            .pointerHoverIcon(PointerIcon.Hand)
-            .clickable(
+            .pressable(
                 interactionSource = interactionSource,
-                indication = null,
-                role = Role.Button,
+                shape = shape,
                 onClickLabel = stringResource(Res.string.book_open_title, title),
                 onClick = onClick,
             )

@@ -5,6 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import io.lukia.resources.Res
 import io.lukia.resources.action_cancel
 import org.jetbrains.compose.resources.stringResource
@@ -31,11 +32,13 @@ fun ConfirmDialog(
     confirmLabel: String,
     onConfirm: () -> Unit,
     onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
     destructive: Boolean = false,
 ) {
     if (!visible) return
 
     AlertDialog(
+        modifier = modifier,
         onDismissRequest = onDismissRequest,
         title = { Text(text = title, style = MaterialTheme.typography.titleMedium) },
         text = { Text(text = message, style = MaterialTheme.typography.bodyMedium) },

@@ -81,7 +81,7 @@ internal fun SettingsTextField(
             .clip(MaterialTheme.shapes.small)
             .background(colors.surfaceVariant.copy(alpha = LukiaAlpha.Fill))
             .focusRing(interactionSource, MaterialTheme.shapes.small)
-            .padding(horizontal = FieldPadding, vertical = 4.dp),
+            .padding(horizontal = FieldPadding, vertical = Space.xs),
     ) {
         Box(modifier = Modifier.weight(1f)) {
             if (value.isEmpty()) {

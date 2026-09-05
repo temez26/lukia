@@ -18,8 +18,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -38,19 +36,24 @@ import io.lukia.resources.book_format_and_size
 import io.lukia.resources.book_progress_percent
 import io.lukia.resources.book_unavailable
 import io.lukia.shared.presentation.components.controls.ReadingProgressBar
-import io.lukia.shared.presentation.components.controls.focusRing
-import io.lukia.shared.presentation.components.controls.hoverHighlight
 import io.lukia.shared.presentation.components.controls.menuGesture
+import io.lukia.shared.presentation.components.controls.pressFeedback
 import io.lukia.shared.presentation.components.cover.BookCover
 import io.lukia.shared.presentation.components.cover.FavoriteBadge
 import io.lukia.shared.presentation.components.surface.StatusBadge
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 
-/** Tall enough to read a jacket by, short enough to fit three times the grid's books. */
-private val RowCoverHeight: Dp = 64.dp
+/**
+ * Tall enough to read a jacket by, short enough to fit three times the grid's
+ * books - and the size of every slot in a library laid out as a list, including
+ * the one at the end that imports rather than opens. `ImportBookRow` carried its
+ * own copy of both numbers, so a row and the slot under it agreed only by
+ * coincidence.
+ */
+internal val RowCoverHeight: Dp = 64.dp
 
-private val RowCoverWidth: Dp = 44.dp
+internal val RowCoverWidth: Dp = 44.dp
 
 private val SelectionMarkSize: Dp = 22.dp
 
@@ -98,9 +101,10 @@ internal fun BookRow(
         modifier = modifier
             .fillMaxWidth()
             .clip(shape)
-            .hoverHighlight(interactionSource, shape)
-            .focusRing(interactionSource, shape)
-            .pointerHoverIcon(PointerIcon.Hand)
+            .pressFeedback(
+                interactionSource = interactionSource,
+                shape = shape,
+            )
             .menuGesture(
                 interactionSource = interactionSource,
                 onClick = selection?.onToggle ?: onClick,

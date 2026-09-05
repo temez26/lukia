@@ -28,17 +28,12 @@ import io.lukia.resources.stats_footnote
 import io.lukia.resources.stats_title
 import io.lukia.shared.presentation.components.state.ErrorState
 import io.lukia.shared.presentation.components.state.LoadingState
+import io.lukia.shared.presentation.theme.Clearance
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.softFadeOut
 import io.lukia.shared.presentation.theme.stateSwapIn
 import org.jetbrains.compose.resources.stringResource
-
-/** Vertical room reserved so content starts clear of the floating back control. */
-private val TopChromeClearance: Dp = 68.dp
-
-/** Room past the last group, so the page does not end hard against the edge. */
-private val StatsBottomClearance: Dp = 32.dp
 
 /**
  * Room held while the figures are being counted, so the page arrives at roughly
@@ -71,7 +66,7 @@ internal fun StatsBody(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.verticalScroll(rememberScrollState()),
     ) {
-        Spacer(modifier = Modifier.height(TopChromeClearance))
+        Spacer(modifier = Modifier.height(Clearance.topChrome))
 
         Column(
             modifier = Modifier
@@ -89,7 +84,7 @@ internal fun StatsBody(
             )
         }
 
-        Spacer(modifier = Modifier.height(StatsBottomClearance))
+        Spacer(modifier = Modifier.height(Clearance.pageBottom))
     }
 }
 

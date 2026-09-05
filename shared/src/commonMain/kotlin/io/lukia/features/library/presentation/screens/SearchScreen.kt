@@ -36,13 +36,11 @@ import io.lukia.resources.search_empty_title
 import io.lukia.resources.search_placeholder
 import io.lukia.shared.presentation.components.surface.EmptyState
 import io.lukia.shared.presentation.components.surface.SectionLabel
+import io.lukia.shared.presentation.theme.Clearance
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-
-/** Clears the last result of the tab bar the list scrolls up to. */
-private val ResultsBottomPadding: Dp = 24.dp
 
 /** How far down an empty screen its notice sits, so it is not against the field. */
 private val NoticeTopPadding: Dp = 64.dp
@@ -219,7 +217,7 @@ private fun SearchHistory(
             .padding(
                 start = dimens.screenPadding,
                 end = dimens.screenPadding,
-                bottom = ResultsBottomPadding,
+                bottom = Clearance.listBottom,
             ),
     ) {
         RecentSearches(
@@ -245,7 +243,7 @@ private fun SearchResults(
         contentPadding = PaddingValues(
             start = dimens.screenPadding,
             end = dimens.screenPadding,
-            bottom = ResultsBottomPadding,
+            bottom = Clearance.listBottom,
         ),
         verticalArrangement = Arrangement.spacedBy(Space.xs),
     ) {

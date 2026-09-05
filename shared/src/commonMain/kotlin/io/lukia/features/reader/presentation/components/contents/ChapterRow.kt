@@ -2,7 +2,6 @@ package io.lukia.features.reader.presentation.components.contents
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -29,9 +28,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -45,8 +41,7 @@ import io.lukia.resources.reader_chapter_at_page
 import io.lukia.resources.reader_go_to_chapter
 import io.lukia.resources.reader_hide_sections_of
 import io.lukia.resources.reader_show_sections_of
-import io.lukia.shared.presentation.components.controls.focusRing
-import io.lukia.shared.presentation.components.controls.hoverHighlight
+import io.lukia.shared.presentation.components.controls.pressable
 import io.lukia.shared.presentation.components.icons.DisclosureChevron
 import io.lukia.shared.presentation.theme.HairlineWidth
 import io.lukia.shared.presentation.theme.LocalLukiaMetrics
@@ -151,13 +146,9 @@ internal fun ChapterRowItem(
                     )
                 }
             }
-            .hoverHighlight(interactionSource, RectangleShape)
-            .focusRing(interactionSource, RectangleShape)
-            .pointerHoverIcon(PointerIcon.Hand)
-            .clickable(
+            .pressable(
                 interactionSource = interactionSource,
-                indication = null,
-                role = Role.Button,
+                shape = RectangleShape,
                 onClickLabel = goTo,
                 onClick = onClick,
             )
@@ -247,13 +238,9 @@ private fun DisclosureToggle(
         modifier = Modifier
             .size(width = DisclosureSlot, height = rowHeight)
             .clip(shape)
-            .hoverHighlight(interactionSource, shape)
-            .focusRing(interactionSource, shape)
-            .pointerHoverIcon(PointerIcon.Hand)
-            .clickable(
+            .pressable(
                 interactionSource = interactionSource,
-                indication = null,
-                role = Role.Button,
+                shape = shape,
                 onClickLabel = label,
                 onClick = onClick,
             )

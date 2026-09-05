@@ -138,7 +138,15 @@ internal fun colorSchemeFor(
 ): ColorScheme {
     val highlight = accentColor(accent, darkTheme) ?: themedAccentColor(palette, darkTheme)
 
-    return surfacesFor(palette, darkTheme).scheme(darkTheme).withAccent(highlight, darkTheme)
+    // The same palette seen from the other side, which is where every "inverse"
+    // role is answered from - see [Surfaces.scheme].
+    val opposite = surfacesFor(palette, !darkTheme)
+    val oppositeHighlight =
+        accentColor(accent, !darkTheme) ?: themedAccentColor(palette, !darkTheme)
+
+    return surfacesFor(palette, darkTheme)
+        .scheme(darkTheme, opposite)
+        .withAccent(highlight, oppositeHighlight, darkTheme)
 }
 
 /**
@@ -173,7 +181,19 @@ private fun surfacesFor(palette: AppPalette, darkTheme: Boolean): Surfaces = whe
     AppPalette.Slate -> if (darkTheme) SlateDark else SlateLight
 }
 
-private fun Surfaces.scheme(darkTheme: Boolean): ColorScheme {
+/**
+ * [opposite] is the same palette at the other lightness, and is what fills
+ * Material's `inverse` roles.
+ *
+ * Those roles are not decoration and are not optional: `Snackbar` and
+ * `PlainTooltip` are painted entirely out of them, and both were therefore
+ * wearing Material's own baseline neutrals - a cold lilac-grey - on top of the
+ * Paper palette's warm surfaces, because the app had never set them. Nothing
+ * here is computed by inverting a channel; the light theme's inverse surface is
+ * literally the dark theme's card, which has already been held to the same
+ * contrast as every other colour in this file.
+ */
+private fun Surfaces.scheme(darkTheme: Boolean, opposite: Surfaces): ColorScheme {
     val base = if (darkTheme) darkColorScheme() else lightColorScheme()
 
     return base.copy(
@@ -187,6 +207,13 @@ private fun Surfaces.scheme(darkTheme: Boolean): ColorScheme {
         // The one surface that differs by lightness rather than by palette: a
         // light theme raises by staying white, a dark one by growing paler.
         surfaceContainerHigh = if (darkTheme) secondary else elevated,
+        // What an unchecked `Switch` draws its track in, and the only Material
+        // component in the app that reaches past `surfaceVariant` for a
+        // recessed fill. Same colour, so a switch in a settings row sits on the
+        // palette rather than beside it.
+        surfaceContainerHighest = secondary,
+        inverseSurface = opposite.elevated,
+        inverseOnSurface = opposite.label,
         outline = separator,
         outlineVariant = separator.copy(alpha = if (darkTheme) 0.6f else 0.5f),
         error = if (darkTheme) ErrorRedDark else ErrorRed,
@@ -200,13 +227,21 @@ private fun Surfaces.scheme(darkTheme: Boolean): ColorScheme {
  * the progress bar, the chosen row and the button that does the thing without
  * any of them knowing that a setting exists.
  */
-private fun ColorScheme.withAccent(accent: Color, darkTheme: Boolean): ColorScheme = copy(
+private fun ColorScheme.withAccent(
+    accent: Color,
+    onInverse: Color,
+    darkTheme: Boolean,
+): ColorScheme = copy(
     primary = accent,
     onPrimary = accent.readableOn(),
     primaryContainer = accent.copy(alpha = if (darkTheme) 0.24f else 0.12f),
     onPrimaryContainer = accent,
     secondary = accent,
     onSecondary = accent.readableOn(),
+    // The accent as it is drawn on `inverseSurface` - a snackbar's action - which
+    // is the other theme's accent for the same reason that surface is the other
+    // theme's card: it is the one already measured against that ground.
+    inversePrimary = onInverse,
 )
 
 /**

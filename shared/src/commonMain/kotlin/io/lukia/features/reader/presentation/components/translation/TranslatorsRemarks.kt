@@ -12,7 +12,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.AppError
 import io.lukia.core.presentation.displayShortMessage
 import io.lukia.features.translate.domain.text.Sentence
@@ -21,6 +20,7 @@ import io.lukia.features.translate.domain.text.words
 import io.lukia.features.translate.presentation.PassageTranslation
 import io.lukia.features.translate.presentation.SentenceTranslations
 import io.lukia.features.translate.presentation.shownText
+import io.lukia.shared.presentation.theme.Space
 
 /** A note is an aside about the text, and is set smaller than the text. */
 internal const val NOTE_SCALE = 0.82f
@@ -79,8 +79,8 @@ internal fun TranslatorsRemarks(
     if (remarks.isEmpty()) return
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-        modifier = Modifier.padding(top = 6.dp),
+        verticalArrangement = Arrangement.spacedBy(Space.xxs),
+        modifier = Modifier.padding(top = Space.sm),
     ) {
         remarks.forEach { remark ->
             val failed = remark is Remark.Failure

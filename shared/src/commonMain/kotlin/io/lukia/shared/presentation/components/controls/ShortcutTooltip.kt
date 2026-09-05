@@ -34,10 +34,11 @@ import org.jetbrains.compose.resources.stringResource
 fun ShortcutTooltip(
     description: String,
     shortcut: String,
+    modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
     if (LocalWindowWidthClass.current == WindowWidthClass.Compact) {
-        content()
+        Box(modifier = modifier) { content() }
         return
     }
 
@@ -54,7 +55,8 @@ fun ShortcutTooltip(
         state = rememberTooltipState(),
         focusable = false,
         enableUserInput = true,
+        modifier = modifier,
     ) {
-        Box(modifier = Modifier) { content() }
+        content()
     }
 }

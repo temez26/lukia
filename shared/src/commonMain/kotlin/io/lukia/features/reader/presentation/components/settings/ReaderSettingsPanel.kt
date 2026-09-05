@@ -30,6 +30,7 @@ import io.lukia.features.reader.domain.ReaderTypeface
 import io.lukia.features.reader.domain.ReadingWidth
 import io.lukia.features.reader.domain.TextAlignment
 import io.lukia.features.reader.presentation.displayName
+import io.lukia.features.reader.presentation.theme.ReaderPanelWidth
 import io.lukia.getPlatform
 import io.lukia.resources.Res
 import io.lukia.resources.reader_keep_screen_awake
@@ -61,14 +62,6 @@ import org.jetbrains.compose.resources.stringResource
 
 /** Grows out of the control it hangs from, matching the book actions menu. */
 private val PanelTransformOrigin = TransformOrigin(1f, 0f)
-
-/**
- * On a window with room, the panel is wider and its labels sit beside their
- * controls rather than above them. A phone stacks them because it has no choice;
- * carrying that stack onto a desktop is what makes a panel read as a phone
- * layout that happened to be opened on a monitor.
- */
-private val WidePanelWidth: Dp = 380.dp
 
 /**
  * How far the panel may grow before it scrolls inside itself.
@@ -146,7 +139,7 @@ internal fun ReaderSettingsPanel(
                 // screen a thumb is aiming at while it is open, and five width
                 // presets sharing 284dp were a row of 56dp targets against the
                 // 44dp a finger is actually worth.
-                .then(if (wide) Modifier.width(WidePanelWidth) else Modifier.fillMaxWidth())
+                .then(if (wide) Modifier.width(ReaderPanelWidth) else Modifier.fillMaxWidth())
                 // A short window - a phone in landscape - would otherwise
                 // leave the last setting past the bottom edge with no way to
                 // reach it.

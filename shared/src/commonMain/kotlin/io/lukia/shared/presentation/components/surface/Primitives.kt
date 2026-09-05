@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.Space
+import io.lukia.shared.presentation.theme.StateMeasure
 
 /**
  * The app's one hairline.
@@ -195,7 +196,7 @@ fun EmptyState(
     title: String,
     message: String,
     modifier: Modifier = Modifier,
-    maxWidth: Dp = 360.dp,
+    maxWidth: Dp = StateMeasure,
     content: (@Composable () -> Unit)? = null,
 ) {
     Column(

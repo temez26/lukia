@@ -2,7 +2,6 @@ package io.lukia.shared.presentation.components.controls
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,9 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -171,16 +167,12 @@ fun LukiaButton(
                     Modifier
                 },
             )
-            .hoverHighlight(interactionSource, shape)
-            .focusRing(interactionSource, shape)
-            .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default)
-            .clickable(
-                enabled = enabled,
+            .pressable(
                 interactionSource = interactionSource,
-                indication = null,
-                role = Role.Button,
+                shape = shape,
                 onClickLabel = label,
                 onClick = onClick,
+                enabled = enabled,
             )
             .padding(horizontal = horizontalPadding)
             .semantics { contentDescription = label },
@@ -291,16 +283,12 @@ fun LukiaIconButton(
                         Modifier
                     },
                 )
-                .hoverHighlight(interactionSource, CircleShape)
-                .focusRing(interactionSource, CircleShape)
-                .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default)
-                .clickable(
-                    enabled = enabled,
+                .pressable(
                     interactionSource = interactionSource,
-                    indication = null,
-                    role = Role.Button,
+                    shape = CircleShape,
                     onClickLabel = label,
                     onClick = onClick,
+                    enabled = enabled,
                 )
                 .semantics { contentDescription = label },
         ) {
