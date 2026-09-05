@@ -25,12 +25,7 @@ import io.lukia.features.reader.domain.text.TextRun
 internal fun readMarkdown(
     bytes: ByteArray,
     diagnostics: Diagnostics = Diagnostics.None,
-): ReflowableContent {
-    val blocks = markdownBlocks(decodeText(bytes, diagnostics))
-    val sectioned = sectionText(blocks)
-
-    return ReflowableContent(sections = sectioned.sections, outline = sectioned.outline)
-}
+): ReflowableContent = reflowableFrom(markdownBlocks(decodeText(bytes, diagnostics)))
 
 private val ThematicBreak = Regex("""^ {0,3}([-*_])( *\1){2,} *$""")
 private val AtxHeading = Regex("""^ {0,3}(#{1,6})\s+(.*?)\s*#*\s*$""")
@@ -41,7 +36,7 @@ private val CodeFence = Regex("""^ {0,3}(`{3,}|~{3,})(.*)$""")
 private val SetextUnderline = Regex("""^ {0,3}(=+|-+) *$""")
 
 private fun markdownBlocks(source: String): List<TextBlock> {
-    val lines = source.replace("\r\n", "\n").replace('\r', '\n').split('\n')
+    val lines = source.split('\n')
     val blocks = mutableListOf<TextBlock>()
 
     // Gathered rather than emitted per line: a paragraph is however many
