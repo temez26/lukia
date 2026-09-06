@@ -54,7 +54,7 @@ data class LibraryBook(
      * How to get this book's artwork, which is not the artwork itself.
      *
      * The shelf reads its books without their covers - see
-     * [io.lukia.features.library.domain.LibraryRepository.getDocuments] - because
+     * [io.lukia.core.domain.document.DocumentCatalogue.getDocuments] - because
      * a library's worth of them is hundreds of megabytes to draw the dozen the
      * reader can see. What travels with the book instead is the way to ask for
      * one, and the asking happens as a card is drawn.

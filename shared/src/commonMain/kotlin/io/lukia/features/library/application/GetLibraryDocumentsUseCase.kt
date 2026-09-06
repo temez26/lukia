@@ -10,7 +10,7 @@ import io.lukia.features.library.domain.LibraryRepository
  * In two halves because the read is in two halves. The rows come back without
  * their artwork - a library's worth of covers is hundreds of megabytes held to
  * draw the dozen the reader can see - and whatever draws one asks for it by name
- * as it does. See [LibraryRepository.getDocuments].
+ * as it does. See [io.lukia.core.domain.document.DocumentCatalogue.getDocuments].
  */
 class GetLibraryDocumentsUseCase(
     private val repository: LibraryRepository,

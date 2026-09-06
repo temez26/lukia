@@ -3,12 +3,12 @@ package io.lukia.features.reader.application
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.asFailure
 import io.lukia.core.domain.diagnostics.Diagnostics
+import io.lukia.core.domain.document.DocumentCatalogue
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.domain.reading.PdfLayout
 import io.lukia.core.domain.storage.DocumentWorkspace
 import io.lukia.core.infrastructure.ioDispatcher
-import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.reader.domain.ReaderContent
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.text.TextExtraction
@@ -24,7 +24,7 @@ import kotlinx.coroutines.withContext
  * The caller owns the returned [ReaderDocument] and has to close it.
  */
 class OpenDocumentUseCase(
-    private val libraryRepository: LibraryRepository,
+    private val catalogue: DocumentCatalogue,
     private val documentWorkspace: DocumentWorkspace,
     private val diagnostics: Diagnostics = Diagnostics.None,
     /**
@@ -59,7 +59,7 @@ class OpenDocumentUseCase(
         onProgress: (TextExtraction) -> Unit = {},
     ): Result<ReaderDocument> =
         withContext(dispatcher) {
-            val documentInfo = libraryRepository.getDocument(location)
+            val documentInfo = catalogue.getDocument(location)
                 ?: return@withContext AppError.DocumentNotFound.asFailure()
 
             val workingCopy = documentWorkspace.workingCopy(documentInfo)

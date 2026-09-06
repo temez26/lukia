@@ -111,7 +111,7 @@ class SqlLibraryRepository(
 
 /**
  * A shelf row as the rest of the app knows it - everything about a book except
- * the artwork, which the shelf does not read. See `LibraryRepository.getDocuments`.
+ * the artwork, which the shelf does not read. See `DocumentCatalogue.getDocuments`.
  *
  * A mapper of its own rather than a shared one: the two reads come back as two
  * generated types, and the only way to write this once would be a function

@@ -24,13 +24,14 @@ class ArchitectureTest {
     /**
      * Whichever import breaks the loop is the one to delete; the entry naming that loop
      * then fails as stale, and the rule tightens on its own.
+     *
+     * Empty, and the intention is that it stays that way. The one loop it held -
+     * library to settings to reader and back - was broken at its thinnest edge: the
+     * reader wanted one method of the library's repository, so the reading half of that
+     * repository became `core.domain.document.DocumentCatalogue` and the arrow went
+     * away. The statistics screen's arrow went with it, for the same reason.
      */
-    private val allowedCycles = setOf(
-        // No phase's yet - found by this test rather than by the audit that preceded it.
-        // The library screen hosts the settings overlay, settings edits the reader's
-        // settings, and the reader looks a book up in the library.
-        "library -> settings -> reader -> library",
-    )
+    private val allowedCycles = emptySet<String>()
 
     private val layersAboveDomain = listOf("application", "infrastructure", "presentation")
 

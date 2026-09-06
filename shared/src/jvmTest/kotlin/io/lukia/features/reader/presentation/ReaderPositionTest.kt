@@ -79,7 +79,7 @@ class ReaderPositionTest : ReaderViewModelTestCase() {
         val viewModel = ReaderViewModel(
             location = "/library/missing.pdf",
             openDocumentUseCase = OpenDocumentUseCase(
-                libraryRepository = FakeLibraryRepository(),
+                catalogue = FakeLibraryRepository(),
                 documentWorkspace = workspace,
                 dispatcher = openDispatcher,
             ),

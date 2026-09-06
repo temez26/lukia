@@ -70,6 +70,13 @@ Examples of shared code include:
 - Shared services
 - Cross-feature infrastructure
 
+A repository interface read by more than one feature belongs here, and its
+implementation stays with the storage it wraps. `ReadingProgressRepository` and
+`DocumentCatalogue` are both in `core/domain` and both implemented under
+`features/`. This is what keeps two features that need the same thing from
+pointing at each other: the reader opens a book by asking `DocumentCatalogue`,
+not by importing the library.
+
 ## Supported platforms
 
 | Platform | Minimum                                           |

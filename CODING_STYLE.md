@@ -176,6 +176,14 @@ entry that no longer describes anything fails too, so fixing a violation tighten
 rather than leaving a hole where it was. Adding an entry is a design decision, not a way
 past a red build.
 
+**Every allow-list is now empty**, and like the file-length baseline the intention is that
+they stay that way. The last entry named a loop — library to settings to reader and back —
+and it was broken where it was thinnest: the reader wanted one method of the library's
+repository, so the reading half of that repository became
+`core.domain.document.DocumentCatalogue`, which the reader and the statistics screen take
+instead. A port two features read is not one feature's property; the implementation stays
+with the storage.
+
 ## Visibility
 
 Not machine-enforced — no rule in either tool expresses it — but expected in review:

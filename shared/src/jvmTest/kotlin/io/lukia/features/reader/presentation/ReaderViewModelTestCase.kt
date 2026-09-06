@@ -200,7 +200,7 @@ abstract class ReaderViewModelTestCase {
     ) = ReaderViewModel(
         location = document.document.location,
         openDocumentUseCase = OpenDocumentUseCase(
-            libraryRepository = FakeLibraryRepository(listOf(document)),
+            catalogue = FakeLibraryRepository(listOf(document)),
             documentWorkspace = workspace,
             dispatcher = openDispatcher,
         ),
