@@ -98,10 +98,12 @@ class AndroidFolderScanner(
 
         cursor?.use {
             while (it.moveToNext()) {
-                val childId = it.getString(0) ?: continue
-                val name = it.getString(1) ?: continue
+                // A row missing either of the two things that make a child
+                // addressable is skipped; a provider is allowed to return one.
+                val childId = it.getString(0)
+                val name = it.getString(1)
 
-                onChild(childId, name, it.getString(2))
+                if (childId != null && name != null) onChild(childId, name, it.getString(2))
             }
         }
     }

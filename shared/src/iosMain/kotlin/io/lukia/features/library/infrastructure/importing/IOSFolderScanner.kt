@@ -43,25 +43,24 @@ class IOSFolderScanner : FolderScanner {
             // walked in full only to have most of it thrown away.
             if (enumerator.level.toInt() > MaxFolderScanDepth) {
                 enumerator.skipDescendants()
-                continue
+            } else {
+                fileUrl.asPickedDocument()?.let { documents += it }
             }
-
-            val fileName = fileUrl.lastPathComponent ?: continue
-            val extension = fileUrl.pathExtension ?: ""
-
-            if (!isSupportedDocument(extension)) {
-                continue
-            }
-
-            val location = fileUrl.absoluteString ?: continue
-
-            documents += PickedDocument(
-                fileName = fileName,
-                extension = extension,
-                location = location,
-            )
         }
 
         return documents
     }
+}
+
+/** Null for anything the walk turns up that is not a book this app can open. */
+private fun NSURL.asPickedDocument(): PickedDocument? {
+    val fileName = lastPathComponent ?: return null
+    val location = absoluteString ?: return null
+    val extension = pathExtension ?: ""
+
+    return PickedDocument(
+        fileName = fileName,
+        extension = extension,
+        location = location,
+    ).takeIf { isSupportedDocument(extension) }
 }

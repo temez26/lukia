@@ -61,24 +61,35 @@ private fun PdfObjectParser.readEscapedBytes(): List<Byte> {
             emptyList()
         }
 
-        in '0'.code.toByte()..'7'.code.toByte() -> {
-            var value = escape - '0'.code.toByte()
-            var digits = 1
-            while (digits < 3 &&
-                position < bytes.size &&
-                bytes[position] >= '0'.code.toByte() &&
-                bytes[position] <= '7'.code.toByte()
-            ) {
-                value = value * 8 + (bytes[position] - '0'.code.toByte())
-                position++
-                digits++
-            }
-            listOf(value.toByte())
-        }
+        in '0'.code.toByte()..'7'.code.toByte() -> listOf(readOctalByte(escape))
 
         else -> listOf(escape)
     }
 }
+
+/**
+ * `\101` is `A`: up to three octal digits, of which [first] has already been
+ * read. Fewer than three is legal - the escape ends at the first byte that is
+ * not an octal digit, which is how `\0` is written next to a `9`.
+ */
+private fun PdfObjectParser.readOctalByte(first: Byte): Byte {
+    var value = first - '0'.code.toByte()
+    var digits = 1
+
+    while (digits < OctalDigits && position < bytes.size && bytes[position].isOctalDigit()) {
+        value = value * OctalBase + (bytes[position] - '0'.code.toByte())
+        position++
+        digits++
+    }
+
+    return value.toByte()
+}
+
+private fun Byte.isOctalDigit(): Boolean =
+    this >= '0'.code.toByte() && this <= '7'.code.toByte()
+
+private const val OctalDigits = 3
+private const val OctalBase = 8
 
 internal fun PdfObjectParser.parseHexString(): PdfValue? {
     position++

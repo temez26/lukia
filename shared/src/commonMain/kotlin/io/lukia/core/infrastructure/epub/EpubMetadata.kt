@@ -19,22 +19,12 @@ import io.lukia.core.infrastructure.xml.xmlEvents
  * - is read correctly without a namespace table.
  */
 internal fun readEpubMetadata(packageXml: String): BookMetadata {
-    var title: String? = null
-    val authors = mutableListOf<String>()
-    var publisher: String? = null
-    var published: String? = null
-    var language: String? = null
-    var description: String? = null
-    val subjects = mutableListOf<String>()
-    var identifier: String? = null
-    var isbn: String? = null
+    val fields = DublinCore()
 
     var inMetadata = false
     var current: String? = null
-    var currentAttributes: Map<String, String> = emptyMap()
+    var attributes: Map<String, String> = emptyMap()
     val text = StringBuilder()
-
-    fun collected(): String = text.toString().collapseWhitespace()
 
     xmlEvents(packageXml).forEach { event ->
         when (event) {
@@ -43,7 +33,7 @@ internal fun readEpubMetadata(packageXml: String): BookMetadata {
 
                 inMetadata && !event.selfClosing -> {
                     current = event.name
-                    currentAttributes = event.attributes
+                    attributes = event.attributes
                     text.clear()
                 }
             }
@@ -54,41 +44,81 @@ internal fun readEpubMetadata(packageXml: String): BookMetadata {
                 event.name == "metadata" -> inMetadata = false
 
                 inMetadata && event.name == current -> {
-                    val value = collected()
-
-                    if (value.isNotBlank()) {
-                        when (event.name) {
-                            "title" -> if (title == null) title = value
-                            "creator" -> authors += value
-                            "publisher" -> if (publisher == null) publisher = value
-                            "date" -> if (published == null) published = value
-                            "language" -> if (language == null) language = value
-                            "description" -> if (description == null) description = value.stripMarkup()
-                            "subject" -> subjects += value
-
-                            "identifier" -> {
-                                // A book carries several - a UUID the tooling
-                                // generated, sometimes an ISBN as well. The ISBN
-                                // is the one a reader recognises, so it wins
-                                // wherever the book declares which is which.
-                                if (currentAttributes.declaresIsbn() || value.looksLikeIsbn()) {
-                                    if (isbn == null) isbn = value.isbnDigits()
-                                } else if (identifier == null) {
-                                    identifier = value
-                                }
-                            }
-                        }
-                    }
-
+                    fields.take(event.name, text.toString().collapseWhitespace(), attributes)
                     current = null
-                    currentAttributes = emptyMap()
+                    attributes = emptyMap()
                     text.clear()
                 }
             }
         }
     }
 
-    return BookMetadata(
+    return fields.asMetadata()
+}
+
+/**
+ * The Dublin Core fields as they are found, one closed element at a time.
+ *
+ * Separate from the walk above because the two answer different questions: that
+ * one knows where in the document it is, and this one knows what a book is made
+ * of. Together in one function they were a walk that had to be read twice to see
+ * either.
+ */
+private class DublinCore {
+
+    private var title: String? = null
+    private var publisher: String? = null
+    private var published: String? = null
+    private var language: String? = null
+    private var description: String? = null
+    private var identifier: String? = null
+    private var isbn: String? = null
+    private val authors = mutableListOf<String>()
+    private val subjects = mutableListOf<String>()
+
+    fun take(name: String, value: String, attributes: Map<String, String>) {
+        if (value.isBlank()) return
+
+        when (name) {
+            // The two a book may state as many times as it likes.
+            "creator" -> authors += value
+            "subject" -> subjects += value
+
+            "identifier" -> takeIdentifier(value, attributes)
+
+            else -> takeSingle(name, value)
+        }
+    }
+
+    /**
+     * The fields a book has one of, where the first found is the book's own. A
+     * package document may repeat `dc:title` for a subtitle or an alternate
+     * script, and the specification says the first is the title.
+     */
+    private fun takeSingle(name: String, value: String) {
+        when (name) {
+            "title" -> title = title ?: value
+            "publisher" -> publisher = publisher ?: value
+            "date" -> published = published ?: value
+            "language" -> language = language ?: value
+            "description" -> description = description ?: value.stripMarkup()
+        }
+    }
+
+    /**
+     * A book carries several - a UUID the tooling generated, sometimes an ISBN as
+     * well. The ISBN is the one a reader recognises, so it wins wherever the book
+     * declares which is which.
+     */
+    private fun takeIdentifier(value: String, attributes: Map<String, String>) {
+        if (attributes.declaresIsbn() || value.looksLikeIsbn()) {
+            isbn = isbn ?: value.isbnDigits()
+        } else {
+            identifier = identifier ?: value
+        }
+    }
+
+    fun asMetadata(): BookMetadata = BookMetadata(
         title = title,
         authors = authors.distinct(),
         publisher = publisher,

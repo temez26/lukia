@@ -28,27 +28,7 @@ internal actual fun renderPdfCover(pdfBytes: ByteArray): ByteArray? {
 
         ParcelFileDescriptor.open(tempFile, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
             PdfRenderer(descriptor).use { renderer ->
-                if (renderer.pageCount == 0) {
-                    null
-                } else {
-                    renderer.openPage(0).use { page ->
-                        val bitmap = Bitmap.createBitmap(page.width, page.height, Bitmap.Config.ARGB_8888)
-
-                        // PdfRenderer draws the page's ink and nothing else, so
-                        // whatever it does not cover keeps the bitmap's own
-                        // transparent background - which comes out black the
-                        // moment the cover is stored in a format without an
-                        // alpha channel. The paper has to be painted first.
-                        bitmap.eraseColor(Color.WHITE)
-
-                        page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-
-                        ByteArrayOutputStream().use { output ->
-                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)
-                            output.toByteArray()
-                        }
-                    }
-                }
+                renderer.takeIf { it.pageCount > 0 }?.firstPageAsPng()
             }
         }
     } catch (ignored: IOException) {
@@ -59,3 +39,24 @@ internal actual fun renderPdfCover(pdfBytes: ByteArray): ByteArray? {
         tempFile.delete()
     }
 }
+
+/** The first page drawn at its own size, as a PNG. */
+private fun PdfRenderer.firstPageAsPng(): ByteArray = openPage(0).use { page ->
+    val bitmap = Bitmap.createBitmap(page.width, page.height, Bitmap.Config.ARGB_8888)
+
+    // PdfRenderer draws the page's ink and nothing else, so whatever it does not
+    // cover keeps the bitmap's own transparent background - which comes out black
+    // the moment the cover is stored in a format without an alpha channel. The
+    // paper has to be painted first.
+    bitmap.eraseColor(Color.WHITE)
+
+    page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+
+    ByteArrayOutputStream().use { output ->
+        bitmap.compress(Bitmap.CompressFormat.PNG, PNG_QUALITY, output)
+        output.toByteArray()
+    }
+}
+
+/** Ignored for PNG, which is lossless, but the parameter is not optional. */
+private const val PNG_QUALITY = 100

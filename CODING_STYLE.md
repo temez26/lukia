@@ -86,6 +86,13 @@ When a file crosses the limit, the split follows the architecture in the
 Splitting to satisfy the counter is worse than the long file. If the only split available
 is arbitrary, the file is telling you the design is wrong somewhere above it.
 
+The split a decoder almost always wants is **the walk and what it collects**. A reader over
+a stream of events — XML, bytes, lines — accumulates state in locals around a loop, and the
+two questions it is answering get further apart the longer it runs: *where in the document
+am I* and *what does a document say*. Give the second one a type, hand it each finished
+piece, and the loop shrinks to the first. `DublinCore` in `EpubMetadata.kt` and `DocxWalk`
+in `DocxTextReader.kt` are the same move in two formats.
+
 ## Formatting
 
 Set by [`.editorconfig`](.editorconfig), which the IDE reads too — no separate IDE setup
