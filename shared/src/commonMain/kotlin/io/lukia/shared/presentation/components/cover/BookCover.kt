@@ -30,11 +30,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.lukia.core.presentation.decodeToImageBitmapOrNull
 import io.lukia.shared.presentation.theme.LukiaElevation
 import io.lukia.shared.presentation.theme.LukiaMotion
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.compose.resources.decodeToImageBitmap
 
 /** Standard trade-paperback proportions, used for every cover in the app. */
 const val BOOK_COVER_ASPECT_RATIO = 0.68f
@@ -111,7 +111,7 @@ internal fun rememberCoverArt(cover: CoverArtSource?): CoverArt {
                     // stored, are the same thing from the reader's side - so
                     // neither is an error to report, and neither is worth trying
                     // again on every scroll.
-                    runCatching { cover.load()?.decodeToImageBitmap() }.getOrNull()
+                    runCatching { cover.load() }.getOrNull()?.decodeToImageBitmapOrNull()
                 }
                     ?.let { CoverArt.Artwork(it) }
                     ?: CoverArt.Absent
