@@ -33,9 +33,9 @@ import io.lukia.features.reader.presentation.pagination.PaginatedBook
 import io.lukia.features.reader.presentation.pagination.TextPage
 import io.lukia.features.reader.presentation.screens.SheetPadding
 import io.lukia.features.reader.presentation.screens.chromeHeight
+import io.lukia.features.reader.presentation.translation.BookTranslations
 import io.lukia.features.reader.presentation.translation.TranslateOnScreen
 import io.lukia.features.translate.domain.settings.TranslationGestures
-import io.lukia.features.translate.presentation.BookTranslations
 import io.lukia.resources.Res
 import io.lukia.resources.reader_page_x_of_y
 import io.lukia.shared.presentation.theme.LocalLukiaDimens

@@ -13,9 +13,9 @@ import io.lukia.features.reader.presentation.components.passages.NoBlockActions
 import io.lukia.features.reader.presentation.pagination.PageBlock
 import io.lukia.features.reader.presentation.pagination.TextPage
 import io.lukia.features.reader.presentation.theme.BLOCK_SPACING
+import io.lukia.features.reader.presentation.translation.BookTranslations
 import io.lukia.features.reader.presentation.translation.TranslateOnScreen
 import io.lukia.features.translate.domain.settings.TranslationGestures
-import io.lukia.features.translate.presentation.BookTranslations
 
 /**
  * One page of a reflowable book, set at the reader's chosen size.

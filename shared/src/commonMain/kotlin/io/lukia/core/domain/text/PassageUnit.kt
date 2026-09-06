@@ -1,4 +1,4 @@
-package io.lukia.features.translate.domain.text
+package io.lukia.core.domain.text
 
 /**
  * How much of the book one gesture asks about.

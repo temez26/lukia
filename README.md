@@ -38,6 +38,12 @@ feature/
 └── presentation/
 ```
 
+Where one feature does depend on another, the arrow should read as a question
+one of them can ask. The reader asks the translator for words back and for how
+translating is set up; it does not borrow the translator's types to describe its
+own pages. Anything both of them need in order to ask - a passage unit, a book's
+catalogue - belongs in `core`, not in whichever of the two wrote it first.
+
 ### Layer responsibilities
 if there is just couple of files per responsibility, layer is not needed
 

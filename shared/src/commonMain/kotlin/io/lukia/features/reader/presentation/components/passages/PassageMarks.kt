@@ -24,7 +24,7 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import io.lukia.features.translate.presentation.PassageTranslation
+import io.lukia.features.reader.presentation.translation.PassageTranslation
 import io.lukia.shared.presentation.theme.LocalMotionStyle
 
 /**

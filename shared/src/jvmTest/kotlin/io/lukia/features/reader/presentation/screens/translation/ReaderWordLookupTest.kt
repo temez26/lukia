@@ -11,13 +11,13 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runComposeUiTest
 import io.lukia.core.domain.AppError
+import io.lukia.core.domain.text.PassageUnit
+import io.lukia.features.reader.domain.text.TextAnchor
+import io.lukia.features.reader.presentation.translation.PassageSelection
+import io.lukia.features.reader.presentation.translation.PassageTranslation
 import io.lukia.features.reader.presentation.translation.TranslateOnScreen
 import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.domain.settings.TranslationGestures
-import io.lukia.features.translate.domain.text.PassageUnit
-import io.lukia.features.translate.domain.text.TextAnchor
-import io.lukia.features.translate.presentation.PassageSelection
-import io.lukia.features.translate.presentation.PassageTranslation
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

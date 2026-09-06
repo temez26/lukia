@@ -22,7 +22,7 @@ data class WordMeaning(
  * fits over the word in the book.
  *
  * The same source as
- * [io.lukia.features.translate.domain.text.WordLookup.Wiktionary] and a
+ * [io.lukia.features.reader.domain.text.WordLookup.Wiktionary] and a
  * different question. Translating a word has to end in one thing the reader can
  * put in place of it, so what goes on the page is one reading of one sense; this
  * is what somebody asks when that was not enough, and cutting it would be

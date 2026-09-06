@@ -2,11 +2,11 @@ package io.lukia.features.reader.presentation.components.text
 
 import androidx.compose.ui.text.font.FontStyle
 import io.lukia.features.reader.domain.text.Emphasis
+import io.lukia.features.reader.domain.text.Sentence
 import io.lukia.features.reader.domain.text.TextRun
-import io.lukia.features.translate.domain.text.Sentence
-import io.lukia.features.translate.domain.text.Word
-import io.lukia.features.translate.domain.text.splitIntoSentences
-import io.lukia.features.translate.domain.text.words
+import io.lukia.features.reader.domain.text.Word
+import io.lukia.features.reader.domain.text.splitIntoSentences
+import io.lukia.features.reader.domain.text.words
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

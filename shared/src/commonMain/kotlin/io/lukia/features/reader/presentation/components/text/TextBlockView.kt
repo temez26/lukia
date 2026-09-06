@@ -8,9 +8,9 @@ import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.domain.text.BlockAlignment
 import io.lukia.features.reader.domain.text.TextBlock
 import io.lukia.features.reader.presentation.components.passages.BlockActions
+import io.lukia.features.reader.presentation.translation.SentenceTranslations
 import io.lukia.features.reader.presentation.translation.TranslateOnScreen
 import io.lukia.features.translate.domain.settings.TranslationGestures
-import io.lukia.features.translate.presentation.SentenceTranslations
 
 /** One thing on the page, drawn as whichever kind of block it is. */
 @Composable

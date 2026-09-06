@@ -1,4 +1,4 @@
-package io.lukia.features.translate.domain.text
+package io.lukia.features.reader.domain.text
 
 /**
  * One word of a sentence, and where it sits in the text that sentence was cut

@@ -14,12 +14,12 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import io.lukia.core.domain.AppError
 import io.lukia.core.presentation.displayShortMessage
-import io.lukia.features.translate.domain.text.Sentence
-import io.lukia.features.translate.domain.text.Word
-import io.lukia.features.translate.domain.text.words
-import io.lukia.features.translate.presentation.PassageTranslation
-import io.lukia.features.translate.presentation.SentenceTranslations
-import io.lukia.features.translate.presentation.shownText
+import io.lukia.features.reader.domain.text.Sentence
+import io.lukia.features.reader.domain.text.Word
+import io.lukia.features.reader.domain.text.words
+import io.lukia.features.reader.presentation.translation.PassageTranslation
+import io.lukia.features.reader.presentation.translation.SentenceTranslations
+import io.lukia.features.reader.presentation.translation.shownText
 import io.lukia.shared.presentation.theme.Space
 
 /** A note is an aside about the text, and is set smaller than the text. */

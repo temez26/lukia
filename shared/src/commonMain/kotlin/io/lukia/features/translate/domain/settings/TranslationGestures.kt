@@ -1,6 +1,6 @@
 package io.lukia.features.translate.domain.settings
 
-import io.lukia.features.translate.domain.text.PassageUnit
+import io.lukia.core.domain.text.PassageUnit
 
 /**
  * What a tap and a long press on the book ask for.

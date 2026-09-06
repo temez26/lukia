@@ -1,8 +1,8 @@
 package io.lukia.features.reader.presentation.components.passages
 
 import androidx.compose.runtime.Stable
-import io.lukia.features.translate.domain.text.Sentence
-import io.lukia.features.translate.domain.text.Word
+import io.lukia.features.reader.domain.text.Sentence
+import io.lukia.features.reader.domain.text.Word
 
 /**
  * Which gesture reached a word, which is what decides what becomes of it.

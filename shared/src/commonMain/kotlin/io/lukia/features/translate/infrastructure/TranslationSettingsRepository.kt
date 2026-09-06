@@ -2,6 +2,7 @@ package io.lukia.features.translate.infrastructure
 
 import io.lukia.core.domain.storage.SecretStore
 import io.lukia.core.domain.storage.SettingsStore
+import io.lukia.core.domain.text.PassageUnit
 import io.lukia.core.infrastructure.PersistedSettings
 import io.lukia.core.infrastructure.readEnum
 import io.lukia.features.translate.domain.BulkTranslation
@@ -10,8 +11,7 @@ import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.domain.settings.TranslationSettings
-import io.lukia.features.translate.domain.text.PassageUnit
-import io.lukia.features.translate.domain.text.WordLookup
+import io.lukia.features.translate.domain.settings.WordLookup
 import kotlinx.coroutines.flow.StateFlow
 
 /**

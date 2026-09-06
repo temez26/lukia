@@ -1,7 +1,7 @@
 package io.lukia.features.reader.domain.page
 
-import io.lukia.features.translate.domain.text.splitIntoSentences
-import io.lukia.features.translate.domain.text.words
+import io.lukia.features.reader.domain.text.splitIntoSentences
+import io.lukia.features.reader.domain.text.words
 /**
  * One sentence of a laid-out page: what it says, and the rectangles it covers.
  *
@@ -51,7 +51,7 @@ data class PageSentence(
 data class PageWord(
     /**
      * Its place in the sentence, which is how it is addressed - see
-     * [io.lukia.features.translate.domain.text.Word].
+     * [io.lukia.features.reader.domain.text.Word].
      */
     val index: Int,
     val text: String,

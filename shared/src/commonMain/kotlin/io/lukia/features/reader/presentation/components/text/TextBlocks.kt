@@ -49,9 +49,9 @@ import io.lukia.features.reader.presentation.theme.QuoteRuleWidth
 import io.lukia.features.reader.presentation.theme.SeparatorPadding
 import io.lukia.features.reader.presentation.theme.codeStyle
 import io.lukia.features.reader.presentation.theme.headingStyle
+import io.lukia.features.reader.presentation.translation.SentenceTranslations
 import io.lukia.features.reader.presentation.translation.TranslateOnScreen
 import io.lukia.features.translate.domain.settings.TranslationGestures
-import io.lukia.features.translate.presentation.SentenceTranslations
 import io.lukia.resources.Res
 import io.lukia.resources.figure_illustration
 import io.lukia.resources.figure_look_closer

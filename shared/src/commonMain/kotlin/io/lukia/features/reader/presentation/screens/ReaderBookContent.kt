@@ -25,6 +25,7 @@ import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReflowableContent
 import io.lukia.features.reader.domain.outline.ReaderOutline
 import io.lukia.features.reader.domain.page.PageSentence
+import io.lukia.features.reader.domain.text.TextAnchor
 import io.lukia.features.reader.presentation.KeepScreenAwake
 import io.lukia.features.reader.presentation.components.chrome.ReaderNotice
 import io.lukia.features.reader.presentation.components.translation.WordLookupPanel
@@ -40,16 +41,15 @@ import io.lukia.features.reader.presentation.screens.translation.ReaderTranslati
 import io.lukia.features.reader.presentation.screens.translation.ReaderTranslationUi
 import io.lukia.features.reader.presentation.theme.ReaderTheming
 import io.lukia.features.reader.presentation.theme.readerPageStyle
+import io.lukia.features.reader.presentation.translation.BookTranslations
+import io.lukia.features.reader.presentation.translation.PassageSelection
+import io.lukia.features.reader.presentation.translation.PassageTranslation
 import io.lukia.features.reader.presentation.translation.ShownTranslations
 import io.lukia.features.reader.presentation.translation.TranslateOnScreen
 import io.lukia.features.reader.presentation.translation.WordInquiry
 import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationGestures
-import io.lukia.features.translate.domain.text.TextAnchor
-import io.lukia.features.translate.presentation.BookTranslations
-import io.lukia.features.translate.presentation.PassageSelection
-import io.lukia.features.translate.presentation.PassageTranslation
 import io.lukia.resources.Res
 import io.lukia.resources.action_try_again
 import io.lukia.resources.reader_pdf_no_text

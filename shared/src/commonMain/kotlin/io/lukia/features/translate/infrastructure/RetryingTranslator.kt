@@ -40,7 +40,7 @@ private val MAX_BACKOFF = 4.seconds
  * knows when the limit resets - but only up to here. Past this the honest thing
  * is to stop and say so: a sentence that arrives forty seconds after the tap is
  * one the reader gave up on thirty seconds ago, and holding the request open
- * blocks the two that [io.lukia.features.translate.presentation.TranslationSession]
+ * blocks the two that [io.lukia.features.reader.presentation.translation.TranslationSession]
  * allows at once.
  */
 private val MAX_HONOURED_RETRY_AFTER = 10.seconds

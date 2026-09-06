@@ -4,12 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import io.lukia.features.reader.domain.text.Sentence
+import io.lukia.features.reader.domain.text.Word
+import io.lukia.features.reader.domain.text.words
 import io.lukia.features.reader.presentation.components.text.ParagraphText
 import io.lukia.features.reader.presentation.components.text.WHOLE_BLOCK
-import io.lukia.features.translate.domain.text.Sentence
-import io.lukia.features.translate.domain.text.Word
-import io.lukia.features.translate.domain.text.words
-import io.lukia.features.translate.presentation.SentenceTranslations
+import io.lukia.features.reader.presentation.translation.SentenceTranslations
 
 /**
  * Which passages of this paragraph are marked, and how - named by index rather

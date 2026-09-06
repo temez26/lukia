@@ -3,7 +3,7 @@ package io.lukia.features.translate.domain.lookup
 /**
  * Somewhere on the web that can be opened about one word.
  *
- * The counterpart to [io.lukia.features.translate.domain.text.WordLookup], and
+ * The counterpart to [io.lukia.features.reader.domain.text.WordLookup], and
  * deliberately not part of it: that setting chooses who answers *inside* the
  * book, in a line over the word, and everything in it has to be something this
  * app can ask and read back. This one chooses where the reader is sent when a

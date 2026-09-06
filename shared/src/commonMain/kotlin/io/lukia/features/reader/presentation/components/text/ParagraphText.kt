@@ -9,9 +9,9 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import io.lukia.features.reader.domain.text.Emphasis
+import io.lukia.features.reader.domain.text.Sentence
 import io.lukia.features.reader.domain.text.TextRun
-import io.lukia.features.translate.domain.text.Sentence
-import io.lukia.features.translate.domain.text.Word
+import io.lukia.features.reader.domain.text.Word
 
 /**
  * A paragraph as it is actually drawn, and where each of its sentences and

@@ -4,19 +4,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import io.lukia.core.domain.text.PassageUnit
+import io.lukia.features.reader.domain.text.Sentence
+import io.lukia.features.reader.domain.text.TextAnchor
 import io.lukia.features.reader.domain.text.TextSection
+import io.lukia.features.reader.domain.text.Word
 import io.lukia.features.reader.presentation.components.passages.BlockActions
 import io.lukia.features.reader.presentation.components.passages.NoBlockActions
 import io.lukia.features.reader.presentation.components.passages.PassageActions
 import io.lukia.features.reader.presentation.components.passages.WordGesture
 import io.lukia.features.reader.presentation.pagination.PageBlock
 import io.lukia.features.reader.presentation.pagination.TextPage
+import io.lukia.features.reader.presentation.translation.PassageSelection
 import io.lukia.features.translate.domain.MAX_TRANSLATABLE_CHARS
-import io.lukia.features.translate.domain.text.PassageUnit
-import io.lukia.features.translate.domain.text.Sentence
-import io.lukia.features.translate.domain.text.TextAnchor
-import io.lukia.features.translate.domain.text.Word
-import io.lukia.features.translate.presentation.PassageSelection
 
 /**
  * What a tap, a long press and a call for the whole page mean on one page.

@@ -1,4 +1,4 @@
-package io.lukia.features.translate.presentation
+package io.lukia.features.reader.presentation.translation
 
 import io.lukia.features.translate.domain.Translation
 import kotlinx.coroutines.CompletableDeferred

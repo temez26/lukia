@@ -48,7 +48,7 @@ private const val PUBLIC_ENDPOINT = "https://translate.googleapis.com/translate_
  * Translates through Google, which knows nothing about the book.
  *
  * Offered for single words only - see
- * [io.lukia.features.translate.domain.text.WordLookup]. A word is the one thing a
+ * [io.lukia.features.reader.domain.text.WordLookup]. A word is the one thing a
  * translator with no context can be relied on for, and the one thing a reader
  * may reasonably want answered in a tenth of a second rather than in two
  * seconds by a model.

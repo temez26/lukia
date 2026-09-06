@@ -1,7 +1,8 @@
 package io.lukia.features.translate.presentation
 
 import androidx.compose.runtime.Composable
-import io.lukia.features.translate.domain.text.PassageUnit
+import io.lukia.core.domain.text.PassageUnit
+import io.lukia.core.presentation.displayName
 import io.lukia.resources.Res
 import io.lukia.resources.gesture_off
 import io.lukia.shared.presentation.components.controls.SegmentedControl

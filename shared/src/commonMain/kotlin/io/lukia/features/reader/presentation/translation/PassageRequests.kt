@@ -4,11 +4,10 @@ import io.lukia.core.presentation.displayTitle
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.outline.ReaderOutline
 import io.lukia.features.reader.domain.outline.chapterCovering
+import io.lukia.features.reader.domain.text.TextAnchor
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.asTranslationContext
 import io.lukia.features.translate.domain.settings.TargetLanguage
-import io.lukia.features.translate.domain.text.TextAnchor
-import io.lukia.features.translate.presentation.PassageSelection
 
 /**
  * What the reader points at, as something a translator can be asked.

@@ -1,4 +1,4 @@
-package io.lukia.features.translate.domain.text
+package io.lukia.features.translate.domain.settings
 
 /**
  * What answers when the reader asks about a single word.

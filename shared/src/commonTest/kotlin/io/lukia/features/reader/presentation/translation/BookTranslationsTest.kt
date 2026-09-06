@@ -1,8 +1,8 @@
-package io.lukia.features.translate.presentation
+package io.lukia.features.reader.presentation.translation
 
 import io.lukia.core.domain.AppError
+import io.lukia.features.reader.domain.text.TextAnchor
 import io.lukia.features.translate.domain.Translation
-import io.lukia.features.translate.domain.text.TextAnchor
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

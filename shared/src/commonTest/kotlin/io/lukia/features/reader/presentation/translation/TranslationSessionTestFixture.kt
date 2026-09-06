@@ -1,11 +1,11 @@
-package io.lukia.features.translate.presentation
+package io.lukia.features.reader.presentation.translation
 
+import io.lukia.features.reader.domain.text.TextAnchor
 import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.Translator
 import io.lukia.features.translate.domain.settings.TargetLanguage
-import io.lukia.features.translate.domain.text.TextAnchor
 import kotlinx.coroutines.test.TestScope
 
 /**

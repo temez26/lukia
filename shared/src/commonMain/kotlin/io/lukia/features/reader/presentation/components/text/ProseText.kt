@@ -28,7 +28,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.toSize
+import io.lukia.core.domain.text.PassageUnit
 import io.lukia.features.reader.domain.text.TextRun
+import io.lukia.features.reader.domain.text.splitIntoSentences
+import io.lukia.features.reader.domain.text.words
 import io.lukia.features.reader.presentation.components.chrome.detectReaderTaps
 import io.lukia.features.reader.presentation.components.passages.BlockActions
 import io.lukia.features.reader.presentation.components.passages.WordGesture
@@ -37,14 +40,11 @@ import io.lukia.features.reader.presentation.components.passages.passageMarkColo
 import io.lukia.features.reader.presentation.components.passages.passageMarkStyles
 import io.lukia.features.reader.presentation.components.passages.passageSweep
 import io.lukia.features.reader.presentation.components.translation.TranslatorsRemarks
+import io.lukia.features.reader.presentation.translation.SentenceTranslations
 import io.lukia.features.reader.presentation.translation.TRANSLATE_SETTLE_MILLIS
 import io.lukia.features.reader.presentation.translation.TranslateOnScreen
+import io.lukia.features.reader.presentation.translation.shownText
 import io.lukia.features.translate.domain.settings.TranslationGestures
-import io.lukia.features.translate.domain.text.PassageUnit
-import io.lukia.features.translate.domain.text.splitIntoSentences
-import io.lukia.features.translate.domain.text.words
-import io.lukia.features.translate.presentation.SentenceTranslations
-import io.lukia.features.translate.presentation.shownText
 import io.lukia.resources.Res
 import io.lukia.resources.reader_restore_this_paragraph
 import io.lukia.resources.reader_translate_this_paragraph

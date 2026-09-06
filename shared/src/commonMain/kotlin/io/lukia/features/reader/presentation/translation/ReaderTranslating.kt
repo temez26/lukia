@@ -1,15 +1,13 @@
 package io.lukia.features.reader.presentation.translation
 
+import io.lukia.core.domain.text.PassageUnit
 import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.reader.domain.ReaderDocument
+import io.lukia.features.reader.domain.text.TextAnchor
 import io.lukia.features.reader.presentation.ReaderViewModel
 import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationGestures
-import io.lukia.features.translate.domain.text.PassageUnit
-import io.lukia.features.translate.domain.text.TextAnchor
-import io.lukia.features.translate.presentation.PassageSelection
-import io.lukia.features.translate.presentation.PassageTranslation
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -139,7 +137,7 @@ fun ReaderViewModel.onWordInquiryDismissed() {
  * One entry point for all three, because they are one gesture underneath: a tap
  * on a passage puts it back, brings it forward, or asks again, decided by what
  * has become of it - see
- * [io.lukia.features.translate.presentation.TranslationSession.onPassageTapped].
+ * [io.lukia.features.reader.presentation.translation.TranslationSession.onPassageTapped].
  * The panel's button is that tap, reached from a panel instead of from the page.
  */
 fun ReaderViewModel.onInquiredWordActioned() {
@@ -169,7 +167,7 @@ private fun PassageTranslation?.onThePage(): WordOnThePage? = when (this) {
  * Asked for rather than tapped, so a sentence they have already flipped back to
  * the original stays as they left it and a failure is not retried behind their
  * back - see
- * [io.lukia.features.translate.presentation.TranslationSession.onPassageRequested].
+ * [io.lukia.features.reader.presentation.translation.TranslationSession.onPassageRequested].
  */
 fun ReaderViewModel.onPassagesRequested(selections: List<PassageSelection>) {
     val document = uiState.value.dataOrNull ?: return
