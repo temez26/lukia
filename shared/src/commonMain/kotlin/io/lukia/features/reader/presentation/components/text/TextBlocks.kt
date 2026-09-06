@@ -28,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
@@ -37,6 +36,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.lukia.core.presentation.decodeToImageBitmapOrNull
 import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.domain.text.TextBlock
 import io.lukia.features.reader.presentation.components.passages.BlockActions
@@ -224,7 +224,7 @@ internal fun FigureBlock(
 ) {
     val image by produceState<ImageBitmap?>(initialValue = null, block) {
         value = withContext(Dispatchers.Default) {
-            runCatching { block.bytes.decodeToImageBitmap() }.getOrNull()
+            block.bytes.decodeToImageBitmapOrNull()
         }
     }
 

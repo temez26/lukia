@@ -6,7 +6,6 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -15,6 +14,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import io.lukia.core.presentation.decodeToImageBitmapOrNull
 import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.domain.text.TextBlock
 import io.lukia.features.reader.domain.text.TextSection
@@ -157,9 +157,9 @@ private class FigureShapes(private val density: Density) {
 
     fun heightOf(figure: TextBlock.Figure, widthPx: Int, size: FigureSize): Int {
         val shape = sizes.getOrPut(figure) {
-            runCatching { figure.bytes.decodeToImageBitmap() }
-                .map { IntSize(it.width, it.height) }
-                .getOrDefault(IntSize.Zero)
+            figure.bytes.decodeToImageBitmapOrNull()
+                ?.let { IntSize(it.width, it.height) }
+                ?: IntSize.Zero
         }
 
         if (shape.width <= 0) return 0
