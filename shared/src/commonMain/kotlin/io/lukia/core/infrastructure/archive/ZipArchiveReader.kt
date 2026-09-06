@@ -39,16 +39,7 @@ internal class ZipArchiveReader(private val data: ByteArray) {
         if (entry.compressedSize < 0 || entry.compressedSize > MAX_ENTRY_SIZE) return null
         if (entry.uncompressedSize < 0 || entry.uncompressedSize > MAX_ENTRY_SIZE) return null
 
-        val localHeaderStart = entry.localHeaderOffset
-        if (localHeaderStart < 0 || localHeaderStart + LOCAL_HEADER_SIZE > data.size) return null
-        if (readU32(localHeaderStart) != LOCAL_FILE_HEADER_SIGNATURE) return null
-
-        val nameLength = readU16(localHeaderStart + 26)
-        val extraLength = readU16(localHeaderStart + 28)
-        val dataStart = localHeaderStart + LOCAL_HEADER_SIZE + nameLength + extraLength
-
-        if (dataStart < 0 || dataStart + entry.compressedSize > data.size) return null
-
+        val dataStart = entryDataStart(entry) ?: return null
         val compressed = data.copyOfRange(dataStart, dataStart + entry.compressedSize)
 
         return when (entry.compressionMethod) {
@@ -56,6 +47,27 @@ internal class ZipArchiveReader(private val data: ByteArray) {
             8 -> runCatching { inflateRaw(compressed, entry.uncompressedSize) }.getOrNull()
             else -> null
         }
+    }
+
+    /**
+     * Where an entry's bytes begin, past a local header whose name and extra
+     * fields are as long as that header says.
+     *
+     * Read from the local header rather than from the central directory's copy of
+     * the same two lengths: the two are allowed to differ, and it is the local one
+     * that says where the data actually starts.
+     */
+    private fun entryDataStart(entry: ZipEntryInfo): Int? {
+        val header = entry.localHeaderOffset
+
+        if (header < 0 || header + LOCAL_HEADER_SIZE > data.size) return null
+        if (readU32(header) != LOCAL_FILE_HEADER_SIGNATURE) return null
+
+        val nameLength = readU16(header + 26)
+        val extraLength = readU16(header + 28)
+        val dataStart = header + LOCAL_HEADER_SIZE + nameLength + extraLength
+
+        return dataStart.takeIf { it >= 0 && it + entry.compressedSize <= data.size }
     }
 
     private fun readCentralDirectory(): Map<String, ZipEntryInfo> {

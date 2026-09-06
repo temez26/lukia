@@ -4,12 +4,14 @@ import app.cash.sqldelight.db.SqlDriver
 import io.ktor.client.HttpClient
 import io.lukia.core.domain.diagnostics.CrashStore
 import io.lukia.core.domain.diagnostics.FakeCrashStore
+import io.lukia.core.domain.document.DocumentCatalogue
 import io.lukia.core.domain.reading.ReadingProgressRepository
 import io.lukia.core.domain.storage.DocumentWorkspace
 import io.lukia.core.domain.storage.SecretStore
 import io.lukia.core.domain.storage.SettingsStore
 import io.lukia.core.infrastructure.lukiaSqlDriver
 import io.lukia.features.library.application.RemoveDocumentUseCase
+import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import io.lukia.features.settings.infrastructure.AppSettingsRepository
@@ -117,6 +119,17 @@ class AppGraphTest {
     @Test
     fun removingADocumentResolvesWithTheWorkspace() {
         assertNotNull(koin.get<RemoveDocumentUseCase>())
+    }
+
+    /**
+     * The shelf is reachable by two names - the library holds all of it, the reader
+     * and the statistics screen are handed the reading half. Two instances would be
+     * two shelves, and the failure would be a book imported on one screen that never
+     * appeared on another rather than anything that looked like a wiring mistake.
+     */
+    @Test
+    fun theShelfIsOneInstanceUnderBothOfItsNames() {
+        assertSame(koin.get<LibraryRepository>(), koin.get<DocumentCatalogue>())
     }
 
     /**

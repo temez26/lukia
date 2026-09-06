@@ -2,13 +2,13 @@ package io.lukia.features.translate.infrastructure
 
 import io.lukia.core.domain.storage.FakeSecretStore
 import io.lukia.core.domain.storage.FakeSettingsStore
+import io.lukia.core.domain.text.PassageUnit
 import io.lukia.features.translate.domain.lookup.WordSite
 import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.domain.settings.TranslationSettings
-import io.lukia.features.translate.domain.text.PassageUnit
-import io.lukia.features.translate.domain.text.WordLookup
+import io.lukia.features.translate.domain.settings.WordLookup
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

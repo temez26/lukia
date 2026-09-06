@@ -110,16 +110,24 @@ private const val TRANSLATION_KEY = "\"translation\""
  * one to judge.
  */
 internal fun translationSoFar(answer: String): String? {
-    val key = answer.indexOf(TRANSLATION_KEY)
-    if (key < 0) return null
-
-    val colon = answer.indexOf(':', key + TRANSLATION_KEY.length)
-    if (colon < 0) return null
-
-    val opening = answer.indexOf('"', colon + 1)
-    if (opening < 0) return null
+    val opening = answer.openingQuoteOfTranslation() ?: return null
 
     return answer.unescapedStringFrom(opening + 1)
+}
+
+/**
+ * Where the translation's own text starts, or null while the key, its colon or
+ * its opening quote have yet to arrive - which is most of what a stream looks
+ * like in its first few tokens.
+ */
+private fun String.openingQuoteOfTranslation(): Int? {
+    val key = indexOf(TRANSLATION_KEY)
+    if (key < 0) return null
+
+    val colon = indexOf(':', key + TRANSLATION_KEY.length)
+    if (colon < 0) return null
+
+    return indexOf('"', colon + 1).takeIf { it >= 0 }
 }
 
 /**
@@ -158,14 +166,7 @@ private class Escape(val text: String, val length: Int)
 private fun String.escapeAt(index: Int): Escape? {
     val marker = getOrNull(index + 1) ?: return null
 
-    if (marker == 'u') {
-        val digits = drop(index + 2).take(4)
-        if (digits.length < 4) return null
-
-        val code = digits.toIntOrNull(16) ?: return null
-
-        return Escape(code.toChar().toString(), length = 6)
-    }
+    if (marker == 'u') return unicodeEscapeAt(index)
 
     val text = when (marker) {
         'n' -> "\n"
@@ -180,3 +181,23 @@ private fun String.escapeAt(index: Int): Escape? {
 
     return Escape(text, length = 2)
 }
+
+/**
+ * `\uXXXX`, or null while fewer than four of its digits have arrived - which is
+ * an escape split across two chunks of a stream rather than a broken one.
+ */
+private fun String.unicodeEscapeAt(index: Int): Escape? {
+    val digits = drop(index + 2).take(UnicodeEscapeDigits)
+
+    if (digits.length < UnicodeEscapeDigits) return null
+
+    val code = digits.toIntOrNull(HexRadix) ?: return null
+
+    return Escape(code.toChar().toString(), length = UnicodeEscapeLength)
+}
+
+private const val UnicodeEscapeDigits = 4
+private const val HexRadix = 16
+
+/** `\` and `u` and the four digits. */
+private const val UnicodeEscapeLength = 6

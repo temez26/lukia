@@ -236,6 +236,22 @@ private val commonTestClasses = providers.of(CommonTestClasses::class) {
 private val jvmTestTask = tasks.named<Test>("jvmTest")
 
 /**
+ * The Kotlin sources are an input to `jvmTest`, because two of its tests read
+ * them as text rather than through the classpath: `ArchitectureTest` reads the
+ * package and import lines of every main source set, and
+ * `PlatformModuleParityTest` reads what each platform's DI module binds.
+ *
+ * Gradle cannot see that from a classpath it does not appear on. Without this,
+ * a change to `iosMain` alone leaves both tests reported as up to date - and a
+ * check that does not run when the thing it checks changes is not a check.
+ */
+jvmTestTask.configure {
+    inputs.files(fileTree("src") { include("**/*.kt") })
+        .withPropertyName("kotlinSourcesReadAsText")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+}
+
+/**
  * The common tests alone, which is what CI runs.
  *
  * The platform half of `jvmTest` is 659 tests against 814 common ones, and 30 of

@@ -10,12 +10,14 @@ package io.lukia.core.infrastructure.pdf
  *
  * Returning null also covers the window ending mid-object, which is how the
  * caller knows to read more of the file and try again.
- *
- * @param baseOffset where [bytes] starts in the file, so stream data offsets
- *   come back absolute.
  */
 internal class PdfObjectParser(
+    /**
+     * The window to read, which need not begin at an object boundary -
+     * [parseIndirectObject] is told where in it to start.
+     */
     internal val bytes: ByteArray,
+    /** Where [bytes] sits in the file, so a stream's offset comes back absolute. */
     private val baseOffset: Long = 0L,
 ) {
 
@@ -28,15 +30,28 @@ internal class PdfObjectParser(
     fun parseIndirectObject(offset: Int = 0): PdfValue? {
         position = offset
 
-        readInteger() ?: return null
-        readInteger() ?: return null
-        if (!readKeyword("obj")) return null
+        if (!skipObjectHeader()) return null
 
         val value = parseValue() ?: return null
 
         skipWhitespaceAndComments()
-        if (!readKeyword("stream")) return value
 
+        return if (readKeyword("stream")) streamAfter(value) else value
+    }
+
+    /** Reads past `<number> <generation> obj`, false when that is not what is here. */
+    private fun skipObjectHeader(): Boolean {
+        readInteger() ?: return false
+        readInteger() ?: return false
+
+        return readKeyword("obj")
+    }
+
+    /**
+     * The stream body that followed [value], or null when [value] was not a
+     * dictionary - only a dictionary can say how long a stream is.
+     */
+    private fun streamAfter(value: PdfValue): PdfValue? {
         // The data begins after the newline that closes the `stream` keyword,
         // which the spec allows to be either CRLF or a bare LF.
         if (position < bytes.size && bytes[position] == CARRIAGE_RETURN) position++
@@ -77,10 +92,17 @@ internal class PdfObjectParser(
                 return PdfValue.Dictionary(entries)
             }
 
-            val key = (parseName() as? PdfValue.Name)?.value ?: return null
-            val value = parseValue() ?: return null
-            entries[key] = value
+            if (!readEntryInto(entries)) return null
         }
+    }
+
+    /** False for a pair the bytes do not spell, which makes the dictionary a loss. */
+    private fun readEntryInto(entries: MutableMap<String, PdfValue>): Boolean {
+        val key = (parseName() as? PdfValue.Name)?.value ?: return false
+        val value = parseValue() ?: return false
+
+        entries[key] = value
+        return true
     }
 
     private fun parseArray(): PdfValue? {
@@ -112,49 +134,64 @@ internal class PdfObjectParser(
             val byte = bytes[position]
             if (isWhitespace(byte) || isDelimiter(byte)) break
 
-            if (byte == HASH && position + 2 < bytes.size) {
-                val decoded = hexValue(bytes[position + 1], bytes[position + 2])
-                if (decoded != null) {
-                    name.append(decoded.toChar())
-                    position += 3
-                    continue
-                }
-            }
-
-            name.append((byte.toInt() and 0xFF).toChar())
-            position++
+            name.append(nextNameChar())
         }
 
         return PdfValue.Name(name.toString())
     }
 
     /**
-     * A number, a reference, or one of the three keywords. References are only
-     * recognisable by looking past two integers for an `R`, so the position is
-     * put back when it turns out to be a plain number.
+     * One character of a name, advancing past what spelled it.
+     *
+     * `#XX` is how a name holds a character it cannot write plainly - a space, a
+     * slash - and a `#` that is not followed by two hex digits is just a `#`.
      */
+    private fun nextNameChar(): Char {
+        val byte = bytes[position]
+
+        if (byte == HASH && position + 2 < bytes.size) {
+            val decoded = hexValue(bytes[position + 1], bytes[position + 2])
+
+            if (decoded != null) {
+                position += 3
+                return decoded.toChar()
+            }
+        }
+
+        position++
+        return (byte.toInt() and 0xFF).toChar()
+    }
+
+    /** A number, a reference, or one of the three keywords. */
     private fun parseKeywordOrNumber(): PdfValue? {
-        if (readKeyword("true")) return PdfValue.Bool(true)
-        if (readKeyword("false")) return PdfValue.Bool(false)
-        if (readKeyword("null")) return PdfValue.Null
+        val keyword = PdfKeyword.entries.firstOrNull { readKeyword(it.text) }
+
+        if (keyword != null) return keyword.value
 
         val start = position
         val number = readNumber() ?: return null
 
-        if (number == number.toInt().toDouble() && number >= 0) {
-            val afterFirst = position
-            val generation = readInteger()
+        return referenceFrom(number) ?: PdfValue.Number(number).takeIf { position != start }
+    }
 
-            if (generation != null && readKeyword("R")) {
-                return PdfValue.Reference(number.toInt(), generation)
-            }
+    /**
+     * The reference [number] opens, or null when it opens nothing.
+     *
+     * References are only recognisable by looking past two integers for an `R`,
+     * so the position is put back when it turns out to be a plain number.
+     */
+    private fun referenceFrom(number: Double): PdfValue.Reference? {
+        if (number != number.toInt().toDouble() || number < 0) return null
 
-            position = afterFirst
+        val afterFirst = position
+        val generation = readInteger()
+
+        if (generation != null && readKeyword("R")) {
+            return PdfValue.Reference(number.toInt(), generation)
         }
 
-        if (position == start) return null
-
-        return PdfValue.Number(number)
+        position = afterFirst
+        return null
     }
 
     private fun readNumber(): Double? {
@@ -207,20 +244,27 @@ internal class PdfObjectParser(
     private fun readKeyword(keyword: String): Boolean {
         skipWhitespaceAndComments()
 
-        if (position + keyword.length > bytes.size) return false
-
-        for (index in keyword.indices) {
-            if (bytes[position + index] != keyword[index].code.toByte()) return false
-        }
-
-        // Must not be the start of a longer token: "R" should not match "Rotate".
         val after = position + keyword.length
-        if (after < bytes.size && !isWhitespace(bytes[after]) && !isDelimiter(bytes[after])) {
-            return false
-        }
+
+        if (!spells(keyword, endingAt = after)) return false
 
         position = after
         return true
+    }
+
+    /**
+     * Whether the bytes from the current position spell [keyword] and then stop.
+     *
+     * The stopping is half the test: without it "R" matches the start of
+     * "Rotate", and a page's rotation becomes a reference to object zero.
+     */
+    private fun spells(keyword: String, endingAt: Int): Boolean {
+        if (endingAt > bytes.size) return false
+        if (keyword.indices.any { bytes[position + it] != keyword[it].code.toByte() }) return false
+
+        return endingAt == bytes.size ||
+            isWhitespace(bytes[endingAt]) ||
+            isDelimiter(bytes[endingAt])
     }
 
     private fun skipWhitespaceAndComments() {
@@ -245,4 +289,11 @@ internal class PdfObjectParser(
     }
 
     private fun peek(ahead: Int): Byte? = bytes.getOrNull(position + ahead)
+}
+
+/** The three values a PDF writes as a bare word rather than as bytes. */
+private enum class PdfKeyword(val text: String, val value: PdfValue) {
+    True("true", PdfValue.Bool(true)),
+    False("false", PdfValue.Bool(false)),
+    Null("null", PdfValue.Null),
 }

@@ -30,18 +30,18 @@ import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReflowableContent
 import io.lukia.features.reader.domain.outline.ReaderOutline
+import io.lukia.features.reader.domain.text.TextAnchor
 import io.lukia.features.reader.domain.text.TextBlock
 import io.lukia.features.reader.domain.text.TextRun
 import io.lukia.features.reader.domain.text.TextSection
 import io.lukia.features.reader.presentation.screens.ReaderContent
+import io.lukia.features.reader.presentation.translation.PassageSelection
+import io.lukia.features.reader.presentation.translation.PassageTranslation
 import io.lukia.features.reader.presentation.translation.TranslateOnScreen
 import io.lukia.features.reader.presentation.translation.WordInquiry
 import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationGestures
-import io.lukia.features.translate.domain.text.TextAnchor
-import io.lukia.features.translate.presentation.PassageSelection
-import io.lukia.features.translate.presentation.PassageTranslation
 import io.lukia.shared.presentation.theme.LukiaTheme
 
 /**

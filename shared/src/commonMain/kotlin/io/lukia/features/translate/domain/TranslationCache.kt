@@ -44,7 +44,7 @@ value class TranslationCacheKey(val value: String)
  *
  * Read per request rather than settled once, because which of the two answers a
  * word is a setting the reader can change with the book open - see
- * [io.lukia.features.translate.domain.text.WordLookup].
+ * [io.lukia.features.reader.domain.text.WordLookup].
  */
 data class CacheIdentity(
     /** Who would be asked, as "provider/model" - see [TranslationProvider]. */

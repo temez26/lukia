@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -90,6 +91,14 @@ internal fun ReaderToolbar(
 ) {
     val wide = isWideWindow
 
+    // Wide and narrow are two different shapes of tree - three weighted tracks
+    // against three controls in a row - and the same two slots are emitted from
+    // both. Made movable so a window dragged across the threshold carries their
+    // state with them rather than rebuilding them: the end control holds the
+    // reader's open settings panel, and a resize would otherwise shut it.
+    val center = remember(centerControl) { movableContentOf(centerControl) }
+    val end = remember(endControl) { movableContentOf(endControl) }
+
     GlassSurface(
         // A capsule, because this is the one piece of chrome in the app that
         // genuinely floats free of everything around it.
@@ -124,10 +133,6 @@ internal fun ReaderToolbar(
                     // difference, which is the better of the two failures.
                     .heightIn(min = readerToolbarHeight()),
             ) {
-                val center: @Composable () -> Unit = {
-                    Box(modifier = Modifier.widthIn(max = centerWidth)) { centerControl() }
-                }
-
                 if (wide) {
                     // Three tracks rather than three controls in a row: the outer
                     // two share what is left over evenly, which is what keeps the
@@ -135,19 +140,19 @@ internal fun ReaderToolbar(
                     // title beside it runs.
                     TitleTrack(onBack = onBack, title = title)
 
-                    center()
+                    Box(modifier = Modifier.widthIn(max = centerWidth)) { center() }
 
                     Row(
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.weight(1f),
                     ) {
-                        endControl()
+                        end()
                     }
                 } else {
                     CloseBookButton(onBack)
-                    center()
-                    endControl()
+                    Box(modifier = Modifier.widthIn(max = centerWidth)) { center() }
+                    end()
                 }
             }
         }

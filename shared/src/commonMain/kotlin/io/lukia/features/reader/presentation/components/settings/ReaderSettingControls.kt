@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,6 +70,13 @@ internal fun SettingGroup(
     enabled: Boolean = true,
     control: @Composable () -> Unit,
 ) {
+    // Wide and stacked put the control in two different places in the tree, and
+    // a window dragged across the boundary moves it from one to the other. Made
+    // movable so it takes its state with it - otherwise resizing the panel past
+    // the wide threshold resets whatever the control remembers, which for the
+    // text-size stepper is the press it is in the middle of.
+    val slot = remember(control) { movableContentOf(control) }
+
     if (wide) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -92,7 +100,7 @@ internal fun SettingGroup(
             // language, and a control given exactly that much has nowhere to
             // grow into - the label beside it does, because it is weighted.
             Box(modifier = Modifier.widthIn(min = WideControlWidth)) {
-                control()
+                slot()
             }
         }
     } else {
@@ -107,7 +115,7 @@ internal fun SettingGroup(
                 modifier = Modifier.padding(bottom = Space.sm),
             )
 
-            control()
+            slot()
         }
     }
 }

@@ -1,8 +1,8 @@
 package io.lukia.features.reader.presentation.components.passages
 
 import io.lukia.core.domain.AppError
+import io.lukia.features.reader.presentation.translation.PassageTranslation
 import io.lukia.features.translate.domain.Translation
-import io.lukia.features.translate.presentation.PassageTranslation
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

@@ -6,12 +6,29 @@
 # Rules that ktlint already covers are switched off here so a single problem is not
 # reported twice.
 
+# Which source sets are tests.
+#
+# detekt ships a test-exclude list on the rules that are only meaningful about
+# production code, but it was written for a JVM or Android layout: it names
+# `commonTest`, `jvmTest` and `iosTest` and knows nothing of this project's
+# `androidDeviceTest`, so a rule silenced everywhere else fired there alone.
+# Declared once and referenced by each rule that needs it, so the next source set
+# is added in one place. Not a rule set, which is why validation is told to
+# expect it.
+testSources: &testSources
+  - '**/commonTest/**'
+  - '**/jvmTest/**'
+  - '**/iosTest/**'
+  - '**/androidDeviceTest/**'
+  - '**/*.kts'
+
 build:
   maxIssues: 0
 
 config:
   validation: true
   warningsAsErrors: false
+  excludes: 'testSources'
 
 comments:
   UndocumentedPublicClass:
@@ -22,6 +39,9 @@ comments:
     active: false
   OutdatedDocumentation:
     active: true
+    # A test helper's KDoc explains what the fixture is for; it is not the public
+    # API contract this rule is checking.
+    excludes: *testSources
 
 complexity:
   CyclomaticComplexMethod:
@@ -82,6 +102,12 @@ exceptions:
     active: true
   TooGenericExceptionThrown:
     active: true
+    # detekt excludes test sources from TooGenericExceptionCaught and not from
+    # this one, which is an oversight in its defaults rather than a distinction.
+    # A fake that throws is not the app failing to model a failure - it is a test
+    # saying "and then the network was not there", and the type it throws is
+    # never caught by type. See the note above `naming` for the source-set list.
+    excludes: *testSources
 
 naming:
   FunctionNaming:
@@ -157,9 +183,30 @@ style:
     ignoreCompanionObjectPropertyDeclaration: true
     ignoreConstantDeclaration: true
     ignoreAnnotation: true
+    # An enum entry already names its own value. `Tight(1.2f)` says more than a
+    # constant called TightLineSpacing would, and the entry is the only place the
+    # number is written.
+    ignoreEnums: true
     # Layout literals read better inline than hoisted into named constants; the
     # design system's tokens cover the values that genuinely need a name.
     ignoreAnnotated: ['Composable', 'Preview']
+    # Spelled out rather than referencing `testSources`, because YAML has no way
+    # to append to an aliased sequence and this one has an entry of its own.
+    excludes:
+      - '**/commonTest/**'
+      - '**/jvmTest/**'
+      - '**/iosTest/**'
+      - '**/androidDeviceTest/**'
+      - '**/*.kts'
+      # The layer that decodes published formats and speaks protocols. A ZIP
+      # central-directory record puts the name length at offset 28, a surrogate
+      # pair starts at 0xD800, and 172.16/12 is a private range - each of those
+      # numbers means what a specification says it means, is written in exactly
+      # one place, and reads worse behind a name somebody invented for it. The
+      # rule asks "what is this number", and here the answer is already beside
+      # it. It still applies to domain, application and presentation, which is
+      # where a number nobody can account for actually turns up.
+      - '**/infrastructure/**'
   MandatoryBracesLoops:
     active: true
   MandatoryBracesIfStatements:
@@ -173,6 +220,14 @@ style:
     max: 2
   UnnecessaryLet:
     active: true
+  # A fixture's sample text and a builder returning a fixed document are what a
+  # test is made of, not constants waiting to be named.
+  MayBeConst:
+    active: true
+    excludes: *testSources
+  FunctionOnlyReturningConstant:
+    active: true
+    excludes: *testSources
   UnusedImports:
     active: true
   UnusedPrivateMember:

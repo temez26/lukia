@@ -32,31 +32,38 @@ class TranslatePassageUseCase(
     ): Result<Translation> {
         val passage = request.text.trim()
 
-        if (passage.isEmpty()) {
-            return AppError.Unexpected("There is nothing to translate here.").asFailure()
+        passage.refusal()?.let { return it.asFailure() }
+
+        val answer = runCatchingApp {
+            translator.translate(request.copy(text = passage), onPartial)
         }
 
-        if (passage.length > MAX_TRANSLATABLE_CHARS) {
-            return AppError.Unexpected("That passage is too long to translate.").asFailure()
-        }
-
-        val translation =
-            runCatchingApp { translator.translate(request.copy(text = passage), onPartial) }
-                .getOrElse { return Result.failure(it) }
-
-        // A provider that answered with nothing has failed without saying so.
-        // Left as a success it would show as a sentence replaced by a blank
-        // space, which reads as the reader having lost the text rather than as
-        // the translation having failed.
-        if (translation.text.isBlank()) {
-            return AppError.TranslationFailed.asFailure()
-        }
-
-        return Result.success(
-            Translation(
-                text = translation.text.trim(),
-                note = translation.note?.trim()?.takeIf { it.isNotEmpty() },
-            ),
+        return answer.fold(
+            onSuccess = { it.asAnswer() },
+            onFailure = { Result.failure(it) },
         )
     }
+}
+
+/** Why this passage is not worth sending anywhere, when it is not. */
+private fun String.refusal(): AppError? = when {
+    isEmpty() -> AppError.Unexpected("There is nothing to translate here.")
+    length > MAX_TRANSLATABLE_CHARS -> AppError.Unexpected("That passage is too long to translate.")
+    else -> null
+}
+
+/**
+ * A provider that answered with nothing has failed without saying so. Left as a
+ * success it would show as a sentence replaced by a blank space, which reads as
+ * the reader having lost the text rather than as the translation having failed.
+ */
+private fun Translation.asAnswer(): Result<Translation> = when {
+    text.isBlank() -> AppError.TranslationFailed.asFailure()
+
+    else -> Result.success(
+        Translation(
+            text = text.trim(),
+            note = note?.trim()?.takeIf { it.isNotEmpty() },
+        ),
+    )
 }

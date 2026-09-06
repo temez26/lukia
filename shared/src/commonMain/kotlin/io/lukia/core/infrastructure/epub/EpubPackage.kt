@@ -100,53 +100,29 @@ internal class EpubPackage private constructor(
         fun open(epubBytes: ByteArray): EpubPackage? {
             val zip = ZipArchiveReader(epubBytes)
 
-            val packagePath = packageDocumentPath(zip) ?: return null
-            val packageXml = zip.readEntry(packagePath)?.decodeToString() ?: return null
-            val directory = packagePath.substringBeforeLast('/', missingDelimiterValue = "")
-
-            val manifest = mutableListOf<EpubManifestItem>()
-            val spine = mutableListOf<String>()
-            var inSpine = false
-
-            xmlEvents(packageXml).forEach { event ->
-                when (event) {
-                    is XmlEvent.Open -> when (event.name) {
-                        "spine" -> inSpine = true
-
-                        "item" -> {
-                            val id = event.attributes["id"]
-                            val href = event.attributes["href"]
-
-                            if (id != null && href != null) {
-                                manifest += EpubManifestItem(
-                                    id = id,
-                                    path = resolveArchivePath(directory, decodePercentEncoding(href)),
-                                    mediaType = event.attributes["media-type"].orEmpty(),
-                                    properties = event.attributes["properties"].orEmpty(),
-                                )
-                            }
-                        }
-
-                        // Only inside the spine: `itemref` has no meaning elsewhere,
-                        // and a manifest is not a reading order.
-                        "itemref" -> if (inSpine) {
-                            event.attributes["idref"]?.let(spine::add)
-                        }
-                    }
-
-                    is XmlEvent.Close -> if (event.name == "spine") inSpine = false
-
-                    is XmlEvent.Text -> Unit
-                }
-            }
-
-            if (manifest.isEmpty()) return null
+            val document = packageDocument(zip) ?: return null
+            val contents = readContents(document.xml, document.directory) ?: return null
 
             return EpubPackage(
                 zip = zip,
-                packageXml = packageXml,
-                manifest = manifest,
-                spine = spine,
+                packageXml = document.xml,
+                manifest = contents.manifest,
+                spine = contents.spine,
+            )
+        }
+
+        /**
+         * The package document, found through the indirection at the front of
+         * every EPUB: `container.xml` names it, and only then can it be read.
+         */
+        private fun packageDocument(zip: ZipArchiveReader): PackageDocument? {
+            val path = packageDocumentPath(zip) ?: return null
+            val xml = zip.readEntry(path)?.decodeToString() ?: return null
+
+            return PackageDocument(
+                xml = xml,
+                // Everything the manifest names is written relative to this.
+                directory = path.substringBeforeLast('/', missingDelimiterValue = ""),
             )
         }
 
@@ -161,4 +137,78 @@ internal class EpubPackage private constructor(
                 ?.let(::decodePercentEncoding)
         }
     }
+}
+
+/** The package document itself, and what its paths are written relative to. */
+private class PackageDocument(val xml: String, val directory: String)
+
+/** What the package document lists, which is read in one pass over it. */
+private class Contents(
+    val manifest: List<EpubManifestItem>,
+    val spine: List<String>,
+)
+
+/**
+ * The resources a book declares and the order they are read in.
+ *
+ * Both come out of the same walk because the spine refers to the manifest by id
+ * and the two are interleaved in the document; separating them would mean
+ * parsing the package twice to answer one question.
+ */
+private fun readContents(packageXml: String, directory: String): Contents? {
+    val walk = PackageWalk(directory)
+    xmlEvents(packageXml).forEach(walk::on)
+
+    // A package that declares no resources is not a book that can be opened,
+    // whatever else it says about itself.
+    return walk.contents().takeIf { it.manifest.isNotEmpty() }
+}
+
+/**
+ * What the package document has said so far, and whether the walk is inside the
+ * spine - which is the one thing that changes what an element means.
+ */
+private class PackageWalk(private val directory: String) {
+
+    private val manifest = mutableListOf<EpubManifestItem>()
+    private val spine = mutableListOf<String>()
+    private var inSpine = false
+
+    fun contents(): Contents = Contents(manifest = manifest, spine = spine)
+
+    fun on(event: XmlEvent) {
+        when (event) {
+            is XmlEvent.Open -> opened(event)
+            is XmlEvent.Close -> if (event.name == "spine") inSpine = false
+            is XmlEvent.Text -> Unit
+        }
+    }
+
+    private fun opened(event: XmlEvent.Open) {
+        when (event.name) {
+            "spine" -> inSpine = true
+
+            "item" -> manifestItem(event.attributes, directory)?.let { manifest += it }
+
+            // Only inside the spine: `itemref` has no meaning elsewhere, and a
+            // manifest is not a reading order.
+            "itemref" -> if (inSpine) event.attributes["idref"]?.let(spine::add)
+        }
+    }
+}
+
+/** Null for an `item` missing either of the two things that make it addressable. */
+private fun manifestItem(
+    attributes: Map<String, String>,
+    directory: String,
+): EpubManifestItem? {
+    val id = attributes["id"] ?: return null
+    val href = attributes["href"] ?: return null
+
+    return EpubManifestItem(
+        id = id,
+        path = resolveArchivePath(directory, decodePercentEncoding(href)),
+        mediaType = attributes["media-type"].orEmpty(),
+        properties = attributes["properties"].orEmpty(),
+    )
 }

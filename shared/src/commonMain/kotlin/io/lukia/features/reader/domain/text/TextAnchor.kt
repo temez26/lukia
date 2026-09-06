@@ -1,4 +1,4 @@
-package io.lukia.features.translate.domain.text
+package io.lukia.features.reader.domain.text
 
 /**
  * Where in a book a translated sentence lives.

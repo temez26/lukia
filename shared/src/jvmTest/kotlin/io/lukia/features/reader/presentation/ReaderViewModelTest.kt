@@ -54,7 +54,7 @@ class ReaderViewModelTest : ReaderViewModelTestCase() {
         val viewModel = ReaderViewModel(
             location = "/library/missing.pdf",
             openDocumentUseCase = OpenDocumentUseCase(
-                libraryRepository = FakeLibraryRepository(),
+                catalogue = FakeLibraryRepository(),
                 documentWorkspace = workspace,
                 dispatcher = openDispatcher,
             ),
@@ -116,7 +116,7 @@ class ReaderViewModelTest : ReaderViewModelTestCase() {
         val viewModel = ReaderViewModel(
             location = document.document.location,
             openDocumentUseCase = OpenDocumentUseCase(
-                libraryRepository = repository,
+                catalogue = repository,
                 documentWorkspace = workspace,
                 dispatcher = openDispatcher,
             ),
@@ -187,7 +187,7 @@ class ReaderViewModelTest : ReaderViewModelTestCase() {
         val viewModel = ReaderViewModel(
             location = "/library/missing.pdf",
             openDocumentUseCase = OpenDocumentUseCase(
-                libraryRepository = FakeLibraryRepository(),
+                catalogue = FakeLibraryRepository(),
                 documentWorkspace = workspace,
                 dispatcher = openDispatcher,
             ),

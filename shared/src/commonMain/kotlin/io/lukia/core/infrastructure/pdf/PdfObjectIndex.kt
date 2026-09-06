@@ -177,12 +177,12 @@ internal class PdfObjectIndex(private val source: PdfByteSource) {
 
         while (window <= MAX_WINDOW) {
             val bytes = source.read(offset, window)
-            if (bytes.isEmpty()) return null
 
             PdfObjectParser(bytes, offset).parseIndirectObject()?.let { return it }
 
             // The window already reached the end of the file, so there is
-            // nothing more to read and the object is simply malformed.
+            // nothing more to read and the object is simply malformed. An empty
+            // read lands here too, having parsed to nothing above it.
             if (bytes.size < window) return null
 
             window *= WINDOW_GROWTH

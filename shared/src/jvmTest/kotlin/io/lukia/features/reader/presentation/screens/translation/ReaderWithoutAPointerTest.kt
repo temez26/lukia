@@ -8,8 +8,8 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runComposeUiTest
-import io.lukia.features.translate.domain.text.TextAnchor
-import io.lukia.features.translate.presentation.PassageSelection
+import io.lukia.features.reader.domain.text.TextAnchor
+import io.lukia.features.reader.presentation.translation.PassageSelection
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull

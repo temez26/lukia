@@ -2,13 +2,13 @@ package io.lukia.features.reader.presentation.components.text
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.TextLayoutResult
+import io.lukia.core.domain.text.PassageUnit
+import io.lukia.features.reader.domain.text.Sentence
+import io.lukia.features.reader.domain.text.Word
 import io.lukia.features.reader.presentation.components.passages.BlockActions
 import io.lukia.features.reader.presentation.components.passages.WordGesture
+import io.lukia.features.reader.presentation.translation.SentenceTranslations
 import io.lukia.features.translate.domain.settings.TranslationGestures
-import io.lukia.features.translate.domain.text.PassageUnit
-import io.lukia.features.translate.domain.text.Sentence
-import io.lukia.features.translate.domain.text.Word
-import io.lukia.features.translate.presentation.SentenceTranslations
 
 // Where a finger landed in a paragraph, as a passage of the book - kept apart
 // from ProseText, which draws the paragraph and knows nothing about what the

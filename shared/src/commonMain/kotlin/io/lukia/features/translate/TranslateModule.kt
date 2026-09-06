@@ -1,5 +1,6 @@
 package io.lukia.features.translate
 
+import io.lukia.core.domain.text.PassageUnit
 import io.lukia.features.translate.application.LookUpWordUseCase
 import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.CacheIdentity
@@ -9,7 +10,6 @@ import io.lukia.features.translate.domain.lookup.WordDictionary
 import io.lukia.features.translate.domain.provider.ModelCatalogue
 import io.lukia.features.translate.domain.provider.ModelWarmUp
 import io.lukia.features.translate.domain.settings.TranslationSettings
-import io.lukia.features.translate.domain.text.PassageUnit
 import io.lukia.features.translate.infrastructure.CachingTranslator
 import io.lukia.features.translate.infrastructure.CoalescingTranslator
 import io.lukia.features.translate.infrastructure.ConfiguredTranslator

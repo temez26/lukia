@@ -6,7 +6,6 @@ import io.lukia.features.translate.application.LookUpWordUseCase
 import io.lukia.features.translate.domain.lookup.urlFor
 import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
-import io.lukia.features.translate.presentation.PassageSelection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow

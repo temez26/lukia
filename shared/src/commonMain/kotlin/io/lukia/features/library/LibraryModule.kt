@@ -1,5 +1,6 @@
 package io.lukia.features.library
 
+import io.lukia.core.domain.document.DocumentCatalogue
 import io.lukia.features.library.application.GetDocumentDetailsUseCase
 import io.lukia.features.library.application.GetLibraryDocumentsUseCase
 import io.lukia.features.library.application.ImportDocumentUseCase
@@ -15,13 +16,18 @@ import io.lukia.features.library.infrastructure.SqlLibraryRepository
 import io.lukia.features.library.presentation.BookDetailViewModel
 import io.lukia.features.library.presentation.LibraryViewModel
 import org.koin.core.module.dsl.viewModel
+import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val libraryModule = module {
 
+    // One shelf, reachable by two names. The library holds the whole of it; the
+    // reader and the statistics screen are handed `DocumentCatalogue`, which is
+    // the reading half. Bound rather than registered twice, so there is no way
+    // for the two names to end up in front of different databases.
     single<LibraryRepository> {
         SqlLibraryRepository(get())
-    }
+    } bind DocumentCatalogue::class
 
     single {
         ImportDocumentUseCase(get(), get())

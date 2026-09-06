@@ -3,12 +3,8 @@ package io.lukia.features.translate.presentation
 import androidx.compose.runtime.Composable
 import io.lukia.features.translate.domain.lookup.WordSite
 import io.lukia.features.translate.domain.provider.TranslationProvider
-import io.lukia.features.translate.domain.text.PassageUnit
-import io.lukia.features.translate.domain.text.WordLookup
+import io.lukia.features.translate.domain.settings.WordLookup
 import io.lukia.resources.Res
-import io.lukia.resources.passage_unit_paragraph
-import io.lukia.resources.passage_unit_sentence
-import io.lukia.resources.passage_unit_word
 import io.lukia.resources.provider_anthropic
 import io.lukia.resources.provider_local
 import io.lukia.resources.provider_openai
@@ -35,13 +31,11 @@ import org.jetbrains.compose.resources.stringResource
  * copy inside `domain` - where a string resource cannot follow, because reading
  * one takes a composition and because pointing a domain package at the UI is the
  * one direction `ArchitectureTest` exists to prevent.
+ *
+ * What a passage unit is called is not here but in `core.presentation`, beside
+ * the type - a tap on a sentence is a question about the page whether or not
+ * anything translates it.
  */
-@Composable
-fun PassageUnit.displayName(): String = when (this) {
-    PassageUnit.Word -> stringResource(Res.string.passage_unit_word)
-    PassageUnit.Sentence -> stringResource(Res.string.passage_unit_sentence)
-    PassageUnit.Paragraph -> stringResource(Res.string.passage_unit_paragraph)
-}
 
 /**
  * Two of these name a company rather than a thing, and are resources so the

@@ -11,7 +11,7 @@ import io.lukia.features.translate.domain.lookup.WordSite
  *
  * The line that goes over a word in the book has to be one thing, short enough
  * to stand where the word stood - see
- * [io.lukia.features.translate.domain.text.WordLookup]. That is the right answer
+ * [io.lukia.features.reader.domain.text.WordLookup]. That is the right answer
  * to "what does this say" and the wrong one to "what does this mean", which is
  * the question somebody learning the language is actually asking. This is what
  * the second question opens.

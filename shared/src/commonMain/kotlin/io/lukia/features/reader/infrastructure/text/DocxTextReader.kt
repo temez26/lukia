@@ -112,104 +112,127 @@ private class DocxParagraph {
  * what a paragraph is at the point it ends rather than having to look ahead.
  */
 private fun docxBlocks(xml: String, image: (relationshipId: String) -> ByteArray?): List<TextBlock> {
+    val walk = DocxWalk(image)
+    xmlEvents(xml).forEach(walk::on)
+    return walk.blocks
+}
+
+/**
+ * Everything the walk has to remember between two events.
+ *
+ * A class rather than seven locals around a `forEach`, because that is what this
+ * reading is: which paragraph is open, what its runs are formatted as, and
+ * whether the text arriving is text the author can see. As one function the
+ * opening and closing halves of each of those questions were a hundred lines
+ * apart.
+ */
+private class DocxWalk(private val image: (relationshipId: String) -> ByteArray?) {
+
     val blocks = mutableListOf<TextBlock>()
 
-    var paragraph: DocxParagraph? = null
-    var emphasis = emptySet<Emphasis>()
-    var inRunProperties = false
-    var inText = false
+    private var paragraph: DocxParagraph? = null
+    private var emphasis = emptySet<Emphasis>()
+    private var inRunProperties = false
+    private var inText = false
 
-    // What the author wrote about the picture, which Word puts on the drawing's
-    // own properties rather than on the picture - and which arrives before it.
-    // Without this a picture in a Word document was announced to a screen reader
-    // as "Illustration" even where its author had said what it was, while the
-    // same picture in an EPUB kept its words.
-    var described: String? = null
+    /**
+     * What the author wrote about the picture, which Word puts on the drawing's
+     * own properties rather than on the picture - and which arrives before it.
+     * Without this a picture in a Word document was announced to a screen reader
+     * as "Illustration" even where its author had said what it was, while the
+     * same picture in an EPUB kept its words.
+     */
+    private var described: String? = null
 
-    // Field instructions and deleted text are both stored as ordinary text and
-    // are both invisible in Word - a `PAGEREF` instruction read aloud in the
-    // middle of a sentence is not something the author wrote.
-    var hiddenDepth = 0
+    /**
+     * Field instructions and deleted text are both stored as ordinary text and
+     * are both invisible in Word - a `PAGEREF` instruction read aloud in the
+     * middle of a sentence is not something the author wrote.
+     */
+    private var hiddenDepth = 0
 
-    xmlEvents(xml).forEach { event ->
+    fun on(event: XmlEvent) {
         when (event) {
-            is XmlEvent.Open -> when (event.name) {
-                "p" -> paragraph = DocxParagraph()
-
-                "instrtext", "del" -> if (!event.selfClosing) hiddenDepth++
-
-                "pstyle" ->
-                    paragraph?.style =
-                        event.attributes["w:val"].orEmpty().lowercase().replace(" ", "")
-
-                "numpr" -> paragraph?.isListItem = true
-
-                // A run's formatting comes only from its own properties, so both
-                // the run and its property block start from nothing. Without the
-                // reset on `w:r`, a run with no properties of its own would
-                // inherit whatever the paragraph mark was formatted as.
-                "r" -> emphasis = emptySet()
-
-                "rpr" -> {
-                    inRunProperties = !event.selfClosing
-                    emphasis = emptySet()
-                }
-
-                "b" -> if (inRunProperties && event.attributes.isOn()) {
-                    emphasis = emphasis + Emphasis.Bold
-                }
-
-                "i" -> if (inRunProperties && event.attributes.isOn()) {
-                    emphasis = emphasis + Emphasis.Italic
-                }
-
-                // `<w:t/>` with nothing in it has no closing tag to switch this
-                // back off again.
-                "t" -> inText = !event.selfClosing && hiddenDepth == 0
-
-                // Word's own line and tab characters, which are elements rather
-                // than characters in the text.
-                "br" -> paragraph?.runs?.append("\n", emphasis)
-                "tab" -> paragraph?.runs?.append("\t", emphasis)
-
-                "docpr" -> described = event.attributes["descr"]?.trim()?.ifEmpty { null }
-
-                "blip" -> {
-                    val bytes = event.attributes["r:embed"]?.let(image)
-
-                    if (bytes != null) {
-                        blocks += TextBlock.Figure(bytes = bytes, description = described)
-                    }
-
-                    // Spent, whether or not there was a picture to put it on: it
-                    // belongs to this drawing and not to the next one.
-                    described = null
-                }
-            }
-
-            is XmlEvent.Close -> when (event.name) {
-                "p" -> {
-                    paragraph?.let { blocks.addParagraph(it) }
-                    paragraph = null
-
-                    // A run's formatting does not survive the paragraph it was
-                    // in, and neither does a paragraph left open by a malformed
-                    // file.
-                    emphasis = emptySet()
-                }
-
-                "instrtext", "del" -> if (hiddenDepth > 0) hiddenDepth--
-
-                "rpr" -> inRunProperties = false
-
-                "t" -> inText = false
-            }
-
+            is XmlEvent.Open -> opened(event)
+            is XmlEvent.Close -> closed(event)
             is XmlEvent.Text -> if (inText) paragraph?.runs?.append(event.text, emphasis)
         }
     }
 
-    return blocks
+    private fun opened(event: XmlEvent.Open) {
+        when (event.name) {
+            "p" -> paragraph = DocxParagraph()
+
+            "instrtext", "del" -> if (!event.selfClosing) hiddenDepth++
+
+            "pstyle" ->
+                paragraph?.style =
+                    event.attributes["w:val"].orEmpty().lowercase().replace(" ", "")
+
+            "numpr" -> paragraph?.isListItem = true
+
+            // A run's formatting comes only from its own properties, so both
+            // the run and its property block start from nothing. Without the
+            // reset on `w:r`, a run with no properties of its own would
+            // inherit whatever the paragraph mark was formatted as.
+            "r" -> emphasis = emptySet()
+
+            "rpr" -> {
+                inRunProperties = !event.selfClosing
+                emphasis = emptySet()
+            }
+
+            "b" -> if (inRunProperties && event.attributes.isOn()) {
+                emphasis = emphasis + Emphasis.Bold
+            }
+
+            "i" -> if (inRunProperties && event.attributes.isOn()) {
+                emphasis = emphasis + Emphasis.Italic
+            }
+
+            // `<w:t/>` with nothing in it has no closing tag to switch this
+            // back off again.
+            "t" -> inText = !event.selfClosing && hiddenDepth == 0
+
+            // Word's own line and tab characters, which are elements rather
+            // than characters in the text.
+            "br" -> paragraph?.runs?.append("\n", emphasis)
+            "tab" -> paragraph?.runs?.append("\t", emphasis)
+
+            "docpr" -> described = event.attributes["descr"]?.trim()?.ifEmpty { null }
+
+            "blip" -> figure(event)
+        }
+    }
+
+    private fun figure(event: XmlEvent.Open) {
+        event.attributes["r:embed"]
+            ?.let(image)
+            ?.let { blocks += TextBlock.Figure(bytes = it, description = described) }
+
+        // Spent, whether or not there was a picture to put it on: it belongs to
+        // this drawing and not to the next one.
+        described = null
+    }
+
+    private fun closed(event: XmlEvent.Close) {
+        when (event.name) {
+            "p" -> {
+                paragraph?.let { blocks.addParagraph(it) }
+                paragraph = null
+
+                // A run's formatting does not survive the paragraph it was in,
+                // and neither does a paragraph left open by a malformed file.
+                emphasis = emptySet()
+            }
+
+            "instrtext", "del" -> if (hiddenDepth > 0) hiddenDepth--
+
+            "rpr" -> inRunProperties = false
+
+            "t" -> inText = false
+        }
+    }
 }
 
 /**

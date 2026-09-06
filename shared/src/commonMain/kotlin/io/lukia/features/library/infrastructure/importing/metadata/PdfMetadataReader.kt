@@ -55,13 +55,7 @@ internal fun extractPdfMetadata(pdfBytes: ByteArray): BookMetadata? {
 private fun String.isPlausibleTitle(): Boolean {
     val trimmed = trim()
 
-    if (trimmed.length < 2) return false
-    if (ProducerPrefix.containsMatchIn(trimmed)) return false
-    if (FileExtension.containsMatchIn(trimmed)) return false
-    // A bare UUID or hash, which is what a scanning workflow leaves behind.
-    if (HexBlob.matches(trimmed)) return false
-
-    return true
+    return trimmed.length >= MinimumTitleLength && NotATitle.none { it(trimmed) }
 }
 
 private val ProducerPrefix = Regex(
@@ -103,3 +97,23 @@ private fun String.asPdfYear(): String? =
     PdfDate.find(this)?.groupValues?.get(1)
 
 private val PdfDate = Regex("""^D?:?\s*(\d{4})""")
+
+/**
+ * The ways a `/Title` turns out to be something other than a title.
+ *
+ * A list rather than a run of guard clauses, so that what counts as a false
+ * title reads as one thing and a fourth of them is one line.
+ *
+ * Two are matched anywhere in the value because their own patterns are anchored;
+ * the third has to match the whole of it, since a title may legitimately mention
+ * a hash without being one.
+ */
+private val NotATitle: List<(String) -> Boolean> = listOf(
+    ProducerPrefix::containsMatchIn,
+    FileExtension::containsMatchIn,
+    // A bare UUID or hash, which is what a scanning workflow leaves behind.
+    HexBlob::matches,
+)
+
+/** One character is an initial, not a title. */
+private const val MinimumTitleLength = 2

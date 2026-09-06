@@ -34,10 +34,10 @@ import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.page.PageSentence
 import io.lukia.features.reader.presentation.rendering.renderWidthFor
 import io.lukia.features.reader.presentation.screens.chromeHeight
+import io.lukia.features.reader.presentation.translation.BookTranslations
+import io.lukia.features.reader.presentation.translation.PassageSelection
 import io.lukia.features.reader.presentation.translation.TranslateOnScreen
 import io.lukia.features.translate.domain.settings.TranslationGestures
-import io.lukia.features.translate.presentation.BookTranslations
-import io.lukia.features.translate.presentation.PassageSelection
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 

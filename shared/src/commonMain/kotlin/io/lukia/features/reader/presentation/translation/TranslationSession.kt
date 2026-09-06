@@ -1,9 +1,9 @@
-package io.lukia.features.translate.presentation
+package io.lukia.features.reader.presentation.translation
 
 import io.lukia.core.domain.toAppError
+import io.lukia.features.reader.domain.text.TextAnchor
 import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.TranslationRequest
-import io.lukia.features.translate.domain.text.TextAnchor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin

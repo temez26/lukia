@@ -36,9 +36,14 @@ internal fun scanPdfObjects(source: PdfByteSource): PdfFileScan {
 
     var windowStart = 0L
 
-    while (windowStart < source.size) {
+    // A window shorter than one asked for is the last of the file; an empty one
+    // is a file that ended exactly between two. Read as the loop's own condition
+    // rather than as breaks inside it, so there is one way out.
+    var reading = true
+
+    while (reading && windowStart < source.size) {
         val bytes = source.read(windowStart, SCAN_WINDOW)
-        if (bytes.isEmpty()) break
+        reading = bytes.size == SCAN_WINDOW
 
         bytes.forEachSequence(objectMarker) { index ->
             readObjectHeaderStart(bytes, index)?.let { (number, headerStart) ->
@@ -61,8 +66,6 @@ internal fun scanPdfObjects(source: PdfByteSource): PdfFileScan {
         bytes.forEachSequence(crossReferenceMarker) { index ->
             crossReferenceHits += windowStart + index
         }
-
-        if (bytes.size < SCAN_WINDOW) break
 
         // Overlapped so a header split across two windows is still seen whole
         // by one of them.
@@ -93,34 +96,62 @@ internal fun scanPdfObjects(source: PdfByteSource): PdfFileScan {
  * inside `endobj` and in ordinary words.
  */
 private fun readObjectHeaderStart(bytes: ByteArray, objIndex: Int): Pair<Int, Int>? {
-    var index = objIndex - 1
+    if (bytes.endsEndobjAt(objIndex - 1)) return null
 
-    // `endobj` ends in the same three letters.
-    if (index >= 2 &&
-        bytes[index] == 'd'.code.toByte() &&
-        bytes[index - 1] == 'n'.code.toByte() &&
-        bytes[index - 2] == 'e'.code.toByte()
-    ) {
-        return null
+    val header = HeaderScan(bytes, from = objIndex - 1)
+
+    // `<number> <generation> obj`, so read backwards it is the generation first
+    // and the object's own number second. Both have to be there, and the second
+    // is only looked for once the first was found.
+    val hasGeneration = header.skipNumberBefore()
+    val hasNumber = hasGeneration && header.skipNumberBefore()
+
+    if (!hasNumber) return null
+
+    return header.numberAndStart()
+}
+
+/** `endobj` ends in the same three letters as `obj` does. */
+private fun ByteArray.endsEndobjAt(index: Int): Boolean {
+    if (index < 2) return false
+
+    return this[index] == 'd'.code.toByte() &&
+        this[index - 1] == 'n'.code.toByte() &&
+        this[index - 2] == 'e'.code.toByte()
+}
+
+/**
+ * A cursor walking backwards over the `<whitespace><digits>` pairs that precede
+ * an `obj` keyword, remembering where the last run of digits sat.
+ *
+ * Backwards because the keyword is what the scan finds; the numbers before it are
+ * only reachable from there, and how many digits they have is not known until the
+ * walk runs off the front of them.
+ */
+private class HeaderScan(private val bytes: ByteArray, from: Int) {
+
+    private var index = from
+    private var digitsStart = 0
+    private var digitsEnd = 0
+
+    /** False as soon as what precedes the cursor is not whitespace and then digits. */
+    fun skipNumberBefore(): Boolean {
+        if (index < 0 || !isWhitespace(bytes[index])) return false
+
+        while (index >= 0 && isWhitespace(bytes[index])) index--
+
+        digitsEnd = index
+        while (index >= 0 && bytes[index] in ZERO..NINE) index--
+        digitsStart = index + 1
+
+        return index != digitsEnd
     }
 
-    if (index < 0 || !isWhitespace(bytes[index])) return null
-    while (index >= 0 && isWhitespace(bytes[index])) index--
-
-    val generationEnd = index
-    while (index >= 0 && bytes[index] in ZERO..NINE) index--
-    if (index == generationEnd) return null
-
-    if (index < 0 || !isWhitespace(bytes[index])) return null
-    while (index >= 0 && isWhitespace(bytes[index])) index--
-
-    val numberEnd = index
-    while (index >= 0 && bytes[index] in ZERO..NINE) index--
-    if (index == numberEnd) return null
-
-    val number = bytes.decodeToString(index + 1, numberEnd + 1).toIntOrNull() ?: return null
-
-    return number to (index + 1)
+    /** The digits last walked over, with where they begin in the file. */
+    fun numberAndStart(): Pair<Int, Int>? =
+        bytes.decodeToString(digitsStart, digitsEnd + 1)
+            .toIntOrNull()
+            ?.let { it to digitsStart }
 }
 
 private const val SCAN_WINDOW = 1 shl 20

@@ -2,42 +2,20 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>CastToNullableType:IOSSecretStore.kt$IOSSecretStore$as</ID>
-    <ID>ComplexCondition:PdfFileScan.kt$index &gt;= 2 &amp;&amp; bytes[index] == 'd'.code.toByte() &amp;&amp; bytes[index - 1] == 'n'.code.toByte() &amp;&amp; bytes[index - 2] == 'e'.code.toByte()</ID>
-    <ID>ComplexCondition:PdfStringParsing.kt$digits &lt; 3 &amp;&amp; position &lt; bytes.size &amp;&amp; bytes[position] &gt;= '0'.code.toByte() &amp;&amp; bytes[position] &lt;= '7'.code.toByte()</ID>
     <ID>ComposableParamOrder:ReaderBookContent.kt$ReaderContent</ID>
     <ID>ComposableParamOrder:ReaderToolbar.kt$ReaderToolbar</ID>
-    <ID>ContentSlotReused:ReaderSettingControls.kt$control</ID>
-    <ID>ContentSlotReused:ReaderToolbar.kt$endControl</ID>
-    <ID>ContentSlotReused:ShortcutTooltip.kt$content</ID>
     <ID>CyclomaticComplexMethod:Buttons.kt$@Composable fun LukiaButton( label: String, onClick: () -&gt; Unit, modifier: Modifier = Modifier, variant: ButtonVariant = ButtonVariant.Primary, size: ButtonSize = ButtonSize.Regular, enabled: Boolean = true, icon: (@Composable (Color, Modifier) -&gt; Unit)? = null, )</ID>
-    <ID>CyclomaticComplexMethod:DocxMetadataReader.kt$internal fun extractDocxMetadata(docxBytes: ByteArray): BookMetadata?</ID>
-    <ID>CyclomaticComplexMethod:DocxTextReader.kt$private fun docxBlocks(xml: String, image: (relationshipId: String) -&gt; ByteArray?): List&lt;TextBlock&gt;</ID>
-    <ID>CyclomaticComplexMethod:EpubMetadata.kt$internal fun readEpubMetadata(packageXml: String): BookMetadata</ID>
-    <ID>CyclomaticComplexMethod:EpubNavigation.kt$internal fun navigationEntries( xml: String, placeOf: (href: String) -&gt; OutlinePlace?, ): List&lt;OutlineEntry&gt;</ID>
-    <ID>CyclomaticComplexMethod:EpubPackage.kt$EpubPackage.Companion$fun open(epubBytes: ByteArray): EpubPackage?</ID>
-    <ID>CyclomaticComplexMethod:IOSFolderScanner.kt$IOSFolderScanner$override suspend fun scan(folder: PickedFolder): List&lt;PickedDocument&gt;</ID>
-    <ID>CyclomaticComplexMethod:MarkdownTextReader.kt$private fun markdownBlocks(source: String): List&lt;TextBlock&gt;</ID>
-    <ID>CyclomaticComplexMethod:MarkdownTextReader.kt$private fun markdownRuns(source: String): List&lt;TextRun&gt;</ID>
-    <ID>CyclomaticComplexMethod:PdfFileScan.kt$private fun readObjectHeaderStart(bytes: ByteArray, objIndex: Int): Pair&lt;Int, Int&gt;?</ID>
-    <ID>CyclomaticComplexMethod:PdfStringParsing.kt$private fun PdfObjectParser.readEscapedBytes(): List&lt;Byte&gt;</ID>
     <ID>CyclomaticComplexMethod:ReaderCommandHandling.kt$@Composable internal fun readerCommands( listState: LazyListState, pageCount: Int, reflowable: Boolean, settings: ReaderSettings, onSettingsChange: (ReaderSettings) -&gt; Unit, onBack: () -&gt; Unit, onToggleContents: () -&gt; Unit, onToggleSettings: () -&gt; Unit, onTranslateOnScreen: () -&gt; Unit, onToggleContinuousTranslation: () -&gt; Unit, onToggleTranslationsShown: () -&gt; Unit, ): (ReaderCommand) -&gt; Unit</ID>
     <ID>CyclomaticComplexMethod:ReaderShortcuts.kt$internal fun readerCommandFor(event: KeyEvent): ReaderCommand?</ID>
-    <ID>FunctionNaming:MainViewController.kt$@Suppress("ktlint:standard:function-naming") fun MainViewController()</ID>
-    <ID>FunctionOnlyReturningConstant:MinimalPdf.kt$MinimalPdf$private fun emptyContentStream(): String</ID>
     <ID>LongMethod:BookDetailBody.kt$@Composable internal fun BookDetailBody( details: BookDetails, onRead: () -&gt; Unit, onLongPress: () -&gt; Unit, modifier: Modifier = Modifier, topClearance: Dp = Clearance.topChrome, bottomClearance: Dp = Clearance.pageBottom, coverWidth: Dp = Dp.Unspecified, /** * What the grouped details sit in. It has to contrast with whatever is behind * this body, and that differs: the screen lays it on the window background, * the panel on a raised surface, and one colour cannot be a step away from * both - in the dark theme especially, where the background is true black. */ infoCardColor: Color = MaterialTheme.colorScheme.surface, )</ID>
     <ID>LongMethod:BookDetailScreen.kt$@Composable fun BookDetailContent( uiState: UiState&lt;BookDetails&gt;, onBack: () -&gt; Unit, onRead: () -&gt; Unit, onRetry: () -&gt; Unit, onToggleFavorite: () -&gt; Unit, onRefresh: () -&gt; Unit, onDelete: () -&gt; Unit, /** * Defaulted so this screen still composes without a ViewModel behind it, * which is how it is tested and previewed. */ snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }, )</ID>
     <ID>LongMethod:Buttons.kt$@Composable fun LukiaButton( label: String, onClick: () -&gt; Unit, modifier: Modifier = Modifier, variant: ButtonVariant = ButtonVariant.Primary, size: ButtonSize = ButtonSize.Regular, enabled: Boolean = true, icon: (@Composable (Color, Modifier) -&gt; Unit)? = null, )</ID>
     <ID>LongMethod:ChapterRow.kt$@Composable internal fun ChapterRowItem( row: ChapterRow, inset: Dp, isCurrent: Boolean, onToggle: () -&gt; Unit, onClick: () -&gt; Unit, )</ID>
     <ID>LongMethod:Chip.kt$@Composable fun LukiaChip( label: String, selected: Boolean, onClick: () -&gt; Unit, modifier: Modifier = Modifier, /** Marks a chip that opens a menu beneath itself. */ chevron: Boolean = false, icon: (@Composable (Color, Modifier) -&gt; Unit)? = null, )</ID>
-    <ID>LongMethod:EpubMetadata.kt$internal fun readEpubMetadata(packageXml: String): BookMetadata</ID>
     <ID>LongMethod:ImportBookCard.kt$@Composable internal fun ImportBookCard( menuExpanded: Boolean, onMenuRequest: () -&gt; Unit, onMenuDismiss: () -&gt; Unit, onImport: () -&gt; Unit, onImportFolder: () -&gt; Unit, reveal: LaunchReveal, revealIndex: Int, modifier: Modifier = Modifier, label: String? = "Add Books", )</ID>
     <ID>LongMethod:LibraryContent.kt$@Composable fun LibraryContent( uiState: UiState&lt;List&lt;DocumentInfo&gt;&gt;, books: List&lt;LibraryBook&gt;, facets: LibraryFacets, query: LibraryQuery, onQueryChange: (LibraryQuery) -&gt; Unit, onImport: () -&gt; Unit, onImportFolder: () -&gt; Unit, onDocumentClick: (DocumentInfo) -&gt; Unit, onDocumentDetails: (DocumentInfo) -&gt; Unit, onToggleFavorite: (DocumentInfo) -&gt; Unit, onRefresh: (DocumentInfo) -&gt; Unit, onDelete: (DocumentInfo) -&gt; Unit, onRetry: () -&gt; Unit, isImporting: Boolean, /** * How far through a multi-file import the library is, when there is more * than one file to count. Defaulted to nothing so this screen still composes * without a ViewModel behind it, which is how it is tested and previewed. */ importProgress: ImportProgress? = null, onSettings: () -&gt; Unit = {}, snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }, /** * How far through each book its reader is, keyed by location. Only the book * whose details are open is looked up here; the grid draws its bars from * [books], which already carries each book's position. */ readingProgress: Map&lt;String, ReadingProgress&gt; = emptyMap(), /** How the shelf is laid out, what is picked off it, and what can be done to that. */ shelf: LibraryShelfUi = LibraryShelfUi.None, /** False where searching has a screen of its own - see [LibraryNavBar]. */ showSearch: Boolean = true, /** The way to the reader's own page, supplied by the shell - see `MobileShell`. */ statsButton: @Composable () -&gt; Unit = {}, )</ID>
     <ID>LongMethod:LibraryFilterBar.kt$@Composable internal fun LibraryFilterBar( query: LibraryQuery, facets: LibraryFacets, onQueryChange: (LibraryQuery) -&gt; Unit, openMenu: OpenMenu?, onOpenMenuChange: (OpenMenu?) -&gt; Unit, layout: LibraryLayout, onLayoutChange: (LibraryLayout) -&gt; Unit, modifier: Modifier = Modifier, )</ID>
     <ID>LongMethod:LibraryGridView.kt$@Composable internal fun LibraryGrid( books: List&lt;LibraryBook&gt;, gridState: LazyGridState, query: LibraryQuery, facets: LibraryFacets, onQueryChange: (LibraryQuery) -&gt; Unit, isImporting: Boolean, importProgress: ImportProgress?, reveal: LaunchReveal, onDocumentClick: (DocumentInfo) -&gt; Unit, onDocumentDetails: (DocumentInfo) -&gt; Unit, openMenu: OpenMenu?, onOpenMenuChange: (OpenMenu?) -&gt; Unit, onToggleFavorite: (DocumentInfo) -&gt; Unit, onRefresh: (DocumentInfo) -&gt; Unit, onDelete: (DocumentInfo) -&gt; Unit, onImport: () -&gt; Unit, onImportFolder: () -&gt; Unit, modifier: Modifier = Modifier, /** What is ticked, while the shelf is being selected from. */ layout: LibraryLayout = LibraryLayout.Grid, onLayoutChange: (LibraryLayout) -&gt; Unit = {}, selection: LibrarySelection = LibrarySelection.None, onStartSelecting: () -&gt; Unit = {}, onToggle: (location: String) -&gt; Unit = {}, )</ID>
-    <ID>LongMethod:MarkdownTextReader.kt$private fun markdownBlocks(source: String): List&lt;TextBlock&gt;</ID>
-    <ID>LongMethod:MarkdownTextReader.kt$private fun markdownRuns(source: String): List&lt;TextRun&gt;</ID>
-    <ID>LongMethod:OpenAiTranslator.kt$OpenAiTranslator$override suspend fun translate( request: TranslationRequest, onPartial: (String) -&gt; Unit, ): Translation</ID>
     <ID>LongMethod:ProseText.kt$@Composable internal fun ProseText( runs: List&lt;TextRun&gt;, style: TextStyle, translations: SentenceTranslations, actions: BlockActions, translateOnScreen: TranslateOnScreen, gestures: TranslationGestures, resizingType: Boolean, modifier: Modifier = Modifier, )</ID>
     <ID>LongMethod:ReaderBookContent.kt$@Composable internal fun ReaderContent( uiState: UiState&lt;ReaderDocument&gt;, settings: ReaderSettings, outline: ReaderOutline, /** * Where the book was left off and how long it was then, or null while the * stored position is still being read. * * Both halves, because a reflowable book's length is a fact about the window * it was read in: the same book on a phone and on a monitor is a different * number of pages, so a stored page number only means anything alongside the * count it was one of. */ initialPosition: ReadingProgress? = null, /** What has become of each sentence somebody has asked about, by where it is. */ translations: Map&lt;TextAnchor, PassageTranslation&gt; = emptyMap(), /** Whether what the reader can see should be translated without being tapped. */ translateOnScreen: TranslateOnScreen = TranslateOnScreen.Idle, /** Whether there is anything set up to translate with, which is what the controls need. */ translationConfigured: Boolean = false, /** What the reader's own translations are doing, for the control that puts them away. */ shownTranslations: ShownTranslations = ShownTranslations.None, /** What a tap and a long press on the book ask for. */ gestures: TranslationGestures = TranslationGestures.Default, /** The language a passage comes back in, which the panel can also change. */ targetLanguage: TargetLanguage = TargetLanguage.Default, /** Which of the two ways of translating more than one passage are offered at all. */ bulkTranslation: BulkTranslation = BulkTranslation.Default, /** The one word the reader has held to ask about properly, if any. */ wordInquiry: WordInquiry? = null, /** Whether the translator's asides are set under the paragraphs they belong to. */ translationNotes: Boolean = true, /** How this book is being read, and what became of asking for it as text. */ layout: ReaderLayoutUi = ReaderLayoutUi(), onBack: () -&gt; Unit, onRetry: () -&gt; Unit, onSettingsChange: (ReaderSettings) -&gt; Unit, onPageSettled: (pageIndex: Int, pageCount: Int) -&gt; Unit = { _, _ -&gt; }, onPassageSelected: (PassageSelection) -&gt; Unit = {}, /** A hold on a word already answered, which opens what else it means. */ onPassageHold: (PassageSelection) -&gt; Unit = {}, /** The second mouse button on a word, which opens what it means either way. */ onPassageInquiry: (PassageSelection) -&gt; Unit = {}, onPassagesRequested: (List&lt;PassageSelection&gt;) -&gt; Unit = {}, onWordInquiryDismiss: () -&gt; Unit = {}, onInquiredWordAction: () -&gt; Unit = {}, onTranslateOnScreen: () -&gt; Unit = {}, onContinuousTranslationChange: (Boolean) -&gt; Unit = {}, onTranslationsVisibleChange: (Boolean) -&gt; Unit = {}, onTargetLanguageChange: (TargetLanguage) -&gt; Unit = {}, onTranslationGesturesChange: (TranslationGestures) -&gt; Unit = {}, onTranslationNotesChange: (Boolean) -&gt; Unit = {}, /** What is written on a page of a fixed-layout document, read when one is looked at. */ sentencesOnPage: suspend (index: Int) -&gt; List&lt;PageSentence&gt; = { emptyList() }, renderPage: suspend (index: Int, widthPx: Int) -&gt; ImageBitmap?, )</ID>
     <ID>LongMethod:ReaderPageList.kt$@Composable internal fun PageList( pages: PagedContent, listState: LazyListState, pageScale: Float, pageColor: Color, pageFilter: ColorFilter?, translations: BookTranslations, onToggleChrome: () -&gt; Unit, onPageScaleChange: (Float) -&gt; Unit, onPassageSelected: (PassageSelection) -&gt; Unit, onPassageHold: (PassageSelection) -&gt; Unit, onPassageInquiry: (PassageSelection) -&gt; Unit, onPassagesRequested: (List&lt;PassageSelection&gt;) -&gt; Unit, translateOnScreen: TranslateOnScreen, gestures: TranslationGestures, sentencesOnPage: suspend (index: Int) -&gt; List&lt;PageSentence&gt;, renderPage: suspend (index: Int, widthPx: Int) -&gt; ImageBitmap?, )</ID>
@@ -47,58 +25,8 @@
     <ID>LongParameterList:ParagraphText.kt$( slices: List&lt;RunSlice&gt;, sentence: Sentence, words: List&lt;Word&gt;, end: Int, shown: ShownTranslation, drawn: MutableList&lt;ParagraphText.DrawnWord&gt;, )</ID>
     <ID>LongParameterList:PdfOutlineReader.kt$PdfOutlineReader$( index: PdfObjectIndex, pageNumbers: Map&lt;Int, Int&gt;, destinations: NamedDestinations, reference: PdfValue?, level: Int, visited: MutableSet&lt;Int&gt;, into: MutableList&lt;OutlineEntry&gt;, )</ID>
     <ID>LongParameterList:ReaderTranslationControls.kt$ReaderTranslationUi$( val configured: Boolean, val onScreen: TranslateOnScreen, val shown: ShownTranslations, val offered: BulkTranslation, val onTranslateOnScreen: () -&gt; Unit, val onContinuousChange: (Boolean) -&gt; Unit, val onVisibleChange: (Boolean) -&gt; Unit, )</ID>
-    <ID>LoopWithTooManyJumpStatements:AndroidFolderScanner.kt$AndroidFolderScanner$while</ID>
-    <ID>LoopWithTooManyJumpStatements:IOSFolderScanner.kt$IOSFolderScanner$while</ID>
-    <ID>LoopWithTooManyJumpStatements:PdfFileScan.kt$while</ID>
-    <ID>LoopWithTooManyJumpStatements:PdfObjectParser.kt$PdfObjectParser$while</ID>
-    <ID>LoopWithTooManyJumpStatements:ServerSentEvents.kt$while</ID>
-    <ID>MagicNumber:AndroidDocumentAnalyzerTest.kt$AndroidDocumentAnalyzerTest$1024L</ID>
-    <ID>MagicNumber:AndroidPdfOutlineTest.kt$AndroidPdfOutlineTest$100</ID>
-    <ID>MagicNumber:AndroidPdfOutlineTest.kt$AndroidPdfOutlineTest$16</ID>
-    <ID>MagicNumber:AndroidPdfOutlineTest.kt$AndroidPdfOutlineTest$4</ID>
-    <ID>MagicNumber:AndroidPdfOutlineTest.kt$AndroidPdfOutlineTest$64</ID>
-    <ID>MagicNumber:AndroidPdfOutlineTest.kt$AndroidPdfOutlineTest$8</ID>
-    <ID>MagicNumber:ArchivePaths.kt$16</ID>
-    <ID>MagicNumber:ArchivePaths.kt$3</ID>
-    <ID>MagicNumber:DocxTextReader.kt$6</ID>
-    <ID>MagicNumber:Inflate.kt$0xFF</ID>
-    <ID>MagicNumber:Inflate.kt$31</ID>
-    <ID>MagicNumber:Inflate.kt$8</ID>
     <ID>MagicNumber:PassageMarks.kt$0.5f</ID>
-    <ID>MagicNumber:PdfBytes.kt$10</ID>
-    <ID>MagicNumber:PdfBytes.kt$4</ID>
-    <ID>MagicNumber:PdfCoverRenderer.android.kt$100</ID>
-    <ID>MagicNumber:PdfCoverRenderer.ios.kt$240.0</ID>
-    <ID>MagicNumber:PdfCoverRenderer.ios.kt$320.0</ID>
-    <ID>MagicNumber:PdfCoverRenderer.jvm.kt$96f</ID>
-    <ID>MagicNumber:PdfDocEncoding.kt$0x18</ID>
-    <ID>MagicNumber:PdfDocEncoding.kt$0x80</ID>
-    <ID>MagicNumber:PdfDocEncoding.kt$0xA0</ID>
-    <ID>MagicNumber:PdfDocEncoding.kt$0xFF</ID>
-    <ID>MagicNumber:PdfDocEncoding.kt$8</ID>
-    <ID>MagicNumber:PdfObjectParser.kt$PdfObjectParser$0xFF</ID>
-    <ID>MagicNumber:PdfObjectParser.kt$PdfObjectParser$3</ID>
-    <ID>MagicNumber:PdfStringParsing.kt$3</ID>
-    <ID>MagicNumber:PdfStringParsing.kt$4</ID>
-    <ID>MagicNumber:PdfStringParsing.kt$8</ID>
-    <ID>MagicNumber:RawInflate.ios.kt$15</ID>
-    <ID>MagicNumber:ReaderSettings.kt$LineSpacing.Normal$1.45f</ID>
-    <ID>MagicNumber:ReaderSettings.kt$LineSpacing.Relaxed$1.75f</ID>
-    <ID>MagicNumber:ReaderSettings.kt$LineSpacing.Tight$1.2f</ID>
     <ID>MagicNumber:ReaderSettings.kt$ReaderSettings$100f</ID>
-    <ID>MagicNumber:ReaderSettings.kt$ReadingWidth.Larger$1.25f</ID>
-    <ID>MagicNumber:ReaderSettings.kt$ReadingWidth.Largest$1.5f</ID>
-    <ID>MagicNumber:ReaderSettings.kt$ReadingWidth.Medium$0.9f</ID>
-    <ID>MagicNumber:ReaderSettings.kt$ReadingWidth.Narrow$0.75f</ID>
-    <ID>MagicNumber:TestDocumentProvider.kt$TestDocumentProvider$1024L</ID>
-    <ID>MagicNumber:TextDecoding.kt$0x80</ID>
-    <ID>MagicNumber:TextDecoding.kt$0x9F</ID>
-    <ID>MagicNumber:TextDecoding.kt$0xFE</ID>
-    <ID>MagicNumber:TextDecoding.kt$0xFF</ID>
-    <ID>MagicNumber:TextDecoding.kt$3</ID>
-    <ID>MagicNumber:TextDecoding.kt$8</ID>
-    <ID>MagicNumber:TranslationAnswer.kt$16</ID>
-    <ID>MagicNumber:TranslationAnswer.kt$4</ID>
     <ID>MagicNumber:TranslationCache.kt$0xFF</ID>
     <ID>MagicNumber:TranslationCache.kt$16</ID>
     <ID>MagicNumber:TranslationCache.kt$4</ID>
@@ -114,45 +42,10 @@
     <ID>MagicNumber:TranslationEndpoint.kt$255</ID>
     <ID>MagicNumber:TranslationEndpoint.kt$31</ID>
     <ID>MagicNumber:TranslationEndpoint.kt$4</ID>
-    <ID>MagicNumber:TranslationHttpClient.kt$1000L</ID>
-    <ID>MagicNumber:XmlEvents.kt$0x10000</ID>
-    <ID>MagicNumber:XmlEvents.kt$0x10FFFF</ID>
-    <ID>MagicNumber:XmlEvents.kt$0x3FF</ID>
-    <ID>MagicNumber:XmlEvents.kt$0xD800</ID>
-    <ID>MagicNumber:XmlEvents.kt$0xDC00</ID>
-    <ID>MagicNumber:XmlEvents.kt$0xDFFF</ID>
-    <ID>MagicNumber:XmlEvents.kt$0xFFFF</ID>
-    <ID>MagicNumber:XmlEvents.kt$10</ID>
-    <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$0xFF</ID>
-    <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$10</ID>
-    <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$16</ID>
-    <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$20</ID>
-    <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$24</ID>
-    <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$26</ID>
-    <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$28</ID>
-    <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$3</ID>
-    <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$30</ID>
-    <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$32</ID>
-    <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$42</ID>
-    <ID>MagicNumber:ZipArchiveReader.kt$ZipArchiveReader$8</ID>
-    <ID>MayBeConst:ReaderTranslationTestFixture.kt$/** * The book these tests read, and the reader showing it. * * Shared so that every question about translating reaches the same three * paragraphs. The sample sentences are chosen for their shape: one short, one * long, and one paragraph that opens with a sentence of two words. */ internal val opening = "Call me Ishmael."</ID>
-    <ID>MayBeConst:ReaderTranslationTestFixture.kt$internal val afterword = "No. This paragraph opens with a very short sentence indeed, and then runs on."</ID>
-    <ID>MayBeConst:ReaderTranslationTestFixture.kt$internal val second = "Some years ago I went to sea."</ID>
-    <ID>MayBeConst:ReaderTranslationTestFixture.kt$internal val translated = "Kutsukaa minua Ismaeliksi."</ID>
     <ID>ModifierMissing:BookDetailScreen.kt$BookDetailContent</ID>
     <ID>ModifierMissing:LibraryContent.kt$LibraryContent</ID>
     <ID>ModifierMissing:LibraryScreen.kt$LibraryScreen</ID>
     <ID>ModifierNotUsedAtRoot:ProseText.kt$modifier = tappable</ID>
-    <ID>NestedBlockDepth:DocxMetadataReader.kt$internal fun extractDocxMetadata(docxBytes: ByteArray): BookMetadata?</ID>
-    <ID>NestedBlockDepth:DocxTextReader.kt$private fun docxBlocks(xml: String, image: (relationshipId: String) -&gt; ByteArray?): List&lt;TextBlock&gt;</ID>
-    <ID>NestedBlockDepth:EpubMetadata.kt$internal fun readEpubMetadata(packageXml: String): BookMetadata</ID>
-    <ID>NestedBlockDepth:EpubNavigation.kt$internal fun navigationEntries( xml: String, placeOf: (href: String) -&gt; OutlinePlace?, ): List&lt;OutlineEntry&gt;</ID>
-    <ID>NestedBlockDepth:EpubNavigation.kt$internal fun ncxEntries( xml: String, placeOf: (href: String) -&gt; OutlinePlace?, ): List&lt;OutlineEntry&gt;</ID>
-    <ID>NestedBlockDepth:EpubPackage.kt$EpubPackage.Companion$fun open(epubBytes: ByteArray): EpubPackage?</ID>
-    <ID>NestedBlockDepth:MarkdownTextReader.kt$private fun markdownRuns(source: String): List&lt;TextRun&gt;</ID>
-    <ID>NestedBlockDepth:PdfCoverRenderer.android.kt$internal actual fun renderPdfCover(pdfBytes: ByteArray): ByteArray?</ID>
-    <ID>OutdatedDocumentation:PdfObjectParser.kt$PdfObjectParser</ID>
-    <ID>OutdatedDocumentation:PdfOutlineReaderTest.kt$PdfOutlineReaderTest$private fun pdf( pageCount: Int, compress: Boolean = false, bulky: Boolean = false, configure: (PDDocument) -&gt; Unit = {}, ): File</ID>
     <ID>ParameterNaming:ReaderBookContent.kt$onPageSettled</ID>
     <ID>ParameterNaming:ReaderBookContent.kt$onPassageSelected</ID>
     <ID>ParameterNaming:ReaderBookContent.kt$onPassagesRequested</ID>
@@ -166,46 +59,5 @@
     <ID>ParameterNaming:ReaderReadingEffects.kt$onPageSettled</ID>
     <ID>ParameterNaming:ReaderTextPageList.kt$onPassageSelected</ID>
     <ID>ParameterNaming:ReaderTextPageList.kt$onPassagesRequested</ID>
-    <ID>ReturnCount:EpubPackage.kt$EpubPackage.Companion$fun open(epubBytes: ByteArray): EpubPackage?</ID>
-    <ID>ReturnCount:HtmlBlockBuilder.kt$HtmlBlockBuilder$private fun open(event: XmlEvent.Open)</ID>
-    <ID>ReturnCount:PdfFileScan.kt$private fun readObjectHeaderStart(bytes: ByteArray, objIndex: Int): Pair&lt;Int, Int&gt;?</ID>
-    <ID>ReturnCount:PdfMetadataReader.kt$private fun String.isPlausibleTitle(): Boolean</ID>
-    <ID>ReturnCount:PdfObjectIndex.kt$PdfObjectIndex$private fun objectAt(offset: Long): PdfValue?</ID>
-    <ID>ReturnCount:PdfObjectParser.kt$PdfObjectParser$fun parseIndirectObject(offset: Int = 0): PdfValue?</ID>
-    <ID>ReturnCount:PdfObjectParser.kt$PdfObjectParser$private fun parseDictionary(): PdfValue?</ID>
-    <ID>ReturnCount:PdfObjectParser.kt$PdfObjectParser$private fun parseKeywordOrNumber(): PdfValue?</ID>
-    <ID>ReturnCount:PdfObjectParser.kt$PdfObjectParser$private fun readKeyword(keyword: String): Boolean</ID>
-    <ID>ReturnCount:TranslatePassageUseCase.kt$TranslatePassageUseCase$suspend operator fun invoke( request: TranslationRequest, onPartial: (String) -&gt; Unit = {}, ): Result&lt;Translation&gt;</ID>
-    <ID>ReturnCount:TranslationAnswer.kt$internal fun translationSoFar(answer: String): String?</ID>
-    <ID>ReturnCount:TranslationAnswer.kt$private fun String.escapeAt(index: Int): Escape?</ID>
-    <ID>ReturnCount:TranslationEndpoint.kt$private fun String.isPrivateAddress(): Boolean</ID>
-    <ID>ReturnCount:ZipArchiveReader.kt$ZipArchiveReader$private fun readEntryData(entry: ZipEntryInfo): ByteArray?</ID>
-    <ID>SwallowedException:FilePdfByteSource.kt$FilePdfByteSource$e: java.io.IOException</ID>
-    <ID>SwallowedException:PdfCoverRenderer.android.kt$e: Exception</ID>
-    <ID>SwallowedException:PdfCoverRenderer.jvm.kt$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:AppError.kt$failure: Throwable</ID>
-    <ID>TooGenericExceptionCaught:CoalescingTranslator.kt$CoalescingTranslator$failure: Throwable</ID>
-    <ID>TooGenericExceptionCaught:ImportDocumentsUseCase.kt$ImportDocumentsUseCase$error: Exception</ID>
-    <ID>TooGenericExceptionCaught:PdfCoverRenderer.android.kt$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:PdfCoverRenderer.jvm.kt$e: Exception</ID>
-    <ID>TooGenericExceptionThrown:CachingTranslatorTest.kt$CachingTranslatorTest$throw RuntimeException("no network")</ID>
-    <ID>TooGenericExceptionThrown:CoalescingTranslatorTest.kt$CoalescingTranslatorTest$throw RuntimeException("no network")</ID>
-    <ID>TooGenericExceptionThrown:TranslatePassageUseCaseTest.kt$TranslatePassageUseCaseTest$throw RuntimeException("no network")</ID>
-    <ID>TooGenericExceptionThrown:TranslationSessionTest.kt$TranslationSessionTest$throw RuntimeException("no network")</ID>
-    <ID>UnusedImports:AndroidDocumentAnalyzerTest.kt$import io.lukia.features.library.infrastructure.importing.AndroidDocumentAnalyzer</ID>
-    <ID>UnusedImports:AnthropicFailureTest.kt$import io.lukia.features.translate.domain.translate</ID>
-    <ID>UnusedImports:IOSDocumentAnalyzerTest.kt$import io.lukia.features.library.infrastructure.importing.IOSDocumentAnalyzer</ID>
-    <ID>UnusedImports:OpenAiFailureTest.kt$import io.lukia.features.translate.domain.translate</ID>
-    <ID>UseCheckOrError:AndroidDocumentWorkspace.kt$AndroidDocumentWorkspace$throw IllegalStateException("Could not store a copy of $source")</ID>
-    <ID>UseCheckOrError:BookDetailViewModelTest.kt$BookDetailViewModelTest.ThrowingLibraryRepository$throw IllegalStateException( "detail read blew up", )</ID>
-    <ID>UseCheckOrError:LibraryTestFixture.kt$ThrowingDocumentAnalyzer$throw IllegalStateException("analysis blew up")</ID>
-    <ID>UseCheckOrError:LibraryTestFixture.kt$ThrowingLibraryRepository$throw IllegalStateException("library read blew up")</ID>
-    <ID>UseCheckOrError:LibraryTestFixture.kt$ThrowingProgressRepository$throw IllegalStateException( "position store blew up", )</ID>
-    <ID>UseRequire:AndroidDocumentAnalyzer.kt$AndroidDocumentAnalyzer$throw IllegalArgumentException( "File does not exist: ${document.location}", )</ID>
-    <ID>UseRequire:DesktopDocumentAnalyzer.kt$DesktopDocumentAnalyzer$throw IllegalArgumentException( "File does not exist: ${document.location}", )</ID>
-    <ID>UseRequire:DesktopDocumentAnalyzer.kt$DesktopDocumentAnalyzer$throw IllegalArgumentException( "Path is not a file: ${document.location}", )</ID>
-    <ID>UseRequire:IOSDocumentAnalyzer.kt$IOSDocumentAnalyzer$throw IllegalArgumentException( "File does not exist: ${document.location}", )</ID>
-    <ID>UseRequire:IOSDocumentAnalyzer.kt$IOSDocumentAnalyzer$throw IllegalArgumentException( "Path is not a file: ${document.location}", )</ID>
-    <ID>UseRequire:ImportTestDoubles.kt$TypeFromExtensionAnalyzer$throw IllegalArgumentException( "File does not exist: ${document.location}", )</ID>
   </CurrentIssues>
 </SmellBaseline>

@@ -1,14 +1,14 @@
 package io.lukia.features.reader.presentation.screens.pages
 
+import io.lukia.core.domain.text.PassageUnit
 import io.lukia.features.reader.domain.page.PageSentence
 import io.lukia.features.reader.domain.page.PageWord
 import io.lukia.features.reader.domain.page.sentenceAt
+import io.lukia.features.reader.domain.text.TextAnchor
+import io.lukia.features.reader.presentation.translation.PassageSelection
+import io.lukia.features.reader.presentation.translation.SentenceTranslations
+import io.lukia.features.reader.presentation.translation.replacesTheOriginal
 import io.lukia.features.translate.domain.MAX_TRANSLATABLE_CHARS
-import io.lukia.features.translate.domain.text.PassageUnit
-import io.lukia.features.translate.domain.text.TextAnchor
-import io.lukia.features.translate.presentation.PassageSelection
-import io.lukia.features.translate.presentation.SentenceTranslations
-import io.lukia.features.translate.presentation.replacesTheOriginal
 
 /**
  * What one page of a fixed-layout document can be asked about, and how a point

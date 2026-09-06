@@ -32,18 +32,31 @@ private const val END_OF_STREAM = "[DONE]"
 internal suspend fun HttpResponse.forEachEventPayload(action: (String) -> Unit): Boolean {
     val body = bodyAsChannel()
 
-    while (true) {
-        val line = body.readUTF8Line() ?: return false
+    // Set only by the stream saying goodbye, which is the whole point of the
+    // return value: running out of lines instead is a connection that dropped in
+    // the middle of an answer. Nothing is read after the goodbye - on a stream
+    // the server has not closed yet, that read would wait for a line that is
+    // never coming.
+    var finished = false
 
-        if (!line.startsWith(DATA_FIELD)) continue
+    while (!finished) {
+        val line = body.readUTF8Line() ?: break
 
-        val payload = line.removePrefix(DATA_FIELD).trim()
-
-        if (payload.isEmpty()) continue
-        if (payload == END_OF_STREAM) return true
-
-        action(payload)
+        when (val payload = line.eventPayload()) {
+            null -> Unit
+            END_OF_STREAM -> finished = true
+            else -> action(payload)
+        }
     }
+
+    return finished
 }
+
+/** What a line carries, or null for one of the many that carry nothing. */
+private fun String.eventPayload(): String? =
+    takeIf { it.startsWith(DATA_FIELD) }
+        ?.removePrefix(DATA_FIELD)
+        ?.trim()
+        ?.takeIf { it.isNotEmpty() }
 
 private const val DATA_FIELD = "data:"

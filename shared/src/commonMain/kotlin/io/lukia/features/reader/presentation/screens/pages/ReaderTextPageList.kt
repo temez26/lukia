@@ -25,10 +25,10 @@ import io.lukia.features.reader.presentation.pagination.BookPlace
 import io.lukia.features.reader.presentation.pagination.PaginatedBook
 import io.lukia.features.reader.presentation.pagination.rememberPagination
 import io.lukia.features.reader.presentation.theme.readerTextStyle
+import io.lukia.features.reader.presentation.translation.BookTranslations
+import io.lukia.features.reader.presentation.translation.PassageSelection
 import io.lukia.features.reader.presentation.translation.TranslateOnScreen
 import io.lukia.features.translate.domain.settings.TranslationGestures
-import io.lukia.features.translate.presentation.BookTranslations
-import io.lukia.features.translate.presentation.PassageSelection
 
 /**
  * A reflowable book, page by page.

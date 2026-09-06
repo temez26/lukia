@@ -15,11 +15,11 @@ import io.ktor.serialization.kotlinx.json.json
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.storage.FakeSecretStore
 import io.lukia.core.domain.storage.FakeSettingsStore
+import io.lukia.core.domain.text.PassageUnit
 import io.lukia.core.domain.toAppError
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationSettings
-import io.lukia.features.translate.domain.text.PassageUnit
 import io.lukia.features.translate.domain.translate
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import kotlinx.coroutines.test.runTest

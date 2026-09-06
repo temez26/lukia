@@ -7,7 +7,7 @@ import io.lukia.features.translate.domain.lookup.WordSite
 import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationGestures
-import io.lukia.features.translate.domain.text.WordLookup
+import io.lukia.features.translate.domain.settings.WordLookup
 
 /**
  * What the settings screen may be told about the service it is configuring.

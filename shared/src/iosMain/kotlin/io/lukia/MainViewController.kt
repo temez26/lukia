@@ -6,7 +6,8 @@ import io.lukia.di.platformModule
 import org.koin.core.context.startKoin
 
 // Named for the Objective-C entry point Xcode calls, not for Kotlin's convention.
-@Suppress("ktlint:standard:function-naming")
+// Both linters have a rule for this, and both have to be told.
+@Suppress("ktlint:standard:function-naming", "FunctionNaming")
 fun MainViewController() = run {
     startKoin {
         modules(

@@ -2,9 +2,7 @@ package io.lukia.features.reader.infrastructure.text
 
 import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.features.reader.domain.ReflowableContent
-import io.lukia.features.reader.domain.text.Emphasis
 import io.lukia.features.reader.domain.text.TextBlock
-import io.lukia.features.reader.domain.text.TextRun
 
 /**
  * Reads a Markdown file as the document it describes.
@@ -35,269 +33,155 @@ private val Quoted = Regex("""^ {0,3}> ?(.*)$""")
 private val CodeFence = Regex("""^ {0,3}(`{3,}|~{3,})(.*)$""")
 private val SetextUnderline = Regex("""^ {0,3}(=+|-+) *$""")
 
+/**
+ * The first of the two stages a Markdown file goes through: what each line is.
+ * What is written inside one is `MarkdownInline.kt`.
+ */
 private fun markdownBlocks(source: String): List<TextBlock> {
     val lines = source.split('\n')
-    val blocks = mutableListOf<TextBlock>()
-
-    // Gathered rather than emitted per line: a paragraph is however many
-    // consecutive lines are not something else, joined back up - the wrapping in
-    // the source file is not wrapping the reader should see.
-    val paragraph = mutableListOf<String>()
-
-    fun flushParagraph() {
-        if (paragraph.isEmpty()) return
-
-        val text = paragraph.joinToString(separator = " ").trim()
-        paragraph.clear()
-
-        if (text.isNotEmpty()) blocks += TextBlock.Paragraph(markdownRuns(text))
-    }
+    val document = MarkdownDocument()
 
     var index = 0
 
     while (index < lines.size) {
         val line = lines[index]
-
         val fence = CodeFence.matchEntire(line)
 
-        if (fence != null) {
-            flushParagraph()
-            index = blocks.addFencedCode(lines, from = index + 1, fence = fence.groupValues[1])
-            continue
+        index = if (fence == null) {
+            document.addLine(line)
+            index + 1
+        } else {
+            document.addFencedCode(lines, from = index + 1, fence = fence.groupValues[1])
         }
+    }
 
+    return document.finish()
+}
+
+/**
+ * The blocks read so far, and the paragraph still being gathered.
+ *
+ * A paragraph is however many consecutive lines are not something else, joined
+ * back up - the wrapping in the source file is not wrapping the reader should
+ * see - so it cannot be emitted until the line that ends it arrives. That one
+ * piece of carried state is why this is a type: every other block is decided and
+ * added on the line it appears on.
+ */
+private class MarkdownDocument {
+
+    private val blocks = mutableListOf<TextBlock>()
+    private val paragraph = mutableListOf<String>()
+
+    fun finish(): List<TextBlock> {
+        flushParagraph()
+        return blocks
+    }
+
+    fun addLine(line: String) {
         when {
             line.isBlank() -> flushParagraph()
 
             // Before the thematic break, since a run of dashes under a line of
             // text underlines it rather than dividing the page.
-            paragraph.isNotEmpty() && SetextUnderline.matches(line) -> {
-                val text = paragraph.joinToString(separator = " ").trim()
-                paragraph.clear()
+            paragraph.isNotEmpty() && SetextUnderline.matches(line) -> underline(line)
 
-                blocks += TextBlock.Heading(
-                    text = markdownRuns(text),
-                    level = if (line.trimStart().startsWith('=')) 1 else 2,
-                )
-            }
+            ThematicBreak.matches(line) -> emit(TextBlock.Separator)
 
-            ThematicBreak.matches(line) -> {
-                flushParagraph()
-                blocks += TextBlock.Separator
-            }
-
-            else -> {
-                val heading = AtxHeading.matchEntire(line)
-                val bullet = BulletItem.matchEntire(line)
-                val numbered = NumberedItem.matchEntire(line)
-                val quote = Quoted.matchEntire(line)
-
-                when {
-                    heading != null -> {
-                        flushParagraph()
-                        blocks += TextBlock.Heading(
-                            text = markdownRuns(heading.groupValues[2]),
-                            level = heading.groupValues[1].length,
-                        )
-                    }
-
-                    bullet != null -> {
-                        flushParagraph()
-                        blocks += TextBlock.ListItem(
-                            text = markdownRuns(bullet.groupValues[1]),
-                            marker = "•",
-                        )
-                    }
-
-                    numbered != null -> {
-                        flushParagraph()
-                        blocks += TextBlock.ListItem(
-                            text = markdownRuns(numbered.groupValues[2]),
-                            // The document's own number, not a count: a list that
-                            // starts at 4, or that repeats 1., is written that way
-                            // on purpose often enough to be worth honouring.
-                            marker = "${numbered.groupValues[1]}.",
-                        )
-                    }
-
-                    quote != null -> {
-                        flushParagraph()
-                        blocks += TextBlock.Quote(markdownRuns(quote.groupValues[1]))
-                    }
-
-                    else -> paragraph += line.trim()
-                }
-            }
+            else -> addMarked(line)
         }
-
-        index++
     }
 
-    flushParagraph()
+    /**
+     * Adds the fenced block starting at [from] and returns the line after its
+     * closing fence - or after the end of the file, for a fence nobody closed.
+     */
+    fun addFencedCode(lines: List<String>, from: Int, fence: String): Int {
+        flushParagraph()
 
-    return blocks
-}
+        val code = mutableListOf<String>()
+        var index = from
 
-/**
- * Adds the fenced block starting at [from] and returns the line after its
- * closing fence - or after the end of the file, for a fence nobody closed.
- */
-private fun MutableList<TextBlock>.addFencedCode(
-    lines: List<String>,
-    from: Int,
-    fence: String,
-): Int {
-    val code = mutableListOf<String>()
-    var index = from
+        while (index < lines.size) {
+            // Closed only by a fence of the same character and at least the same
+            // length, which is what lets a block fenced with backticks hold a
+            // line of tildes - or a line of backticks shorter than the fence.
+            val trimmed = lines[index].trim()
 
-    while (index < lines.size) {
-        val line = lines[index]
+            if (trimmed.length >= fence.length && trimmed.all { it == fence[0] }) {
+                index++
+                break
+            }
 
-        // Closed only by a fence of the same character and at least the same
-        // length, which is what lets a block fenced with backticks hold a line
-        // of tildes - or a line of backticks shorter than the fence.
-        val trimmed = line.trim()
-
-        if (trimmed.length >= fence.length && trimmed.all { it == fence[0] }) {
+            code += lines[index]
             index++
-            break
         }
 
-        code += line
-        index++
+        val text = code.joinToString(separator = "\n").trim('\n')
+
+        if (text.isNotBlank()) blocks += TextBlock.Code(text)
+
+        return index
     }
 
-    val text = code.joinToString(separator = "\n").trim('\n')
-
-    if (text.isNotBlank()) add(TextBlock.Code(text))
-
-    return index
-}
-
-/**
- * The emphasis inside a line.
- *
- * Marks are toggled as they are met rather than matched as opening and closing
- * pairs. Proper delimiter matching exists to settle cases like `a * b * c`,
- * where the asterisks are arithmetic; toggling gets those wrong and gets every
- * well-formed line right, which for reading a book is the trade worth making -
- * the alternative is a page of CommonMark's delimiter-run rules in the middle of
- * a reader.
- */
-private fun markdownRuns(source: String): List<TextRun> {
-    val runs = mutableListOf<TextRun>()
-    val plain = StringBuilder()
-    var marks = emptySet<Emphasis>()
-    var index = 0
-
-    fun flushPlain() {
-        runs.append(plain.toString(), marks)
-        plain.clear()
-    }
-
-    while (index < source.length) {
-        val char = source[index]
+    /** The four things a line can announce itself as, or else more paragraph. */
+    private fun addMarked(line: String) {
+        val heading = AtxHeading.matchEntire(line)
+        val bullet = BulletItem.matchEntire(line)
+        val numbered = NumberedItem.matchEntire(line)
+        val quote = Quoted.matchEntire(line)
 
         when {
-            // A backslash turns the punctuation after it back into itself, which
-            // is how a literal asterisk is written.
-            char == '\\' && index + 1 < source.length && !source[index + 1].isLetterOrDigit() -> {
-                plain.append(source[index + 1])
-                index += 2
-            }
+            heading != null -> emit(
+                TextBlock.Heading(
+                    text = markdownRuns(heading.groupValues[2]),
+                    level = heading.groupValues[1].length,
+                ),
+            )
 
-            char == '`' -> {
-                val close = source.indexOf('`', startIndex = index + 1)
+            bullet != null -> emit(
+                TextBlock.ListItem(text = markdownRuns(bullet.groupValues[1]), marker = "\u2022"),
+            )
 
-                if (close < 0) {
-                    plain.append(char)
-                    index++
-                } else {
-                    flushPlain()
-                    runs.append(source.substring(index + 1, close), marks + Emphasis.Monospace)
-                    index = close + 1
-                }
-            }
+            numbered != null -> emit(
+                TextBlock.ListItem(
+                    text = markdownRuns(numbered.groupValues[2]),
+                    // The document's own number, not a count: a list that starts
+                    // at 4, or that repeats 1., is written that way on purpose
+                    // often enough to be worth honouring.
+                    marker = "${numbered.groupValues[1]}.",
+                ),
+            )
 
-            char == '!' && source.getOrNull(index + 1) == '[' -> {
-                val link = parseLink(source, index + 1)
+            quote != null -> emit(TextBlock.Quote(markdownRuns(quote.groupValues[1])))
 
-                if (link == null) {
-                    plain.append(char)
-                    index++
-                } else {
-                    // The alt text, which is the only part of an image a reader
-                    // that cannot open the file has anything to show.
-                    plain.append(link.text)
-                    index = link.end
-                }
-            }
-
-            char == '[' -> {
-                val link = parseLink(source, index)
-
-                if (link == null) {
-                    plain.append(char)
-                    index++
-                } else {
-                    plain.append(link.text)
-                    index = link.end
-                }
-            }
-
-            char == '*' || char == '_' -> {
-                val doubled = source.getOrNull(index + 1) == char
-                val width = if (doubled) 2 else 1
-
-                if (char == '_' && isInsideWord(source, index, width)) {
-                    // `snake_case_names` are identifiers, not emphasis.
-                    plain.append(char)
-                    index++
-                } else {
-                    flushPlain()
-
-                    val mark = if (doubled) Emphasis.Bold else Emphasis.Italic
-                    marks = if (mark in marks) marks - mark else marks + mark
-                    index += width
-                }
-            }
-
-            else -> {
-                plain.append(char)
-                index++
-            }
+            else -> paragraph += line.trim()
         }
     }
 
-    flushPlain()
+    /** A `===` or `---` under a paragraph makes a heading of what it underlines. */
+    private fun underline(line: String) {
+        val text = takeParagraph()
 
-    return runs
-}
+        blocks += TextBlock.Heading(
+            text = markdownRuns(text),
+            level = if (line.trimStart().startsWith('=')) 1 else 2,
+        )
+    }
 
-private class MarkdownLink(val text: String, val end: Int)
+    private fun emit(block: TextBlock) {
+        flushParagraph()
+        blocks += block
+    }
 
-/**
- * A `[text](target)` starting at [start], or null when what follows is not one -
- * an unmatched bracket is a bracket.
- */
-private fun parseLink(source: String, start: Int): MarkdownLink? {
-    val textEnd = source.indexOf(']', startIndex = start + 1)
+    private fun flushParagraph() {
+        val text = takeParagraph()
 
-    if (textEnd < 0 || source.getOrNull(textEnd + 1) != '(') return null
+        if (text.isNotEmpty()) blocks += TextBlock.Paragraph(markdownRuns(text))
+    }
 
-    val targetEnd = source.indexOf(')', startIndex = textEnd + 2)
-
-    if (targetEnd < 0) return null
-
-    return MarkdownLink(
-        text = source.substring(start + 1, textEnd),
-        end = targetEnd + 1,
-    )
-}
-
-private fun isInsideWord(source: String, index: Int, width: Int): Boolean {
-    val before = source.getOrNull(index - 1)
-    val after = source.getOrNull(index + width)
-
-    return before != null && after != null && before.isLetterOrDigit() && after.isLetterOrDigit()
+    private fun takeParagraph(): String {
+        val text = paragraph.joinToString(separator = " ").trim()
+        paragraph.clear()
+        return text
+    }
 }

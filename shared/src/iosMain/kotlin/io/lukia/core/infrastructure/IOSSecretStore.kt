@@ -75,7 +75,7 @@ class IOSSecretStore : SecretStore {
         // data is freed with the Kotlin object rather than leaked.
         val data = CFBridgingRelease(found.value) as? NSData ?: return@memScoped null
 
-        NSString.create(data = data, encoding = NSUTF8StringEncoding) as String?
+        NSString.create(data = data, encoding = NSUTF8StringEncoding) as? String
     }
 
     /**

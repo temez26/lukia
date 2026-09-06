@@ -2,6 +2,7 @@ package io.lukia.features.reader.infrastructure
 
 import io.lukia.core.infrastructure.pdf.PdfByteSource
 import java.io.File
+import java.io.IOException
 import java.io.RandomAccessFile
 
 /**
@@ -24,11 +25,16 @@ internal class FilePdfByteSource(file: File) : PdfByteSource, AutoCloseable {
         val count = minOf(length.toLong(), size - offset).toInt()
         val buffer = ByteArray(count)
 
+        // No bytes rather than a failure, because every caller here is looking
+        // for something optional inside the file - an outline, a page's text -
+        // and answers "not found" to a window it could not read. A book whose
+        // working copy has gone away still opens; it opens without its contents
+        // list, which is the failure the reader can actually do something about.
         return try {
             handle.seek(offset)
             handle.readFully(buffer)
             buffer
-        } catch (e: java.io.IOException) {
+        } catch (ignored: IOException) {
             ByteArray(0)
         }
     }

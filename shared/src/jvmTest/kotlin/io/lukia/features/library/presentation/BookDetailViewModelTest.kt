@@ -249,9 +249,7 @@ class BookDetailViewModelTest : MainDispatcherTest() {
 
         override suspend fun getDocuments(): List<DocumentInfo> = emptyList()
 
-        override suspend fun getDocument(location: String): DocumentInfo? = throw IllegalStateException(
-            "detail read blew up",
-        )
+        override suspend fun getDocument(location: String): DocumentInfo? = error("detail read blew up")
 
         /** Read by location, exactly as the real store reads it. */
         override suspend fun coverFor(location: String): CoverImage? =

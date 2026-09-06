@@ -23,8 +23,8 @@ import io.lukia.features.reader.presentation.components.passages.drawPassageHigh
 import io.lukia.features.reader.presentation.components.passages.markStyle
 import io.lukia.features.reader.presentation.components.passages.passageMarkColors
 import io.lukia.features.reader.presentation.components.passages.passageSweep
-import io.lukia.features.translate.presentation.PassageTranslation
-import io.lukia.features.translate.presentation.SentenceTranslations
+import io.lukia.features.reader.presentation.translation.PassageTranslation
+import io.lukia.features.reader.presentation.translation.SentenceTranslations
 import io.lukia.shared.presentation.theme.LukiaMotion
 
 /**

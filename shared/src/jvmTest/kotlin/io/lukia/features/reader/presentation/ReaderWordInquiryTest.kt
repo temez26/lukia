@@ -2,6 +2,10 @@ package io.lukia.features.reader.presentation
 
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.AppErrorException
+import io.lukia.core.domain.text.PassageUnit
+import io.lukia.features.reader.domain.text.TextAnchor
+import io.lukia.features.reader.presentation.translation.PassageSelection
+import io.lukia.features.reader.presentation.translation.PassageTranslation
 import io.lukia.features.reader.presentation.translation.WordOnThePage
 import io.lukia.features.reader.presentation.translation.onPassageHold
 import io.lukia.features.reader.presentation.translation.onPassageInquiry
@@ -10,10 +14,6 @@ import io.lukia.features.reader.presentation.translation.translations
 import io.lukia.features.reader.presentation.translation.wordInquiry
 import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.domain.Translator
-import io.lukia.features.translate.domain.text.PassageUnit
-import io.lukia.features.translate.domain.text.TextAnchor
-import io.lukia.features.translate.presentation.PassageSelection
-import io.lukia.features.translate.presentation.PassageTranslation
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest

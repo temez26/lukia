@@ -22,23 +22,17 @@ class IOSDocumentAnalyzer(
     override suspend fun analyze(
         document: PickedDocument,
     ): DocumentInfo {
-        val url = NSURL.URLWithString(document.location)
-            ?: throw IllegalArgumentException(
-                "Invalid document URL: ${document.location}",
-            )
+        val url = requireNotNull(NSURL.URLWithString(document.location)) {
+            "Invalid document URL: ${document.location}"
+        }
 
         val fileManager = NSFileManager.defaultManager
-        val path = url.path
-            ?: throw IllegalArgumentException(
-                "Document URL has no path: ${document.location}",
-            )
+        val path = requireNotNull(url.path) {
+            "Document URL has no path: ${document.location}"
+        }
 
-        val exists = fileManager.fileExistsAtPath(path)
-
-        if (!exists) {
-            throw IllegalArgumentException(
-                "File does not exist: ${document.location}",
-            )
+        require(fileManager.fileExistsAtPath(path)) {
+            "File does not exist: ${document.location}"
         }
 
         val attributes = fileManager.attributesOfItemAtPath(
@@ -46,10 +40,8 @@ class IOSDocumentAnalyzer(
             null,
         )
 
-        if (attributes?.get(NSFileType) == NSFileTypeDirectory) {
-            throw IllegalArgumentException(
-                "Path is not a file: ${document.location}",
-            )
+        require(attributes?.get(NSFileType) != NSFileTypeDirectory) {
+            "Path is not a file: ${document.location}"
         }
 
         val size = (attributes?.get(NSFileSize) as? NSNumber)

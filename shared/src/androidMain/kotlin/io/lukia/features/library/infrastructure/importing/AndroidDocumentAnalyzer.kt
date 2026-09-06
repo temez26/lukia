@@ -44,11 +44,7 @@ class AndroidDocumentAnalyzer(
             }
         }
 
-        if (!exists) {
-            throw IllegalArgumentException(
-                "File does not exist: ${document.location}",
-            )
-        }
+        require(exists) { "File does not exist: ${document.location}" }
 
         val type = DocumentType.fromExtension(document.extension)
 

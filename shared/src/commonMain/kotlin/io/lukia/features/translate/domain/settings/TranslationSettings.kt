@@ -4,7 +4,6 @@ import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.lookup.WordSite
 import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.provider.isAllowedTranslationEndpoint
-import io.lukia.features.translate.domain.text.WordLookup
 
 /**
  * What translating is set to do, as opposed to the reader's own presentation

@@ -86,6 +86,13 @@ When a file crosses the limit, the split follows the architecture in the
 Splitting to satisfy the counter is worse than the long file. If the only split available
 is arbitrary, the file is telling you the design is wrong somewhere above it.
 
+The split a decoder almost always wants is **the walk and what it collects**. A reader over
+a stream of events — XML, bytes, lines — accumulates state in locals around a loop, and the
+two questions it is answering get further apart the longer it runs: *where in the document
+am I* and *what does a document say*. Give the second one a type, hand it each finished
+piece, and the loop shrinks to the first. `DublinCore` in `EpubMetadata.kt` and `DocxWalk`
+in `DocxTextReader.kt` are the same move in two formats.
+
 ## Formatting
 
 Set by [`.editorconfig`](.editorconfig), which the IDE reads too — no separate IDE setup
@@ -158,11 +165,31 @@ None of these is something the compiler can fail, and the import that breaks one
 the convenient thing to write at the time. Test sources are not read — a fixture reaching
 across features is how a test builds its world, not a dependency the app carries.
 
+[`PlatformModuleParityTest`](shared/src/jvmTest/kotlin/io/lukia/di/PlatformModuleParityTest.kt)
+reads the same way, and holds the three `PlatformModule.kt` files to the same set of
+bindings. [`AppGraphTest`](shared/src/jvmTest/kotlin/io/lukia/di/AppGraphTest.kt) beside it
+is the stronger check and can only ever resolve one platform's graph — it runs on the JVM,
+and Android's module needs a `Context`, iOS's a keychain. So what the desktop proves by
+resolving, the other two prove by matching it.
+
+Both read files that are not on the test's classpath, so `jvmTest` declares the Kotlin
+sources as an input in [`shared/build.gradle.kts`](shared/build.gradle.kts). Without it a
+change to `iosMain` alone leaves them reported as up to date, and a check that does not run
+when the thing it checks changes is not a check.
+
 Where a rule is broken today, the exact pair — or the exact cycle — is allow-listed in the
 test with a comment saying whose job it is to remove. The allow-list is read both ways: an
 entry that no longer describes anything fails too, so fixing a violation tightens the rule
 rather than leaving a hole where it was. Adding an entry is a design decision, not a way
 past a red build.
+
+**Every allow-list is now empty**, and like the file-length baseline the intention is that
+they stay that way. The last entry named a loop — library to settings to reader and back —
+and it was broken where it was thinnest: the reader wanted one method of the library's
+repository, so the reading half of that repository became
+`core.domain.document.DocumentCatalogue`, which the reader and the statistics screen take
+instead. A port two features read is not one feature's property; the implementation stays
+with the storage.
 
 ## Visibility
 
@@ -208,5 +235,23 @@ without the whole codebase having to be fixed first. Regenerate it with
 
 It shrinks over time and does not grow. When a change makes a baselined finding clean,
 regenerate the baseline in the same pull request.
+
+A baseline entry is a finding waiting to be fixed, so nothing else belongs in it. Two
+things that look like baseline material are not:
+
+- **A rule that is right about the code.** Fix the code. If it is right about the code and
+  the code is right anyway — a boundary that catches `Throwable` on purpose — suppress it
+  where it is, with the comment [Suppressions](#suppressions) asks for. A suppression says
+  *why* on the line it applies to; a baseline entry says nothing anywhere.
+- **A rule that is wrong about this codebase.** Configure it in
+  [`config/detekt/detekt.yml`](config/detekt/detekt.yml) and say why in a comment there.
+  Silencing the same misfit once per occurrence hides how many there are and reads as debt
+  that will never be paid, because there is nothing to fix.
+
+The one to watch is `excludes`. detekt's defaults exempt test sources from the rules that
+are only meaningful about production code, but the list they ship names `commonTest`,
+`jvmTest` and `iosTest` and has never heard of this project's `androidDeviceTest` — so a
+rule silenced everywhere else fires there alone. `testSources` at the top of the config is
+that list, corrected; a new test source set is added to it and nowhere else.
 
 The file length baseline beside it is already empty — see [Size](#size).

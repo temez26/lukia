@@ -151,35 +151,55 @@ internal class HtmlBlockBuilder(private val image: (src: String) -> ByteArray?) 
 
         event.attributes["id"]?.takeIf { it.isNotEmpty() }?.let(pendingAnchors::add)
 
+        if (!openedInline(event)) openedBlock(event)
+    }
+
+    /**
+     * The elements that do not begin a block: a break or a picture, and the marks
+     * that only change how the words around them are set. True when [event] was
+     * one of those and there is nothing further to do with it.
+     */
+    private fun openedInline(event: XmlEvent.Open): Boolean {
+        val name = event.name
+
         if (name in VoidElements) {
             void(name, event.attributes)
-            return
+            return true
         }
 
-        EmphasisElements[name]?.let {
-            if (!event.selfClosing) emphasis += it
-            return
-        }
+        val mark = EmphasisElements[name] ?: return false
+
+        if (!event.selfClosing) emphasis += mark
+
+        return true
+    }
+
+    /**
+     * A list, a preformatted block, or one of the elements that sets prose. The
+     * first two are named ahead of [BlockElements] because opening one does more
+     * than start a block - a list has to be counted, and a `pre` changes how the
+     * text inside it is treated.
+     */
+    private fun openedBlock(event: XmlEvent.Open) {
+        val name = event.name
 
         when (name) {
             "ul", "ol" -> {
                 flush()
                 lists += ListContext(ordered = name == "ol")
-                return
             }
 
             "pre" -> {
                 flush()
                 preformattedDepth++
                 openBlocks += OpenBlock(tag = name, kind = BlockKind.Code)
-                return
+            }
+
+            in BlockElements -> {
+                flush()
+                openBlocks += blockFor(name, event.declaredAlignment())
             }
         }
-
-        if (name !in BlockElements) return
-
-        flush()
-        openBlocks += blockFor(name, event.declaredAlignment())
     }
 
     /**

@@ -13,7 +13,7 @@ import io.lukia.features.settings.presentation.components.SettingsTextField
 import io.lukia.features.translate.domain.lookup.WordSite
 import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.settings.TranslationSettings
-import io.lukia.features.translate.domain.text.WordLookup
+import io.lukia.features.translate.domain.settings.WordLookup
 import io.lukia.features.translate.presentation.displayFootnote
 import io.lukia.features.translate.presentation.displayName
 import io.lukia.resources.Res

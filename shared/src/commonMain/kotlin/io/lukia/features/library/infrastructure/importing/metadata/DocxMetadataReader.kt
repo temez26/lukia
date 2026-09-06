@@ -25,11 +25,7 @@ internal fun extractDocxMetadata(docxBytes: ByteArray): BookMetadata? {
         ?.decodeToString()
         ?: return null
 
-    var title: String? = null
-    var creator: String? = null
-    var description: String? = null
-    var keywords: String? = null
-
+    val properties = CoreProperties()
     var current: String? = null
     val text = StringBuilder()
 
@@ -43,35 +39,53 @@ internal fun extractDocxMetadata(docxBytes: ByteArray): BookMetadata? {
             is XmlEvent.Text -> if (current != null) text.append(event.text)
 
             is XmlEvent.Close -> if (event.name == current) {
-                val value = text.toString().collapseWhitespace()
-
-                if (value.isNotBlank()) {
-                    when (event.name) {
-                        "title" -> if (title == null) title = value
-                        "creator" -> if (creator == null) creator = value
-                        // `dc:description` is Word's "Comments" field; `subject`
-                        // is a one-line summary. Either is worth showing, and a
-                        // document rarely fills in both.
-                        "description" -> if (description == null) description = value
-                        "subject" -> if (description == null) description = value
-                        "keywords" -> if (keywords == null) keywords = value
-                    }
-                }
-
+                properties.take(event.name, text.toString().collapseWhitespace())
                 current = null
                 text.clear()
             }
         }
     }
 
-    val metadata = BookMetadata(
+    return properties.asMetadata().takeIf { !it.isEmpty }
+}
+
+/**
+ * The four fields worth having out of Word's core properties, taken one closed
+ * element at a time.
+ *
+ * Separate from the walk above for the same reason the EPUB reader's Dublin Core
+ * accumulator is: the walk knows where in the document it is, and this knows what
+ * a document says about itself. First value wins, as it does there.
+ */
+private class CoreProperties {
+
+    private var title: String? = null
+    private var creator: String? = null
+    private var description: String? = null
+    private var keywords: String? = null
+
+    fun take(name: String, value: String) {
+        if (value.isBlank()) return
+
+        when (name) {
+            "title" -> title = title ?: value
+            "creator" -> creator = creator ?: value
+
+            // `dc:description` is Word's "Comments" field; `subject` is a
+            // one-line summary. Either is worth showing, and a document rarely
+            // fills in both.
+            "description", "subject" -> description = description ?: value
+
+            "keywords" -> keywords = keywords ?: value
+        }
+    }
+
+    fun asMetadata(): BookMetadata = BookMetadata(
         title = title,
         authors = listOfNotNull(creator),
         description = description,
         subjects = keywords.orEmpty().splitKeywords(),
     )
-
-    return metadata.takeIf { !it.isEmpty }
 }
 
 private const val CorePropertiesPath = "docProps/core.xml"

@@ -17,53 +17,35 @@ internal fun navigationEntries(
     xml: String,
     placeOf: (href: String) -> OutlinePlace?,
 ): List<OutlineEntry> {
+    val walk = NavigationWalk(placeOf)
+    xmlEvents(xml).forEach(walk::on)
+    return walk.entries
+}
+
+/**
+ * Where in the navigation document the walk has got to.
+ *
+ * A class rather than five locals and a `forEach`, because the state is what the
+ * reading is: which `nav` this is, how deep the lists are nested, and whether a
+ * link is open. Split out so each event's meaning is a short method rather than a
+ * branch four levels inside another one.
+ */
+private class NavigationWalk(private val placeOf: (href: String) -> OutlinePlace?) {
+
     val entries = mutableListOf<OutlineEntry>()
-    val label = StringBuilder()
 
-    var inContents = false
-    var finished = false
-    var listDepth = 0
-    var href: String? = null
+    private val label = StringBuilder()
+    private var inContents = false
+    private var finished = false
+    private var listDepth = 0
+    private var href: String? = null
 
-    xmlEvents(xml).forEach { event ->
-        if (finished) return@forEach
+    fun on(event: XmlEvent) {
+        if (finished) return
 
         when (event) {
-            is XmlEvent.Open -> when {
-                event.name == "nav" && !inContents -> {
-                    val type = event.attributes["epub:type"]
-                    inContents = type == null || "toc" in type
-                }
-
-                !inContents -> Unit
-
-                event.name == "ol" || event.name == "ul" -> listDepth++
-
-                event.name == "a" -> {
-                    href = event.attributes["href"]
-                    label.clear()
-                }
-            }
-
-            is XmlEvent.Close -> when {
-                !inContents -> Unit
-
-                event.name == "nav" -> finished = true
-
-                event.name == "ol" || event.name == "ul" ->
-                    if (listDepth > 0) listDepth--
-
-                event.name == "a" -> {
-                    entries.addEntry(
-                        title = label.toString(),
-                        place = href?.let(placeOf),
-                        level = listDepth - 1,
-                    )
-
-                    href = null
-                    label.clear()
-                }
-            }
+            is XmlEvent.Open -> opened(event)
+            is XmlEvent.Close -> closed(event)
 
             // Only while a link is open: everything else in a navigation
             // document is the punctuation between the links.
@@ -71,7 +53,44 @@ internal fun navigationEntries(
         }
     }
 
-    return entries
+    private fun opened(event: XmlEvent.Open) {
+        when {
+            event.name == "nav" && !inContents -> {
+                val type = event.attributes["epub:type"]
+                inContents = type == null || "toc" in type
+            }
+
+            !inContents -> Unit
+
+            event.name == "ol" || event.name == "ul" -> listDepth++
+
+            event.name == "a" -> {
+                href = event.attributes["href"]
+                label.clear()
+            }
+        }
+    }
+
+    private fun closed(event: XmlEvent.Close) {
+        when {
+            !inContents -> Unit
+
+            event.name == "nav" -> finished = true
+
+            event.name == "ol" || event.name == "ul" -> if (listDepth > 0) listDepth--
+
+            event.name == "a" -> {
+                entries.addEntry(
+                    title = label.toString(),
+                    place = href?.let(placeOf),
+                    level = listDepth - 1,
+                )
+
+                href = null
+                label.clear()
+            }
+        }
+    }
 }
 
 /**
@@ -85,39 +104,51 @@ internal fun ncxEntries(
     xml: String,
     placeOf: (href: String) -> OutlinePlace?,
 ): List<OutlineEntry> {
+    val walk = NcxWalk(placeOf)
+    xmlEvents(xml).forEach(walk::on)
+    return walk.entries
+}
+
+/** The same idea as [NavigationWalk], over the older format's shape. */
+private class NcxWalk(private val placeOf: (href: String) -> OutlinePlace?) {
+
     val entries = mutableListOf<OutlineEntry>()
-    val label = StringBuilder()
 
-    var depth = 0
-    var inLabel = false
+    private val label = StringBuilder()
+    private var depth = 0
+    private var inLabel = false
 
-    xmlEvents(xml).forEach { event ->
+    fun on(event: XmlEvent) {
         when (event) {
-            is XmlEvent.Open -> when (event.name) {
-                "navpoint" -> {
-                    depth++
-                    label.clear()
-                }
-
-                "text" -> inLabel = true
-
-                "content" -> entries.addEntry(
-                    title = label.toString(),
-                    place = event.attributes["src"]?.let(placeOf),
-                    level = depth - 1,
-                )
-            }
-
-            is XmlEvent.Close -> when (event.name) {
-                "navpoint" -> if (depth > 0) depth--
-                "text" -> inLabel = false
-            }
-
+            is XmlEvent.Open -> opened(event)
+            is XmlEvent.Close -> closed(event)
             is XmlEvent.Text -> if (inLabel) label.append(event.text)
         }
     }
 
-    return entries
+    private fun opened(event: XmlEvent.Open) {
+        when (event.name) {
+            "navpoint" -> {
+                depth++
+                label.clear()
+            }
+
+            "text" -> inLabel = true
+
+            "content" -> entries.addEntry(
+                title = label.toString(),
+                place = event.attributes["src"]?.let(placeOf),
+                level = depth - 1,
+            )
+        }
+    }
+
+    private fun closed(event: XmlEvent.Close) {
+        when (event.name) {
+            "navpoint" -> if (depth > 0) depth--
+            "text" -> inLabel = false
+        }
+    }
 }
 
 /** Where in the book one table-of-contents link leads. */

@@ -14,17 +14,8 @@ class DesktopDocumentAnalyzer(
     override suspend fun analyze(document: PickedDocument): DocumentInfo {
         val file = File(document.location)
 
-        if (!file.exists()) {
-            throw IllegalArgumentException(
-                "File does not exist: ${document.location}",
-            )
-        }
-
-        if (!file.isFile) {
-            throw IllegalArgumentException(
-                "Path is not a file: ${document.location}",
-            )
-        }
+        require(file.exists()) { "File does not exist: ${document.location}" }
+        require(file.isFile) { "Path is not a file: ${document.location}" }
 
         val type = DocumentType.fromExtension(document.extension)
 

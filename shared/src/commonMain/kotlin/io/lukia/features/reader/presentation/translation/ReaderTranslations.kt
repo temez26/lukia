@@ -1,16 +1,13 @@
 package io.lukia.features.reader.presentation.translation
 
+import io.lukia.features.reader.domain.text.TextAnchor
 import io.lukia.features.translate.application.LookUpWordUseCase
 import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationGestures
-import io.lukia.features.translate.domain.text.TextAnchor
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
-import io.lukia.features.translate.presentation.PassageSelection
-import io.lukia.features.translate.presentation.PassageTranslation
-import io.lukia.features.translate.presentation.TranslationSession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -225,7 +222,7 @@ internal class ReaderTranslations(
      * A passage the reader asked for rather than tapped, so one they have already
      * flipped back to the original stays as they left it and a failure is not
      * retried behind their back - see
-     * [io.lukia.features.translate.presentation.TranslationSession.onPassageRequested].
+     * [io.lukia.features.reader.presentation.translation.TranslationSession.onPassageRequested].
      */
     fun onPassageRequested(anchor: TextAnchor, request: () -> TranslationRequest) {
         session.onPassageRequested(anchor, request)

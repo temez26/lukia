@@ -2,7 +2,6 @@ package io.lukia.features.translate.infrastructure.anthropic
 
 import io.ktor.http.HttpStatusCode
 import io.lukia.core.domain.AppError
-import io.lukia.features.translate.domain.translate
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

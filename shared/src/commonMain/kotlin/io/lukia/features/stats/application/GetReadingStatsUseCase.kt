@@ -1,8 +1,8 @@
 package io.lukia.features.stats.application
 
+import io.lukia.core.domain.document.DocumentCatalogue
 import io.lukia.core.domain.reading.ReadingProgressRepository
 import io.lukia.core.domain.reading.ReadingSessionRepository
-import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.stats.domain.ReadingSummary
 import io.lukia.features.stats.domain.readingHabits
 import io.lukia.features.stats.domain.readingSummary
@@ -27,7 +27,7 @@ import kotlin.time.Instant
  * on when it ran would be a test that failed at midnight.
  */
 class GetReadingStatsUseCase(
-    private val library: LibraryRepository,
+    private val library: DocumentCatalogue,
     private val progress: ReadingProgressRepository,
     private val sessions: ReadingSessionRepository,
     private val now: () -> Instant = { Clock.System.now() },
@@ -50,7 +50,7 @@ class GetReadingStatsUseCase(
     /**
      * The handful of books the screen actually shows, with their artwork.
      *
-     * The library above is read without any - see [LibraryRepository.getDocuments]
+     * The library above is read without any - see [DocumentCatalogue.getDocuments]
      * - so the few that are drawn here are asked for one at a time. There are
      * five of them: reading five covers is nothing beside reading every cover in
      * the library to draw five.
