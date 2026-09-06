@@ -8,7 +8,7 @@
 - It also compiles `androidMain`, `iosMain`, `jvmMain` and every test source set,
   including the platform tests it does not run: a test that no longer compiles
   still fails the build.
-- The rest of `jvmTest` is run on a local machine. It adds roughly 640 tests to
+- The rest of `jvmTest` is run on a local machine. It adds roughly 590 tests to
   the common ones and 30 seconds — nearly all of it the 40 Compose UI suites,
   which want a display.
 - iOS is the exception: `:shared:iosSimulatorArm64Test` runs on CI and takes the
@@ -22,14 +22,37 @@
 | Source set | Runs on CI | For |
 |---|---|---|
 | `commonTest` | yes, three times over | Anything that does not need a platform. It is run on the JVM, against the Android target on the host, and in the iOS simulator — so a test here is worth three. |
-| `androidHostTest` | yes | Android tests that want nothing of a device but a `Context`. Robolectric answers the framework on the host. |
+| `androidHostTest` | yes | Android tests that want nothing of a device but a `Context` — a content provider's answers, a file under a cache directory. Robolectric answers the framework on the host. |
 | `jvmTest` | compiled only | Compose UI suites, PDFBox, the SQLDelight JDBC driver, anything reading a file through `java.io` — and the desktop half of a rule the platforms disagree about. |
 | `iosTest` | yes | The iOS half of the same, plus the cinterop code that exists nowhere else. |
-| `androidDeviceTest` | no | What only a device can answer: a CursorWindow's size limit, `BitmapFactory`, pdfbox-android. |
+| `androidDeviceTest` | no | What only a device can answer: a CursorWindow's size limit, `BitmapFactory`, the keystore, pdfbox-android. |
 
 A test in `jvmTest` that imports nothing platform-specific is a common test in
 the wrong place — it runs once instead of three times, and never against the
 `actual` implementations two of the three platforms use.
+
+# What is deliberately not tested, and why
+
+- **`IOSSecretStore`.** A Kotlin/Native test executable runs in the simulator
+  without an app bundle, so it has no keychain: `SecItemAdd` answers `-25291`,
+  `errSecNotAvailable`, for every write. Nothing about the store can be asserted
+  from `iosTest` — a test there would pin the absence of a keychain rather than
+  the code. `JvmSecretStoreTest` and `AndroidSecretStoreTest` cover the same
+  contract on the two platforms where it can be asked; covering iOS means an
+  XCTest target in `iosApp`, which is a bundle with entitlements.
+
+# Where things stand
+
+| Suite | Tests | Runs on CI |
+|---|---|---|
+| `:shared:jvmCommonTest` | 1,040 | yes |
+| `:shared:testAndroidHostTest` | 1,039 | yes |
+| `:shared:iosSimulatorArm64Test` | 1,067 | yes |
+| `:shared:jvmTest` | 1,630 | no — local |
+| `:shared:connectedAndroidDeviceTest` | 1,040 | no — needs a device |
+
+The three that overlap are the common tests, run once per platform against that
+platform's `actual` implementations.
 
 # Manual Testing
 
@@ -78,15 +101,16 @@ The report also covers only the layers where a percentage means something:
 the generated database and resource classes are filtered out, because their
 coverage is a fact about which suites happened to run rather than about the code.
 
-Those layers stand at 86%, and `koverVerify` — which runs as part of `check` —
+Those layers stand at 88%, and `koverVerify` — which runs as part of `check` —
 holds them to 80. A floor to notice a feature arriving with no tests, not a
 target. It is not in the CI jobs: it measures `jvmTest`, and CI runs
 `jvmCommonTest`.
 
-The eighty-six is lower than it looks because `androidMain` is counted too, and
-`AndroidSecretStore`, `AndroidFolderScanner` and `AndroidPageContent` are three
-of the least-tested files in the project. That is worth seeing, which is why the
-number is left aggregated rather than measured per target.
+It is lower than the common layers alone reach because `androidMain` is counted
+too, and Kover sees only what the JVM and Android-host runs execute — so what the
+device tests prove about the keystore and the page content reader does not appear
+in it. That is worth seeing rather than filtering away, which is why the number is
+left aggregated rather than measured per target.
 
 ## Before opening a pull request
 

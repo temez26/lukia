@@ -1,8 +1,7 @@
 package io.lukia.features.reader.infrastructure.text.epub
 
-import java.io.ByteArrayOutputStream
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
+import io.lukia.core.infrastructure.archive.storedZip
+import io.lukia.features.reader.domain.ReflowableContent
 
 internal fun chapter(title: String, body: String): String =
     "<html><body><h1>$title</h1><p>$body</p></body></html>"
@@ -48,21 +47,28 @@ internal fun epub(
     )
 }
 
-internal fun zip(entries: Map<String, Any>): ByteArray {
-    val output = ByteArrayOutputStream()
-
-    ZipOutputStream(output).use { stream ->
-        entries.forEach { (name, content) ->
-            stream.putNextEntry(ZipEntry(name))
-            stream.write(
-                when (content) {
-                    is ByteArray -> content
-                    else -> content.toString().encodeToByteArray()
-                },
-            )
-            stream.closeEntry()
+/**
+ * The archive, with whatever a test wrote into it as text or as bytes.
+ *
+ * Written by [storedZip] rather than by `java.util.zip`, which is what moved
+ * this whole set of tests out of `jvmTest`: an EPUB is opened on a phone far
+ * more often than on a desktop, and until this changed no test ever opened one
+ * anywhere but the JVM.
+ */
+internal fun zip(entries: Map<String, Any>): ByteArray = storedZip(
+    entries.mapValues { (_, content) ->
+        when (content) {
+            is ByteArray -> content
+            else -> content.toString().encodeToByteArray()
         }
-    }
+    },
+)
 
-    return output.toByteArray()
-}
+/**
+ * [readEpub] under whatever scope the test is running in.
+ *
+ * The files really are read at the same time as each other here as they are in
+ * the app - a helper that read them one after another would be checking a
+ * different reader to the one that ships.
+ */
+internal suspend fun epubRead(bytes: ByteArray): ReflowableContent? = readEpub(bytes)

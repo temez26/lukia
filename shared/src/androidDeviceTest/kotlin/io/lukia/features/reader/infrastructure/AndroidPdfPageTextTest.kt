@@ -1,6 +1,7 @@
 package io.lukia.features.reader.infrastructure
 
 import androidx.test.platform.app.InstrumentationRegistry
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import io.lukia.core.infrastructure.pdf.MinimalPdf
 import io.lukia.features.reader.domain.page.pageSentences
 import kotlinx.coroutines.async
@@ -8,6 +9,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.test.runTest
 import java.io.File
 import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -31,6 +33,20 @@ class AndroidPdfPageTextTest {
 
     private val file = File(context.cacheDir, "page-text-test.pdf").apply {
         writeBytes(MinimalPdf.withText("Near the top." to 740, "Near the bottom." to 60))
+    }
+
+    /**
+     * What `LukiaApplication` does at startup, done again here.
+     *
+     * pdfbox-android reads the base-14 font metrics out of its own assets, and
+     * without a `Context` to find them it answers every page with no text at
+     * all rather than with an error. The app initialises it in its `Application`
+     * and this process is not the app's - so a test that skipped this would be
+     * asserting about a reader that was never switched on.
+     */
+    @BeforeTest
+    fun initialisePdfBox() {
+        PDFBoxResourceLoader.init(context)
     }
 
     @AfterTest
