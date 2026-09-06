@@ -37,6 +37,27 @@ compose.desktop {
             // launch with a JVM error, while `run` - which uses the full JDK - stays happy.
             modules("java.instrument", "java.management", "java.sql", "jdk.unsupported")
 
+            // What the installers offer to open. Together with `main`'s
+            // arguments - which is how every desktop hands an application the
+            // document it was asked to open - this is what makes double-clicking
+            // a book in a file manager land it on Lukia's shelf.
+            //
+            // The same five formats the Android manifest and the iOS Info.plist
+            // list, and offered on the same terms: these are formats Lukia
+            // reads, not formats it owns, so nothing here asks to become the
+            // system default. Each desktop adds Lukia to the list of
+            // applications that can open one and leaves the reader's own choice
+            // where it was.
+            fileAssociation("application/pdf", "pdf", "PDF document")
+            fileAssociation("application/epub+zip", "epub", "EPUB book")
+            fileAssociation(
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "docx",
+                "Word document",
+            )
+            fileAssociation("text/plain", "txt", "Plain text")
+            fileAssociation("text/markdown", "md", "Markdown text")
+
             val icons = project.file("src/main/resources/icons")
 
             macOS {

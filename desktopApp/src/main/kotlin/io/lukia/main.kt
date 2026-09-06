@@ -3,6 +3,7 @@ package io.lukia
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.Key
@@ -29,6 +30,7 @@ import io.lukia.core.infrastructure.DesktopWindowBounds
 import io.lukia.core.infrastructure.MinHeight
 import io.lukia.core.infrastructure.MinWidth
 import io.lukia.core.infrastructure.SavedWindow
+import io.lukia.core.infrastructure.deliverIncomingDocuments
 import io.lukia.core.infrastructure.isMacOs
 import io.lukia.di.commonModule
 import io.lukia.di.platformModule
@@ -37,6 +39,11 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import org.koin.core.context.startKoin
 import java.awt.Dimension
+import java.awt.datatransfer.DataFlavor
+import java.awt.dnd.DnDConstants
+import java.awt.dnd.DropTarget
+import java.awt.dnd.DropTargetDropEvent
+import java.io.File
 
 private object Resources
 
@@ -61,7 +68,13 @@ private val DefaultWindowSize = DpSize(1280.dp, 860.dp)
 /** How long the window has to sit still before where it is gets written down. */
 private const val BoundsSettleMillis = 500L
 
-fun main() {
+/**
+ * [args] are the books the desktop was asked to open with - a file double-clicked
+ * in a file manager, or one named on the command line. Every desktop hands an
+ * application its documents this way, which is what makes the file associations
+ * declared in `desktopApp/build.gradle.kts` do anything at all.
+ */
+fun main(args: Array<String>) {
     val koin = startKoin {
         modules(
             commonModule,
@@ -72,6 +85,10 @@ fun main() {
     val bounds = koin.get<DesktopWindowBounds>()
     val commands = koin.get<AppCommands>()
     val saved = bounds.saved()
+
+    // Queued before there is a composition, and taken by the library as soon as
+    // there is one - see `DocumentInbox`, which exists for exactly this gap.
+    deliverIncomingDocuments(args.map(::File))
 
     application {
         val windowState = rememberWindowState(
@@ -85,7 +102,15 @@ fun main() {
         )
 
         Window(
-            onCloseRequest = ::exitApplication,
+            // The window is written down here as well as on the timer, because
+            // the timer is deliberately half a second behind the reader - see
+            // [RememberWhereTheWindowWas] - and dragging a window to where you
+            // want it and then closing the app is not an unusual thing to do.
+            // Without this that last drag is the one arrangement never kept.
+            onCloseRequest = {
+                bounds.remember(windowState.shape())
+                exitApplication()
+            },
             state = windowState,
             title = "Lukia",
             icon = windowIcon,
@@ -98,6 +123,7 @@ fun main() {
             // and the reader's floating chrome starts overlapping itself.
             LaunchedEffect(window) {
                 window.minimumSize = Dimension(MinWidth, MinHeight)
+                window.acceptBooksDroppedOnIt()
             }
 
             RememberWhereTheWindowWas(windowState, bounds)
@@ -123,20 +149,10 @@ fun main() {
 @Composable
 private fun RememberWhereTheWindowWas(state: WindowState, bounds: DesktopWindowBounds) {
     LaunchedEffect(state, bounds) {
-        snapshotFlow { WindowShape(state.size, state.position, state.placement) }
+        snapshotFlow { state.shape() }
             .distinctUntilChanged()
             .debounce(BoundsSettleMillis)
-            .collect { shape ->
-                if (shape.placement == WindowPlacement.Fullscreen) return@collect
-
-                bounds.save(
-                    width = shape.size.width.value.toInt(),
-                    height = shape.size.height.value.toInt(),
-                    x = shape.position.x.value.toInt(),
-                    y = shape.position.y.value.toInt(),
-                    maximized = shape.placement == WindowPlacement.Maximized,
-                )
-            }
+            .collect(bounds::remember)
     }
 }
 
@@ -145,6 +161,72 @@ private data class WindowShape(
     val position: WindowPosition,
     val placement: WindowPlacement,
 )
+
+private fun WindowState.shape(): WindowShape = WindowShape(size, position, placement)
+
+/**
+ * Stores one shape, unless it is a full-screen one or one that has no position
+ * yet.
+ *
+ * A window the reader put into full screen has the size of the display rather
+ * than a size they chose, and coming back out of it should find the window they
+ * were using - so that shape is passed over and the last real one stands.
+ *
+ * A window still opening has [WindowPosition.PlatformDefault], whose coordinates
+ * are unspecified rather than zero. Storing those would write a window into the
+ * top-left corner of the primary display on behalf of a reader who never put it
+ * there.
+ */
+private fun DesktopWindowBounds.remember(shape: WindowShape) {
+    if (shape.placement == WindowPlacement.Fullscreen) return
+    if (!shape.position.isSpecified) return
+
+    save(
+        width = shape.size.width.value.toInt(),
+        height = shape.size.height.value.toInt(),
+        x = shape.position.x.value.toInt(),
+        y = shape.position.y.value.toInt(),
+        maximized = shape.placement == WindowPlacement.Maximized,
+    )
+}
+
+/**
+ * Books dragged onto the window from a file manager.
+ *
+ * The one way of adding a book that a desktop reader will try before looking for
+ * a menu, and the counterpart to the share sheet the two mobile shells already
+ * answer - the file lands in the same inbox either way, so the library imports
+ * it, reports it and reloads through the one path it already has.
+ *
+ * Set on the AWT window rather than through Compose's own drag-and-drop, because
+ * what is wanted is the whole window: a reader dropping a book on a reading app
+ * is not aiming at a target inside it, and every part of the library that is not
+ * a target would otherwise refuse the drop.
+ */
+private fun ComposeWindow.acceptBooksDroppedOnIt() {
+    dropTarget = object : DropTarget() {
+        override fun drop(event: DropTargetDropEvent) {
+            if (!event.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+                event.rejectDrop()
+                return
+            }
+
+            event.acceptDrop(DnDConstants.ACTION_COPY)
+
+            val dropped = runCatching {
+                @Suppress("UNCHECKED_CAST")
+                event.transferable.getTransferData(DataFlavor.javaFileListFlavor) as List<File>
+            }
+
+            // Told before the books are read, and told the truth: what can fail
+            // from here is reading a file, which the import reports on the shelf
+            // rather than through a cursor that is already gone.
+            event.dropComplete(dropped.isSuccess)
+
+            deliverIncomingDocuments(dropped.getOrDefault(emptyList()))
+        }
+    }
+}
 
 /**
  * The window's own menus, on the one desktop where they belong at the top of the
@@ -223,12 +305,12 @@ private fun AppCommands.requestedBy(event: KeyEvent): Boolean {
 }
 
 /**
- * Where the window was, unless that is nowhere useful.
+ * Where the window was, unless there is nowhere useful to put it.
  *
- * A stored position is only good for the display arrangement it was written on.
- * Restored onto a monitor that has since been unplugged, the window opens with
- * its title bar off-screen and cannot be dragged back - so an absent position
- * means the platform places it, which is what a first run gets.
+ * A stored position is only good for the display arrangement it was written on,
+ * and [DesktopWindowBounds] is what decides whether this machine still has that
+ * arrangement. An absent position is its way of saying no, and means the platform
+ * places the window - which is what a first run gets.
  */
 private fun SavedWindow.positionOrCentred(): WindowPosition {
     val left = x
