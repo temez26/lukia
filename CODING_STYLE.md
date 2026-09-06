@@ -82,6 +82,9 @@ When a file crosses the limit, the split follows the architecture in the
   decoding — into its own type in the same `infrastructure/` package.
 - **A test class** splits by the behaviour under test, not by the class under test. Four
   focused test files beat one that covers everything a view model can do.
+- **A fixture** splits into the world and the format it is written in. `MinimalEpub`
+  describes a book; `storedZip` beside it lays out the bytes of a ZIP. The same move as
+  the decoder split below, and what lets a second fixture reuse the format.
 
 Splitting to satisfy the counter is worse than the long file. If the only split available
 is arbitrary, the file is telling you the design is wrong somewhere above it.
@@ -148,6 +151,12 @@ Enforced by the [compose-rules](https://mrmans0n.github.io/compose-rules/) detek
 - No `println`. Console output is invisible on a device.
 - No `GlobalScope`. Suspending work takes a scope from its caller, and a dispatcher is
   injected rather than hard-coded, so tests can replace it.
+- **A clock is injected the same way.** Anything that throttles, debounces or times out
+  takes a `TimeSource` — or a `() -> Instant` — with a real default, because on
+  `TimeSource.Monotonic` the only way to assert a throttle is to wait for real time to
+  pass, and a test that waits is a test that flakes. `TranslationSession`,
+  `paginateProgressively` and `CrashRecorder` all take theirs; `runTest`'s
+  `testScheduler.timeSource` is what the tests hand them.
 
 ## Architecture
 
@@ -250,8 +259,9 @@ things that look like baseline material are not:
 
 The one to watch is `excludes`. detekt's defaults exempt test sources from the rules that
 are only meaningful about production code, but the list they ship names `commonTest`,
-`jvmTest` and `iosTest` and has never heard of this project's `androidDeviceTest` — so a
-rule silenced everywhere else fires there alone. `testSources` at the top of the config is
-that list, corrected; a new test source set is added to it and nowhere else.
+`jvmTest` and `iosTest` and has never heard of this project's `androidDeviceTest` or
+`androidHostTest` — so a rule silenced everywhere else fires there alone. `testSources` at
+the top of the config is that list, corrected; a new test source set is added to it and
+nowhere else.
 
 The file length baseline beside it is already empty — see [Size](#size).

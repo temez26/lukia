@@ -2,8 +2,6 @@ package io.lukia.core.presentation
 
 import kotlin.io.encoding.Base64
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 /**
@@ -16,16 +14,15 @@ import kotlin.test.assertNull
  * with an undecodable plate. So these run wherever the common tests run - the
  * JVM on CI, the simulator beside it - and the Android half is pinned by
  * `AndroidImageDecodingTest`, which needs a device to say anything at all.
+ *
+ * That a picture which *is* a picture decodes is not here, and cannot be: these
+ * also run against the Android target on the host, where `BitmapFactory` is a
+ * stub that decodes nothing. So each platform pins the decoding half where a
+ * real decoder answers - `DesktopImageDecodingTest`, `IOSImageDecodingTest` and
+ * `AndroidImageDecodingTest` - and what is common here is the failing half,
+ * which is the half the reader crashed on.
  */
 class ImageDecodingTest {
-
-    @Test
-    fun decodesAPicture() {
-        val decoded = assertNotNull(onePixelPng().decodeToImageBitmapOrNull())
-
-        assertEquals(1, decoded.width)
-        assertEquals(1, decoded.height)
-    }
 
     @Test
     fun bytesThatAreNotAPictureAreNothing() {
@@ -48,8 +45,14 @@ class ImageDecodingTest {
     }
 }
 
-/** The smallest PNG there is: one opaque pixel, header, one row and a checksum. */
-private fun onePixelPng(): ByteArray = Base64.decode(
+/**
+ * The smallest PNG there is: one opaque pixel, header, one row and a checksum.
+ *
+ * Internal rather than private, because the three platform tests that decode it
+ * for real are decoding the same picture, and a second copy of these bytes is a
+ * second thing to keep right.
+ */
+internal fun onePixelPng(): ByteArray = Base64.decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAE" +
         "hQGAhKmMIQAAAABJRU5ErkJggg==",
 )

@@ -137,4 +137,48 @@ class ProgressivePaginationTest {
 
         assertEquals(together.last().places(), alone.last().places())
     }
+
+    /**
+     * A book is handed over on a clock, not once per run.
+     *
+     * A long book is a hundred runs, and a hundred books arriving is the
+     * reader's list rebuilt a hundred times, the contents put back on their
+     * pages a hundred times and the position followed across a hundred
+     * re-layouts. The clock here is the test's own and never moves, so what
+     * comes out is what the throttle allows at its narrowest: the first
+     * beginning, because somebody is waiting for it, and the finished book,
+     * because it is the only one that can say how long the book is.
+     *
+     * Twenty chapters cut into several runs, and still two.
+     */
+    @Test
+    fun aBookIsHandedOverOnAClockRatherThanOncePerRun() = runTest {
+        val laid = paginateProgressively(
+            book,
+            PAGE_HEIGHT,
+            workers,
+            EmptyCoroutineContext,
+            testScheduler.timeSource,
+        ).toList()
+
+        assertEquals(2, laid.size, "a book was handed over ${laid.size} times")
+        assertTrue(laid.last().complete)
+    }
+
+    /** However few runs there are, the finished book still goes out. */
+    @Test
+    fun aBookInOneRunIsStillHandedOverWhenItIsDone() = runTest {
+        val unnamed = List(4) { chapter(null, *Array(10) { filler(40) }) }
+
+        val laid = paginateProgressively(
+            unnamed,
+            PAGE_HEIGHT,
+            workers,
+            EmptyCoroutineContext,
+            testScheduler.timeSource,
+        ).toList()
+
+        assertTrue(laid.last().complete)
+        assertEquals(laid.last().pageCount, paginate(unnamed, CharacterHeights, PAGE_HEIGHT).pageCount)
+    }
 }

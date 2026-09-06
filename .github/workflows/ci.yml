@@ -41,12 +41,19 @@ jobs:
       # TESTING.md. It still depends on jvmTestClasses, so the platform tests
       # must go on compiling here; only running them moves to a local machine.
       #
+      # testAndroidHostTest runs the same common tests again against the Android
+      # target, plus the androidHostTest ones beside them - which is the only
+      # thing anywhere that runs common code compiled for Android. It wants no
+      # display and no emulator, and it is what caught `decodeToImageBitmap`
+      # answering differently there.
+      #
       # assembleDebug is what compiles androidMain and :androidApp; nothing else
       # in CI touches either. --continue so a failure in one still reports the rest.
       - name: Build and test
         run: >
           ./gradlew --continue
           :shared:jvmCommonTest
+          :shared:testAndroidHostTest
           :androidApp:assembleDebug
           :desktopApp:compileKotlin
 

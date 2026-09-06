@@ -1,6 +1,7 @@
 package io.lukia.features.reader.infrastructure.text.epub
 
 import io.lukia.features.reader.infrastructure.text.MAX_BLOCKS_PER_SECTION
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -16,7 +17,7 @@ import kotlin.test.assertTrue
 class EpubSingleFileBookTest {
 
     @Test
-    fun aFileHoldingEveryChapterIsDividedIntoThem() {
+    fun aFileHoldingEveryChapterIsDividedIntoThem() = runTest {
         val content = epubRead(singleFileBook())
 
         assertNotNull(content)
@@ -28,7 +29,7 @@ class EpubSingleFileBookTest {
 
     /** A row per chapter that all lead to the same place is a panel that does nothing. */
     @Test
-    fun theContentsLeadsToTheChapterItsAnchorNames() {
+    fun theContentsLeadsToTheChapterItsAnchorNames() = runTest {
         val content = epubRead(singleFileBook())
 
         assertNotNull(content)
@@ -40,7 +41,7 @@ class EpubSingleFileBookTest {
 
     /** No chapter of a divided book is large enough to stutter when it is drawn. */
     @Test
-    fun noSectionIsLargerThanTheLayoutBudget() {
+    fun noSectionIsLargerThanTheLayoutBudget() = runTest {
         val content = epubRead(singleFileBook(paragraphs = 900))
 
         assertNotNull(content)
@@ -52,7 +53,7 @@ class EpubSingleFileBookTest {
      * reader can lay out is one section, however many headings are inside it.
      */
     @Test
-    fun aFileTheReaderCanLayOutIsLeftAsTheOneSectionTheSpineSaysItIs() {
+    fun aFileTheReaderCanLayOutIsLeftAsTheOneSectionTheSpineSaysItIs() = runTest {
         val content = epubRead(singleFileBook(paragraphs = 4))
 
         assertNotNull(content)

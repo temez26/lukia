@@ -7,6 +7,66 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.kover)
+}
+
+/**
+ * What the tests reach, measured - as a report to read, not a gate to pass.
+ *
+ * The JVM and Android targets are instrumented, which is Kover's own limit:
+ * what `iosTest` and a device prove does not appear here at all. So the number
+ * is honest about what those two runs reach and silent about the rest, and
+ * treating it as a threshold to defend would mean writing tests for the
+ * coverage rather than for the code.
+ *
+ * The verification below is a floor rather than a target. It reads the layers
+ * where a number means something - a use case either handles a case or does not
+ * - and leaves out the ones where it does not: a composable's coverage is a
+ * function of how many Compose UI suites happened to run on that machine, and
+ * the generated database and resource classes were never anybody's to test.
+ *
+ * Eighty against the eighty-six those layers stand at today. Far enough below to
+ * survive a refactor that takes tests out with the code it covered, and near
+ * enough to notice a feature arriving with none. A floor set at the current
+ * number fails on the next commit; one set at half of it says nothing.
+ *
+ * Eighty-six rather than the ninety-three the common layers alone reach, because
+ * `androidMain` is in the denominator: the secret store, the folder scanner and
+ * the page content reader are three of the least-tested files in the project and
+ * all three are Android's. That is a finding rather than noise, which is why the
+ * number is left aggregated instead of measured per target.
+ *
+ * `koverVerify` joins `check`, which already runs both of those suites. It is
+ * not in the CI jobs: CI runs `jvmCommonTest` rather than `jvmTest` for the
+ * reasons in TESTING.md, and a coverage number over part of the suite would be
+ * worse than none.
+ */
+kover {
+    reports {
+        filters {
+            excludes {
+                packages(
+                    "io.lukia.*.presentation",
+                    "io.lukia.*.presentation.*",
+                    "io.lukia.shared.presentation.*",
+                    "io.lukia.navigation",
+                    "io.lukia.di",
+                    "io.lukia.core.infrastructure.db",
+                    "io.lukia.resources",
+                )
+                annotatedBy("androidx.compose.runtime.Composable")
+            }
+        }
+
+        verify {
+            rule("The layers a number means something about") {
+                bound {
+                    minValue = 80
+                    coverageUnits = kotlinx.kover.gradle.plugin.dsl.CoverageUnit.LINE
+                }
+            }
+        }
+    }
 }
 
 // See `compose-stability.conf`: value types the compiler cannot prove immutable,
@@ -185,6 +245,24 @@ kotlin {
             @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
             implementation(compose.uiTest)
         }
+        /**
+         * The Android tests that want nothing of a device but a `Context`.
+         *
+         * A device test costs a booted emulator, so CI has never run one - see
+         * TESTING.md. Robolectric answers the Android framework on the host
+         * instead, which is enough for a ContentProvider or a file under a cache
+         * directory, and is not enough for a CursorWindow's size limit or
+         * `BitmapFactory`'s idea of what is not a picture. Those stay next door
+         * in `androidDeviceTest`, where a stub would pass them for the wrong
+         * reason.
+         */
+        named("androidHostTest") {
+            dependencies {
+                implementation(libs.robolectric)
+                implementation(libs.androidx.test.ext.junit)
+            }
+        }
+
         named("androidDeviceTest") {
             dependencies {
                 implementation(libs.androidx.test.runner)

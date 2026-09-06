@@ -2,6 +2,7 @@ package io.lukia.features.reader.infrastructure.text.epub
 
 import io.lukia.features.reader.domain.text.TextBlock
 import io.lukia.features.reader.domain.text.plainText
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -12,7 +13,7 @@ class EpubTextReaderTest {
 
     /** The spine is the book's own statement of what order it is read in. */
     @Test
-    fun sectionsFollowTheSpineRatherThanTheManifest() {
+    fun sectionsFollowTheSpineRatherThanTheManifest() = runTest {
         val content = epubRead(
             epub(
                 manifest = """
@@ -35,7 +36,7 @@ class EpubTextReaderTest {
     }
 
     @Test
-    fun readsTheEpub3NavigationDocumentAsTheTableOfContents() {
+    fun readsTheEpub3NavigationDocumentAsTheTableOfContents() = runTest {
         val nav = """
             <html xmlns:epub="http://www.idpf.org/2007/ops">
               <body>
@@ -85,7 +86,7 @@ class EpubTextReaderTest {
 
     /** Publishers ship an NCX alongside the newer form, and older books only have one. */
     @Test
-    fun fallsBackToTheEpub2NcxWhenThereIsNoNavigationDocument() {
+    fun fallsBackToTheEpub2NcxWhenThereIsNoNavigationDocument() = runTest {
         val ncx = """
             <ncx>
               <navMap>
@@ -137,7 +138,7 @@ class EpubTextReaderTest {
 
     /** A flat list of real chapter names beats a panel saying the book has none. */
     @Test
-    fun aBookWithNoNavigationGetsAContentsFromItsOwnHeadings() {
+    fun aBookWithNoNavigationGetsAContentsFromItsOwnHeadings() = runTest {
         val content = epubRead(
             epub(
                 manifest = """
@@ -163,7 +164,7 @@ class EpubTextReaderTest {
     }
 
     @Test
-    fun illustrationsAreResolvedRelativeToTheChapterThatShowsThem() {
+    fun illustrationsAreResolvedRelativeToTheChapterThatShowsThem() = runTest {
         val plate = byteArrayOf(1, 2, 3, 4)
 
         val content = epubRead(
@@ -193,7 +194,7 @@ class EpubTextReaderTest {
 
     /** An href is a URL; the entry it names is not. */
     @Test
-    fun percentEncodedHrefsFindTheirEntries() {
+    fun percentEncodedHrefsFindTheirEntries() = runTest {
         val content = epubRead(
             epub(
                 manifest = """
@@ -209,13 +210,13 @@ class EpubTextReaderTest {
     }
 
     @Test
-    fun aFileThatIsNotAnEpubIsNotReadAsOne() {
+    fun aFileThatIsNotAnEpubIsNotReadAsOne() = runTest {
         assertNull(epubRead("not a zip at all".encodeToByteArray()))
         assertNull(epubRead(zip(mapOf("hello.txt" to "hi"))))
     }
 
     @Test
-    fun paragraphsSurviveWithTheirEmphasis() {
+    fun paragraphsSurviveWithTheirEmphasis() = runTest {
         val content = epubRead(
             epub(
                 manifest =
@@ -246,7 +247,7 @@ class EpubTextReaderTest {
      * destination - a contents panel of forty rows that all do the same thing.
      */
     @Test
-    fun sectionsInsideOneChapterKeepTheirOwnPlaces() {
+    fun sectionsInsideOneChapterKeepTheirOwnPlaces() = runTest {
         val nav = """
             <html xmlns:epub="http://www.idpf.org/2007/ops">
               <body>
@@ -298,7 +299,7 @@ class EpubTextReaderTest {
 
     /** The same, for the older navigation an EPUB 2 carries. */
     @Test
-    fun theNcxKeepsItsSectionsPlacesToo() {
+    fun theNcxKeepsItsSectionsPlacesToo() = runTest {
         val ncx = """
             <ncx>
               <navMap>
@@ -338,7 +339,7 @@ class EpubTextReaderTest {
      * first section has to be moved onto the section that took it.
      */
     @Test
-    fun anAnchorInALaterSectionIsPlacedWithinThatSection() {
+    fun anAnchorInALaterSectionIsPlacedWithinThatSection() = runTest {
         val prose = (1..500).joinToString("") { "<p>Paragraph $it.</p>" }
         val nav = """
             <html xmlns:epub="http://www.idpf.org/2007/ops">

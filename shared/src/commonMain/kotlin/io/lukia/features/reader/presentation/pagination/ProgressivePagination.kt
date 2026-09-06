@@ -60,6 +60,13 @@ internal fun paginateProgressively(
      * test that is waiting for the book, could not do.
      */
     context: CoroutineContext = measuringContext(),
+    /**
+     * How [emitInOrder]'s throttle tells the time. A parameter for the same
+     * reason [context] is: on the monotonic clock, whether a growing book is
+     * handed over once a run or once a [PUBLISH_INTERVAL] can only be told
+     * apart by waiting for real time to pass.
+     */
+    timeSource: TimeSource = TimeSource.Monotonic,
 ): Flow<PaginatedBook> = flow {
     if (sections.isEmpty() || pageHeightPx <= 0 || sizesPerWorker.isEmpty()) {
         emit(PaginatedBook.Empty)
@@ -75,7 +82,7 @@ internal fun paginateProgressively(
 
         launch { dispatchRuns(sections, pageHeightPx, sizesPerWorker, runs) }
 
-        emitInOrder(runs)
+        emitInOrder(runs, timeSource)
     }
 }.flowOn(context)
 
@@ -134,11 +141,12 @@ private suspend fun dispatchRuns(
  */
 private suspend fun FlowCollector<PaginatedBook>.emitInOrder(
     runs: ReceiveChannel<Deferred<PaginatedChunk>>,
+    timeSource: TimeSource,
 ) {
     val pages = mutableListOf<TextPage>()
     val sectionPages = mutableListOf<Int>()
 
-    var published = TimeSource.Monotonic.markNow()
+    var published = timeSource.markNow()
     var handedOver = false
 
     while (true) {
@@ -153,7 +161,7 @@ private suspend fun FlowCollector<PaginatedBook>.emitInOrder(
         sectionPages += chunk.sectionPages.map { it + firstPage }
 
         if (!handedOver || published.elapsedNow() >= PUBLISH_INTERVAL) {
-            published = TimeSource.Monotonic.markNow()
+            published = timeSource.markNow()
             handedOver = true
 
             emit(PaginatedBook(pages.toList(), sectionPages.toList(), complete = false))
