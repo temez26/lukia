@@ -166,8 +166,14 @@ jobs:
 
       # See CODING_STYLE.md. ktlint checks formatting, detekt checks structure and
       # Compose usage, checkFileLength enforces the 400-line limit.
+      #
+      # checkComposeStability is here rather than with the tests because what it
+      # reads is a build configuration file rather than the app: it holds
+      # compose-stability.conf to types that still exist, which nothing else
+      # notices - an entry that stops matching is ignored silently by the
+      # compiler and costs the screens built on that type their skipping.
       - name: Check coding style
-        run: ./gradlew --continue ktlintCheck detekt checkFileLength
+        run: ./gradlew --continue ktlintCheck detekt checkFileLength checkComposeStability
 
       # Puts each detekt finding on the line that caused it in the pull request.
       # Merged into one file by the detektReportMerge task in build.gradle.kts.

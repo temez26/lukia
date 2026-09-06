@@ -75,6 +75,24 @@ composeCompiler {
     stabilityConfigurationFiles.add(
         rootProject.layout.projectDirectory.file("compose-stability.conf"),
     )
+
+    // What the compiler decided about every composable in the module: which are
+    // skippable, which parameters it could not prove stable, and why. Off by
+    // default because writing them slows every compilation in the module and
+    // nothing reads them on an ordinary build; asked for when a screen is being
+    // looked at rather than left on:
+    //
+    //     ./gradlew :shared:compileKotlinJvm -Plukia.composeMetrics
+    //
+    // The result lands in `shared/build/compose-metrics` as a
+    // `*-composables.txt` to read and a `*-module.json` to compare against a
+    // later run.
+    if (providers.gradleProperty("lukia.composeMetrics").isPresent) {
+        val destination = layout.buildDirectory.dir("compose-metrics")
+
+        reportsDestination.set(destination)
+        metricsDestination.set(destination)
+    }
 }
 
 /**

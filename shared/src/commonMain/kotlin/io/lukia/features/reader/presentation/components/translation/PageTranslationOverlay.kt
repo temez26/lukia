@@ -18,8 +18,9 @@ import androidx.compose.ui.graphics.Color
 import io.lukia.features.reader.domain.page.PageSentence
 import io.lukia.features.reader.domain.page.TextQuad
 import io.lukia.features.reader.domain.page.union
+import io.lukia.features.reader.presentation.components.passages.PassageBand
 import io.lukia.features.reader.presentation.components.passages.PassageMarkStyle
-import io.lukia.features.reader.presentation.components.passages.drawPassageHighlight
+import io.lukia.features.reader.presentation.components.passages.drawPassageBands
 import io.lukia.features.reader.presentation.components.passages.markStyle
 import io.lukia.features.reader.presentation.components.passages.passageMarkColors
 import io.lukia.features.reader.presentation.components.passages.passageSweep
@@ -72,6 +73,24 @@ internal fun PageTranslationOverlay(
 
     val marked = remember(sentences, translations) { markedPassages(sentences, translations) }
 
+    // Where the marks land on the page as it is drawn now, worked out here
+    // rather than in the draw block below: the sweep repaints that block on
+    // every frame, and none of this moves between one of those frames and the
+    // next. [scale] is a key because a pinch is the one thing that does move it,
+    // and the page is recomposed for that anyway.
+    val bands = remember(marked, scale) {
+        marked.mapNotNull { passage ->
+            if (passage.state.panel() != null) return@mapNotNull null
+
+            val style = passage.state.markStyle() ?: return@mapNotNull null
+
+            passage.quads.map { it.asLine(scale) }
+                .filter { it.width > 0f && it.height > 0f }
+                .takeIf { it.isNotEmpty() }
+                ?.let { PassageBand(style, it) }
+        }
+    }
+
     val markColors = passageMarkColors()
 
     // Read where it is drawn rather than here: read during composition it would
@@ -88,24 +107,12 @@ internal fun PageTranslationOverlay(
             // between a PDF and an EPUB is not moving between two different
             // readers. Faint enough to leave somebody else's typesetting
             // perfectly readable underneath it.
-            .drawBehind {
-                marked.forEach { passage ->
-                    // A passage with something to put on the page brings its own
-                    // highlight with it - see TranslationPanel. Drawing one here
-                    // as well would leave the wider of the two showing round the
-                    // edges of the narrower.
-                    if (passage.state.panel() != null) return@forEach
-
-                    val style = passage.state.markStyle() ?: return@forEach
-
-                    drawPassageHighlight(
-                        lines = passage.quads.map { it.asLine(scale) },
-                        style = style,
-                        colors = markColors,
-                        sweep = sweep.value,
-                    )
-                }
-            },
+            //
+            // A passage with something to put on the page brings its own
+            // highlight with it - see TranslationPanel - so it is left out of
+            // the bands above; drawing one here as well would leave the wider of
+            // the two showing round the edges of the narrower.
+            .drawBehind { drawPassageBands(bands, markColors, sweep.value) },
     ) {
         marked.forEach { passage ->
             val panel = passage.state.panel()

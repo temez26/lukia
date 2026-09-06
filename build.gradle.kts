@@ -104,6 +104,112 @@ abstract class CheckKotlinFileLength : DefaultTask() {
     }
 }
 
+/**
+ * Fails the build for a line of `compose-stability.conf` that no longer names a type.
+ *
+ * The file tells the Compose compiler which of the app's value types are immutable when
+ * it cannot see that for itself - see the file's own header. Entries are matched as plain
+ * strings, and a line that matches nothing is not an error to anybody: not to the
+ * compiler, not to Gradle, and not to a build log. It is a type that quietly stopped being
+ * declared stable, and screens built on it that went back to recomposing wholesale with
+ * nothing on screen to say so.
+ *
+ * Which has happened. The file's own header records the reader profile's types sitting in
+ * it for a while after the statistics screen replaced them, noticed by somebody reading
+ * the file rather than by anything failing.
+ *
+ * What it cannot check is whether a line is still worth having. A class the compiler has
+ * since learned to prove stable by itself is redundant rather than broken, and nothing
+ * about that is wrong.
+ */
+abstract class CheckComposeStabilityConfig : DefaultTask() {
+
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val config: RegularFileProperty
+
+    @get:InputFiles
+    @get:SkipWhenEmpty
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val sources: ConfigurableFileCollection
+
+    /** The package prefix the check applies to; everything else in the file is a library type. */
+    @get:Input
+    abstract val ownPackage: Property<String>
+
+    @TaskAction
+    fun check() {
+        val prefix = ownPackage.get() + "."
+
+        val configured = config.get().asFile.readLines()
+            .map { it.substringBefore("//").trim() }
+            .filter { it.startsWith(prefix) }
+
+        check(configured.isNotEmpty()) {
+            "${config.get().asFile.name} names no $prefix types - the scan is broken, not the file."
+        }
+
+        val declared = sources.files
+            .filter { it.isFile && it.extension == "kt" }
+            .flatMap { it.declaredTypeNames() }
+            .toSet()
+
+        val missing = configured.filterNot { it in declared }
+
+        if (missing.isNotEmpty()) {
+            throw GradleException(
+                missing.joinToString(
+                    prefix = "${config.get().asFile.name} names types that are no longer declared:\n  ",
+                    separator = "\n  ",
+                    postfix = "\n\nThe Compose compiler ignores each of these silently. Point it at where " +
+                        "the type lives now, or drop the line if the type has gone."
+                )
+            )
+        }
+    }
+
+    /**
+     * The types one file declares, by fully qualified name, with nesting tracked by
+     * indentation.
+     *
+     * Indentation rather than a parser, because the only question is whether a name is
+     * declared here at all, and every file in the project is ktlint-formatted - so a
+     * nested declaration is indented and a top-level one is not. A misread can only add a
+     * name that is not really there, which makes the check more forgiving rather than
+     * less: it can miss a stale line, and it cannot invent one.
+     */
+    private fun File.declaredTypeNames(): List<String> {
+        val text = readText()
+        val packageName = packagePattern.find(text)?.groupValues?.get(1) ?: return emptyList()
+        val enclosing = mutableListOf<Pair<Int, String>>()
+
+        return text.lineSequence().mapNotNull { line ->
+            val (indent, name) = declaredTypePattern.find(line)?.destructured ?: return@mapNotNull null
+
+            while (enclosing.isNotEmpty() && enclosing.last().first >= indent.length) enclosing.removeLast()
+
+            val qualified = (listOf(packageName) + enclosing.map { it.second } + name).joinToString(".")
+            enclosing += indent.length to name
+
+            qualified
+        }.toList()
+    }
+
+    private companion object {
+        val packagePattern = Regex("""^package\s+([\w.]+)""", RegexOption.MULTILINE)
+
+        /**
+         * A type declaration and how far it is indented. `data class`, `value class` and
+         * `data object` are covered by the modifiers before the keyword; a typealias is
+         * not something the compiler can be told about.
+         */
+        val declaredTypePattern = Regex(
+            """^([\t ]*)(?:(?:public|internal|private|protected|expect|actual|abstract|open|sealed|""" +
+                """data|value|inner|enum|annotation|external|fun)\s+)*(?:class|interface|object)\s+(\w+)"""
+        )
+    }
+}
+
 // Resolved here because the version catalog accessor only exists on the root project.
 val composeDetektRules = libs.detekt.composeRules
 
@@ -116,6 +222,22 @@ val composeDetektRules = libs.detekt.composeRules
  */
 val detektReportMerge = tasks.register<ReportMergeTask>("detektReportMerge") {
     output.set(rootProject.layout.buildDirectory.file("reports/detekt/merged.sarif"))
+}
+
+/**
+ * One check for the whole repository rather than one per module, because there is one
+ * configuration file and it is the root project's.
+ *
+ * It reads every module's sources through the root's own tree rather than each project's,
+ * so a type moved from :shared to another module is found where it went instead of
+ * reported as gone - and so nothing here reaches across projects to configure itself.
+ */
+val checkComposeStability = tasks.register<CheckComposeStabilityConfig>("checkComposeStability") {
+    group = "verification"
+    description = "Fails on a compose-stability.conf entry that no longer names a type."
+    config.set(layout.projectDirectory.file("compose-stability.conf"))
+    sources.from(fileTree(layout.projectDirectory) { include("*/src/**/*.kt") })
+    ownPackage.set("io.lukia")
 }
 
 subprojects {
@@ -173,6 +295,8 @@ subprojects {
 
     // `check` only exists once the module's own plugins have been applied.
     plugins.withType<LifecycleBasePlugin> {
-        tasks.named("check") { dependsOn(checkFileLength) }
+        // The stability check is the root project's and covers every module, so
+        // whichever `check` runs first is the one that runs it.
+        tasks.named("check") { dependsOn(checkFileLength, checkComposeStability) }
     }
 }

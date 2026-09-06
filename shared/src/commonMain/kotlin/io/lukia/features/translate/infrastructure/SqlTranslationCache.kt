@@ -1,11 +1,11 @@
 package io.lukia.features.translate.infrastructure
 
 import io.lukia.core.infrastructure.db.LukiaDatabase
+import io.lukia.core.infrastructure.ioDispatcher
 import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.domain.TranslationCache
 import io.lukia.features.translate.domain.TranslationCacheKey
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
@@ -38,7 +38,7 @@ private const val TRIM_BATCH = MAX_ENTRIES / 10
 class SqlTranslationCache(
     database: LukiaDatabase,
     /** Injectable so tests can run against a database deterministically. */
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val dispatcher: CoroutineDispatcher = ioDispatcher(),
 ) : TranslationCache {
 
     private val cache = database.translationCacheQueries

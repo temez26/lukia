@@ -5,15 +5,38 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /**
- * How many pages' worth of parsed sentences are kept.
+ * How much parsed page is kept, counted in the rectangles held rather than in
+ * pages.
  *
- * Counted in pages rather than in bytes, unlike the drawn ones: what this holds
- * is text and rectangles, whose size follows how much is written on a page
- * rather than how large the page is drawn. Comfortably more than fits on any
- * screen, so a reader moving back and forth over a spread never waits for the
- * same page to be parsed twice.
+ * A page is not a size. What this holds is a rectangle per line of every
+ * sentence on a page and another per word in it, and how many that is has
+ * nothing to do with the page and everything to do with what is written on it:
+ * a novel's page is a few hundred, a two-column paper's with footnotes is
+ * several thousand, and a budget in pages has to be set for one of the two. Set
+ * for the novel it is the wrong bound on the paper; set for the paper it holds a
+ * novel's whole chapter for a reader who has left it.
+ *
+ * Rectangles rather than bytes because a rectangle is the unit this can actually
+ * count - four floats and an object header, near enough sixty bytes with the
+ * list slot holding it, against a page's text which is a string it shares with
+ * nobody. So the budget below is around six megabytes of geometry, which is the
+ * same order as the covers and a quarter of what the drawn pages are allowed.
+ *
+ * Kept generous in the ordinary case: a hundred thousand rectangles is still
+ * fifty pages of a novel, so a reader moving back and forth over a spread never
+ * waits for the same page to be parsed twice.
  */
-private const val MAX_CACHED_PAGES = 24
+private const val MAX_CACHED_QUADS = 100_000
+
+/**
+ * The last page read is never evicted, whatever its size.
+ *
+ * A page dense enough to be over the whole budget on its own is exactly the page
+ * that must not be parsed again on the next tap - and it is the one certainly
+ * about to be asked about, because it is the one being read. Same reasoning as
+ * the drawn pages, which keep their newest entry for the same reason.
+ */
+private const val MIN_CACHED_PAGES = 1
 
 /**
  * The sentences of the pages most recently looked at.
@@ -22,10 +45,11 @@ private const val MAX_CACHED_PAGES = 24
  * to do again every time somebody taps the same page twice - and a reader
  * working through a page taps it several times.
  *
- * Least-recently-used, like the drawn pages, and for the same reason rather than
- * the same weight: one page of sentences is small, but it is a rectangle per
- * line of every sentence on it, and a long document read end to end is hundreds
- * of pages of them held for a reader who is no longer anywhere near any of it.
+ * Least-recently-used, like the drawn pages, and bounded by weight for the same
+ * reason: one page of sentences is small, but it is a rectangle per line of
+ * every sentence on it and another per word, and a long document read end to end
+ * is hundreds of pages of them held for a reader who is no longer anywhere near
+ * any of it.
  */
 internal class PageSentenceCache {
 
@@ -33,7 +57,7 @@ internal class PageSentenceCache {
      * Replaced rather than emptied when the book goes - see [clear] - so it is
      * read once into a local wherever it is used.
      */
-    private var kept = LinkedHashMap<Int, List<PageSentence>>()
+    private var kept = KeptSentences()
 
     private val lock = Mutex()
 
@@ -47,11 +71,14 @@ internal class PageSentenceCache {
         val sentences = parse()
 
         return lock.withLock {
-            val pages = kept
+            val held = kept
 
-            pages.getOrPut(index) { sentences }.also {
-                while (pages.size > MAX_CACHED_PAGES) {
-                    pages.remove(pages.keys.first())
+            held.pages.getOrPut(index) { sentences }.also {
+                // Least-recently-used out first, until the budget is met - and
+                // never the page just read, which is the one certainly about to
+                // be asked about again.
+                while (held.pages.size > MIN_CACHED_PAGES && held.quads() > MAX_CACHED_QUADS) {
+                    held.pages.remove(held.pages.keys.first())
                 }
             }
         }
@@ -67,7 +94,7 @@ internal class PageSentenceCache {
      * that map is by then nobody's.
      */
     fun clear() {
-        kept = LinkedHashMap()
+        kept = KeptSentences()
     }
 
     /**
@@ -76,8 +103,28 @@ internal class PageSentenceCache {
      */
     private suspend fun remembered(index: Int): List<PageSentence>? =
         lock.withLock {
-            val pages = kept
+            val pages = kept.pages
 
             pages.remove(index)?.also { pages[index] = it }
         }
+}
+
+/** One book's parsed pages, and what they weigh. */
+private class KeptSentences {
+
+    val pages = LinkedHashMap<Int, List<PageSentence>>()
+
+    /**
+     * Counted rather than tracked as pages come and go.
+     *
+     * A page is stored once and read many times, and only the storing asks this
+     * - so the walk happens on the rare path, while the common one stays a map
+     * lookup. Two dozen pages of a few thousand rectangles is a sum over a few
+     * hundred lists, which is nothing beside the parse that just produced them.
+     */
+    fun quads(): Long = pages.values.sumOf { page ->
+        page.sumOf { sentence ->
+            sentence.quads.size.toLong() + sentence.words.sumOf { it.quads.size.toLong() }
+        }
+    }
 }

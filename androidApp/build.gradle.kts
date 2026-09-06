@@ -36,6 +36,21 @@ dependencies {
 }
 
 /**
+ * What the generated profiles are used for here, as opposed to how they are
+ * made - see the :baselineprofile module for that.
+ *
+ * The baseline profile is installed and compiled without any of this. The
+ * startup one is not used for anything at all unless this is asked for: it is
+ * read by R8, which puts the classes a launch touches into the primary dex file
+ * in the order the launch touches them, so opening the app reads a run of pages
+ * rather than reaching across every dex file for each class in turn. That needs
+ * R8, which the release build already runs.
+ */
+baselineProfile {
+    dexLayoutOptimization = true
+}
+
+/**
  * Where the release keystore is, when there is one.
  *
  * Absent for everyone but the release workflow, and the build stays usable
