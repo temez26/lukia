@@ -8,9 +8,9 @@ import io.lukia.core.domain.document.PickedDocument
 import io.lukia.core.infrastructure.db.Document
 import io.lukia.core.infrastructure.db.LukiaDatabase
 import io.lukia.core.infrastructure.db.SelectAll
+import io.lukia.core.infrastructure.ioDispatcher
 import io.lukia.features.library.domain.LibraryRepository
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
@@ -20,11 +20,18 @@ import kotlinx.coroutines.withContext
  * ViewModel scope, which is main-dispatched, and one of these reads carries the
  * cover art of every book in the library - hundreds of kilobytes at a time,
  * which is not something to do on the thread that draws.
+ *
+ * Off it onto [ioDispatcher] rather than the default one, which is what this
+ * used to do and what the other three of these already avoid. A query blocks
+ * while SQLite reads the file, and the default dispatcher has one thread per
+ * core - two on the phones this most matters on - so the read of the whole
+ * library that every launch begins with was occupying half of the pool that
+ * decodes the covers it just returned.
  */
 class SqlLibraryRepository(
     database: LukiaDatabase,
     /** Injectable so tests can run against a database deterministically. */
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val dispatcher: CoroutineDispatcher = ioDispatcher(),
 ) : LibraryRepository {
 
     private val documents = database.documentQueries

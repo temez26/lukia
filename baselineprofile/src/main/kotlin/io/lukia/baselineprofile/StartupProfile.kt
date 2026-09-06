@@ -8,7 +8,8 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * Writes the list of methods worth compiling ahead of time.
+ * Writes the list of methods worth compiling ahead of time, and the shorter list
+ * of the ones a launch cannot start without.
  *
  * What this walks is what a reader does in the first few seconds of a cold
  * start: the app opens, the shelf arrives, and they move along the tab bar. Every
@@ -30,6 +31,14 @@ import org.junit.Test
  * exist and misses ones that are new. Worth regenerating when the opening
  * changes shape.
  *
+ * The same walk also writes the *startup* profile - see [includeInStartupProfile]
+ * below - which is a different thing put to a different use. The baseline
+ * profile tells the installer what to compile; the startup profile tells R8 how
+ * to lay the dex files out, so the classes a launch touches sit together instead
+ * of being scattered through the app and read a page at a time. It is worth
+ * having on the same walk because the walk is already the launch, and it needs
+ * `dexLayoutOptimization` in :androidApp to be used at all.
+ *
  * What it does not cover is reading a book. The generator walks a library that
  * is empty - a fresh emulator has imported nothing - so the reader is reached
  * by nothing here. Covering it needs a book to open, which means a PDF shipped
@@ -42,7 +51,13 @@ class StartupProfile {
     val rule = BaselineProfileRule()
 
     @Test
-    fun openingAndBrowsing() = rule.collect(packageName = PACKAGE) {
+    fun openingAndBrowsing() = rule.collect(
+        packageName = PACKAGE,
+        // What this walk is: the app opening. Without it the run writes a
+        // baseline profile and no startup profile at all, and the dex layout
+        // has nothing to order itself by.
+        includeInStartupProfile = true,
+    ) {
         pressHome()
         startActivityAndWait()
 

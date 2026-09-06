@@ -22,6 +22,7 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
@@ -34,8 +35,9 @@ import io.lukia.features.reader.domain.text.splitIntoSentences
 import io.lukia.features.reader.domain.text.words
 import io.lukia.features.reader.presentation.components.chrome.detectReaderTaps
 import io.lukia.features.reader.presentation.components.passages.BlockActions
+import io.lukia.features.reader.presentation.components.passages.PassageBands
 import io.lukia.features.reader.presentation.components.passages.WordGesture
-import io.lukia.features.reader.presentation.components.passages.drawPassageMarks
+import io.lukia.features.reader.presentation.components.passages.drawPassageBands
 import io.lukia.features.reader.presentation.components.passages.passageMarkColors
 import io.lukia.features.reader.presentation.components.passages.passageMarkStyles
 import io.lukia.features.reader.presentation.components.passages.passageSweep
@@ -276,6 +278,13 @@ internal fun ProseText(
 
             val marks = remember(paragraphText, marked) { marked.marksFor(paragraphText) }
 
+            // Where those marks land, kept across the frames of a sweep - see
+            // [PassageBands]. The layout it is worked out from is read in the
+            // draw block below and nowhere else, so a re-layout still costs a
+            // repaint rather than a recomposition.
+            val bands = remember { PassageBands() }
+            val density = LocalDensity.current
+
             Text(
                 text = paragraphText.text,
                 style = style,
@@ -297,7 +306,7 @@ internal fun ProseText(
                     .drawBehind {
                         val lines = measured ?: return@drawBehind
 
-                        drawPassageMarks(lines, marks, colors, sweep.value)
+                        drawPassageBands(bands.of(density, lines, marks), colors, sweep.value)
                     },
             )
         }
