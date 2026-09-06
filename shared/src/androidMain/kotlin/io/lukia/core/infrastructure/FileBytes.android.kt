@@ -15,6 +15,11 @@ internal actual fun readFileBytes(path: String): ByteArray = File(path).readByte
  * Renamed rather than moved through `java.nio.file`, which Android only gained
  * at API 26 and desugaring does not back-fill - the same reason
  * `AndroidIncomingDocumentStore` puts its own copies in place this way.
+ *
+ * Renamed straight over the old file rather than deleting it first. Every
+ * Android is Linux, where a rename replaces an existing name in one step; the
+ * delete only opened a moment with no book under the name the library points
+ * at, and made a rename that then failed lose both copies rather than one.
  */
 internal actual fun writeFileBytes(path: String, bytes: ByteArray) {
     val target = File(path)
@@ -22,7 +27,6 @@ internal actual fun writeFileBytes(path: String, bytes: ByteArray) {
 
     try {
         partial.writeBytes(bytes)
-        target.delete()
 
         if (!partial.renameTo(target)) throw IOException("File could not be written: $path")
     } finally {

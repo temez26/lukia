@@ -1,6 +1,7 @@
 package io.lukia.features.library.infrastructure.importing.cover
 
 import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.infrastructure.epub.MinimalEpub
 import io.lukia.core.infrastructure.shrinkCoverImage
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
@@ -114,19 +115,6 @@ class StoredCoverTest {
         return output.toByteArray()
     }
 
-    private fun epubWithCover(coverBytes: ByteArray): ByteArray = testEpub(
-        opf = """
-            <?xml version="1.0"?>
-            <package xmlns="http://www.idpf.org/2007/opf">
-              <metadata>
-                <meta name="cover" content="cover-image"/>
-              </metadata>
-              <manifest>
-                <item id="cover-image" href="cover.png" media-type="image/png"/>
-              </manifest>
-            </package>
-        """.trimIndent(),
-        coverPath = "OEBPS/cover.png",
-        coverBytes = coverBytes,
-    )
+    private fun epubWithCover(coverBytes: ByteArray): ByteArray =
+        MinimalEpub.bookWithCover(coverBytes)
 }

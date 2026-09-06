@@ -1,11 +1,8 @@
 package io.lukia.features.reader.presentation.translation
 
 import io.lukia.core.domain.AppError
-import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.Translation
-import io.lukia.features.translate.domain.Translator
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -16,6 +13,9 @@ import kotlin.test.assertIs
  * A passage the reader points at: what it says while it waits, what it says
  * when it fails, and how tapping it again flips between the translation and
  * the book's own words.
+ *
+ * An answer that arrives a piece at a time is [TranslationSessionStreamingTest]
+ * next door, and putting a whole page away is [TranslationSessionVisibilityTest].
  */
 class TranslationSessionTest {
 
@@ -159,92 +159,4 @@ class TranslationSessionTest {
 
         assertEquals(1, built)
     }
-
-    /**
-     * What the reader sees while a model is writing: the sentence filling in,
-     * rather than the original sitting there looking untouched.
-     */
-    @Test
-    fun aSentenceStillArrivingIsShownAsFarAsItHasGot() = runTest {
-        val session = TranslationSession(
-            TranslatePassageUseCase(
-                Translator { _, onPartial ->
-                    onPartial("Kutsukaa")
-                    onPartial("Kutsukaa minua")
-                    Translation("Kutsukaa minua Ismaeliksi.")
-                },
-            ),
-            this,
-        )
-
-        session.tap(anchor)
-        runCurrent()
-
-        assertEquals(
-            PassageTranslation.Ready(Translation("Kutsukaa minua Ismaeliksi.")),
-            session.passages.value[anchor],
-        )
-    }
-
-    /**
-     * The first piece goes up at once: it is what tells the reader their tap
-     * landed on something. It has to survive the throttle that keeps the pieces
-     * behind it from filing every translation in the book once per token - see
-     * `showAsItArrives` - which is a throttle that could very easily swallow
-     * the one piece worth showing soonest.
-     */
-    @Test
-    fun theFirstPieceOfAnArrivingAnswerIsShownAtOnce() = runTest {
-        val answer = CompletableDeferred<Translation>()
-        val session = TranslationSession(
-            TranslatePassageUseCase(
-                Translator { _, onPartial ->
-                    onPartial("Kutsukaa")
-                    answer.await()
-                },
-            ),
-            this,
-        )
-
-        session.tap(anchor)
-        runCurrent()
-
-        assertEquals(PassageTranslation.Loading("Kutsukaa"), session.passages.value[anchor])
-
-        // Let it finish, so the request is not left standing when the test ends.
-        answer.complete(Translation("Kutsukaa minua Ismaeliksi."))
-        advanceUntilIdle()
-    }
-
-    /**
-     * A piece still in flight must not land on top of the finished answer -
-     * which is the one way a streamed translation could end up permanently
-     * showing half of itself.
-     */
-    @Test
-    fun theLastThingShownIsTheWholeTranslation() = runTest {
-        val session = TranslationSession(
-            TranslatePassageUseCase(
-                Translator { _, onPartial ->
-                    repeat(20) { onPartial("Kutsukaa".take(it + 1)) }
-                    Translation("Kutsukaa minua Ismaeliksi.")
-                },
-            ),
-            this,
-        )
-
-        session.tap(anchor)
-        advanceUntilIdle()
-
-        assertEquals(
-            "Kutsukaa minua Ismaeliksi.",
-            (session.passages.value[anchor] as PassageTranslation.Ready).translation.text,
-        )
-    }
-
-    /**
-     * Translating a whole page must not undo what the reader has already done to
-     * it: a sentence they flipped back to the original stays as they left it,
-     * and one that failed is not retried behind their back forty times over.
-     */
 }

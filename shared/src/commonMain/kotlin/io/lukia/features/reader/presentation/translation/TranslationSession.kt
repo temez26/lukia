@@ -87,6 +87,16 @@ private val SHOW_ARRIVING_EVERY = 80.milliseconds
 class TranslationSession(
     private val translate: TranslatePassageUseCase,
     private val scope: CoroutineScope,
+    /**
+     * How the throttle in [showAsItArrives] tells the time.
+     *
+     * A parameter because it is the only way to hold that throttle to anything:
+     * it is the difference between a streamed answer costing one rebuild of the
+     * book's translations every eighty milliseconds and one per token, and on
+     * the monotonic clock a test can only assert which of those happened by
+     * waiting for real time to pass.
+     */
+    private val timeSource: TimeSource = TimeSource.Monotonic,
 ) {
 
     /**
@@ -293,7 +303,7 @@ class TranslationSession(
 
             if (last != null && last.elapsedNow() < SHOW_ARRIVING_EVERY) return@collect
 
-            shown = TimeSource.Monotonic.markNow()
+            shown = timeSource.markNow()
             put(anchor, PassageTranslation.Loading(text))
         }
     }

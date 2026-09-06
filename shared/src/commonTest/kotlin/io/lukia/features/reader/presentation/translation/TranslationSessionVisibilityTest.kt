@@ -114,4 +114,55 @@ class TranslationSessionVisibilityTest {
 
         assertTrue(session.passages.value.isEmpty())
     }
+
+    /**
+     * The other half of leaving a page alone, and the half that costs money.
+     *
+     * A passage that failed is kept as a failure, and translating the page again
+     * - which happens on every settle, every re-layout, every time the reader
+     * comes back to it - must not ask about it again. A service that refused a
+     * passage once refuses it just as firmly the fortieth time, and each refusal
+     * is a request somebody pays for.
+     *
+     * Tapping it is still how the reader retries: that is a gesture, and this is
+     * not.
+     */
+    @Test
+    fun aPassageThatFailedIsNotAskedAboutAgainWhenThePageIsSweptAgain() = runTest {
+        var asked = 0
+        val session = session {
+            asked++
+            throw RuntimeException("no network")
+        }
+
+        session.tap(anchor)
+        runCurrent()
+        assertIs<PassageTranslation.Failed>(session.passages.value[anchor])
+
+        repeat(5) { session.onPassageRequested(anchor) { request("Call me Ishmael.") } }
+        runCurrent()
+
+        assertEquals(1, asked, "a passage the service refused was offered to it again")
+        assertIs<PassageTranslation.Failed>(session.passages.value[anchor])
+    }
+
+    /** And tapping it, which is the reader asking rather than the page, does retry. */
+    @Test
+    fun tappingThatSamePassageStillRetriesIt() = runTest {
+        var attempt = 0
+        val session = session {
+            attempt++
+            if (attempt == 1) throw RuntimeException("no network") else Translation("Second time.")
+        }
+
+        session.tap(anchor)
+        runCurrent()
+        session.onPassageRequested(anchor) { request("Call me Ishmael.") }
+        runCurrent()
+        session.tap(anchor)
+        runCurrent()
+
+        assertEquals(2, attempt)
+        assertEquals("Second time.", session.ready(anchor).translation.text)
+    }
 }

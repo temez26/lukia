@@ -22,8 +22,15 @@ internal class PdfFileScan(
  * One pass over the file, collecting where every object starts and where the few
  * landmarks the reader needs sit. Read in windows so that a large book is never
  * held in memory at once.
+ *
+ * [windowBytes] is a parameter only so a test can set it small enough to put an
+ * object header across a boundary on purpose. Reaching that case at the real
+ * size needs a megabyte of fixture, and it is the one case the overlap below
+ * exists for.
  */
-internal fun scanPdfObjects(source: PdfByteSource): PdfFileScan {
+internal fun scanPdfObjects(source: PdfByteSource, windowBytes: Int = SCAN_WINDOW): PdfFileScan {
+    require(windowBytes > SCAN_OVERLAP) { "a window has to be longer than the overlap it keeps" }
+
     val objectMarker = "obj".encodeToByteArray()
     val trailerMarker = "trailer".encodeToByteArray()
     val objectStreamMarker = "/ObjStm".encodeToByteArray()
@@ -42,8 +49,8 @@ internal fun scanPdfObjects(source: PdfByteSource): PdfFileScan {
     var reading = true
 
     while (reading && windowStart < source.size) {
-        val bytes = source.read(windowStart, SCAN_WINDOW)
-        reading = bytes.size == SCAN_WINDOW
+        val bytes = source.read(windowStart, windowBytes)
+        reading = bytes.size == windowBytes
 
         bytes.forEachSequence(objectMarker) { index ->
             readObjectHeaderStart(bytes, index)?.let { (number, headerStart) ->
@@ -69,7 +76,7 @@ internal fun scanPdfObjects(source: PdfByteSource): PdfFileScan {
 
         // Overlapped so a header split across two windows is still seen whole
         // by one of them.
-        windowStart += SCAN_WINDOW - SCAN_OVERLAP
+        windowStart += windowBytes - SCAN_OVERLAP
     }
 
     // A `/ObjStm` sits inside the object that declares it, so the stream's own
@@ -134,7 +141,19 @@ private class HeaderScan(private val bytes: ByteArray, from: Int) {
     private var digitsStart = 0
     private var digitsEnd = 0
 
-    /** False as soon as what precedes the cursor is not whitespace and then digits. */
+    /**
+     * False as soon as what precedes the cursor is not whitespace and then
+     * digits - and false too when those digits reach the front of the window,
+     * because then there is no telling how many more of them there were.
+     *
+     * The second case is the one that costs a book. A window boundary landing
+     * inside `11 0 obj` leaves the next window reading `1 0 obj`, which is a
+     * perfectly well-formed header for a different object at a later offset -
+     * and later wins, so the catalog of a file long enough to be read in two
+     * windows would be replaced by the tail of an unrelated one. Nothing is lost
+     * by refusing it: the window before this one overlaps by more than a header
+     * is long, and has already recorded the same object from where it begins.
+     */
     fun skipNumberBefore(): Boolean {
         if (index < 0 || !isWhitespace(bytes[index])) return false
 
@@ -144,7 +163,7 @@ private class HeaderScan(private val bytes: ByteArray, from: Int) {
         while (index >= 0 && bytes[index] in ZERO..NINE) index--
         digitsStart = index + 1
 
-        return index != digitsEnd
+        return index >= 0 && index != digitsEnd
     }
 
     /** The digits last walked over, with where they begin in the file. */

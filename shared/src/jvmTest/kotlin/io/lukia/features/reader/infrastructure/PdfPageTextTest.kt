@@ -1,5 +1,6 @@
 package io.lukia.features.reader.infrastructure
 
+import io.lukia.core.infrastructure.pdf.MinimalPdf
 import io.lukia.features.reader.domain.page.pageSentences
 import io.lukia.features.reader.domain.page.sentenceAt
 import kotlinx.coroutines.test.runTest
@@ -137,4 +138,30 @@ class PdfPageTextTest {
             }
         }.absolutePath,
     )
+
+    /**
+     * The hand-written fixture the device tests read, checked here where it can
+     * actually be run.
+     *
+     * `AndroidPdfPageTextTest` reads the same bytes through pdfbox-android and
+     * `PdfKitPageTextTest` through PDFKit, and neither runs on CI. A fixture
+     * that quietly stopped drawing anything would leave both of them asserting
+     * about an empty page, and nobody would find out until somebody plugged in a
+     * phone. This is the one place that fails first.
+     */
+    @Test
+    fun theHandWrittenFixtureHasWordsOnIt() = runTest {
+        val file = File(root, "hand-written.pdf").apply {
+            writeBytes(MinimalPdf.withText("Near the top." to 740, "Near the bottom." to 60))
+        }
+
+        openTestPdf(file.absolutePath).use { pages ->
+            val sentences = pageSentences(assertNotNull(pages.pageText(0), "no text layer"))
+
+            // The same two assertions AndroidPdfPageTextTest makes, so that a
+            // fixture which stopped drawing fails here first.
+            assertEquals(listOf("Near the top.", "Near the bottom."), sentences.map { it.text })
+            assertTrue(sentences.first().bounds.top < 120f, "the top line was not near the top")
+        }
+    }
 }

@@ -95,14 +95,14 @@ internal suspend fun paginateChunk(
  * measuring has a thread to itself this costs a comparison per block and yields
  * to nobody.
  */
-private class Breather {
+private class Breather(private val timeSource: TimeSource = TimeSource.Monotonic) {
 
-    private var since = TimeSource.Monotonic.markNow()
+    private var since = timeSource.markNow()
 
     suspend fun breathe() {
         if (since.elapsedNow() < BREATH) return
 
-        since = TimeSource.Monotonic.markNow()
+        since = timeSource.markNow()
         yield()
     }
 }

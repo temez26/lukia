@@ -2,6 +2,8 @@ package io.lukia.core.presentation
 
 import androidx.compose.ui.graphics.decodeToImageBitmap
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 /**
@@ -21,6 +23,19 @@ import kotlin.test.assertNull
  * comment above is the thing to correct.
  */
 class AndroidImageDecodingTest {
+
+    /**
+     * The half of [io.lukia.core.presentation.ImageDecodingTest] that cannot be
+     * common: a real decoder is needed to say that a picture is one, and on this
+     * platform a real decoder means a device.
+     */
+    @Test
+    fun decodesAPicture() {
+        val decoded = assertNotNull(onePixelPng().decodeToImageBitmapOrNull())
+
+        assertEquals(1, decoded.width)
+        assertEquals(1, decoded.height)
+    }
 
     @Test
     fun bytesThatAreNotAPictureAreNothing() {
