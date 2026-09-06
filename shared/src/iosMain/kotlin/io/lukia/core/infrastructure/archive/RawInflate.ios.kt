@@ -9,6 +9,7 @@ import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.sizeOf
 import kotlinx.cinterop.toKString
 import kotlinx.cinterop.usePinned
+import platform.zlib.Z_NO_FLUSH
 import platform.zlib.Z_OK
 import platform.zlib.Z_STREAM_END
 import platform.zlib.inflate
@@ -30,6 +31,7 @@ internal actual fun inflateRaw(compressedData: ByteArray, uncompressedSize: Int)
 
     val output = ByteArray(uncompressedSize)
     var producedSize = 0
+    var broken = false
 
     memScoped {
         val stream = alloc<z_stream>()
@@ -40,7 +42,7 @@ internal actual fun inflateRaw(compressedData: ByteArray, uncompressedSize: Int)
             zlibVersion()?.toKString(),
             sizeOf<z_stream>().toInt(),
         )
-        if (initResult != Z_OK) return@memScoped
+        require(initResult == Z_OK) { "zlib would not start: $initResult" }
 
         compressedData.usePinned { inPinned ->
             output.usePinned { outPinned ->
@@ -49,15 +51,32 @@ internal actual fun inflateRaw(compressedData: ByteArray, uncompressedSize: Int)
                 stream.next_out = outPinned.addressOf(0).reinterpret()
                 stream.avail_out = uncompressedSize.toUInt()
 
-                val result = inflate(stream.ptr, 0)
+                val result = inflate(stream.ptr, Z_NO_FLUSH)
+
+                // Finished, or out of input with the stream still well formed -
+                // which is what a stream cut short answers, and what this used
+                // to throw away. Whatever zlib decoded before it ran out is
+                // already in the buffer and is a prefix of the real thing,
+                // which is exactly what the JVM's Inflater loop hands back from
+                // the same situation.
+                //
+                // Anything else is data that is not a DEFLATE stream, and has
+                // to be told apart from a short one rather than quietly
+                // becoming an empty array: `ZipArchiveReader` reads this
+                // through a `runCatching`, and on this platform there was never
+                // anything for it to catch.
                 if (result == Z_OK || result == Z_STREAM_END) {
                     producedSize = uncompressedSize - stream.avail_out.toInt()
+                } else {
+                    broken = true
                 }
             }
         }
 
         inflateEnd(stream.ptr)
     }
+
+    require(!broken) { "Not a DEFLATE stream" }
 
     return if (producedSize == uncompressedSize) output else output.copyOf(producedSize)
 }

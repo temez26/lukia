@@ -2,6 +2,33 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!--
+	    Which languages the app is offered in. Declared because iOS decides an
+	    app's language by intersecting the reader's preferred languages with
+	    this list, and there is nothing else here for it to read: Compose
+	    Multiplatform keeps its translations inside the shared framework rather
+	    than in `.lproj` folders, so without this the bundle looks like an
+	    English-only app and a Finnish device is answered in English - while the
+	    same build on Android reads Finnish.
+
+	    Kept in step with `shared/src/commonMain/composeResources`, which is
+	    where the translations themselves are. English is the language the app
+	    was written in and so the one it falls back to.
+	-->
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>da</string>
+		<string>de</string>
+		<string>es</string>
+		<string>fi</string>
+		<string>fr</string>
+		<string>it</string>
+		<string>nb</string>
+		<string>nl</string>
+		<string>pl</string>
+		<string>sv</string>
+	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<!--

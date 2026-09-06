@@ -5,7 +5,15 @@ package io.lukia.core.infrastructure.archive
  *
  * Returns fewer bytes than [uncompressedSize] when the stream ends early, so a
  * caller that does not know the decoded size up front can pass a ceiling and
- * read the real length from what comes back.
+ * read the real length from what comes back. A stream cut short is not a
+ * failure: what was decoded before it ran out is a prefix of the real thing, and
+ * a chapter of a damaged book is worth more to a reader than nothing at all.
+ *
+ * Throws when the data is not a DEFLATE stream, which is a different thing and
+ * has to stay distinguishable from the first: every caller here wraps this in
+ * `runCatching`, and that wrapping means nothing on a platform that answers a
+ * stream of rubbish with an empty array. Said here rather than left to each
+ * implementation because it is the half the three of them had drifted on.
  */
 internal expect fun inflateRaw(compressedData: ByteArray, uncompressedSize: Int): ByteArray
 

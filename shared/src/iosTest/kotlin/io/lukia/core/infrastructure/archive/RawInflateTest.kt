@@ -4,6 +4,7 @@ import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -43,11 +44,33 @@ class RawInflateTest {
         assertContentEquals(ByteArray(0), inflateRaw(RAW_DEFLATE, 0))
     }
 
+    /**
+     * Told apart from a short stream rather than answered with an empty array -
+     * see the contract on `inflateRaw`. `ZipArchiveReader` reads every EPUB
+     * entry through a `runCatching`, and until this threw there was nothing on
+     * this platform for it to catch.
+     */
     @Test
-    fun somethingThatIsNotADeflateStreamInflatesToNothing() {
+    fun somethingThatIsNotADeflateStreamIsRefused() {
         val rubbish = Random(0).nextBytes(RUBBISH_BYTES)
 
-        assertTrue(inflateRaw(rubbish, COMPRESSED_TEXT.length).isEmpty())
+        assertFailsWith<IllegalArgumentException> {
+            inflateRaw(rubbish, COMPRESSED_TEXT.length)
+        }
+    }
+
+    /**
+     * A book that was cut off part-way through a download is still a book with
+     * a first chapter in it, and the JVM's inflater has always handed that back.
+     */
+    @Test
+    fun aStreamThatStopsPartWayThroughGivesBackWhatItHad() {
+        val truncated = RAW_DEFLATE.copyOf(RAW_DEFLATE.size - TAIL_CUT)
+
+        val inflated = inflateRaw(truncated, COMPRESSED_TEXT.length).decodeToString()
+
+        assertTrue(inflated.isNotEmpty(), "nothing came back from a stream that had a start")
+        assertTrue(COMPRESSED_TEXT.startsWith(inflated), "what came back was not the start of it")
     }
 
     /** The wrapped form, which is what a PDF's FlateDecode filter produces. */
@@ -80,6 +103,7 @@ class RawInflateTest {
 
         const val ROOM_TO_SPARE = 512
         const val RUBBISH_BYTES = 64
+        const val TAIL_CUT = 6
         const val MAX_OUTPUT = 4096
     }
 }

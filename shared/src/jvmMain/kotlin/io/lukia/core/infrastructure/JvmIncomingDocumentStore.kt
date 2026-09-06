@@ -13,10 +13,15 @@ import java.nio.file.StandardCopyOption
  * Kept beside the working copies, under the same per-user directory everything
  * else the desktop build stores between runs lives in.
  *
- * The desktop has no share sheet to receive from, so in practice this serves
- * a file opened from the command line or dropped on the window. It is
- * registered all the same: the graph is common, and a store that exists on two
- * platforms out of three is a null check at every call site.
+ * The desktop has no share sheet to receive from. What it has instead are the
+ * two ways a desktop is handed a document at all - dropped on the window, or
+ * named on the command line by whatever opened it - and both arrive here through
+ * `deliverIncomingDocuments`.
+ *
+ * Copied rather than pointed at, even though a desktop path is one the app could
+ * keep. A book dragged out of a downloads folder is a book that will be tidied
+ * out of it, and a shelf holding a path to a file the reader has since deleted
+ * is a shelf that fails to open a book it is still showing.
  */
 class JvmIncomingDocumentStore(
     /** Injectable so tests can work in a temporary directory. */

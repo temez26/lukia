@@ -5,10 +5,8 @@ import androidx.compose.runtime.remember
 import io.lukia.core.domain.document.PickedDocument
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSURL
-import platform.UIKit.UIApplication
 import platform.UIKit.UIDocumentPickerDelegateProtocol
 import platform.UIKit.UIDocumentPickerViewController
-import platform.UIKit.UIWindow
 import platform.UniformTypeIdentifiers.UTType
 import platform.UniformTypeIdentifiers.UTTypeEPUB
 import platform.UniformTypeIdentifiers.UTTypePDF
@@ -87,18 +85,7 @@ actual fun rememberPlatformFilePicker(): PlatformFilePickerState {
                 delegate = pickerDelegate
                 picker.delegate = pickerDelegate
 
-                val window =
-                    UIApplication.sharedApplication.windows
-                        .firstOrNull() as? UIWindow
-
-                val rootViewController =
-                    window?.rootViewController
-
-                rootViewController?.presentViewController(
-                    picker,
-                    animated = true,
-                    completion = null,
-                )
+                presentOverApp(picker)
             }
         }
     }
