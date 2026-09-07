@@ -244,6 +244,9 @@
     <string name="library_close_menu">Close menu</string>
     <string name="library_import_books">Import Books</string>
     <string name="library_add_folder">Add Folder</string>
+    <string name="library_importing">Importing…</string>
+    <string name="library_importing_count">Importing %1$d of %2$d…</string>
+    <string name="library_import_stop">Stop</string>
     <string name="library_settings">Settings</string>
     <string name="library_missing_files">Missing Files (%1$d)</string>
     <string name="library_duplicates">Duplicates (%1$d)</string>

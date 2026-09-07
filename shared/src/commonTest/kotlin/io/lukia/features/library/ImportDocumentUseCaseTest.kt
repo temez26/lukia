@@ -150,6 +150,8 @@ class ImportDocumentUseCaseTest {
         private val documentInfo: DocumentInfo,
     ) : DocumentAnalyzer {
 
+        override suspend fun exists(document: PickedDocument): Boolean = true
+
         override suspend fun analyze(
             document: PickedDocument,
         ): DocumentInfo = documentInfo
@@ -158,6 +160,8 @@ class ImportDocumentUseCaseTest {
     private class FailingDocumentAnalyzer(
         private val exception: Exception,
     ) : DocumentAnalyzer {
+
+        override suspend fun exists(document: PickedDocument): Boolean = true
 
         override suspend fun analyze(
             document: PickedDocument,

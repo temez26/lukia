@@ -65,11 +65,11 @@ val libraryModule = module {
     }
 
     single {
-        RefreshDocumentUseCase(get(), get())
+        RefreshDocumentUseCase(get(), get(), get())
     }
 
     single {
-        RemoveDocumentUseCase(get(), get(), get(), get())
+        RemoveDocumentUseCase(get(), get(), get(), get(), get())
     }
 
     // How the shelf is laid out is remembered between sessions, and read back by

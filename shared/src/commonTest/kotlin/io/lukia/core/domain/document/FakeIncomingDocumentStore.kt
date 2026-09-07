@@ -14,6 +14,7 @@ class FakeIncomingDocumentStore(
 ) : IncomingDocumentStore {
 
     val kept = mutableListOf<String>()
+    val discarded = mutableListOf<String>()
 
     override suspend fun keep(document: IncomingDocument): PickedDocument {
         require(!failing) { "Could not read ${document.fileName}" }
@@ -28,5 +29,10 @@ class FakeIncomingDocumentStore(
             extension = document.extension,
             location = "/incoming/${document.fileName}",
         )
+    }
+
+    /** Records the copies a real store would delete, and ignores everything else. */
+    override suspend fun discard(location: String) {
+        if (location.startsWith("/incoming/")) discarded.add(location)
     }
 }

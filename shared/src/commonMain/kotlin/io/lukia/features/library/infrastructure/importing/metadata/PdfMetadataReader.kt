@@ -55,8 +55,24 @@ internal fun extractPdfMetadata(pdfBytes: ByteArray): BookMetadata? {
 private fun String.isPlausibleTitle(): Boolean {
     val trimmed = trim()
 
-    return trimmed.length >= MinimumTitleLength && NotATitle.none { it(trimmed) }
+    return trimmed.isLongEnoughToBeATitle() && NotATitle.none { it(trimmed) }
 }
+
+/**
+ * One character is an initial, not a title - in an alphabet. In a script that
+ * writes a whole word in one character it is a book: 道 and 詩 are both titles
+ * a publisher has actually used, and a rule counting characters was measuring
+ * the alphabet rather than the book.
+ */
+private fun String.isLongEnoughToBeATitle(): Boolean = when (length) {
+    0 -> false
+    1 -> this[0].writesAWordAlone()
+    else -> true
+}
+
+/** Kana and the CJK ideographs, then the hangul syllables. */
+private fun Char.writesAWordAlone(): Boolean =
+    code in 0x3040..0x9FFF || code in 0xAC00..0xD7AF
 
 private val ProducerPrefix = Regex(
     """^(microsoft\s+word|microsoft\s+powerpoint|microsoft\s+excel|untitled)\b""",
@@ -114,6 +130,3 @@ private val NotATitle: List<(String) -> Boolean> = listOf(
     // A bare UUID or hash, which is what a scanning workflow leaves behind.
     HexBlob::matches,
 )
-
-/** One character is an initial, not a title. */
-private const val MinimumTitleLength = 2

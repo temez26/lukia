@@ -5,6 +5,7 @@ import io.lukia.core.domain.AppError
 import io.lukia.core.domain.document.CoverImage
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.domain.document.FakeIncomingDocumentStore
 import io.lukia.core.domain.document.TestDocuments
 import io.lukia.core.domain.reading.FakePdfLayoutRepository
 import io.lukia.core.domain.reading.FakeReadingProgressRepository
@@ -186,11 +187,13 @@ class BookDetailViewModelTest : MainDispatcherTest() {
                 libraryRepository = repository,
                 dispatcher = UnconfinedTestDispatcher(),
             ),
+            documentAnalyzer = analyzer,
             dispatcher = UnconfinedTestDispatcher(),
         ),
         removeDocumentUseCase = RemoveDocumentUseCase(
             repository,
             FakeDocumentWorkspace(),
+            FakeIncomingDocumentStore(),
             FakeReadingProgressRepository(),
             FakePdfLayoutRepository(),
         ),

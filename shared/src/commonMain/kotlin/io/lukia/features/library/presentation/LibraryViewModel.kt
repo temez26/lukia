@@ -246,6 +246,9 @@ class LibraryViewModel(
 
     fun importFolder(pickedFolder: PickedFolder) = importSession.importFolder(pickedFolder)
 
+    /** Stops the running import, keeping the books that already arrived. */
+    fun cancelImport() = importSession.cancel()
+
     /**
      * Deriving the new value from [document] keeps the toggle decision out of
      * the composable.
@@ -283,7 +286,15 @@ class LibraryViewModel(
 
         viewModelScope.launch {
             runCatchingApp { refreshDocumentUseCase(location).getOrThrow() }
-                .onFailure { _message.value = LibraryMessage.Failed(it.toAppError()) }
+                .onFailure {
+                    _message.value = LibraryMessage.Failed(it.toAppError())
+
+                    // Read again even though this failed: a re-reading that
+                    // finds the file gone writes that down on the row, and the
+                    // shelf would otherwise go on showing the book as present
+                    // until something else happened to reload it.
+                    loadDocuments()
+                }
                 .onSuccess { refreshed ->
                     // Patched in place rather than re-read, for the reason
                     // favouriting is: one row changing is not a reason to pull

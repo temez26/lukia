@@ -8,11 +8,13 @@ import io.lukia.core.domain.document.TestDocuments
 import io.lukia.core.presentation.UiState
 import io.lukia.features.library.TypeFromExtensionAnalyzer
 import io.lukia.features.library.presentation.model.LibraryMessage
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  * Putting books into the library: one file, a folder of them, and every way
@@ -70,6 +72,36 @@ class LibraryImportTest : MainDispatcherTest() {
 
         assertEquals(LibraryMessage.Failed(AppError.Unexpected()), viewModel.message.value)
         assertFalse(viewModel.isImporting.value)
+    }
+
+    /**
+     * A folder can hold thousands of books, each one opened and its cover
+     * rendered, and until this the only way out of one was to kill the app -
+     * which stops at the same book and says nothing about how far it got.
+     */
+    @Test
+    fun stoppingAnImportKeepsTheBooksThatAlreadyArrived() = runTest {
+        val arrived = pdfDocumentInfo(location = "/test/one.pdf")
+        val repository = FakeLibraryRepository()
+
+        val viewModel = createViewModel(
+            repository = repository,
+            analyzer = HaltingDocumentAnalyzer(
+                haltAt = "/test/two.pdf",
+                halted = CompletableDeferred(),
+            ),
+        )
+
+        viewModel.importDocuments(
+            listOf(arrived.document, TestDocuments.pdf(location = "/test/two.pdf")),
+        )
+
+        assertTrue(viewModel.isImporting.value)
+
+        viewModel.cancelImport()
+
+        assertFalse(viewModel.isImporting.value)
+        assertEquals(listOf(arrived), viewModel.documents())
     }
 
     /** An import failing must not blank out a library the user can still read. */

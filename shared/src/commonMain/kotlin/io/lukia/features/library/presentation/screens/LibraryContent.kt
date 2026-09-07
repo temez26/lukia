@@ -31,17 +31,16 @@ import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.library.presentation.BookDetailOverlay
 import io.lukia.features.library.presentation.components.toolbar.LibraryNavBar
 import io.lukia.features.library.presentation.components.toolbar.libraryNavBarHeight
-import io.lukia.features.library.presentation.model.ImportProgress
 import io.lukia.features.library.presentation.model.LibraryBook
 import io.lukia.features.library.presentation.model.LibraryFacets
 import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.library.presentation.model.OpenMenu
+import io.lukia.features.library.presentation.sessions.LibraryImportUi
 import io.lukia.features.library.presentation.sessions.LibraryShelfUi
 import io.lukia.resources.Res
 import io.lukia.resources.action_try_again
 import io.lukia.shared.presentation.components.launch.rememberLaunchReveal
 import io.lukia.shared.presentation.components.menu.ActionMenuScrim
-import io.lukia.shared.presentation.components.state.LoadingState
 import io.lukia.shared.presentation.components.state.UiStateContent
 import io.lukia.shared.presentation.components.surface.behindOverlay
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
@@ -82,13 +81,12 @@ fun LibraryContent(
     onRefresh: (DocumentInfo) -> Unit,
     onDelete: (DocumentInfo) -> Unit,
     onRetry: () -> Unit,
-    isImporting: Boolean,
     /**
-     * How far through a multi-file import the library is, when there is more
-     * than one file to count. Defaulted to nothing so this screen still composes
-     * without a ViewModel behind it, which is how it is tested and previewed.
+     * Whether an import is running, how far through it is, and the way to stop
+     * it. Defaulted to nothing running so this screen still composes without a
+     * ViewModel behind it, which is how it is tested and previewed.
      */
-    importProgress: ImportProgress? = null,
+    importing: LibraryImportUi = LibraryImportUi.None,
     onSettings: () -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     /**
@@ -195,7 +193,7 @@ fun LibraryContent(
                         // only for when there is nothing else to show yet.
                         val contentState = when {
                             loaded.isNotEmpty() -> LibraryContentState.Content
-                            isImporting -> LibraryContentState.Importing
+                            importing.isImporting -> LibraryContentState.Importing
                             else -> LibraryContentState.Empty
                         }
 
@@ -212,8 +210,8 @@ fun LibraryContent(
                             label = "libraryContent",
                         ) { state ->
                             when (state) {
-                                LibraryContentState.Importing -> LoadingState(
-                                    message = importingMessage(importProgress),
+                                LibraryContentState.Importing -> ImportingState(
+                                    importing = importing,
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .padding(top = libraryNavBarHeight()),
@@ -235,8 +233,7 @@ fun LibraryContent(
                                     query = query,
                                     facets = facets,
                                     onQueryChange = onQueryChange,
-                                    isImporting = isImporting,
-                                    importProgress = importProgress,
+                                    importing = importing,
                                     reveal = reveal,
                                     onDocumentClick = onDocumentClick,
                                     onDocumentDetails = { document ->

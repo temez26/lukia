@@ -118,6 +118,44 @@ class ImportDocumentsUseCaseTest {
         )
     }
 
+    /**
+     * A folder walked through a symlink back into itself hands the same path in
+     * twice. Reading it twice is a second cover rendered to produce the row the
+     * first one already stored, and it made one book arrive as two.
+     */
+    @Test
+    fun theSameFileHandedInTwiceIsOneBook() = runTest {
+        val book = TestDocuments.pdf(location = "/test/book.pdf")
+        val repository = FakeImportLibraryRepository()
+        val analyzed = mutableListOf<String>()
+
+        val summary = ImportDocumentsUseCase(
+            importDocumentUseCase = ImportDocumentUseCase(
+                documentAnalyzer = RecordingAnalyzer(analyzed),
+                libraryRepository = repository,
+                dispatcher = UnconfinedTestDispatcher(testScheduler),
+            ),
+            libraryRepository = repository,
+            dispatcher = UnconfinedTestDispatcher(testScheduler),
+        )(listOf(book, book, TestDocuments.epub(location = "/test/novel.epub"))).getOrThrow()
+
+        assertEquals(ImportSummary(imported = 2, alreadyInLibrary = 0, failed = 0), summary)
+        assertEquals(listOf(book.location, "/test/novel.epub"), analyzed)
+    }
+
+    /** The count a progress notice reads from is what is left after that, not what was handed in. */
+    @Test
+    fun repeatedFilesAreNotCountedInTheProgressTotal() = runTest {
+        val book = TestDocuments.pdf(location = "/test/book.pdf")
+        val seen = mutableListOf<Pair<Int, Int>>()
+
+        createUseCase(FakeImportLibraryRepository())(
+            listOf(book, book, TestDocuments.epub(location = "/test/novel.epub")),
+        ) { completed, total -> seen += completed to total }
+
+        assertEquals(listOf(1 to 2, 2 to 2), seen)
+    }
+
     @Test
     fun reportsProgressAfterEachFile() = runTest {
         val seen = mutableListOf<Pair<Int, Int>>()
@@ -152,6 +190,10 @@ class ImportDocumentsUseCaseTest {
     ) : io.lukia.features.library.domain.DocumentAnalyzer {
 
         private val delegate = TypeFromExtensionAnalyzer()
+
+        override suspend fun exists(
+            document: io.lukia.core.domain.document.PickedDocument,
+        ): Boolean = delegate.exists(document)
 
         override suspend fun analyze(document: io.lukia.core.domain.document.PickedDocument): DocumentInfo {
             analyzed += document.location

@@ -108,7 +108,6 @@ class LibrarySelectionModeTest {
                         onRefresh = {},
                         onDelete = {},
                         onRetry = {},
-                        isImporting = false,
                         shelf = LibraryShelfUi(
                             selection = selection,
                             running = running,

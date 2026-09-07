@@ -1,6 +1,7 @@
 package io.lukia.core.infrastructure
 
 import android.content.Context
+import android.net.Uri
 import androidx.core.content.FileProvider
 import io.lukia.core.domain.document.IncomingDocument
 import io.lukia.core.domain.document.IncomingDocumentStore
@@ -51,6 +52,28 @@ class AndroidIncomingDocumentStore(
                 location = uri.toString(),
             )
         }
+
+    /**
+     * Only what this app's own provider serves. A picked book is a `content://`
+     * URI from someone else's provider - a cloud drive, the Downloads app - and
+     * asking one of those to delete would be deleting the reader's own file, so
+     * the authority is checked before anything is asked at all.
+     */
+    override suspend fun discard(location: String) {
+        withContext(Dispatchers.IO) {
+            val uri = Uri.parse(location)
+
+            if (uri.authority != authority()) return@withContext
+
+            // FileProvider answers a delete by deleting the file it serves, so
+            // there is no second path to the copy to keep in step with this.
+            //
+            // A refusal is ignored on purpose: the copy staying is a wasted
+            // file rather than a wrong shelf, and there is nothing the reader
+            // could usefully be told about it.
+            runCatching { context.contentResolver.delete(uri, null, null) }
+        }
+    }
 
     /**
      * Built from the package name rather than written out, so the debug build's

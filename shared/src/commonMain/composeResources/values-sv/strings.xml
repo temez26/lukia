@@ -195,6 +195,9 @@
     <string name="library_close_menu">Stäng menyn</string>
     <string name="library_import_books">Importera böcker</string>
     <string name="library_add_folder">Lägg till mapp</string>
+    <string name="library_importing">Importerar…</string>
+    <string name="library_importing_count">Importerar %1$d av %2$d…</string>
+    <string name="library_import_stop">Stoppa</string>
     <string name="library_settings">Inställningar</string>
     <string name="library_missing_files">Saknade filer (%1$d)</string>
     <string name="library_duplicates">Dubbletter (%1$d)</string>

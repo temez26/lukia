@@ -19,6 +19,12 @@ class IOSDocumentAnalyzer(
     private val diagnostics: Diagnostics = Diagnostics.None,
 ) : DocumentAnalyzer {
 
+    override suspend fun exists(document: PickedDocument): Boolean {
+        val path = NSURL.URLWithString(document.location)?.path ?: return false
+
+        return NSFileManager.defaultManager.fileExistsAtPath(path)
+    }
+
     override suspend fun analyze(
         document: PickedDocument,
     ): DocumentInfo {

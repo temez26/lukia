@@ -52,4 +52,20 @@ interface IncomingDocumentStore {
      * library untouched rather than half-added-to.
      */
     suspend fun keep(document: IncomingDocument): PickedDocument
+
+    /**
+     * Deletes the copy kept at [location], if that copy is one of these.
+     *
+     * A no-op for every other location, and that limit is the whole of it: most
+     * of a library is files the reader keeps themselves, and removing a book
+     * from the shelf must never delete one of those - see [DocumentWorkspace],
+     * which draws the same line around its own directory.
+     *
+     * What this is for is the other kind. A book handed to the app has no
+     * original left to point at, so the copy [keep] made *is* the book, and it
+     * is filed under a name nothing but the removed row could ever have named.
+     * Without this, sharing a book in and later dropping it from the library
+     * leaves the whole of it on the device with no way left to reach it.
+     */
+    suspend fun discard(location: String)
 }

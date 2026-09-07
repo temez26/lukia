@@ -26,13 +26,13 @@ import io.lukia.features.library.presentation.components.book.ImportBookRow
 import io.lukia.features.library.presentation.components.selection.CardSelection
 import io.lukia.features.library.presentation.components.toolbar.LibraryHeader
 import io.lukia.features.library.presentation.components.toolbar.libraryNavBarHeight
-import io.lukia.features.library.presentation.model.ImportProgress
 import io.lukia.features.library.presentation.model.LibraryBook
 import io.lukia.features.library.presentation.model.LibraryFacets
 import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.library.presentation.model.LibrarySelection
 import io.lukia.features.library.presentation.model.LibraryShelf
 import io.lukia.features.library.presentation.model.OpenMenu
+import io.lukia.features.library.presentation.sessions.LibraryImportUi
 import io.lukia.resources.Res
 import io.lukia.resources.library_no_matches_filtered
 import io.lukia.resources.library_no_matches_filtered_term
@@ -62,8 +62,7 @@ internal fun LibraryGrid(
     query: LibraryQuery,
     facets: LibraryFacets,
     onQueryChange: (LibraryQuery) -> Unit,
-    isImporting: Boolean,
-    importProgress: ImportProgress?,
+    importing: LibraryImportUi,
     reveal: LaunchReveal,
     onDocumentClick: (DocumentInfo) -> Unit,
     onDocumentDetails: (DocumentInfo) -> Unit,
@@ -113,8 +112,7 @@ internal fun LibraryGrid(
                 onQueryChange = onQueryChange,
                 openMenu = openMenu,
                 onOpenMenuChange = onOpenMenuChange,
-                isImporting = isImporting,
-                importProgress = importProgress,
+                importing = importing,
                 reveal = reveal,
                 layout = layout,
                 onLayoutChange = onLayoutChange,

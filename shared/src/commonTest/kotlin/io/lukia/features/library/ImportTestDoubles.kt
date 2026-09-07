@@ -13,7 +13,12 @@ import io.lukia.features.library.domain.LibraryRepository
  */
 class TypeFromExtensionAnalyzer(
     private val failingLocations: Set<String> = emptySet(),
+    /** Locations whose file has gone, which is not the same as one that fails to open. */
+    private val missingLocations: Set<String> = emptySet(),
 ) : DocumentAnalyzer {
+
+    override suspend fun exists(document: PickedDocument): Boolean =
+        document.location !in missingLocations
 
     override suspend fun analyze(document: PickedDocument): DocumentInfo {
         require(document.location !in failingLocations) {

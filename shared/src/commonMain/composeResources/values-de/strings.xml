@@ -171,6 +171,9 @@
     <string name="library_close_menu">Menü schließen</string>
     <string name="library_import_books">Bücher importieren</string>
     <string name="library_add_folder">Ordner hinzufügen</string>
+    <string name="library_importing">Wird importiert…</string>
+    <string name="library_importing_count">%1$d von %2$d werden importiert…</string>
+    <string name="library_import_stop">Anhalten</string>
     <string name="library_settings">Einstellungen</string>
     <string name="library_missing_files">Fehlende Dateien (%1$d)</string>
     <string name="library_duplicates">Doppelte (%1$d)</string>

@@ -170,6 +170,9 @@
     <string name="library_close_menu">Lukk menyen</string>
     <string name="library_import_books">Importer bøker</string>
     <string name="library_add_folder">Legg til mappe</string>
+    <string name="library_importing">Importerer…</string>
+    <string name="library_importing_count">Importerer %1$d av %2$d…</string>
+    <string name="library_import_stop">Stopp</string>
     <string name="library_settings">Innstillinger</string>
     <string name="library_missing_files">Manglende filer (%1$d)</string>
     <string name="library_duplicates">Duplikater (%1$d)</string>

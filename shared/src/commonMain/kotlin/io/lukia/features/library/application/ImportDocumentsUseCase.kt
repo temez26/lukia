@@ -44,7 +44,15 @@ class ImportDocumentsUseCase(
         // should cost two imports rather than five hundred.
         val known = libraryRepository.knownLocations()
 
-        documents.singleOrNull()?.let { only ->
+        // One file named twice is one file. A folder walked through a symlink
+        // back into itself, or a picker that answers with a selection twice,
+        // hands the same location in more than once - and every one of those
+        // repeats was a second reading of the file and a second cover rendered,
+        // to produce the row the first one already stored. The count said two
+        // books arrived where one did.
+        val picked = documents.distinctBy { it.location }
+
+        picked.singleOrNull()?.let { only ->
             onProgress(1, 1)
 
             if (only.location in known) {
@@ -68,7 +76,7 @@ class ImportDocumentsUseCase(
         // Sequential on purpose: ImportDocumentUseCase does CPU-bound cover
         // rendering, so fanning out would just contend for the same cores and
         // spike memory on large folders.
-        documents.forEachIndexed { index, document ->
+        picked.forEachIndexed { index, document ->
             if (document.location in known) {
                 alreadyInLibrary++
             } else {
@@ -88,7 +96,7 @@ class ImportDocumentsUseCase(
                     .onFailure { failed++ }
             }
 
-            onProgress(index + 1, documents.size)
+            onProgress(index + 1, picked.size)
         }
 
         Result.success(

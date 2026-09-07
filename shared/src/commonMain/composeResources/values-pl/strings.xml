@@ -186,6 +186,9 @@
     <string name="library_close_menu">Zamknij menu</string>
     <string name="library_import_books">Importuj książki</string>
     <string name="library_add_folder">Dodaj folder</string>
+    <string name="library_importing">Importowanie…</string>
+    <string name="library_importing_count">Importowanie %1$d z %2$d…</string>
+    <string name="library_import_stop">Zatrzymaj</string>
     <string name="library_settings">Ustawienia</string>
     <string name="library_missing_files">Brakujące pliki (%1$d)</string>
     <string name="library_duplicates">Duplikaty (%1$d)</string>

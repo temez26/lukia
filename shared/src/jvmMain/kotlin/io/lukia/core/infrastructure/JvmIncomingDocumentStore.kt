@@ -51,6 +51,19 @@ class JvmIncomingDocumentStore(
         }
 
     /**
+     * Only inside this directory. A desktop location is an ordinary path, so
+     * without the check this would happily delete the reader's own copy of a
+     * book they imported from their downloads folder.
+     */
+    override suspend fun discard(location: String) {
+        withContext(Dispatchers.IO) {
+            val file = File(location)
+
+            if (file.parentFile?.absoluteFile == directory.absoluteFile) file.delete()
+        }
+    }
+
+    /**
      * Writes through a scratch file and moves it into place, so a write cut
      * short by the process dying never leaves a half-written file under the name
      * the library is about to store.

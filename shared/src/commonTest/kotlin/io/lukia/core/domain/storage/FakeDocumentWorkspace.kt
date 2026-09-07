@@ -12,6 +12,9 @@ class FakeDocumentWorkspace : DocumentWorkspace {
     val copied = mutableListOf<String>()
     val discarded = mutableListOf<String>()
 
+    /** Run as a copy is discarded, so a test can assert on what is true at that moment. */
+    var onDiscard: suspend (location: String) -> Unit = {}
+
     override suspend fun workingCopy(document: DocumentInfo): WorkingCopy {
         val location = document.document.location
         copied.add(location)
@@ -23,6 +26,7 @@ class FakeDocumentWorkspace : DocumentWorkspace {
     }
 
     override suspend fun discard(location: String) {
+        onDiscard(location)
         discarded.add(location)
     }
 }
