@@ -359,6 +359,34 @@ jvmTestTask.configure {
  * Classpath and class directories come from `jvmTest` rather than being rebuilt
  * here, so the two cannot drift into running the same code differently.
  */
+/**
+ * The tests about what an update does to a library that already exists.
+ *
+ * A task of its own because CI runs `jvmCommonTest`, which is `commonTest` and
+ * nothing else - and these cannot live there: they drive a real SQLite through
+ * the JDBC driver, which is the JVM's. So the one suite in this project that
+ * stands between a reader and losing their library to an update was the one
+ * suite CI never ran, and would have gone on not running until somebody noticed
+ * a migration had been broken for three releases.
+ *
+ * It wants no display and no emulator and it takes under a second, which is why
+ * it goes to CI rather than joining the local-only half of `jvmTest`.
+ */
+tasks.register<Test>("jvmMigrationTest") {
+    group = "verification"
+    description = "Runs the schema and migration tests, which CI would otherwise not run."
+
+    val jvmTest = jvmTestTask.get()
+    testClassesDirs = jvmTest.testClassesDirs
+    classpath = jvmTest.classpath
+
+    filter {
+        // A pattern that matches nothing means a test silently stopped running.
+        isFailOnNoMatchingTests = true
+        includeTestsMatching("io.lukia.core.infrastructure.db.*")
+    }
+}
+
 tasks.register<Test>("jvmCommonTest") {
     group = "verification"
     description = "Runs the common tests on the JVM, leaving the platform ones out."

@@ -13,10 +13,18 @@
 -- are written and replaced together, and a book re-read at a different size
 -- stores a different count for the same place in it.
 --
--- Not a foreign key on `document`, which would tie this to a table it has no
--- reason to be locked to - a position can be stored for a book the library was
--- never told about. Removing a book clears its position all the same; that is
--- `RemoveDocumentUseCase`'s doing rather than the schema's.
+-- A foreign key on `document`, cascading. Every route into this table goes
+-- through a book the library already holds - the reader refuses to open a
+-- location the catalogue does not know - so the row has no life of its own to
+-- protect, and leaving the rule to `RemoveDocumentUseCase` meant that a process
+-- dying between two of its four writes left a position for a book on no shelf.
+-- Nothing lists those, nothing sweeps them, and nothing can reach them again.
+-- The schema owns the rule now: the position goes when the book does, in the
+-- same statement, whatever the app does next.
+--
+-- Nothing may `INSERT OR REPLACE` into `document`. A replace is a delete and an
+-- insert, and with this key that delete takes the reader's place in the book
+-- with it - which is why the import is `INSERT OR IGNORE` plus an `UPDATE`.
 --
 -- `readAt` orders the shelf by what was read last. It counts writes rather than
 -- telling the time - one past the highest in the table - for the same reason
@@ -24,7 +32,7 @@
 -- backwards, and what this has to answer is only ever "which of these two came
 -- later".
 CREATE TABLE reading_position (
-    location TEXT NOT NULL PRIMARY KEY,
+    location TEXT NOT NULL PRIMARY KEY REFERENCES document(location) ON DELETE CASCADE,
     pageIndex INTEGER NOT NULL,
     pageCount INTEGER NOT NULL,
     readAt INTEGER NOT NULL DEFAULT 0

@@ -42,6 +42,20 @@ CREATE TABLE document (
     metaIdentifier TEXT
 );
 
+-- What `insertIfAbsent` reads to give a new book its place on the shelf.
+--
+-- `MAX(sortKey)` over an unindexed column is a scan of the whole library, and it
+-- runs once per book being imported - so importing a folder of five thousand
+-- cost five thousand scans of a table growing under it, and the last book in
+-- the folder was the most expensive one. With this SQLite answers the same
+-- question from the end of the index without reading a row, which is a
+-- documented special case rather than a hope.
+--
+-- It also happens to be the order `selectAll` asks for. That is not what it is
+-- for: reading every column of every book is a scan whatever the planner does
+-- about the sort, and one library's worth of rows sorts in no time.
+CREATE INDEX document_sortKey ON document(sortKey);
+
 -- The shelf, without the artwork on it.
 --
 -- Every column but `coverImage`, spelled out rather than taken with a `*`,

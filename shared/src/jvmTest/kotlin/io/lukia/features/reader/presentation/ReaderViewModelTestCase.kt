@@ -11,6 +11,7 @@ import io.lukia.core.domain.reading.FakeReadingSessionRepository
 import io.lukia.core.domain.storage.FakeSecretStore
 import io.lukia.core.domain.storage.FakeSettingsStore
 import io.lukia.core.infrastructure.JvmDocumentWorkspace
+import io.lukia.core.infrastructure.shelve
 import io.lukia.core.infrastructure.testDatabase
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
@@ -85,8 +86,10 @@ abstract class ReaderViewModelTestCase {
      * book opens is the point of this, and a fake would only ever return what
      * the fake was told to.
      */
+    protected val database = testDatabase()
+
     protected val progress = SqlReadingProgressRepository(
-        database = testDatabase(),
+        database = database,
         dispatcher = UnconfinedTestDispatcher(),
     )
 
@@ -272,6 +275,11 @@ abstract class ReaderViewModelTestCase {
 
             document.save(file)
         }
+
+        // On the shelf as well as on disk, which is what the name says: a
+        // position is keyed to the book it is about - see `ReadingPosition.sq` -
+        // so a book the library has never heard of has nowhere to store one.
+        database.shelve(file.absolutePath)
 
         return DocumentInfo(
             document = PickedDocument(

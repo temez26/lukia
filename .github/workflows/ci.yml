@@ -49,10 +49,16 @@ jobs:
       #
       # assembleDebug is what compiles androidMain and :androidApp; nothing else
       # in CI touches either. --continue so a failure in one still reports the rest.
+      #
+      # jvmMigrationTest is the schema and migration suite. It cannot be a common
+      # test - it drives real SQLite through the JDBC driver - so without naming
+      # it here, the one suite standing between a reader and losing their library
+      # to an update would be one CI never ran. It takes under a second.
       - name: Build and test
         run: >
           ./gradlew --continue
           :shared:jvmCommonTest
+          :shared:jvmMigrationTest
           :shared:testAndroidHostTest
           :androidApp:assembleDebug
           :desktopApp:compileKotlin

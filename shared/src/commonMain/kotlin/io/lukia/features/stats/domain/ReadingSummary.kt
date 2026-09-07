@@ -106,10 +106,12 @@ private const val RecentLimit = 5
  * the library and the positions stored against it.
  *
  * A pure function of the two, so it is the same answer wherever it is asked and
- * can be tested without a database. Positions are joined onto the library rather
- * than counted on their own: a position can outlive the book it belongs to - the
- * store keys on location and takes no foreign key - and a reader who removed a
- * book from their library should not go on being credited with reading it.
+ * can be tested without a database. Positions are joined onto the library
+ * rather than counted on their own, so that a reader who removed a book from
+ * their library does not go on being credited with reading it. The schema now
+ * says the same thing - a position is deleted with the book it is about - and
+ * this is still the join rather than a count, because a pure function of two
+ * lists should not depend on which of them was written by whom.
  */
 internal fun readingSummary(
     documents: List<DocumentInfo>,

@@ -1,6 +1,7 @@
 package io.lukia.features.reader.infrastructure
 
 import io.lukia.core.domain.reading.ReadingProgress
+import io.lukia.core.infrastructure.shelve
 import io.lukia.core.infrastructure.testDatabase
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -11,7 +12,13 @@ import kotlin.test.assertTrue
 
 class SqlReadingProgressRepositoryTest {
 
-    private val database = testDatabase()
+    /**
+     * Both books are on the shelf before anything is stored about them. A
+     * position is keyed to the book it is about - see `ReadingPosition.sq` - so
+     * saving one for a book no library holds is refused by the database, here
+     * exactly as it would be in the app.
+     */
+    private val database = testDatabase().apply { shelve("/books/one.pdf", "/books/two.pdf") }
 
     private val repository = SqlReadingProgressRepository(
         database = database,

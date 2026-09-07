@@ -1,6 +1,7 @@
 package io.lukia.features.reader.infrastructure
 
 import io.lukia.core.domain.reading.PdfLayout
+import io.lukia.core.infrastructure.shelve
 import io.lukia.core.infrastructure.testDatabase
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -10,8 +11,13 @@ import kotlin.test.assertNull
 
 class SqlPdfLayoutRepositoryTest {
 
+    /**
+     * Both books are on the shelf first: a stored layout is keyed to the book it
+     * is about - see `ReaderLayout.sq` - so one for a book no library holds is
+     * refused by the database, here exactly as it would be in the app.
+     */
     private val repository = SqlPdfLayoutRepository(
-        database = testDatabase(),
+        database = testDatabase().apply { shelve("/books/one.pdf", "/books/two.pdf") },
         dispatcher = UnconfinedTestDispatcher(),
     )
 

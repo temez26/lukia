@@ -36,33 +36,52 @@ private const val TRIM_BATCH = MAX_ENTRIES / 10
  * no cache.
  */
 class SqlTranslationCache(
-    database: LukiaDatabase,
+    private val database: LukiaDatabase,
     /** Injectable so tests can run against a database deterministically. */
     private val dispatcher: CoroutineDispatcher = ioDispatcher(),
 ) : TranslationCache {
 
     private val cache = database.translationCacheQueries
 
+    /**
+     * The read and the stamp that follows it are one transaction, so an entry
+     * cannot be trimmed out from under the answer being returned about it.
+     */
     override suspend fun get(key: TranslationCacheKey): Translation? = withContext(dispatcher) {
-        val stored = cache.selectByKey(key.value).executeAsOneOrNull() ?: return@withContext null
+        database.transactionWithResult {
+            val stored = cache.selectByKey(key.value).executeAsOneOrNull()
+                ?: return@transactionWithResult null
 
-        // Reading is what keeps an entry alive. A sentence somebody keeps coming
-        // back to should outlive the hundred they passed over once.
-        cache.touch(key.value)
+            // Reading is what keeps an entry alive. A sentence somebody keeps
+            // coming back to should outlive the hundred they passed over once.
+            cache.touch(key.value)
 
-        Translation(text = stored.translation, note = stored.note)
+            Translation(text = stored.translation, note = stored.note)
+        }
     }
 
+    /**
+     * The write, the count and the trim are one transaction.
+     *
+     * Two passages translated at once is the ordinary case - the reader taps a
+     * paragraph and the app asks about several sentences - and apart, each of
+     * them counted a table the other was still writing to. Both then saw the
+     * ceiling passed, and both trimmed: a tenth of the cache thrown away twice
+     * for one entry over the line, including entries written since the count
+     * that decided it.
+     */
     override suspend fun put(key: TranslationCacheKey, translation: Translation) =
         withContext(dispatcher) {
-            cache.put(
-                cacheKey = key.value,
-                translation = translation.text,
-                note = translation.note,
-            )
+            database.transaction {
+                cache.put(
+                    cacheKey = key.value,
+                    translation = translation.text,
+                    note = translation.note,
+                )
 
-            if (cache.count().executeAsOne() > MAX_ENTRIES) {
-                cache.trimLeastRecentlyUsed(TRIM_BATCH)
+                if (cache.count().executeAsOne() > MAX_ENTRIES) {
+                    cache.trimLeastRecentlyUsed(TRIM_BATCH)
+                }
             }
         }
 }

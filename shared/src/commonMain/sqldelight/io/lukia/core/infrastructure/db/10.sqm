@@ -1,0 +1,58 @@
+-- Ties a reading position and a chosen layout to the book they are about, so
+-- that removing the book removes them. See `ReadingPosition.sq`.
+--
+-- Until now this was `RemoveDocumentUseCase`'s doing: four writes, to four
+-- stores, in a row. A process that died between the first and the third - and
+-- removing a book is a thing readers do just before closing the app - left a
+-- position and a layout for a book no longer on any shelf. Nothing lists them,
+-- nothing sweeps them, and nothing can ever reach them again, so they were
+-- permanent. The rule belongs in the schema, where one `DELETE` carries it out
+-- atomically whatever the app does next.
+--
+-- The rows already orphaned go first, and they have to: SQLite checks a new
+-- foreign key as the rows are copied into the rebuilt table, so a position
+-- pointing at a book that is gone would fail this migration and take the whole
+-- upgrade with it. What is dropped is exactly what could no longer be read - a
+-- page number for a book the library does not have - and what is kept is every
+-- position and layout belonging to a book still on a shelf.
+DELETE FROM reading_position WHERE location NOT IN (SELECT location FROM document);
+DELETE FROM reader_layout WHERE location NOT IN (SELECT location FROM document);
+
+-- A foreign key cannot be added to a table that already exists, so both tables
+-- are rebuilt: the procedure SQLite documents, minus its steps for the indexes,
+-- triggers and views that neither table has. The copy is a few numbers per book
+-- somebody has actually opened, so it costs nothing even for a large library.
+--
+-- No `PRAGMA foreign_keys = OFF` around it, which that procedure asks for. It
+-- would be a no-op: every driver runs a migration inside a transaction, and
+-- that pragma does nothing inside one. It is not needed either - the orphans
+-- are already gone, and nothing points at either of these tables.
+CREATE TABLE reading_position_rebuilt (
+    location TEXT NOT NULL PRIMARY KEY REFERENCES document(location) ON DELETE CASCADE,
+    pageIndex INTEGER NOT NULL,
+    pageCount INTEGER NOT NULL,
+    readAt INTEGER NOT NULL DEFAULT 0
+);
+
+INSERT INTO reading_position_rebuilt(location, pageIndex, pageCount, readAt)
+SELECT location, pageIndex, pageCount, readAt FROM reading_position;
+
+DROP TABLE reading_position;
+
+ALTER TABLE reading_position_rebuilt RENAME TO reading_position;
+
+CREATE TABLE reader_layout_rebuilt (
+    location TEXT NOT NULL PRIMARY KEY REFERENCES document(location) ON DELETE CASCADE,
+    layout TEXT NOT NULL
+);
+
+INSERT INTO reader_layout_rebuilt(location, layout)
+SELECT location, layout FROM reader_layout;
+
+DROP TABLE reader_layout;
+
+ALTER TABLE reader_layout_rebuilt RENAME TO reader_layout;
+
+-- What `insertIfAbsent` reads to give a new book its place on the shelf, which
+-- until now was a scan of the whole library per book imported. See `Document.sq`.
+CREATE INDEX document_sortKey ON document(sortKey);
