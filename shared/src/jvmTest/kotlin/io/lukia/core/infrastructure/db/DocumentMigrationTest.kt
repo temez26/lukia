@@ -16,43 +16,20 @@ import kotlin.test.assertTrue
  * This is the one change in the schema's life so far that an installed copy of
  * the app has to be carried across, and the failure mode is the worst kind: the
  * columns are missing, every query naming them throws, and the reader's whole
- * library appears to have vanished. So the old schema is written out here
- * verbatim and opened with the current driver, exactly as an existing
- * installation would be.
+ * library appears to have vanished. So the old schema is written out verbatim -
+ * see [versionOneDatabase] - and opened with the current driver, exactly as an
+ * existing installation would be.
  */
 class DocumentMigrationTest {
 
-    /** `document` as it stood at schema version 1, before the metadata columns. */
-    private val version1Schema = """
-        CREATE TABLE document (
-            location TEXT NOT NULL PRIMARY KEY,
-            fileName TEXT NOT NULL,
-            extension TEXT NOT NULL,
-            type TEXT NOT NULL,
-            fileExists INTEGER NOT NULL,
-            sizeBytes INTEGER NOT NULL,
-            isFavorite INTEGER NOT NULL DEFAULT 0,
-            coverImage BLOB,
-            sortKey INTEGER NOT NULL
-        );
-        CREATE TABLE reading_position (
-            location TEXT NOT NULL PRIMARY KEY,
-            pageIndex INTEGER NOT NULL,
-            pageCount INTEGER NOT NULL
-        );
-    """.trimIndent()
-
     /**
-     * A database holding one favourited book, stamped as version 1 - which is
-     * what tells the driver there is a migration to run.
+     * A database of that vintage holding one favourited book. The schema itself
+     * is in [versionOneDatabase], because more than one test starts from it and
+     * two copies of the oldest schema in the world would be two things to keep
+     * in step.
      */
     private fun version1Database(): JdbcSqliteDriver {
-        val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
-
-        version1Schema.split(';')
-            .map { it.trim() }
-            .filter { it.isNotEmpty() }
-            .forEach { driver.execute(null, it, 0) }
+        val driver = versionOneDatabase()
 
         driver.execute(
             null,
@@ -62,8 +39,6 @@ class DocumentMigrationTest {
             """.trimIndent(),
             0,
         )
-
-        driver.execute(null, "PRAGMA user_version = 1", 0)
 
         return driver
     }

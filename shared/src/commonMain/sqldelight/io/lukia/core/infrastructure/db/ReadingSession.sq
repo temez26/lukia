@@ -15,11 +15,15 @@
 -- the wrong date; that is the cost of being able to say "you have read on five
 -- days in a row" at all.
 --
--- Not a foreign key on `document`, for the reason `reading_position` is not
--- either. It also outlives the book on purpose: removing a book from the
--- library forgets where the reader was in it, but the hours they spent reading
--- it happened, and taking them back would rewrite a history the reader can
+-- The one table here with no foreign key on `document`, and the only one that
+-- should not have one. It outlives the book on purpose: removing a book from
+-- the library forgets where the reader was in it, but the hours they spent
+-- reading it happened, and a cascade would rewrite a history the reader can
 -- remember better than the app can.
+--
+-- `deleteByLocation` is how a caller that means it takes those hours back.
+-- Nothing calls it, which is also why `location` carries no index: an index is
+-- a write per sitting, and this one would buy a scan nobody runs.
 CREATE TABLE reading_session (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     location TEXT NOT NULL,

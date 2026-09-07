@@ -26,29 +26,41 @@ private const val TRIM_BATCH = MAX_PAGES / 10
  * no cache.
  */
 internal class SqlWiktionaryPageCache(
-    database: LukiaDatabase,
+    private val database: LukiaDatabase,
     /** Injectable so tests can run against a database deterministically. */
     private val dispatcher: CoroutineDispatcher = ioDispatcher(),
 ) : WiktionaryPageCache {
 
     private val pages = database.wiktionaryPageCacheQueries
 
+    /** Read and stamp as one - see `SqlTranslationCache` for why. */
     override suspend fun get(wiki: String, title: String): CachedPage? = withContext(dispatcher) {
-        val stored = pages.selectPage(wiki, title).executeAsOneOrNull() ?: return@withContext null
+        database.transactionWithResult {
+            val stored = pages.selectPage(wiki, title).executeAsOneOrNull()
+                ?: return@transactionWithResult null
 
-        // Reading is what keeps a page alive. A word somebody keeps coming back
-        // to should outlive the hundred they looked up once.
-        pages.touch(wiki, title)
+            // Reading is what keeps a page alive. A word somebody keeps coming
+            // back to should outlive the hundred they looked up once.
+            pages.touch(wiki, title)
 
-        stored.extract?.let { CachedPage.Text(it) } ?: CachedPage.NoSuchPage
+            stored.extract?.let { CachedPage.Text(it) } ?: CachedPage.NoSuchPage
+        }
     }
 
+    /**
+     * Write, count and trim as one - see `SqlTranslationCache` for why. This
+     * cache is the one where two at once is guaranteed rather than likely:
+     * following an inflected word to the word it is a form of is a second page
+     * fetched for the first.
+     */
     override suspend fun put(wiki: String, title: String, extract: String?) =
         withContext(dispatcher) {
-            pages.put(wiki = wiki, title = title, extract = extract)
+            database.transaction {
+                pages.put(wiki = wiki, title = title, extract = extract)
 
-            if (pages.count().executeAsOne() > MAX_PAGES) {
-                pages.trimLeastRecentlyUsed(TRIM_BATCH)
+                if (pages.count().executeAsOne() > MAX_PAGES) {
+                    pages.trimLeastRecentlyUsed(TRIM_BATCH)
+                }
             }
         }
 }

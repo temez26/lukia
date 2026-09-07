@@ -8,6 +8,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
@@ -65,6 +66,24 @@ class ReadingPositionMigrationTest {
             .filter { it.isNotEmpty() }
             .forEach { driver.execute(null, it, 0) }
 
+        // Both books are on the shelf, as they would be in a real library of
+        // this vintage: nothing could open a book the library did not list, so
+        // nothing could store a position for one. Version 10 leans on that when
+        // it keys positions to documents, and drops any that are not.
+        listOf("/books/moby.epub", "/books/dune.pdf").forEachIndexed { index, location ->
+            val fileName = location.substringAfterLast('/')
+            val sortKey = index + 1
+
+            driver.execute(
+                null,
+                """
+                INSERT INTO document(location, fileName, extension, type, fileExists, sizeBytes, isFavorite, coverImage, sortKey)
+                VALUES ('$location', '$fileName', 'epub', 'EPUB', 1, 2048, 0, NULL, $sortKey)
+                """.trimIndent(),
+                0,
+            )
+        }
+
         driver.execute(
             null,
             """
@@ -113,6 +132,34 @@ class ReadingPositionMigrationTest {
 
         assertEquals(0L, positions.getValue("/books/moby.epub").readAt)
         assertTrue(positions.getValue("/books/dune.pdf").readAt > 0L)
+    }
+
+    /**
+     * Version 10 keys a position to the book it is about, and can only do that
+     * by dropping the ones pointing at no book. Nothing could have created one -
+     * the reader refuses to open a location the library does not list - but a
+     * database is not a proof, so this is what says the migration takes only
+     * those and leaves every position with a book still on the shelf.
+     */
+    @Test
+    fun aPositionForABookNoLongerInTheLibraryDoesNotSurviveTheKey() = runTest {
+        val driver = version3Database()
+
+        driver.execute(
+            null,
+            """
+            INSERT INTO reading_position(location, pageIndex, pageCount)
+            VALUES ('/books/vanished.epub', 7, 90)
+            """.trimIndent(),
+            0,
+        )
+
+        LukiaDatabase.Schema.migrate(driver, oldVersion = 3, newVersion = LukiaDatabase.Schema.version)
+
+        val repository = SqlReadingProgressRepository(LukiaDatabase(driver), Dispatchers.Unconfined)
+
+        assertNull(repository.progressFor("/books/vanished.epub"))
+        assertNotNull(repository.progressFor("/books/moby.epub"))
     }
 
     @Test

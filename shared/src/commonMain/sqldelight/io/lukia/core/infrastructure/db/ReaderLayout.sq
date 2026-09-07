@@ -14,8 +14,12 @@
 -- of reading a document - should there ever be one - is a value here and not a
 -- migration. `PdfLayout` decides what an unreadable name means, which is the
 -- default, exactly as the key-value settings do.
+--
+-- Keyed to `document` and cascading, for the reason `reading_position` is - see
+-- the note there. A choice about how to read a book that is no longer in the
+-- library is not a choice anybody can reach.
 CREATE TABLE reader_layout (
-    location TEXT NOT NULL PRIMARY KEY,
+    location TEXT NOT NULL PRIMARY KEY REFERENCES document(location) ON DELETE CASCADE,
     layout TEXT NOT NULL
 );
 
