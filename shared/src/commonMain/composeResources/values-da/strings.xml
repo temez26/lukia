@@ -19,6 +19,7 @@
     <string name="action_go_back">Tilbage</string>
     <string name="action_try_again">Prøv igen</string>
     <string name="action_close_panel">Luk dette panel</string>
+    <string name="action_explain">Mere om %1$s</string>
     <string name="state_loading">Indlæser</string>
     <string name="menu_book_details">Bogens oplysninger</string>
     <string name="menu_favourite">Føj til favoritter</string>
@@ -385,6 +386,8 @@
     <string name="settings_copy_report">Kopier rapporten</string>
     <string name="settings_diagnostics">Diagnostik</string>
     <string name="settings_diagnostics_footnote">Beholdes på denne enhed, indtil du kopierer den, og sendes aldrig nogen steder. Indeholder ingen bogtekst, ingen titler, ingen filnavne og ingen nøgler.</string>
+    <string name="settings_developer">Udviklerindstillinger</string>
+    <string name="settings_developer_info">Viser diagnostikken og den seneste nedbrudsrapport nederst på denne side. Begge bliver på denne enhed og sendes aldrig nogen steder hen. Slå fra for at skjule dem igen.</string>
     <string name="settings_record_problems">Notér hvad der går galt</string>
     <string name="settings_record_problems_detail">Noterer, når et omslag, en side eller en oversættelse ikke kunne læses, så et problem, du kan beskrive, har noget bag sig. At slå dette fra rydder det noterede.</string>
     <string name="settings_nothing_recorded">Intet noteret endnu. Brug appen, som du gjorde, da det gik galt, og kom så tilbage.</string>

@@ -19,6 +19,7 @@
     <string name="action_go_back">Atrás</string>
     <string name="action_try_again">Reintentar</string>
     <string name="action_close_panel">Cerrar este panel</string>
+    <string name="action_explain">Más sobre %1$s</string>
     <string name="state_loading">Cargando</string>
     <string name="menu_book_details">Datos del libro</string>
     <string name="menu_favourite">Añadir a favoritos</string>
@@ -385,6 +386,8 @@
     <string name="settings_copy_report">Copiar el informe</string>
     <string name="settings_diagnostics">Diagnóstico</string>
     <string name="settings_diagnostics_footnote">Se queda en este dispositivo hasta que lo copies, y nunca se envía a ninguna parte. No contiene texto de libros, ni títulos, ni nombres de archivo, ni claves.</string>
+    <string name="settings_developer">Opciones de desarrollador</string>
+    <string name="settings_developer_info">Muestra el diagnóstico y el último informe de fallo al final de esta página. Ambos se quedan en este dispositivo y nunca se envían a ninguna parte. Desactívalo para volver a ocultarlos.</string>
     <string name="settings_record_problems">Registrar lo que va mal</string>
     <string name="settings_record_problems_detail">Anota cuándo no se ha podido leer una portada, una página o una traducción, para que un problema que puedas describir tenga algo detrás. Desactivarlo borra lo registrado.</string>
     <string name="settings_nothing_recorded">Todavía no hay nada registrado. Usa la aplicación como cuando fue mal, y vuelve luego aquí.</string>

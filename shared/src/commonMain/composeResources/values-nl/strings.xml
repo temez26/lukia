@@ -19,6 +19,7 @@
     <string name="action_go_back">Terug</string>
     <string name="action_try_again">Opnieuw proberen</string>
     <string name="action_close_panel">Dit paneel sluiten</string>
+    <string name="action_explain">Meer over %1$s</string>
     <string name="state_loading">Laden</string>
     <string name="menu_book_details">Gegevens van het boek</string>
     <string name="menu_favourite">Aan favorieten toevoegen</string>
@@ -385,6 +386,8 @@
     <string name="settings_copy_report">Rapport kopiëren</string>
     <string name="settings_diagnostics">Diagnose</string>
     <string name="settings_diagnostics_footnote">Blijft op dit apparaat tot u het kopieert, en wordt nooit ergens heen gestuurd. Bevat geen boektekst, geen titels, geen bestandsnamen en geen sleutels.</string>
+    <string name="settings_developer">Ontwikkelaarsopties</string>
+    <string name="settings_developer_info">Zet de diagnostiek en het laatste crashrapport onder aan deze pagina. Beide blijven op dit apparaat en worden nergens heen gestuurd. Zet dit uit om ze weer te verbergen.</string>
     <string name="settings_record_problems">Vastleggen wat er misgaat</string>
     <string name="settings_record_problems_detail">Noteert wanneer een omslag, een pagina of een vertaling niet gelezen kon worden, zodat een probleem dat u kunt beschrijven iets achter zich heeft. Dit uitzetten wist wat er is vastgelegd.</string>
     <string name="settings_nothing_recorded">Nog niets vastgelegd. Gebruik de app zoals u deed toen het misging, en kom dan terug.</string>

@@ -28,6 +28,7 @@
     <string name="action_go_back">Takaisin</string>
     <string name="action_try_again">Yritä uudelleen</string>
     <string name="action_close_panel">Sulje tämä paneeli</string>
+    <string name="action_explain">Lisätietoja: %1$s</string>
     <string name="state_loading">Ladataan</string>
 
     <string name="menu_book_details">Kirjan tiedot</string>
@@ -447,6 +448,8 @@
     <string name="settings_copy_report">Kopioi raportti</string>
     <string name="settings_diagnostics">Vianmääritys</string>
     <string name="settings_diagnostics_footnote">Säilytetään tällä laitteella kunnes kopioit sen, eikä lähetetä minnekään. Ei sisällä kirjojen tekstiä, nimiä, tiedostonimiä eikä avaimia.</string>
+    <string name="settings_developer">Kehittäjäasetukset</string>
+    <string name="settings_developer_info">Tuo vianmäärityksen ja viimeisimmän kaatumisraportin tämän sivun alaosaan. Molemmat säilyvät tällä laitteella eikä niitä lähetetä minnekään. Poista käytöstä, niin ne piilotetaan taas.</string>
     <string name="settings_record_problems">Tallenna mikä menee vikaan</string>
     <string name="settings_record_problems_detail">Merkitsee muistiin kun kantta, sivua tai käännöstä ei voitu lukea, jotta kuvailemasi ongelman takana on jotain. Tämän ottaminen pois käytöstä tyhjentää tallennetun.</string>
     <string name="settings_nothing_recorded">Ei vielä tallennettua. Käytä sovellusta kuten silloin kun se meni vikaan, ja palaa sitten tänne.</string>

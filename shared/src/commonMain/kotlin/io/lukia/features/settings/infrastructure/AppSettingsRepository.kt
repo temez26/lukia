@@ -39,6 +39,8 @@ class AppSettingsRepository(
             motion = store.readEnum(KEY_MOTION, AppMotion.entries, defaults.motion),
             diagnostics = store.getString(KEY_DIAGNOSTICS)?.toBooleanStrictOrNull()
                 ?: defaults.diagnostics,
+            developerMode = store.getString(KEY_DEVELOPER)?.toBooleanStrictOrNull()
+                ?: defaults.developerMode,
         )
     }
 
@@ -48,6 +50,7 @@ class AppSettingsRepository(
         store.putString(KEY_ACCENT, settings.accent.name)
         store.putString(KEY_MOTION, settings.motion.name)
         store.putString(KEY_DIAGNOSTICS, settings.diagnostics.toString())
+        store.putString(KEY_DEVELOPER, settings.developerMode.toString())
     }
 
     private companion object {
@@ -56,5 +59,6 @@ class AppSettingsRepository(
         const val KEY_ACCENT = "app.accent"
         const val KEY_MOTION = "app.motion"
         const val KEY_DIAGNOSTICS = "app.diagnostics"
+        const val KEY_DEVELOPER = "app.developerMode"
     }
 }

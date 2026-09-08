@@ -118,7 +118,7 @@ private fun LastCrashSection(
 ) {
     SettingsSection(
         title = stringResource(Res.string.settings_last_crash),
-        footnote = stringResource(Res.string.settings_last_crash_footnote),
+        info = stringResource(Res.string.settings_last_crash_footnote),
         groupColor = groupColor,
         modifier = modifier,
     ) {
@@ -176,14 +176,14 @@ private fun DiagnosticsRecordSection(
         // Says where it goes, because that is the whole question somebody has
         // about a setting with this name. Nothing here sends anything: copying
         // is the only way out, and the reader chooses what to paste it into.
-        footnote = stringResource(Res.string.settings_diagnostics_footnote),
+        info = stringResource(Res.string.settings_diagnostics_footnote),
         groupColor = groupColor,
         modifier = modifier,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
             SettingsToggle(
                 label = stringResource(Res.string.settings_record_problems),
-                detail = stringResource(Res.string.settings_record_problems_detail),
+                info = stringResource(Res.string.settings_record_problems_detail),
                 checked = enabled,
                 onChange = onEnabledChange,
             )

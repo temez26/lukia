@@ -21,6 +21,7 @@
     <string name="action_go_back">Wstecz</string>
     <string name="action_try_again">Spróbuj ponownie</string>
     <string name="action_close_panel">Zamknij ten panel</string>
+    <string name="action_explain">Więcej o: %1$s</string>
     <string name="state_loading">Wczytywanie</string>
     <string name="menu_book_details">Szczegóły książki</string>
     <string name="menu_favourite">Dodaj do ulubionych</string>
@@ -405,6 +406,8 @@
     <string name="settings_copy_report">Kopiuj raport</string>
     <string name="settings_diagnostics">Diagnostyka</string>
     <string name="settings_diagnostics_footnote">Zostaje na tym urządzeniu, dopóki jej nie skopiujesz, i nigdy nigdzie nie jest wysyłana. Nie zawiera tekstu książek, tytułów, nazw plików ani kluczy.</string>
+    <string name="settings_developer">Opcje programisty</string>
+    <string name="settings_developer_info">Pokazuje diagnostykę i ostatni raport awarii na dole tej strony. Oba pozostają na tym urządzeniu i nigdy nigdzie nie są wysyłane. Wyłącz, aby je znowu ukryć.</string>
     <string name="settings_record_problems">Zapisuj, co idzie nie tak</string>
     <string name="settings_record_problems_detail">Odnotowuje, gdy okładki, strony lub tłumaczenia nie dało się odczytać, żeby problem, który potrafisz opisać, miał coś za sobą. Wyłączenie tego czyści to, co zostało zapisane.</string>
     <string name="settings_nothing_recorded">Nic jeszcze nie zapisano. Użyj aplikacji tak jak wtedy, gdy poszło nie tak, i wróć tutaj.</string>

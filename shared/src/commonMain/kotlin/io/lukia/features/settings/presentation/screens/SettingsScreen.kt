@@ -53,7 +53,7 @@ fun SettingsScreen(
         providerState = remember(connectionTest, availableModels, modelReadiness) {
             ProviderState(connectionTest, availableModels, modelReadiness)
         },
-        onAppearanceChange = viewModel::setAppearance,
+        onSettingsChange = viewModel::setAppSettings,
         onReaderChange = viewModel::setReaderSettings,
         translatingActions = rememberTranslatingActions(viewModel),
         providerActions = rememberProviderActions(viewModel),
@@ -75,7 +75,7 @@ fun SettingsContent(
     settings: AppSettings,
     reader: ReaderSettings,
     translation: TranslationSettings,
-    onAppearanceChange: (AppSettings) -> Unit,
+    onSettingsChange: (AppSettings) -> Unit,
     onReaderChange: (ReaderSettings) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -106,7 +106,7 @@ fun SettingsContent(
                 reader = reader,
                 translation = translation,
                 providerState = providerState,
-                onAppearanceChange = onAppearanceChange,
+                onSettingsChange = onSettingsChange,
                 onReaderChange = onReaderChange,
                 translatingActions = translatingActions,
                 providerActions = providerActions,

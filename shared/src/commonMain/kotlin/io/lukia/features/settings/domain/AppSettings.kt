@@ -36,4 +36,18 @@ data class AppSettings(
      * it is on stays in memory until the reader copies it out themselves.
      */
     val diagnostics: Boolean = false,
+    /**
+     * Whether the settings a reader is only ever asked for are on the page at
+     * all - the diagnostics record above, and the last crash report beside it.
+     *
+     * Off, and reached by pressing the version in About rather than by a switch
+     * somebody could find. Both of the things it reveals are a stack trace and a
+     * log: they are what a bug report is built from and they are not settings
+     * anybody reads a book better for having seen.
+     *
+     * It hides them rather than disabling them. [diagnostics] stays whatever it
+     * was, so a reader who turned recording on, took the report and put the
+     * developer settings away again is not quietly still being recorded.
+     */
+    val developerMode: Boolean = false,
 )

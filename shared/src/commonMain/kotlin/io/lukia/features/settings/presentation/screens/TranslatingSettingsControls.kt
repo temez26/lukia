@@ -57,7 +57,7 @@ internal fun TranslatingSettings(
     Column(modifier = modifier.fillMaxWidth()) {
         SettingsSection(
             title = stringResource(Res.string.reader_translate_into),
-            footnote = stringResource(Res.string.settings_translate_into_footnote),
+            info = stringResource(Res.string.settings_translate_into_footnote),
             groupColor = groupColor,
             padding = Space.xs,
         ) {
@@ -98,7 +98,7 @@ private fun GestureSection(
 ) {
     SettingsSection(
         title = stringResource(Res.string.settings_pointing_at_the_book),
-        footnote = stringResource(Res.string.settings_pointing_footnote),
+        info = stringResource(Res.string.settings_pointing_footnote),
         groupColor = groupColor,
         modifier = modifier,
     ) {
@@ -123,14 +123,14 @@ private fun GestureSection(
 
             SettingsToggle(
                 label = stringResource(Res.string.reader_notes_under_paragraph),
-                detail = stringResource(Res.string.settings_notes_detail),
+                info = stringResource(Res.string.settings_notes_detail),
                 checked = translation.notes,
                 onChange = actions.onNotesChange,
             )
 
             SettingsToggle(
                 label = stringResource(Res.string.settings_hold_again),
-                detail = stringResource(
+                info = stringResource(
                     Res.string.settings_hold_again_detail,
                     translation.wordSite.displayName(),
                 ),
@@ -159,7 +159,7 @@ private fun TranslatingAheadSection(
 ) {
     SettingsSection(
         title = stringResource(Res.string.settings_translating_ahead),
-        footnote = stringResource(Res.string.settings_translating_ahead_footnote),
+        info = stringResource(Res.string.settings_translating_ahead_footnote),
         groupColor = groupColor,
         modifier = modifier,
     ) {

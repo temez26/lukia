@@ -138,16 +138,23 @@ a file manager months later. Turning the setting off clears it — otherwise "of
 would quietly mean "stopped adding to it".
 
 Reading and copying live in Settings, under whichever group is open rather than
-as a fifth segment. The list shows the same lines the export copies, because
-what a reader reviews before handing something over has to *be* what they hand
-over.
+as a fifth segment - and only once the developer settings are on, which is seven
+presses on the version in About and nothing else. A record of what the app
+absorbed is what a bug report is built from; it is not a setting anybody reads a
+book better for having found. `AppSettings.developerMode` is what hides it, and
+it hides rather than disables: the switch above keeps whatever it was set to, so
+putting the group away does not quietly leave recording on.
+
+The list shows the same lines the export copies, because what a reader reviews
+before handing something over has to *be* what they hand over.
 
 ## The crash file
 
 The buffer dies with the process, so the one failure it can never show anybody
 is the one that takes the app down. `CrashRecorder` writes one file,
 `last-crash.txt`, app-private and overwritten each time; the next run offers it
-in Settings to read, copy or delete.
+in Settings to read, copy or delete, beside the record and behind the same
+developer switch - it is a stack trace, and it is read by whoever asked for it.
 
 The consent split needs no code. The stack trace is written whether or not
 diagnostics are on — the crash worth reading is usually from the reader who

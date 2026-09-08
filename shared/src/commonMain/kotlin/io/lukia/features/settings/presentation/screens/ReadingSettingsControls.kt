@@ -88,7 +88,7 @@ private fun PageSection(
 ) {
     SettingsSection(
         title = stringResource(Res.string.settings_the_page),
-        footnote = stringResource(Res.string.settings_the_page_footnote),
+        info = stringResource(Res.string.settings_the_page_footnote),
         groupColor = groupColor,
         modifier = modifier,
     ) {
@@ -134,7 +134,7 @@ private fun TypeSection(
 ) {
     SettingsSection(
         title = stringResource(Res.string.settings_text_and_images),
-        footnote = stringResource(Res.string.settings_text_and_images_footnote),
+        info = stringResource(Res.string.settings_text_and_images_footnote),
         groupColor = groupColor,
         modifier = modifier,
     ) {
@@ -200,7 +200,7 @@ private fun PdfSection(
 ) {
     SettingsSection(
         title = stringResource(Res.string.settings_opening_a_pdf),
-        footnote = stringResource(
+        info = stringResource(
             if (reader.defaultPdfLayout.asText) {
                 Res.string.settings_opening_a_pdf_as_text
             } else {

@@ -3,6 +3,7 @@ package io.lukia.shared.presentation.components.surface
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -159,13 +160,26 @@ fun GroupSection(
     footnote: String? = null,
     /** Rows that draw their own vertical padding ask for none of the card's. */
     padding: Dp = Space.lg,
+    /**
+     * The mark that opens whatever this group needs a paragraph to say - see
+     * `InfoButton`. A slot rather than a string, so this primitive stays a
+     * layout and does not have to know what a popover is.
+     */
+    info: (@Composable () -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        SectionLabel(
-            text = title,
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(start = Space.xs, bottom = Space.sm),
-        )
+        ) {
+            SectionLabel(text = title)
+
+            // Beside the name rather than at the far edge of the row: it is
+            // about this group, and a mark floating in white space next to a
+            // short title is about nothing in particular.
+            info?.invoke()
+        }
 
         GroupCard(color = color) {
             Box(modifier = Modifier.padding(horizontal = Space.lg, vertical = padding)) {
