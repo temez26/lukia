@@ -98,6 +98,17 @@ the nearest whole release above it. `IPHONEOS_DEPLOYMENT_TARGET` lives in
 [Config.xcconfig](iosApp/Configuration/Config.xcconfig), the Android versions in
 [libs.versions.toml](gradle/libs.versions.toml).
 
+**iOS is built and tested but not distributed, on purpose.** Every commit
+compiles it, links a real executable and runs the whole common suite against
+iOS's own `actual` implementations - see [TESTING.md](TESTING.md) - so the
+platform is supported by the code and held there by CI. What
+[release.yml](.github/workflows/release.yml) publishes is Android and desktop
+only, because shipping an iOS build means a paid Apple Developer Program
+membership and App Store review, and neither is something this project has yet.
+Build it yourself and run it on your own device: [BUILD.md](BUILD.md#ios) says
+how, and a free Apple ID is enough. The absence of an iOS release job is a
+decision, not an omission.
+
 ## Technologies
 
 - Kotlin Multiplatform
