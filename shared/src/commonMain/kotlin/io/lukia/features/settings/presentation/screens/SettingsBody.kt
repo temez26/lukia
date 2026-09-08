@@ -161,11 +161,18 @@ internal fun SettingsBody(
                 )
             }
 
-            // Outside the crossfade, so it stays put while the groups change
-            // above it. It belongs to the page rather than to any one group.
+            // Outside the crossfade, so they stay put while the groups change
+            // above them. Both belong to the page rather than to any one group.
             diagnostics?.let {
                 Box(modifier = Modifier.padding(top = dimens.sectionSpacing)) { it() }
             }
+
+            // Last, and not a slot: unlike diagnostics it asks the graph for
+            // nothing, so there is nothing for a caller to have to supply.
+            AboutSettings(
+                groupColor = groupColor,
+                modifier = Modifier.padding(top = dimens.sectionSpacing),
+            )
         }
 
         Spacer(modifier = Modifier.height(bottomClearance))

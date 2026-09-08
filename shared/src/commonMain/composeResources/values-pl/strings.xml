@@ -409,6 +409,12 @@
     <string name="settings_record_problems_detail">Odnotowuje, gdy okładki, strony lub tłumaczenia nie dało się odczytać, żeby problem, który potrafisz opisać, miał coś za sobą. Wyłączenie tego czyści to, co zostało zapisane.</string>
     <string name="settings_nothing_recorded">Nic jeszcze nie zapisano. Użyj aplikacji tak jak wtedy, gdy poszło nie tak, i wróć tutaj.</string>
     <string name="settings_showing_last">Pokazywane ostatnie %1$d z %2$d. Kopiowanie bierze wszystkie.</string>
+
+    <string name="settings_about">O aplikacji</string>
+    <string name="settings_version">Wersja %1$s</string>
+    <string name="settings_licensed_under">Udostępniane na licencji Apache License 2.0.</string>
+    <string name="settings_open_source">Licencje open source</string>
+    <string name="settings_open_source_footnote">Z czego zbudowana jest Lukia, i na jakich warunkach udostępniono każdą część.</string>
     <string name="stats_entry">Twoje czytanie</string>
     <string name="stats_title">Czytanie</string>
     <string name="stats_footnote">Liczone na tym urządzeniu i zostaje tutaj.</string>

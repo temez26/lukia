@@ -389,6 +389,12 @@
     <string name="settings_record_problems_detail">Noteert wanneer een omslag, een pagina of een vertaling niet gelezen kon worden, zodat een probleem dat u kunt beschrijven iets achter zich heeft. Dit uitzetten wist wat er is vastgelegd.</string>
     <string name="settings_nothing_recorded">Nog niets vastgelegd. Gebruik de app zoals u deed toen het misging, en kom dan terug.</string>
     <string name="settings_showing_last">De laatste %1$d van %2$d worden getoond. Kopiëren neemt ze allemaal.</string>
+
+    <string name="settings_about">Over</string>
+    <string name="settings_version">Versie %1$s</string>
+    <string name="settings_licensed_under">Uitgebracht onder de Apache License 2.0.</string>
+    <string name="settings_open_source">Opensourcelicenties</string>
+    <string name="settings_open_source_footnote">Waar Lukia van gemaakt is, en onder welke voorwaarden elk onderdeel valt.</string>
     <string name="stats_entry">Uw lezen</string>
     <string name="stats_title">Lezen</string>
     <string name="stats_footnote">Wordt op dit apparaat geteld, en blijft hier.</string>

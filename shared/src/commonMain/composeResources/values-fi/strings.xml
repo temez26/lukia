@@ -452,6 +452,12 @@
     <string name="settings_nothing_recorded">Ei vielä tallennettua. Käytä sovellusta kuten silloin kun se meni vikaan, ja palaa sitten tänne.</string>
     <string name="settings_showing_last">Näytetään viimeiset %1$d / %2$d. Kopiointi ottaa ne kaikki.</string>
 
+    <string name="settings_about">Tietoja</string>
+    <string name="settings_version">Versio %1$s</string>
+    <string name="settings_licensed_under">Lisensoitu Apache License 2.0 -lisenssillä.</string>
+    <string name="settings_open_source">Avoimen lähdekoodin lisenssit</string>
+    <string name="settings_open_source_footnote">Mistä Lukia on rakennettu, ja millä ehdoilla kukin osa on käytössä.</string>
+
     <string name="stats_entry">Lukemisesi</string>
     <string name="stats_title">Lukeminen</string>
     <string name="stats_footnote">Lasketaan tällä laitteella, ja säilytetään täällä.</string>

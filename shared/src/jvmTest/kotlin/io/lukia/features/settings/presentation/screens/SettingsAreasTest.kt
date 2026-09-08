@@ -106,6 +106,32 @@ class SettingsAreasTest {
     }
 
     /**
+     * About belongs to the page rather than to a group, so it is under whichever
+     * one is open. It is where a reader finds the version a bug report will ask
+     * them for, and putting that behind a guess about which segment it is in
+     * would be putting it behind the question it exists to answer.
+     */
+    @Test
+    fun aboutIsAtTheFootOfEveryGroup() = runComposeUiTest {
+        setSettings()
+
+        // The default group is already open, and its segment cannot be clicked
+        // by name: Appearance is both a segment and a section inside itself.
+        assertAboutIsOnThePage()
+
+        (SettingsArea.entries - SettingsArea.Default).forEach { area ->
+            open(area)
+
+            assertAboutIsOnThePage()
+        }
+    }
+
+    private fun ComposeUiTest.assertAboutIsOnThePage() {
+        onNodeWithText("About").assertExists()
+        onNodeWithText("Open-source licences").assertExists()
+    }
+
+    /**
      * The whole reason Providers is a group of its own: somebody changing the
      * language they read into must not have to scroll past an API key to reach
      * it.

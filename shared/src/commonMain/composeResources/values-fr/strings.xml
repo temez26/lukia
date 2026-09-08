@@ -396,6 +396,12 @@
     <string name="settings_record_problems_detail">Note quand une couverture, une page ou une traduction n\u2019a pas pu être lue, pour qu\u2019un problème que vous pouvez décrire ait quelque chose derrière lui. Désactiver ceci efface ce qui a été consigné.</string>
     <string name="settings_nothing_recorded">Rien de consigné pour l\u2019instant. Utilisez l\u2019application comme quand cela n\u2019a pas marché, puis revenez.</string>
     <string name="settings_showing_last">Affichage des %1$d derniers sur %2$d. Copier les prend tous.</string>
+
+    <string name="settings_about">À propos</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_licensed_under">Distribué sous Apache License 2.0.</string>
+    <string name="settings_open_source">Licences open source</string>
+    <string name="settings_open_source_footnote">Ce dont Lukia est fait, et les conditions qui s\u2019appliquent à chaque partie.</string>
     <string name="stats_entry">Vos lectures</string>
     <string name="stats_title">Lecture</string>
     <string name="stats_footnote">Compté sur cet appareil, et gardé ici.</string>

@@ -389,6 +389,12 @@
     <string name="settings_record_problems_detail">Annota quando una copertina, una pagina o una traduzione non si è potuta leggere, così che un problema che sai descrivere abbia qualcosa dietro. Disattivarlo cancella ciò che è stato registrato.</string>
     <string name="settings_nothing_recorded">Ancora niente di registrato. Usa l\u2019applicazione come quando è andata storta, e poi torna qui.</string>
     <string name="settings_showing_last">Vengono mostrati gli ultimi %1$d di %2$d. Copia li prende tutti.</string>
+
+    <string name="settings_about">Informazioni</string>
+    <string name="settings_version">Versione %1$s</string>
+    <string name="settings_licensed_under">Distribuito sotto Apache License 2.0.</string>
+    <string name="settings_open_source">Licenze open source</string>
+    <string name="settings_open_source_footnote">Di cosa è fatta Lukia, e a quali condizioni viene usata ogni parte.</string>
     <string name="stats_entry">La tua lettura</string>
     <string name="stats_title">Lettura</string>
     <string name="stats_footnote">Contato su questo dispositivo, e resta qui.</string>
