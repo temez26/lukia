@@ -86,18 +86,17 @@ class SettingsAreasTest {
     }
 
     /**
-     * The language, the gestures and the expensive ways of translating: what is
-     * translated, rather than who does it.
+     * The language and what a thumb on the page does: the two things a reader can
+     * set on the day they install the app, both answerable by a dictionary.
      */
     @Test
-    fun translatingHoldsWhatIsTranslated() = runComposeUiTest {
+    fun translatingHoldsWhatAnybodyCanUse() = runComposeUiTest {
         setSettings()
 
         open(SettingsArea.Translating)
 
         onNodeWithText("Translate into").assertExists()
         onNodeWithText("Pointing at the book").assertExists()
-        onNodeWithText("Translating ahead").assertExists()
     }
 
     @Test
@@ -108,6 +107,21 @@ class SettingsAreasTest {
 
         onNodeWithText("Looking up a word").assertExists()
         onNodeWithText("AI translation").assertExists()
+    }
+
+    /**
+     * And everything that only a model can do, under it. A sentence, a paragraph
+     * and a screenful at a time all need the service, and beside the language
+     * they were controls that did nothing for most readers.
+     */
+    @Test
+    fun andWhatOnlyTheServiceCanDo() = runComposeUiTest {
+        setSettings()
+
+        open(SettingsArea.Providers)
+
+        onNodeWithText("Asking for more than a word").assertExists()
+        onNodeWithText("Translating ahead").assertExists()
     }
 
     /**
@@ -191,6 +205,8 @@ class SettingsAreasTest {
 
         onNodeWithText("AI translation").assertDoesNotExist()
         onNodeWithText("Looking up a word").assertDoesNotExist()
+        onNodeWithText("Asking for more than a word").assertDoesNotExist()
+        onNodeWithText("Translating ahead").assertDoesNotExist()
     }
 
     private companion object {

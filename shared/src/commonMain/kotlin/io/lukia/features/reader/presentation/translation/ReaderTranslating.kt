@@ -40,6 +40,10 @@ val ReaderViewModel.targetLanguage: StateFlow<TargetLanguage>
 val ReaderViewModel.translationConfigured: StateFlow<Boolean>
     get() = translation.configured
 
+/** Whether the translation service in particular is - see the panel's gestures. */
+val ReaderViewModel.translationServiceConfigured: StateFlow<Boolean>
+    get() = translation.serviceConfigured
+
 /** Whether the translator's asides are set under the paragraphs they belong to. */
 val ReaderViewModel.translationNotes: StateFlow<Boolean>
     get() = translation.notes

@@ -45,7 +45,11 @@ class ReaderTranslationSettingsTest {
      */
     @Test
     fun theLanguageIsInThePanelOnAPointedAtWindowToo() = runComposeUiTest {
-        setReader(translationConfigured = true, width = DesktopWidth)
+        setReader(
+            translationConfigured = true,
+            translationServiceConfigured = true,
+            width = DesktopWidth,
+        )
 
         onNodeWithContentDescription("Reading settings").performClick()
 
@@ -111,6 +115,10 @@ class ReaderTranslationSettingsTest {
         )
     }
 
+    /**
+     * With a service set up, which is the only reader for whom a tap has units to
+     * choose between - a dictionary answers a word and nothing larger.
+     */
     @Test
     fun whatATapAsksForCanBeChangedWithTheBookOpen() = runComposeUiTest {
         var gestures: TranslationGestures? = null
@@ -119,6 +127,7 @@ class ReaderTranslationSettingsTest {
             gestures = TranslationGestures(tap = PassageUnit.Sentence, longPress = null),
             onTranslationGesturesChange = { gestures = it },
             translationConfigured = true,
+            translationServiceConfigured = true,
             width = PhoneWidth,
         )
 
@@ -132,6 +141,35 @@ class ReaderTranslationSettingsTest {
             gestures,
             "the tap is the first of the two gesture rows",
         )
+    }
+
+    /**
+     * And without one it is a switch instead. A reader with a dictionary can
+     * have a tap or not have one; offering them the sentence and the paragraph
+     * is offering two choices that quietly do nothing.
+     */
+    @Test
+    fun aReaderWithNoServiceIsOfferedTheTapAndNotTheUnits() = runComposeUiTest {
+        var gestures: TranslationGestures? = null
+
+        setReader(
+            gestures = TranslationGestures(),
+            onTranslationGesturesChange = { gestures = it },
+            translationConfigured = true,
+            width = PhoneWidth,
+        )
+
+        onNodeWithContentDescription("Reading settings").performClick()
+
+        assertEquals(
+            0,
+            onAllNodes(hasText(words(Res.string.passage_unit_paragraph))).fetchSemanticsNodes().size,
+            "a paragraph nothing on this device can translate",
+        )
+
+        onNodeWithText("Tap a word to translate it").performClick()
+
+        assertEquals(TranslationGestures(tap = PassageUnit.Word), gestures)
     }
 }
 

@@ -54,12 +54,14 @@ enum class SettingsArea {
     Translating,
 
     /**
-     * Who answers - the translator, and whatever looks up a single word.
+     * Who answers - whatever looks up a single word, the translation service,
+     * and the settings that mean nothing without one.
      *
-     * Apart from Translating because it is the only group that can be filled in
-     * wrongly, and the only one whose settings are about machinery rather than
-     * about reading. Somebody changing the language they read into should not
-     * have to scroll past an API key to reach it.
+     * Apart from Translating because it is the group that can be filled in
+     * wrongly, and the one whose settings are about machinery rather than about
+     * reading. Somebody changing the language they read into should not have to
+     * scroll past an API key to reach it - and should not be offered a gesture
+     * asking for a paragraph that nothing on their device can translate.
      */
     Providers,
 

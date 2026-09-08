@@ -9,28 +9,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import io.lukia.features.settings.presentation.ProviderActions
 import io.lukia.features.settings.presentation.ProviderState
+import io.lukia.features.settings.presentation.TranslatingActions
 import io.lukia.features.settings.presentation.components.SettingsTextField
 import io.lukia.features.translate.domain.lookup.WordSite
-import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.features.translate.domain.settings.WordLookup
 import io.lukia.features.translate.presentation.displayFootnote
 import io.lukia.features.translate.presentation.displayName
 import io.lukia.resources.Res
 import io.lukia.resources.settings_address
-import io.lukia.resources.settings_api_key
-import io.lukia.resources.settings_api_key_optional
 import io.lukia.resources.settings_cloud_key
 import io.lukia.resources.settings_looking_up_a_word
-import io.lukia.resources.settings_model
-import io.lukia.resources.settings_none
 import io.lukia.resources.settings_public_endpoint
 import io.lukia.resources.settings_reading_more
 import io.lukia.resources.settings_reading_more_footnote
-import io.lukia.resources.settings_required
 import io.lukia.resources.settings_site_address_example
-import io.lukia.resources.settings_translation_service
-import io.lukia.resources.settings_translation_service_footnote
 import io.lukia.shared.presentation.components.controls.ChoiceList
 import io.lukia.shared.presentation.components.controls.SegmentedControl
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
@@ -38,31 +31,46 @@ import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * Who answers, and everything they need to be reachable.
+ * Who answers, everything they need to be reachable, and everything that only
+ * they can do.
  *
- * Its own group rather than the tail of Translating, because these are the only
- * settings in the app that can be filled in wrongly: an address, a key, a model
- * name, a timeout. Everything about them - the fields, the catalogue, the
- * connection test - is machinery, and a reader who only wants to change which
- * language they read into should never have to scroll past it.
+ * Its own group rather than the tail of Translating, because these are the
+ * settings that can be filled in wrongly: an address, a key, a model name, a
+ * timeout. Everything about them - the fields, the catalogue, the connection
+ * test - is machinery, and a reader who only wants to change which language they
+ * read into should never have to scroll past it.
  *
- * Three groups rather than one, because a single word and a whole sentence are
- * different questions: a dictionary answers the first well and cannot answer the
- * second at all - and neither of them answers the third, which is where somebody
- * goes to read properly about a word they have stopped on.
+ * Two halves, in that order, which is not the order they were in.
  *
- * In that order, which is not the order they were in. What a word goes to comes
- * first because it is the part that works: a dictionary and Google are ordinary
- * web APIs, free, and set up already on a Lukia nobody has configured. The
- * translation service is last and marked as what it is - a model the reader has
- * to find, pay for and point this at, and the newest thing here. It is what a
- * whole sentence needs, and it is nobody's first afternoon with the app.
+ * First what a single word goes to and where the reader is sent to read more
+ * about one, because that is the part that works: a dictionary and Google are
+ * ordinary web APIs, free, and set up already on a Lukia nobody has configured.
+ * A word is the one thing a service that knows nothing about the book can be
+ * relied on for.
+ *
+ * Then the translation service and everything that exists only because of it -
+ * a gesture raised past the word, and translating a screenful at a time. All of
+ * it is marked, all of it is a model the reader has to find, pay for and point
+ * this at, and none of it is anybody's first afternoon with the app. The two
+ * settings at the foot used to sit on the Translating page beside the language,
+ * where they were controls that did nothing for most readers and said nothing
+ * about why.
  */
 @Composable
 internal fun ProviderSettings(
     translation: TranslationSettings,
     state: ProviderState,
     actions: ProviderActions,
+    /**
+     * What is translated, as opposed to who answers - see [TranslatingActions].
+     *
+     * Here as well as on the Translating page because two of those settings
+     * only mean anything beside a translation service: a gesture asking for a
+     * sentence, and the two ways of translating ahead. They are shown under the
+     * service for that reason, and they are changed through the same actions
+     * wherever they are shown.
+     */
+    translatingActions: TranslatingActions,
     groupColor: Color,
     modifier: Modifier = Modifier,
 ) {
@@ -89,152 +97,19 @@ internal fun ProviderSettings(
             groupColor = groupColor,
             modifier = Modifier.padding(top = dimens.sectionSpacing),
         )
-    }
-}
 
-/**
- * Who translates a passage with a model: the service, where it lives, what it is
- * owed, which model, how long to wait, and a way to find out whether any of that
- * was right.
- *
- * Marked as beta for the whole group rather than switch by switch, because what
- * is unfinished is the thing they have in common. Everything above this reaches
- * a published API that answers a word in a tenth of a second for nothing;
- * everything in here reaches a model that takes seconds, bills for them, and
- * fails in ways an address and a key cannot tell apart. A reader should know
- * which of the two they are setting up before they paste a key into it.
- */
-@Composable
-private fun TranslationServiceSection(
-    translation: TranslationSettings,
-    state: ProviderState,
-    actions: ProviderActions,
-    groupColor: Color,
-    modifier: Modifier = Modifier,
-) {
-    SettingsSection(
-        title = stringResource(Res.string.settings_translation_service),
-        // Shown rather than hidden behind the mark, which is where every other
-        // group's prose goes: this is the one that costs money, and a warning
-        // nobody asked for is still a warning worth giving.
-        footnote = stringResource(Res.string.settings_translation_service_footnote),
-        info = translation.provider.footnote(),
-        groupColor = groupColor,
-        beta = true,
-        modifier = modifier,
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
-            SegmentedControl(
-                options = TranslationProvider.entries,
-                selected = translation.provider,
-                label = { it.displayName() },
-                onSelect = actions.onProviderChange,
-            )
-
-            ProviderCredentials(translation = translation, actions = actions)
-
-            ModelChoice(translation = translation, state = state, actions = actions)
-
-            TimeoutField(
-                provider = translation.provider,
-                seconds = translation.timeoutSeconds,
-                onChange = actions.onTimeoutChange,
-            )
-
-            ConnectionTestRow(
-                state = state.connectionTest,
-                enabled = translation.isConfigured,
-                onTest = actions.onTestConnection,
-            )
-        }
-    }
-}
-
-/**
- * Where the service lives and what it is owed: an address for the ones that have
- * a configurable endpoint, a key, and the model to ask for.
- */
-@Composable
-private fun ProviderCredentials(
-    translation: TranslationSettings,
-    actions: ProviderActions,
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
-        if (translation.provider.hasConfigurableEndpoint) {
-            LabelledField(label = stringResource(Res.string.settings_address)) {
-                SettingsTextField(
-                    value = translation.baseUrl,
-                    onValueChange = actions.onBaseUrlChange,
-                    placeholder = translation.provider.defaultBaseUrl,
-                )
-            }
-        }
-
-        val apiKeyLabel = stringResource(
-            if (translation.provider.requiresKey) {
-                Res.string.settings_api_key
-            } else {
-                Res.string.settings_api_key_optional
-            },
+        GestureUnitSection(
+            translation = translation,
+            actions = translatingActions,
+            groupColor = groupColor,
+            modifier = Modifier.padding(top = dimens.sectionSpacing),
         )
 
-        LabelledField(label = apiKeyLabel) {
-            SettingsTextField(
-                value = translation.apiKey.orEmpty(),
-                onValueChange = actions.onApiKeyChange,
-                placeholder = stringResource(
-                    if (translation.provider.requiresKey) {
-                        Res.string.settings_required
-                    } else {
-                        Res.string.settings_none
-                    },
-                ),
-                secret = true,
-            )
-        }
-
-        LabelledField(label = stringResource(Res.string.settings_model)) {
-            SettingsTextField(
-                value = translation.model,
-                onValueChange = actions.onModelChange,
-                placeholder = translation.provider.defaultModel,
-            )
-        }
-    }
-}
-
-/**
- * Which model, offered the way the provider allows it to be: a server can be
- * asked what it holds, while a hosted service can only be named from a list this
- * app carries.
- */
-@Composable
-private fun ModelChoice(
-    translation: TranslationSettings,
-    state: ProviderState,
-    actions: ProviderActions,
-) {
-    if (translation.provider.hasConfigurableEndpoint) {
-        Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
-            ServerModels(
-                state = state.availableModels,
-                selected = translation.model,
-                onSelect = actions.onModelChoose,
-                onLoad = actions.onLoadModels,
-            )
-
-            ModelReadinessRow(
-                state = state.modelReadiness,
-                model = translation.model,
-                onLoad = actions.onLoadChosenModel,
-            )
-        }
-    } else if (translation.provider.suggestedModels.isNotEmpty()) {
-        ChoiceList(
-            options = translation.provider.suggestedModels,
-            selected = translation.model,
-            label = { it },
-            onSelect = actions.onModelChoose,
+        TranslatingAheadSection(
+            translation = translation,
+            actions = translatingActions,
+            groupColor = groupColor,
+            modifier = Modifier.padding(top = dimens.sectionSpacing),
         )
     }
 }

@@ -7,29 +7,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import io.lukia.core.domain.text.PassageUnit
 import io.lukia.features.settings.presentation.TranslatingActions
 import io.lukia.features.translate.domain.settings.TargetLanguage
-import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.domain.settings.TranslationSettings
-import io.lukia.features.translate.presentation.GestureControl
 import io.lukia.features.translate.presentation.displayName
 import io.lukia.resources.Res
-import io.lukia.resources.reader_gesture_long_press
-import io.lukia.resources.reader_gesture_tap
-import io.lukia.resources.reader_keep_translating
 import io.lukia.resources.reader_notes_under_paragraph
 import io.lukia.resources.reader_translate_into
-import io.lukia.resources.reader_translate_on_screen
-import io.lukia.resources.settings_as_you_read_detail
 import io.lukia.resources.settings_hold_again
 import io.lukia.resources.settings_hold_again_detail
 import io.lukia.resources.settings_notes_detail
-import io.lukia.resources.settings_on_screen_detail
 import io.lukia.resources.settings_pointing_at_the_book
 import io.lukia.resources.settings_pointing_footnote
+import io.lukia.resources.settings_tap_to_translate
+import io.lukia.resources.settings_tap_to_translate_info
 import io.lukia.resources.settings_translate_into_footnote
-import io.lukia.resources.settings_translating_ahead
-import io.lukia.resources.settings_translating_ahead_footnote
 import io.lukia.shared.presentation.components.controls.ChoiceList
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
@@ -39,15 +32,24 @@ import org.jetbrains.compose.resources.stringResource
  * What is translated, when, and into what.
  *
  * Everything here is a decision about the book in front of the reader rather
- * than about the machinery behind it: which language they are reading into, what
- * a tap and a press ask for, and whether they are offered a screenful at a time.
- * Who actually answers is a separate question and lives in [ProviderSettings].
+ * than about the machinery behind it: which language they are reading into, and
+ * what a thumb on the page asks for. Who actually answers is a separate question
+ * and lives in [ProviderSettings] - and so, now, is everything that only a model
+ * can do.
+ *
+ * That is the whole of why this page is two groups rather than four. A word can
+ * be answered by a dictionary that needs nothing set up, so a tap and a hold on
+ * one belong here, to everybody. A sentence, a paragraph and a screenful at a
+ * time cannot be answered by anything but a translation service - offered here,
+ * they were three settings that did nothing for most readers and said nothing
+ * about why.
  *
  * The language comes first because it is the one setting nothing works without,
  * and the one most people came here to change.
  *
- * Nothing here is on to begin with - see [TranslationGestures]. A book opens as
- * a book, and the reader says what a thumb on it should ask for.
+ * Nothing here is on to begin with - see
+ * [io.lukia.features.translate.domain.settings.TranslationGestures]. A book
+ * opens as a book, and the reader says what a thumb on it should ask for.
  */
 @Composable
 internal fun TranslatingSettings(
@@ -82,17 +84,25 @@ internal fun TranslatingSettings(
             groupColor = groupColor,
             modifier = Modifier.padding(top = dimens.sectionSpacing),
         )
-
-        TranslatingAheadSection(
-            translation = translation,
-            actions = actions,
-            groupColor = groupColor,
-            modifier = Modifier.padding(top = dimens.sectionSpacing),
-        )
     }
 }
 
-/** What a tap and a press ask the translator for, including nothing at all. */
+/**
+ * What a thumb on the page does: one word translated, and that word asked to say
+ * more.
+ *
+ * Two gestures with one job each, written as switches rather than as a row of
+ * units to choose between. The units are still there - a tap can be raised to
+ * the sentence or the paragraph - but only a translation service can answer
+ * either, so that choice went where the service is and this became the question
+ * a reader can actually answer on the day they install the app: does a tap do
+ * anything, and does a hold.
+ *
+ * A tap sets the word rather than whatever the reader last raised it to. The
+ * switch is the plain version of the setting, and a switch that turned a gesture
+ * back on as "paragraph" because of something set months ago on another page is
+ * a switch that did something it did not say.
+ */
 @Composable
 private fun GestureSection(
     translation: TranslationSettings,
@@ -107,29 +117,15 @@ private fun GestureSection(
         modifier = modifier,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
-            LabelledField(label = stringResource(Res.string.reader_gesture_tap)) {
-                GestureControl(
-                    selected = translation.gestures.tap,
-                    onSelect = {
-                        actions.onGesturesChange(translation.gestures.copy(tap = it))
-                    },
-                )
-            }
-
-            LabelledField(label = stringResource(Res.string.reader_gesture_long_press)) {
-                GestureControl(
-                    selected = translation.gestures.longPress,
-                    onSelect = {
-                        actions.onGesturesChange(translation.gestures.copy(longPress = it))
-                    },
-                )
-            }
-
             SettingsToggle(
-                label = stringResource(Res.string.reader_notes_under_paragraph),
-                info = stringResource(Res.string.settings_notes_detail),
-                checked = translation.notes,
-                onChange = actions.onNotesChange,
+                label = stringResource(Res.string.settings_tap_to_translate),
+                info = stringResource(Res.string.settings_tap_to_translate_info),
+                checked = translation.gestures.tap != null,
+                onChange = { on ->
+                    actions.onGesturesChange(
+                        translation.gestures.copy(tap = if (on) PassageUnit.Word else null),
+                    )
+                },
             )
 
             SettingsToggle(
@@ -143,58 +139,12 @@ private fun GestureSection(
                     actions.onGesturesChange(translation.gestures.copy(wordDetails = it))
                 },
             )
-        }
-    }
-}
 
-/**
- * What the reader may be asked to translate without being pointed at anything.
- *
- * Kept apart from the gestures above it, and marked. Those are how the reader
- * works the book, and a tap on a word reaches a dictionary that costs nothing.
- * Both of these work a paragraph at a time and have nowhere to go but the
- * translation service, which is a model somebody pays by the passage - a
- * different kind of decision, and it reads as one.
- *
- * The mark is on the group as well as on each switch. The switches say that each
- * one is rough; the group says what they have in common, which is the part a
- * reader has to have set up before either of them does anything at all.
- */
-@Composable
-private fun TranslatingAheadSection(
-    translation: TranslationSettings,
-    actions: TranslatingActions,
-    groupColor: Color,
-    modifier: Modifier = Modifier,
-) {
-    SettingsSection(
-        title = stringResource(Res.string.settings_translating_ahead),
-        info = stringResource(Res.string.settings_translating_ahead_footnote),
-        groupColor = groupColor,
-        beta = true,
-        modifier = modifier,
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
-            BetaToggle(
-                label = stringResource(Res.string.reader_translate_on_screen),
-                detail = stringResource(Res.string.settings_on_screen_detail),
-                checked = translation.bulkTranslation.onScreen,
-                onChange = {
-                    actions.onBulkTranslationChange(
-                        translation.bulkTranslation.copy(onScreen = it),
-                    )
-                },
-            )
-
-            BetaToggle(
-                label = stringResource(Res.string.reader_keep_translating),
-                detail = stringResource(Res.string.settings_as_you_read_detail),
-                checked = translation.bulkTranslation.asYouRead,
-                onChange = {
-                    actions.onBulkTranslationChange(
-                        translation.bulkTranslation.copy(asYouRead = it),
-                    )
-                },
+            SettingsToggle(
+                label = stringResource(Res.string.reader_notes_under_paragraph),
+                info = stringResource(Res.string.settings_notes_detail),
+                checked = translation.notes,
+                onChange = actions.onNotesChange,
             )
         }
     }

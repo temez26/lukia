@@ -365,6 +365,10 @@
     <string name="settings_translate_into_footnote">Dotknij zdania podczas czytania, aby je przetłumaczyć, i dotknij ponownie, aby zobaczyć oryginał.</string>
     <string name="settings_pointing_at_the_book">Wskazywanie książki</string>
     <string name="settings_pointing_footnote">Każdy robi zawsze jedną rzecz. Powtórzenie go w tym samym miejscu przywraca własne słowa książki – poza słowem, które wyszukałeś, gdzie przytrzymanie otwiera zamiast tego więcej o nim.</string>
+    <string name="settings_tap_to_translate">Dotknij słowa, aby je przetłumaczyć</string>
+    <string name="settings_tap_to_translate_info">Ponowne dotknięcie tego samego słowa przywraca własne słowo książki. Dotknięcie można podnieść do zdania lub akapitu po skonfigurowaniu usługi tłumaczenia — na żadne z nich nie odpowie nic poza modelem.</string>
+    <string name="settings_asking_for_more">Prośba o więcej niż słowo</string>
+    <string name="settings_asking_for_more_footnote">Słownik odpowiada na słowo i nic większego, więc te ustawienia nic nie robią, dopóki powyżej nie zostanie skonfigurowana usługa tłumaczenia. Wyłączone tutaj to to samo wyłączone co przełączniki w sekcji Tłumaczenie.</string>
     <string name="settings_notes_detail">Uwagi tłumacza, złożone drobnym pismem pod tekstem, do którego należą: notka o wieloznacznym słowie, inne znaczenia ze słownika. Wyłącz je, aby zachować stronę tak, jak złożyła ją książka — przytrzymanie słowa nadal otwiera wszystko, co ono znaczy. Powód, dla którego fragmentu nie dało się przetłumaczyć, jest pokazywany zawsze.</string>
     <string name="settings_hold_again">Przytrzymaj słowo ponownie, aby zobaczyć o nim więcej</string>
     <string name="settings_hold_again_detail">Gdy słowo zostało już wyszukane, przytrzymanie otwiera każde znaczenie, jakie ma dla niego słownik, oraz przejście do %1$s. Działa niezależnie od tego, na co ustawione jest przytrzymanie powyżej.</string>

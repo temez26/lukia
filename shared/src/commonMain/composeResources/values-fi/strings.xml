@@ -404,6 +404,10 @@
     <string name="settings_translate_into_footnote">Napauta lausetta lukiessasi kääntääksesi sen, ja napauta uudelleen nähdäksesi alkuperäisen.</string>
     <string name="settings_pointing_at_the_book">Kirjaan osoittaminen</string>
     <string name="settings_pointing_footnote">Kumpikin tekee aina yhden asian. Sama ele samaan kohtaan palauttaa kirjan omat sanat – paitsi sanassa, jonka olet hakenut, jossa pito avaa siitä lisää.</string>
+    <string name="settings_tap_to_translate">Käännä sana napauttamalla</string>
+    <string name="settings_tap_to_translate_info">Saman sanan napauttaminen uudelleen palauttaa kirjan oman sanan. Napautuksen voi nostaa lauseeseen tai kappaleeseen, kun käännöspalvelu on otettu käyttöön — kumpaankaan ei vastaa mikään muu kuin malli.</string>
+    <string name="settings_asking_for_more">Sanaa suuremman pyytäminen</string>
+    <string name="settings_asking_for_more_footnote">Sanakirja vastaa sanaan eikä mihinkään suurempaan, joten nämä eivät tee mitään ennen kuin käännöspalvelu on otettu käyttöön yllä. Pois on tässä sama pois kuin Kääntäminen-sivun kytkimissä.</string>
     <string name="settings_notes_detail">Kääntäjän huomautukset pienellä sen tekstin alla, johon ne kuuluvat: huomio monitulkintaisesta sanasta, sanakirjan muut merkitykset. Ota ne pois käytöstä, niin sivu säilyy sellaisena kuin kirja sen asetti — sanan pitäminen avaa silti kaikki sen merkitykset. Syy siihen, miksi kohtaa ei voitu kääntää, näytetään aina.</string>
     <string name="settings_hold_again">Pidä sanaa uudelleen nähdäksesi siitä lisää</string>
     <string name="settings_hold_again_detail">Kun sana on kerran haettu, sen pitäminen avaa kaikki merkitykset jotka sanakirjassa on, ja reitin palveluun %1$s. Toimii riippumatta siitä, mihin yllä oleva pito on asetettu.</string>

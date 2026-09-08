@@ -66,6 +66,7 @@ internal fun SettingsAreaContent(
                 translation = translation,
                 state = providerState,
                 actions = providerActions,
+                translatingActions = translatingActions,
                 groupColor = groupColor,
             )
 

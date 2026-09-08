@@ -102,6 +102,13 @@ internal fun ComposeUiTest.setReader(
     targetLanguage: TargetLanguage = TargetLanguage.Default,
     onTargetLanguageChange: (TargetLanguage) -> Unit = {},
     translationConfigured: Boolean = false,
+    /**
+     * Whether the translation service in particular is. Off by default like the
+     * line above it, so a test that says nothing gets the reader most people
+     * are: a dictionary, and a gesture offered as a switch rather than as a row
+     * of units nothing could answer.
+     */
+    translationServiceConfigured: Boolean = false,
     bulkTranslation: BulkTranslation = BulkTranslation.Default,
     /**
      * Read inside the composition rather than captured, like the translations
@@ -127,6 +134,7 @@ internal fun ComposeUiTest.setReader(
                 gestures = gestures,
                 targetLanguage = targetLanguage,
                 translationConfigured = translationConfigured,
+                translationServiceConfigured = translationServiceConfigured,
                 bulkTranslation = bulkTranslation,
                 wordInquiry = wordInquiry(),
                 translationNotes = translationNotes,

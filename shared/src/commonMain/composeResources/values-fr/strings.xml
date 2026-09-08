@@ -352,6 +352,10 @@
     <string name="settings_translate_into_footnote">Appuyez sur une phrase en lisant pour la traduire, et appuyez à nouveau pour l\u2019original.</string>
     <string name="settings_pointing_at_the_book">Désigner le livre</string>
     <string name="settings_pointing_footnote">Chacun fait une seule chose, toujours. Le refaire au même endroit remet les mots du livre – sauf sur un mot que vous avez cherché, où l\u2019appui long en ouvre davantage à la place.</string>
+    <string name="settings_tap_to_translate">Touchez un mot pour le traduire</string>
+    <string name="settings_tap_to_translate_info">Toucher le même mot à nouveau remet le mot du livre. Une touche peut être élevée à la phrase ou au paragraphe une fois un service de traduction configuré : seul un modèle peut répondre à l’un ou à l’autre.</string>
+    <string name="settings_asking_for_more">Demander plus qu’un mot</string>
+    <string name="settings_asking_for_more_footnote">Un dictionnaire répond à un mot et à rien de plus grand ; ceci ne fait donc rien tant qu’un service de traduction n’est pas configuré ci-dessus. Désactivé ici, c’est le même désactivé que les interrupteurs sous Traduction.</string>
     <string name="settings_notes_detail">Les remarques du traducteur, en petit sous le texte auquel elles se rapportent : une note sur un mot ambigu, les autres sens d\u2019un dictionnaire. Désactivez-les pour garder la page telle que le livre l\u2019a composée — un appui long sur un mot ouvre toujours tout ce qu\u2019il signifie. La raison pour laquelle un passage n\u2019a pas pu être traduit est toujours affichée.</string>
     <string name="settings_hold_again">Appuyer à nouveau sur un mot pour en savoir plus</string>
     <string name="settings_hold_again_detail">Une fois un mot cherché, un appui long ouvre chaque sens qu\u2019un dictionnaire lui donne, et un chemin vers %1$s. Fonctionne quel que soit le réglage de l\u2019appui ci-dessus.</string>

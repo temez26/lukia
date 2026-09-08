@@ -345,6 +345,10 @@
     <string name="settings_translate_into_footnote">Tik tijdens het lezen op een zin om die te vertalen, en tik opnieuw voor het origineel.</string>
     <string name="settings_pointing_at_the_book">Naar het boek wijzen</string>
     <string name="settings_pointing_footnote">Elk doet altijd één ding. Het opnieuw doen op dezelfde plek zet de eigen woorden van het boek terug – behalve bij een woord dat u hebt opgezocht, waar vasthouden er juist meer over opent.</string>
+    <string name="settings_tap_to_translate">Tik op een woord om het te vertalen</string>
+    <string name="settings_tap_to_translate_info">Nog eens op hetzelfde woord tikken zet het eigen woord van het boek terug. Een tik kan worden verhoogd naar de zin of de alinea zodra er een vertaaldienst is ingesteld — alleen een model kan beide beantwoorden.</string>
+    <string name="settings_asking_for_more">Om meer dan een woord vragen</string>
+    <string name="settings_asking_for_more_footnote">Een woordenboek beantwoordt een woord en niets groters, dus dit doet niets tot er hierboven een vertaaldienst is ingesteld. Uit is hier hetzelfde uit als de schakelaars onder Vertalen.</string>
     <string name="settings_notes_detail">De opmerkingen van de vertaler, klein gezet onder de tekst waar ze bij horen: een noot bij een dubbelzinnig woord, de andere betekenissen uit een woordenboek. Zet ze uit om de pagina te houden zoals het boek die zette — een woord vasthouden opent nog steeds alles wat het betekent. Waarom een passage niet vertaald kon worden wordt altijd getoond.</string>
     <string name="settings_hold_again">Een woord opnieuw vasthouden voor meer erover</string>
     <string name="settings_hold_again_detail">Zodra een woord is opgezocht, opent vasthouden elke betekenis die een woordenboek ervoor heeft, en een weg naar %1$s. Werkt ongeacht waarop het vasthouden hierboven is ingesteld.</string>

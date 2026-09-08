@@ -86,6 +86,11 @@ internal fun ReaderContent(
     translateOnScreen: TranslateOnScreen = TranslateOnScreen.Idle,
     /** Whether there is anything set up to translate with, which is what the controls need. */
     translationConfigured: Boolean = false,
+    /**
+     * Whether the translation service in particular is, which is a narrower
+     * question - see `ReaderTranslationPreferences.serviceConfigured`.
+     */
+    translationServiceConfigured: Boolean = false,
     /** What the reader's own translations are doing, for the control that puts them away. */
     shownTranslations: ShownTranslations = ShownTranslations.None,
     /** What a tap and a long press on the book ask for. */
@@ -347,7 +352,11 @@ internal fun ReaderContent(
                         layout = layout,
                         onSettingsChange = onSettingsChange,
                         translationSection = {
-                            ReaderTranslationSettings(translationUi, translationPreferences)
+                            ReaderTranslationSettings(
+                                translation = translationUi,
+                                preferences = translationPreferences,
+                                serviceConfigured = translationServiceConfigured,
+                            )
                         },
                     )
                 }

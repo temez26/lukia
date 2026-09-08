@@ -390,6 +390,10 @@
     <string name="settings_translate_into_footnote">Tryck på en mening medan du läser för att översätta den, och tryck igen för originalet.</string>
     <string name="settings_pointing_at_the_book">Att peka på boken</string>
     <string name="settings_pointing_footnote">Var och en gör en sak, alltid. Att göra det igen på samma stycke lägger tillbaka bokens egna ord – utom på ett ord du har slagit upp, där ett håll i stället öppnar mer om det.</string>
+    <string name="settings_tap_to_translate">Tryck på ett ord för att översätta det</string>
+    <string name="settings_tap_to_translate_info">Att trycka på samma ord igen sätter tillbaka bokens eget ord. Ett tryck kan höjas till meningen eller stycket när en översättningstjänst är inställd — inget annat än en modell svarar på någotdera.</string>
+    <string name="settings_asking_for_more">Att be om mer än ett ord</string>
+    <string name="settings_asking_for_more_footnote">En ordbok svarar på ett ord och inget större, så dessa gör ingenting förrän en översättningstjänst är inställd ovanför. Av här är samma av som reglagen under Översättning.</string>
     <string name="settings_notes_detail">Översättarens anmärkningar, satta smått under den text de hör till: en notering om ett tvetydigt ord, en ordboks övriga betydelser. Stäng av dem för att behålla sidan som boken satte den — att hålla ett ord öppnar fortfarande allt det betyder. Varför ett stycke inte kunde översättas visas alltid.</string>
     <string name="settings_hold_again">Håll ett ord igen för mer om det</string>
     <string name="settings_hold_again_detail">När ett ord väl har slagits upp öppnar ett håll varje betydelse en ordbok har för det, och en väg vidare till %1$s. Fungerar oavsett vad hållet ovan är inställt på.</string>

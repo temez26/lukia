@@ -163,6 +163,22 @@ internal class ReaderTranslations(
         )
 
     /**
+     * Whether the translation service in particular is set up, as opposed to
+     * anything at all - see [configured].
+     *
+     * The panel needs both. What a tap asks for can be raised past the word only
+     * where a model answers, so with nothing but a dictionary the panel offers a
+     * switch and not a row of units the reader would find does nothing.
+     */
+    val serviceConfigured: StateFlow<Boolean> = settings.settings
+        .map { it.isConfigured }
+        .stateIn(
+            scope = scope,
+            started = SharingStarted.Eagerly,
+            initialValue = settings.settings.value.isConfigured,
+        )
+
+    /**
      * The language the book is being read into.
      *
      * A flow as well as the value below it because the reader's own panel now

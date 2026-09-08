@@ -345,6 +345,10 @@
     <string name="settings_translate_into_footnote">Tryk på en sætning, mens du læser, for at oversætte den, og tryk igen for originalen.</string>
     <string name="settings_pointing_at_the_book">At pege på bogen</string>
     <string name="settings_pointing_footnote">Hver af dem gør én ting, altid. At gøre det igen samme sted lægger bogens egne ord tilbage – undtagen på et ord, du har slået op, hvor et hold i stedet åbner mere om det.</string>
+    <string name="settings_tap_to_translate">Tryk på et ord for at oversætte det</string>
+    <string name="settings_tap_to_translate_info">Tryk på det samme ord igen for at få bogens eget ord tilbage. Et tryk kan hæves til sætningen eller afsnittet, når en oversættelsestjeneste er sat op — kun en model kan svare på nogen af delene.</string>
+    <string name="settings_asking_for_more">At bede om mere end et ord</string>
+    <string name="settings_asking_for_more_footnote">En ordbog svarer på et ord og intet større, så disse gør ingenting, før en oversættelsestjeneste er sat op ovenfor. Fra her er det samme fra som kontakterne under Oversættelse.</string>
     <string name="settings_notes_detail">Oversætterens bemærkninger, sat småt under den tekst, de hører til: en bemærkning om et flertydigt ord, en ordbogs øvrige betydninger. Slå dem fra for at bevare siden, som bogen satte den — at holde et ord åbner stadig alt, hvad det betyder. Hvorfor et stykke ikke kunne oversættes, vises altid.</string>
     <string name="settings_hold_again">Hold et ord igen for mere om det</string>
     <string name="settings_hold_again_detail">Når et ord først er slået op, åbner et hold hver betydning, en ordbog har for det, og en vej videre til %1$s. Virker uanset hvad holdet ovenfor er sat til.</string>

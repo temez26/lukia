@@ -346,6 +346,10 @@
     <string name="settings_translate_into_footnote">Tippen Sie beim Lesen auf einen Satz, um ihn zu übersetzen, und tippen Sie erneut für das Original.</string>
     <string name="settings_pointing_at_the_book">Auf das Buch zeigen</string>
     <string name="settings_pointing_footnote">Jede tut immer eine Sache. Sie an derselben Stelle erneut zu tun, holt die eigenen Wörter des Buchs zurück – außer bei einem Wort, das Sie nachgeschlagen haben, wo Halten stattdessen mehr dazu öffnet.</string>
+    <string name="settings_tap_to_translate">Auf ein Wort tippen, um es zu übersetzen</string>
+    <string name="settings_tap_to_translate_info">Noch einmal auf dasselbe Wort tippen bringt das Wort des Buchs zurück. Ein Tippen lässt sich auf den Satz oder den Absatz anheben, sobald ein Übersetzungsdienst eingerichtet ist — beides kann nur ein Modell beantworten.</string>
+    <string name="settings_asking_for_more">Mehr verlangen als ein Wort</string>
+    <string name="settings_asking_for_more_footnote">Ein Wörterbuch beantwortet ein Wort und nichts Größeres; diese bewirken also nichts, solange oben kein Übersetzungsdienst eingerichtet ist. Aus ist hier dasselbe Aus wie bei den Schaltern unter Übersetzen.</string>
     <string name="settings_notes_detail">Die Anmerkungen des Übersetzers, klein unter dem Text gesetzt, zu dem sie gehören: eine Bemerkung zu einem mehrdeutigen Wort, die übrigen Bedeutungen eines Wörterbuchs. Schalten Sie sie aus, um die Seite so zu behalten, wie das Buch sie gesetzt hat — ein Wort zu halten öffnet weiterhin alles, was es bedeutet. Warum eine Stelle nicht übersetzt werden konnte, wird immer gezeigt.</string>
     <string name="settings_hold_again">Ein Wort erneut halten für mehr dazu</string>
     <string name="settings_hold_again_detail">Ist ein Wort einmal nachgeschlagen, öffnet Halten jede Bedeutung, die ein Wörterbuch dafür hat, und einen Weg zu %1$s. Funktioniert unabhängig davon, worauf das Halten oben eingestellt ist.</string>
