@@ -33,12 +33,11 @@ import org.jetbrains.compose.resources.stringResource
  * What the toolbar needs to know about translating, gathered so the bar takes it
  * as one thing.
  *
- * These seven always travel together - they are one feature's worth of state and
+ * These six always travel together - they are one feature's worth of state and
  * the callbacks that change it - and passing them separately is what made the
  * bar impossible to lift out of the screen.
  */
 internal class ReaderTranslationUi(
-    val configured: Boolean,
     val onScreen: TranslateOnScreen,
     val shown: ShownTranslations,
     val offered: BulkTranslation,
@@ -70,7 +69,7 @@ internal class ReaderTranslationPreferences(
 
 /**
  * Whether the controls belong in the toolbar, which is a question about how much
- * bar there is.
+ * bar there is and nothing else.
  *
  * A window being pointed at has room for three more glyphs beside the title and
  * a mouse to hover each one for a tooltip. A phone has neither: the same three
@@ -80,12 +79,17 @@ internal class ReaderTranslationPreferences(
  *
  * The two are exclusive, so that the controls are in exactly one place whatever
  * the window is doing.
+ *
+ * They used to ask first whether anything was set up to translate with. Nothing
+ * does now: both of a word's answers are web APIs that need nothing, so there is
+ * always something. What still needs a model asks for itself - the two bulk
+ * controls are behind `offered`, which is empty without a service.
  */
 internal val ReaderTranslationUi.inToolbar: Boolean
-    @Composable get() = configured && isWideWindow
+    @Composable get() = isWideWindow
 
 internal val ReaderTranslationUi.inPanel: Boolean
-    @Composable get() = configured && !isWideWindow
+    @Composable get() = !isWideWindow
 
 /**
  * Translating what is on screen, once or from now on, as glyphs in the toolbar.

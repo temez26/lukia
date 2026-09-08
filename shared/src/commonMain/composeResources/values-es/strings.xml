@@ -131,8 +131,6 @@
     <string name="provider_anthropic">Anthropic</string>
     <string name="provider_openai">OpenAI</string>
     <string name="provider_local">Local</string>
-    <string name="word_lookup_translator">Traductor</string>
-    <string name="word_lookup_translator_footnote">Las palabras van al mismo servicio que las frases, con el párrafo que las rodea – para que la respuesta sea el sentido que quería el libro.</string>
     <string name="word_lookup_google">Google</string>
     <string name="word_lookup_google_footnote">Rápido y gratuito, y nunca ve el libro – solo la palabra. Añade abajo una clave de Cloud Translation para usar la API admitida de Google en lugar del punto de acceso público.</string>
     <string name="word_lookup_dictionary">Diccionario</string>

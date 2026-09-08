@@ -12,8 +12,6 @@ import io.lukia.resources.word_lookup_dictionary
 import io.lukia.resources.word_lookup_dictionary_footnote
 import io.lukia.resources.word_lookup_google
 import io.lukia.resources.word_lookup_google_footnote
-import io.lukia.resources.word_lookup_translator
-import io.lukia.resources.word_lookup_translator_footnote
 import io.lukia.resources.word_site_custom
 import io.lukia.resources.word_site_custom_footnote
 import io.lukia.resources.word_site_google
@@ -50,7 +48,6 @@ fun TranslationProvider.displayName(): String = when (this) {
 
 @Composable
 fun WordLookup.displayName(): String = when (this) {
-    WordLookup.Translator -> stringResource(Res.string.word_lookup_translator)
     WordLookup.Google -> stringResource(Res.string.word_lookup_google)
     WordLookup.Wiktionary -> stringResource(Res.string.word_lookup_dictionary)
 }
@@ -58,7 +55,6 @@ fun WordLookup.displayName(): String = when (this) {
 /** What choosing this one actually gets the reader, which the name cannot say. */
 @Composable
 fun WordLookup.displayFootnote(): String = when (this) {
-    WordLookup.Translator -> stringResource(Res.string.word_lookup_translator_footnote)
     WordLookup.Google -> stringResource(Res.string.word_lookup_google_footnote)
     WordLookup.Wiktionary -> stringResource(Res.string.word_lookup_dictionary_footnote)
 }

@@ -46,7 +46,7 @@ class ReaderTranslationControlsTest {
      */
     @Test
     fun theExpensiveControlsAreNotThereUntilTheyAreAskedFor() = runComposeUiTest {
-        setReader(translationConfigured = true)
+        setReader()
 
         assertEquals(
             0,
@@ -59,7 +59,6 @@ class ReaderTranslationControlsTest {
     @Test
     fun aControlAskedForIsInTheBar() = runComposeUiTest {
         setReader(
-            translationConfigured = true,
             bulkTranslation = BulkTranslation(onScreen = true, asYouRead = false),
         )
 

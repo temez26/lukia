@@ -83,7 +83,14 @@ internal fun SettingsTextField(
             .focusRing(interactionSource, MaterialTheme.shapes.small)
             .padding(horizontal = FieldPadding, vertical = Space.xs),
     ) {
-        Box(modifier = Modifier.weight(1f)) {
+        // Centred, because the two children of this box are not the same height:
+        // the field carries vertical padding and the placeholder does not, so
+        // left to align at the top the placeholder sat above the line the typed
+        // text appears on - "Public endpoint" riding high in its own field.
+        Box(
+            contentAlignment = Alignment.CenterStart,
+            modifier = Modifier.weight(1f),
+        ) {
             if (value.isEmpty()) {
                 Text(
                     text = placeholder,

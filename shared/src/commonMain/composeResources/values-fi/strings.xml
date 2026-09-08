@@ -164,8 +164,6 @@
     <string name="provider_openai">OpenAI</string>
     <string name="provider_local">Paikallinen</string>
 
-    <string name="word_lookup_translator">Kääntäjä</string>
-    <string name="word_lookup_translator_footnote">Sanat menevät samaan palveluun kuin lauseet, ympäröivä kappale mukanaan – niin vastaus on se merkitys, jota kirja tarkoitti.</string>
     <string name="word_lookup_google">Google</string>
     <string name="word_lookup_google_footnote">Nopea ja ilmainen, eikä se näe kirjaa – vain sanan. Lisää alle Cloud Translation -avain, niin käytössä on Googlen tuettu rajapinta julkisen päätepisteen sijaan.</string>
     <string name="word_lookup_dictionary">Sanakirja</string>

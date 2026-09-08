@@ -84,11 +84,9 @@ internal fun ReaderContent(
     translations: Map<TextAnchor, PassageTranslation> = emptyMap(),
     /** Whether what the reader can see should be translated without being tapped. */
     translateOnScreen: TranslateOnScreen = TranslateOnScreen.Idle,
-    /** Whether there is anything set up to translate with, which is what the controls need. */
-    translationConfigured: Boolean = false,
     /**
-     * Whether the translation service in particular is, which is a narrower
-     * question - see `ReaderTranslationPreferences.serviceConfigured`.
+     * Whether the translation service is set up, which is what the controls that
+     * need a model read - see `ReaderTranslationPreferences.serviceConfigured`.
      */
     translationServiceConfigured: Boolean = false,
     /** What the reader's own translations are doing, for the control that puts them away. */
@@ -132,7 +130,6 @@ internal fun ReaderContent(
     val compact = !isWideWindow
 
     val translationUi = ReaderTranslationUi(
-        configured = translationConfigured,
         onScreen = translateOnScreen,
         shown = shownTranslations,
         offered = bulkTranslation,

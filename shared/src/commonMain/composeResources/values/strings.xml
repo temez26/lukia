@@ -197,8 +197,6 @@
     <string name="provider_openai">OpenAI</string>
     <string name="provider_local">Local</string>
 
-    <string name="word_lookup_translator">Translator</string>
-    <string name="word_lookup_translator_footnote">Words go to the same service as sentences, with the paragraph around them - so the answer is the sense the book meant.</string>
     <string name="word_lookup_google">Google</string>
     <string name="word_lookup_google_footnote">Fast and free, and it never sees the book - only the word. Add a Cloud Translation key below to use Google's supported API rather than the public endpoint.</string>
     <string name="word_lookup_dictionary">Dictionary</string>

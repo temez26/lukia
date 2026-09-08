@@ -75,7 +75,6 @@ class TranslationSettingsRepositoryTest {
 
         assertEquals(WordLookup.Wiktionary, reopened.wordLookup)
         assertEquals("google-key", reopened.googleApiKey)
-        assertTrue(reopened.looksUpWordsElsewhere)
     }
 
     /**
@@ -194,6 +193,9 @@ class TranslationSettingsRepositoryTest {
      * Nothing at all, which is the whole point of the defaults: a book that has
      * never been told to translate anything opens as a book, and the reader
      * cannot spend a penny by resting a thumb on a paragraph.
+     *
+     * Who would answer if they did ask is settled all the same, and settled on
+     * the dictionary - the one of the two that asks nobody for anything.
      */
     @Test
     fun anUntouchedInstallDoesNotTranslateAnything() {
@@ -204,8 +206,7 @@ class TranslationSettingsRepositoryTest {
         assertFalse(settings.gestures.translatesAnything)
         assertFalse(settings.gestures.wordDetails)
         assertFalse(settings.notes)
-        assertEquals(WordLookup.Translator, settings.wordLookup)
-        assertFalse(settings.looksUpWordsElsewhere)
+        assertEquals(WordLookup.Wiktionary, settings.wordLookup)
     }
 
     /**

@@ -151,8 +151,6 @@
     <string name="provider_openai">OpenAI</string>
     <string name="provider_local">Lokal</string>
 
-    <string name="word_lookup_translator">Översättare</string>
-    <string name="word_lookup_translator_footnote">Ord går till samma tjänst som meningar, med stycket omkring sig – så att svaret blir den betydelse boken menade.</string>
     <string name="word_lookup_google">Google</string>
     <string name="word_lookup_google_footnote">Snabb och gratis, och den ser aldrig boken – bara ordet. Lägg till en Cloud Translation-nyckel nedan för att använda Googles stödda API i stället för den öppna slutpunkten.</string>
     <string name="word_lookup_dictionary">Ordbok</string>

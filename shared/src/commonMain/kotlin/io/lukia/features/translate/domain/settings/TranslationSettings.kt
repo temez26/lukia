@@ -120,16 +120,6 @@ data class TranslationSettings(
         get() = googleKey?.trim()?.takeIf { it.isNotEmpty() }
 
     /**
-     * Whether a single word goes somewhere other than the translator.
-     *
-     * The one thing that can be set up without setting up a translator at all:
-     * a dictionary needs nothing, and Google needs nothing until the reader
-     * wants the supported API.
-     */
-    val looksUpWordsElsewhere: Boolean
-        get() = wordLookup != WordLookup.Translator
-
-    /**
      * The address to open a word at, before the word is written into it, or null
      * when the reader has chosen [WordSite.Custom] and not yet said where.
      *
@@ -150,21 +140,14 @@ data class TranslationSettings(
      * part of this that runs on a model. A whole sentence has nowhere else to
      * go - see [io.lukia.features.translate.infrastructure.WordLookupTranslator]
      * - so this is what the expensive controls are offered on.
+     *
+     * A word is never waiting on it. Both of [WordLookup]'s answers are web APIs
+     * that need nothing set up, so pointing at one word works on an install
+     * nobody has configured, and nothing in the reader asks this before offering
+     * the language or the gestures.
      */
     val isConfigured: Boolean
         get() = (!provider.requiresKey || apiKey != null) && isEndpointAllowed
-
-    /**
-     * Whether anything at all can answer a reader who points at the book.
-     *
-     * Wider than [isConfigured] on purpose. A dictionary and Google are reached
-     * over their own APIs and need nothing set up, so a reader who has never
-     * opened the translation service can still look words up - and the reader's
-     * own panel has to offer them the language and the gestures for it. Asking
-     * [isConfigured] there hid a working feature behind a key nobody needs.
-     */
-    val answersAnything: Boolean
-        get() = isConfigured || looksUpWordsElsewhere
 
     /**
      * The two expensive ways of translating, with any the reader has turned on

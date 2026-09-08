@@ -8,74 +8,54 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * What a reader can do before they have set up a translation service, which is
- * more than nothing and used to be treated as nothing.
+ * What a reader can do before they have set up a translation service, and what
+ * they still cannot.
  *
- * The reader's own panel hid the language and the gestures behind
- * [TranslationSettings.isConfigured], which asks after the model - so somebody
- * who had chosen the dictionary had a working feature with no way to reach any
- * of its settings. The two questions are separate now, and this is the seam
- * between them.
+ * A word they can always ask about: both of [WordLookup]'s answers are web APIs
+ * that need nothing, which is why the reader offers the language and the
+ * gestures on an install nobody has configured. Everything larger than a word
+ * has nowhere to go but a model, and this is the seam between the two.
  */
 class TranslationSettingsAnswersTest {
 
-    /** A fresh install: the translator is the word lookup, and it has no key. */
+    /** A fresh install: the dictionary, and no service. */
     private val untouched = TranslationSettings()
 
     @Test
-    fun aFreshInstallHasNothingThatCanAnswer() {
+    fun aFreshInstallHasNoTranslationService() {
         assertFalse(untouched.isConfigured)
-        assertFalse(untouched.answersAnything)
+        assertEquals(WordLookup.Wiktionary, untouched.wordLookup)
     }
 
     @Test
-    fun aDictionaryIsSomethingThatCanAnswer() {
-        val dictionary = untouched.withWordLookup(WordLookup.Wiktionary)
-
-        assertFalse(dictionary.isConfigured, "a dictionary is not a translation service")
-        assertTrue(dictionary.answersAnything)
+    fun aTranslationServiceWithAKeyIsSetUp() {
+        assertTrue(untouched.withApiKey("sk-test").isConfigured)
     }
 
-    /**
-     * And so is Google, which needs a key only for its supported endpoint - not
-     * to answer at all.
-     */
+    /** A local server needs no key, so it is set up as soon as it is chosen. */
     @Test
-    fun soIsGoogleWithNoKeyAtAll() {
-        val google = untouched.withWordLookup(WordLookup.Google)
-
-        assertTrue(google.answersAnything)
-    }
-
-    @Test
-    fun aTranslationServiceWithAKeyAnswersEverything() {
-        val configured = untouched.withApiKey("sk-test")
-
-        assertTrue(configured.isConfigured)
-        assertTrue(configured.answersAnything)
+    fun aLocalServerIsSetUpWithoutOne() {
+        assertTrue(untouched.copy(provider = TranslationProvider.Local).isConfigured)
     }
 
     /**
-     * The two expensive ways of translating are the exception: both work a
-     * paragraph at a time, which only the translation service does. A dictionary
-     * cannot carry them, so they are not offered beside one however the flags
-     * were left.
+     * The two expensive ways of translating need the service and not merely an
+     * answer: both work a paragraph at a time, which no dictionary does. They
+     * are not offered beside one however the flags were left.
      */
     @Test
-    fun theExpensiveWaysNeedTheServiceRatherThanAnyAnswer() {
+    fun theExpensiveWaysNeedTheService() {
         val everything = BulkTranslation(onScreen = true, asYouRead = true)
-        val dictionary = untouched
-            .withWordLookup(WordLookup.Wiktionary)
-            .withBulkTranslation(everything)
+        val noService = untouched.withBulkTranslation(everything)
 
-        assertEquals(BulkTranslation.Default, dictionary.offeredBulkTranslation)
-        assertEquals(everything, dictionary.withApiKey("sk-test").offeredBulkTranslation)
+        assertEquals(BulkTranslation.Default, noService.offeredBulkTranslation)
+        assertEquals(everything, noService.withApiKey("sk-test").offeredBulkTranslation)
     }
 
     /**
-     * A key that is taken away takes them with it. Left as the reader set them,
-     * an install whose key was cleared would go on offering a button that can
-     * only fail.
+     * And a key that is taken away takes them with it. Left as the reader set
+     * them, an install whose key was cleared would go on offering a button that
+     * can only fail.
      */
     @Test
     fun andAreTakenBackWhenTheServiceGoesAway() {
@@ -87,13 +67,5 @@ class TranslationSettingsAnswersTest {
             BulkTranslation.Default,
             configured.withApiKey("").offeredBulkTranslation,
         )
-    }
-
-    /** A local server needs no key, so it is set up as soon as it is chosen. */
-    @Test
-    fun aLocalServerIsSetUpWithoutOne() {
-        val local = untouched.copy(provider = TranslationProvider.Local)
-
-        assertTrue(local.isConfigured)
     }
 }

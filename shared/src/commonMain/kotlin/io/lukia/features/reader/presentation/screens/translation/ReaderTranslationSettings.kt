@@ -57,9 +57,10 @@ import org.jetbrains.compose.resources.stringResource
  * of them - and unlike everything else in Settings, both of these are answered
  * by looking at the book rather than at the setting.
  *
- * Shown at all only once something is set up to translate with. A language
- * picker for a translator that does not exist is a setting that can only
- * disappoint.
+ * Shown always, because there is always something to translate with: a word goes
+ * to a dictionary or to Google, neither of which needs anything set up. What
+ * needs a model is behind its own question - the two bulk controls, and whether
+ * a gesture may ask for more than a word.
  *
  * At the top rather than after the type settings: this is the one group here
  * that changes what is written on the page rather than how it is set.
@@ -79,8 +80,6 @@ internal fun ReaderTranslationSettings(
      */
     serviceConfigured: Boolean = false,
 ) {
-    if (!translation.configured) return
-
     val inset = LocalLukiaDimens.current.panelPadding
 
     Column(modifier = modifier.fillMaxWidth()) {

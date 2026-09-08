@@ -141,28 +141,6 @@ internal class ReaderTranslations(
         )
 
     /**
-     * Whether there is anything set up to translate with.
-     *
-     * The reader needs this to decide whether to offer the controls at all: a
-     * button whose only possible outcome is "nothing is set up to translate
-     * with" is worse than no button, and most of a reading app's users never
-     * configure one.
-     *
-     * Anything, rather than the translation service - see
-     * [io.lukia.features.translate.domain.settings.TranslationSettings.answersAnything].
-     * A dictionary needs nothing set up, so a reader who has chosen one has a
-     * working feature, and asking after the service here hid the language and
-     * the gestures from them behind a key they never needed.
-     */
-    val configured: StateFlow<Boolean> = settings.settings
-        .map { it.answersAnything }
-        .stateIn(
-            scope = scope,
-            started = SharingStarted.Eagerly,
-            initialValue = settings.settings.value.answersAnything,
-        )
-
-    /**
      * Whether the translation service in particular is set up, as opposed to
      * anything at all - see [configured].
      *

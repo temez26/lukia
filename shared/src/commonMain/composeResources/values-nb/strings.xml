@@ -131,8 +131,6 @@
     <string name="provider_anthropic">Anthropic</string>
     <string name="provider_openai">OpenAI</string>
     <string name="provider_local">Lokal</string>
-    <string name="word_lookup_translator">Oversetter</string>
-    <string name="word_lookup_translator_footnote">Ord går til samme tjeneste som setninger, med avsnittet rundt seg – slik at svaret blir den betydningen boken mente.</string>
     <string name="word_lookup_google">Google</string>
     <string name="word_lookup_google_footnote">Rask og gratis, og den ser aldri boken – bare ordet. Legg til en Cloud Translation-nøkkel under for å bruke Googles støttede API i stedet for det åpne endepunktet.</string>
     <string name="word_lookup_dictionary">Ordbok</string>

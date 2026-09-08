@@ -32,7 +32,7 @@ class ReaderTranslationSettingsTest {
 
     @Test
     fun theLanguageIsInThePanelOnAPhone() = runComposeUiTest {
-        setReader(translationConfigured = true, width = PhoneWidth)
+        setReader(width = PhoneWidth)
 
         onNodeWithContentDescription("Reading settings").performClick()
 
@@ -46,7 +46,6 @@ class ReaderTranslationSettingsTest {
     @Test
     fun theLanguageIsInThePanelOnAPointedAtWindowToo() = runComposeUiTest {
         setReader(
-            translationConfigured = true,
             translationServiceConfigured = true,
             width = DesktopWidth,
         )
@@ -57,17 +56,19 @@ class ReaderTranslationSettingsTest {
         onNodeWithText("Press and hold").assertIsDisplayed()
     }
 
+    /**
+     * On an install nobody has configured, too. It used to be hidden until a
+     * translation service was set up, which hid a working feature: a word goes
+     * to a dictionary that needs no key, so a reader always has something to
+     * choose a language for.
+     */
     @Test
-    fun nothingIsOfferedUntilThereIsSomethingToTranslateWith() = runComposeUiTest {
-        setReader(translationConfigured = false, width = PhoneWidth)
+    fun andOnOneWhereNoServiceHasBeenSetUp() = runComposeUiTest {
+        setReader(width = PhoneWidth)
 
         onNodeWithContentDescription("Reading settings").performClick()
 
-        assertEquals(
-            0,
-            onAllNodes(hasText("Translate into")).fetchSemanticsNodes().size,
-            "a language picker for a translator that does not exist",
-        )
+        onNodeWithText("Translate into").assertIsDisplayed()
     }
 
     /** The list is a press away, so the panel does not open on seventeen rows. */
@@ -78,7 +79,6 @@ class ReaderTranslationSettingsTest {
         setReader(
             targetLanguage = TargetLanguage.English,
             onTargetLanguageChange = { chosen = it },
-            translationConfigured = true,
             width = PhoneWidth,
         )
 
@@ -102,7 +102,7 @@ class ReaderTranslationSettingsTest {
      */
     @Test
     fun choosingALanguageClosesTheList() = runComposeUiTest {
-        setReader(translationConfigured = true, width = PhoneWidth)
+        setReader(width = PhoneWidth)
 
         onNodeWithContentDescription("Reading settings").performClick()
         onNodeWithContentDescription("Translate into. English").performClick()
@@ -126,7 +126,6 @@ class ReaderTranslationSettingsTest {
         setReader(
             gestures = TranslationGestures(tap = PassageUnit.Sentence, longPress = null),
             onTranslationGesturesChange = { gestures = it },
-            translationConfigured = true,
             translationServiceConfigured = true,
             width = PhoneWidth,
         )
@@ -155,7 +154,6 @@ class ReaderTranslationSettingsTest {
         setReader(
             gestures = TranslationGestures(),
             onTranslationGesturesChange = { gestures = it },
-            translationConfigured = true,
             width = PhoneWidth,
         )
 

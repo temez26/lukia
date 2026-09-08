@@ -178,12 +178,14 @@ private fun GestureSection(
 /**
  * Who answers about a single word, which need not be who translates a sentence.
  *
- * On this page rather than beside the translation service, because two of the
- * three are ordinary web APIs that need nothing filled in - which is the whole
- * of what a reader gets on an app they have just installed, and the reason a
- * word is where the two settings pages divide. The third is the translation
- * service itself, and choosing it is choosing to go and set that up, so the
- * group wears the mark while it is chosen and not otherwise.
+ * On this page rather than beside the translation service, because both answers
+ * are ordinary web APIs that need nothing filled in - which is the whole of what
+ * a reader gets on an app they have just installed, and the reason a word is
+ * where the two settings pages divide.
+ *
+ * The service used to be a third choice here. It is the one thing on this page
+ * that could not answer until the reader had gone and set something up, for the
+ * one unit that never needed it - see [WordLookup].
  */
 @Composable
 private fun WordLookupSection(
@@ -196,7 +198,6 @@ private fun WordLookupSection(
         title = stringResource(Res.string.settings_looking_up_a_word),
         info = translation.wordLookup.displayFootnote(),
         groupColor = groupColor,
-        beta = translation.wordLookup == WordLookup.Translator,
         modifier = modifier,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {

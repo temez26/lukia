@@ -131,8 +131,6 @@
     <string name="provider_anthropic">Anthropic</string>
     <string name="provider_openai">OpenAI</string>
     <string name="provider_local">Lokaal</string>
-    <string name="word_lookup_translator">Vertaler</string>
-    <string name="word_lookup_translator_footnote">Woorden gaan naar dezelfde dienst als zinnen, met de alinea eromheen – zodat het antwoord de betekenis is die het boek bedoelde.</string>
     <string name="word_lookup_google">Google</string>
     <string name="word_lookup_google_footnote">Snel en gratis, en het ziet het boek nooit – alleen het woord. Voeg hieronder een Cloud Translation-sleutel toe om Googles ondersteunde API te gebruiken in plaats van het open eindpunt.</string>
     <string name="word_lookup_dictionary">Woordenboek</string>

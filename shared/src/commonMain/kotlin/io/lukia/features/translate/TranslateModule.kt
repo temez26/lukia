@@ -113,7 +113,7 @@ val translateModule = module {
                 answering = { request ->
                     val current = settings.settings.value
 
-                    if (request.unit == PassageUnit.Word && current.looksUpWordsElsewhere) {
+                    if (request.unit == PassageUnit.Word) {
                         CacheIdentity("word/${current.wordLookup.name}", readsTheBook = false)
                     } else {
                         CacheIdentity(
