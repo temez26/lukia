@@ -20,6 +20,7 @@
     <string name="action_go_back">Zurück</string>
     <string name="action_try_again">Erneut versuchen</string>
     <string name="action_close_panel">Dieses Feld schließen</string>
+    <string name="action_explain">Mehr über %1$s</string>
     <string name="state_loading">Wird geladen</string>
     <string name="menu_book_details">Angaben zum Buch</string>
     <string name="menu_favourite">Zu Favoriten hinzufügen</string>
@@ -386,6 +387,8 @@
     <string name="settings_copy_report">Bericht kopieren</string>
     <string name="settings_diagnostics">Diagnose</string>
     <string name="settings_diagnostics_footnote">Bleibt auf diesem Gerät, bis Sie sie kopieren, und wird nirgendwohin gesendet. Enthält keinen Buchtext, keine Titel, keine Dateinamen und keine Schlüssel.</string>
+    <string name="settings_developer">Entwickleroptionen</string>
+    <string name="settings_developer_info">Zeigt die Diagnose und den letzten Absturzbericht am Fuß dieser Seite. Beides bleibt auf diesem Gerät und wird nirgendwohin gesendet. Zum Ausblenden wieder ausschalten.</string>
     <string name="settings_record_problems">Aufzeichnen, was schiefgeht</string>
     <string name="settings_record_problems_detail">Vermerkt, wenn ein Cover, eine Seite oder eine Übersetzung nicht gelesen werden konnte, damit ein Problem, das Sie beschreiben können, etwas hinter sich hat. Dies auszuschalten löscht das Aufgezeichnete.</string>
     <string name="settings_nothing_recorded">Noch nichts aufgezeichnet. Nutzen Sie die App so wie damals, als es schiefging, und kommen Sie dann zurück.</string>

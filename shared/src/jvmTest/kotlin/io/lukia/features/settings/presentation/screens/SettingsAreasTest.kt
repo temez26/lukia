@@ -1,5 +1,7 @@
 package io.lukia.features.settings.presentation.screens
 
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onNodeWithText
@@ -36,18 +38,19 @@ import kotlin.test.Test
 @OptIn(ExperimentalTestApi::class)
 class SettingsAreasTest {
 
-    private fun ComposeUiTest.setSettings() {
+    private fun ComposeUiTest.setSettings(settings: AppSettings = AppSettings()) {
         setContent {
             LukiaTheme(darkTheme = false) {
                 SettingsBody(
-                    settings = AppSettings(),
+                    settings = settings,
                     reader = ReaderSettings(),
                     translation = TranslationSettings(),
                     providerState = ProviderState(),
-                    onAppearanceChange = {},
+                    onSettingsChange = {},
                     onReaderChange = {},
                     translatingActions = TranslatingActions(),
                     providerActions = ProviderActions(),
+                    diagnostics = { DiagnosticsMarker() },
                 )
             }
         }
@@ -132,6 +135,32 @@ class SettingsAreasTest {
     }
 
     /**
+     * The record of what went wrong is a stack trace and a log. It is what a bug
+     * report is built from, and it is not one of the things somebody opens
+     * Settings to change - so nothing on the page shows it until the developer
+     * settings have been asked for.
+     */
+    @Test
+    fun theDiagnosticsAreOffThePageUntilTheDeveloperSettingsAreOn() = runComposeUiTest {
+        setSettings()
+
+        onNodeWithText(DiagnosticsWords).assertDoesNotExist()
+    }
+
+    @Test
+    fun theyAreOnItOnceTheyAre() = runComposeUiTest {
+        setSettings(AppSettings(developerMode = true))
+
+        onNodeWithText(DiagnosticsWords).assertExists()
+    }
+
+    /** Stands in for the group, which needs a view model this test has not got. */
+    @Composable
+    private fun DiagnosticsMarker() {
+        Text(DiagnosticsWords)
+    }
+
+    /**
      * The whole reason Providers is a group of its own: somebody changing the
      * language they read into must not have to scroll past an API key to reach
      * it.
@@ -144,5 +173,9 @@ class SettingsAreasTest {
 
         onNodeWithText("Translation service").assertDoesNotExist()
         onNodeWithText("Looking up a word").assertDoesNotExist()
+    }
+
+    private companion object {
+        const val DiagnosticsWords = "what the app wrote down"
     }
 }

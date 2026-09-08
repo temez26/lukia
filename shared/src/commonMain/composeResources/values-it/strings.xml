@@ -19,6 +19,7 @@
     <string name="action_go_back">Indietro</string>
     <string name="action_try_again">Riprova</string>
     <string name="action_close_panel">Chiudi questo pannello</string>
+    <string name="action_explain">Altro su %1$s</string>
     <string name="state_loading">Caricamento</string>
     <string name="menu_book_details">Dettagli del libro</string>
     <string name="menu_favourite">Aggiungi ai preferiti</string>
@@ -385,6 +386,8 @@
     <string name="settings_copy_report">Copia il rapporto</string>
     <string name="settings_diagnostics">Diagnostica</string>
     <string name="settings_diagnostics_footnote">Resta su questo dispositivo finché non la copi, e non viene mai inviata da nessuna parte. Non contiene testo dei libri, né titoli, né nomi di file, né chiavi.</string>
+    <string name="settings_developer">Opzioni sviluppatore</string>
+    <string name="settings_developer_info">Mostra la diagnostica e l\u2019ultimo rapporto di arresto anomalo in fondo a questa pagina. Entrambi restano su questo dispositivo e non vengono mai inviati da nessuna parte. Disattiva per nasconderli di nuovo.</string>
     <string name="settings_record_problems">Registra cosa va storto</string>
     <string name="settings_record_problems_detail">Annota quando una copertina, una pagina o una traduzione non si è potuta leggere, così che un problema che sai descrivere abbia qualcosa dietro. Disattivarlo cancella ciò che è stato registrato.</string>
     <string name="settings_nothing_recorded">Ancora niente di registrato. Usa l\u2019applicazione come quando è andata storta, e poi torna qui.</string>

@@ -19,7 +19,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.resources.Res
+import io.lukia.resources.action_explain
 import io.lukia.resources.settings_beta
+import io.lukia.shared.presentation.components.controls.InfoButton
 import io.lukia.shared.presentation.components.controls.toggleRow
 import io.lukia.shared.presentation.components.surface.GroupSection
 import io.lukia.shared.presentation.theme.Space
@@ -72,11 +74,19 @@ enum class SettingsArea {
 }
 
 /**
- * A switch for one setting, with the sentence that says what it does under it.
+ * A switch for one setting, saying as little about it as the setting allows.
  *
- * The detail is not optional. Everything on this screen that is on or off is
- * something whose name alone does not settle whether you want it, which is why
- * these are switches with prose rather than rows in a list.
+ * Two ways of explaining one, and a setting should use exactly one of them.
+ * [detail] is a line short enough to be read whether or not anybody wanted it,
+ * and is for the settings that cost money or throw something away - a warning
+ * nobody asked for is still a warning worth giving. [info] is the paragraph
+ * behind a mark, for everything else.
+ *
+ * The mark sits at the end of the row rather than beside the label, and that is
+ * not a matter of taste: the row is the control - see [toggleRow] - so it merges
+ * everything inside it into one thing a screen reader announces. A button placed
+ * in there would be drawn but not reachable. Outside the row it stays a control
+ * of its own.
  *
  * [badge] is for a mark beside the label - see [BetaToggle], which is this
  * wearing one.
@@ -84,38 +94,57 @@ enum class SettingsArea {
 @Composable
 internal fun SettingsToggle(
     label: String,
-    detail: String,
     checked: Boolean,
     onChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    detail: String? = null,
+    info: String? = null,
     badge: (@Composable () -> Unit)? = null,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(Space.xs),
+        modifier = modifier,
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            // The row is the control, not the switch inside it - see [toggleRow].
-            modifier = Modifier
-                .fillMaxWidth()
-                .toggleRow(label = label, checked = checked, onChange = onChange),
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .weight(1f)
+                    .toggleRow(label = label, checked = checked, onChange = onChange),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
 
-                badge?.invoke()
+                    badge?.invoke()
+                }
+
+                Switch(checked = checked, onCheckedChange = null)
             }
 
-            Switch(checked = checked, onCheckedChange = null)
+            if (info != null) {
+                InfoButton(
+                    label = stringResource(Res.string.action_explain, label),
+                    text = info,
+                    modifier = Modifier.padding(start = Space.xs),
+                )
+            }
         }
 
-        Text(
-            text = detail,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        if (detail != null) {
+            Text(
+                text = detail,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
 
@@ -124,8 +153,9 @@ internal fun SettingsToggle(
  *
  * The label carries the word rather than the section, because these sit beside
  * each other and a reader turning one on is being told about that one. What the
- * beta actually means - slow, and it spends money a screenful at a time - is in
- * the detail underneath, where somebody deciding will read it.
+ * beta actually means - slow, and it spends money a screenful at a time - stays
+ * as a visible [detail] rather than going behind a mark: it is the one thing
+ * about these that somebody has to read before deciding, not after.
  */
 @Composable
 internal fun BetaToggle(
@@ -181,6 +211,15 @@ internal fun SettingsSection(
     footnote: String? = null,
     /** Rows that draw their own vertical padding ask for none of the card's. */
     padding: Dp = Space.lg,
+    /**
+     * What this group needs a paragraph to say, behind a mark beside its name.
+     *
+     * Almost every group here has one. A settings page is opened to change one
+     * thing, and every group explaining itself in prose at the same time is a
+     * page that has to be read before it can be used. [footnote] is what is
+     * left: a line so short that hiding it would cost more than showing it.
+     */
+    info: String? = null,
     content: @Composable () -> Unit,
 ) {
     GroupSection(
@@ -189,6 +228,14 @@ internal fun SettingsSection(
         color = groupColor,
         footnote = footnote,
         padding = padding,
+        info = info?.let {
+            {
+                InfoButton(
+                    label = stringResource(Res.string.action_explain, title),
+                    text = it,
+                )
+            }
+        },
         content = content,
     )
 }

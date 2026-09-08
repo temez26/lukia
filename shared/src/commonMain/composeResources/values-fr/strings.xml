@@ -26,6 +26,7 @@
     <string name="action_go_back">Retour</string>
     <string name="action_try_again">Réessayer</string>
     <string name="action_close_panel">Fermer ce panneau</string>
+    <string name="action_explain">En savoir plus sur %1$s</string>
     <string name="state_loading">Chargement</string>
     <string name="menu_book_details">Détails du livre</string>
     <string name="menu_favourite">Ajouter aux favoris</string>
@@ -392,6 +393,8 @@
     <string name="settings_copy_report">Copier le rapport</string>
     <string name="settings_diagnostics">Diagnostic</string>
     <string name="settings_diagnostics_footnote">Conservé sur cet appareil jusqu\u2019à ce que vous le copiiez, et jamais envoyé nulle part. Ne contient aucun texte de livre, aucun titre, aucun nom de fichier et aucune clé.</string>
+    <string name="settings_developer">Options pour développeurs</string>
+    <string name="settings_developer_info">Place le diagnostic et le dernier rapport de plantage au bas de cette page. Les deux restent sur cet appareil et ne sont jamais envoyés nulle part. Désactivez pour les masquer à nouveau.</string>
     <string name="settings_record_problems">Consigner ce qui ne va pas</string>
     <string name="settings_record_problems_detail">Note quand une couverture, une page ou une traduction n\u2019a pas pu être lue, pour qu\u2019un problème que vous pouvez décrire ait quelque chose derrière lui. Désactiver ceci efface ce qui a été consigné.</string>
     <string name="settings_nothing_recorded">Rien de consigné pour l\u2019instant. Utilisez l\u2019application comme quand cela n\u2019a pas marché, puis revenez.</string>

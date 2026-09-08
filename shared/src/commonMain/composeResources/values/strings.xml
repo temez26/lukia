@@ -31,6 +31,7 @@
     <string name="action_go_back">Go back</string>
     <string name="action_try_again">Try again</string>
     <string name="action_close_panel">Close this panel</string>
+    <string name="action_explain">More about %1$s</string>
     <string name="state_loading">Loading</string>
 
     <!-- The actions one book offers, wherever it is shown. -->
@@ -525,6 +526,8 @@
     <string name="settings_copy_report">Copy report</string>
     <string name="settings_diagnostics">Diagnostics</string>
     <string name="settings_diagnostics_footnote">Kept on this device until you copy it, and never sent anywhere. Holds no book text, titles, file names or keys.</string>
+    <string name="settings_developer">Developer options</string>
+    <string name="settings_developer_info">Puts the diagnostics record and the last crash report at the foot of this page. Both are kept on this device and are never sent anywhere. Turn this off to put them away again.</string>
     <string name="settings_record_problems">Record what goes wrong</string>
     <string name="settings_record_problems_detail">Notes when a cover, a page or a translation could not be read, so a problem you can describe has something behind it. Turning this off clears what was recorded.</string>
     <string name="settings_nothing_recorded">Nothing recorded yet. Use the app as you did when it went wrong, then come back.</string>

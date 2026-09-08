@@ -20,6 +20,7 @@
     <string name="action_go_back">Tillbaka</string>
     <string name="action_try_again">Försök igen</string>
     <string name="action_close_panel">Stäng den här panelen</string>
+    <string name="action_explain">Mer om %1$s</string>
     <string name="state_loading">Läser in</string>
 
     <string name="menu_book_details">Bokens uppgifter</string>
@@ -433,6 +434,8 @@
     <string name="settings_copy_report">Kopiera rapporten</string>
     <string name="settings_diagnostics">Diagnostik</string>
     <string name="settings_diagnostics_footnote">Sparas på den här enheten tills du kopierar den, och skickas aldrig någonstans. Innehåller ingen boktext, inga titlar, inga filnamn och inga nycklar.</string>
+    <string name="settings_developer">Utvecklaralternativ</string>
+    <string name="settings_developer_info">Visar diagnostiken och den senaste kraschrapporten längst ned på den här sidan. Båda stannar på den här enheten och skickas aldrig någonstans. Stäng av för att dölja dem igen.</string>
     <string name="settings_record_problems">Anteckna vad som går fel</string>
     <string name="settings_record_problems_detail">Antecknar när ett omslag, en sida eller en översättning inte kunde läsas, så att ett problem du kan beskriva har något bakom sig. Att stänga av det här rensar det som antecknats.</string>
     <string name="settings_nothing_recorded">Inget antecknat än. Använd appen som du gjorde när det gick fel, och kom sedan tillbaka.</string>

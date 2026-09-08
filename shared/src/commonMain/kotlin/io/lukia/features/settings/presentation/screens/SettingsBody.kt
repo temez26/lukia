@@ -80,7 +80,7 @@ internal fun SettingsBody(
     reader: ReaderSettings,
     translation: TranslationSettings,
     providerState: ProviderState,
-    onAppearanceChange: (AppSettings) -> Unit,
+    onSettingsChange: (AppSettings) -> Unit,
     onReaderChange: (ReaderSettings) -> Unit,
     translatingActions: TranslatingActions,
     providerActions: ProviderActions,
@@ -98,6 +98,10 @@ internal fun SettingsBody(
      * with them - see `DiagnosticsSettings`. A slot rather than more parameters
      * because it is the one group here with a view model of its own, and this
      * body has to stay composable without a dependency graph behind it.
+     *
+     * Composed only while the developer settings are on - see
+     * [AppSettings.developerMode] - so the graph is never asked for its view
+     * model on a page that would not show it.
      */
     diagnostics: (@Composable () -> Unit)? = null,
 ) {
@@ -152,7 +156,7 @@ internal fun SettingsBody(
                     reader = reader,
                     translation = translation,
                     providerState = providerState,
-                    onAppearanceChange = onAppearanceChange,
+                    onAppearanceChange = onSettingsChange,
                     onReaderChange = onReaderChange,
                     translatingActions = translatingActions,
                     providerActions = providerActions,
@@ -163,15 +167,23 @@ internal fun SettingsBody(
 
             // Outside the crossfade, so they stay put while the groups change
             // above them. Both belong to the page rather than to any one group.
-            diagnostics?.let {
-                Box(modifier = Modifier.padding(top = dimens.sectionSpacing)) { it() }
+            if (settings.developerMode) {
+                diagnostics?.let {
+                    Box(modifier = Modifier.padding(top = dimens.sectionSpacing)) { it() }
+                }
             }
 
             // Last, and not a slot: unlike diagnostics it asks the graph for
             // nothing, so there is nothing for a caller to have to supply.
+            //
+            // It is also the way in to the group above it, which is why the
+            // whole settings value reaches it rather than the four appearance
+            // fields the rest of this page changes.
             AboutSettings(
                 groupColor = groupColor,
                 modifier = Modifier.padding(top = dimens.sectionSpacing),
+                developerMode = settings.developerMode,
+                onDeveloperModeChange = { onSettingsChange(settings.copy(developerMode = it)) },
             )
         }
 

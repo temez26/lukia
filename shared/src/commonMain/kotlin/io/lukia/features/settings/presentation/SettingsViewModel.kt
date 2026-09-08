@@ -141,20 +141,21 @@ class SettingsViewModel(
     private var warming: Job? = null
 
     /**
-     * The app's whole appearance at once - how light it is, its palette and its
-     * accent - rather than a setter for each.
+     * The app's own settings whole - how light it is, its palette, its accent,
+     * its motion and whether the developer settings are out - rather than a
+     * setter for each.
      *
-     * They are chosen in one place, from a screen that already holds all three,
-     * and [AppSettingsRepository] writes nothing when nothing changed. A setter
-     * per field would be three ways to say the same sentence.
+     * They are changed from one page that already holds all of them, and
+     * [AppSettingsRepository] writes nothing when nothing changed. A setter per
+     * field would be five ways to say the same sentence.
      */
-    fun setAppearance(settings: AppSettings) {
+    fun setAppSettings(settings: AppSettings) {
         repository.update(settings)
     }
 
     /**
      * How books are set - the page, the type, and what a PDF opens as - carried
-     * whole for the same reason [setAppearance] is.
+     * whole for the same reason [setAppSettings] is.
      */
     fun setReaderSettings(settings: ReaderSettings) {
         reader.update(settings)

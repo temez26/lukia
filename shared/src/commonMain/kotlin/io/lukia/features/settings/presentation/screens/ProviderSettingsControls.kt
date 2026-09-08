@@ -98,7 +98,7 @@ private fun TranslationServiceSection(
 ) {
     SettingsSection(
         title = stringResource(Res.string.settings_translation_service),
-        footnote = translation.provider.footnote(),
+        info = translation.provider.footnote(),
         groupColor = groupColor,
         modifier = modifier,
     ) {
@@ -228,7 +228,7 @@ private fun WordLookupSection(
 ) {
     SettingsSection(
         title = stringResource(Res.string.settings_looking_up_a_word),
-        footnote = translation.wordLookup.displayFootnote(),
+        info = translation.wordLookup.displayFootnote(),
         groupColor = groupColor,
         modifier = modifier,
     ) {
@@ -274,7 +274,7 @@ private fun WordSiteSection(
 ) {
     SettingsSection(
         title = stringResource(Res.string.settings_reading_more),
-        footnote = stringResource(Res.string.settings_reading_more_footnote),
+        info = stringResource(Res.string.settings_reading_more_footnote),
         groupColor = groupColor,
         modifier = modifier,
     ) {

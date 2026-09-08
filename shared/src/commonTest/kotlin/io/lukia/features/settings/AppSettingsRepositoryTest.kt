@@ -88,6 +88,22 @@ class AppSettingsRepositoryTest {
     }
 
     /**
+     * The developer settings are hidden until somebody is talked through finding
+     * them, and stay found afterwards - a reader working through a bug report
+     * should not have to press the version again after every restart.
+     */
+    @Test
+    fun theDeveloperSettingsAreOffUntilAskedForAndStayOnOnceTheyAre() {
+        val store = FakeSettingsStore()
+
+        assertEquals(false, AppSettingsRepository(store).settings.value.developerMode)
+
+        AppSettingsRepository(store).update(AppSettings(developerMode = true))
+
+        assertEquals(true, AppSettingsRepository(store).settings.value.developerMode)
+    }
+
+    /**
      * A value written by an older build, or edited by hand into nonsense, falls
      * back to the default rather than throwing on the way to the first frame.
      */

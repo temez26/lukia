@@ -54,7 +54,7 @@ private fun SettingsPanelBody(viewModel: SettingsViewModel = koinViewModel()) {
         providerState = remember(connectionTest, availableModels, modelReadiness) {
             ProviderState(connectionTest, availableModels, modelReadiness)
         },
-        onAppearanceChange = viewModel::setAppearance,
+        onSettingsChange = viewModel::setAppSettings,
         onReaderChange = viewModel::setReaderSettings,
         translatingActions = rememberTranslatingActions(viewModel),
         providerActions = rememberProviderActions(viewModel),

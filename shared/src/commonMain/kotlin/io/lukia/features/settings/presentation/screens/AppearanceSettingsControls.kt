@@ -84,7 +84,7 @@ internal fun AppearanceSettings(
             // Named for what it does rather than what it is called, since
             // "System" is the only option whose meaning is not obvious from the
             // word alone.
-            footnote = stringResource(Res.string.settings_appearance_footnote),
+            info = stringResource(Res.string.settings_appearance_footnote),
             groupColor = groupColor,
         ) {
             SegmentedControl(
@@ -97,7 +97,7 @@ internal fun AppearanceSettings(
 
         SettingsSection(
             title = stringResource(Res.string.settings_palette),
-            footnote = stringResource(Res.string.settings_palette_footnote),
+            info = stringResource(Res.string.settings_palette_footnote),
             groupColor = groupColor,
             modifier = Modifier.padding(top = dimens.sectionSpacing),
         ) {
@@ -112,7 +112,7 @@ internal fun AppearanceSettings(
 
         SettingsSection(
             title = stringResource(Res.string.settings_accent),
-            footnote = stringResource(Res.string.settings_accent_footnote),
+            info = stringResource(Res.string.settings_accent_footnote),
             groupColor = groupColor,
             modifier = Modifier.padding(top = dimens.sectionSpacing),
         ) {
@@ -153,7 +153,7 @@ private fun MotionSection(
         // button still shrinks under a finger on every one of these, and
         // promising otherwise would be a promise the app breaks the first time
         // somebody presses something.
-        footnote = stringResource(Res.string.settings_motion_footnote),
+        info = stringResource(Res.string.settings_motion_footnote),
         groupColor = groupColor,
         modifier = modifier,
     ) {
