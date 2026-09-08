@@ -372,7 +372,8 @@
     <string name="settings_translating_ahead_footnote">Obie są nowe i obie są wolne i kosztowne: tłumaczą cały ekran naraz zamiast fragmentu, który wskazałeś. Wyłączone, dopóki o nie nie poprosisz, i przez ten czas całkowicie ukryte przed czytnikiem.</string>
     <string name="settings_on_screen_detail">Dodaje przycisk, który raz tłumaczy każde widoczne zdanie.</string>
     <string name="settings_as_you_read_detail">Dodaje przycisk, który tłumaczy dalej wszystko, co wjeżdża na ekran, dopóki go nie wyłączysz. To ten kosztowny.</string>
-    <string name="settings_translation_service">Usługa tłumaczenia</string>
+    <string name="settings_translation_service">Tłumaczenie AI</string>
+    <string name="settings_translation_service_footnote">Jedyna część Lukii, która wymaga własnej usługi, i najnowsza. Sprawdzenie słowa powyżej działa bez niej. Całe zdanie już nie: trafia do modelu, który konfigurujesz tutaj i opłacasz za każdy fragment.</string>
     <string name="settings_address">Adres</string>
     <string name="settings_model">Model</string>
     <string name="settings_api_key">Klucz API</string>

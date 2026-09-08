@@ -398,7 +398,8 @@
     <string name="settings_on_screen_detail">Lägger till en knapp som översätter varje mening du ser, en gång.</string>
     <string name="settings_as_you_read_detail">Lägger till en knapp som fortsätter översätta allt som rullar in tills du stänger av den. Det är den dyra.</string>
 
-    <string name="settings_translation_service">Översättningstjänst</string>
+    <string name="settings_translation_service">AI-översättning</string>
+    <string name="settings_translation_service_footnote">Den enda delen av Lukia som behöver en egen tjänst, och den nyaste. Att slå upp ett ord ovanför fungerar utan den. En hel mening gör det inte: den går till en modell du ställer in här och betalar för per stycke.</string>
     <string name="settings_address">Adress</string>
     <string name="settings_model">Modell</string>
     <string name="settings_api_key">API-nyckel</string>

@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import io.lukia.features.settings.presentation.TranslatingActions
 import io.lukia.features.translate.domain.settings.TargetLanguage
+import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.features.translate.presentation.GestureControl
 import io.lukia.features.translate.presentation.displayName
@@ -44,6 +45,9 @@ import org.jetbrains.compose.resources.stringResource
  *
  * The language comes first because it is the one setting nothing works without,
  * and the one most people came here to change.
+ *
+ * Nothing here is on to begin with - see [TranslationGestures]. A book opens as
+ * a book, and the reader says what a thumb on it should ask for.
  */
 @Composable
 internal fun TranslatingSettings(
@@ -146,9 +150,15 @@ private fun GestureSection(
 /**
  * What the reader may be asked to translate without being pointed at anything.
  *
- * Kept apart from the gestures above it: those are how the reader works the book
- * and are on for everybody, while these are unfinished, slow and spend money -
- * which is a different kind of decision and reads as one.
+ * Kept apart from the gestures above it, and marked. Those are how the reader
+ * works the book, and a tap on a word reaches a dictionary that costs nothing.
+ * Both of these work a paragraph at a time and have nowhere to go but the
+ * translation service, which is a model somebody pays by the passage - a
+ * different kind of decision, and it reads as one.
+ *
+ * The mark is on the group as well as on each switch. The switches say that each
+ * one is rough; the group says what they have in common, which is the part a
+ * reader has to have set up before either of them does anything at all.
  */
 @Composable
 private fun TranslatingAheadSection(
@@ -161,6 +171,7 @@ private fun TranslatingAheadSection(
         title = stringResource(Res.string.settings_translating_ahead),
         info = stringResource(Res.string.settings_translating_ahead_footnote),
         groupColor = groupColor,
+        beta = true,
         modifier = modifier,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {

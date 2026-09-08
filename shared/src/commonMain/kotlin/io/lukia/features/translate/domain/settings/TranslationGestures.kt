@@ -11,18 +11,20 @@ import io.lukia.core.domain.text.PassageUnit
  * finger in the same place did different things depending on what had happened
  * there before. A gesture the reader has set is a gesture that does that.
  *
- * Null is off. A reader who only ever wants to look words up turns the tap off
- * and stops translating sentences by accident; one who never wants to wait for a
- * whole paragraph turns the long press off. Both off leaves a reading app that
- * does not translate, which is a perfectly reasonable thing to want.
+ * Null is off, and off is where both of them start. A reading app that
+ * translates the moment a thumb brushes the page is one that spends somebody's
+ * money before they have said what it is for - and every one of these ends at a
+ * service the reader has to set up themselves. So the book behaves like a book
+ * until the reader asks for something else: they turn the tap on for sentences,
+ * or the hold on for words, or neither.
  *
  * Repeating a gesture on a passage it has already been used on is what puts the
  * book's own words back, and repeating it again brings the translation back - so
  * nothing needs a second gesture to undo it.
  */
 data class TranslationGestures(
-    val tap: PassageUnit? = PassageUnit.Sentence,
-    val longPress: PassageUnit? = PassageUnit.Word,
+    val tap: PassageUnit? = null,
+    val longPress: PassageUnit? = null,
     /**
      * Whether holding a word that has already been looked up opens what else it
      * means - every sense a dictionary has for it, and a way through to a site
@@ -38,8 +40,11 @@ data class TranslationGestures(
      * So it applies whatever the hold is set to, including off, and it applies
      * only to a word that has an answer on the page already. A word nobody has
      * asked about is not a word with more to say.
+     *
+     * Off to begin with, like the two gestures above it: nothing here does
+     * anything until the reader has said translating is something they want.
      */
-    val wordDetails: Boolean = true,
+    val wordDetails: Boolean = false,
 ) {
 
     /** Whether anything at all happens when the reader points at the book. */

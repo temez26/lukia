@@ -29,6 +29,8 @@ import io.lukia.features.translate.domain.lookup.WordDictionary
 import io.lukia.features.translate.domain.lookup.WordEntry
 import io.lukia.features.translate.domain.lookup.WordMeaning
 import io.lukia.features.translate.domain.provider.FakeTranslator
+import io.lukia.core.domain.text.PassageUnit
+import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -233,10 +235,25 @@ abstract class ReaderViewModelTestCase {
      */
     protected fun testTranslations(
         translator: Translator = FakeTranslator(),
+        /**
+         * What the reader has set a tap and a hold to.
+         *
+         * Turned on here rather than taken from `TranslationGestures.Default`,
+         * which is now every gesture off - a book that translates nothing until
+         * its reader asks. Every test that reaches this is about what happens
+         * once they have, so this is the reader who has.
+         */
+        gestures: TranslationGestures = TranslationGestures(
+            tap = PassageUnit.Sentence,
+            longPress = PassageUnit.Word,
+            wordDetails = true,
+        ),
     ) = ReaderTranslationsFactory(
         TranslatePassageUseCase(translator),
         LookUpWordUseCase(WordDictionary { word, _ -> WordEntry(word, listOf(WordMeaning(null, listOf("a sense")))) }),
-        TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()),
+        TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()).apply {
+            update(settings.value.withGestures(gestures))
+        },
     )
 
     /**

@@ -412,7 +412,8 @@
     <string name="settings_on_screen_detail">Lisää painikkeen, joka kääntää kerran kaikki näkyvissä olevat lauseet.</string>
     <string name="settings_as_you_read_detail">Lisää painikkeen, joka jatkaa kääntämistä sitä mukaa kuin tekstiä vierii näkyviin, kunnes otat sen pois käytöstä. Tämä on se kallis.</string>
 
-    <string name="settings_translation_service">Käännöspalvelu</string>
+    <string name="settings_translation_service">Tekoälykäännös</string>
+    <string name="settings_translation_service_footnote">Lukian ainoa osa, joka vaatii oman palvelun, ja sen uusin. Sanan hakeminen ylempää toimii ilman sitä. Kokonainen lause ei toimi: se menee mallille, jonka otat täällä käyttöön ja josta maksat kappaleelta.</string>
     <string name="settings_address">Osoite</string>
     <string name="settings_model">Malli</string>
     <string name="settings_api_key">API-avain</string>

@@ -352,7 +352,8 @@
     <string name="settings_translating_ahead_footnote">Begge er nye, og begge er langsomme og dyre: de oversætter en skærmfuld ad gangen i stedet for det sted, du pegede på. Slået fra, indtil du beder om dem, og helt skjult for læseren så længe.</string>
     <string name="settings_on_screen_detail">Tilføjer en knap, der oversætter hver sætning, du kan se, én gang.</string>
     <string name="settings_as_you_read_detail">Tilføjer en knap, der bliver ved med at oversætte alt, der ruller ind, indtil du slår den fra. Det er den dyre.</string>
-    <string name="settings_translation_service">Oversættelsestjeneste</string>
+    <string name="settings_translation_service">AI-oversættelse</string>
+    <string name="settings_translation_service_footnote">Den eneste del af Lukia, der kræver din egen tjeneste, og den nyeste. At slå et ord op ovenfor virker uden den. En hel sætning gør ikke: den går til en model, du sætter op her og betaler for pr. afsnit.</string>
     <string name="settings_address">Adresse</string>
     <string name="settings_model">Model</string>
     <string name="settings_api_key">API-nøgle</string>

@@ -353,7 +353,8 @@
     <string name="settings_translating_ahead_footnote">Beide sind neu, und beide sind langsam und teuer: Sie übersetzen einen Bildschirm auf einmal statt der Stelle, auf die Sie gezeigt haben. Aus, bis Sie darum bitten, und solange ganz vor dem Leser verborgen.</string>
     <string name="settings_on_screen_detail">Fügt eine Schaltfläche hinzu, die jeden sichtbaren Satz einmal übersetzt.</string>
     <string name="settings_as_you_read_detail">Fügt eine Schaltfläche hinzu, die alles Hereinscrollende weiter übersetzt, bis Sie sie ausschalten. Das ist die teure.</string>
-    <string name="settings_translation_service">Übersetzungsdienst</string>
+    <string name="settings_translation_service">KI-Übersetzung</string>
+    <string name="settings_translation_service_footnote">Der einzige Teil von Lukia, der einen eigenen Dienst braucht, und der neueste. Ein Wort nachzuschlagen funktioniert oben auch ohne ihn. Ein ganzer Satz nicht: er geht an ein Modell, das Sie hier einrichten und pro Textstelle bezahlen.</string>
     <string name="settings_address">Adresse</string>
     <string name="settings_model">Modell</string>
     <string name="settings_api_key">API-Schlüssel</string>

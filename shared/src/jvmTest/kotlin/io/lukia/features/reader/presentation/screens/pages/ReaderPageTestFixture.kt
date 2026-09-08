@@ -32,6 +32,7 @@ import io.lukia.features.reader.presentation.screens.ReaderContent
 import io.lukia.features.reader.presentation.screens.translation.opening
 import io.lukia.features.reader.presentation.translation.PassageSelection
 import io.lukia.features.reader.presentation.translation.PassageTranslation
+import io.lukia.features.reader.presentation.screens.translation.TranslatingReader
 import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.shared.presentation.theme.LukiaTheme
 
@@ -140,7 +141,7 @@ internal fun ComposeUiTest.setPageReader(
     translations: () -> Map<TextAnchor, PassageTranslation> = { emptyMap() },
     onPassageSelected: (PassageSelection) -> Unit = {},
     onPassageHold: (PassageSelection) -> Unit = {},
-    gestures: TranslationGestures = TranslationGestures.Default,
+    gestures: TranslationGestures = TranslatingReader,
 ) {
     setContent {
         LukiaTheme {

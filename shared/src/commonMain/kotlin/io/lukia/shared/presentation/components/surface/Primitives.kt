@@ -166,6 +166,13 @@ fun GroupSection(
      * layout and does not have to know what a popover is.
      */
     info: (@Composable () -> Unit)? = null,
+    /**
+     * A mark on the group's name, for a group that is not what the rest of the
+     * page is - see the beta badge in the settings screens. Between the name and
+     * [info] because it qualifies the name, and the mark that explains the group
+     * comes after both.
+     */
+    badge: (@Composable () -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -174,6 +181,8 @@ fun GroupSection(
             modifier = Modifier.padding(start = Space.xs, bottom = Space.sm),
         ) {
             SectionLabel(text = title)
+
+            badge?.invoke()
 
             // Beside the name rather than at the far edge of the row: it is
             // about this group, and a mark floating in white space next to a

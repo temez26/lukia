@@ -352,7 +352,8 @@
     <string name="settings_translating_ahead_footnote">Beide zijn nieuw, en beide zijn traag en duur: ze vertalen een schermvol tegelijk in plaats van de passage waar u naar wees. Uit tot u erom vraagt, en zolang helemaal verborgen voor de lezer.</string>
     <string name="settings_on_screen_detail">Voegt een knop toe die elke zin die u ziet één keer vertaalt.</string>
     <string name="settings_as_you_read_detail">Voegt een knop toe die alles wat in beeld rolt blijft vertalen tot u hem uitzet. Dit is de dure.</string>
-    <string name="settings_translation_service">Vertaaldienst</string>
+    <string name="settings_translation_service">AI-vertaling</string>
+    <string name="settings_translation_service_footnote">Het enige deel van Lukia dat een eigen dienst nodig heeft, en het nieuwste. Een woord opzoeken hierboven werkt zonder. Een hele zin niet: die gaat naar een model dat je hier instelt en per passage betaalt.</string>
     <string name="settings_address">Adres</string>
     <string name="settings_model">Model</string>
     <string name="settings_api_key">API-sleutel</string>

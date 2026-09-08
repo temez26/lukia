@@ -16,13 +16,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.resources.Res
 import io.lukia.resources.action_explain
 import io.lukia.resources.settings_beta
 import io.lukia.shared.presentation.components.controls.InfoButton
-import io.lukia.shared.presentation.components.controls.toggleRow
 import io.lukia.shared.presentation.components.surface.GroupSection
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
@@ -33,14 +34,14 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * The parts of the app somebody comes to Settings to change.
  *
- * Four rather than the nine sections behind them, because a settings page is
+ * Five rather than the ten sections behind them, because a settings page is
  * read by somebody who already knows what they want to change and is looking for
- * where it lives. Nine equally-weighted boxes in one column is a list to search;
- * four segments across the top is a question with an answer.
+ * where it lives. Ten equally-weighted boxes in one column is a list to search;
+ * five segments across the top is a question with an answer.
  *
  * The order is how often they are opened, which is also how much machinery each
  * one asks the reader to think about: what the app looks like, how books are
- * set, what is translated, and last of all who is doing it.
+ * set, what is translated, who is doing it, and last of all which Lukia this is.
  */
 enum class SettingsArea {
 
@@ -61,6 +62,19 @@ enum class SettingsArea {
      * have to scroll past an API key to reach it.
      */
     Providers,
+
+    /**
+     * Which Lukia this is, what it was built from, and the record of what went
+     * wrong while it ran.
+     *
+     * A segment of its own rather than a group repeated under all the others.
+     * It sat at the foot of every page so the version would always be a scroll
+     * away, which made the four groups end in a paragraph about licences that
+     * had nothing to do with any of them - and made the page longer, on every
+     * one of them, for a thing somebody looks at twice a year. A segment is one
+     * press, which is not further away than the bottom of a scrolling page.
+     */
+    About,
     ;
 
     companion object {
@@ -82,11 +96,11 @@ enum class SettingsArea {
  * nobody asked for is still a warning worth giving. [info] is the paragraph
  * behind a mark, for everything else.
  *
- * The mark sits at the end of the row rather than beside the label, and that is
- * not a matter of taste: the row is the control - see [toggleRow] - so it merges
- * everything inside it into one thing a screen reader announces. A button placed
- * in there would be drawn but not reachable. Outside the row it stays a control
- * of its own.
+ * The switch is the control, and it is the only part of the row that is. The
+ * whole row used to be, which reads well on a phone's settings list and badly
+ * here: these rows carry a label, a beta mark, an explaining mark and sometimes
+ * a line of detail, and a reader reaching for any of those flipped the setting
+ * instead. A press on the words about a setting is a press to read them.
  *
  * [badge] is for a mark beside the label - see [BetaToggle], which is this
  * wearing one.
@@ -112,9 +126,7 @@ internal fun SettingsToggle(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .weight(1f)
-                    .toggleRow(label = label, checked = checked, onChange = onChange),
+                modifier = Modifier.weight(1f),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
@@ -126,7 +138,15 @@ internal fun SettingsToggle(
                     badge?.invoke()
                 }
 
-                Switch(checked = checked, onCheckedChange = null)
+                // The label is put on the switch rather than on the row, because
+                // the switch is now the whole control: without this a screen
+                // reader would reach a switch with a state and no name, and the
+                // words naming it would be text it had already passed.
+                Switch(
+                    checked = checked,
+                    onCheckedChange = onChange,
+                    modifier = Modifier.semantics { contentDescription = label },
+                )
             }
 
             if (info != null) {
@@ -169,8 +189,15 @@ internal fun BetaToggle(
     }
 }
 
+/**
+ * The mark that says a setting or a whole group is new and known to be rough.
+ *
+ * One badge for both, because they say the same thing: everything it is put on
+ * runs through a model somebody has to set up and pay for, and none of it is
+ * finished. See [SettingsSection]'s `beta`.
+ */
 @Composable
-private fun BetaBadge(modifier: Modifier = Modifier) {
+internal fun BetaBadge(modifier: Modifier = Modifier) {
     Text(
         text = stringResource(Res.string.settings_beta),
         style = MaterialTheme.typography.labelSmall,
@@ -220,6 +247,16 @@ internal fun SettingsSection(
      * left: a line so short that hiding it would cost more than showing it.
      */
     info: String? = null,
+    /**
+     * Whether this whole group is the unfinished kind - see [BetaBadge].
+     *
+     * A group rather than a switch, because what is in beta here is not one
+     * setting but everything that goes through a model: the service, and the two
+     * ways of asking it for more of the book than the reader pointed at. Marking
+     * each switch and leaving the group unmarked said it three times and never
+     * about the thing they have in common.
+     */
+    beta: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     GroupSection(
@@ -228,6 +265,11 @@ internal fun SettingsSection(
         color = groupColor,
         footnote = footnote,
         padding = padding,
+        badge = if (beta) {
+            { BetaBadge(modifier = Modifier.padding(start = Space.sm)) }
+        } else {
+            null
+        },
         info = info?.let {
             {
                 InfoButton(

@@ -25,6 +25,7 @@ import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.domain.document.PickedDocument
 import io.lukia.core.domain.storage.WorkingCopy
+import io.lukia.core.domain.text.PassageUnit
 import io.lukia.core.presentation.UiState
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderSettings
@@ -74,6 +75,21 @@ internal fun SemanticsNodeInteraction.secondButtonOnFirstWords() =
  * a test can change them and watch the paragraph follow - which is what
  * actually happens when an answer comes back.
  */
+/**
+ * A reader who has turned translating on: a tap for the sentence, a hold for the
+ * word, and a word able to say more when held again.
+ *
+ * Named here rather than taken from `TranslationGestures.Default`, which is now
+ * every one of them off - a book that does not translate until its reader says
+ * so. These tests are about what a gesture does once it has been set, so they
+ * set it.
+ */
+internal val TranslatingReader = TranslationGestures(
+    tap = PassageUnit.Sentence,
+    longPress = PassageUnit.Word,
+    wordDetails = true,
+)
+
 internal fun ComposeUiTest.setReader(
     translations: () -> Map<TextAnchor, PassageTranslation> = { emptyMap() },
     onPassageSelected: (PassageSelection) -> Unit = {},
@@ -81,7 +97,7 @@ internal fun ComposeUiTest.setReader(
     onPassageInquiry: (PassageSelection) -> Unit = {},
     onPassagesRequested: (List<PassageSelection>) -> Unit = {},
     translateOnScreen: () -> TranslateOnScreen = { TranslateOnScreen.Idle },
-    gestures: TranslationGestures = TranslationGestures.Default,
+    gestures: TranslationGestures = TranslatingReader,
     onTranslationGesturesChange: (TranslationGestures) -> Unit = {},
     targetLanguage: TargetLanguage = TargetLanguage.Default,
     onTargetLanguageChange: (TargetLanguage) -> Unit = {},

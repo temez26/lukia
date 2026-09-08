@@ -181,6 +181,7 @@ class ReaderWordHoldTest {
             gestures = TranslationGestures(
                 tap = PassageUnit.Sentence,
                 longPress = PassageUnit.Sentence,
+                wordDetails = true,
             ),
         )
 
@@ -206,7 +207,11 @@ class ReaderWordHoldTest {
                 )
             },
             onPassageHold = { held = it },
-            gestures = TranslationGestures(tap = PassageUnit.Sentence, longPress = null),
+            gestures = TranslationGestures(
+                tap = PassageUnit.Sentence,
+                longPress = null,
+                wordDetails = true,
+            ),
         )
 
         onNodeWithText("Kutsukaa me Ishmael.", substring = true).performTouchInput {
@@ -267,6 +272,7 @@ class ReaderWordHoldTest {
             gestures = TranslationGestures(
                 tap = PassageUnit.Sentence,
                 longPress = PassageUnit.Sentence,
+                wordDetails = true,
             ),
         )
 

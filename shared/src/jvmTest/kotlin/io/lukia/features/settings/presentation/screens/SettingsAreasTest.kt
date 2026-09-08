@@ -14,6 +14,7 @@ import io.lukia.features.settings.presentation.ProviderState
 import io.lukia.features.settings.presentation.TranslatingActions
 import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.resources.Res
+import io.lukia.resources.settings_about
 import io.lukia.resources.settings_area_appearance
 import io.lukia.resources.settings_area_providers
 import io.lukia.resources.settings_area_reading
@@ -25,7 +26,7 @@ import kotlin.test.Test
 /**
  * Where each setting lives, as somebody looking for one meets it.
  *
- * The point of the four groups is that a reader who knows what they want to
+ * The point of the five groups is that a reader who knows what they want to
  * change can guess which segment it is behind. That is a claim about the page
  * rather than about any control on it, so it is tested by opening each segment
  * and looking for the sections that were promised - and, as much, for the ones
@@ -70,6 +71,7 @@ class SettingsAreasTest {
         SettingsArea.Reading -> Res.string.settings_area_reading
         SettingsArea.Translating -> Res.string.settings_area_translating
         SettingsArea.Providers -> Res.string.settings_area_providers
+        SettingsArea.About -> Res.string.settings_about
     }
 
     @Test
@@ -104,34 +106,40 @@ class SettingsAreasTest {
 
         open(SettingsArea.Providers)
 
-        onNodeWithText("Translation service").assertExists()
         onNodeWithText("Looking up a word").assertExists()
+        onNodeWithText("AI translation").assertExists()
     }
 
     /**
-     * About belongs to the page rather than to a group, so it is under whichever
-     * one is open. It is where a reader finds the version a bug report will ask
-     * them for, and putting that behind a guess about which segment it is in
-     * would be putting it behind the question it exists to answer.
+     * Which Lukia this is, behind a segment of its own.
+     *
+     * It used to sit at the foot of all four groups, so that the version a bug
+     * report asks for was never behind a guess. That put a paragraph about
+     * licences at the end of every page in Settings, which is a worse answer to
+     * the same problem than a segment named after the question.
      */
     @Test
-    fun aboutIsAtTheFootOfEveryGroup() = runComposeUiTest {
+    fun aboutIsASegmentOfItsOwn() = runComposeUiTest {
         setSettings()
 
-        // The default group is already open, and its segment cannot be clicked
-        // by name: Appearance is both a segment and a section inside itself.
-        assertAboutIsOnThePage()
+        open(SettingsArea.About)
 
-        (SettingsArea.entries - SettingsArea.Default).forEach { area ->
-            open(area)
-
-            assertAboutIsOnThePage()
-        }
+        onNodeWithText("Open-source licences").assertExists()
     }
 
-    private fun ComposeUiTest.assertAboutIsOnThePage() {
-        onNodeWithText("About").assertExists()
-        onNodeWithText("Open-source licences").assertExists()
+    /**
+     * And is only there. A group repeated under every other one is a group the
+     * reader scrolls past four times looking for something else.
+     */
+    @Test
+    fun andIsNotUnderTheOtherGroups() = runComposeUiTest {
+        setSettings()
+
+        (SettingsArea.entries - SettingsArea.About).forEach { area ->
+            if (area != SettingsArea.Default) open(area)
+
+            onNodeWithText("Open-source licences").assertDoesNotExist()
+        }
     }
 
     /**
@@ -144,12 +152,22 @@ class SettingsAreasTest {
     fun theDiagnosticsAreOffThePageUntilTheDeveloperSettingsAreOn() = runComposeUiTest {
         setSettings()
 
+        open(SettingsArea.About)
+
         onNodeWithText(DiagnosticsWords).assertDoesNotExist()
     }
 
+    /**
+     * Under About once they are on, which is where the version line that
+     * unlocked them is - not at the foot of whichever group happens to be open.
+     */
     @Test
-    fun theyAreOnItOnceTheyAre() = runComposeUiTest {
+    fun theyAreUnderAboutOnceTheyAre() = runComposeUiTest {
         setSettings(AppSettings(developerMode = true))
+
+        onNodeWithText(DiagnosticsWords).assertDoesNotExist()
+
+        open(SettingsArea.About)
 
         onNodeWithText(DiagnosticsWords).assertExists()
     }
@@ -171,7 +189,7 @@ class SettingsAreasTest {
 
         open(SettingsArea.Translating)
 
-        onNodeWithText("Translation service").assertDoesNotExist()
+        onNodeWithText("AI translation").assertDoesNotExist()
         onNodeWithText("Looking up a word").assertDoesNotExist()
     }
 

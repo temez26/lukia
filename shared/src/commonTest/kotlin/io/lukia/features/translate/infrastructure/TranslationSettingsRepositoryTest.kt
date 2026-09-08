@@ -142,43 +142,37 @@ class TranslationSettingsRepositoryTest {
     /** Off has to survive too, and it is not the same as never having been set. */
 
     /**
-     * On unless it says otherwise, unlike everything else that is off by default:
-     * this costs nothing, and an install upgraded from a build that never heard
-     * of it should still offer it.
+     * Off until it is asked for, like every other thing translating does - and
+     * on again the next time the app opens once it has been.
      */
     @Test
-    fun holdingAWordForMoreAboutItIsOnUntilItIsTurnedOff() {
+    fun holdingAWordForMoreAboutItIsOffUntilItIsTurnedOn() {
         val store = FakeSettingsStore()
 
-        assertTrue(
+        assertFalse(
             TranslationSettingsRepository(store, secrets).settings.value.gestures.wordDetails,
         )
 
         TranslationSettingsRepository(store, secrets).update(
-            TranslationSettings().withGestures(TranslationGestures(wordDetails = false)),
+            TranslationSettings().withGestures(TranslationGestures(wordDetails = true)),
         )
 
         val reopened = TranslationSettingsRepository(store, secrets).settings.value
 
-        assertFalse(reopened.gestures.wordDetails)
+        assertTrue(reopened.gestures.wordDetails)
     }
 
-    /**
-     * On unless it says otherwise, like the word panel: an install upgraded from
-     * a build that never heard of this kept showing notes and should go on doing
-     * so.
-     */
     @Test
-    fun notesUnderTheParagraphAreOnUntilTheyAreTurnedOff() {
+    fun notesUnderTheParagraphAreOffUntilTheyAreTurnedOn() {
         val store = FakeSettingsStore()
 
-        assertTrue(TranslationSettingsRepository(store, secrets).settings.value.notes)
+        assertFalse(TranslationSettingsRepository(store, secrets).settings.value.notes)
 
         TranslationSettingsRepository(store, secrets).update(
-            TranslationSettings().withNotes(false),
+            TranslationSettings().withNotes(true),
         )
 
-        assertFalse(TranslationSettingsRepository(store, secrets).settings.value.notes)
+        assertTrue(TranslationSettingsRepository(store, secrets).settings.value.notes)
     }
 
     @Test
@@ -196,12 +190,20 @@ class TranslationSettingsRepositoryTest {
         assertFalse(reopened.gestures.translatesAnything)
     }
 
+    /**
+     * Nothing at all, which is the whole point of the defaults: a book that has
+     * never been told to translate anything opens as a book, and the reader
+     * cannot spend a penny by resting a thumb on a paragraph.
+     */
     @Test
-    fun anUntouchedInstallTapsForTheSentenceAndHoldsForTheWord() {
+    fun anUntouchedInstallDoesNotTranslateAnything() {
         val settings = TranslationSettingsRepository(FakeSettingsStore(), secrets).settings.value
 
-        assertEquals(PassageUnit.Sentence, settings.gestures.tap)
-        assertEquals(PassageUnit.Word, settings.gestures.longPress)
+        assertNull(settings.gestures.tap)
+        assertNull(settings.gestures.longPress)
+        assertFalse(settings.gestures.translatesAnything)
+        assertFalse(settings.gestures.wordDetails)
+        assertFalse(settings.notes)
         assertEquals(WordLookup.Translator, settings.wordLookup)
         assertFalse(settings.looksUpWordsElsewhere)
     }

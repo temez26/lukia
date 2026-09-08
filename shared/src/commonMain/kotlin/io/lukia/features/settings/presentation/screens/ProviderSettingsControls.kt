@@ -30,6 +30,7 @@ import io.lukia.resources.settings_reading_more_footnote
 import io.lukia.resources.settings_required
 import io.lukia.resources.settings_site_address_example
 import io.lukia.resources.settings_translation_service
+import io.lukia.resources.settings_translation_service_footnote
 import io.lukia.shared.presentation.components.controls.ChoiceList
 import io.lukia.shared.presentation.components.controls.SegmentedControl
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
@@ -39,9 +40,9 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * Who answers, and everything they need to be reachable.
  *
- * Its own group rather than the tail of Translating, because these two are the
- * only settings in the app that can be filled in wrongly: an address, a key, a
- * model name, a timeout. Everything about them - the fields, the catalogue, the
+ * Its own group rather than the tail of Translating, because these are the only
+ * settings in the app that can be filled in wrongly: an address, a key, a model
+ * name, a timeout. Everything about them - the fields, the catalogue, the
  * connection test - is machinery, and a reader who only wants to change which
  * language they read into should never have to scroll past it.
  *
@@ -49,6 +50,13 @@ import org.jetbrains.compose.resources.stringResource
  * different questions: a dictionary answers the first well and cannot answer the
  * second at all - and neither of them answers the third, which is where somebody
  * goes to read properly about a word they have stopped on.
+ *
+ * In that order, which is not the order they were in. What a word goes to comes
+ * first because it is the part that works: a dictionary and Google are ordinary
+ * web APIs, free, and set up already on a Lukia nobody has configured. The
+ * translation service is last and marked as what it is - a model the reader has
+ * to find, pay for and point this at, and the newest thing here. It is what a
+ * whole sentence needs, and it is nobody's first afternoon with the app.
  */
 @Composable
 internal fun ProviderSettings(
@@ -61,18 +69,10 @@ internal fun ProviderSettings(
     val dimens = LocalLukiaDimens.current
 
     Column(modifier = modifier.fillMaxWidth()) {
-        TranslationServiceSection(
-            translation = translation,
-            state = state,
-            actions = actions,
-            groupColor = groupColor,
-        )
-
         WordLookupSection(
             translation = translation,
             actions = actions,
             groupColor = groupColor,
-            modifier = Modifier.padding(top = dimens.sectionSpacing),
         )
 
         WordSiteSection(
@@ -81,12 +81,28 @@ internal fun ProviderSettings(
             groupColor = groupColor,
             modifier = Modifier.padding(top = dimens.sectionSpacing),
         )
+
+        TranslationServiceSection(
+            translation = translation,
+            state = state,
+            actions = actions,
+            groupColor = groupColor,
+            modifier = Modifier.padding(top = dimens.sectionSpacing),
+        )
     }
 }
 
 /**
- * Who translates a passage: the service, where it lives, what it is owed, which
- * model, how long to wait, and a way to find out whether any of that was right.
+ * Who translates a passage with a model: the service, where it lives, what it is
+ * owed, which model, how long to wait, and a way to find out whether any of that
+ * was right.
+ *
+ * Marked as beta for the whole group rather than switch by switch, because what
+ * is unfinished is the thing they have in common. Everything above this reaches
+ * a published API that answers a word in a tenth of a second for nothing;
+ * everything in here reaches a model that takes seconds, bills for them, and
+ * fails in ways an address and a key cannot tell apart. A reader should know
+ * which of the two they are setting up before they paste a key into it.
  */
 @Composable
 private fun TranslationServiceSection(
@@ -98,8 +114,13 @@ private fun TranslationServiceSection(
 ) {
     SettingsSection(
         title = stringResource(Res.string.settings_translation_service),
+        // Shown rather than hidden behind the mark, which is where every other
+        // group's prose goes: this is the one that costs money, and a warning
+        // nobody asked for is still a warning worth giving.
+        footnote = stringResource(Res.string.settings_translation_service_footnote),
         info = translation.provider.footnote(),
         groupColor = groupColor,
+        beta = true,
         modifier = modifier,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
@@ -218,7 +239,15 @@ private fun ModelChoice(
     }
 }
 
-/** Who answers about a single word, which need not be who translates a sentence. */
+/**
+ * Who answers about a single word, which need not be who translates a sentence.
+ *
+ * First on the page, because two of the three answer over an ordinary web API
+ * with nothing to fill in - which is the whole of what a reader gets on an app
+ * they have just installed. The third is the translation service further down,
+ * and choosing it is choosing to set that up, so the group wears the mark while
+ * it is chosen and not otherwise.
+ */
 @Composable
 private fun WordLookupSection(
     translation: TranslationSettings,
@@ -230,6 +259,7 @@ private fun WordLookupSection(
         title = stringResource(Res.string.settings_looking_up_a_word),
         info = translation.wordLookup.displayFootnote(),
         groupColor = groupColor,
+        beta = translation.wordLookup == WordLookup.Translator,
         modifier = modifier,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {

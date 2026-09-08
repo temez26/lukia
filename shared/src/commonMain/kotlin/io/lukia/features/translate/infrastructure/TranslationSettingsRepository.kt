@@ -59,10 +59,7 @@ class TranslationSettingsRepository(
             customWordSiteUrl = store.getString(KEY_WORD_SITE_URL)?.takeIf { it.isNotBlank() },
             googleKey = secrets.getSecret(KEY_GOOGLE_KEY)?.takeIf { it.isNotBlank() },
             gestures = readGestures(defaults.gestures),
-            // On unless it says otherwise, like the word panel and unlike the
-            // bulk flags: an install that has never heard of this setting kept
-            // showing notes, and should go on doing so.
-            notes = store.getString(KEY_NOTES)?.equals("false", ignoreCase = true) != true,
+            notes = store.readFlag(KEY_NOTES),
             bulkTranslation = BulkTranslation(
                 onScreen = store.readFlag(KEY_TRANSLATE_ON_SCREEN),
                 asYouRead = store.readFlag(KEY_TRANSLATE_AS_YOU_READ),
@@ -133,11 +130,7 @@ class TranslationSettingsRepository(
     private fun readGestures(defaults: TranslationGestures) = TranslationGestures(
         tap = readGesture(KEY_TAP, defaults.tap),
         longPress = readGesture(KEY_LONG_PRESS, defaults.longPress),
-        // On unless it says otherwise, unlike the flags below: this one costs
-        // nothing and is the only way to reach what a word means beyond the one
-        // line that fits over it, so an install that has never heard of it
-        // should still offer it.
-        wordDetails = store.getString(KEY_WORD_DETAILS)?.equals("false", ignoreCase = true) != true,
+        wordDetails = store.readFlag(KEY_WORD_DETAILS),
     )
 
     private fun readGesture(key: String, default: PassageUnit?): PassageUnit? {
@@ -154,7 +147,11 @@ class TranslationSettingsRepository(
         store.putString(KEY_WORD_DETAILS, gestures.wordDetails.toString())
     }
 
-    /** Off unless it says otherwise, which is what makes these off on a fresh install. */
+    /**
+     * Off unless it says otherwise, which is what makes everything translating
+     * does off on a fresh install - and what makes an install upgraded from a
+     * build that turned some of it on by itself keep what the reader had.
+     */
     private fun SettingsStore.readFlag(key: String): Boolean =
         getString(key)?.equals("true", ignoreCase = true) == true
 

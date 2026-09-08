@@ -55,13 +55,18 @@ internal class ReaderTranslations(
     /**
      * Whether the reader has asked to be offered translating more of the book
      * than they pointed at.
+     *
+     * And whether there is anything that could do it. Both of these translate
+     * whole paragraphs, which only the translation service answers - so with no
+     * service set up they are taken back off whatever the reader turned on, and
+     * the panel is spared two controls that can only produce an error.
      */
     val bulkTranslation: StateFlow<BulkTranslation> = settings.settings
-        .map { it.bulkTranslation }
+        .map { it.offeredBulkTranslation }
         .stateIn(
             scope = scope,
             started = SharingStarted.Eagerly,
-            initialValue = settings.settings.value.bulkTranslation,
+            initialValue = settings.settings.value.offeredBulkTranslation,
         )
 
     /**
@@ -142,13 +147,19 @@ internal class ReaderTranslations(
      * button whose only possible outcome is "nothing is set up to translate
      * with" is worse than no button, and most of a reading app's users never
      * configure one.
+     *
+     * Anything, rather than the translation service - see
+     * [io.lukia.features.translate.domain.settings.TranslationSettings.answersAnything].
+     * A dictionary needs nothing set up, so a reader who has chosen one has a
+     * working feature, and asking after the service here hid the language and
+     * the gestures from them behind a key they never needed.
      */
     val configured: StateFlow<Boolean> = settings.settings
-        .map { it.isConfigured }
+        .map { it.answersAnything }
         .stateIn(
             scope = scope,
             started = SharingStarted.Eagerly,
-            initialValue = settings.settings.value.isConfigured,
+            initialValue = settings.settings.value.answersAnything,
         )
 
     /**

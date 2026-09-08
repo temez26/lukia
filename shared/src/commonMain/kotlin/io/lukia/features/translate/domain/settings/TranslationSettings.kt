@@ -60,17 +60,18 @@ data class TranslationSettings(
      * Whether the translator's asides are set under the paragraph they belong
      * to - a remark about an ambiguous word, a dictionary's other senses.
      *
-     * On, because for most of this app's life they were the only place those
-     * senses could be read at all. They have somewhere better to be now: holding
-     * a word opens every sense it has, at length and out of the way of the
-     * prose - see [io.lukia.features.reader.presentation.translation.WordInquiry]
-     * - and a reader who has found that would rather have their page back.
+     * Off, with everything else translating does. They were once the only place
+     * those senses could be read at all, which is why they used to be on; they
+     * have somewhere better to be now - holding a word opens every sense it has,
+     * at length and out of the way of the prose, see
+     * [io.lukia.features.reader.presentation.translation.WordInquiry] - so a
+     * page that starts out as the book set it costs the reader nothing.
      *
      * Never covers a failure. A passage marked as translated with nothing to
      * show and no reason given is a reader wondering what happened, and that is
      * not an aside about the text.
      */
-    val notes: Boolean = true,
+    val notes: Boolean = false,
     /**
      * Whether the reader has asked for the two ways of translating more of the
      * book than they pointed at. Off until they do - see [BulkTranslation].
@@ -142,9 +143,41 @@ data class TranslationSettings(
             else -> wordSite.urlTemplate
         }
 
-    /** True once there is enough here to actually ask for a translation. */
+    /**
+     * True once there is enough here to actually ask for a translation.
+     *
+     * About the translation service and nothing else, which is to say about the
+     * part of this that runs on a model. A whole sentence has nowhere else to
+     * go - see [io.lukia.features.translate.infrastructure.WordLookupTranslator]
+     * - so this is what the expensive controls are offered on.
+     */
     val isConfigured: Boolean
         get() = (!provider.requiresKey || apiKey != null) && isEndpointAllowed
+
+    /**
+     * Whether anything at all can answer a reader who points at the book.
+     *
+     * Wider than [isConfigured] on purpose. A dictionary and Google are reached
+     * over their own APIs and need nothing set up, so a reader who has never
+     * opened the translation service can still look words up - and the reader's
+     * own panel has to offer them the language and the gestures for it. Asking
+     * [isConfigured] there hid a working feature behind a key nobody needs.
+     */
+    val answersAnything: Boolean
+        get() = isConfigured || looksUpWordsElsewhere
+
+    /**
+     * The two expensive ways of translating, with any the reader has turned on
+     * taken back off while there is nothing that could carry them out.
+     *
+     * Both work a paragraph at a time, and a paragraph has nowhere to go but the
+     * translation service. Left as the reader set them, a fresh install with a
+     * dictionary and no service would offer a button whose only outcome is a
+     * failure - and would go on offering it for as long as the flag sat in the
+     * settings file.
+     */
+    val offeredBulkTranslation: BulkTranslation
+        get() = if (isConfigured) bulkTranslation else BulkTranslation.Default
 
     /**
      * False only when the reader has pointed this at a public address over
@@ -229,7 +262,7 @@ data class TranslationSettings(
             customWordSiteUrl: String? = null,
             googleKey: String? = null,
             gestures: TranslationGestures = TranslationGestures.Default,
-            notes: Boolean = true,
+            notes: Boolean = false,
             bulkTranslation: BulkTranslation = BulkTranslation.Default,
         ) = TranslationSettings(
             targetLanguage = targetLanguage,
