@@ -61,7 +61,7 @@ class ReaderPageWordHoldTest {
             sentences = listOf(wholePage),
             onPassageSelected = { selected = it },
             onPassageHold = { held = it },
-            gestures = TranslationGestures(tap = null, longPress = PassageUnit.Sentence),
+            gestures = TranslationGestures.of(tap = null, longPress = PassageUnit.Sentence),
         )
 
         onNodeWithContentDescription("Page 2 of 2").performTouchInput { longClick() }
@@ -84,7 +84,7 @@ class ReaderPageWordHoldTest {
                 )
             },
             onPassageHold = { held = it },
-            gestures = TranslationGestures(tap = PassageUnit.Sentence, longPress = null),
+            gestures = TranslationGestures.of(tap = PassageUnit.Sentence, longPress = null),
         )
 
         onNodeWithText("Kutsukaa", substring = true).performTouchInput { longClick() }
@@ -110,7 +110,7 @@ class ReaderPageWordHoldTest {
             },
             onPassageSelected = { selected = it },
             onPassageHold = { held = it },
-            gestures = TranslationGestures(tap = PassageUnit.Sentence, longPress = null),
+            gestures = TranslationGestures.of(tap = PassageUnit.Sentence, longPress = null),
         )
 
         onNodeWithText("Kutsukaa", substring = true).performTouchInput { click() }

@@ -16,6 +16,7 @@ import io.lukia.features.settings.presentation.TranslatingActions
 import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.resources.Res
+import io.lukia.resources.gesture_off
 import io.lukia.resources.passage_unit_paragraph
 import io.lukia.resources.passage_unit_word
 import io.lukia.resources.settings_area_ai_translation
@@ -25,14 +26,18 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * How much of the book a gesture may ask the model for, which is everything
- * larger than a word and nothing else.
+ * How much of the book a gesture asks the model for, and what that row is not
+ * allowed to decide.
  *
- * The word is left out because it is the one unit a dictionary has an entry for,
- * and whether a tap translates it is a switch on the Translating page beside
- * that dictionary. Offered here as well, it would be a second control writing
- * the same setting - and a reader who turned the tap off with the switch would
- * find it back on from a row they never touched.
+ * Whether a tap translates at all is a switch on the Translating page, beside
+ * the dictionary that answers a word without any of this being set up. This row
+ * only raises what a tap asks for. The two shared one nullable field once, so
+ * setting this row to "off" reached across and turned that switch off - and
+ * touching it at all turned the switch on. They are two settings now, and this
+ * is the seam.
+ *
+ * The hold is not the same shape, and deliberately: translating by holding is
+ * offered here and nowhere else, so its row keeps an off of its own.
  */
 @OptIn(ExperimentalTestApi::class)
 class AiGestureUnitsTest {
@@ -60,31 +65,51 @@ class AiGestureUnitsTest {
         onNodeWithText(words(Res.string.settings_area_ai_translation)).performClick()
     }
 
+    /**
+     * One off on the page, and it belongs to the hold. The tap's off is the
+     * switch under Translating.
+     */
     @Test
-    fun theWordIsNotOneOfTheChoices() = runComposeUiTest {
+    fun onlyTheHoldRowOffersAnOff() = runComposeUiTest {
         setPage()
 
         assertEquals(
-            0,
-            onAllNodes(hasText(words(Res.string.passage_unit_word))).fetchSemanticsNodes().size,
-            "a unit the dictionary on the other page already answers",
+            1,
+            onAllNodes(hasText(words(Res.string.gesture_off))).fetchSemanticsNodes().size,
+        )
+    }
+
+    /** Raising what a tap asks for does not start it translating. */
+    @Test
+    fun raisingTheTapDoesNotTurnItOn() = runComposeUiTest {
+        setPage(TranslationGestures(tapTranslates = false))
+
+        chooseInTheTapRow(words(Res.string.passage_unit_paragraph))
+
+        assertEquals(
+            TranslationGestures(tapTranslates = false, tapUnit = PassageUnit.Paragraph),
+            gestures,
+        )
+    }
+
+    /** And lowering it back to the word does not stop it, either. */
+    @Test
+    fun norDoesLoweringItToTheWordTurnItOff() = runComposeUiTest {
+        setPage(TranslationGestures(tapTranslates = true, tapUnit = PassageUnit.Sentence))
+
+        chooseInTheTapRow(words(Res.string.passage_unit_word))
+
+        assertEquals(
+            TranslationGestures(tapTranslates = true, tapUnit = PassageUnit.Word),
+            gestures,
         )
     }
 
     /**
-     * A tap set to the word therefore matches no segment here, and the row still
-     * works: choosing the paragraph raises that same tap.
+     * The tap is the first of the two rows. Scrolled to first: the group sits
+     * under the whole service card, which is taller than the test window.
      */
-    @Test
-    fun aTapSetToTheWordCanStillBeRaisedFromHere() = runComposeUiTest {
-        setPage(TranslationGestures(tap = PassageUnit.Word))
-
-        // Scrolled to first: the group sits under the whole service card, which
-        // is taller than the test window.
-        onAllNodes(hasText(words(Res.string.passage_unit_paragraph)))[0]
-            .performScrollTo()
-            .performClick()
-
-        assertEquals(TranslationGestures(tap = PassageUnit.Paragraph), gestures)
+    private fun ComposeUiTest.chooseInTheTapRow(unit: String) {
+        onAllNodes(hasText(unit))[0].performScrollTo().performClick()
     }
 }

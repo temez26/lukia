@@ -124,7 +124,7 @@ class ReaderTranslationSettingsTest {
         var gestures: TranslationGestures? = null
 
         setReader(
-            gestures = TranslationGestures(tap = PassageUnit.Sentence, longPress = null),
+            gestures = TranslationGestures.of(tap = PassageUnit.Sentence, longPress = null),
             onTranslationGesturesChange = { gestures = it },
             translationServiceConfigured = true,
             width = PhoneWidth,
@@ -136,7 +136,7 @@ class ReaderTranslationSettingsTest {
         onAllNodesWithText(words(Res.string.passage_unit_paragraph))[0].performClick()
 
         assertEquals(
-            TranslationGestures(tap = PassageUnit.Paragraph, longPress = null),
+            TranslationGestures.of(tap = PassageUnit.Paragraph, longPress = null),
             gestures,
             "the tap is the first of the two gesture rows",
         )
@@ -152,7 +152,7 @@ class ReaderTranslationSettingsTest {
         var gestures: TranslationGestures? = null
 
         setReader(
-            gestures = TranslationGestures(),
+            gestures = TranslationGestures.of(),
             onTranslationGesturesChange = { gestures = it },
             width = PhoneWidth,
         )
@@ -167,7 +167,7 @@ class ReaderTranslationSettingsTest {
 
         onNodeWithText("Tap a word to translate it").performClick()
 
-        assertEquals(TranslationGestures(tap = PassageUnit.Word), gestures)
+        assertEquals(TranslationGestures.of(tap = PassageUnit.Word), gestures)
     }
 }
 

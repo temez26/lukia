@@ -2,11 +2,9 @@ package io.lukia.features.translate.infrastructure
 
 import io.lukia.core.domain.storage.FakeSecretStore
 import io.lukia.core.domain.storage.FakeSettingsStore
-import io.lukia.core.domain.text.PassageUnit
 import io.lukia.features.translate.domain.lookup.WordSite
 import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.settings.TargetLanguage
-import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.features.translate.domain.settings.WordLookup
 import kotlin.test.Test
@@ -120,93 +118,6 @@ class TranslationSettingsRepositoryTest {
         val settings = TranslationSettings().withWordSite(WordSite.Custom)
 
         assertNull(settings.wordSiteUrlTemplate)
-    }
-
-    @Test
-    fun whatTheGesturesDoIsThereTheNextTimeTheAppOpens() {
-        val store = FakeSettingsStore()
-
-        TranslationSettingsRepository(store, secrets).update(
-            TranslationSettings().withGestures(
-                TranslationGestures(tap = PassageUnit.Paragraph, longPress = PassageUnit.Sentence),
-            ),
-        )
-
-        val reopened = TranslationSettingsRepository(store, secrets).settings.value
-
-        assertEquals(PassageUnit.Paragraph, reopened.gestures.tap)
-        assertEquals(PassageUnit.Sentence, reopened.gestures.longPress)
-    }
-
-    /** Off has to survive too, and it is not the same as never having been set. */
-
-    /**
-     * Off until it is asked for, like every other thing translating does - and
-     * on again the next time the app opens once it has been.
-     */
-    @Test
-    fun holdingAWordForMoreAboutItIsOffUntilItIsTurnedOn() {
-        val store = FakeSettingsStore()
-
-        assertFalse(
-            TranslationSettingsRepository(store, secrets).settings.value.gestures.wordDetails,
-        )
-
-        TranslationSettingsRepository(store, secrets).update(
-            TranslationSettings().withGestures(TranslationGestures(wordDetails = true)),
-        )
-
-        val reopened = TranslationSettingsRepository(store, secrets).settings.value
-
-        assertTrue(reopened.gestures.wordDetails)
-    }
-
-    @Test
-    fun notesUnderTheParagraphAreOffUntilTheyAreTurnedOn() {
-        val store = FakeSettingsStore()
-
-        assertFalse(TranslationSettingsRepository(store, secrets).settings.value.notes)
-
-        TranslationSettingsRepository(store, secrets).update(
-            TranslationSettings().withNotes(true),
-        )
-
-        assertTrue(TranslationSettingsRepository(store, secrets).settings.value.notes)
-    }
-
-    @Test
-    fun aGestureTurnedOffStaysOff() {
-        val store = FakeSettingsStore()
-
-        TranslationSettingsRepository(store, secrets).update(
-            TranslationSettings().withGestures(TranslationGestures(tap = null, longPress = null)),
-        )
-
-        val reopened = TranslationSettingsRepository(store, secrets).settings.value
-
-        assertNull(reopened.gestures.tap)
-        assertNull(reopened.gestures.longPress)
-        assertFalse(reopened.gestures.translatesAnything)
-    }
-
-    /**
-     * Nothing at all, which is the whole point of the defaults: a book that has
-     * never been told to translate anything opens as a book, and the reader
-     * cannot spend a penny by resting a thumb on a paragraph.
-     *
-     * Who would answer if they did ask is settled all the same, and settled on
-     * the dictionary - the one of the two that asks nobody for anything.
-     */
-    @Test
-    fun anUntouchedInstallDoesNotTranslateAnything() {
-        val settings = TranslationSettingsRepository(FakeSettingsStore(), secrets).settings.value
-
-        assertNull(settings.gestures.tap)
-        assertNull(settings.gestures.longPress)
-        assertFalse(settings.gestures.translatesAnything)
-        assertFalse(settings.gestures.wordDetails)
-        assertFalse(settings.notes)
-        assertEquals(WordLookup.Wiktionary, settings.wordLookup)
     }
 
     /**

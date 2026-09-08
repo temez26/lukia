@@ -11,7 +11,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
-import io.lukia.core.domain.text.PassageUnit
 import io.lukia.features.reader.presentation.components.settings.PanelDisclosureRow
 import io.lukia.features.reader.presentation.components.settings.PanelSwitchRow
 import io.lukia.features.reader.presentation.components.settings.SettingGroup
@@ -155,11 +154,9 @@ private fun GestureSettings(
     if (!serviceConfigured) {
         PanelSwitchRow(
             label = stringResource(Res.string.settings_tap_to_translate),
-            checked = preferences.gestures.tap != null,
-            onChange = { on ->
-                preferences.onGesturesChange(
-                    preferences.gestures.copy(tap = if (on) PassageUnit.Word else null),
-                )
+            checked = preferences.gestures.tapTranslates,
+            onChange = {
+                preferences.onGesturesChange(preferences.gestures.copy(tapTranslates = it))
             },
             inset = inset,
         )
@@ -172,9 +169,14 @@ private fun GestureSettings(
         wide = false,
         inset = inset,
     ) {
+        // One control for both halves of the tap, unlike the settings screen,
+        // which splits them across two pages - see `TranslationGestures.tapping`.
+        // A panel is opened with the book in front of the reader and closed
+        // again; it is not the place to send somebody to another page to find
+        // the off for the row they are looking at.
         GestureControl(
             selected = preferences.gestures.tap,
-            onSelect = { preferences.onGesturesChange(preferences.gestures.copy(tap = it)) },
+            onSelect = { preferences.onGesturesChange(preferences.gestures.tapping(it)) },
         )
     }
 

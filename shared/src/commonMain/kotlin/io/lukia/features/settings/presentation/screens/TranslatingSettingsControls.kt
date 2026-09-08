@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import io.lukia.core.domain.text.PassageUnit
 import io.lukia.features.settings.presentation.ProviderActions
 import io.lukia.features.settings.presentation.TranslatingActions
 import io.lukia.features.settings.presentation.components.SettingsTextField
@@ -129,10 +128,11 @@ internal fun TranslatingSettings(
  * a reader can actually answer on the day they install the app: does a tap do
  * anything, and does a hold.
  *
- * A tap sets the word rather than whatever the reader last raised it to. The
- * switch is the plain version of the setting, and a switch that turned a gesture
- * back on as "paragraph" because of something set months ago on another page is
- * a switch that did something it did not say.
+ * The switch says only whether a tap translates. How much it asks for is a
+ * separate setting on the AI translation page - see
+ * [io.lukia.features.translate.domain.settings.TranslationGestures.tapTranslates]
+ * for why the two are apart. Turning the tap off here leaves the unit alone, so
+ * turning it back on gives the reader what they had rather than the word.
  */
 @Composable
 private fun GestureSection(
@@ -150,11 +150,9 @@ private fun GestureSection(
         Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
             SettingsToggle(
                 label = stringResource(Res.string.settings_tap_to_translate),
-                checked = translation.gestures.tap != null,
-                onChange = { on ->
-                    actions.onGesturesChange(
-                        translation.gestures.copy(tap = if (on) PassageUnit.Word else null),
-                    )
+                checked = translation.gestures.tapTranslates,
+                onChange = {
+                    actions.onGesturesChange(translation.gestures.copy(tapTranslates = it))
                 },
             )
 

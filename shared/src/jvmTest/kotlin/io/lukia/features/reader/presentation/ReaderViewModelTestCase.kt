@@ -243,7 +243,7 @@ abstract class ReaderViewModelTestCase {
          * its reader asks. Every test that reaches this is about what happens
          * once they have, so this is the reader who has.
          */
-        gestures: TranslationGestures = TranslationGestures(
+        gestures: TranslationGestures = TranslationGestures.of(
             tap = PassageUnit.Sentence,
             longPress = PassageUnit.Word,
             wordDetails = true,

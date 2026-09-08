@@ -58,7 +58,7 @@ class TranslationSettingsRepository(
             wordSite = store.readEnum(KEY_WORD_SITE, WordSite.entries, defaults.wordSite),
             customWordSiteUrl = store.getString(KEY_WORD_SITE_URL)?.takeIf { it.isNotBlank() },
             googleKey = secrets.getSecret(KEY_GOOGLE_KEY)?.takeIf { it.isNotBlank() },
-            gestures = readGestures(defaults.gestures),
+            gestures = readGestures(),
             notes = store.readFlag(KEY_NOTES),
             bulkTranslation = BulkTranslation(
                 onScreen = store.readFlag(KEY_TRANSLATE_ON_SCREEN),
@@ -126,12 +126,26 @@ class TranslationSettingsRepository(
      * about, and turned off as an empty value - which reads back as null rather
      * than as a unit nobody chose, and leaves an older build's settings file
      * meaning what it meant.
+     *
+     * The tap is two settings now and is stored as two - see
+     * [TranslationGestures.tapTranslates]. `KEY_TAP` keeps holding what the tap
+     * actually asks for, so a build that never heard of the second key still
+     * reads the file correctly; `KEY_TAP_UNIT` holds the unit on its own, which
+     * is what survives the tap being switched off.
      */
-    private fun readGestures(defaults: TranslationGestures) = TranslationGestures(
-        tap = readGesture(KEY_TAP, defaults.tap),
-        longPress = readGesture(KEY_LONG_PRESS, defaults.longPress),
-        wordDetails = store.readFlag(KEY_WORD_DETAILS),
-    )
+    private fun readGestures(): TranslationGestures {
+        val tapped = readGesture(KEY_TAP, null)
+
+        return TranslationGestures(
+            tapTranslates = tapped != null,
+            // Falling back to what the tap was set to is the upgrade path: an
+            // install written before the two were separate has only the one
+            // key, and whatever it asked for is what it asks for.
+            tapUnit = readGesture(KEY_TAP_UNIT, null) ?: tapped ?: PassageUnit.Word,
+            longPress = readGesture(KEY_LONG_PRESS, null),
+            wordDetails = store.readFlag(KEY_WORD_DETAILS),
+        )
+    }
 
     private fun readGesture(key: String, default: PassageUnit?): PassageUnit? {
         val stored = store.getString(key) ?: return default
@@ -143,6 +157,7 @@ class TranslationSettingsRepository(
 
     private fun writeGestures(gestures: TranslationGestures) {
         store.putString(KEY_TAP, gestures.tap?.name.orEmpty())
+        store.putString(KEY_TAP_UNIT, gestures.tapUnit.name)
         store.putString(KEY_LONG_PRESS, gestures.longPress?.name.orEmpty())
         store.putString(KEY_WORD_DETAILS, gestures.wordDetails.toString())
     }
@@ -186,6 +201,7 @@ class TranslationSettingsRepository(
         const val KEY_GOOGLE_KEY = "translation.googleApiKey"
         const val KEY_NOTES = "translation.notes"
         const val KEY_TAP = "translation.gesture.tap"
+        const val KEY_TAP_UNIT = "translation.gesture.tap.unit"
         const val KEY_LONG_PRESS = "translation.gesture.longPress"
         const val KEY_WORD_DETAILS = "translation.gesture.wordDetails"
         const val KEY_TRANSLATE_ON_SCREEN = "translation.bulk.onScreen"

@@ -11,10 +11,10 @@ import io.lukia.features.settings.presentation.ProviderActions
 import io.lukia.features.settings.presentation.ProviderState
 import io.lukia.features.settings.presentation.TranslatingActions
 import io.lukia.features.settings.presentation.components.SettingsTextField
-import io.lukia.core.domain.text.PassageUnit
 import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.features.translate.presentation.GestureControl
+import io.lukia.features.translate.presentation.PassageUnitControl
 import io.lukia.features.translate.presentation.displayName
 import io.lukia.resources.Res
 import io.lukia.resources.reader_gesture_long_press
@@ -264,18 +264,17 @@ private fun ModelChoice(
  * How much of the book a tap and a hold ask for, where that question can only be
  * asked.
  *
- * Only the sentence and the paragraph, because they are the only two a model has
- * to be asked for. Whether a tap translates the word is a switch on the
- * Translating page, where the dictionary that answers a word also lives - and
- * offering the word again here would be a second control writing the same
- * setting in other words.
+ * The two rows are not the same shape, because the two gestures are not set in
+ * the same number of places.
  *
- * So a reader whose tap is set to the word finds nothing selected in the row
- * for it. That is the honest answer rather than a gap: their tap is set,
- * elsewhere, to something smaller than anything this page can offer.
+ * A tap has a switch on the Translating page saying whether it translates at
+ * all, so this row says only how much it asks for: the word, the sentence or the
+ * paragraph, with no off. An off here would be a second page turning that switch
+ * off, which is what this pair used to do to each other.
  *
- * Turning a gesture off here is the same off as the switch there. There is one
- * setting behind both, and it says what a gesture asks for, including nothing.
+ * A hold has no switch anywhere else - translating by holding is offered here
+ * and nowhere else - so its row keeps its own off, and the word with it, since
+ * nothing else can turn the gesture on.
  */
 @Composable
 private fun GestureUnitSection(
@@ -293,12 +292,16 @@ private fun GestureUnitSection(
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
             LabelledField(label = stringResource(Res.string.reader_gesture_tap)) {
-                GestureControl(
-                    selected = translation.gestures.tap,
+                // No off: whether a tap translates is the switch on the
+                // Translating page, and a row here that could turn it off would
+                // be two pages writing one setting - which is exactly what this
+                // pair used to be. The word is this row's own way of asking for
+                // nothing more than a word.
+                PassageUnitControl(
+                    selected = translation.gestures.tapUnit,
                     onSelect = {
-                        actions.onGesturesChange(translation.gestures.copy(tap = it))
+                        actions.onGesturesChange(translation.gestures.copy(tapUnit = it))
                     },
-                    units = ModelUnits,
                 )
             }
 
@@ -308,7 +311,6 @@ private fun GestureUnitSection(
                     onSelect = {
                         actions.onGesturesChange(translation.gestures.copy(longPress = it))
                     },
-                    units = ModelUnits,
                 )
             }
         }
@@ -367,11 +369,3 @@ private fun TranslatingAheadSection(
     }
 }
 
-/**
- * The passage units nothing but a model can answer.
- *
- * The word is left out for the reason [GestureUnitSection] gives: it is the one
- * unit a dictionary has an entry for, and it is set by a switch on the
- * Translating page beside the dictionary that answers it.
- */
-private val ModelUnits = listOf(PassageUnit.Sentence, PassageUnit.Paragraph)

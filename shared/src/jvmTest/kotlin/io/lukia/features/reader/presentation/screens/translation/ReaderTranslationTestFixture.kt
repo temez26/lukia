@@ -84,7 +84,7 @@ internal fun SemanticsNodeInteraction.secondButtonOnFirstWords() =
  * so. These tests are about what a gesture does once it has been set, so they
  * set it.
  */
-internal val TranslatingReader = TranslationGestures(
+internal val TranslatingReader = TranslationGestures.of(
     tap = PassageUnit.Sentence,
     longPress = PassageUnit.Word,
     wordDetails = true,

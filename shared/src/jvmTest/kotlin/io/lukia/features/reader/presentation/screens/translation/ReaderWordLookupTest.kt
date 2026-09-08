@@ -159,7 +159,7 @@ class ReaderWordLookupTest {
 
         setReader(
             onPassageSelected = { selected = it },
-            gestures = TranslationGestures(tap = PassageUnit.Paragraph, longPress = null),
+            gestures = TranslationGestures.of(tap = PassageUnit.Paragraph, longPress = null),
         )
 
         onNodeWithText(opening, substring = true).clickFirstWords()
@@ -198,7 +198,7 @@ class ReaderWordLookupTest {
         setReader(
             onPassageSelected = { selected = it },
             onPassageHold = { held = it },
-            gestures = TranslationGestures(tap = null, longPress = null),
+            gestures = TranslationGestures.of(tap = null, longPress = null),
         )
 
         onNodeWithText(opening, substring = true).clickFirstWords()
