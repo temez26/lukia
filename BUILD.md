@@ -122,6 +122,59 @@ it — which takes the library with it.
 Worth regenerating when the app's opening changes shape. A stale profile is not
 wrong, only less useful.
 
+## Before a release: does the shrunk app run?
+
+`:androidApp:assembleRelease` proves R8 *compiled* the app. It cannot prove the
+app still works, and that is the half that matters: every rule in
+[`androidApp/proguard-rules.pro`](androidApp/proguard-rules.pro) covers a lookup
+R8 cannot see - a class named in a string, a service file, a member reached
+reflectively - and a missing one fails at run time, on a reader's device, as a
+blank page or a translation that never arrives. Nothing in the build catches it.
+
+So this is a step before a release rather than a check on a pull request, and it
+is the only thing standing behind the keep rules.
+
+Run it against `benchmarkRelease`, not `release`. It is the same R8 run - the
+baseline profile plugin derives it from the release build type, and
+`minifyBenchmarkReleaseWithR8` is in its task graph - but it carries a debug
+signature, so it installs without the release keystore:
+
+```bash
+./gradlew :androidApp:installBenchmarkRelease
+```
+
+Then, on the device, and in this order:
+
+| Do this | And it proves |
+| --- | --- |
+| Open the app and reach the library | Koin's graph, the SQLDelight schema and the Compose runtime all survived |
+| Change the palette in Settings, then force-stop and reopen | the kotlinx.serialization rules. Settings are stored as JSON and the generated serializers are reached through a companion R8 cannot see used |
+| Open a PDF as pages, then re-set the same one as text | the pdfbox-android rules, which are the broadest in the file. Filters, fonts and `COSName` constants are all resolved by name |
+| Open a password-protected PDF | Bouncy Castle, which pdfbox-android reaches reflectively for encrypted documents |
+| Open an EPUB and a DOCX | the ZIP and XML readers, and the fonts an EPUB carries |
+| Translate a passage | the Ktor rules. The engine is found through `META-INF/services`, and without its container kept, every translation fails with *Failed to find HTTP client engine implementation* |
+| Read Settings > About | the version is the one being released |
+
+Two of those rows are already automated against the same shrunk build:
+
+```bash
+./gradlew :baselineprofile:connectedBenchmarkReleaseAndroidTest \
+    -Pandroid.injected.androidTest.leaveApksInstalledAfterRun=true
+```
+
+`PageTurnBenchmark` opens a real PDF and a real reflowed book out of a real
+library, so it walks the pdfbox path and the reader on the minified app. It is
+described as a performance tool and is also this. It needs a device that already
+holds the books it names, which is why it cannot run on a fresh emulator and is
+not part of `connectedCheck` - and why the rest of the table is a person's job.
+
+**Why none of this is in CI.** The rows that matter need what CI has not got: a
+library with real books in it, and translation credentials. A Gradle Managed
+Device would answer the first row and nothing below it, at the cost of an
+emulator image and several minutes on every run - which would buy the weakest
+row in the table and leave the pdfbox rules exactly as unproven as they are now.
+When somebody wants to narrow those rules, this is the run that earns it.
+
 ## Build locations at a glance
 
 | Platform | Build | Location                                      |
