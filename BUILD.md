@@ -20,6 +20,47 @@
 ./gradlew :desktopApp:packageMsi
 ```
 
+### Signing the Mac build
+
+**A DMG built without the variables below will not open on any Mac but the one
+that built it.** Gatekeeper refuses a downloaded application with no Developer ID
+signature, and since macOS Sequoia the reader cannot right-click past the
+refusal - the app is simply blocked. So this is not a hardening step that can be
+left for later: it is what makes the Mac build something anybody else can run.
+
+The build works without them, deliberately. Absent, `packageDmg` produces an
+unsigned DMG, which is fine for trying a change on your own machine and is the
+same arrangement `ANDROID_KEYSTORE_PATH` makes for Android - see
+`androidApp/build.gradle.kts`. Nobody without a certificate is stopped from
+building.
+
+| Variable | Holds |
+| --- | --- |
+| `MACOS_SIGNING_IDENTITY` | The certificate's common name, e.g. `Developer ID Application: Your Name (TEAMID)`. Its presence is what turns signing on. |
+| `MACOS_SIGNING_KEYCHAIN` | Optional. The keychain to look in, for a CI runner that imported the certificate into one of its own. Your login keychain is found without it. |
+| `MACOS_NOTARIZATION_APPLE_ID` | The Apple ID the certificate belongs to. |
+| `MACOS_NOTARIZATION_PASSWORD` | An **app-specific password**, not the account password. Made at [appleid.apple.com](https://appleid.apple.com) under Sign-In and Security. |
+| `MACOS_NOTARIZATION_TEAM_ID` | The ten-character team ID, the same one `TEAM_ID` holds for iOS. |
+
+Signing is what lets the DMG open at all; notarization is what stops macOS
+warning about it the first time. The first three are enough to sign:
+
+```bash
+MACOS_SIGNING_IDENTITY="Developer ID Application: Your Name (TEAMID)" ./gradlew :desktopApp:packageDmg
+```
+
+Notarizing asks Apple's service, which takes minutes rather than seconds, so it
+is a separate task rather than part of packaging:
+
+```bash
+./gradlew :desktopApp:notarizeDmg
+```
+
+Nothing extra is needed for the hardened runtime that notarization requires. A
+JVM has to write executable memory, and the Compose plugin's own default
+entitlements already allow exactly that - so there is no entitlements file in
+this repository, and adding one would only be a way to get it wrong.
+
 ## iOS
 
 Requires macOS + Xcode.
