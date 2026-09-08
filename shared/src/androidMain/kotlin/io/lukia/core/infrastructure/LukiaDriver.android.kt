@@ -59,11 +59,17 @@ private class LukiaCallback(
      * across the range of versions this app supports. `busy_timeout` is what
      * keeps a second write landing at once from failing outright - see
      * [BusyTimeoutMillis].
+     *
+     * The timeout is asked for with `query` rather than `execSQL`, because a
+     * `PRAGMA` that sets a value also answers with it. Android's `execSQL`
+     * refuses any statement that returns a row, and the refusal arrives here -
+     * inside the open - so the whole database failed to open and every screen
+     * that reads one showed its "something went wrong".
      */
     override fun onConfigure(db: SupportSQLiteDatabase) {
         db.setForeignKeyConstraintsEnabled(true)
         db.enableWriteAheadLogging()
-        db.execSQL("PRAGMA busy_timeout = $BusyTimeoutMillis")
+        db.query("PRAGMA busy_timeout = $BusyTimeoutMillis").use { it.moveToFirst() }
     }
 
     /**
