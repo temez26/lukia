@@ -1,8 +1,11 @@
 package io.lukia.features.reader.presentation.screens
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
@@ -22,6 +25,7 @@ import io.lukia.features.reader.domain.ReadingWidth
 import io.lukia.features.reader.domain.outline.ReaderOutline
 import io.lukia.features.reader.domain.text.TextExtraction
 import io.lukia.shared.presentation.theme.LukiaTheme
+import io.lukia.shared.presentation.theme.MinTouchTarget
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -164,6 +168,47 @@ class ReaderChromeTest {
         waitForIdle()
 
         onNodeWithContentDescription("Close book").assertExists()
+    }
+
+    /**
+     * That the page indicator is drawn as a label and pressed as a control.
+     *
+     * Held to a control's height, its fill was a 44dp slab around one 13sp line
+     * - most of the inside of the toolbar tinted grey. The fill is drawn to its
+     * own label now, and this is the half of that change that could go wrong:
+     * what got smaller is the drawing, not what a thumb has to hit.
+     *
+     * Pressed above the label rather than on it, which is where the fill used to
+     * reach and where a thumb aiming at the middle of the bar still lands.
+     */
+    @Test
+    fun thePageIndicatorIsPressedWellPastWhatItDraws() = runComposeUiTest {
+        setContent {
+            LukiaTheme(touch = true) {
+                ReaderContent(
+                    uiState = UiState.Success(readerDocument(348)),
+                    settings = ReaderSettings(),
+                    outline = chapters,
+                    onBack = {},
+                    onRetry = {},
+                    onSettingsChange = {},
+                    renderPage = { _, _ -> null },
+                )
+            }
+        }
+
+        val indicator = onNode(
+            hasContentDescription("Page 1 of 348", substring = true) and hasClickAction(),
+        )
+
+        indicator.assertHeightIsAtLeast(MinTouchTarget)
+
+        indicator.performTouchInput {
+            click(Offset(width / 2f, height / 2f - AbovePress))
+        }
+        waitForIdle()
+
+        onNodeWithText("Chapters").assertExists()
     }
 
     @Test
@@ -359,3 +404,9 @@ class ReaderChromeTest {
         onNodeWithText("Justified").assertExists()
     }
 }
+
+/**
+ * How far above the middle of the drawn label the press lands: past its top
+ * edge, and inside the target reserved around it.
+ */
+private const val AbovePress = 16f
