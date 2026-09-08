@@ -22,17 +22,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.library.domain.LibraryLayout
-import io.lukia.features.library.presentation.model.ImportProgress
 import io.lukia.features.library.presentation.model.LibraryFacets
 import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.library.presentation.model.OpenMenu
 import io.lukia.features.library.presentation.model.displayName
+import io.lukia.features.library.presentation.sessions.LibraryImportUi
+import io.lukia.resources.Res
+import io.lukia.resources.library_import_stop
+import io.lukia.resources.library_importing
+import io.lukia.resources.library_importing_count
+import io.lukia.shared.presentation.components.controls.ButtonSize
+import io.lukia.shared.presentation.components.controls.ButtonVariant
+import io.lukia.shared.presentation.components.controls.LukiaButton
 import io.lukia.shared.presentation.components.controls.SegmentedControl
 import io.lukia.shared.presentation.components.launch.LaunchReveal
 import io.lukia.shared.presentation.components.launch.launchReveal
 import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.isWideWindow
+import org.jetbrains.compose.resources.stringResource
 
 /** Width the shelves take when they are not filling the screen, with every segment. */
 private val ShelfControlWidth: Dp = 320.dp
@@ -66,8 +74,7 @@ internal fun LibraryHeader(
     onQueryChange: (LibraryQuery) -> Unit,
     openMenu: OpenMenu?,
     onOpenMenuChange: (OpenMenu?) -> Unit,
-    isImporting: Boolean,
-    importProgress: ImportProgress?,
+    importing: LibraryImportUi,
     reveal: LaunchReveal,
     layout: LibraryLayout,
     onLayoutChange: (LibraryLayout) -> Unit,
@@ -111,8 +118,7 @@ internal fun LibraryHeader(
         )
 
         ImportingNotice(
-            visible = isImporting,
-            progress = importProgress,
+            importing = importing,
             modifier = Modifier.launchReveal(reveal, index = 2),
         )
     }
@@ -125,15 +131,18 @@ internal fun LibraryHeader(
  * screen stay readable while the rest arrive. Present only while it is true -
  * there is nothing to say about an import that is not happening - and expanded
  * into place rather than appearing, so the grid is nudged down rather than jumping.
+ *
+ * It also carries the way out. A folder can hold thousands of books, each one
+ * opened and its cover rendered, and without this the only way to stop is to kill
+ * the app - which stops at the same book and says nothing about how far it got.
  */
 @Composable
 private fun ImportingNotice(
-    visible: Boolean,
-    progress: ImportProgress?,
+    importing: LibraryImportUi,
     modifier: Modifier = Modifier,
 ) {
     AnimatedVisibility(
-        visible = visible,
+        visible = importing.isImporting,
         enter = expandVertically(LukiaMotion.standard()) + fadeIn(LukiaMotion.standard()),
         exit = shrinkVertically(LukiaMotion.exit()) + fadeOut(LukiaMotion.exit()),
         modifier = modifier,
@@ -154,11 +163,20 @@ private fun ImportingNotice(
                 // A folder can hold hundreds of books, each one opened and its
                 // cover rendered. Without the count, a long import is a spinner
                 // that gives no way to tell working from stuck.
-                text = progress
-                    ?.let { "Importing ${it.completed} of ${it.total}…" }
-                    ?: "Importing…",
+                text = importing.progress
+                    ?.let {
+                        stringResource(Res.string.library_importing_count, it.completed, it.total)
+                    }
+                    ?: stringResource(Res.string.library_importing),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            LukiaButton(
+                label = stringResource(Res.string.library_import_stop),
+                onClick = importing.onCancel,
+                variant = ButtonVariant.Ghost,
+                size = ButtonSize.Compact,
             )
         }
     }

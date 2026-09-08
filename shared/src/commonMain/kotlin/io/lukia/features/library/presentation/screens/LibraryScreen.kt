@@ -16,6 +16,7 @@ import io.lukia.core.infrastructure.AppCommand
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.pickers.rememberPlatformFilePicker
 import io.lukia.features.library.presentation.pickers.rememberPlatformFolderPicker
+import io.lukia.features.library.presentation.sessions.rememberImportUi
 import io.lukia.features.settings.presentation.SettingsOverlay
 import io.lukia.shared.presentation.components.surface.behindOverlay
 import io.lukia.shared.presentation.theme.isWideWindow
@@ -44,8 +45,6 @@ fun LibraryScreen(
     val facets by viewModel.facets.collectAsState()
     val query by viewModel.query.collectAsState()
     val message by viewModel.message.collectAsState()
-    val isImporting by viewModel.isImporting.collectAsState()
-    val importProgress by viewModel.importProgress.collectAsState()
     val readingProgress by viewModel.readingProgress.collectAsState()
 
     val filePicker = rememberPlatformFilePicker()
@@ -95,8 +94,7 @@ fun LibraryScreen(
                 shelf = rememberShelfUi(viewModel),
                 onDelete = viewModel::deleteDocument,
                 onRetry = viewModel::refresh,
-                isImporting = isImporting,
-                importProgress = importProgress,
+                importing = rememberImportUi(viewModel),
                 snackbarHostState = snackbarHostState,
                 readingProgress = readingProgress,
                 showSearch = showSearch,

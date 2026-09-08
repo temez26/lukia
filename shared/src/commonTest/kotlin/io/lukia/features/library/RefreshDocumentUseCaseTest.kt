@@ -96,6 +96,42 @@ class RefreshDocumentUseCaseTest {
         assertEquals(1L, repository.getDocument(book.location)?.sizeBytes)
     }
 
+    /**
+     * The shelf's own record of what has gone. A message is gone by the next
+     * screen; the row is what lets the library offer to tidy the book up later -
+     * see `LibraryUpkeep`, whose missing half has nothing to show without this.
+     */
+    @Test
+    fun aFileThatIsNoLongerThereIsWrittenDownAsMissing() = runTest {
+        val repository = FakeImportLibraryRepository(listOf(storedAs(sizeBytes = 1L)))
+
+        val result = createUseCase(
+            repository,
+            analyzer = TypeFromExtensionAnalyzer(missingLocations = setOf(book.location)),
+        )(book.location)
+
+        assertEquals(AppError.DocumentNotFound, result.exceptionOrNull()?.toAppError())
+        assertFalse(repository.getDocument(book.location)!!.exists)
+    }
+
+    /** A file that has moved may come back, and everything read out of it should still be there. */
+    @Test
+    fun markingABookMissingKeepsEverythingElseAboutIt() = runTest {
+        val stored = storedAs(sizeBytes = 4096L).copy(isFavorite = true)
+        val repository = FakeImportLibraryRepository(listOf(stored))
+
+        createUseCase(
+            repository,
+            analyzer = TypeFromExtensionAnalyzer(missingLocations = setOf(book.location)),
+        )(book.location)
+
+        val marked = repository.getDocument(book.location)!!
+
+        assertTrue(marked.isFavorite)
+        assertEquals(4096L, marked.sizeBytes)
+        assertEquals(1, repository.documents.size)
+    }
+
     private fun storedAs(sizeBytes: Long) = DocumentInfo(
         document = book,
         type = DocumentType.PDF,
@@ -113,6 +149,7 @@ class RefreshDocumentUseCaseTest {
             libraryRepository = repository,
             dispatcher = UnconfinedTestDispatcher(testScheduler),
         ),
+        documentAnalyzer = analyzer,
         dispatcher = UnconfinedTestDispatcher(testScheduler),
     )
 
@@ -120,6 +157,8 @@ class RefreshDocumentUseCaseTest {
     private class FixedAnalyzer(
         private val documentInfo: DocumentInfo,
     ) : DocumentAnalyzer {
+        override suspend fun exists(document: PickedDocument): Boolean = true
+
         override suspend fun analyze(document: PickedDocument): DocumentInfo = documentInfo
     }
 }

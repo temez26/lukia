@@ -5,11 +5,16 @@ import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.domain.document.PickedDocument
 import io.lukia.features.library.domain.DocumentAnalyzer
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 
 class DesktopDocumentAnalyzer(
     private val diagnostics: Diagnostics = Diagnostics.None,
 ) : DocumentAnalyzer {
+
+    override suspend fun exists(document: PickedDocument): Boolean =
+        withContext(Dispatchers.IO) { File(document.location).isFile }
 
     override suspend fun analyze(document: PickedDocument): DocumentInfo {
         val file = File(document.location)

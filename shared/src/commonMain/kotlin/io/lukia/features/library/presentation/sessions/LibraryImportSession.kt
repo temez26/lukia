@@ -12,7 +12,9 @@ import io.lukia.features.library.application.ImportSummary
 import io.lukia.features.library.presentation.model.ImportProgress
 import io.lukia.features.library.presentation.model.LibraryMessage
 import io.lukia.features.library.presentation.model.notice
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -52,6 +54,14 @@ class LibraryImportSession(
      */
     private val _progress = MutableStateFlow<ImportProgress?>(null)
     val progress: StateFlow<ImportProgress?> = _progress.asStateFlow()
+
+    /**
+     * The import the reader started, while it is running, so that they can stop
+     * it. Only that one: a book handed to the app by another app is collected
+     * from an inbox that has to go on collecting, and cancelling the coroutine
+     * doing the collecting would close the inbox for the rest of the session.
+     */
+    private var started: Job? = null
 
     fun importDocuments(pickedDocuments: List<PickedDocument>) {
         if (pickedDocuments.isEmpty()) return
@@ -97,7 +107,23 @@ class LibraryImportSession(
      * unforeseen - the same way.
      */
     private fun run(block: suspend () -> Result<ImportSummary>) {
-        scope.launch { runImport(block) }
+        started = scope.launch { runImport(block) }
+    }
+
+    /**
+     * Stops the import that is running, keeping every book that has already
+     * arrived.
+     *
+     * A folder of five thousand books is minutes of work that the reader can
+     * otherwise only get out of by killing the app - which stops it at the same
+     * book, having told them nothing, and leaves them wondering how much of
+     * their library made it. Stopping is safe because a batch is a book at a
+     * time: whatever was imported is committed, and running the same import
+     * again picks up where this left off rather than adding second copies.
+     */
+    fun cancel() {
+        started?.cancel()
+        started = null
     }
 
     /** [run] without the coroutine, for a caller that is already in one. */
@@ -117,6 +143,12 @@ class LibraryImportSession(
                     onMessage(summary.notice())
                     onImported()
                 }
+        } catch (stopped: CancellationException) {
+            // Whatever arrived before the reader stopped it is on the shelf and
+            // has to be shown, or a stopped import looks like one that did
+            // nothing. Re-thrown so the coroutine still ends as cancelled.
+            onImported()
+            throw stopped
         } finally {
             // In a finally so nothing can leave the library spinning.
             _isImporting.value = false

@@ -69,6 +69,23 @@ class IOSIncomingDocumentStore : IncomingDocumentStore {
         }
 
     /**
+     * Only inside this directory. A picked book is a `file://` URL to somewhere
+     * in the Files app, and without the check this would delete the reader's own
+     * copy of it rather than the app's.
+     */
+    override suspend fun discard(location: String) {
+        withContext(Dispatchers.IO) {
+            // A location arrives as a file:// URL, but a scanned one can be a
+            // plain path - the same two shapes the workspace resolves.
+            val path = NSURL.URLWithString(location)?.path ?: location
+
+            if (path.substringBeforeLast('/') != directory) return@withContext
+
+            fileManager.removeItemAtPath(path, null)
+        }
+    }
+
+    /**
      * Writes through a scratch file and moves it into place, so a write cut
      * short by the process dying never leaves a half-written file under the name
      * the library is about to store.

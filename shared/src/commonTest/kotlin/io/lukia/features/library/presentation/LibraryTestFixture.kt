@@ -28,6 +28,7 @@ import io.lukia.features.library.domain.FolderScanner
 import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.library.infrastructure.LibrarySettingsRepository
 import io.lukia.features.library.infrastructure.RecentSearchesRepository
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 
 /**
@@ -93,11 +94,13 @@ internal fun createViewModel(
                 libraryRepository = repository,
                 dispatcher = UnconfinedTestDispatcher(),
             ),
+            documentAnalyzer = analyzer,
             dispatcher = UnconfinedTestDispatcher(),
         ),
         removeDocumentUseCase = RemoveDocumentUseCase(
             repository,
             FakeDocumentWorkspace(),
+            incomingDocumentStore,
             FakeReadingProgressRepository(),
             FakePdfLayoutRepository(),
         ),
@@ -131,11 +134,35 @@ internal fun pdfDocumentInfo(
 
 internal class FakeDocumentAnalyzer(
     internal val documentInfo: DocumentInfo,
+    /** Locations whose file has gone, which a refresh writes down on the row. */
+    private val missingLocations: Set<String> = emptySet(),
 ) : DocumentAnalyzer {
+    override suspend fun exists(document: PickedDocument): Boolean =
+        document.location !in missingLocations
+
     override suspend fun analyze(document: PickedDocument): DocumentInfo = documentInfo
 }
 
+/**
+ * Stops part way through a batch and stays there, so a test can act on an import
+ * that is genuinely still running rather than on one that has already finished.
+ */
+internal class HaltingDocumentAnalyzer(
+    private val haltAt: String,
+    private val halted: CompletableDeferred<Unit>,
+) : DocumentAnalyzer {
+    override suspend fun exists(document: PickedDocument): Boolean = true
+
+    override suspend fun analyze(document: PickedDocument): DocumentInfo {
+        if (document.location == haltAt) halted.await()
+
+        return pdfDocumentInfo(location = document.location)
+    }
+}
+
 internal class ThrowingDocumentAnalyzer : DocumentAnalyzer {
+    override suspend fun exists(document: PickedDocument): Boolean = true
+
     override suspend fun analyze(
         document: PickedDocument,
     ): DocumentInfo = error("analysis blew up")

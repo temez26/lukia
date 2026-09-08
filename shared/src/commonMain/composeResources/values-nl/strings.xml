@@ -170,6 +170,9 @@
     <string name="library_close_menu">Menu sluiten</string>
     <string name="library_import_books">Boeken importeren</string>
     <string name="library_add_folder">Map toevoegen</string>
+    <string name="library_importing">Importeren…</string>
+    <string name="library_importing_count">%1$d van %2$d importeren…</string>
+    <string name="library_import_stop">Stoppen</string>
     <string name="library_settings">Instellingen</string>
     <string name="library_missing_files">Ontbrekende bestanden (%1$d)</string>
     <string name="library_duplicates">Dubbele (%1$d)</string>

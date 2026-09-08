@@ -102,7 +102,6 @@ class LibraryContentTest {
                         onRefresh = {},
                         onDelete = {},
                         onRetry = {},
-                        isImporting = false,
                     )
                 }
             }

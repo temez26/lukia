@@ -6,6 +6,7 @@ import io.lukia.core.domain.reading.FakeReadingProgressRepository
 import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.core.presentation.UiState
 import io.lukia.features.library.presentation.model.LibraryMessage
+import io.lukia.features.library.presentation.model.upkeep
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -105,6 +106,36 @@ class LibraryViewModelTest : MainDispatcherTest() {
 
         assertEquals(LibraryMessage.Failed(AppError.Unexpected()), viewModel.message.value)
         assertEquals(UiState.Success(listOf(documentInfo)), viewModel.uiState.value)
+    }
+
+    /**
+     * The end of the only path that can find out a book's file has gone. Nothing
+     * looks on its own - a shelf of five thousand is five thousand trips to the
+     * file system - so a re-reading is what corrects the row, and the shelf's
+     * upkeep is what the reader is then offered.
+     */
+    @Test
+    fun aRefreshThatFindsTheFileGoneLeavesTheBookMarkedMissing() = runTest {
+        val documentInfo = pdfDocumentInfo()
+        val repository = FakeLibraryRepository(initialDocuments = listOf(documentInfo))
+        val viewModel = createViewModel(
+            repository = repository,
+            analyzer = FakeDocumentAnalyzer(
+                documentInfo = documentInfo,
+                missingLocations = setOf(documentInfo.document.location),
+            ),
+        )
+
+        viewModel.refreshDocument(documentInfo)
+
+        assertEquals(
+            LibraryMessage.Failed(AppError.DocumentNotFound),
+            viewModel.message.value,
+        )
+        assertEquals(
+            setOf(documentInfo.document.location),
+            viewModel.books.value.upkeep().missing,
+        )
     }
 
     @Test

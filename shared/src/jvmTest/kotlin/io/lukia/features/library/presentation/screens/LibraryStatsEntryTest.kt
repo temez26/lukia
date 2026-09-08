@@ -53,7 +53,6 @@ class LibraryStatsEntryTest {
                         onRefresh = {},
                         onDelete = {},
                         onRetry = {},
-                        isImporting = false,
                         statsButton = {
                             StatsButton(onClick = { openedStats = true })
                         },

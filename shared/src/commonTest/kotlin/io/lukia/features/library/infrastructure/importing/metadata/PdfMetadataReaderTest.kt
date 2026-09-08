@@ -44,6 +44,32 @@ class PdfMetadataReaderTest {
         assertNull(metadata?.title)
     }
 
+    /**
+     * The rule that drops a one-character title is about initials, which is a
+     * fact about alphabets. A script that writes a whole word in one character
+     * writes titles in one too, and dropping those left the reader looking at a
+     * file name where the book had told them its name.
+     */
+    @Test
+    fun keepsAOneCharacterTitleInAScriptThatWritesWordsThatWay() {
+        val metadata = extractPdfMetadata(
+            // UTF-16 with a byte-order mark, which is how a PDF holds anything
+            // PDFDocEncoding cannot spell.
+            MinimalPdf.withInfo("/Title <FEFF9053>"),
+        )
+
+        assertEquals("道", metadata?.title)
+    }
+
+    @Test
+    fun stillDropsAOneLetterTitle() {
+        val metadata = extractPdfMetadata(
+            MinimalPdf.withInfo("/Title (A) /Author (Jane Roe)"),
+        )
+
+        assertNull(metadata?.title)
+    }
+
     /** `/Author` is one string however many people it names. */
     @Test
     fun splitsSeveralAuthorsOutOfOneField() {

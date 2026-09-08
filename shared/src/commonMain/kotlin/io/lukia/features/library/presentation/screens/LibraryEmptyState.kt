@@ -1,6 +1,7 @@
 package io.lukia.features.library.presentation.screens
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -13,13 +14,22 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.library.presentation.components.book.ImportBookCard
 import io.lukia.features.library.presentation.model.ImportProgress
+import io.lukia.features.library.presentation.sessions.LibraryImportUi
 import io.lukia.resources.Res
 import io.lukia.resources.library_empty_message
 import io.lukia.resources.library_empty_title
+import io.lukia.resources.library_import_stop
+import io.lukia.resources.library_importing
+import io.lukia.resources.library_importing_count
+import io.lukia.shared.presentation.components.controls.ButtonSize
+import io.lukia.shared.presentation.components.controls.ButtonVariant
+import io.lukia.shared.presentation.components.controls.LukiaButton
 import io.lukia.shared.presentation.components.launch.LaunchReveal
 import io.lukia.shared.presentation.components.launch.launchReveal
+import io.lukia.shared.presentation.components.state.LoadingState
 import io.lukia.shared.presentation.components.surface.EmptyState
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 
 /** The lone import card on an empty screen, at about a grid cell's width. */
@@ -35,12 +45,42 @@ private val EmptyStateCoverWidth: Dp = 116.dp
  * plain "Importing books…" rather than as a progress bar that is finished before
  * it is seen.
  */
+@Composable
 internal fun importingMessage(progress: ImportProgress?): String =
     if (progress == null) {
-        "Importing books…"
+        stringResource(Res.string.library_importing)
     } else {
-        "Importing ${progress.completed} of ${progress.total}…"
+        stringResource(Res.string.library_importing_count, progress.completed, progress.total)
     }
+
+/**
+ * The whole screen while a library with nothing on it yet is being filled: how
+ * far the import has got, and the way to stop it.
+ *
+ * The way out is here as well as in the header's notice, and this is the copy
+ * that matters most. The shelf is not re-read until an import finishes, so a
+ * reader whose first act is to point at a folder of five thousand books is
+ * looking at this - never at the notice - for every one of the minutes it takes.
+ */
+@Composable
+internal fun ImportingState(
+    importing: LibraryImportUi,
+    modifier: Modifier = Modifier,
+) {
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            LoadingState(message = importingMessage(importing.progress))
+
+            LukiaButton(
+                label = stringResource(Res.string.library_import_stop),
+                onClick = importing.onCancel,
+                variant = ButtonVariant.Ghost,
+                size = ButtonSize.Compact,
+                modifier = Modifier.padding(top = Space.lg),
+            )
+        }
+    }
+}
 
 /** What a successfully read library is showing. */
 internal enum class LibraryContentState {

@@ -19,18 +19,18 @@ import io.lukia.core.presentation.UiState
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.model.HomeMenu
 import io.lukia.features.library.presentation.model.HomeRow
-import io.lukia.features.library.presentation.model.ImportProgress
 import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.library.presentation.model.homeRows
 import io.lukia.features.library.presentation.pickers.rememberPlatformFilePicker
 import io.lukia.features.library.presentation.pickers.rememberPlatformFolderPicker
 import io.lukia.features.library.presentation.sessions.HomeBookActions
+import io.lukia.features.library.presentation.sessions.LibraryImportUi
 import io.lukia.features.library.presentation.sessions.LibraryShelfUi
+import io.lukia.features.library.presentation.sessions.rememberImportUi
 import io.lukia.resources.Res
 import io.lukia.resources.action_try_again
 import io.lukia.shared.presentation.components.launch.rememberLaunchReveal
 import io.lukia.shared.presentation.components.menu.ActionMenuScrim
-import io.lukia.shared.presentation.components.state.LoadingState
 import io.lukia.shared.presentation.components.state.UiStateContent
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -65,8 +65,6 @@ internal fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
     val library by viewModel.library.collectAsState()
     val facets by viewModel.facets.collectAsState()
-    val isImporting by viewModel.isImporting.collectAsState()
-    val importProgress by viewModel.importProgress.collectAsState()
 
     val filePicker = rememberPlatformFilePicker()
     val folderPicker = rememberPlatformFolderPicker()
@@ -101,7 +99,7 @@ internal fun HomeScreen(
     HomeContent(
         uiState = uiState,
         rows = rows,
-        isImporting = isImporting,
+        importing = rememberImportUi(viewModel),
         actions = actions,
         onSeeAll = onSeeAll,
         onImport = { filePicker.launch(viewModel::importDocuments) },
@@ -112,7 +110,6 @@ internal fun HomeScreen(
         },
         onRetry = viewModel::refresh,
         categories = facets.categories,
-        importProgress = importProgress,
         shelf = homeShelf,
         onSettings = onSettings,
         statsButton = statsButton,
@@ -131,7 +128,6 @@ internal fun HomeScreen(
 internal fun HomeContent(
     uiState: UiState<List<DocumentInfo>>,
     rows: List<HomeRow>,
-    isImporting: Boolean,
     actions: HomeBookActions,
     onSeeAll: (LibraryQuery) -> Unit,
     onImport: () -> Unit,
@@ -145,7 +141,7 @@ internal fun HomeContent(
      * than one file to count. Defaulted to nothing so this screen still composes
      * without a ViewModel behind it, which is how it is tested and previewed.
      */
-    importProgress: ImportProgress? = null,
+    importing: LibraryImportUi = LibraryImportUi.None,
     /** What the corner menu offers, which is what the library's own bar offers. */
     shelf: LibraryShelfUi = LibraryShelfUi.None,
     onSettings: () -> Unit = {},
@@ -202,8 +198,8 @@ internal fun HomeContent(
                 // A library still filling has nothing to sample yet, and a card
                 // offering to add a fourth book while three are being read in is
                 // the wrong thing to be pressing.
-                isImporting -> LoadingState(
-                    message = importingMessage(importProgress),
+                importing.isImporting -> ImportingState(
+                    importing = importing,
                     modifier = Modifier.fillMaxSize(),
                 )
 
