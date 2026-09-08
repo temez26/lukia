@@ -119,6 +119,11 @@ wrong, what it must never record, and where a call belongs. Nothing is collected
 unless the reader turns it on, and nothing leaves the device unless they copy it
 out themselves.
 
+## Security
+
+See [SECURITY.md](SECURITY.md) for what is in scope, how to report something
+privately, and what response to expect from a project with one maintainer.
+
 ## Contributing
 
 See our [Guidelines](CONTRIBUTING.md) for details on how to submit changes, write clear PR titles, and structure your commits.
