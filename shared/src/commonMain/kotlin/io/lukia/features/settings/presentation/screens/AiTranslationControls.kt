@@ -7,12 +7,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import io.lukia.core.domain.text.PassageUnit
 import io.lukia.features.settings.presentation.ProviderActions
 import io.lukia.features.settings.presentation.ProviderState
 import io.lukia.features.settings.presentation.TranslatingActions
 import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.features.translate.presentation.GestureControl
-import io.lukia.features.translate.presentation.PassageUnitControl
 import io.lukia.resources.Res
 import io.lukia.resources.reader_gesture_long_press
 import io.lukia.resources.reader_gesture_tap
@@ -160,17 +160,17 @@ private fun AiSwitchSection(
  * How much of the book a tap and a hold ask for, where that question can only be
  * asked.
  *
- * The two rows are not the same shape, because the two gestures are not set in
- * the same number of places.
+ * Both rows read the same way and neither offers the word, because the word is
+ * what this group is named for asking past. Off is "no, this gesture does not
+ * ask for more than a word".
  *
- * A tap has a switch on the Translating page saying whether it translates at
- * all, so this row says only how much it asks for: the word, the sentence or the
- * paragraph, with no off. An off here would be a second page turning that switch
- * off, which is what this pair used to do to each other.
- *
- * A hold has no switch anywhere else - translating by holding is offered here
- * and nowhere else - so its row keeps its own off, and the word with it, since
- * nothing else can turn the gesture on.
+ * What that leaves differs by gesture, and only because their other halves are
+ * elsewhere. A tap goes on translating the word, since whether it translates at
+ * all is the switch on the Translating page - and off here writes the word to
+ * that tap rather than turning it off, which is what the two used to do to each
+ * other while they shared one field. A hold translates nothing, since it has no
+ * other job than this one: holding a word for what else it means is its own
+ * switch, on the Translating page, and is not affected.
  */
 @Composable
 private fun GestureUnitSection(
@@ -188,16 +188,18 @@ private fun GestureUnitSection(
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
             LabelledField(label = stringResource(Res.string.reader_gesture_tap)) {
-                // No off: whether a tap translates is the switch on the
-                // Translating page, and a row here that could turn it off would
-                // be two pages writing one setting - which is exactly what this
-                // pair used to be. The word is this row's own way of asking for
-                // nothing more than a word.
-                PassageUnitControl(
-                    selected = translation.gestures.tapUnit,
+                // Off is the word, not nothing: this row says how far past the
+                // word a tap reaches, and whether it reaches at all is the
+                // switch on the Translating page. Writing the word here is what
+                // keeps the two from turning each other off.
+                GestureControl(
+                    selected = translation.gestures.tapUnit.takeIf { it != PassageUnit.Word },
                     onSelect = {
-                        actions.onGesturesChange(translation.gestures.copy(tapUnit = it))
+                        actions.onGesturesChange(
+                            translation.gestures.copy(tapUnit = it ?: PassageUnit.Word),
+                        )
                     },
+                    units = ModelUnits,
                 )
             }
 
@@ -207,6 +209,7 @@ private fun GestureUnitSection(
                     onSelect = {
                         actions.onGesturesChange(translation.gestures.copy(longPress = it))
                     },
+                    units = ModelUnits,
                 )
             }
         }
@@ -264,3 +267,14 @@ private fun TranslatingAheadSection(
         }
     }
 }
+
+/**
+ * The two units that are more than a word, which is the whole of what this group
+ * is about.
+ *
+ * The word is left out of both rows rather than sitting in them as a third
+ * choice. A group called "asking for more than a word" whose rows offer the word
+ * is a group arguing with its own name - and neither row needs it: off says the
+ * same thing, in the terms the group is written in.
+ */
+private val ModelUnits = listOf(PassageUnit.Sentence, PassageUnit.Paragraph)

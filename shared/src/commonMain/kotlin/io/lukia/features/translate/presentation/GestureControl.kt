@@ -26,39 +26,27 @@ import org.jetbrains.compose.resources.stringResource
 fun GestureControl(
     selected: PassageUnit?,
     onSelect: (PassageUnit?) -> Unit,
+    /**
+     * Which units this control may be set to, off aside.
+     *
+     * A parameter because the answer differs by where the control is. In the
+     * reader's own panel it is all three, because that is the whole of what a
+     * gesture can be set to. Under "asking for more than a word" it is the two
+     * that are more than a word - offering the word there would be a row whose
+     * name and whose choices disagreed.
+     *
+     * A gesture set to a unit this control does not offer leaves it with nothing
+     * selected, which is the honest answer and what [SegmentedControl] already
+     * does for a page width between two presets.
+     */
+    units: List<PassageUnit> = PassageUnit.entries,
 ) {
-    val choices = remember { listOf<PassageUnit?>(null) + PassageUnit.entries }
+    val choices = remember(units) { listOf<PassageUnit?>(null) + units }
 
     SegmentedControl(
         options = choices,
         selected = selected,
         label = { it?.displayName() ?: stringResource(Res.string.gesture_off) },
-        onSelect = onSelect,
-    )
-}
-
-/**
- * How much of the book a gesture asks for, without the option of nothing.
- *
- * For the gesture whose off is somewhere else. Whether a tap translates is a
- * switch on the Translating page, beside the dictionary that answers a word; how
- * much it asks for is on the AI translation page, because only a model answers a
- * sentence. A control offering off in the second place would be a second page
- * turning off a switch set in the first - which is what the two did to each
- * other while they shared one nullable field.
- *
- * The word is the first choice rather than a missing one, and it is this row's
- * way of asking for nothing more than a word.
- */
-@Composable
-fun PassageUnitControl(
-    selected: PassageUnit,
-    onSelect: (PassageUnit) -> Unit,
-) {
-    SegmentedControl(
-        options = PassageUnit.entries,
-        selected = selected,
-        label = { it.displayName() },
         onSelect = onSelect,
     )
 }

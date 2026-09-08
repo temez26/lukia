@@ -17,6 +17,7 @@ import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.resources.Res
 import io.lukia.resources.gesture_off
+import io.lukia.resources.gesture_off
 import io.lukia.resources.passage_unit_paragraph
 import io.lukia.resources.passage_unit_word
 import io.lukia.resources.settings_area_ai_translation
@@ -26,18 +27,18 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * How much of the book a gesture asks the model for, and what that row is not
- * allowed to decide.
+ * How far past the word a gesture reaches, and what these rows are not allowed
+ * to decide.
  *
- * Whether a tap translates at all is a switch on the Translating page, beside
- * the dictionary that answers a word without any of this being set up. This row
- * only raises what a tap asks for. The two shared one nullable field once, so
- * setting this row to "off" reached across and turned that switch off - and
- * touching it at all turned the switch on. They are two settings now, and this
- * is the seam.
+ * The group is named for asking past the word, so neither row offers the word:
+ * off says the same thing in the group's own terms. Whether a tap translates at
+ * all is a switch on the Translating page, beside the dictionary that answers a
+ * word without any of this being set up - so off here means the tap goes on
+ * translating the word, and not that it stops.
  *
- * The hold is not the same shape, and deliberately: translating by holding is
- * offered here and nowhere else, so its row keeps an off of its own.
+ * The two shared one nullable field once, and setting this row to off reached
+ * across and turned that switch off, while touching it at all turned the switch
+ * on. They are two settings now, and this is the seam.
  */
 @OptIn(ExperimentalTestApi::class)
 class AiGestureUnitsTest {
@@ -70,16 +71,24 @@ class AiGestureUnitsTest {
         onNodeWithText(words(Res.string.settings_area_ai_translation)).performClick()
     }
 
-    /**
-     * One off on the page, and it belongs to the hold. The tap's off is the
-     * switch under Translating.
-     */
+    /** Neither row offers the word, which is the unit this group asks past. */
     @Test
-    fun onlyTheHoldRowOffersAnOff() = runComposeUiTest {
+    fun theWordIsNotOneOfTheChoices() = runComposeUiTest {
         setPage()
 
         assertEquals(
-            1,
+            0,
+            onAllNodes(hasText(words(Res.string.passage_unit_word))).fetchSemanticsNodes().size,
+        )
+    }
+
+    /** Both offer an off instead, and it is what each of them asks past from. */
+    @Test
+    fun bothRowsOfferAnOffInstead() = runComposeUiTest {
+        setPage()
+
+        assertEquals(
+            2,
             onAllNodes(hasText(words(Res.string.gesture_off))).fetchSemanticsNodes().size,
         )
     }
@@ -97,15 +106,38 @@ class AiGestureUnitsTest {
         )
     }
 
-    /** And lowering it back to the word does not stop it, either. */
+    /**
+     * And the tap's own off puts it back to the word rather than stopping it.
+     * There is no other way back: the word is not a choice in this row, and the
+     * switch on the other page is about whether a tap translates at all.
+     */
     @Test
-    fun norDoesLoweringItToTheWordTurnItOff() = runComposeUiTest {
+    fun theTapsOffPutsItBackToTheWordRatherThanStoppingIt() = runComposeUiTest {
         setPage(TranslationGestures(tapTranslates = true, tapUnit = PassageUnit.Sentence))
 
-        chooseInTheTapRow(words(Res.string.passage_unit_word))
+        chooseInTheTapRow(words(Res.string.gesture_off))
 
         assertEquals(
             TranslationGestures(tapTranslates = true, tapUnit = PassageUnit.Word),
+            gestures,
+        )
+    }
+
+    /** The hold's off is what it says: that gesture translates nothing. */
+    @Test
+    fun theHoldsOffTranslatesNothing() = runComposeUiTest {
+        setPage(
+            TranslationGestures(
+                tapTranslates = true,
+                longPress = PassageUnit.Paragraph,
+                wordDetails = true,
+            ),
+        )
+
+        onAllNodes(hasText(words(Res.string.gesture_off)))[1].performScrollTo().performClick()
+
+        assertEquals(
+            TranslationGestures(tapTranslates = true, longPress = null, wordDetails = true),
             gestures,
         )
     }
