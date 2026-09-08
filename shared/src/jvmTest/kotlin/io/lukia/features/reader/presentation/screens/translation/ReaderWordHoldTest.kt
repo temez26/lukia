@@ -124,7 +124,7 @@ class ReaderWordHoldTest {
         var questioned: PassageSelection? = null
 
         setReader(
-            gestures = TranslationGestures(longPress = PassageUnit.Sentence),
+            gestures = TranslationGestures.of(longPress = PassageUnit.Sentence),
             onPassageInquiry = { questioned = it },
         )
 
@@ -178,9 +178,10 @@ class ReaderWordHoldTest {
                 )
             },
             onPassageHold = { held = it },
-            gestures = TranslationGestures(
+            gestures = TranslationGestures.of(
                 tap = PassageUnit.Sentence,
                 longPress = PassageUnit.Sentence,
+                wordDetails = true,
             ),
         )
 
@@ -206,7 +207,11 @@ class ReaderWordHoldTest {
                 )
             },
             onPassageHold = { held = it },
-            gestures = TranslationGestures(tap = PassageUnit.Sentence, longPress = null),
+            gestures = TranslationGestures.of(
+                tap = PassageUnit.Sentence,
+                longPress = null,
+                wordDetails = true,
+            ),
         )
 
         onNodeWithText("Kutsukaa me Ishmael.", substring = true).performTouchInput {
@@ -237,7 +242,7 @@ class ReaderWordHoldTest {
             },
             onPassageSelected = { selected = it },
             onPassageHold = { held = it },
-            gestures = TranslationGestures(
+            gestures = TranslationGestures.of(
                 tap = PassageUnit.Sentence,
                 longPress = PassageUnit.Sentence,
                 wordDetails = false,
@@ -264,9 +269,10 @@ class ReaderWordHoldTest {
         setReader(
             onPassageSelected = { selected = it },
             onPassageHold = { held = it },
-            gestures = TranslationGestures(
+            gestures = TranslationGestures.of(
                 tap = PassageUnit.Sentence,
                 longPress = PassageUnit.Sentence,
+                wordDetails = true,
             ),
         )
 

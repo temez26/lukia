@@ -28,7 +28,7 @@ class ReaderTranslationPlacementTest {
 
     @Test
     fun aPhoneKeepsThemInThePanel() = runComposeUiTest {
-        setReader(translationConfigured = true, bulkTranslation = everything, width = PhoneWidth)
+        setReader(bulkTranslation = everything, width = PhoneWidth)
 
         assertEquals(
             0,
@@ -47,7 +47,7 @@ class ReaderTranslationPlacementTest {
 
     @Test
     fun aPointedAtWindowKeepsThemInTheBar() = runComposeUiTest {
-        setReader(translationConfigured = true, bulkTranslation = everything, width = DesktopWidth)
+        setReader(bulkTranslation = everything, width = DesktopWidth)
 
         onNodeWithContentDescription("Translate what is on screen").assertIsDisplayed()
 
@@ -67,7 +67,6 @@ class ReaderTranslationPlacementTest {
     @Test
     fun thePanelLeavesOutWhatWasNotAskedFor() = runComposeUiTest {
         setReader(
-            translationConfigured = true,
             bulkTranslation = BulkTranslation(onScreen = true, asYouRead = false),
             width = PhoneWidth,
         )
@@ -81,17 +80,19 @@ class ReaderTranslationPlacementTest {
         )
     }
 
+    /**
+     * Putting the translations away is offered whatever is set up, because there
+     * is always something set up: a word goes to a dictionary that needs no key.
+     * It does nothing until something has been translated, which is why it is
+     * there from the start and disabled rather than appearing later.
+     */
     @Test
-    fun nothingIsOfferedUntilThereIsSomethingToTranslateWith() = runComposeUiTest {
-        setReader(translationConfigured = false, bulkTranslation = everything, width = PhoneWidth)
+    fun puttingThemAwayIsOfferedOnAnInstallNobodyHasConfigured() = runComposeUiTest {
+        setReader(width = PhoneWidth)
 
         onNodeWithContentDescription("Reading settings").performClick()
 
-        assertEquals(
-            0,
-            onAllNodes(hasText("Show translations")).fetchSemanticsNodes().size,
-            "a control that can only produce an error is worse than no control",
-        )
+        onNodeWithText("Show translations").assertIsDisplayed()
     }
 }
 

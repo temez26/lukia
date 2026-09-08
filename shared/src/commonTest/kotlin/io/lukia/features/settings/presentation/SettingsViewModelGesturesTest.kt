@@ -37,7 +37,7 @@ class SettingsViewModelGesturesTest {
         val translation = TranslationSettingsRepository(store, FakeSecretStore())
 
         viewModel(store, translation).setGestures(
-            TranslationGestures(tap = PassageUnit.Paragraph, longPress = PassageUnit.Word),
+            TranslationGestures.of(tap = PassageUnit.Paragraph, longPress = PassageUnit.Word),
         )
 
         assertEquals(PassageUnit.Paragraph, translation.settings.value.gestures.tap)
@@ -51,7 +51,7 @@ class SettingsViewModelGesturesTest {
         val translation = TranslationSettingsRepository(store, FakeSecretStore())
 
         viewModel(store, translation).setGestures(
-            TranslationGestures(tap = PassageUnit.Sentence, longPress = PassageUnit.Sentence),
+            TranslationGestures.of(tap = PassageUnit.Sentence, longPress = PassageUnit.Sentence),
         )
 
         assertEquals(PassageUnit.Sentence, translation.settings.value.gestures.longPress)
@@ -63,7 +63,7 @@ class SettingsViewModelGesturesTest {
         val store = FakeSettingsStore()
         val translation = TranslationSettingsRepository(store, FakeSecretStore())
 
-        viewModel(store, translation).setGestures(TranslationGestures(tap = null))
+        viewModel(store, translation).setGestures(TranslationGestures.of(tap = null))
 
         assertNull(translation.settings.value.gestures.tap)
     }
@@ -75,9 +75,9 @@ class SettingsViewModelGesturesTest {
         val translation = TranslationSettingsRepository(store, FakeSecretStore())
         val settings = viewModel(store, translation)
 
-        settings.setGestures(TranslationGestures(tap = PassageUnit.Word))
+        settings.setGestures(TranslationGestures.of(tap = PassageUnit.Word))
         settings.setGestures(
-            TranslationGestures(tap = PassageUnit.Word, longPress = PassageUnit.Paragraph),
+            TranslationGestures.of(tap = PassageUnit.Word, longPress = PassageUnit.Paragraph),
         )
 
         assertEquals(PassageUnit.Word, translation.settings.value.gestures.tap)

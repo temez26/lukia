@@ -42,9 +42,9 @@ private fun SettingsPanelBody(viewModel: SettingsViewModel = koinViewModel()) {
     val settings by viewModel.settings.collectAsState()
     val reader by viewModel.readerSettings.collectAsState()
     val translation by viewModel.translationSettings.collectAsState()
-    val connectionTest by viewModel.connectionTest.collectAsState()
-    val availableModels by viewModel.availableModels.collectAsState()
-    val modelReadiness by viewModel.modelReadiness.collectAsState()
+    val connectionTest by viewModel.probe.connectionTest.collectAsState()
+    val availableModels by viewModel.probe.availableModels.collectAsState()
+    val modelReadiness by viewModel.probe.modelReadiness.collectAsState()
     val dimens = LocalLukiaDimens.current
 
     SettingsBody(

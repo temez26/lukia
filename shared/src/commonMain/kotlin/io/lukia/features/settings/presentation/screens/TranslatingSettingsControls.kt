@@ -7,29 +7,32 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import io.lukia.features.settings.presentation.ProviderActions
 import io.lukia.features.settings.presentation.TranslatingActions
+import io.lukia.features.settings.presentation.components.SettingsTextField
+import io.lukia.features.translate.domain.lookup.WordSite
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationSettings
-import io.lukia.features.translate.presentation.GestureControl
+import io.lukia.features.translate.domain.settings.WordLookup
+import io.lukia.features.translate.presentation.displayFootnote
 import io.lukia.features.translate.presentation.displayName
 import io.lukia.resources.Res
-import io.lukia.resources.reader_gesture_long_press
-import io.lukia.resources.reader_gesture_tap
-import io.lukia.resources.reader_keep_translating
 import io.lukia.resources.reader_notes_under_paragraph
 import io.lukia.resources.reader_translate_into
-import io.lukia.resources.reader_translate_on_screen
-import io.lukia.resources.settings_as_you_read_detail
+import io.lukia.resources.settings_address
+import io.lukia.resources.settings_cloud_key
 import io.lukia.resources.settings_hold_again
-import io.lukia.resources.settings_hold_again_detail
-import io.lukia.resources.settings_notes_detail
-import io.lukia.resources.settings_on_screen_detail
+import io.lukia.resources.settings_looking_up_a_word
 import io.lukia.resources.settings_pointing_at_the_book
 import io.lukia.resources.settings_pointing_footnote
+import io.lukia.resources.settings_public_endpoint
+import io.lukia.resources.settings_reading_more
+import io.lukia.resources.settings_reading_more_footnote
+import io.lukia.resources.settings_site_address_example
+import io.lukia.resources.settings_tap_to_translate
 import io.lukia.resources.settings_translate_into_footnote
-import io.lukia.resources.settings_translating_ahead
-import io.lukia.resources.settings_translating_ahead_footnote
 import io.lukia.shared.presentation.components.controls.ChoiceList
+import io.lukia.shared.presentation.components.controls.SegmentedControl
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
@@ -37,18 +40,37 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * What is translated, when, and into what.
  *
- * Everything here is a decision about the book in front of the reader rather
- * than about the machinery behind it: which language they are reading into, what
- * a tap and a press ask for, and whether they are offered a screenful at a time.
- * Who actually answers is a separate question and lives in [ProviderSettings].
+ * Everything a reader can use on the day they install the app, and nothing
+ * else. The language, what a thumb on the page does, what answers about a single
+ * word, and where they are sent to read more about one - all of it reached over
+ * an ordinary web API, free, with nothing to fill in.
+ *
+ * What only a model can do is a separate page - see [AiTranslationSettings]. A
+ * word is the one thing a service that knows nothing about the book can be
+ * relied on for, and it is also the only thing a dictionary has an entry for, so
+ * the line between the two pages falls exactly there: a word here, a sentence
+ * and a paragraph and a screenful at a time over there.
  *
  * The language comes first because it is the one setting nothing works without,
  * and the one most people came here to change.
+ *
+ * Nothing here is on to begin with - see
+ * [io.lukia.features.translate.domain.settings.TranslationGestures]. A book
+ * opens as a book, and the reader says what a thumb on it should ask for.
  */
 @Composable
 internal fun TranslatingSettings(
     translation: TranslationSettings,
     actions: TranslatingActions,
+    /**
+     * Who answers about a word, as opposed to what is translated - see
+     * [ProviderActions].
+     *
+     * Here because the two groups at the foot of this page are a choice between
+     * services, and the actions are still grouped by what they change rather
+     * than by which page happens to show them.
+     */
+    providerActions: ProviderActions,
     groupColor: Color,
     modifier: Modifier = Modifier,
 ) {
@@ -79,16 +101,39 @@ internal fun TranslatingSettings(
             modifier = Modifier.padding(top = dimens.sectionSpacing),
         )
 
-        TranslatingAheadSection(
+        WordLookupSection(
             translation = translation,
-            actions = actions,
+            actions = providerActions,
+            groupColor = groupColor,
+            modifier = Modifier.padding(top = dimens.sectionSpacing),
+        )
+
+        WordSiteSection(
+            translation = translation,
+            actions = providerActions,
             groupColor = groupColor,
             modifier = Modifier.padding(top = dimens.sectionSpacing),
         )
     }
 }
 
-/** What a tap and a press ask the translator for, including nothing at all. */
+/**
+ * What a thumb on the page does: one word translated, and that word asked to say
+ * more.
+ *
+ * Two gestures with one job each, written as switches rather than as a row of
+ * units to choose between. The units are still there - a tap can be raised to
+ * the sentence or the paragraph - but only a translation service can answer
+ * either, so that choice went where the service is and this became the question
+ * a reader can actually answer on the day they install the app: does a tap do
+ * anything, and does a hold.
+ *
+ * The switch says only whether a tap translates. How much it asks for is a
+ * separate setting on the AI translation page - see
+ * [io.lukia.features.translate.domain.settings.TranslationGestures.tapTranslates]
+ * for why the two are apart. Turning the tap off here leaves the unit alone, so
+ * turning it back on gives the reader what they had rather than the word.
+ */
 @Composable
 private fun GestureSection(
     translation: TranslationSettings,
@@ -103,88 +148,122 @@ private fun GestureSection(
         modifier = modifier,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
-            LabelledField(label = stringResource(Res.string.reader_gesture_tap)) {
-                GestureControl(
-                    selected = translation.gestures.tap,
-                    onSelect = {
-                        actions.onGesturesChange(translation.gestures.copy(tap = it))
-                    },
-                )
-            }
-
-            LabelledField(label = stringResource(Res.string.reader_gesture_long_press)) {
-                GestureControl(
-                    selected = translation.gestures.longPress,
-                    onSelect = {
-                        actions.onGesturesChange(translation.gestures.copy(longPress = it))
-                    },
-                )
-            }
-
             SettingsToggle(
-                label = stringResource(Res.string.reader_notes_under_paragraph),
-                info = stringResource(Res.string.settings_notes_detail),
-                checked = translation.notes,
-                onChange = actions.onNotesChange,
+                label = stringResource(Res.string.settings_tap_to_translate),
+                checked = translation.gestures.tapTranslates,
+                onChange = {
+                    actions.onGesturesChange(translation.gestures.copy(tapTranslates = it))
+                },
             )
 
             SettingsToggle(
                 label = stringResource(Res.string.settings_hold_again),
-                info = stringResource(
-                    Res.string.settings_hold_again_detail,
-                    translation.wordSite.displayName(),
-                ),
                 checked = translation.gestures.wordDetails,
                 onChange = {
                     actions.onGesturesChange(translation.gestures.copy(wordDetails = it))
                 },
+            )
+
+            SettingsToggle(
+                label = stringResource(Res.string.reader_notes_under_paragraph),
+                checked = translation.notes,
+                onChange = actions.onNotesChange,
             )
         }
     }
 }
 
 /**
- * What the reader may be asked to translate without being pointed at anything.
+ * Who answers about a single word, which need not be who translates a sentence.
  *
- * Kept apart from the gestures above it: those are how the reader works the book
- * and are on for everybody, while these are unfinished, slow and spend money -
- * which is a different kind of decision and reads as one.
+ * On this page rather than beside the translation service, because both answers
+ * are ordinary web APIs that need nothing filled in - which is the whole of what
+ * a reader gets on an app they have just installed, and the reason a word is
+ * where the two settings pages divide.
+ *
+ * The service used to be a third choice here. It is the one thing on this page
+ * that could not answer until the reader had gone and set something up, for the
+ * one unit that never needed it - see [WordLookup].
  */
 @Composable
-private fun TranslatingAheadSection(
+private fun WordLookupSection(
     translation: TranslationSettings,
-    actions: TranslatingActions,
+    actions: ProviderActions,
     groupColor: Color,
     modifier: Modifier = Modifier,
 ) {
     SettingsSection(
-        title = stringResource(Res.string.settings_translating_ahead),
-        info = stringResource(Res.string.settings_translating_ahead_footnote),
+        title = stringResource(Res.string.settings_looking_up_a_word),
+        info = translation.wordLookup.displayFootnote(),
         groupColor = groupColor,
         modifier = modifier,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
-            BetaToggle(
-                label = stringResource(Res.string.reader_translate_on_screen),
-                detail = stringResource(Res.string.settings_on_screen_detail),
-                checked = translation.bulkTranslation.onScreen,
-                onChange = {
-                    actions.onBulkTranslationChange(
-                        translation.bulkTranslation.copy(onScreen = it),
-                    )
-                },
+            SegmentedControl(
+                options = WordLookup.entries,
+                selected = translation.wordLookup,
+                label = { it.displayName() },
+                onSelect = actions.onWordLookupChange,
             )
 
-            BetaToggle(
-                label = stringResource(Res.string.reader_keep_translating),
-                detail = stringResource(Res.string.settings_as_you_read_detail),
-                checked = translation.bulkTranslation.asYouRead,
-                onChange = {
-                    actions.onBulkTranslationChange(
-                        translation.bulkTranslation.copy(asYouRead = it),
+            // Only where it does anything. Google is the one choice here with
+            // something to configure, and a key field under a dictionary that
+            // has never heard of one is a field that asks a question with no
+            // answer.
+            if (translation.wordLookup == WordLookup.Google) {
+                LabelledField(label = stringResource(Res.string.settings_cloud_key)) {
+                    SettingsTextField(
+                        value = translation.googleApiKey.orEmpty(),
+                        onValueChange = actions.onGoogleApiKeyChange,
+                        placeholder = stringResource(Res.string.settings_public_endpoint),
+                        secret = true,
                     )
-                },
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Where the reader goes when the line over the word was not enough.
+ *
+ * A list rather than a row of segments, because a choice here carries a line
+ * saying what is at the other end - these are other people's websites, and their
+ * names alone do not say which is a dictionary and which is a translator.
+ */
+@Composable
+private fun WordSiteSection(
+    translation: TranslationSettings,
+    actions: ProviderActions,
+    groupColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    SettingsSection(
+        title = stringResource(Res.string.settings_reading_more),
+        info = stringResource(Res.string.settings_reading_more_footnote),
+        groupColor = groupColor,
+        modifier = modifier,
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
+            ChoiceList(
+                options = WordSite.entries,
+                selected = translation.wordSite,
+                label = { it.displayName() },
+                detail = { it.displayFootnote() },
+                onSelect = actions.onWordSiteChange,
             )
+
+            // Only where it does anything - the same reasoning as the Google key
+            // above. Every other choice here already knows its own address.
+            if (translation.wordSite == WordSite.Custom) {
+                LabelledField(label = stringResource(Res.string.settings_address)) {
+                    SettingsTextField(
+                        value = translation.wordSiteUrlTemplate.orEmpty(),
+                        onValueChange = actions.onWordSiteUrlChange,
+                        placeholder = stringResource(Res.string.settings_site_address_example),
+                    )
+                }
+            }
         }
     }
 }

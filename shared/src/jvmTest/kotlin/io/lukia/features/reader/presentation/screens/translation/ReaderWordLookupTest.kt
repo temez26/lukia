@@ -159,7 +159,7 @@ class ReaderWordLookupTest {
 
         setReader(
             onPassageSelected = { selected = it },
-            gestures = TranslationGestures(tap = PassageUnit.Paragraph, longPress = null),
+            gestures = TranslationGestures.of(tap = PassageUnit.Paragraph, longPress = null),
         )
 
         onNodeWithText(opening, substring = true).clickFirstWords()
@@ -189,6 +189,46 @@ class ReaderWordLookupTest {
         )
     }
 
+    /**
+     * With no translation service - which is what a reader has until they turn
+     * AI on and set one up - a tap set past the word asks for the word instead.
+     *
+     * The setting itself is untouched: a dictionary answers a word and nothing
+     * larger, so a tap that went on asking for the paragraph could only come
+     * back as an error, and the app is meant to behave as though a model does
+     * not exist rather than as though one is broken.
+     */
+    @Test
+    fun withNoServiceATapSetPastTheWordAsksForTheWord() = runComposeUiTest {
+        var selected: PassageSelection? = null
+
+        setReader(
+            onPassageSelected = { selected = it },
+            gestures = TranslationGestures.of(tap = PassageUnit.Paragraph, longPress = null),
+            translationServiceConfigured = false,
+        )
+
+        onNodeWithText(opening, substring = true).clickFirstWords()
+
+        assertEquals(PassageUnit.Word, assertNotNull(selected, "nothing was selected").unit)
+    }
+
+    /** And a hold set past it asks for nothing, because a hold has no word to ask for. */
+    @Test
+    fun andAHoldSetPastItAsksForNothing() = runComposeUiTest {
+        var held: PassageSelection? = null
+
+        setReader(
+            onPassageHold = { held = it },
+            gestures = TranslationGestures.of(tap = null, longPress = PassageUnit.Sentence),
+            translationServiceConfigured = false,
+        )
+
+        onNodeWithText(opening, substring = true).performTouchInput { longClick(Offset(4f, 4f)) }
+
+        assertNull(held, "a hold reached a service that is not there")
+    }
+
     /** Off is off - a gesture turned off reaches nothing, not something narrower. */
     @Test
     fun aGestureTurnedOffAsksForNothing() = runComposeUiTest {
@@ -198,7 +238,7 @@ class ReaderWordLookupTest {
         setReader(
             onPassageSelected = { selected = it },
             onPassageHold = { held = it },
-            gestures = TranslationGestures(tap = null, longPress = null),
+            gestures = TranslationGestures.of(tap = null, longPress = null),
         )
 
         onNodeWithText(opening, substring = true).clickFirstWords()

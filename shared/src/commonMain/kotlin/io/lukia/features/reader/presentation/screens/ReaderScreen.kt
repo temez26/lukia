@@ -23,7 +23,7 @@ import io.lukia.features.reader.presentation.translation.setTranslationsVisible
 import io.lukia.features.reader.presentation.translation.shownTranslations
 import io.lukia.features.reader.presentation.translation.targetLanguage
 import io.lukia.features.reader.presentation.translation.translateOnScreen
-import io.lukia.features.reader.presentation.translation.translationConfigured
+import io.lukia.features.reader.presentation.translation.translationServiceConfigured
 import io.lukia.features.reader.presentation.translation.translationGestures
 import io.lukia.features.reader.presentation.translation.translationNotes
 import io.lukia.features.reader.presentation.translation.translations
@@ -58,7 +58,7 @@ fun ReaderScreen(
     val initialPosition by viewModel.initialPosition.collectAsState()
     val translations by viewModel.translations.collectAsState()
     val translateOnScreen by viewModel.translateOnScreen.collectAsState()
-    val translationConfigured by viewModel.translationConfigured.collectAsState()
+    val translationServiceConfigured by viewModel.translationServiceConfigured.collectAsState()
     val shownTranslations by viewModel.shownTranslations.collectAsState()
     val gestures by viewModel.translationGestures.collectAsState()
     val targetLanguage by viewModel.targetLanguage.collectAsState()
@@ -73,7 +73,7 @@ fun ReaderScreen(
         initialPosition = initialPosition,
         translations = translations,
         translateOnScreen = translateOnScreen,
-        translationConfigured = translationConfigured,
+        translationServiceConfigured = translationServiceConfigured,
         shownTranslations = shownTranslations,
         gestures = gestures,
         targetLanguage = targetLanguage,

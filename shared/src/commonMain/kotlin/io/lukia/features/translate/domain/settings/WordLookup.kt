@@ -9,14 +9,15 @@ package io.lukia.features.translate.domain.settings
  * word is the one case where something that knows none of that can still be
  * right, and where a reader may well prefer it: a dictionary gives every sense a
  * word has rather than the one a model chose.
+ *
+ * Both of these are ordinary web APIs that need nothing set up, which is what
+ * makes a word the one thing Lukia can always answer. The translation service
+ * used to be a third choice here and is not any more: it is the page the reader
+ * has to go and configure, it is the one that costs money, and offering it for
+ * the one unit that never needed it made the app look as though it could not
+ * translate anything until a key was pasted in.
  */
 enum class WordLookup {
-
-    /**
-     * The translator the reader has already set up, asked the same way it is
-     * asked about a sentence - with the book and the paragraph attached.
-     */
-    Translator,
 
     /**
      * Google Translate, which needs nothing set up and knows nothing about the
@@ -32,6 +33,12 @@ enum class WordLookup {
     ;
 
     companion object {
-        val Default = Translator
+
+        /**
+         * The dictionary, which is the one of the two that asks nobody for
+         * anything: no key, no account, and no published endpoint being used in
+         * a way its owner never agreed to - see `GoogleTranslator`.
+         */
+        val Default = Wiktionary
     }
 }

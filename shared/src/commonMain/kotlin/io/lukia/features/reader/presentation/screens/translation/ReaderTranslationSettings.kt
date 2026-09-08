@@ -26,6 +26,7 @@ import io.lukia.resources.reader_translate_as_you_read
 import io.lukia.resources.reader_translate_into
 import io.lukia.resources.reader_translate_this_page
 import io.lukia.resources.reader_translation
+import io.lukia.resources.settings_tap_to_translate
 import io.lukia.shared.presentation.components.controls.ButtonVariant
 import io.lukia.shared.presentation.components.controls.ChoiceDensity
 import io.lukia.shared.presentation.components.controls.ChoiceList
@@ -55,9 +56,10 @@ import org.jetbrains.compose.resources.stringResource
  * of them - and unlike everything else in Settings, both of these are answered
  * by looking at the book rather than at the setting.
  *
- * Shown at all only once something is set up to translate with. A language
- * picker for a translator that does not exist is a setting that can only
- * disappoint.
+ * Shown always, because there is always something to translate with: a word goes
+ * to a dictionary or to Google, neither of which needs anything set up. What
+ * needs a model is behind its own question - the two bulk controls, and whether
+ * a gesture may ask for more than a word.
  *
  * At the top rather than after the type settings: this is the one group here
  * that changes what is written on the page rather than how it is set.
@@ -67,9 +69,16 @@ internal fun ReaderTranslationSettings(
     translation: ReaderTranslationUi,
     preferences: ReaderTranslationPreferences,
     modifier: Modifier = Modifier,
+    /**
+     * Whether the translation service in particular is set up, which decides how
+     * a gesture is offered rather than whether it is - see [GestureSettings].
+     *
+     * Its own parameter rather than a seventh field on [preferences], because it
+     * is not a preference: it is what this device can answer. A word goes to a
+     * dictionary that needs nothing; a sentence goes to a model or nowhere.
+     */
+    serviceConfigured: Boolean = false,
 ) {
-    if (!translation.configured) return
-
     val inset = LocalLukiaDimens.current.panelPadding
 
     Column(modifier = modifier.fillMaxWidth()) {
@@ -85,40 +94,16 @@ internal fun ReaderTranslationSettings(
         // Last of the group, because they are the least likely to be changed
         // twice in an evening: what a tap does is a decision somebody makes once
         // and then stops thinking about.
-        //
-        // Stacked under their labels on every window, unlike everything else in
-        // the panel. These are the only controls here with four segments of real
-        // words in them, and the wide layout's control column cuts "Sentence"
-        // and "Paragraph" to stubs - a control whose choices cannot be read is
-        // worse than a row that does not line up with the ones below it.
-        SettingGroup(
-            label = stringResource(Res.string.reader_gesture_tap),
-            wide = false,
+        GestureSettings(
+            preferences = preferences,
+            serviceConfigured = serviceConfigured,
             inset = inset,
-        ) {
-            GestureControl(
-                selected = preferences.gestures.tap,
-                onSelect = { preferences.onGesturesChange(preferences.gestures.copy(tap = it)) },
-            )
-        }
+        )
 
-        SettingGroup(
-            label = stringResource(Res.string.reader_gesture_long_press),
-            wide = false,
-            inset = inset,
-        ) {
-            GestureControl(
-                selected = preferences.gestures.longPress,
-                onSelect = {
-                    preferences.onGesturesChange(preferences.gestures.copy(longPress = it))
-                },
-            )
-        }
-
-        // Under the hold rather than beside it, because it is about that gesture
-        // - and a switch rather than a fourth segment in the control above,
-        // because it is not one of the things a hold can ask for. It is what a
-        // hold does on a word that has already answered, whatever it is set to.
+        // Under the gestures rather than beside them, because it is about the
+        // hold - and a switch rather than another unit to choose, because it is
+        // not one of the things a hold can ask for. It is what a hold does on a
+        // word that has already answered, whatever the hold is set to.
         PanelSwitchRow(
             label = stringResource(Res.string.reader_hold_again),
             checked = preferences.gestures.wordDetails,
@@ -141,6 +126,70 @@ internal fun ReaderTranslationSettings(
             inset = inset,
             endInset = inset,
             modifier = Modifier.padding(vertical = Space.md),
+        )
+    }
+}
+
+/**
+ * What a thumb on the page asks for, in whichever of its two forms this reader
+ * can use.
+ *
+ * A switch where there is no translation service, because a word is then the
+ * only thing anything can answer and a row of units offering the sentence and
+ * the paragraph would be two choices that quietly do nothing. The same split the
+ * settings screen makes - see `TranslatingSettings` and `GestureUnitSection`.
+ *
+ * The units are stacked under their labels on every window, unlike everything
+ * else in the panel. These are the only controls here with four segments of real
+ * words in them, and the wide layout's control column cuts "Sentence" and
+ * "Paragraph" to stubs - a control whose choices cannot be read is worse than a
+ * row that does not line up with the ones below it.
+ */
+@Composable
+private fun GestureSettings(
+    preferences: ReaderTranslationPreferences,
+    serviceConfigured: Boolean,
+    inset: Dp,
+) {
+    if (!serviceConfigured) {
+        PanelSwitchRow(
+            label = stringResource(Res.string.settings_tap_to_translate),
+            checked = preferences.gestures.tapTranslates,
+            onChange = {
+                preferences.onGesturesChange(preferences.gestures.copy(tapTranslates = it))
+            },
+            inset = inset,
+        )
+
+        return
+    }
+
+    SettingGroup(
+        label = stringResource(Res.string.reader_gesture_tap),
+        wide = false,
+        inset = inset,
+    ) {
+        // One control for both halves of the tap, unlike the settings screen,
+        // which splits them across two pages - see `TranslationGestures.tapping`.
+        // A panel is opened with the book in front of the reader and closed
+        // again; it is not the place to send somebody to another page to find
+        // the off for the row they are looking at.
+        GestureControl(
+            selected = preferences.gestures.tap,
+            onSelect = { preferences.onGesturesChange(preferences.gestures.tapping(it)) },
+        )
+    }
+
+    SettingGroup(
+        label = stringResource(Res.string.reader_gesture_long_press),
+        wide = false,
+        inset = inset,
+    ) {
+        GestureControl(
+            selected = preferences.gestures.longPress,
+            onSelect = {
+                preferences.onGesturesChange(preferences.gestures.copy(longPress = it))
+            },
         )
     }
 }

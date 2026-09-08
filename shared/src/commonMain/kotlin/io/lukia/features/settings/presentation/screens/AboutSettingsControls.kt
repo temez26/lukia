@@ -24,7 +24,6 @@ import io.lukia.resources.Res
 import io.lukia.resources.action_explain
 import io.lukia.resources.settings_about
 import io.lukia.resources.settings_developer
-import io.lukia.resources.settings_developer_info
 import io.lukia.resources.settings_licensed_under
 import io.lukia.resources.settings_open_source
 import io.lukia.resources.settings_open_source_footnote
@@ -98,7 +97,6 @@ internal fun AboutSettings(
             if (developerMode) {
                 SettingsToggle(
                     label = stringResource(Res.string.settings_developer),
-                    info = stringResource(Res.string.settings_developer_info),
                     checked = true,
                     onChange = onDeveloperModeChange,
                     modifier = Modifier.padding(top = Space.md),

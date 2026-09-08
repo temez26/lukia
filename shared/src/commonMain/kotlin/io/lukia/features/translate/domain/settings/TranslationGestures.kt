@@ -11,18 +11,49 @@ import io.lukia.core.domain.text.PassageUnit
  * finger in the same place did different things depending on what had happened
  * there before. A gesture the reader has set is a gesture that does that.
  *
- * Null is off. A reader who only ever wants to look words up turns the tap off
- * and stops translating sentences by accident; one who never wants to wait for a
- * whole paragraph turns the long press off. Both off leaves a reading app that
- * does not translate, which is a perfectly reasonable thing to want.
+ * Everything here starts off. A reading app that translates the moment a thumb
+ * brushes the page is one that spends somebody's money before they have said
+ * what it is for. So the book behaves like a book until the reader asks for
+ * something else.
  *
  * Repeating a gesture on a passage it has already been used on is what puts the
  * book's own words back, and repeating it again brings the translation back - so
  * nothing needs a second gesture to undo it.
  */
 data class TranslationGestures(
-    val tap: PassageUnit? = PassageUnit.Sentence,
-    val longPress: PassageUnit? = PassageUnit.Word,
+    /**
+     * Whether a tap translates what is under it at all.
+     *
+     * Its own field, apart from [tapUnit], because the two are set in two places
+     * and must not be able to undo each other. Whether a tap translates is a
+     * switch on the Translating page, where it belongs to everybody: a word goes
+     * to a dictionary that needs nothing set up. How much it asks for is on the
+     * AI translation page, because only a model answers a sentence.
+     *
+     * They were one nullable field once, and the two controls wrote it in turn -
+     * so a reader who set the unit row to "off" on one page found the switch on
+     * the other page had turned itself off, and a reader who touched the unit row
+     * with the switch off turned translating on without asking for it.
+     */
+    val tapTranslates: Boolean = false,
+    /**
+     * How much of the book a tap asks for when it does translate.
+     *
+     * The word unless the reader has raised it, and remembered while the tap is
+     * off - so turning the tap back on gives them the setting they chose rather
+     * than silently dropping to the word.
+     */
+    val tapUnit: PassageUnit = PassageUnit.Word,
+    /**
+     * What a long press asks for, or null for nothing.
+     *
+     * One nullable field rather than the tap's two, because a hold is set in one
+     * place only. Holding a word that has already been answered opens what else
+     * it means - see [wordDetails] - and translating something larger by holding
+     * it is offered on the AI translation page and nowhere else, so there is no
+     * second control for its own off to disagree with.
+     */
+    val longPress: PassageUnit? = null,
     /**
      * Whether holding a word that has already been looked up opens what else it
      * means - every sense a dictionary has for it, and a way through to a site
@@ -39,13 +70,64 @@ data class TranslationGestures(
      * only to a word that has an answer on the page already. A word nobody has
      * asked about is not a word with more to say.
      */
-    val wordDetails: Boolean = true,
+    val wordDetails: Boolean = false,
 ) {
+
+    /** What a tap actually asks for, or null when it asks for nothing. */
+    val tap: PassageUnit? get() = tapUnit.takeIf { tapTranslates }
 
     /** Whether anything at all happens when the reader points at the book. */
     val translatesAnything: Boolean get() = tap != null || longPress != null
 
+    /**
+     * The tap set to one unit or turned off, as a single control would set it -
+     * the reader's own panel offers exactly that where a translation service is
+     * configured.
+     *
+     * Turning it off keeps [tapUnit], so the unit the reader chose survives the
+     * gesture being switched off and on again.
+     */
+    fun tapping(unit: PassageUnit?): TranslationGestures =
+        copy(tapTranslates = unit != null, tapUnit = unit ?: tapUnit)
+
+    /**
+     * These gestures as they behave with no translation service behind them: a
+     * tap asks for the word, and a hold translates nothing.
+     *
+     * A view rather than a change. Nothing but a model answers a sentence or a
+     * paragraph, so with none set up - or with AI switched off altogether - a
+     * gesture set to one of them could only come back as an error. What the
+     * reader chose is left in the settings untouched and is what they get back
+     * the moment there is a service again.
+     *
+     * A tap still translates if it was translating, and holding a word for what
+     * else it means still works: both are answered by a dictionary that needs
+     * nothing.
+     */
+    fun withoutAModel(): TranslationGestures = copy(tapUnit = PassageUnit.Word, longPress = null)
+
     companion object {
+
         val Default = TranslationGestures()
+
+        /**
+         * A reader whose tap asks for [tap] and whose hold asks for [longPress],
+         * written the way both used to be constructed.
+         *
+         * Kept because "what does a tap do" is one question everywhere except in
+         * the two settings controls that set its halves separately, and spelling
+         * out both fields at every one of those places would say the same thing
+         * twice and let the two disagree.
+         */
+        fun of(
+            tap: PassageUnit? = null,
+            longPress: PassageUnit? = null,
+            wordDetails: Boolean = false,
+        ): TranslationGestures = TranslationGestures(
+            tapTranslates = tap != null,
+            tapUnit = tap ?: PassageUnit.Word,
+            longPress = longPress,
+            wordDetails = wordDetails,
+        )
     }
 }

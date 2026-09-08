@@ -14,8 +14,9 @@ import io.lukia.features.settings.presentation.ProviderState
 import io.lukia.features.settings.presentation.TranslatingActions
 import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.resources.Res
+import io.lukia.resources.settings_about
 import io.lukia.resources.settings_area_appearance
-import io.lukia.resources.settings_area_providers
+import io.lukia.resources.settings_area_ai_translation
 import io.lukia.resources.settings_area_reading
 import io.lukia.resources.settings_area_translating
 import io.lukia.shared.presentation.theme.LukiaTheme
@@ -25,7 +26,7 @@ import kotlin.test.Test
 /**
  * Where each setting lives, as somebody looking for one meets it.
  *
- * The point of the four groups is that a reader who knows what they want to
+ * The point of the five groups is that a reader who knows what they want to
  * change can guess which segment it is behind. That is a claim about the page
  * rather than about any control on it, so it is tested by opening each segment
  * and looking for the sections that were promised - and, as much, for the ones
@@ -38,13 +39,20 @@ import kotlin.test.Test
 @OptIn(ExperimentalTestApi::class)
 class SettingsAreasTest {
 
-    private fun ComposeUiTest.setSettings(settings: AppSettings = AppSettings()) {
+    private fun ComposeUiTest.setSettings(
+        settings: AppSettings = AppSettings(),
+        /**
+         * With AI switched on unless a test says otherwise, because most of what
+         * this file asks about is behind that switch - see `AiSwitchSection`.
+         */
+        translation: TranslationSettings = TranslationSettings().withAiTranslation(true),
+    ) {
         setContent {
             LukiaTheme(darkTheme = false) {
                 SettingsBody(
                     settings = settings,
                     reader = ReaderSettings(),
-                    translation = TranslationSettings(),
+                    translation = translation,
                     providerState = ProviderState(),
                     onSettingsChange = {},
                     onReaderChange = {},
@@ -69,7 +77,8 @@ class SettingsAreasTest {
         SettingsArea.Appearance -> Res.string.settings_area_appearance
         SettingsArea.Reading -> Res.string.settings_area_reading
         SettingsArea.Translating -> Res.string.settings_area_translating
-        SettingsArea.Providers -> Res.string.settings_area_providers
+        SettingsArea.AiTranslation -> Res.string.settings_area_ai_translation
+        SettingsArea.About -> Res.string.settings_about
     }
 
     @Test
@@ -84,54 +93,85 @@ class SettingsAreasTest {
     }
 
     /**
-     * The language, the gestures and the expensive ways of translating: what is
-     * translated, rather than who does it.
+     * Everything a reader has on the day they install the app: the language, what
+     * a thumb on the page does, and who answers about a single word - all of it
+     * answerable by a dictionary over an ordinary web API.
      */
     @Test
-    fun translatingHoldsWhatIsTranslated() = runComposeUiTest {
+    fun translatingHoldsWhatAnybodyCanUse() = runComposeUiTest {
         setSettings()
 
         open(SettingsArea.Translating)
 
         onNodeWithText("Translate into").assertExists()
         onNodeWithText("Pointing at the book").assertExists()
-        onNodeWithText("Translating ahead").assertExists()
-    }
-
-    @Test
-    fun providersHoldsWhoAnswers() = runComposeUiTest {
-        setSettings()
-
-        open(SettingsArea.Providers)
-
-        onNodeWithText("Translation service").assertExists()
         onNodeWithText("Looking up a word").assertExists()
+        onNodeWithText("Reading more about a word").assertExists()
     }
 
     /**
-     * About belongs to the page rather than to a group, so it is under whichever
-     * one is open. It is where a reader finds the version a bug report will ask
-     * them for, and putting that behind a guess about which segment it is in
-     * would be putting it behind the question it exists to answer.
+     * And the other page is everything that only a model can do: the service, how
+     * much of the book a gesture may ask it for, and the two ways of asking it
+     * for more than the reader pointed at.
      */
     @Test
-    fun aboutIsAtTheFootOfEveryGroup() = runComposeUiTest {
+    fun aiTranslationHoldsWhatOnlyAModelCanDo() = runComposeUiTest {
         setSettings()
 
-        // The default group is already open, and its segment cannot be clicked
-        // by name: Appearance is both a segment and a section inside itself.
-        assertAboutIsOnThePage()
+        open(SettingsArea.AiTranslation)
 
-        (SettingsArea.entries - SettingsArea.Default).forEach { area ->
-            open(area)
-
-            assertAboutIsOnThePage()
-        }
+        onNodeWithText("Translation service").assertExists()
+        onNodeWithText("Asking for more than a word").assertExists()
+        onNodeWithText("Translating ahead").assertExists()
     }
 
-    private fun ComposeUiTest.assertAboutIsOnThePage() {
-        onNodeWithText("About").assertExists()
+    /**
+     * And with the switch off, that page is the switch and nothing else. The
+     * point of it is that Lukia is then the app it is without a model, and a
+     * page still offering an API key is not that.
+     */
+    @Test
+    fun andNoneOfItWhileTheSwitchIsOff() = runComposeUiTest {
+        setSettings(translation = TranslationSettings())
+
+        open(SettingsArea.AiTranslation)
+
+        onNodeWithText("Use a translation service").assertExists()
+        onNodeWithText("Translation service").assertDoesNotExist()
+        onNodeWithText("Asking for more than a word").assertDoesNotExist()
+        onNodeWithText("Translating ahead").assertDoesNotExist()
+    }
+
+    /**
+     * Which Lukia this is, behind a segment of its own.
+     *
+     * It used to sit at the foot of all four groups, so that the version a bug
+     * report asks for was never behind a guess. That put a paragraph about
+     * licences at the end of every page in Settings, which is a worse answer to
+     * the same problem than a segment named after the question.
+     */
+    @Test
+    fun aboutIsASegmentOfItsOwn() = runComposeUiTest {
+        setSettings()
+
+        open(SettingsArea.About)
+
         onNodeWithText("Open-source licences").assertExists()
+    }
+
+    /**
+     * And is only there. A group repeated under every other one is a group the
+     * reader scrolls past four times looking for something else.
+     */
+    @Test
+    fun andIsNotUnderTheOtherGroups() = runComposeUiTest {
+        setSettings()
+
+        (SettingsArea.entries - SettingsArea.About).forEach { area ->
+            if (area != SettingsArea.Default) open(area)
+
+            onNodeWithText("Open-source licences").assertDoesNotExist()
+        }
     }
 
     /**
@@ -144,12 +184,22 @@ class SettingsAreasTest {
     fun theDiagnosticsAreOffThePageUntilTheDeveloperSettingsAreOn() = runComposeUiTest {
         setSettings()
 
+        open(SettingsArea.About)
+
         onNodeWithText(DiagnosticsWords).assertDoesNotExist()
     }
 
+    /**
+     * Under About once they are on, which is where the version line that
+     * unlocked them is - not at the foot of whichever group happens to be open.
+     */
     @Test
-    fun theyAreOnItOnceTheyAre() = runComposeUiTest {
+    fun theyAreUnderAboutOnceTheyAre() = runComposeUiTest {
         setSettings(AppSettings(developerMode = true))
+
+        onNodeWithText(DiagnosticsWords).assertDoesNotExist()
+
+        open(SettingsArea.About)
 
         onNodeWithText(DiagnosticsWords).assertExists()
     }
@@ -161,9 +211,9 @@ class SettingsAreasTest {
     }
 
     /**
-     * The whole reason Providers is a group of its own: somebody changing the
+     * The whole reason AI translation is a page of its own: somebody changing the
      * language they read into must not have to scroll past an API key to reach
-     * it.
+     * it, or past two switches that spend money a screenful at a time.
      */
     @Test
     fun theMachineryIsNotOnTheTranslatingPage() = runComposeUiTest {
@@ -172,7 +222,22 @@ class SettingsAreasTest {
         open(SettingsArea.Translating)
 
         onNodeWithText("Translation service").assertDoesNotExist()
+        onNodeWithText("Asking for more than a word").assertDoesNotExist()
+        onNodeWithText("Translating ahead").assertDoesNotExist()
+    }
+
+    /**
+     * And the dictionary is not on the page about the model. It needs no key, no
+     * address and no money, which is the whole reason the two pages are apart.
+     */
+    @Test
+    fun norIsTheDictionaryOnTheOneAboutTheModel() = runComposeUiTest {
+        setSettings()
+
+        open(SettingsArea.AiTranslation)
+
         onNodeWithText("Looking up a word").assertDoesNotExist()
+        onNodeWithText("Reading more about a word").assertDoesNotExist()
     }
 
     private companion object {

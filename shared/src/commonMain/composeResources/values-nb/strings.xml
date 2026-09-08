@@ -131,8 +131,6 @@
     <string name="provider_anthropic">Anthropic</string>
     <string name="provider_openai">OpenAI</string>
     <string name="provider_local">Lokal</string>
-    <string name="word_lookup_translator">Oversetter</string>
-    <string name="word_lookup_translator_footnote">Ord går til samme tjeneste som setninger, med avsnittet rundt seg – slik at svaret blir den betydningen boken mente.</string>
     <string name="word_lookup_google">Google</string>
     <string name="word_lookup_google_footnote">Rask og gratis, og den ser aldri boken – bare ordet. Legg til en Cloud Translation-nøkkel under for å bruke Googles støttede API i stedet for det åpne endepunktet.</string>
     <string name="word_lookup_dictionary">Ordbok</string>
@@ -323,7 +321,7 @@
     <string name="settings_area_appearance">Utseende</string>
     <string name="settings_area_reading">Lesing</string>
     <string name="settings_area_translating">Oversetting</string>
-    <string name="settings_area_providers">Tjenester</string>
+    <string name="settings_area_ai_translation">Beta</string>
     <string name="settings_beta">BETA</string>
     <string name="settings_show">Vis</string>
     <string name="settings_hide">Skjul</string>
@@ -345,14 +343,19 @@
     <string name="settings_translate_into_footnote">Trykk på en setning mens du leser for å oversette den, og trykk igjen for originalen.</string>
     <string name="settings_pointing_at_the_book">Å peke på boken</string>
     <string name="settings_pointing_footnote">Hver av dem gjør én ting, alltid. Å gjøre det igjen på samme sted legger bokens egne ord tilbake – bortsett fra på et ord du har slått opp, der et hold i stedet åpner mer om det.</string>
-    <string name="settings_notes_detail">Oversetterens merknader, satt smått under teksten de hører til: en bemerkning om et flertydig ord, en ordboks andre betydninger. Slå dem av for å beholde siden slik boken satte den — å holde et ord åpner fortsatt alt det betyr. Hvorfor et stykke ikke kunne oversettes vises alltid.</string>
+    <string name="settings_tap_to_translate">Trykk på et ord for å oversette det</string>
+    <string name="settings_asking_for_more">Å be om mer enn ett ord</string>
+    <string name="settings_asking_for_more_footnote">En ordbok svarer på ett ord og ikke noe større, så disse gjør ingenting før en oversettelsestjeneste er satt opp over. Av her er det samme av som bryterne under Oversetting.</string>
     <string name="settings_hold_again">Hold et ord igjen for mer om det</string>
-    <string name="settings_hold_again_detail">Når et ord først er slått opp, åpner et hold hver betydning en ordbok har for det, og en vei videre til %1$s. Virker uansett hva holdet over er satt til.</string>
     <string name="settings_translating_ahead">Å oversette på forskudd</string>
     <string name="settings_translating_ahead_footnote">Begge er nye, og begge er trege og dyre: de oversetter en skjermfull om gangen i stedet for stedet du pekte på. Av til du ber om dem, og helt skjult for leseren så lenge.</string>
     <string name="settings_on_screen_detail">Legger til en knapp som oversetter hver setning du ser, én gang.</string>
     <string name="settings_as_you_read_detail">Legger til en knapp som fortsetter å oversette alt som ruller inn til du slår den av. Dette er den dyre.</string>
+    <string name="settings_ai_translation">KI-oversettelse</string>
+    <string name="settings_use_ai">Bruk en oversettelsestjeneste</string>
+    <string name="settings_use_ai_detail">Av slår Lukia opp ett ord i en gratis ordbok og gjør ingenting annet – ingen nøkkel å skrive inn, ingen knapper i leseren. På kan den oversette hele setninger og avsnitt gjennom en tjeneste du setter opp og betaler for per avsnitt. Å slå den av beholder alt du har satt opp.</string>
     <string name="settings_translation_service">Oversettelsestjeneste</string>
+    <string name="settings_translation_service_footnote">Ingenting på denne siden gjør noe før dette er satt opp. Å slå opp et ord under Oversetting fungerer uten den; en hel setning gjør det ikke — den går til en modell du betaler for per avsnitt.</string>
     <string name="settings_address">Adresse</string>
     <string name="settings_model">Modell</string>
     <string name="settings_api_key">API-nøkkel</string>
@@ -387,7 +390,6 @@
     <string name="settings_diagnostics">Diagnostikk</string>
     <string name="settings_diagnostics_footnote">Beholdes på denne enheten til du kopierer den, og sendes aldri noe sted. Inneholder ingen boktekst, ingen titler, ingen filnavn og ingen nøkler.</string>
     <string name="settings_developer">Utvikleralternativer</string>
-    <string name="settings_developer_info">Viser diagnostikken og den siste krasjrapporten nederst på denne siden. Begge blir på denne enheten og sendes aldri noe sted. Slå av for å skjule dem igjen.</string>
     <string name="settings_record_problems">Noter hva som går galt</string>
     <string name="settings_record_problems_detail">Noterer når et omslag, en side eller en oversettelse ikke kunne leses, slik at et problem du kan beskrive har noe bak seg. Å slå dette av tømmer det som er notert.</string>
     <string name="settings_nothing_recorded">Ingenting notert ennå. Bruk appen slik du gjorde da det gikk galt, og kom så tilbake.</string>

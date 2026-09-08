@@ -84,8 +84,11 @@ internal fun ReaderContent(
     translations: Map<TextAnchor, PassageTranslation> = emptyMap(),
     /** Whether what the reader can see should be translated without being tapped. */
     translateOnScreen: TranslateOnScreen = TranslateOnScreen.Idle,
-    /** Whether there is anything set up to translate with, which is what the controls need. */
-    translationConfigured: Boolean = false,
+    /**
+     * Whether the translation service is set up, which is what the controls that
+     * need a model read - see `ReaderTranslationPreferences.serviceConfigured`.
+     */
+    translationServiceConfigured: Boolean = false,
     /** What the reader's own translations are doing, for the control that puts them away. */
     shownTranslations: ShownTranslations = ShownTranslations.None,
     /** What a tap and a long press on the book ask for. */
@@ -127,7 +130,6 @@ internal fun ReaderContent(
     val compact = !isWideWindow
 
     val translationUi = ReaderTranslationUi(
-        configured = translationConfigured,
         onScreen = translateOnScreen,
         shown = shownTranslations,
         offered = bulkTranslation,
@@ -135,6 +137,19 @@ internal fun ReaderContent(
         onContinuousChange = onContinuousTranslationChange,
         onVisibleChange = onTranslationsVisibleChange,
     )
+
+    // What a gesture actually asks for, which is not always what it is set to.
+    // Nothing but a translation service answers a sentence or a paragraph, so
+    // with none set up - or with AI switched off altogether - a tap asks for the
+    // word and a hold asks for nothing, rather than asking for something that
+    // can only come back as an error.
+    //
+    // The page gets this and the panel below gets the setting itself, because
+    // the panel is where the reader changes it: shown the clamped value, its
+    // switch would write the clamp back and quietly lose the unit they chose.
+    val gesturesInForce = remember(gestures, translationServiceConfigured) {
+        if (translationServiceConfigured) gestures else gestures.withoutAModel()
+    }
 
     val translationPreferences = ReaderTranslationPreferences(
         targetLanguage = targetLanguage,
@@ -280,7 +295,7 @@ internal fun ReaderContent(
                                 onPassageInquiry = onPassageInquiry,
                                 onPassagesRequested = onPassagesRequested,
                                 translateOnScreen = translateOnScreen,
-                                gestures = gestures,
+                                gestures = gesturesInForce,
                                 sentencesOnPage = sentencesOnPage,
                                 renderPage = renderPage,
                             )
@@ -299,7 +314,7 @@ internal fun ReaderContent(
                                 onPassagesRequested = onPassagesRequested,
                                 onPagesChange = { paginated = it },
                                 translateOnScreen = translateOnScreen,
-                                gestures = gestures,
+                                gestures = gesturesInForce,
                                 openedAt = initialPosition,
                             )
                         }
@@ -347,7 +362,11 @@ internal fun ReaderContent(
                         layout = layout,
                         onSettingsChange = onSettingsChange,
                         translationSection = {
-                            ReaderTranslationSettings(translationUi, translationPreferences)
+                            ReaderTranslationSettings(
+                                translation = translationUi,
+                                preferences = translationPreferences,
+                                serviceConfigured = translationServiceConfigured,
+                            )
                         },
                     )
                 }

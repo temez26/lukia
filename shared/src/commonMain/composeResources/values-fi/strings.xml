@@ -164,8 +164,6 @@
     <string name="provider_openai">OpenAI</string>
     <string name="provider_local">Paikallinen</string>
 
-    <string name="word_lookup_translator">Kääntäjä</string>
-    <string name="word_lookup_translator_footnote">Sanat menevät samaan palveluun kuin lauseet, ympäröivä kappale mukanaan – niin vastaus on se merkitys, jota kirja tarkoitti.</string>
     <string name="word_lookup_google">Google</string>
     <string name="word_lookup_google_footnote">Nopea ja ilmainen, eikä se näe kirjaa – vain sanan. Lisää alle Cloud Translation -avain, niin käytössä on Googlen tuettu rajapinta julkisen päätepisteen sijaan.</string>
     <string name="word_lookup_dictionary">Sanakirja</string>
@@ -379,7 +377,7 @@
     <string name="settings_area_appearance">Ulkoasu</string>
     <string name="settings_area_reading">Lukeminen</string>
     <string name="settings_area_translating">Kääntäminen</string>
-    <string name="settings_area_providers">Palvelut</string>
+    <string name="settings_area_ai_translation">Beta</string>
     <string name="settings_beta">BEETA</string>
     <string name="settings_show">Näytä</string>
     <string name="settings_hide">Piilota</string>
@@ -404,15 +402,20 @@
     <string name="settings_translate_into_footnote">Napauta lausetta lukiessasi kääntääksesi sen, ja napauta uudelleen nähdäksesi alkuperäisen.</string>
     <string name="settings_pointing_at_the_book">Kirjaan osoittaminen</string>
     <string name="settings_pointing_footnote">Kumpikin tekee aina yhden asian. Sama ele samaan kohtaan palauttaa kirjan omat sanat – paitsi sanassa, jonka olet hakenut, jossa pito avaa siitä lisää.</string>
-    <string name="settings_notes_detail">Kääntäjän huomautukset pienellä sen tekstin alla, johon ne kuuluvat: huomio monitulkintaisesta sanasta, sanakirjan muut merkitykset. Ota ne pois käytöstä, niin sivu säilyy sellaisena kuin kirja sen asetti — sanan pitäminen avaa silti kaikki sen merkitykset. Syy siihen, miksi kohtaa ei voitu kääntää, näytetään aina.</string>
+    <string name="settings_tap_to_translate">Käännä sana napauttamalla</string>
+    <string name="settings_asking_for_more">Sanaa suuremman pyytäminen</string>
+    <string name="settings_asking_for_more_footnote">Sanakirja vastaa sanaan eikä mihinkään suurempaan, joten nämä eivät tee mitään ennen kuin käännöspalvelu on otettu käyttöön yllä. Pois on tässä sama pois kuin Kääntäminen-sivun kytkimissä.</string>
     <string name="settings_hold_again">Pidä sanaa uudelleen nähdäksesi siitä lisää</string>
-    <string name="settings_hold_again_detail">Kun sana on kerran haettu, sen pitäminen avaa kaikki merkitykset jotka sanakirjassa on, ja reitin palveluun %1$s. Toimii riippumatta siitä, mihin yllä oleva pito on asetettu.</string>
     <string name="settings_translating_ahead">Kääntäminen etukäteen</string>
     <string name="settings_translating_ahead_footnote">Molemmat ovat uusia, ja molemmat ovat hitaita ja kalliita: ne kääntävät ruudullisen kerrallaan sen kohdan sijaan, johon osoitit. Pois käytöstä kunnes pyydät niitä, ja lukunäkymästä kokonaan piilossa siihen asti.</string>
     <string name="settings_on_screen_detail">Lisää painikkeen, joka kääntää kerran kaikki näkyvissä olevat lauseet.</string>
     <string name="settings_as_you_read_detail">Lisää painikkeen, joka jatkaa kääntämistä sitä mukaa kuin tekstiä vierii näkyviin, kunnes otat sen pois käytöstä. Tämä on se kallis.</string>
 
+    <string name="settings_ai_translation">Tekoälykäännös</string>
+    <string name="settings_use_ai">Käytä käännöspalvelua</string>
+    <string name="settings_use_ai_detail">Pois päältä Lukia hakee yksittäisen sanan ilmaisesta sanakirjasta eikä tee muuta – ei avainta syötettäväksi eikä säätimiä lukunäkymässä. Päällä se voi kääntää kokonaisia lauseita ja kappaleita palvelun kautta, jonka otat käyttöön ja josta maksat kappaleelta. Pois kytkeminen säilyttää kaiken määrittämäsi.</string>
     <string name="settings_translation_service">Käännöspalvelu</string>
+    <string name="settings_translation_service_footnote">Mikään tällä sivulla ei tee mitään ennen kuin tämä on otettu käyttöön. Sanan hakeminen Kääntäminen-sivulta toimii ilman sitä; kokonainen lause ei toimi — se menee mallille, josta maksat kappaleelta.</string>
     <string name="settings_address">Osoite</string>
     <string name="settings_model">Malli</string>
     <string name="settings_api_key">API-avain</string>
@@ -449,7 +452,6 @@
     <string name="settings_diagnostics">Vianmääritys</string>
     <string name="settings_diagnostics_footnote">Säilytetään tällä laitteella kunnes kopioit sen, eikä lähetetä minnekään. Ei sisällä kirjojen tekstiä, nimiä, tiedostonimiä eikä avaimia.</string>
     <string name="settings_developer">Kehittäjäasetukset</string>
-    <string name="settings_developer_info">Tuo vianmäärityksen ja viimeisimmän kaatumisraportin tämän sivun alaosaan. Molemmat säilyvät tällä laitteella eikä niitä lähetetä minnekään. Poista käytöstä, niin ne piilotetaan taas.</string>
     <string name="settings_record_problems">Tallenna mikä menee vikaan</string>
     <string name="settings_record_problems_detail">Merkitsee muistiin kun kantta, sivua tai käännöstä ei voitu lukea, jotta kuvailemasi ongelman takana on jotain. Tämän ottaminen pois käytöstä tyhjentää tallennetun.</string>
     <string name="settings_nothing_recorded">Ei vielä tallennettua. Käytä sovellusta kuten silloin kun se meni vikaan, ja palaa sitten tänne.</string>

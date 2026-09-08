@@ -2,11 +2,9 @@ package io.lukia.features.translate.infrastructure
 
 import io.lukia.core.domain.storage.FakeSecretStore
 import io.lukia.core.domain.storage.FakeSettingsStore
-import io.lukia.core.domain.text.PassageUnit
 import io.lukia.features.translate.domain.lookup.WordSite
 import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.settings.TargetLanguage
-import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.features.translate.domain.settings.WordLookup
 import kotlin.test.Test
@@ -43,6 +41,7 @@ class TranslationSettingsRepositoryTest {
         TranslationSettingsRepository(store, secrets).update(
             TranslationSettings(
                 targetLanguage = TargetLanguage.Finnish,
+                aiTranslation = true,
                 provider = TranslationProvider.OpenAi,
             ).withModel("gpt-4o-mini").withApiKey("sk-test"),
         )
@@ -75,7 +74,6 @@ class TranslationSettingsRepositoryTest {
 
         assertEquals(WordLookup.Wiktionary, reopened.wordLookup)
         assertEquals("google-key", reopened.googleApiKey)
-        assertTrue(reopened.looksUpWordsElsewhere)
     }
 
     /**
@@ -121,89 +119,6 @@ class TranslationSettingsRepositoryTest {
         val settings = TranslationSettings().withWordSite(WordSite.Custom)
 
         assertNull(settings.wordSiteUrlTemplate)
-    }
-
-    @Test
-    fun whatTheGesturesDoIsThereTheNextTimeTheAppOpens() {
-        val store = FakeSettingsStore()
-
-        TranslationSettingsRepository(store, secrets).update(
-            TranslationSettings().withGestures(
-                TranslationGestures(tap = PassageUnit.Paragraph, longPress = PassageUnit.Sentence),
-            ),
-        )
-
-        val reopened = TranslationSettingsRepository(store, secrets).settings.value
-
-        assertEquals(PassageUnit.Paragraph, reopened.gestures.tap)
-        assertEquals(PassageUnit.Sentence, reopened.gestures.longPress)
-    }
-
-    /** Off has to survive too, and it is not the same as never having been set. */
-
-    /**
-     * On unless it says otherwise, unlike everything else that is off by default:
-     * this costs nothing, and an install upgraded from a build that never heard
-     * of it should still offer it.
-     */
-    @Test
-    fun holdingAWordForMoreAboutItIsOnUntilItIsTurnedOff() {
-        val store = FakeSettingsStore()
-
-        assertTrue(
-            TranslationSettingsRepository(store, secrets).settings.value.gestures.wordDetails,
-        )
-
-        TranslationSettingsRepository(store, secrets).update(
-            TranslationSettings().withGestures(TranslationGestures(wordDetails = false)),
-        )
-
-        val reopened = TranslationSettingsRepository(store, secrets).settings.value
-
-        assertFalse(reopened.gestures.wordDetails)
-    }
-
-    /**
-     * On unless it says otherwise, like the word panel: an install upgraded from
-     * a build that never heard of this kept showing notes and should go on doing
-     * so.
-     */
-    @Test
-    fun notesUnderTheParagraphAreOnUntilTheyAreTurnedOff() {
-        val store = FakeSettingsStore()
-
-        assertTrue(TranslationSettingsRepository(store, secrets).settings.value.notes)
-
-        TranslationSettingsRepository(store, secrets).update(
-            TranslationSettings().withNotes(false),
-        )
-
-        assertFalse(TranslationSettingsRepository(store, secrets).settings.value.notes)
-    }
-
-    @Test
-    fun aGestureTurnedOffStaysOff() {
-        val store = FakeSettingsStore()
-
-        TranslationSettingsRepository(store, secrets).update(
-            TranslationSettings().withGestures(TranslationGestures(tap = null, longPress = null)),
-        )
-
-        val reopened = TranslationSettingsRepository(store, secrets).settings.value
-
-        assertNull(reopened.gestures.tap)
-        assertNull(reopened.gestures.longPress)
-        assertFalse(reopened.gestures.translatesAnything)
-    }
-
-    @Test
-    fun anUntouchedInstallTapsForTheSentenceAndHoldsForTheWord() {
-        val settings = TranslationSettingsRepository(FakeSettingsStore(), secrets).settings.value
-
-        assertEquals(PassageUnit.Sentence, settings.gestures.tap)
-        assertEquals(PassageUnit.Word, settings.gestures.longPress)
-        assertEquals(WordLookup.Translator, settings.wordLookup)
-        assertFalse(settings.looksUpWordsElsewhere)
     }
 
     /**
@@ -359,10 +274,38 @@ class TranslationSettingsRepositoryTest {
     /** A local server needs no key, so having none is not being unconfigured. */
     @Test
     fun aLocalServerIsReadyWithoutAKey() {
-        val settings = TranslationSettings(provider = TranslationProvider.Local)
+        val settings = TranslationSettings(
+            aiTranslation = true,
+            provider = TranslationProvider.Local,
+        )
 
         assertNull(settings.apiKey)
         assertTrue(settings.isConfigured)
+    }
+
+    /**
+     * A key in the file and no switch beside it is an install from before the
+     * switch existed, and is read as a reader who went and set a service up -
+     * not as one whose sentences quietly stopped being translated on an update.
+     */
+    @Test
+    fun anInstallFromBeforeTheSwitchKeepsItsService() {
+        val store = FakeSettingsStore()
+        val secrets = FakeSecretStore()
+        secrets.putSecret("translation.apiKey.Anthropic", "sk-test")
+
+        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+
+        assertTrue(reopened.aiTranslation)
+        assertTrue(reopened.isConfigured)
+    }
+
+    /** And one with nothing set up starts where every other setting starts. */
+    @Test
+    fun andOneWithNothingSetUpStartsOff() {
+        val settings = TranslationSettingsRepository(FakeSettingsStore(), secrets).settings.value
+
+        assertFalse(settings.aiTranslation)
     }
 
     /** Pointing plain HTTP at the open internet is not a setup this will use. */

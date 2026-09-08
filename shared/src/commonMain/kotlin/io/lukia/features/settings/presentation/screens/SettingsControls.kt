@@ -4,8 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -16,13 +18,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.resources.Res
 import io.lukia.resources.action_explain
 import io.lukia.resources.settings_beta
 import io.lukia.shared.presentation.components.controls.InfoButton
-import io.lukia.shared.presentation.components.controls.toggleRow
 import io.lukia.shared.presentation.components.surface.GroupSection
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
@@ -33,14 +36,14 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * The parts of the app somebody comes to Settings to change.
  *
- * Four rather than the nine sections behind them, because a settings page is
+ * Five rather than the ten sections behind them, because a settings page is
  * read by somebody who already knows what they want to change and is looking for
- * where it lives. Nine equally-weighted boxes in one column is a list to search;
- * four segments across the top is a question with an answer.
+ * where it lives. Ten equally-weighted boxes in one column is a list to search;
+ * five segments across the top is a question with an answer.
  *
  * The order is how often they are opened, which is also how much machinery each
  * one asks the reader to think about: what the app looks like, how books are
- * set, what is translated, and last of all who is doing it.
+ * set, what is translated, who is doing it, and last of all which Lukia this is.
  */
 enum class SettingsArea {
 
@@ -49,18 +52,46 @@ enum class SettingsArea {
     /** How a book is set: its page, its type, and what a PDF opens as. */
     Reading,
 
-    /** What is translated, when, and into what. */
+    /**
+     * What is translated, when, into what, and who answers about a single word.
+     *
+     * Everything a reader has on the day they install the app. A word goes to a
+     * dictionary or to Google over an ordinary web API, free and with nothing to
+     * fill in, so all of it belongs beside the language rather than behind a
+     * page about machinery.
+     */
     Translating,
 
     /**
-     * Who answers - the translator, and whatever looks up a single word.
+     * Everything translating does that only a model can do.
      *
-     * Apart from Translating because it is the only group that can be filled in
-     * wrongly, and the only one whose settings are about machinery rather than
-     * about reading. Somebody changing the language they read into should not
-     * have to scroll past an API key to reach it.
+     * Named, on the segment itself, for the state all of it is in: Beta. It was
+     * called Providers, which described an address, a key and a timeout and said
+     * nothing about why a reader would open it - and put the dictionary that
+     * needs none of them on the same page as the service that is all of them.
+     * The enum keeps the longer name because it says what the page holds; the
+     * segment says what a reader is walking into.
+     *
+     * Apart from Translating because it is the group that can be filled in
+     * wrongly, and the one that costs money. Somebody changing the language they
+     * read into should not have to scroll past an API key to reach it, and
+     * should not be offered a gesture asking for a paragraph that nothing on
+     * their device can translate.
      */
-    Providers,
+    AiTranslation,
+
+    /**
+     * Which Lukia this is, what it was built from, and the record of what went
+     * wrong while it ran.
+     *
+     * A segment of its own rather than a group repeated under all the others.
+     * It sat at the foot of every page so the version would always be a scroll
+     * away, which made the four groups end in a paragraph about licences that
+     * had nothing to do with any of them - and made the page longer, on every
+     * one of them, for a thing somebody looks at twice a year. A segment is one
+     * press, which is not further away than the bottom of a scrolling page.
+     */
+    About,
     ;
 
     companion object {
@@ -76,17 +107,21 @@ enum class SettingsArea {
 /**
  * A switch for one setting, saying as little about it as the setting allows.
  *
- * Two ways of explaining one, and a setting should use exactly one of them.
- * [detail] is a line short enough to be read whether or not anybody wanted it,
- * and is for the settings that cost money or throw something away - a warning
- * nobody asked for is still a warning worth giving. [info] is the paragraph
- * behind a mark, for everything else.
+ * Which is usually nothing. A setting on this page is named in a few words and
+ * left at that: a row that carried a mark opening a paragraph about itself made
+ * every group a page to read before it could be used, and the group above the
+ * rows already explains what the group is for. [detail] is the exception - a
+ * line short enough to be read whether or not anybody wanted it, for the
+ * settings that cost money or throw something away, because a warning nobody
+ * asked for is still a warning worth giving.
  *
- * The mark sits at the end of the row rather than beside the label, and that is
- * not a matter of taste: the row is the control - see [toggleRow] - so it merges
- * everything inside it into one thing a screen reader announces. A button placed
- * in there would be drawn but not reachable. Outside the row it stays a control
- * of its own.
+ * The switch is the control, and it is the only part of the row that is. The
+ * whole row used to be, which reads well on a phone's settings list and badly
+ * here: a reader reaching for the words about a setting flipped it instead.
+ *
+ * The label takes the width and wraps; the switch keeps its own. Without that
+ * the two shared a row with no rule about who gave way, and a long label - "Hold
+ * a word again for more about it" - ran on under the switch.
  *
  * [badge] is for a mark beside the label - see [BetaToggle], which is this
  * wearing one.
@@ -98,7 +133,6 @@ internal fun SettingsToggle(
     onChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     detail: String? = null,
-    info: String? = null,
     badge: (@Composable () -> Unit)? = null,
 ) {
     Column(
@@ -111,31 +145,31 @@ internal fun SettingsToggle(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .weight(1f)
-                    .toggleRow(label = label, checked = checked, onChange = onChange),
+                modifier = Modifier.weight(1f),
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-
-                    badge?.invoke()
-                }
-
-                Switch(checked = checked, onCheckedChange = null)
-            }
-
-            if (info != null) {
-                InfoButton(
-                    label = stringResource(Res.string.action_explain, label),
-                    text = info,
-                    modifier = Modifier.padding(start = Space.xs),
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    // Only as much of the row as it needs, so a badge beside it
+                    // keeps its own width rather than being pushed off the end.
+                    modifier = Modifier.weight(1f, fill = false),
                 )
+
+                badge?.invoke()
             }
+
+            Spacer(modifier = Modifier.width(Space.md))
+
+            // The label is put on the switch rather than on the row, because the
+            // switch is the whole control: without this a screen reader would
+            // reach a switch with a state and no name, and the words naming it
+            // would be text it had already passed.
+            Switch(
+                checked = checked,
+                onCheckedChange = onChange,
+                modifier = Modifier.semantics { contentDescription = label },
+            )
         }
 
         if (detail != null) {
@@ -169,8 +203,15 @@ internal fun BetaToggle(
     }
 }
 
+/**
+ * The mark that says a setting or a whole group is new and known to be rough.
+ *
+ * One badge for both, because they say the same thing: everything it is put on
+ * runs through a model somebody has to set up and pay for, and none of it is
+ * finished. See [SettingsSection]'s `beta`.
+ */
 @Composable
-private fun BetaBadge(modifier: Modifier = Modifier) {
+internal fun BetaBadge(modifier: Modifier = Modifier) {
     Text(
         text = stringResource(Res.string.settings_beta),
         style = MaterialTheme.typography.labelSmall,
@@ -220,6 +261,16 @@ internal fun SettingsSection(
      * left: a line so short that hiding it would cost more than showing it.
      */
     info: String? = null,
+    /**
+     * Whether this whole group is the unfinished kind - see [BetaBadge].
+     *
+     * A group rather than a switch, because what is in beta here is not one
+     * setting but everything that goes through a model: the service, and the two
+     * ways of asking it for more of the book than the reader pointed at. Marking
+     * each switch and leaving the group unmarked said it three times and never
+     * about the thing they have in common.
+     */
+    beta: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     GroupSection(
@@ -228,6 +279,11 @@ internal fun SettingsSection(
         color = groupColor,
         footnote = footnote,
         padding = padding,
+        badge = if (beta) {
+            { BetaBadge(modifier = Modifier.padding(start = Space.sm)) }
+        } else {
+            null
+        },
         info = info?.let {
             {
                 InfoButton(

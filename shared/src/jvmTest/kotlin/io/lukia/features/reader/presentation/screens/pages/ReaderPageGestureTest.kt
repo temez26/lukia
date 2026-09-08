@@ -38,7 +38,7 @@ class ReaderPageGestureTest {
         setPageReader(
             sentences = listOf(pageOfWords),
             onPassageSelected = { selected = it },
-            gestures = TranslationGestures(tap = PassageUnit.Word, longPress = null),
+            gestures = TranslationGestures.of(tap = PassageUnit.Word, longPress = null),
         )
         tapPageTwo()
 
@@ -60,7 +60,7 @@ class ReaderPageGestureTest {
         setPageReader(
             sentences = listOf(pageWithAGapInTheMiddle),
             onPassageSelected = { selected = it },
-            gestures = TranslationGestures(tap = PassageUnit.Word, longPress = null),
+            gestures = TranslationGestures.of(tap = PassageUnit.Word, longPress = null),
         )
         tapPageTwo()
 
@@ -75,7 +75,7 @@ class ReaderPageGestureTest {
         setPageReader(
             sentences = listOf(pageOfWords),
             onPassageSelected = { selected = it },
-            gestures = TranslationGestures(tap = PassageUnit.Sentence, longPress = null),
+            gestures = TranslationGestures.of(tap = PassageUnit.Sentence, longPress = null),
         )
         tapPageTwo()
 
@@ -96,7 +96,7 @@ class ReaderPageGestureTest {
         setPageReader(
             sentences = listOf(pageOfWords, secondBlock),
             onPassageSelected = { selected = it },
-            gestures = TranslationGestures(tap = PassageUnit.Paragraph, longPress = null),
+            gestures = TranslationGestures.of(tap = PassageUnit.Paragraph, longPress = null),
         )
         tapPageTwo()
 
@@ -128,7 +128,7 @@ class ReaderPageGestureTest {
                 )
             },
             onPassageSelected = { selected = it },
-            gestures = TranslationGestures(tap = PassageUnit.Sentence, longPress = null),
+            gestures = TranslationGestures.of(tap = PassageUnit.Sentence, longPress = null),
         )
         tapPageTwo()
 
@@ -191,7 +191,7 @@ class ReaderPageGestureTest {
                 )
             },
             onPassageSelected = { selected = it },
-            gestures = TranslationGestures(tap = PassageUnit.Sentence, longPress = null),
+            gestures = TranslationGestures.of(tap = PassageUnit.Sentence, longPress = null),
         )
 
         onNodeWithText("Kutsukaa", substring = true).performTouchInput { click() }

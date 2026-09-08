@@ -131,8 +131,6 @@
     <string name="provider_anthropic">Anthropic</string>
     <string name="provider_openai">OpenAI</string>
     <string name="provider_local">Lokaal</string>
-    <string name="word_lookup_translator">Vertaler</string>
-    <string name="word_lookup_translator_footnote">Woorden gaan naar dezelfde dienst als zinnen, met de alinea eromheen – zodat het antwoord de betekenis is die het boek bedoelde.</string>
     <string name="word_lookup_google">Google</string>
     <string name="word_lookup_google_footnote">Snel en gratis, en het ziet het boek nooit – alleen het woord. Voeg hieronder een Cloud Translation-sleutel toe om Googles ondersteunde API te gebruiken in plaats van het open eindpunt.</string>
     <string name="word_lookup_dictionary">Woordenboek</string>
@@ -323,7 +321,7 @@
     <string name="settings_area_appearance">Uiterlijk</string>
     <string name="settings_area_reading">Lezen</string>
     <string name="settings_area_translating">Vertalen</string>
-    <string name="settings_area_providers">Diensten</string>
+    <string name="settings_area_ai_translation">Beta</string>
     <string name="settings_beta">BÈTA</string>
     <string name="settings_show">Tonen</string>
     <string name="settings_hide">Verbergen</string>
@@ -345,14 +343,19 @@
     <string name="settings_translate_into_footnote">Tik tijdens het lezen op een zin om die te vertalen, en tik opnieuw voor het origineel.</string>
     <string name="settings_pointing_at_the_book">Naar het boek wijzen</string>
     <string name="settings_pointing_footnote">Elk doet altijd één ding. Het opnieuw doen op dezelfde plek zet de eigen woorden van het boek terug – behalve bij een woord dat u hebt opgezocht, waar vasthouden er juist meer over opent.</string>
-    <string name="settings_notes_detail">De opmerkingen van de vertaler, klein gezet onder de tekst waar ze bij horen: een noot bij een dubbelzinnig woord, de andere betekenissen uit een woordenboek. Zet ze uit om de pagina te houden zoals het boek die zette — een woord vasthouden opent nog steeds alles wat het betekent. Waarom een passage niet vertaald kon worden wordt altijd getoond.</string>
+    <string name="settings_tap_to_translate">Tik op een woord om het te vertalen</string>
+    <string name="settings_asking_for_more">Om meer dan een woord vragen</string>
+    <string name="settings_asking_for_more_footnote">Een woordenboek beantwoordt een woord en niets groters, dus dit doet niets tot er hierboven een vertaaldienst is ingesteld. Uit is hier hetzelfde uit als de schakelaars onder Vertalen.</string>
     <string name="settings_hold_again">Een woord opnieuw vasthouden voor meer erover</string>
-    <string name="settings_hold_again_detail">Zodra een woord is opgezocht, opent vasthouden elke betekenis die een woordenboek ervoor heeft, en een weg naar %1$s. Werkt ongeacht waarop het vasthouden hierboven is ingesteld.</string>
     <string name="settings_translating_ahead">Vooruit vertalen</string>
     <string name="settings_translating_ahead_footnote">Beide zijn nieuw, en beide zijn traag en duur: ze vertalen een schermvol tegelijk in plaats van de passage waar u naar wees. Uit tot u erom vraagt, en zolang helemaal verborgen voor de lezer.</string>
     <string name="settings_on_screen_detail">Voegt een knop toe die elke zin die u ziet één keer vertaalt.</string>
     <string name="settings_as_you_read_detail">Voegt een knop toe die alles wat in beeld rolt blijft vertalen tot u hem uitzet. Dit is de dure.</string>
+    <string name="settings_ai_translation">AI-vertaling</string>
+    <string name="settings_use_ai">Een vertaaldienst gebruiken</string>
+    <string name="settings_use_ai_detail">Uit zoekt Lukia één woord op in een gratis woordenboek en doet verder niets: geen sleutel in te voeren, geen knoppen in de lezer. Aan kan ze hele zinnen en alinea’s vertalen via een dienst die je instelt en per passage betaalt. Uitzetten behoudt alles wat je hebt ingesteld.</string>
     <string name="settings_translation_service">Vertaaldienst</string>
+    <string name="settings_translation_service_footnote">Niets op deze pagina doet iets tot dit is ingesteld. Een woord opzoeken onder Vertalen werkt zonder; een hele zin niet: die gaat naar een model dat je per passage betaalt.</string>
     <string name="settings_address">Adres</string>
     <string name="settings_model">Model</string>
     <string name="settings_api_key">API-sleutel</string>
@@ -387,7 +390,6 @@
     <string name="settings_diagnostics">Diagnose</string>
     <string name="settings_diagnostics_footnote">Blijft op dit apparaat tot u het kopieert, en wordt nooit ergens heen gestuurd. Bevat geen boektekst, geen titels, geen bestandsnamen en geen sleutels.</string>
     <string name="settings_developer">Ontwikkelaarsopties</string>
-    <string name="settings_developer_info">Zet de diagnostiek en het laatste crashrapport onder aan deze pagina. Beide blijven op dit apparaat en worden nergens heen gestuurd. Zet dit uit om ze weer te verbergen.</string>
     <string name="settings_record_problems">Vastleggen wat er misgaat</string>
     <string name="settings_record_problems_detail">Noteert wanneer een omslag, een pagina of een vertaling niet gelezen kon worden, zodat een probleem dat u kunt beschrijven iets achter zich heeft. Dit uitzetten wist wat er is vastgelegd.</string>
     <string name="settings_nothing_recorded">Nog niets vastgelegd. Gebruik de app zoals u deed toen het misging, en kom dan terug.</string>

@@ -32,7 +32,7 @@ class ReaderTranslationSettingsTest {
 
     @Test
     fun theLanguageIsInThePanelOnAPhone() = runComposeUiTest {
-        setReader(translationConfigured = true, width = PhoneWidth)
+        setReader(width = PhoneWidth)
 
         onNodeWithContentDescription("Reading settings").performClick()
 
@@ -45,7 +45,10 @@ class ReaderTranslationSettingsTest {
      */
     @Test
     fun theLanguageIsInThePanelOnAPointedAtWindowToo() = runComposeUiTest {
-        setReader(translationConfigured = true, width = DesktopWidth)
+        setReader(
+            translationServiceConfigured = true,
+            width = DesktopWidth,
+        )
 
         onNodeWithContentDescription("Reading settings").performClick()
 
@@ -53,17 +56,19 @@ class ReaderTranslationSettingsTest {
         onNodeWithText("Press and hold").assertIsDisplayed()
     }
 
+    /**
+     * On an install nobody has configured, too. It used to be hidden until a
+     * translation service was set up, which hid a working feature: a word goes
+     * to a dictionary that needs no key, so a reader always has something to
+     * choose a language for.
+     */
     @Test
-    fun nothingIsOfferedUntilThereIsSomethingToTranslateWith() = runComposeUiTest {
-        setReader(translationConfigured = false, width = PhoneWidth)
+    fun andOnOneWhereNoServiceHasBeenSetUp() = runComposeUiTest {
+        setReader(translationServiceConfigured = false, width = PhoneWidth)
 
         onNodeWithContentDescription("Reading settings").performClick()
 
-        assertEquals(
-            0,
-            onAllNodes(hasText("Translate into")).fetchSemanticsNodes().size,
-            "a language picker for a translator that does not exist",
-        )
+        onNodeWithText("Translate into").assertIsDisplayed()
     }
 
     /** The list is a press away, so the panel does not open on seventeen rows. */
@@ -74,7 +79,6 @@ class ReaderTranslationSettingsTest {
         setReader(
             targetLanguage = TargetLanguage.English,
             onTargetLanguageChange = { chosen = it },
-            translationConfigured = true,
             width = PhoneWidth,
         )
 
@@ -98,7 +102,7 @@ class ReaderTranslationSettingsTest {
      */
     @Test
     fun choosingALanguageClosesTheList() = runComposeUiTest {
-        setReader(translationConfigured = true, width = PhoneWidth)
+        setReader(width = PhoneWidth)
 
         onNodeWithContentDescription("Reading settings").performClick()
         onNodeWithContentDescription("Translate into. English").performClick()
@@ -111,14 +115,18 @@ class ReaderTranslationSettingsTest {
         )
     }
 
+    /**
+     * With a service set up, which is the only reader for whom a tap has units to
+     * choose between - a dictionary answers a word and nothing larger.
+     */
     @Test
     fun whatATapAsksForCanBeChangedWithTheBookOpen() = runComposeUiTest {
         var gestures: TranslationGestures? = null
 
         setReader(
-            gestures = TranslationGestures(tap = PassageUnit.Sentence, longPress = null),
+            gestures = TranslationGestures.of(tap = PassageUnit.Sentence, longPress = null),
             onTranslationGesturesChange = { gestures = it },
-            translationConfigured = true,
+            translationServiceConfigured = true,
             width = PhoneWidth,
         )
 
@@ -128,10 +136,39 @@ class ReaderTranslationSettingsTest {
         onAllNodesWithText(words(Res.string.passage_unit_paragraph))[0].performClick()
 
         assertEquals(
-            TranslationGestures(tap = PassageUnit.Paragraph, longPress = null),
+            TranslationGestures.of(tap = PassageUnit.Paragraph, longPress = null),
             gestures,
             "the tap is the first of the two gesture rows",
         )
+    }
+
+    /**
+     * And without one it is a switch instead. A reader with a dictionary can
+     * have a tap or not have one; offering them the sentence and the paragraph
+     * is offering two choices that quietly do nothing.
+     */
+    @Test
+    fun aReaderWithNoServiceIsOfferedTheTapAndNotTheUnits() = runComposeUiTest {
+        var gestures: TranslationGestures? = null
+
+        setReader(
+            gestures = TranslationGestures.of(),
+            onTranslationGesturesChange = { gestures = it },
+            translationServiceConfigured = false,
+            width = PhoneWidth,
+        )
+
+        onNodeWithContentDescription("Reading settings").performClick()
+
+        assertEquals(
+            0,
+            onAllNodes(hasText(words(Res.string.passage_unit_paragraph))).fetchSemanticsNodes().size,
+            "a paragraph nothing on this device can translate",
+        )
+
+        onNodeWithText("Tap a word to translate it").performClick()
+
+        assertEquals(TranslationGestures.of(tap = PassageUnit.Word), gestures)
     }
 }
 

@@ -18,7 +18,11 @@ import io.lukia.features.translate.domain.settings.WordLookup
  * different and often better one: it gives every sense rather than choosing.
  *
  * Read per request, like everything else here that is a setting: a reader
- * comparing a dictionary against a model does it with the book open.
+ * comparing a dictionary against Google does it with the book open.
+ *
+ * [translator] is therefore never asked about a word. It is here for everything
+ * larger, which has nowhere else to go - see [WordLookup] for why the service
+ * stopped being one of the choices for a word.
  */
 class WordLookupTranslator(
     private val lookup: () -> WordLookup,
@@ -34,7 +38,6 @@ class WordLookupTranslator(
         if (request.unit != PassageUnit.Word) return translator.translate(request, onPartial)
 
         val answering = when (lookup()) {
-            WordLookup.Translator -> translator
             WordLookup.Google -> google
             WordLookup.Wiktionary -> dictionary
         }

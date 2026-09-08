@@ -44,10 +44,14 @@ internal object MinimalPdf {
      * [entries] is written into the dictionary verbatim, so a test can hand it
      * whatever a producer would - including the file names and application
      * banners that real files put in `/Title`.
+     *
+     * [catalogEntries] goes into the catalog instead, for the things PDF keeps
+     * about the document rather than about the file - `/Lang` is the one this
+     * app reads.
      */
-    fun withInfo(entries: String): ByteArray {
+    fun withInfo(entries: String, catalogEntries: String = ""): ByteArray {
         val objects = listOf(
-            "<< /Type /Catalog /Pages 2 0 R >>",
+            "<< /Type /Catalog /Pages 2 0 R $catalogEntries>>",
             "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
             page(contentsObject = 4),
             emptyContentStream(),
@@ -55,6 +59,21 @@ internal object MinimalPdf {
         )
 
         return assemble(objects, extraTrailerEntries = " /Info 5 0 R")
+    }
+
+    /**
+     * A document with a catalog and no information dictionary at all, which is
+     * an ordinary shape for a PDF and still says what language it is in.
+     */
+    fun withCatalog(catalogEntries: String): ByteArray {
+        val objects = listOf(
+            "<< /Type /Catalog /Pages 2 0 R $catalogEntries>>",
+            "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+            page(contentsObject = 4),
+            emptyContentStream(),
+        )
+
+        return assemble(objects, extraTrailerEntries = "")
     }
 
     /**

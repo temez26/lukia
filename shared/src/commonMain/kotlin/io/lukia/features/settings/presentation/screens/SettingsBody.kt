@@ -3,7 +3,6 @@ package io.lukia.features.settings.presentation.screens
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -44,7 +43,7 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * The least room a group is given, however little it has to put in it.
  *
- * Appearance is one control and Providers is a dozen, and a page that shrank
+ * Appearance is one control and AI translation is a dozen, and a page that shrank
  * to fit whichever was open made switching between them feel like opening and
  * closing something rather than moving along a row. Held at about the height of
  * a phone's content area, the shortest group still fills the view and the
@@ -94,10 +93,10 @@ internal fun SettingsBody(
      */
     groupColor: Color = MaterialTheme.colorScheme.surface,
     /**
-     * The diagnostics group, which is not one of the four and does not switch
-     * with them - see `DiagnosticsSettings`. A slot rather than more parameters
-     * because it is the one group here with a view model of its own, and this
-     * body has to stay composable without a dependency graph behind it.
+     * The diagnostics group, which sits under About - see `DiagnosticsSettings`.
+     * A slot rather than more parameters because it is the one group here with a
+     * view model of its own, and this body has to stay composable without a
+     * dependency graph behind it.
      *
      * Composed only while the developer settings are on - see
      * [AppSettings.developerMode] - so the graph is never asked for its view
@@ -121,7 +120,7 @@ internal fun SettingsBody(
                 .padding(horizontal = dimens.screenPadding),
         ) {
             // Open on the first one rather than on a menu of them. Settings is
-            // four groups, not a place to navigate around: the same control the
+            // five groups, not a place to navigate around: the same control the
             // library narrows itself with switches between them, in place, with
             // nothing to go back out of.
             var area by rememberSaveable { mutableStateOf(SettingsArea.Default) }
@@ -156,35 +155,15 @@ internal fun SettingsBody(
                     reader = reader,
                     translation = translation,
                     providerState = providerState,
-                    onAppearanceChange = onSettingsChange,
+                    onSettingsChange = onSettingsChange,
                     onReaderChange = onReaderChange,
                     translatingActions = translatingActions,
                     providerActions = providerActions,
                     groupColor = groupColor,
                     modifier = Modifier.padding(top = dimens.sectionSpacing),
+                    diagnostics = diagnostics,
                 )
             }
-
-            // Outside the crossfade, so they stay put while the groups change
-            // above them. Both belong to the page rather than to any one group.
-            if (settings.developerMode) {
-                diagnostics?.let {
-                    Box(modifier = Modifier.padding(top = dimens.sectionSpacing)) { it() }
-                }
-            }
-
-            // Last, and not a slot: unlike diagnostics it asks the graph for
-            // nothing, so there is nothing for a caller to have to supply.
-            //
-            // It is also the way in to the group above it, which is why the
-            // whole settings value reaches it rather than the four appearance
-            // fields the rest of this page changes.
-            AboutSettings(
-                groupColor = groupColor,
-                modifier = Modifier.padding(top = dimens.sectionSpacing),
-                developerMode = settings.developerMode,
-                onDeveloperModeChange = { onSettingsChange(settings.copy(developerMode = it)) },
-            )
         }
 
         Spacer(modifier = Modifier.height(bottomClearance))
@@ -192,7 +171,7 @@ internal fun SettingsBody(
 }
 
 /**
- * The page's name and the control that switches between its four groups.
+ * The page's name and the control that switches between its five groups.
  *
  * It keeps its title where the library dropped one: the library is the app's
  * home and needs no introduction, while arriving here from a menu does.

@@ -37,8 +37,16 @@ val ReaderViewModel.translationGestures: StateFlow<TranslationGestures>
 val ReaderViewModel.targetLanguage: StateFlow<TargetLanguage>
     get() = translation.targetLanguage
 
-val ReaderViewModel.translationConfigured: StateFlow<Boolean>
-    get() = translation.configured
+/**
+ * Whether the translation service is set up, which decides how a gesture is
+ * offered rather than whether it is - see the panel's gestures.
+ *
+ * There is no wider question any more. Both of a word's answers are web APIs
+ * that need nothing set up, so a reader always has something that can translate
+ * what they point at.
+ */
+val ReaderViewModel.translationServiceConfigured: StateFlow<Boolean>
+    get() = translation.serviceConfigured
 
 /** Whether the translator's asides are set under the paragraphs they belong to. */
 val ReaderViewModel.translationNotes: StateFlow<Boolean>

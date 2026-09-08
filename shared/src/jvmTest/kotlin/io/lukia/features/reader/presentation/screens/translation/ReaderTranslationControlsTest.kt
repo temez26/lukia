@@ -22,7 +22,7 @@ class ReaderTranslationControlsTest {
 
     @Test
     fun aTapTurnedOffStillReachesThePage() = runComposeUiTest {
-        setReader(gestures = TranslationGestures(tap = null, longPress = PassageUnit.Word))
+        setReader(gestures = TranslationGestures.of(tap = null, longPress = PassageUnit.Word))
 
         // The chrome is what a tap on the page has always reached, so it is what
         // proves the tap arrived at all.
@@ -46,7 +46,7 @@ class ReaderTranslationControlsTest {
      */
     @Test
     fun theExpensiveControlsAreNotThereUntilTheyAreAskedFor() = runComposeUiTest {
-        setReader(translationConfigured = true)
+        setReader()
 
         assertEquals(
             0,
@@ -59,7 +59,6 @@ class ReaderTranslationControlsTest {
     @Test
     fun aControlAskedForIsInTheBar() = runComposeUiTest {
         setReader(
-            translationConfigured = true,
             bulkTranslation = BulkTranslation(onScreen = true, asYouRead = false),
         )
 

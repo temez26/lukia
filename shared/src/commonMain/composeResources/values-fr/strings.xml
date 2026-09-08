@@ -138,8 +138,6 @@
     <string name="provider_anthropic">Anthropic</string>
     <string name="provider_openai">OpenAI</string>
     <string name="provider_local">Local</string>
-    <string name="word_lookup_translator">Traducteur</string>
-    <string name="word_lookup_translator_footnote">Les mots vont au même service que les phrases, avec le paragraphe autour d\u2019eux – pour que la réponse soit le sens que le livre voulait dire.</string>
     <string name="word_lookup_google">Google</string>
     <string name="word_lookup_google_footnote">Rapide et gratuit, et il ne voit jamais le livre – seulement le mot. Ajoutez ci-dessous une clé Cloud Translation pour utiliser l\u2019API prise en charge de Google plutôt que le point d\u2019accès public.</string>
     <string name="word_lookup_dictionary">Dictionnaire</string>
@@ -330,7 +328,7 @@
     <string name="settings_area_appearance">Apparence</string>
     <string name="settings_area_reading">Lecture</string>
     <string name="settings_area_translating">Traduction</string>
-    <string name="settings_area_providers">Services</string>
+    <string name="settings_area_ai_translation">Beta</string>
     <string name="settings_beta">BÊTA</string>
     <string name="settings_show">Afficher</string>
     <string name="settings_hide">Masquer</string>
@@ -352,14 +350,19 @@
     <string name="settings_translate_into_footnote">Appuyez sur une phrase en lisant pour la traduire, et appuyez à nouveau pour l\u2019original.</string>
     <string name="settings_pointing_at_the_book">Désigner le livre</string>
     <string name="settings_pointing_footnote">Chacun fait une seule chose, toujours. Le refaire au même endroit remet les mots du livre – sauf sur un mot que vous avez cherché, où l\u2019appui long en ouvre davantage à la place.</string>
-    <string name="settings_notes_detail">Les remarques du traducteur, en petit sous le texte auquel elles se rapportent : une note sur un mot ambigu, les autres sens d\u2019un dictionnaire. Désactivez-les pour garder la page telle que le livre l\u2019a composée — un appui long sur un mot ouvre toujours tout ce qu\u2019il signifie. La raison pour laquelle un passage n\u2019a pas pu être traduit est toujours affichée.</string>
+    <string name="settings_tap_to_translate">Touchez un mot pour le traduire</string>
+    <string name="settings_asking_for_more">Demander plus qu’un mot</string>
+    <string name="settings_asking_for_more_footnote">Un dictionnaire répond à un mot et à rien de plus grand ; ceci ne fait donc rien tant qu’un service de traduction n’est pas configuré ci-dessus. Désactivé ici, c’est le même désactivé que les interrupteurs sous Traduction.</string>
     <string name="settings_hold_again">Appuyer à nouveau sur un mot pour en savoir plus</string>
-    <string name="settings_hold_again_detail">Une fois un mot cherché, un appui long ouvre chaque sens qu\u2019un dictionnaire lui donne, et un chemin vers %1$s. Fonctionne quel que soit le réglage de l\u2019appui ci-dessus.</string>
     <string name="settings_translating_ahead">Traduire à l\u2019avance</string>
     <string name="settings_translating_ahead_footnote">Les deux sont récentes, et les deux sont lentes et coûteuses : elles traduisent un écran entier à la fois plutôt que le passage désigné. Désactivées tant que vous ne les demandez pas, et entièrement cachées au lecteur d\u2019ici là.</string>
     <string name="settings_on_screen_detail">Ajoute un bouton qui traduit une fois chaque phrase visible.</string>
     <string name="settings_as_you_read_detail">Ajoute un bouton qui continue de traduire tout ce qui défile jusqu\u2019à ce que vous l\u2019arrêtiez. C\u2019est celle qui coûte cher.</string>
+    <string name="settings_ai_translation">Traduction par IA</string>
+    <string name="settings_use_ai">Utiliser un service de traduction</string>
+    <string name="settings_use_ai_detail">Désactivé, Lukia cherche un mot isolé dans un dictionnaire gratuit et ne fait rien d’autre : aucune clé à saisir, aucune commande dans le lecteur. Activé, elle peut traduire des phrases et des paragraphes entiers via un service que vous configurez et payez au passage. Le désactiver conserve tous vos réglages.</string>
     <string name="settings_translation_service">Service de traduction</string>
+    <string name="settings_translation_service_footnote">Rien sur cette page ne fonctionne tant que ceci n’est pas configuré. Chercher un mot sous Traduction fonctionne sans ; une phrase entière, non : elle part vers un modèle que vous payez au passage.</string>
     <string name="settings_address">Adresse</string>
     <string name="settings_model">Modèle</string>
     <string name="settings_api_key">Clé d\u2019API</string>
@@ -394,7 +397,6 @@
     <string name="settings_diagnostics">Diagnostic</string>
     <string name="settings_diagnostics_footnote">Conservé sur cet appareil jusqu\u2019à ce que vous le copiiez, et jamais envoyé nulle part. Ne contient aucun texte de livre, aucun titre, aucun nom de fichier et aucune clé.</string>
     <string name="settings_developer">Options pour développeurs</string>
-    <string name="settings_developer_info">Place le diagnostic et le dernier rapport de plantage au bas de cette page. Les deux restent sur cet appareil et ne sont jamais envoyés nulle part. Désactivez pour les masquer à nouveau.</string>
     <string name="settings_record_problems">Consigner ce qui ne va pas</string>
     <string name="settings_record_problems_detail">Note quand une couverture, une page ou une traduction n\u2019a pas pu être lue, pour qu\u2019un problème que vous pouvez décrire ait quelque chose derrière lui. Désactiver ceci efface ce qui a été consigné.</string>
     <string name="settings_nothing_recorded">Rien de consigné pour l\u2019instant. Utilisez l\u2019application comme quand cela n\u2019a pas marché, puis revenez.</string>

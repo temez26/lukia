@@ -25,7 +25,12 @@ data class ProviderState(
 )
 
 /**
- * Everything the Providers group can ask for.
+ * Everything about who answers, wherever it is shown.
+ *
+ * Grouped by what it changes rather than by which page shows it, which are no
+ * longer the same thing: the two settings that choose who answers about a single
+ * word are on the Translating page, beside the language, because a dictionary
+ * needs nothing set up. The rest is on the AI translation page.
  *
  * Gathered rather than passed one by one because they travel together through
  * four composables that do nothing with them, and a screen whose signature is
@@ -36,6 +41,7 @@ data class ProviderState(
  * it - a preview, a test - supplies only what it means to exercise.
  */
 data class ProviderActions(
+    val onAiTranslationChange: (Boolean) -> Unit = {},
     val onProviderChange: (TranslationProvider) -> Unit = {},
     val onBaseUrlChange: (String) -> Unit = {},
     val onApiKeyChange: (String) -> Unit = {},
@@ -51,7 +57,11 @@ data class ProviderActions(
     val onWordSiteUrlChange: (String) -> Unit = {},
 )
 
-/** Everything the Translating group can ask for. See [ProviderActions]. */
+/**
+ * Everything about what is translated, wherever it is shown - which, for the two
+ * settings that only a model can carry out, is the AI translation page. See
+ * [ProviderActions].
+ */
 data class TranslatingActions(
     val onTargetLanguageChange: (TargetLanguage) -> Unit = {},
     val onGesturesChange: (TranslationGestures) -> Unit = {},
@@ -60,7 +70,7 @@ data class TranslatingActions(
 )
 
 /**
- * The Providers group wired to the ViewModel behind it.
+ * Who answers, wired to the ViewModel behind it.
  *
  * Here rather than at each call site because the settings are shown two ways -
  * a screen on a phone, a panel on anything wider - and the wiring is the one
@@ -71,15 +81,16 @@ data class TranslatingActions(
 fun rememberProviderActions(viewModel: SettingsViewModel): ProviderActions =
     remember(viewModel) {
         ProviderActions(
+            onAiTranslationChange = viewModel::setAiTranslation,
             onProviderChange = viewModel::setProvider,
             onBaseUrlChange = viewModel::onBaseUrlEdited,
             onApiKeyChange = viewModel::setApiKey,
             onModelChange = viewModel::setModel,
             onModelChoose = viewModel::chooseModel,
-            onLoadModels = viewModel::loadAvailableModels,
-            onLoadChosenModel = viewModel::loadChosenModel,
+            onLoadModels = viewModel.probe::loadAvailableModels,
+            onLoadChosenModel = viewModel.probe::loadChosenModel,
             onTimeoutChange = viewModel::setTimeoutSeconds,
-            onTestConnection = viewModel::testConnection,
+            onTestConnection = viewModel.probe::testConnection,
             onWordLookupChange = viewModel::setWordLookup,
             onGoogleApiKeyChange = viewModel::setGoogleApiKey,
             onWordSiteChange = viewModel::setWordSite,

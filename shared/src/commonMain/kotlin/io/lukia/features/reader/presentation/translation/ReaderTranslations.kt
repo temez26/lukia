@@ -55,13 +55,18 @@ internal class ReaderTranslations(
     /**
      * Whether the reader has asked to be offered translating more of the book
      * than they pointed at.
+     *
+     * And whether there is anything that could do it. Both of these translate
+     * whole paragraphs, which only the translation service answers - so with no
+     * service set up they are taken back off whatever the reader turned on, and
+     * the panel is spared two controls that can only produce an error.
      */
     val bulkTranslation: StateFlow<BulkTranslation> = settings.settings
-        .map { it.bulkTranslation }
+        .map { it.offeredBulkTranslation }
         .stateIn(
             scope = scope,
             started = SharingStarted.Eagerly,
-            initialValue = settings.settings.value.bulkTranslation,
+            initialValue = settings.settings.value.offeredBulkTranslation,
         )
 
     /**
@@ -136,14 +141,14 @@ internal class ReaderTranslations(
         )
 
     /**
-     * Whether there is anything set up to translate with.
+     * Whether the translation service in particular is set up, as opposed to
+     * anything at all - see [configured].
      *
-     * The reader needs this to decide whether to offer the controls at all: a
-     * button whose only possible outcome is "nothing is set up to translate
-     * with" is worse than no button, and most of a reading app's users never
-     * configure one.
+     * The panel needs both. What a tap asks for can be raised past the word only
+     * where a model answers, so with nothing but a dictionary the panel offers a
+     * switch and not a row of units the reader would find does nothing.
      */
-    val configured: StateFlow<Boolean> = settings.settings
+    val serviceConfigured: StateFlow<Boolean> = settings.settings
         .map { it.isConfigured }
         .stateIn(
             scope = scope,

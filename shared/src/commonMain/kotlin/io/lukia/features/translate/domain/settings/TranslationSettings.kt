@@ -22,6 +22,21 @@ import io.lukia.features.translate.domain.provider.isAllowedTranslationEndpoint
  */
 data class TranslationSettings(
     val targetLanguage: TargetLanguage = TargetLanguage.Default,
+    /**
+     * Whether the reader wants a model involved in any of this at all.
+     *
+     * One switch over everything on the AI translation page, and off until it is
+     * asked for. Turned off, Lukia is the app it is without a service: a tap
+     * looks a single word up in a free dictionary, a hold opens what else that
+     * word means, and nothing on any page or in any bar offers to translate a
+     * sentence, spend a screenful of somebody's credit, or ask for a key.
+     *
+     * It gates [isConfigured] rather than sitting beside it, so nothing further
+     * on has to remember to ask both. What is stored under it - the key, the
+     * model, the address, the units a gesture was raised to - is kept exactly as
+     * the reader left it, and comes back the moment they turn it on again.
+     */
+    val aiTranslation: Boolean = false,
     val provider: TranslationProvider = TranslationProvider.Default,
     private val models: Map<TranslationProvider, String> = emptyMap(),
     private val keys: Map<TranslationProvider, String> = emptyMap(),
@@ -60,17 +75,18 @@ data class TranslationSettings(
      * Whether the translator's asides are set under the paragraph they belong
      * to - a remark about an ambiguous word, a dictionary's other senses.
      *
-     * On, because for most of this app's life they were the only place those
-     * senses could be read at all. They have somewhere better to be now: holding
-     * a word opens every sense it has, at length and out of the way of the
-     * prose - see [io.lukia.features.reader.presentation.translation.WordInquiry]
-     * - and a reader who has found that would rather have their page back.
+     * Off, with everything else translating does. They were once the only place
+     * those senses could be read at all, which is why they used to be on; they
+     * have somewhere better to be now - holding a word opens every sense it has,
+     * at length and out of the way of the prose, see
+     * [io.lukia.features.reader.presentation.translation.WordInquiry] - so a
+     * page that starts out as the book set it costs the reader nothing.
      *
      * Never covers a failure. A passage marked as translated with nothing to
      * show and no reason given is a reader wondering what happened, and that is
      * not an aside about the text.
      */
-    val notes: Boolean = true,
+    val notes: Boolean = false,
     /**
      * Whether the reader has asked for the two ways of translating more of the
      * book than they pointed at. Off until they do - see [BulkTranslation].
@@ -119,16 +135,6 @@ data class TranslationSettings(
         get() = googleKey?.trim()?.takeIf { it.isNotEmpty() }
 
     /**
-     * Whether a single word goes somewhere other than the translator.
-     *
-     * The one thing that can be set up without setting up a translator at all:
-     * a dictionary needs nothing, and Google needs nothing until the reader
-     * wants the supported API.
-     */
-    val looksUpWordsElsewhere: Boolean
-        get() = wordLookup != WordLookup.Translator
-
-    /**
      * The address to open a word at, before the word is written into it, or null
      * when the reader has chosen [WordSite.Custom] and not yet said where.
      *
@@ -142,9 +148,34 @@ data class TranslationSettings(
             else -> wordSite.urlTemplate
         }
 
-    /** True once there is enough here to actually ask for a translation. */
+    /**
+     * True once there is enough here to actually ask for a translation.
+     *
+     * About the translation service and nothing else, which is to say about the
+     * part of this that runs on a model. A whole sentence has nowhere else to
+     * go - see [io.lukia.features.translate.infrastructure.WordLookupTranslator]
+     * - so this is what the expensive controls are offered on.
+     *
+     * A word is never waiting on it. Both of [WordLookup]'s answers are web APIs
+     * that need nothing set up, so pointing at one word works on an install
+     * nobody has configured, and nothing in the reader asks this before offering
+     * the language or the gestures.
+     */
     val isConfigured: Boolean
-        get() = (!provider.requiresKey || apiKey != null) && isEndpointAllowed
+        get() = aiTranslation && (!provider.requiresKey || apiKey != null) && isEndpointAllowed
+
+    /**
+     * The two expensive ways of translating, with any the reader has turned on
+     * taken back off while there is nothing that could carry them out.
+     *
+     * Both work a paragraph at a time, and a paragraph has nowhere to go but the
+     * translation service. Left as the reader set them, a fresh install with a
+     * dictionary and no service would offer a button whose only outcome is a
+     * failure - and would go on offering it for as long as the flag sat in the
+     * settings file.
+     */
+    val offeredBulkTranslation: BulkTranslation
+        get() = if (isConfigured) bulkTranslation else BulkTranslation.Default
 
     /**
      * False only when the reader has pointed this at a public address over
@@ -185,18 +216,20 @@ data class TranslationSettings(
 
     fun withNotes(notes: Boolean): TranslationSettings = copy(notes = notes)
 
+    fun withAiTranslation(on: Boolean): TranslationSettings = copy(aiTranslation = on)
+
     fun withBulkTranslation(bulk: BulkTranslation): TranslationSettings =
         copy(bulkTranslation = bulk)
 
-    /** What is stored for a provider that is not the one currently chosen. */
-    fun modelFor(provider: TranslationProvider): String =
-        models.entryFor(provider) ?: provider.defaultModel
-
-    fun apiKeyFor(provider: TranslationProvider): String? = keys.entryFor(provider)
-
-    fun baseUrlFor(provider: TranslationProvider): String =
-        baseUrls.entryFor(provider) ?: provider.defaultBaseUrl
-
+    /**
+     * What is stored for a provider that is not the one currently chosen - which
+     * is the whole point of keeping these per provider, and is checked by the
+     * repository's tests.
+     *
+     * The model, the key and the address had accessors of this shape too. They
+     * were read by nothing: everywhere in the app that wants one of those wants
+     * the current provider's, which is what the properties above give.
+     */
     fun timeoutSecondsFor(provider: TranslationProvider): Int =
         timeouts.timeoutFor(provider) ?: provider.defaultTimeoutSeconds
 
@@ -219,6 +252,7 @@ data class TranslationSettings(
          */
         fun stored(
             targetLanguage: TargetLanguage,
+            aiTranslation: Boolean = false,
             provider: TranslationProvider,
             models: Map<TranslationProvider, String>,
             keys: Map<TranslationProvider, String>,
@@ -229,10 +263,11 @@ data class TranslationSettings(
             customWordSiteUrl: String? = null,
             googleKey: String? = null,
             gestures: TranslationGestures = TranslationGestures.Default,
-            notes: Boolean = true,
+            notes: Boolean = false,
             bulkTranslation: BulkTranslation = BulkTranslation.Default,
         ) = TranslationSettings(
             targetLanguage = targetLanguage,
+            aiTranslation = aiTranslation,
             provider = provider,
             models = models,
             keys = keys,

@@ -42,6 +42,8 @@ class TranslationSettingsRepository(
 
     private fun load(): TranslationSettings {
         val defaults = TranslationSettings()
+        val keys = readKeys()
+        val baseUrls = readPerProvider(KEY_BASE_URL)
 
         return TranslationSettings.stored(
             targetLanguage = store.readEnum(
@@ -49,20 +51,25 @@ class TranslationSettingsRepository(
                 TargetLanguage.entries,
                 defaults.targetLanguage,
             ),
+            // Off on a fresh install like everything else translating does.
+            // An install that predates the switch has never written it, and is
+            // read as on if it has a key or an address stored for any provider -
+            // which is a reader who went and set a service up, and whose app
+            // should not quietly stop translating sentences on an update.
+            aiTranslation = store.getString(KEY_AI_TRANSLATION)
+                ?.let { it.equals("true", ignoreCase = true) }
+                ?: (keys.isNotEmpty() || baseUrls.isNotEmpty()),
             provider = store.readEnum(KEY_PROVIDER, TranslationProvider.entries, defaults.provider),
             models = readPerProvider(KEY_MODEL),
-            keys = readKeys(),
-            baseUrls = readPerProvider(KEY_BASE_URL),
+            keys = keys,
+            baseUrls = baseUrls,
             timeouts = readTimeouts(),
             wordLookup = store.readEnum(KEY_WORD_LOOKUP, WordLookup.entries, defaults.wordLookup),
             wordSite = store.readEnum(KEY_WORD_SITE, WordSite.entries, defaults.wordSite),
             customWordSiteUrl = store.getString(KEY_WORD_SITE_URL)?.takeIf { it.isNotBlank() },
             googleKey = secrets.getSecret(KEY_GOOGLE_KEY)?.takeIf { it.isNotBlank() },
-            gestures = readGestures(defaults.gestures),
-            // On unless it says otherwise, like the word panel and unlike the
-            // bulk flags: an install that has never heard of this setting kept
-            // showing notes, and should go on doing so.
-            notes = store.getString(KEY_NOTES)?.equals("false", ignoreCase = true) != true,
+            gestures = readGestures(),
+            notes = store.readFlag(KEY_NOTES),
             bulkTranslation = BulkTranslation(
                 onScreen = store.readFlag(KEY_TRANSLATE_ON_SCREEN),
                 asYouRead = store.readFlag(KEY_TRANSLATE_AS_YOU_READ),
@@ -72,6 +79,7 @@ class TranslationSettingsRepository(
 
     private fun save(settings: TranslationSettings) {
         store.putString(KEY_TARGET_LANGUAGE, settings.targetLanguage.name)
+        store.putString(KEY_AI_TRANSLATION, settings.aiTranslation.toString())
         store.putString(KEY_PROVIDER, settings.provider.name)
 
         writePerProvider(KEY_MODEL, settings.storedModels())
@@ -129,16 +137,26 @@ class TranslationSettingsRepository(
      * about, and turned off as an empty value - which reads back as null rather
      * than as a unit nobody chose, and leaves an older build's settings file
      * meaning what it meant.
+     *
+     * The tap is two settings now and is stored as two - see
+     * [TranslationGestures.tapTranslates]. `KEY_TAP` keeps holding what the tap
+     * actually asks for, so a build that never heard of the second key still
+     * reads the file correctly; `KEY_TAP_UNIT` holds the unit on its own, which
+     * is what survives the tap being switched off.
      */
-    private fun readGestures(defaults: TranslationGestures) = TranslationGestures(
-        tap = readGesture(KEY_TAP, defaults.tap),
-        longPress = readGesture(KEY_LONG_PRESS, defaults.longPress),
-        // On unless it says otherwise, unlike the flags below: this one costs
-        // nothing and is the only way to reach what a word means beyond the one
-        // line that fits over it, so an install that has never heard of it
-        // should still offer it.
-        wordDetails = store.getString(KEY_WORD_DETAILS)?.equals("false", ignoreCase = true) != true,
-    )
+    private fun readGestures(): TranslationGestures {
+        val tapped = readGesture(KEY_TAP, null)
+
+        return TranslationGestures(
+            tapTranslates = tapped != null,
+            // Falling back to what the tap was set to is the upgrade path: an
+            // install written before the two were separate has only the one
+            // key, and whatever it asked for is what it asks for.
+            tapUnit = readGesture(KEY_TAP_UNIT, null) ?: tapped ?: PassageUnit.Word,
+            longPress = readGesture(KEY_LONG_PRESS, null),
+            wordDetails = store.readFlag(KEY_WORD_DETAILS),
+        )
+    }
 
     private fun readGesture(key: String, default: PassageUnit?): PassageUnit? {
         val stored = store.getString(key) ?: return default
@@ -150,11 +168,16 @@ class TranslationSettingsRepository(
 
     private fun writeGestures(gestures: TranslationGestures) {
         store.putString(KEY_TAP, gestures.tap?.name.orEmpty())
+        store.putString(KEY_TAP_UNIT, gestures.tapUnit.name)
         store.putString(KEY_LONG_PRESS, gestures.longPress?.name.orEmpty())
         store.putString(KEY_WORD_DETAILS, gestures.wordDetails.toString())
     }
 
-    /** Off unless it says otherwise, which is what makes these off on a fresh install. */
+    /**
+     * Off unless it says otherwise, which is what makes everything translating
+     * does off on a fresh install - and what makes an install upgraded from a
+     * build that turned some of it on by itself keep what the reader had.
+     */
     private fun SettingsStore.readFlag(key: String): Boolean =
         getString(key)?.equals("true", ignoreCase = true) == true
 
@@ -178,6 +201,7 @@ class TranslationSettingsRepository(
 
     private companion object {
         const val KEY_TARGET_LANGUAGE = "translation.targetLanguage"
+        const val KEY_AI_TRANSLATION = "translation.ai"
         const val KEY_PROVIDER = "translation.provider"
         const val KEY_MODEL = "translation.model"
         const val KEY_API_KEY = "translation.apiKey"
@@ -189,6 +213,7 @@ class TranslationSettingsRepository(
         const val KEY_GOOGLE_KEY = "translation.googleApiKey"
         const val KEY_NOTES = "translation.notes"
         const val KEY_TAP = "translation.gesture.tap"
+        const val KEY_TAP_UNIT = "translation.gesture.tap.unit"
         const val KEY_LONG_PRESS = "translation.gesture.longPress"
         const val KEY_WORD_DETAILS = "translation.gesture.wordDetails"
         const val KEY_TRANSLATE_ON_SCREEN = "translation.bulk.onScreen"

@@ -40,14 +40,22 @@ class WordLookupTranslatorTest {
         assertEquals(listOf("dictionary"), asked)
     }
 
+    /**
+     * And never to the translation service, whatever else is set up. It stopped
+     * being one of the choices for a word - see [WordLookup] - because it is the
+     * one answer here that a reader has to go and configure, for the one unit
+     * that never needed configuring.
+     */
     @Test
-    fun aWordStillGoesToTheTranslatorWhenThatIsWhatIsChosen() = runTest {
-        val asked = mutableListOf<String>()
-        val translator = lookingUpWith(WordLookup.Translator, asked)
+    fun aWordNeverGoesToTheTranslationService() = runTest {
+        WordLookup.entries.forEach { lookup ->
+            val asked = mutableListOf<String>()
+            val translator = lookingUpWith(lookup, asked)
 
-        translator.translate(request("whale", PassageUnit.Word))
+            translator.translate(request("whale", PassageUnit.Word))
 
-        assertEquals(listOf("translator"), asked)
+            assertEquals(emptyList(), asked - setOf("google", "dictionary"), "words set to $lookup")
+        }
     }
 
     /**

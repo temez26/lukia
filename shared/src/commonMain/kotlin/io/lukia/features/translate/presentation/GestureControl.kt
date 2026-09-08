@@ -1,6 +1,7 @@
 package io.lukia.features.translate.presentation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import io.lukia.core.domain.text.PassageUnit
 import io.lukia.core.presentation.displayName
 import io.lukia.resources.Res
@@ -25,13 +26,27 @@ import org.jetbrains.compose.resources.stringResource
 fun GestureControl(
     selected: PassageUnit?,
     onSelect: (PassageUnit?) -> Unit,
+    /**
+     * Which units this control may be set to, off aside.
+     *
+     * A parameter because the answer differs by where the control is. In the
+     * reader's own panel it is all three, because that is the whole of what a
+     * gesture can be set to. Under "asking for more than a word" it is the two
+     * that are more than a word - offering the word there would be a row whose
+     * name and whose choices disagreed.
+     *
+     * A gesture set to a unit this control does not offer leaves it with nothing
+     * selected, which is the honest answer and what [SegmentedControl] already
+     * does for a page width between two presets.
+     */
+    units: List<PassageUnit> = PassageUnit.entries,
 ) {
+    val choices = remember(units) { listOf<PassageUnit?>(null) + units }
+
     SegmentedControl(
-        options = GestureChoices,
+        options = choices,
         selected = selected,
         label = { it?.displayName() ?: stringResource(Res.string.gesture_off) },
         onSelect = onSelect,
     )
 }
-
-private val GestureChoices: List<PassageUnit?> = listOf(null) + PassageUnit.entries

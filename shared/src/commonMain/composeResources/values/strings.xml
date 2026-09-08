@@ -197,8 +197,6 @@
     <string name="provider_openai">OpenAI</string>
     <string name="provider_local">Local</string>
 
-    <string name="word_lookup_translator">Translator</string>
-    <string name="word_lookup_translator_footnote">Words go to the same service as sentences, with the paragraph around them - so the answer is the sense the book meant.</string>
     <string name="word_lookup_google">Google</string>
     <string name="word_lookup_google_footnote">Fast and free, and it never sees the book - only the word. Add a Cloud Translation key below to use Google's supported API rather than the public endpoint.</string>
     <string name="word_lookup_dictionary">Dictionary</string>
@@ -449,7 +447,10 @@
     <string name="settings_area_appearance">Appearance</string>
     <string name="settings_area_reading">Reading</string>
     <string name="settings_area_translating">Translating</string>
-    <string name="settings_area_providers">Providers</string>
+    <!-- The AI translation segment. Named for the state everything behind it is
+         in rather than for what it holds: it is the shortest true thing that
+         fits in a segment beside four others. -->
+    <string name="settings_area_ai_translation">Beta</string>
     <!-- Marks a setting that is new and known to be rough. -->
     <string name="settings_beta">BETA</string>
     <string name="settings_show">Show</string>
@@ -478,16 +479,21 @@
     <string name="settings_translate_into_footnote">Tap a sentence while reading to translate it, and tap it again for the original.</string>
     <string name="settings_pointing_at_the_book">Pointing at the book</string>
     <string name="settings_pointing_footnote">Each does one thing, always. Doing it again on the same passage puts the book\u2019s own words back - except on a word you have looked up, where holding opens more about it instead.</string>
-    <string name="settings_notes_detail">The translator's asides, set small under the text they belong to: a remark about an ambiguous word, a dictionary's other senses. Turn them off to keep the page as the book set it \u2014 holding a word still opens everything it means. Why a passage could not be translated is always shown.</string>
+    <string name="settings_tap_to_translate">Tap a word to translate it</string>
+    <string name="settings_asking_for_more">Asking for more than a word</string>
+    <string name="settings_asking_for_more_footnote">A dictionary answers a word and nothing larger, so these do nothing until a translation service is set up above. Off here is the same off as the switches under Translating.</string>
     <string name="settings_hold_again">Hold a word again for more about it</string>
-    <string name="settings_hold_again_detail">Once a word has been looked up, holding it opens every sense a dictionary has for it and a way through to %1$s. Works whatever the hold above is set to.</string>
     <string name="settings_translating_ahead">Translating ahead</string>
     <string name="settings_translating_ahead_footnote">Both are new, and both are slow and expensive: they translate a screenful at a time rather than the passage you pointed at. Off until you ask for them, and hidden from the reader entirely while they are.</string>
     <string name="settings_on_screen_detail">Adds a button that translates every sentence you can see, once.</string>
     <string name="settings_as_you_read_detail">Adds a button that goes on translating whatever scrolls into view until you turn it off. This is the expensive one.</string>
 
     <!-- Who answers. -->
+    <string name="settings_ai_translation">AI translation</string>
+    <string name="settings_use_ai">Use a translation service</string>
+    <string name="settings_use_ai_detail">Off, Lukia looks a single word up in a free dictionary and does nothing else — no key to enter, no controls in the reader. On, it can translate whole sentences and paragraphs through a service you set up and pay for by the passage. Turning it off keeps everything you have set up.</string>
     <string name="settings_translation_service">Translation service</string>
+    <string name="settings_translation_service_footnote">Nothing under this page does anything until this is set up. Looking a word up under Translating works without it; a whole sentence does not — it goes to a model you pay for by the passage.</string>
     <string name="settings_address">Address</string>
     <string name="settings_model">Model</string>
     <string name="settings_api_key">API key</string>
@@ -527,7 +533,6 @@
     <string name="settings_diagnostics">Diagnostics</string>
     <string name="settings_diagnostics_footnote">Kept on this device until you copy it, and never sent anywhere. Holds no book text, titles, file names or keys.</string>
     <string name="settings_developer">Developer options</string>
-    <string name="settings_developer_info">Puts the diagnostics record and the last crash report at the foot of this page. Both are kept on this device and are never sent anywhere. Turn this off to put them away again.</string>
     <string name="settings_record_problems">Record what goes wrong</string>
     <string name="settings_record_problems_detail">Notes when a cover, a page or a translation could not be read, so a problem you can describe has something behind it. Turning this off clears what was recorded.</string>
     <string name="settings_nothing_recorded">Nothing recorded yet. Use the app as you did when it went wrong, then come back.</string>

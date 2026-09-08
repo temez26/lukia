@@ -132,8 +132,6 @@
     <string name="provider_anthropic">Anthropic</string>
     <string name="provider_openai">OpenAI</string>
     <string name="provider_local">Lokal</string>
-    <string name="word_lookup_translator">Übersetzer</string>
-    <string name="word_lookup_translator_footnote">Wörter gehen an denselben Dienst wie Sätze, mit dem Absatz darum herum – damit die Antwort die Bedeutung ist, die das Buch meinte.</string>
     <string name="word_lookup_google">Google</string>
     <string name="word_lookup_google_footnote">Schnell und kostenlos, und es sieht nie das Buch – nur das Wort. Fügen Sie unten einen Cloud-Translation-Schlüssel hinzu, um Googles unterstützte Schnittstelle statt des offenen Endpunkts zu nutzen.</string>
     <string name="word_lookup_dictionary">Wörterbuch</string>
@@ -324,7 +322,7 @@
     <string name="settings_area_appearance">Aussehen</string>
     <string name="settings_area_reading">Lesen</string>
     <string name="settings_area_translating">Übersetzen</string>
-    <string name="settings_area_providers">Dienste</string>
+    <string name="settings_area_ai_translation">Beta</string>
     <string name="settings_beta">BETA</string>
     <string name="settings_show">Anzeigen</string>
     <string name="settings_hide">Verbergen</string>
@@ -346,14 +344,19 @@
     <string name="settings_translate_into_footnote">Tippen Sie beim Lesen auf einen Satz, um ihn zu übersetzen, und tippen Sie erneut für das Original.</string>
     <string name="settings_pointing_at_the_book">Auf das Buch zeigen</string>
     <string name="settings_pointing_footnote">Jede tut immer eine Sache. Sie an derselben Stelle erneut zu tun, holt die eigenen Wörter des Buchs zurück – außer bei einem Wort, das Sie nachgeschlagen haben, wo Halten stattdessen mehr dazu öffnet.</string>
-    <string name="settings_notes_detail">Die Anmerkungen des Übersetzers, klein unter dem Text gesetzt, zu dem sie gehören: eine Bemerkung zu einem mehrdeutigen Wort, die übrigen Bedeutungen eines Wörterbuchs. Schalten Sie sie aus, um die Seite so zu behalten, wie das Buch sie gesetzt hat — ein Wort zu halten öffnet weiterhin alles, was es bedeutet. Warum eine Stelle nicht übersetzt werden konnte, wird immer gezeigt.</string>
+    <string name="settings_tap_to_translate">Auf ein Wort tippen, um es zu übersetzen</string>
+    <string name="settings_asking_for_more">Mehr verlangen als ein Wort</string>
+    <string name="settings_asking_for_more_footnote">Ein Wörterbuch beantwortet ein Wort und nichts Größeres; diese bewirken also nichts, solange oben kein Übersetzungsdienst eingerichtet ist. Aus ist hier dasselbe Aus wie bei den Schaltern unter Übersetzen.</string>
     <string name="settings_hold_again">Ein Wort erneut halten für mehr dazu</string>
-    <string name="settings_hold_again_detail">Ist ein Wort einmal nachgeschlagen, öffnet Halten jede Bedeutung, die ein Wörterbuch dafür hat, und einen Weg zu %1$s. Funktioniert unabhängig davon, worauf das Halten oben eingestellt ist.</string>
     <string name="settings_translating_ahead">Im Voraus übersetzen</string>
     <string name="settings_translating_ahead_footnote">Beide sind neu, und beide sind langsam und teuer: Sie übersetzen einen Bildschirm auf einmal statt der Stelle, auf die Sie gezeigt haben. Aus, bis Sie darum bitten, und solange ganz vor dem Leser verborgen.</string>
     <string name="settings_on_screen_detail">Fügt eine Schaltfläche hinzu, die jeden sichtbaren Satz einmal übersetzt.</string>
     <string name="settings_as_you_read_detail">Fügt eine Schaltfläche hinzu, die alles Hereinscrollende weiter übersetzt, bis Sie sie ausschalten. Das ist die teure.</string>
+    <string name="settings_ai_translation">KI-Übersetzung</string>
+    <string name="settings_use_ai">Einen Übersetzungsdienst verwenden</string>
+    <string name="settings_use_ai_detail">Aus schlägt Lukia ein einzelnes Wort in einem kostenlosen Wörterbuch nach und tut sonst nichts – kein Schlüssel einzugeben, keine Bedienelemente im Leser. Ein kann sie ganze Sätze und Absätze über einen Dienst übersetzen, den Sie einrichten und pro Textstelle bezahlen. Ausschalten behält alles Eingerichtete.</string>
     <string name="settings_translation_service">Übersetzungsdienst</string>
+    <string name="settings_translation_service_footnote">Nichts auf dieser Seite bewirkt etwas, solange dies nicht eingerichtet ist. Ein Wort unter Übersetzen nachzuschlagen geht auch ohne; ein ganzer Satz nicht — er geht an ein Modell, das Sie pro Textstelle bezahlen.</string>
     <string name="settings_address">Adresse</string>
     <string name="settings_model">Modell</string>
     <string name="settings_api_key">API-Schlüssel</string>
@@ -388,7 +391,6 @@
     <string name="settings_diagnostics">Diagnose</string>
     <string name="settings_diagnostics_footnote">Bleibt auf diesem Gerät, bis Sie sie kopieren, und wird nirgendwohin gesendet. Enthält keinen Buchtext, keine Titel, keine Dateinamen und keine Schlüssel.</string>
     <string name="settings_developer">Entwickleroptionen</string>
-    <string name="settings_developer_info">Zeigt die Diagnose und den letzten Absturzbericht am Fuß dieser Seite. Beides bleibt auf diesem Gerät und wird nirgendwohin gesendet. Zum Ausblenden wieder ausschalten.</string>
     <string name="settings_record_problems">Aufzeichnen, was schiefgeht</string>
     <string name="settings_record_problems_detail">Vermerkt, wenn ein Cover, eine Seite oder eine Übersetzung nicht gelesen werden konnte, damit ein Problem, das Sie beschreiben können, etwas hinter sich hat. Dies auszuschalten löscht das Aufgezeichnete.</string>
     <string name="settings_nothing_recorded">Noch nichts aufgezeichnet. Nutzen Sie die App so wie damals, als es schiefging, und kommen Sie dann zurück.</string>
