@@ -210,6 +210,100 @@ abstract class CheckComposeStabilityConfig : DefaultTask() {
     }
 }
 
+/**
+ * Fails when the attribution list, the version catalogue and `NOTICE` disagree.
+ *
+ * Apache-2.0 section 4 asks a distribution to carry the licence and the copyright
+ * notices of what it redistributes, and the list of what that is has to come from
+ * somewhere. A hand-written one is right on the day it is written and wrong by the
+ * next dependency; the alternative is a licence plugin, which for seventeen names
+ * costs more than it settles - see the header of `config/attribution/dependencies.txt`.
+ *
+ * So the list is hand-written and this is what stops it drifting. Every module the
+ * catalogue declares is either claimed by an attribution's Maven group or listed in
+ * `not-distributed.txt` with the reason it ships in nothing, which makes a new
+ * dependency a decision between the two rather than something that can be forgotten.
+ * It reads both ways, as the architecture allow-lists do: an attribution whose groups
+ * match nothing left the catalogue and has to go with it.
+ *
+ * **What it cannot check** is the entries that name no group - a runtime arriving
+ * underneath something the catalogue does name, which the catalogue can therefore
+ * neither confirm nor deny. Those are read by a person or not at all.
+ */
+abstract class CheckAttribution : DefaultTask() {
+
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val attributions: RegularFileProperty
+
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val notDistributed: RegularFileProperty
+
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val catalogue: RegularFileProperty
+
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val notice: RegularFileProperty
+
+    @TaskAction
+    fun check() {
+        val entries = attributions.get().asFile.dataLines().map { it.split('|').map(String::trim) }
+        check(entries.isNotEmpty()) { "The attribution list is empty - the scan is broken, not the file." }
+
+        val shipped = catalogueModules() - notDistributed.get().asFile.dataLines().toSet()
+        check(shipped.isNotEmpty()) { "No catalogue modules were read - the scan is broken, not the file." }
+
+        val claimed = entries.flatMap { it[3].split(',').map(String::trim).filter(String::isNotEmpty) }
+        val groups = shipped.map { it.substringBefore(':') }
+        val noticeText = notice.get().asFile.readText()
+
+        val problems =
+            shipped.filterNot { module -> claimed.any { module.substringBefore(':').isUnder(it) } }
+                .map { "$it ships in the app and no attribution claims its group" } +
+                claimed.filterNot { group -> groups.any { it.isUnder(group) } }
+                    .map { "an attribution claims $it, which the catalogue no longer declares" } +
+                entries.filterNot { it[0] in noticeText && it[2] in noticeText }
+                    .map { "NOTICE does not carry ${it[0]} with its copyright line" }
+
+        if (problems.isNotEmpty()) {
+            throw GradleException(
+                problems.sorted().joinToString(
+                    prefix = "The attribution list no longer describes what the app ships:\n  ",
+                    separator = "\n  ",
+                    postfix = "\n\nEvery dependency is either attributed in config/attribution/dependencies.txt " +
+                        "or excused in not-distributed.txt beside it, and NOTICE carries every attribution."
+                )
+            )
+        }
+    }
+
+    /** Each `module = "group:artifact"` the catalogue's `[libraries]` section declares. */
+    private fun catalogueModules(): Set<String> {
+        val libraries = catalogue.get().asFile.readText()
+            .substringAfter("[libraries]", "")
+            .substringBefore("\n[")
+
+        return modulePattern.findAll(libraries).map { it.groupValues[1] }.toSet()
+    }
+
+    /**
+     * Whether a Maven group is [prefix] or sits under it, by segment rather than by
+     * characters - so `androidx` claims `androidx.core` and leaves
+     * `org.jetbrains.androidx` to be claimed on purpose.
+     */
+    private fun String.isUnder(prefix: String): Boolean = this == prefix || startsWith("$prefix.")
+
+    private fun File.dataLines(): List<String> =
+        readLines().map { it.substringBefore('#').trim() }.filter { it.isNotEmpty() }
+
+    private companion object {
+        val modulePattern = Regex("""module\s*=\s*"([\w.\-]+:[\w.\-]+)"""")
+    }
+}
+
 // Resolved here because the version catalog accessor only exists on the root project.
 val composeDetektRules = libs.detekt.composeRules
 
@@ -238,6 +332,20 @@ val checkComposeStability = tasks.register<CheckComposeStabilityConfig>("checkCo
     config.set(layout.projectDirectory.file("compose-stability.conf"))
     sources.from(fileTree(layout.projectDirectory) { include("*/src/**/*.kt") })
     ownPackage.set("io.lukia")
+}
+
+/**
+ * One check for the whole repository, like the one above it and for the same
+ * reason: the three files it reads are the root project's, and what ships is a
+ * fact about the distribution rather than about any one module.
+ */
+val checkAttribution = tasks.register<CheckAttribution>("checkAttribution") {
+    group = "verification"
+    description = "Fails when the attribution list, the version catalogue and NOTICE disagree."
+    attributions.set(layout.projectDirectory.file("config/attribution/dependencies.txt"))
+    notDistributed.set(layout.projectDirectory.file("config/attribution/not-distributed.txt"))
+    catalogue.set(layout.projectDirectory.file("gradle/libs.versions.toml"))
+    notice.set(layout.projectDirectory.file("NOTICE"))
 }
 
 subprojects {
@@ -295,8 +403,8 @@ subprojects {
 
     // `check` only exists once the module's own plugins have been applied.
     plugins.withType<LifecycleBasePlugin> {
-        // The stability check is the root project's and covers every module, so
-        // whichever `check` runs first is the one that runs it.
-        tasks.named("check") { dependsOn(checkFileLength, checkComposeStability) }
+        // The stability and attribution checks are the root project's and cover
+        // every module, so whichever `check` runs first is the one that runs them.
+        tasks.named("check") { dependsOn(checkFileLength, checkComposeStability, checkAttribution) }
     }
 }

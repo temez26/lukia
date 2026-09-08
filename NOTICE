@@ -1,0 +1,122 @@
+Lukia
+Copyright 2026 Teemu Kalmari
+
+Licensed under the Apache License, Version 2.0. See LICENSE.
+
+This product bundles the third-party software listed below, each under its own
+terms. Section 4 of the Apache License asks a distribution to carry the licence
+and the copyright notices of what it redistributes; this file and the About
+screen in the app are the two places it does.
+
+Both are generated from, or held against, config/attribution/dependencies.txt,
+which the build's checkAttribution task holds against gradle/libs.versions.toml.
+The list covers every dependency the version catalogue declares that reaches a
+distribution, plus the runtimes underneath them that the app could not run
+without and that the catalogue never names - the Kotlin standard library,
+SQLite, OkHttp, Bouncy Castle and Skia.
+
+A year appears in a copyright line only where the dependency's own NOTICE states
+one. Inventing the rest would have made this file look more precise and be less
+true.
+
+-------------------------------------------------------------------------------
+Apache License 2.0
+-------------------------------------------------------------------------------
+
+Apache PDFBox
+Copyright 2002-2026 The Apache Software Foundation
+
+  This product includes software developed at
+  The Apache Software Foundation (http://www.apache.org/).
+  Based on source code contributed to the original PDFBox project.
+  Copyright (c) 2002-2007, www.pdfbox.org
+
+  Includes the Adobe Glyph List
+  Copyright 1997, 1998, 2002, 2007, 2010 Adobe Systems Incorporated.
+
+Apache FontBox
+Copyright 2008-2026 The Apache Software Foundation
+
+  This product includes software developed at
+  The Apache Software Foundation (http://www.apache.org/).
+  Based on source code contributed to the original FontBox project.
+  Copyright (c) 2006-2007, www.fontbox.org
+
+  Includes the Script Property (Scripts-10.0.0.txt)
+  Copyright 2017 Unicode, Inc.
+
+PdfBox-Android
+Copyright Tom Roush and the PdfBox-Android developers
+
+  Apache PDFBox 2.0.x, ported to Android. https://github.com/TomRoush/PdfBox-Android
+
+Ktor
+Copyright JetBrains s.r.o. and contributors
+
+Compose Multiplatform
+Copyright JetBrains s.r.o. and respective authors and developers
+
+AndroidX
+Copyright The Android Open Source Project
+
+Koin
+Copyright the Koin authors
+
+SQLDelight
+Copyright Square, Inc.
+
+kotlinx.coroutines
+Copyright JetBrains s.r.o.
+
+kotlinx.serialization
+Copyright JetBrains s.r.o.
+
+kotlinx-datetime
+Copyright JetBrains s.r.o.
+
+Kotlin standard library
+Copyright JetBrains s.r.o. and Kotlin Programming Language contributors
+
+OkHttp and Okio
+Copyright Square, Inc.
+
+  Reached through ktor-client-okhttp on Android and desktop.
+
+SQLite JDBC
+Copyright Taro L. Saito and the SQLite JDBC contributors
+
+  The desktop database driver. SQLite itself is in the public domain; Android
+  and iOS use the one their platform ships.
+
+-------------------------------------------------------------------------------
+GNU General Public License v2 with the Classpath Exception
+-------------------------------------------------------------------------------
+
+Android core library desugaring
+Copyright Google LLC, and Oracle and/or its affiliates
+
+  desugar_jdk_libs, which back-fills the Java 8 APIs Android gained after the
+  app's minimum of API 23. Derived from OpenJDK, and so under OpenJDK's terms
+  rather than Apache-2.0. The Classpath Exception is what lets an application
+  link it without taking on the GPL. https://github.com/google/desugar_jdk_libs
+
+-------------------------------------------------------------------------------
+Bouncy Castle Licence
+-------------------------------------------------------------------------------
+
+Bouncy Castle
+Copyright the Legion of the Bouncy Castle Inc.
+
+  Reached through PdfBox-Android, which uses it to open encrypted PDFs.
+  https://www.bouncycastle.org/licence.html
+
+-------------------------------------------------------------------------------
+BSD 3-Clause License
+-------------------------------------------------------------------------------
+
+Skia, through Skiko
+Copyright Google LLC
+
+  What Compose Multiplatform draws the desktop app with. Skiko, the Kotlin
+  binding around it, is Apache-2.0 and JetBrains'; Skia inside it is Google's
+  and BSD-3-Clause.

@@ -149,6 +149,66 @@ val generateLukiaVersion = tasks.register("generateLukiaVersion") {
     }
 }
 
+/**
+ * What the app ships that somebody else wrote, written into common code so the
+ * About screen can show it.
+ *
+ * Generated from `config/attribution/dependencies.txt` for the reason
+ * [generateLukiaVersion] is generated from `gradle.properties`: the same list is
+ * read by three things - this, `NOTICE`, and `checkAttribution` in the root build
+ * - and three hand-kept copies of a licence notice is three chances to ship the
+ * wrong one. The text file is the one a person edits.
+ */
+val attributionSource = layout.settingsDirectory.file("config/attribution/dependencies.txt")
+val generatedAttributionDir = layout.buildDirectory.dir("generated/attribution")
+
+val generateAttribution = tasks.register("generateAttribution") {
+    description = "Writes the third-party attribution list into common source."
+
+    inputs.file(attributionSource).withPathSensitivity(PathSensitivity.RELATIVE)
+    outputs.dir(generatedAttributionDir)
+
+    val source = attributionSource
+    val target = generatedAttributionDir
+
+    doLast {
+        val entries = source.asFile.readLines()
+            .map { it.substringBefore('#').trim() }
+            .filter { it.isNotEmpty() }
+            .map { line ->
+                val (name, licence, copyright) = line.split('|').map(String::trim)
+                """    Attribution("$name", "$licence", "$copyright"),"""
+            }
+
+        check(entries.isNotEmpty()) { "${source.asFile.name} names no dependencies." }
+
+        val header = """
+            package io.lukia.features.settings.domain
+
+            /**
+             * One thing the app ships that somebody else wrote.
+             *
+             * [licence] and [copyright] are proper nouns and are never translated - a
+             * licence is the name of a document, and a copyright line is somebody's
+             * claim in the words they made it.
+             */
+            internal data class Attribution(
+                val name: String,
+                val licence: String,
+                val copyright: String,
+            )
+
+            /** Generated from `config/attribution/dependencies.txt`. Do not edit. */
+            internal val LukiaAttributions: List<Attribution> = listOf(
+        """.trimIndent()
+
+        val file = target.get().file("io/lukia/features/settings/domain/Attribution.kt").asFile
+
+        file.parentFile.mkdirs()
+        file.writeText(header + "\n" + entries.joinToString("\n") + "\n)\n")
+    }
+}
+
 kotlin {
     listOf(
         iosArm64(),
@@ -210,6 +270,7 @@ kotlin {
         }
         commonMain {
             kotlin.srcDir(generateLukiaVersion)
+            kotlin.srcDir(generateAttribution)
         }
 
         commonMain.dependencies {

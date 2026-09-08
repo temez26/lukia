@@ -141,3 +141,10 @@ Unless required by applicable law or agreed to in writing, software distributed
 under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
+
+Lukia bundles third-party software, each under its own terms. [NOTICE](NOTICE)
+carries the licence and copyright line of every one, and the app repeats the
+list under Settings > About. Both come from
+[`config/attribution/dependencies.txt`](config/attribution/dependencies.txt),
+which the `checkAttribution` build task holds against the version catalogue - so
+a dependency cannot arrive without the terms it comes under.
