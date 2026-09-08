@@ -343,7 +343,7 @@
     <string name="settings_area_appearance">Wygląd</string>
     <string name="settings_area_reading">Czytanie</string>
     <string name="settings_area_translating">Tłumaczenie</string>
-    <string name="settings_area_ai_translation">Tłumaczenie AI</string>
+    <string name="settings_area_ai_translation">Beta</string>
     <string name="settings_beta">BETA</string>
     <string name="settings_show">Pokaż</string>
     <string name="settings_hide">Ukryj</string>
@@ -366,12 +366,9 @@
     <string name="settings_pointing_at_the_book">Wskazywanie książki</string>
     <string name="settings_pointing_footnote">Każdy robi zawsze jedną rzecz. Powtórzenie go w tym samym miejscu przywraca własne słowa książki – poza słowem, które wyszukałeś, gdzie przytrzymanie otwiera zamiast tego więcej o nim.</string>
     <string name="settings_tap_to_translate">Dotknij słowa, aby je przetłumaczyć</string>
-    <string name="settings_tap_to_translate_info">Ponowne dotknięcie tego samego słowa przywraca własne słowo książki. Dotknięcie można podnieść do zdania lub akapitu po skonfigurowaniu usługi tłumaczenia — na żadne z nich nie odpowie nic poza modelem.</string>
     <string name="settings_asking_for_more">Prośba o więcej niż słowo</string>
     <string name="settings_asking_for_more_footnote">Słownik odpowiada na słowo i nic większego, więc te ustawienia nic nie robią, dopóki powyżej nie zostanie skonfigurowana usługa tłumaczenia. Wyłączone tutaj to to samo wyłączone co przełączniki w sekcji Tłumaczenie.</string>
-    <string name="settings_notes_detail">Uwagi tłumacza, złożone drobnym pismem pod tekstem, do którego należą: notka o wieloznacznym słowie, inne znaczenia ze słownika. Wyłącz je, aby zachować stronę tak, jak złożyła ją książka — przytrzymanie słowa nadal otwiera wszystko, co ono znaczy. Powód, dla którego fragmentu nie dało się przetłumaczyć, jest pokazywany zawsze.</string>
     <string name="settings_hold_again">Przytrzymaj słowo ponownie, aby zobaczyć o nim więcej</string>
-    <string name="settings_hold_again_detail">Gdy słowo zostało już wyszukane, przytrzymanie otwiera każde znaczenie, jakie ma dla niego słownik, oraz przejście do %1$s. Działa niezależnie od tego, na co ustawione jest przytrzymanie powyżej.</string>
     <string name="settings_translating_ahead">Tłumaczenie z wyprzedzeniem</string>
     <string name="settings_translating_ahead_footnote">Obie są nowe i obie są wolne i kosztowne: tłumaczą cały ekran naraz zamiast fragmentu, który wskazałeś. Wyłączone, dopóki o nie nie poprosisz, i przez ten czas całkowicie ukryte przed czytnikiem.</string>
     <string name="settings_on_screen_detail">Dodaje przycisk, który raz tłumaczy każde widoczne zdanie.</string>
@@ -412,7 +409,6 @@
     <string name="settings_diagnostics">Diagnostyka</string>
     <string name="settings_diagnostics_footnote">Zostaje na tym urządzeniu, dopóki jej nie skopiujesz, i nigdy nigdzie nie jest wysyłana. Nie zawiera tekstu książek, tytułów, nazw plików ani kluczy.</string>
     <string name="settings_developer">Opcje programisty</string>
-    <string name="settings_developer_info">Pokazuje diagnostykę i ostatni raport awarii na dole tej strony. Oba pozostają na tym urządzeniu i nigdy nigdzie nie są wysyłane. Wyłącz, aby je znowu ukryć.</string>
     <string name="settings_record_problems">Zapisuj, co idzie nie tak</string>
     <string name="settings_record_problems_detail">Odnotowuje, gdy okładki, strony lub tłumaczenia nie dało się odczytać, żeby problem, który potrafisz opisać, miał coś za sobą. Wyłączenie tego czyści to, co zostało zapisane.</string>
     <string name="settings_nothing_recorded">Nic jeszcze nie zapisano. Użyj aplikacji tak jak wtedy, gdy poszło nie tak, i wróć tutaj.</string>

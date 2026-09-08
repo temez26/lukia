@@ -181,9 +181,13 @@ private fun DiagnosticsRecordSection(
         modifier = modifier,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
+            // Shown rather than behind a mark, which is where the rest of this
+            // page's prose went: turning this off does not only stop recording,
+            // it throws away what was recorded, and that is the one thing about
+            // it a reader has to be told before they press it rather than after.
             SettingsToggle(
                 label = stringResource(Res.string.settings_record_problems),
-                info = stringResource(Res.string.settings_record_problems_detail),
+                detail = stringResource(Res.string.settings_record_problems_detail),
                 checked = enabled,
                 onChange = onEnabledChange,
             )

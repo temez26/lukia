@@ -4,8 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -63,10 +65,12 @@ enum class SettingsArea {
     /**
      * Everything translating does that only a model can do.
      *
-     * Named for the decision behind it rather than for the fields in it. It was
+     * Named, on the segment itself, for the state all of it is in: Beta. It was
      * called Providers, which described an address, a key and a timeout and said
      * nothing about why a reader would open it - and put the dictionary that
      * needs none of them on the same page as the service that is all of them.
+     * The enum keeps the longer name because it says what the page holds; the
+     * segment says what a reader is walking into.
      *
      * Apart from Translating because it is the group that can be filled in
      * wrongly, and the one that costs money. Somebody changing the language they
@@ -103,17 +107,21 @@ enum class SettingsArea {
 /**
  * A switch for one setting, saying as little about it as the setting allows.
  *
- * Two ways of explaining one, and a setting should use exactly one of them.
- * [detail] is a line short enough to be read whether or not anybody wanted it,
- * and is for the settings that cost money or throw something away - a warning
- * nobody asked for is still a warning worth giving. [info] is the paragraph
- * behind a mark, for everything else.
+ * Which is usually nothing. A setting on this page is named in a few words and
+ * left at that: a row that carried a mark opening a paragraph about itself made
+ * every group a page to read before it could be used, and the group above the
+ * rows already explains what the group is for. [detail] is the exception - a
+ * line short enough to be read whether or not anybody wanted it, for the
+ * settings that cost money or throw something away, because a warning nobody
+ * asked for is still a warning worth giving.
  *
  * The switch is the control, and it is the only part of the row that is. The
  * whole row used to be, which reads well on a phone's settings list and badly
- * here: these rows carry a label, a beta mark, an explaining mark and sometimes
- * a line of detail, and a reader reaching for any of those flipped the setting
- * instead. A press on the words about a setting is a press to read them.
+ * here: a reader reaching for the words about a setting flipped it instead.
+ *
+ * The label takes the width and wraps; the switch keeps its own. Without that
+ * the two shared a row with no rule about who gave way, and a long label - "Hold
+ * a word again for more about it" - ran on under the switch.
  *
  * [badge] is for a mark beside the label - see [BetaToggle], which is this
  * wearing one.
@@ -125,7 +133,6 @@ internal fun SettingsToggle(
     onChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     detail: String? = null,
-    info: String? = null,
     badge: (@Composable () -> Unit)? = null,
 ) {
     Column(
@@ -138,37 +145,31 @@ internal fun SettingsToggle(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.weight(1f),
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-
-                    badge?.invoke()
-                }
-
-                // The label is put on the switch rather than on the row, because
-                // the switch is now the whole control: without this a screen
-                // reader would reach a switch with a state and no name, and the
-                // words naming it would be text it had already passed.
-                Switch(
-                    checked = checked,
-                    onCheckedChange = onChange,
-                    modifier = Modifier.semantics { contentDescription = label },
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    // Only as much of the row as it needs, so a badge beside it
+                    // keeps its own width rather than being pushed off the end.
+                    modifier = Modifier.weight(1f, fill = false),
                 )
+
+                badge?.invoke()
             }
 
-            if (info != null) {
-                InfoButton(
-                    label = stringResource(Res.string.action_explain, label),
-                    text = info,
-                    modifier = Modifier.padding(start = Space.xs),
-                )
-            }
+            Spacer(modifier = Modifier.width(Space.md))
+
+            // The label is put on the switch rather than on the row, because the
+            // switch is the whole control: without this a screen reader would
+            // reach a switch with a state and no name, and the words naming it
+            // would be text it had already passed.
+            Switch(
+                checked = checked,
+                onCheckedChange = onChange,
+                modifier = Modifier.semantics { contentDescription = label },
+            )
         }
 
         if (detail != null) {

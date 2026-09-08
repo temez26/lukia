@@ -23,8 +23,6 @@ import io.lukia.resources.reader_translate_into
 import io.lukia.resources.settings_address
 import io.lukia.resources.settings_cloud_key
 import io.lukia.resources.settings_hold_again
-import io.lukia.resources.settings_hold_again_detail
-import io.lukia.resources.settings_notes_detail
 import io.lukia.resources.settings_looking_up_a_word
 import io.lukia.resources.settings_pointing_at_the_book
 import io.lukia.resources.settings_pointing_footnote
@@ -33,7 +31,6 @@ import io.lukia.resources.settings_reading_more
 import io.lukia.resources.settings_reading_more_footnote
 import io.lukia.resources.settings_site_address_example
 import io.lukia.resources.settings_tap_to_translate
-import io.lukia.resources.settings_tap_to_translate_info
 import io.lukia.resources.settings_translate_into_footnote
 import io.lukia.shared.presentation.components.controls.ChoiceList
 import io.lukia.shared.presentation.components.controls.SegmentedControl
@@ -153,7 +150,6 @@ private fun GestureSection(
         Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
             SettingsToggle(
                 label = stringResource(Res.string.settings_tap_to_translate),
-                info = stringResource(Res.string.settings_tap_to_translate_info),
                 checked = translation.gestures.tap != null,
                 onChange = { on ->
                     actions.onGesturesChange(
@@ -164,10 +160,6 @@ private fun GestureSection(
 
             SettingsToggle(
                 label = stringResource(Res.string.settings_hold_again),
-                info = stringResource(
-                    Res.string.settings_hold_again_detail,
-                    translation.wordSite.displayName(),
-                ),
                 checked = translation.gestures.wordDetails,
                 onChange = {
                     actions.onGesturesChange(translation.gestures.copy(wordDetails = it))
@@ -176,7 +168,6 @@ private fun GestureSection(
 
             SettingsToggle(
                 label = stringResource(Res.string.reader_notes_under_paragraph),
-                info = stringResource(Res.string.settings_notes_detail),
                 checked = translation.notes,
                 onChange = actions.onNotesChange,
             )

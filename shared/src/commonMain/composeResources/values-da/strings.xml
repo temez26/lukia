@@ -323,7 +323,7 @@
     <string name="settings_area_appearance">Udseende</string>
     <string name="settings_area_reading">Læsning</string>
     <string name="settings_area_translating">Oversættelse</string>
-    <string name="settings_area_ai_translation">AI-oversættelse</string>
+    <string name="settings_area_ai_translation">Beta</string>
     <string name="settings_beta">BETA</string>
     <string name="settings_show">Vis</string>
     <string name="settings_hide">Skjul</string>
@@ -346,12 +346,9 @@
     <string name="settings_pointing_at_the_book">At pege på bogen</string>
     <string name="settings_pointing_footnote">Hver af dem gør én ting, altid. At gøre det igen samme sted lægger bogens egne ord tilbage – undtagen på et ord, du har slået op, hvor et hold i stedet åbner mere om det.</string>
     <string name="settings_tap_to_translate">Tryk på et ord for at oversætte det</string>
-    <string name="settings_tap_to_translate_info">Tryk på det samme ord igen for at få bogens eget ord tilbage. Et tryk kan hæves til sætningen eller afsnittet, når en oversættelsestjeneste er sat op — kun en model kan svare på nogen af delene.</string>
     <string name="settings_asking_for_more">At bede om mere end et ord</string>
     <string name="settings_asking_for_more_footnote">En ordbog svarer på et ord og intet større, så disse gør ingenting, før en oversættelsestjeneste er sat op ovenfor. Fra her er det samme fra som kontakterne under Oversættelse.</string>
-    <string name="settings_notes_detail">Oversætterens bemærkninger, sat småt under den tekst, de hører til: en bemærkning om et flertydigt ord, en ordbogs øvrige betydninger. Slå dem fra for at bevare siden, som bogen satte den — at holde et ord åbner stadig alt, hvad det betyder. Hvorfor et stykke ikke kunne oversættes, vises altid.</string>
     <string name="settings_hold_again">Hold et ord igen for mere om det</string>
-    <string name="settings_hold_again_detail">Når et ord først er slået op, åbner et hold hver betydning, en ordbog har for det, og en vej videre til %1$s. Virker uanset hvad holdet ovenfor er sat til.</string>
     <string name="settings_translating_ahead">At oversætte i forvejen</string>
     <string name="settings_translating_ahead_footnote">Begge er nye, og begge er langsomme og dyre: de oversætter en skærmfuld ad gangen i stedet for det sted, du pegede på. Slået fra, indtil du beder om dem, og helt skjult for læseren så længe.</string>
     <string name="settings_on_screen_detail">Tilføjer en knap, der oversætter hver sætning, du kan se, én gang.</string>
@@ -392,7 +389,6 @@
     <string name="settings_diagnostics">Diagnostik</string>
     <string name="settings_diagnostics_footnote">Beholdes på denne enhed, indtil du kopierer den, og sendes aldrig nogen steder. Indeholder ingen bogtekst, ingen titler, ingen filnavne og ingen nøgler.</string>
     <string name="settings_developer">Udviklerindstillinger</string>
-    <string name="settings_developer_info">Viser diagnostikken og den seneste nedbrudsrapport nederst på denne side. Begge bliver på denne enhed og sendes aldrig nogen steder hen. Slå fra for at skjule dem igen.</string>
     <string name="settings_record_problems">Notér hvad der går galt</string>
     <string name="settings_record_problems_detail">Noterer, når et omslag, en side eller en oversættelse ikke kunne læses, så et problem, du kan beskrive, har noget bag sig. At slå dette fra rydder det noterede.</string>
     <string name="settings_nothing_recorded">Intet noteret endnu. Brug appen, som du gjorde, da det gik galt, og kom så tilbage.</string>

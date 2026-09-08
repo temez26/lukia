@@ -323,7 +323,7 @@
     <string name="settings_area_appearance">Apariencia</string>
     <string name="settings_area_reading">Lectura</string>
     <string name="settings_area_translating">Traducción</string>
-    <string name="settings_area_ai_translation">Traducción con IA</string>
+    <string name="settings_area_ai_translation">Beta</string>
     <string name="settings_beta">BETA</string>
     <string name="settings_show">Mostrar</string>
     <string name="settings_hide">Ocultar</string>
@@ -346,12 +346,9 @@
     <string name="settings_pointing_at_the_book">Señalar el libro</string>
     <string name="settings_pointing_footnote">Cada uno hace una sola cosa, siempre. Repetirlo en el mismo pasaje devuelve las palabras del libro – salvo en una palabra que hayas buscado, donde mantener abre más sobre ella.</string>
     <string name="settings_tap_to_translate">Toca una palabra para traducirla</string>
-    <string name="settings_tap_to_translate_info">Tocar la misma palabra otra vez devuelve la palabra del libro. Un toque puede subir a la frase o al párrafo una vez configurado un servicio de traducción: solo un modelo puede responder a cualquiera de los dos.</string>
     <string name="settings_asking_for_more">Pedir más que una palabra</string>
     <string name="settings_asking_for_more_footnote">Un diccionario responde a una palabra y a nada mayor, así que esto no hace nada hasta configurar arriba un servicio de traducción. Apagado aquí es el mismo apagado que los interruptores de Traducción.</string>
-    <string name="settings_notes_detail">Las acotaciones del traductor, en pequeño bajo el texto al que pertenecen: una nota sobre una palabra ambigua, los otros sentidos de un diccionario. Desactívalas para conservar la página tal como la compuso el libro — mantener una palabra sigue abriendo todo lo que significa. El motivo por el que un pasaje no se ha podido traducir se muestra siempre.</string>
     <string name="settings_hold_again">Mantener una palabra otra vez para saber más</string>
-    <string name="settings_hold_again_detail">Una vez buscada una palabra, mantenerla abre cada sentido que un diccionario le da, y un camino hasta %1$s. Funciona sea cual sea el ajuste del mantener de arriba.</string>
     <string name="settings_translating_ahead">Traducir por adelantado</string>
     <string name="settings_translating_ahead_footnote">Ambas son nuevas, y ambas son lentas y caras: traducen una pantalla entera de una vez en lugar del pasaje que has señalado. Desactivadas hasta que las pidas, y mientras tanto ocultas del todo al lector.</string>
     <string name="settings_on_screen_detail">Añade un botón que traduce una vez cada frase que ves.</string>
@@ -392,7 +389,6 @@
     <string name="settings_diagnostics">Diagnóstico</string>
     <string name="settings_diagnostics_footnote">Se queda en este dispositivo hasta que lo copies, y nunca se envía a ninguna parte. No contiene texto de libros, ni títulos, ni nombres de archivo, ni claves.</string>
     <string name="settings_developer">Opciones de desarrollador</string>
-    <string name="settings_developer_info">Muestra el diagnóstico y el último informe de fallo al final de esta página. Ambos se quedan en este dispositivo y nunca se envían a ninguna parte. Desactívalo para volver a ocultarlos.</string>
     <string name="settings_record_problems">Registrar lo que va mal</string>
     <string name="settings_record_problems_detail">Anota cuándo no se ha podido leer una portada, una página o una traducción, para que un problema que puedas describir tenga algo detrás. Desactivarlo borra lo registrado.</string>
     <string name="settings_nothing_recorded">Todavía no hay nada registrado. Usa la aplicación como cuando fue mal, y vuelve luego aquí.</string>

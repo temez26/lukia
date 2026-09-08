@@ -323,7 +323,7 @@
     <string name="settings_area_appearance">Uiterlijk</string>
     <string name="settings_area_reading">Lezen</string>
     <string name="settings_area_translating">Vertalen</string>
-    <string name="settings_area_ai_translation">AI-vertaling</string>
+    <string name="settings_area_ai_translation">Beta</string>
     <string name="settings_beta">BÈTA</string>
     <string name="settings_show">Tonen</string>
     <string name="settings_hide">Verbergen</string>
@@ -346,12 +346,9 @@
     <string name="settings_pointing_at_the_book">Naar het boek wijzen</string>
     <string name="settings_pointing_footnote">Elk doet altijd één ding. Het opnieuw doen op dezelfde plek zet de eigen woorden van het boek terug – behalve bij een woord dat u hebt opgezocht, waar vasthouden er juist meer over opent.</string>
     <string name="settings_tap_to_translate">Tik op een woord om het te vertalen</string>
-    <string name="settings_tap_to_translate_info">Nog eens op hetzelfde woord tikken zet het eigen woord van het boek terug. Een tik kan worden verhoogd naar de zin of de alinea zodra er een vertaaldienst is ingesteld — alleen een model kan beide beantwoorden.</string>
     <string name="settings_asking_for_more">Om meer dan een woord vragen</string>
     <string name="settings_asking_for_more_footnote">Een woordenboek beantwoordt een woord en niets groters, dus dit doet niets tot er hierboven een vertaaldienst is ingesteld. Uit is hier hetzelfde uit als de schakelaars onder Vertalen.</string>
-    <string name="settings_notes_detail">De opmerkingen van de vertaler, klein gezet onder de tekst waar ze bij horen: een noot bij een dubbelzinnig woord, de andere betekenissen uit een woordenboek. Zet ze uit om de pagina te houden zoals het boek die zette — een woord vasthouden opent nog steeds alles wat het betekent. Waarom een passage niet vertaald kon worden wordt altijd getoond.</string>
     <string name="settings_hold_again">Een woord opnieuw vasthouden voor meer erover</string>
-    <string name="settings_hold_again_detail">Zodra een woord is opgezocht, opent vasthouden elke betekenis die een woordenboek ervoor heeft, en een weg naar %1$s. Werkt ongeacht waarop het vasthouden hierboven is ingesteld.</string>
     <string name="settings_translating_ahead">Vooruit vertalen</string>
     <string name="settings_translating_ahead_footnote">Beide zijn nieuw, en beide zijn traag en duur: ze vertalen een schermvol tegelijk in plaats van de passage waar u naar wees. Uit tot u erom vraagt, en zolang helemaal verborgen voor de lezer.</string>
     <string name="settings_on_screen_detail">Voegt een knop toe die elke zin die u ziet één keer vertaalt.</string>
@@ -392,7 +389,6 @@
     <string name="settings_diagnostics">Diagnose</string>
     <string name="settings_diagnostics_footnote">Blijft op dit apparaat tot u het kopieert, en wordt nooit ergens heen gestuurd. Bevat geen boektekst, geen titels, geen bestandsnamen en geen sleutels.</string>
     <string name="settings_developer">Ontwikkelaarsopties</string>
-    <string name="settings_developer_info">Zet de diagnostiek en het laatste crashrapport onder aan deze pagina. Beide blijven op dit apparaat en worden nergens heen gestuurd. Zet dit uit om ze weer te verbergen.</string>
     <string name="settings_record_problems">Vastleggen wat er misgaat</string>
     <string name="settings_record_problems_detail">Noteert wanneer een omslag, een pagina of een vertaling niet gelezen kon worden, zodat een probleem dat u kunt beschrijven iets achter zich heeft. Dit uitzetten wist wat er is vastgelegd.</string>
     <string name="settings_nothing_recorded">Nog niets vastgelegd. Gebruik de app zoals u deed toen het misging, en kom dan terug.</string>

@@ -16,6 +16,11 @@ import org.jetbrains.compose.resources.stringResource
  * own: the segment and the group are the same thing now, and two resources
  * holding the same word is two chances for a translation to disagree with
  * itself.
+ *
+ * The AI translation segment reads "Beta", which is not what its resource is
+ * named after. The key says what is behind the segment and the word says what
+ * state it is in - and the word is the one that has to fit in a segment beside
+ * four others.
  */
 @Composable
 internal fun SettingsArea.displayTitle(): String = when (this) {

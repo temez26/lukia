@@ -1,15 +1,21 @@
 package io.lukia.features.settings.presentation.screens
 
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import io.lukia.shared.presentation.theme.LukiaTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  * What part of a settings row is the control, which is the switch and only the
@@ -59,14 +65,52 @@ class SettingsToggleTest {
         assertEquals(true, changed)
     }
 
-    private fun ComposeUiTest.setToggle() {
+    /**
+     * The long label the reader reported, in a column no wider than the settings
+     * page gives a group on a phone.
+     *
+     * Set out at a real width on purpose: the bug only exists where the label
+     * does not fit, and a test host's default window is wide enough to hide it.
+     */
+    @Test
+    fun aLabelTooLongForItsRowWrapsRatherThanRunningUnderTheSwitch() = runComposeUiTest {
+        setToggle(label = LongLabel, width = PhoneGroupWidth)
+
+        val label = onNodeWithText(LongLabel).getBoundsInRoot()
+        val switch = onNodeWithContentDescription(LongLabel).getBoundsInRoot()
+
+        assertTrue(
+            label.bottom - label.top > OneLine,
+            "the label stayed on one line, which is what pushed the switch out",
+        )
+        assertTrue(
+            switch.right <= PhoneGroupWidth,
+            "the switch was pushed past the end of the row: it ends at " +
+                "${switch.right} in a row $PhoneGroupWidth wide",
+        )
+        assertTrue(
+            label.right <= switch.left,
+            "the label ran under the switch: it ends at ${label.right}, " +
+                "the switch starts at ${switch.left}",
+        )
+    }
+
+    private fun ComposeUiTest.setToggle(
+        label: String = Label,
+        width: Dp = Dp.Unspecified,
+    ) {
         setContent {
             LukiaTheme(darkTheme = false) {
                 SettingsToggle(
-                    label = Label,
+                    label = label,
                     detail = Detail,
                     checked = false,
                     onChange = { changed = it },
+                    modifier = if (width == Dp.Unspecified) {
+                        Modifier
+                    } else {
+                        Modifier.width(width)
+                    },
                 )
             }
         }
@@ -75,5 +119,14 @@ class SettingsToggleTest {
     private companion object {
         const val Label = "Record what goes wrong"
         const val Detail = "Notes when a page could not be read."
+
+        /** The row that started this: it is longer than a phone's group is wide. */
+        const val LongLabel = "Hold a word again for more about it"
+
+        /** About what a settings group gets on a phone, insets taken off. */
+        val PhoneGroupWidth = 320.dp
+
+        /** Taller than this and the label is on more than one line. */
+        val OneLine = 28.dp
     }
 }

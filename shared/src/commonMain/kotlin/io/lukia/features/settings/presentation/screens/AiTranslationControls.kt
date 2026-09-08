@@ -52,11 +52,12 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * Everything translating does that only a model can do.
  *
- * A page of its own, and named for what it is. It was called Providers, which
- * described the fields in it - an address, a key, a model name, a timeout - and
- * said nothing about why a reader would open it. What is actually behind it is
- * one decision: whether this reader has an AI translation service, and what they
- * want it to do.
+ * A page of its own, and the segment for it reads "Beta" - which is the
+ * shortest true thing that can be said about everything on it. It was called
+ * Providers, which described the fields in it - an address, a key, a model name,
+ * a timeout - and said nothing about why a reader would open it. What is
+ * actually behind it is one decision: whether this reader has an AI translation
+ * service, and what they want it to do.
  *
  * Everything answerable without one went to Translating, including the two
  * groups that choose who answers about a single word. A word is where the line

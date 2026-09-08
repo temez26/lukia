@@ -449,7 +449,10 @@
     <string name="settings_area_appearance">Appearance</string>
     <string name="settings_area_reading">Reading</string>
     <string name="settings_area_translating">Translating</string>
-    <string name="settings_area_ai_translation">AI translation</string>
+    <!-- The AI translation segment. Named for the state everything behind it is
+         in rather than for what it holds: it is the shortest true thing that
+         fits in a segment beside four others. -->
+    <string name="settings_area_ai_translation">Beta</string>
     <!-- Marks a setting that is new and known to be rough. -->
     <string name="settings_beta">BETA</string>
     <string name="settings_show">Show</string>
@@ -479,12 +482,9 @@
     <string name="settings_pointing_at_the_book">Pointing at the book</string>
     <string name="settings_pointing_footnote">Each does one thing, always. Doing it again on the same passage puts the book\u2019s own words back - except on a word you have looked up, where holding opens more about it instead.</string>
     <string name="settings_tap_to_translate">Tap a word to translate it</string>
-    <string name="settings_tap_to_translate_info">Tapping the same word again puts the book’s own word back. A tap can be raised to the sentence or the paragraph once a translation service is set up — nothing but a model can answer either.</string>
     <string name="settings_asking_for_more">Asking for more than a word</string>
     <string name="settings_asking_for_more_footnote">A dictionary answers a word and nothing larger, so these do nothing until a translation service is set up above. Off here is the same off as the switches under Translating.</string>
-    <string name="settings_notes_detail">The translator's asides, set small under the text they belong to: a remark about an ambiguous word, a dictionary's other senses. Turn them off to keep the page as the book set it \u2014 holding a word still opens everything it means. Why a passage could not be translated is always shown.</string>
     <string name="settings_hold_again">Hold a word again for more about it</string>
-    <string name="settings_hold_again_detail">Once a word has been looked up, holding it opens every sense a dictionary has for it and a way through to %1$s. Works whatever the hold above is set to.</string>
     <string name="settings_translating_ahead">Translating ahead</string>
     <string name="settings_translating_ahead_footnote">Both are new, and both are slow and expensive: they translate a screenful at a time rather than the passage you pointed at. Off until you ask for them, and hidden from the reader entirely while they are.</string>
     <string name="settings_on_screen_detail">Adds a button that translates every sentence you can see, once.</string>
@@ -532,7 +532,6 @@
     <string name="settings_diagnostics">Diagnostics</string>
     <string name="settings_diagnostics_footnote">Kept on this device until you copy it, and never sent anywhere. Holds no book text, titles, file names or keys.</string>
     <string name="settings_developer">Developer options</string>
-    <string name="settings_developer_info">Puts the diagnostics record and the last crash report at the foot of this page. Both are kept on this device and are never sent anywhere. Turn this off to put them away again.</string>
     <string name="settings_record_problems">Record what goes wrong</string>
     <string name="settings_record_problems_detail">Notes when a cover, a page or a translation could not be read, so a problem you can describe has something behind it. Turning this off clears what was recorded.</string>
     <string name="settings_nothing_recorded">Nothing recorded yet. Use the app as you did when it went wrong, then come back.</string>
