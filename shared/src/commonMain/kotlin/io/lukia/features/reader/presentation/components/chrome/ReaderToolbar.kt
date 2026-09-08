@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -243,7 +244,12 @@ internal fun PageIndicatorButton(
 
     val interactionSource = remember { MutableInteractionSource() }
     val metrics = LocalLukiaMetrics.current
-    val shape = MaterialTheme.shapes.small
+
+    // A capsule rather than the rounded rect a control in a layout gets. This
+    // one sits inside the toolbar's own capsule with a couple of points either
+    // side of it, and two different corner radii that close together read as a
+    // mistake rather than as a hierarchy.
+    val shape = CircleShape
 
     // Read before the modifier chain: `semantics` is not a composable scope.
     val openContents = stringResource(Res.string.reader_open_contents)
@@ -253,25 +259,20 @@ internal fun PageIndicatorButton(
         description = stringResource(Res.string.reader_contents),
         shortcut = "C",
     ) {
+        // What is pressed, which is as tall as anything else in the bar - a
+        // thumb aiming at the middle of the toolbar has to land on this. What is
+        // drawn is the row inside it.
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
+                .heightIn(min = metrics.controlHeight)
                 .clip(shape)
-                .background(
-                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = LukiaAlpha.Fill),
-                )
                 .pressable(
                     interactionSource = interactionSource,
                     shape = shape,
                     onClickLabel = openContents,
                     onClick = onClick,
                 )
-                // As tall as anything else in the bar. Sized by its own line of
-                // 13sp text this is a 24dp target inside a 44dp toolbar, which
-                // is the one control in the reader that is pressed on purpose
-                // rather than found by accident.
-                .heightIn(min = metrics.controlHeight)
-                .padding(horizontal = Space.md, vertical = Space.xs)
                 // "12 / 348" is a clear enough label to look at and a poor one to
                 // hear, so assistive technology is given the sentence instead.
                 //
@@ -283,14 +284,32 @@ internal fun PageIndicatorButton(
                         .joinToString(separator = ". ")
                 },
         ) {
-            PageIndicatorLabel(chapter = chapter, current = current, pageCount = pageCount)
-
-            DisclosureChevron(
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            // What is drawn, which is the label and a little air around it.
+            //
+            // The fill used to be the target: held to the same height, it was a
+            // 44dp slab around one 13sp line on every device with a thumb, so
+            // most of the inside of the toolbar was tinted grey and read as a
+            // background rather than as something to press. Splitting the two
+            // keeps the target Apple asks for and gives back the air either
+            // side of it that made the bar look like a bar.
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .padding(start = Space.xs)
-                    .size(metrics.iconSmall * 0.6f),
-            )
+                    .clip(shape)
+                    .background(
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = LukiaAlpha.Fill),
+                    )
+                    .padding(horizontal = Space.md, vertical = Space.xs),
+            ) {
+                PageIndicatorLabel(chapter = chapter, current = current, pageCount = pageCount)
+
+                DisclosureChevron(
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .padding(start = Space.xs)
+                        .size(metrics.iconSmall * 0.6f),
+                )
+            }
         }
     }
 }

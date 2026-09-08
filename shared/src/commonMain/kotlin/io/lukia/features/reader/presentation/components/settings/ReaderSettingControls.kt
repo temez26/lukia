@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +28,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.lukia.features.reader.domain.ReaderSettings
+import io.lukia.features.reader.presentation.theme.ReaderPanelWidth
 import io.lukia.resources.Res
 import io.lukia.resources.reader_decrease_text_size
 import io.lukia.resources.reader_increase_text_size
@@ -46,6 +46,10 @@ import org.jetbrains.compose.resources.stringResource
  * control in the panel starts at the same place down the column - five width
  * presets and two typeface options line up instead of each dividing whatever its
  * own label left over.
+ *
+ * Against [ReaderPanelWidth] less its insets this leaves a little over 120dp for
+ * the label, which holds every setting name here on one line in English and
+ * ellipsises rather than wraps in the languages where it does not.
  */
 private val WideControlWidth: Dp = 224.dp
 
@@ -95,11 +99,19 @@ internal fun SettingGroup(
                 modifier = Modifier.weight(1f),
             )
 
-            // A floor rather than a fixed width. Five segments reading "Tight",
-            // "Normal" and "Relaxed" fit 224dp in English and not in every
-            // language, and a control given exactly that much has nowhere to
-            // grow into - the label beside it does, because it is weighted.
-            Box(modifier = Modifier.widthIn(min = WideControlWidth)) {
+            // Fixed rather than a floor, and the label weighted against it.
+            //
+            // A Row measures the children that named no weight first, handing
+            // each one everything still unclaimed - and a segmented control
+            // fills whatever width it is offered. Given a floor, it took the
+            // whole row and the label beside it was measured at nothing: the
+            // wide panel drew six unlabelled tracks, and which of them set the
+            // typeface and which the line spacing was left to be guessed at.
+            //
+            // The panel is a fixed [ReaderPanelWidth] wide, so this leaves the
+            // label a known measure rather than whatever is left over, and
+            // every control in the column starts at the same place down it.
+            Box(modifier = Modifier.width(WideControlWidth)) {
                 slot()
             }
         }
