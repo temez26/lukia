@@ -323,7 +323,7 @@
     <string name="settings_area_appearance">Aspetto</string>
     <string name="settings_area_reading">Lettura</string>
     <string name="settings_area_translating">Traduzione</string>
-    <string name="settings_area_providers">Servizi</string>
+    <string name="settings_area_ai_translation">Traduzione con IA</string>
     <string name="settings_beta">BETA</string>
     <string name="settings_show">Mostra</string>
     <string name="settings_hide">Nascondi</string>
@@ -356,8 +356,8 @@
     <string name="settings_translating_ahead_footnote">Sono entrambe nuove, ed entrambe lente e costose: traducono una schermata intera alla volta invece del passo che hai indicato. Disattivate finché non le chiedi, e nel frattempo del tutto nascoste al lettore.</string>
     <string name="settings_on_screen_detail">Aggiunge un pulsante che traduce una volta ogni frase che vedi.</string>
     <string name="settings_as_you_read_detail">Aggiunge un pulsante che continua a tradurre tutto ciò che scorre finché non lo disattivi. Questo è quello costoso.</string>
-    <string name="settings_translation_service">Traduzione con IA</string>
-    <string name="settings_translation_service_footnote">L'unica parte di Lukia che richiede un servizio tuo, e la più recente. Cercare una parola qui sopra funziona senza. Una frase intera no: va a un modello che configuri qui e paghi a passaggio.</string>
+    <string name="settings_translation_service">Servizio di traduzione</string>
+    <string name="settings_translation_service_footnote">Niente in questa pagina fa qualcosa finché questo non è configurato. Cercare una parola sotto Traduzione funziona senza; una frase intera no: va a un modello che paghi a passaggio.</string>
     <string name="settings_address">Indirizzo</string>
     <string name="settings_model">Modello</string>
     <string name="settings_api_key">Chiave API</string>

@@ -43,7 +43,7 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * The least room a group is given, however little it has to put in it.
  *
- * Appearance is one control and Providers is a dozen, and a page that shrank
+ * Appearance is one control and AI translation is a dozen, and a page that shrank
  * to fit whichever was open made switching between them feel like opening and
  * closing something rather than moving along a row. Held at about the height of
  * a phone's content area, the shortest group still fills the view and the

@@ -449,7 +449,7 @@
     <string name="settings_area_appearance">Appearance</string>
     <string name="settings_area_reading">Reading</string>
     <string name="settings_area_translating">Translating</string>
-    <string name="settings_area_providers">Providers</string>
+    <string name="settings_area_ai_translation">AI translation</string>
     <!-- Marks a setting that is new and known to be rough. -->
     <string name="settings_beta">BETA</string>
     <string name="settings_show">Show</string>
@@ -491,8 +491,8 @@
     <string name="settings_as_you_read_detail">Adds a button that goes on translating whatever scrolls into view until you turn it off. This is the expensive one.</string>
 
     <!-- Who answers. -->
-    <string name="settings_translation_service">AI translation</string>
-    <string name="settings_translation_service_footnote">The only part of Lukia that needs a service of your own, and the newest. Looking a word up above works without it. A whole sentence does not: it goes to a model you set up here and pay for by the passage.</string>
+    <string name="settings_translation_service">Translation service</string>
+    <string name="settings_translation_service_footnote">Nothing under this page does anything until this is set up. Looking a word up under Translating works without it; a whole sentence does not — it goes to a model you pay for by the passage.</string>
     <string name="settings_address">Address</string>
     <string name="settings_model">Model</string>
     <string name="settings_api_key">API key</string>

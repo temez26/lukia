@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import io.lukia.resources.Res
 import io.lukia.resources.settings_about
 import io.lukia.resources.settings_area_appearance
-import io.lukia.resources.settings_area_providers
+import io.lukia.resources.settings_area_ai_translation
 import io.lukia.resources.settings_area_reading
 import io.lukia.resources.settings_area_translating
 import org.jetbrains.compose.resources.stringResource
@@ -22,6 +22,6 @@ internal fun SettingsArea.displayTitle(): String = when (this) {
     SettingsArea.Appearance -> stringResource(Res.string.settings_area_appearance)
     SettingsArea.Reading -> stringResource(Res.string.settings_area_reading)
     SettingsArea.Translating -> stringResource(Res.string.settings_area_translating)
-    SettingsArea.Providers -> stringResource(Res.string.settings_area_providers)
+    SettingsArea.AiTranslation -> stringResource(Res.string.settings_area_ai_translation)
     SettingsArea.About -> stringResource(Res.string.settings_about)
 }

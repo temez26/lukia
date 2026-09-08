@@ -379,7 +379,7 @@
     <string name="settings_area_appearance">Ulkoasu</string>
     <string name="settings_area_reading">Lukeminen</string>
     <string name="settings_area_translating">Kääntäminen</string>
-    <string name="settings_area_providers">Palvelut</string>
+    <string name="settings_area_ai_translation">Tekoälykäännös</string>
     <string name="settings_beta">BEETA</string>
     <string name="settings_show">Näytä</string>
     <string name="settings_hide">Piilota</string>
@@ -416,8 +416,8 @@
     <string name="settings_on_screen_detail">Lisää painikkeen, joka kääntää kerran kaikki näkyvissä olevat lauseet.</string>
     <string name="settings_as_you_read_detail">Lisää painikkeen, joka jatkaa kääntämistä sitä mukaa kuin tekstiä vierii näkyviin, kunnes otat sen pois käytöstä. Tämä on se kallis.</string>
 
-    <string name="settings_translation_service">Tekoälykäännös</string>
-    <string name="settings_translation_service_footnote">Lukian ainoa osa, joka vaatii oman palvelun, ja sen uusin. Sanan hakeminen ylempää toimii ilman sitä. Kokonainen lause ei toimi: se menee mallille, jonka otat täällä käyttöön ja josta maksat kappaleelta.</string>
+    <string name="settings_translation_service">Käännöspalvelu</string>
+    <string name="settings_translation_service_footnote">Mikään tällä sivulla ei tee mitään ennen kuin tämä on otettu käyttöön. Sanan hakeminen Kääntäminen-sivulta toimii ilman sitä; kokonainen lause ei toimi — se menee mallille, josta maksat kappaleelta.</string>
     <string name="settings_address">Osoite</string>
     <string name="settings_model">Malli</string>
     <string name="settings_api_key">API-avain</string>

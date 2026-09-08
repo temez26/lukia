@@ -365,7 +365,7 @@
     <string name="settings_area_appearance">Utseende</string>
     <string name="settings_area_reading">Läsning</string>
     <string name="settings_area_translating">Översättning</string>
-    <string name="settings_area_providers">Tjänster</string>
+    <string name="settings_area_ai_translation">AI-översättning</string>
     <string name="settings_beta">BETA</string>
     <string name="settings_show">Visa</string>
     <string name="settings_hide">Dölj</string>
@@ -402,8 +402,8 @@
     <string name="settings_on_screen_detail">Lägger till en knapp som översätter varje mening du ser, en gång.</string>
     <string name="settings_as_you_read_detail">Lägger till en knapp som fortsätter översätta allt som rullar in tills du stänger av den. Det är den dyra.</string>
 
-    <string name="settings_translation_service">AI-översättning</string>
-    <string name="settings_translation_service_footnote">Den enda delen av Lukia som behöver en egen tjänst, och den nyaste. Att slå upp ett ord ovanför fungerar utan den. En hel mening gör det inte: den går till en modell du ställer in här och betalar för per stycke.</string>
+    <string name="settings_translation_service">Översättningstjänst</string>
+    <string name="settings_translation_service_footnote">Ingenting på den här sidan gör något förrän detta är inställt. Att slå upp ett ord under Översättning fungerar utan den; en hel mening gör det inte: den går till en modell du betalar för per stycke.</string>
     <string name="settings_address">Adress</string>
     <string name="settings_model">Modell</string>
     <string name="settings_api_key">API-nyckel</string>

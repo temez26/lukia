@@ -50,20 +50,31 @@ enum class SettingsArea {
     /** How a book is set: its page, its type, and what a PDF opens as. */
     Reading,
 
-    /** What is translated, when, and into what. */
+    /**
+     * What is translated, when, into what, and who answers about a single word.
+     *
+     * Everything a reader has on the day they install the app. A word goes to a
+     * dictionary or to Google over an ordinary web API, free and with nothing to
+     * fill in, so all of it belongs beside the language rather than behind a
+     * page about machinery.
+     */
     Translating,
 
     /**
-     * Who answers - whatever looks up a single word, the translation service,
-     * and the settings that mean nothing without one.
+     * Everything translating does that only a model can do.
+     *
+     * Named for the decision behind it rather than for the fields in it. It was
+     * called Providers, which described an address, a key and a timeout and said
+     * nothing about why a reader would open it - and put the dictionary that
+     * needs none of them on the same page as the service that is all of them.
      *
      * Apart from Translating because it is the group that can be filled in
-     * wrongly, and the one whose settings are about machinery rather than about
-     * reading. Somebody changing the language they read into should not have to
-     * scroll past an API key to reach it - and should not be offered a gesture
-     * asking for a paragraph that nothing on their device can translate.
+     * wrongly, and the one that costs money. Somebody changing the language they
+     * read into should not have to scroll past an API key to reach it, and
+     * should not be offered a gesture asking for a paragraph that nothing on
+     * their device can translate.
      */
-    Providers,
+    AiTranslation,
 
     /**
      * Which Lukia this is, what it was built from, and the record of what went

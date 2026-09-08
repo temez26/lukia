@@ -59,10 +59,11 @@ internal fun SettingsAreaContent(
             SettingsArea.Translating -> TranslatingSettings(
                 translation = translation,
                 actions = translatingActions,
+                providerActions = providerActions,
                 groupColor = groupColor,
             )
 
-            SettingsArea.Providers -> ProviderSettings(
+            SettingsArea.AiTranslation -> AiTranslationSettings(
                 translation = translation,
                 state = providerState,
                 actions = providerActions,

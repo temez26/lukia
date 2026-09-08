@@ -2,6 +2,8 @@ package io.lukia.features.settings.presentation.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -9,6 +11,7 @@ import io.lukia.features.settings.presentation.ProviderActions
 import io.lukia.features.settings.presentation.ProviderState
 import io.lukia.features.settings.presentation.TranslatingActions
 import io.lukia.features.settings.presentation.components.SettingsTextField
+import io.lukia.core.domain.text.PassageUnit
 import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.features.translate.presentation.GestureControl
@@ -34,16 +37,79 @@ import io.lukia.resources.settings_translation_service
 import io.lukia.resources.settings_translation_service_footnote
 import io.lukia.shared.presentation.components.controls.ChoiceList
 import io.lukia.shared.presentation.components.controls.SegmentedControl
+import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 
-// The half of the Providers page that only means anything once the reader has
-// found a model, paid for it and pointed this at it: the service itself, how
-// much of the book a gesture may ask it for, and the two ways of asking it for
-// more than the reader pointed at. All of it wears the beta mark.
+// Everything that only means anything once the reader has found a model, paid
+// for it and pointed this at it: the service itself, how much of the book a
+// gesture may ask it for, and the two ways of asking it for more than the reader
+// pointed at. All of it wears the beta mark.
 //
-// Apart from the word lookup in ProviderSettingsControls, which is the other
-// half and the half that works on an install nobody has configured.
+// Apart from Translating, which is everything that works on an install nobody
+// has configured - including the dictionary that answers a single word.
+
+/**
+ * Everything translating does that only a model can do.
+ *
+ * A page of its own, and named for what it is. It was called Providers, which
+ * described the fields in it - an address, a key, a model name, a timeout - and
+ * said nothing about why a reader would open it. What is actually behind it is
+ * one decision: whether this reader has an AI translation service, and what they
+ * want it to do.
+ *
+ * Everything answerable without one went to Translating, including the two
+ * groups that choose who answers about a single word. A word is where the line
+ * falls: a dictionary has an entry for one and none for a sentence.
+ *
+ * The service comes first because nothing under it does anything until it is set
+ * up. Then how much of the book a gesture may ask it for, and last the two ways
+ * of asking it for more than the reader pointed at - which is the order of how
+ * much of the reader's money each one can spend.
+ */
+@Composable
+internal fun AiTranslationSettings(
+    translation: TranslationSettings,
+    state: ProviderState,
+    actions: ProviderActions,
+    /**
+     * What is translated, as opposed to who answers - see [TranslatingActions].
+     *
+     * Here as well as on the Translating page because two of those settings only
+     * mean anything beside a translation service: a gesture asking for a
+     * sentence, and the two ways of translating ahead. They are shown under the
+     * service for that reason, and they are changed through the same actions
+     * wherever they are shown.
+     */
+    translatingActions: TranslatingActions,
+    groupColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    val dimens = LocalLukiaDimens.current
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        TranslationServiceSection(
+            translation = translation,
+            state = state,
+            actions = actions,
+            groupColor = groupColor,
+        )
+
+        GestureUnitSection(
+            translation = translation,
+            actions = translatingActions,
+            groupColor = groupColor,
+            modifier = Modifier.padding(top = dimens.sectionSpacing),
+        )
+
+        TranslatingAheadSection(
+            translation = translation,
+            actions = translatingActions,
+            groupColor = groupColor,
+            modifier = Modifier.padding(top = dimens.sectionSpacing),
+        )
+    }
+}
 
 /**
  * Who translates a passage with a model: the service, where it lives, what it is
@@ -58,7 +124,7 @@ import org.jetbrains.compose.resources.stringResource
  * which of the two they are setting up before they paste a key into it.
  */
 @Composable
-internal fun TranslationServiceSection(
+private fun TranslationServiceSection(
     translation: TranslationSettings,
     state: ProviderState,
     actions: ProviderActions,
@@ -197,17 +263,21 @@ private fun ModelChoice(
  * How much of the book a tap and a hold ask for, where that question can only be
  * asked.
  *
- * The Translating page has a switch for each of these gestures, and a switch is
- * the whole of what a reader without a service can set: a word, or nothing. The
- * sentence and the paragraph are here because nothing but a model answers
- * either - a dictionary handed a sentence is a dictionary handed something it
- * has no entry for.
+ * Only the sentence and the paragraph, because they are the only two a model has
+ * to be asked for. Whether a tap translates the word is a switch on the
+ * Translating page, where the dictionary that answers a word also lives - and
+ * offering the word again here would be a second control writing the same
+ * setting in other words.
+ *
+ * So a reader whose tap is set to the word finds nothing selected in the row
+ * for it. That is the honest answer rather than a gap: their tap is set,
+ * elsewhere, to something smaller than anything this page can offer.
  *
  * Turning a gesture off here is the same off as the switch there. There is one
  * setting behind both, and it says what a gesture asks for, including nothing.
  */
 @Composable
-internal fun GestureUnitSection(
+private fun GestureUnitSection(
     translation: TranslationSettings,
     actions: TranslatingActions,
     groupColor: Color,
@@ -227,6 +297,7 @@ internal fun GestureUnitSection(
                     onSelect = {
                         actions.onGesturesChange(translation.gestures.copy(tap = it))
                     },
+                    units = ModelUnits,
                 )
             }
 
@@ -236,6 +307,7 @@ internal fun GestureUnitSection(
                     onSelect = {
                         actions.onGesturesChange(translation.gestures.copy(longPress = it))
                     },
+                    units = ModelUnits,
                 )
             }
         }
@@ -255,7 +327,7 @@ internal fun GestureUnitSection(
  * reader has to have set up before either of them does anything at all.
  */
 @Composable
-internal fun TranslatingAheadSection(
+private fun TranslatingAheadSection(
     translation: TranslationSettings,
     actions: TranslatingActions,
     groupColor: Color,
@@ -293,3 +365,12 @@ internal fun TranslatingAheadSection(
         }
     }
 }
+
+/**
+ * The passage units nothing but a model can answer.
+ *
+ * The word is left out for the reason [GestureUnitSection] gives: it is the one
+ * unit a dictionary has an entry for, and it is set by a switch on the
+ * Translating page beside the dictionary that answers it.
+ */
+private val ModelUnits = listOf(PassageUnit.Sentence, PassageUnit.Paragraph)

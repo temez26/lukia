@@ -16,7 +16,7 @@ import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.resources.Res
 import io.lukia.resources.settings_about
 import io.lukia.resources.settings_area_appearance
-import io.lukia.resources.settings_area_providers
+import io.lukia.resources.settings_area_ai_translation
 import io.lukia.resources.settings_area_reading
 import io.lukia.resources.settings_area_translating
 import io.lukia.shared.presentation.theme.LukiaTheme
@@ -70,7 +70,7 @@ class SettingsAreasTest {
         SettingsArea.Appearance -> Res.string.settings_area_appearance
         SettingsArea.Reading -> Res.string.settings_area_reading
         SettingsArea.Translating -> Res.string.settings_area_translating
-        SettingsArea.Providers -> Res.string.settings_area_providers
+        SettingsArea.AiTranslation -> Res.string.settings_area_ai_translation
         SettingsArea.About -> Res.string.settings_about
     }
 
@@ -86,8 +86,9 @@ class SettingsAreasTest {
     }
 
     /**
-     * The language and what a thumb on the page does: the two things a reader can
-     * set on the day they install the app, both answerable by a dictionary.
+     * Everything a reader has on the day they install the app: the language, what
+     * a thumb on the page does, and who answers about a single word - all of it
+     * answerable by a dictionary over an ordinary web API.
      */
     @Test
     fun translatingHoldsWhatAnybodyCanUse() = runComposeUiTest {
@@ -97,29 +98,22 @@ class SettingsAreasTest {
 
         onNodeWithText("Translate into").assertExists()
         onNodeWithText("Pointing at the book").assertExists()
-    }
-
-    @Test
-    fun providersHoldsWhoAnswers() = runComposeUiTest {
-        setSettings()
-
-        open(SettingsArea.Providers)
-
         onNodeWithText("Looking up a word").assertExists()
-        onNodeWithText("AI translation").assertExists()
+        onNodeWithText("Reading more about a word").assertExists()
     }
 
     /**
-     * And everything that only a model can do, under it. A sentence, a paragraph
-     * and a screenful at a time all need the service, and beside the language
-     * they were controls that did nothing for most readers.
+     * And the other page is everything that only a model can do: the service, how
+     * much of the book a gesture may ask it for, and the two ways of asking it
+     * for more than the reader pointed at.
      */
     @Test
-    fun andWhatOnlyTheServiceCanDo() = runComposeUiTest {
+    fun aiTranslationHoldsWhatOnlyAModelCanDo() = runComposeUiTest {
         setSettings()
 
-        open(SettingsArea.Providers)
+        open(SettingsArea.AiTranslation)
 
+        onNodeWithText("Translation service").assertExists()
         onNodeWithText("Asking for more than a word").assertExists()
         onNodeWithText("Translating ahead").assertExists()
     }
@@ -193,9 +187,9 @@ class SettingsAreasTest {
     }
 
     /**
-     * The whole reason Providers is a group of its own: somebody changing the
+     * The whole reason AI translation is a page of its own: somebody changing the
      * language they read into must not have to scroll past an API key to reach
-     * it.
+     * it, or past two switches that spend money a screenful at a time.
      */
     @Test
     fun theMachineryIsNotOnTheTranslatingPage() = runComposeUiTest {
@@ -203,10 +197,23 @@ class SettingsAreasTest {
 
         open(SettingsArea.Translating)
 
-        onNodeWithText("AI translation").assertDoesNotExist()
-        onNodeWithText("Looking up a word").assertDoesNotExist()
+        onNodeWithText("Translation service").assertDoesNotExist()
         onNodeWithText("Asking for more than a word").assertDoesNotExist()
         onNodeWithText("Translating ahead").assertDoesNotExist()
+    }
+
+    /**
+     * And the dictionary is not on the page about the model. It needs no key, no
+     * address and no money, which is the whole reason the two pages are apart.
+     */
+    @Test
+    fun norIsTheDictionaryOnTheOneAboutTheModel() = runComposeUiTest {
+        setSettings()
+
+        open(SettingsArea.AiTranslation)
+
+        onNodeWithText("Looking up a word").assertDoesNotExist()
+        onNodeWithText("Reading more about a word").assertDoesNotExist()
     }
 
     private companion object {

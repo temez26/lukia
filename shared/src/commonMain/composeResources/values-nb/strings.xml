@@ -323,7 +323,7 @@
     <string name="settings_area_appearance">Utseende</string>
     <string name="settings_area_reading">Lesing</string>
     <string name="settings_area_translating">Oversetting</string>
-    <string name="settings_area_providers">Tjenester</string>
+    <string name="settings_area_ai_translation">KI-oversettelse</string>
     <string name="settings_beta">BETA</string>
     <string name="settings_show">Vis</string>
     <string name="settings_hide">Skjul</string>
@@ -356,8 +356,8 @@
     <string name="settings_translating_ahead_footnote">Begge er nye, og begge er trege og dyre: de oversetter en skjermfull om gangen i stedet for stedet du pekte på. Av til du ber om dem, og helt skjult for leseren så lenge.</string>
     <string name="settings_on_screen_detail">Legger til en knapp som oversetter hver setning du ser, én gang.</string>
     <string name="settings_as_you_read_detail">Legger til en knapp som fortsetter å oversette alt som ruller inn til du slår den av. Dette er den dyre.</string>
-    <string name="settings_translation_service">KI-oversettelse</string>
-    <string name="settings_translation_service_footnote">Den eneste delen av Lukia som trenger en tjeneste du eier selv, og den nyeste. Å slå opp et ord over fungerer uten den. En hel setning gjør det ikke: den går til en modell du setter opp her og betaler for per avsnitt.</string>
+    <string name="settings_translation_service">Oversettelsestjeneste</string>
+    <string name="settings_translation_service_footnote">Ingenting på denne siden gjør noe før dette er satt opp. Å slå opp et ord under Oversetting fungerer uten den; en hel setning gjør det ikke — den går til en modell du betaler for per avsnitt.</string>
     <string name="settings_address">Adresse</string>
     <string name="settings_model">Modell</string>
     <string name="settings_api_key">API-nøkkel</string>
