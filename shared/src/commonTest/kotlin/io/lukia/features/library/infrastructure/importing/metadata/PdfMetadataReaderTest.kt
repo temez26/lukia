@@ -122,8 +122,35 @@ class PdfMetadataReaderTest {
         assertNull(metadata)
     }
 
+    /**
+     * What the document says it is written in, which PDF keeps in the catalog
+     * rather than the information dictionary.
+     *
+     * Read because a reader holding a word in a PDF and taking it out to a
+     * dictionary was sent there with no source language - the site's own "any
+     * language" dash - while the same word in an EPUB arrived with the pair the
+     * book declared.
+     */
     @Test
-    fun aFileWithNoInfoDictionaryIsNothing() {
+    fun readsTheLanguageTheDocumentDeclares() {
+        val metadata = extractPdfMetadata(
+            MinimalPdf.withInfo("/Title (A Real Book)", catalogEntries = "/Lang (en-GB) "),
+        )
+
+        assertEquals("en-GB", metadata?.language)
+    }
+
+    /** And reads it from a file that carries no information dictionary at all. */
+    @Test
+    fun andFromAFileWithNoInformationDictionary() {
+        val metadata = extractPdfMetadata(MinimalPdf.withCatalog("/Lang (fi) "))
+
+        assertEquals("fi", metadata?.language)
+    }
+
+    /** A file that says nothing still says nothing. */
+    @Test
+    fun aFileWithNoInfoDictionaryOrLanguageIsNothing() {
         assertNull(extractPdfMetadata(MinimalPdf.withOutline()))
     }
 

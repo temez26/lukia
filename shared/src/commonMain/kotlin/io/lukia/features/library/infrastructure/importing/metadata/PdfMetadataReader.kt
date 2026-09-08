@@ -7,7 +7,8 @@ import io.lukia.core.infrastructure.pdf.PdfObjectIndex
 import io.lukia.core.infrastructure.pdf.asText
 
 /**
- * A PDF's document information dictionary.
+ * What a PDF says about itself: its information dictionary, and the one field
+ * worth having that PDF never put there - see [declaredLanguage].
  *
  * Much the poorest of the three sources, and treated accordingly. The format has
  * no notion of a publisher or an ISBN, and the fields it does have are filled in
@@ -29,9 +30,13 @@ internal fun extractPdfMetadata(pdfBytes: ByteArray): BookMetadata? {
     val index = runCatching { PdfObjectIndex(ByteArrayPdfSource(pdfBytes)) }.getOrNull()
         ?: return null
 
-    val info = index.info() ?: return null
+    // Not a reason to give up on the file: plenty of PDFs carry no information
+    // dictionary at all and still say in their catalog what language they are
+    // written in, which is the one thing here a reader is sent out of the app
+    // with.
+    val info = index.info()
 
-    fun entry(key: String): String? = index.resolve(info[key])
+    fun entry(key: String): String? = index.resolve(info?.get(key))
         .asText
         ?.collapseWhitespace()
         ?.takeIf { it.isNotBlank() }
@@ -42,10 +47,33 @@ internal fun extractPdfMetadata(pdfBytes: ByteArray): BookMetadata? {
         published = entry("CreationDate")?.asPdfYear(),
         description = entry("Subject"),
         subjects = entry("Keywords").orEmpty().splitKeywords(),
+        language = index.declaredLanguage(),
     )
 
     return metadata.takeIf { !it.isEmpty }
 }
+
+/**
+ * What the document says it is written in.
+ *
+ * Alone among these in coming from the catalog rather than the information
+ * dictionary: `/Lang` is a property of the document itself and PDF never gave
+ * `/Info` a field for it. Read at all because a reader holding a word in a PDF
+ * and taking it out to a dictionary was being sent there with no source
+ * language - the site's own "any language" dash - while the same word in an EPUB
+ * arrived with the pair the book declared.
+ *
+ * A BCP 47 tag as written, `en` or `en-GB`, and left as written: what is done
+ * with it belongs to whoever is asking, and both of the things that ask - the
+ * translator's prompt and a dictionary's address - want different parts of it.
+ *
+ * Not every PDF has one. A file that says nothing still says nothing, and the
+ * dash is the honest answer there rather than a guess at English.
+ */
+private fun PdfObjectIndex.declaredLanguage(): String? = resolve(catalog()?.get("Lang"))
+    .asText
+    ?.collapseWhitespace()
+    ?.takeIf { it.isNotBlank() }
 
 /**
  * Producers write the source document's file name into `/Title` far more often
