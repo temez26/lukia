@@ -90,6 +90,22 @@ data class TranslationGestures(
     fun tapping(unit: PassageUnit?): TranslationGestures =
         copy(tapTranslates = unit != null, tapUnit = unit ?: tapUnit)
 
+    /**
+     * These gestures as they behave with no translation service behind them: a
+     * tap asks for the word, and a hold translates nothing.
+     *
+     * A view rather than a change. Nothing but a model answers a sentence or a
+     * paragraph, so with none set up - or with AI switched off altogether - a
+     * gesture set to one of them could only come back as an error. What the
+     * reader chose is left in the settings untouched and is what they get back
+     * the moment there is a service again.
+     *
+     * A tap still translates if it was translating, and holding a word for what
+     * else it means still works: both are answered by a dictionary that needs
+     * nothing.
+     */
+    fun withoutAModel(): TranslationGestures = copy(tapUnit = PassageUnit.Word, longPress = null)
+
     companion object {
 
         val Default = TranslationGestures()

@@ -351,6 +351,9 @@
     <string name="settings_translating_ahead_footnote">Begge er nye, og begge er trege og dyre: de oversetter en skjermfull om gangen i stedet for stedet du pekte på. Av til du ber om dem, og helt skjult for leseren så lenge.</string>
     <string name="settings_on_screen_detail">Legger til en knapp som oversetter hver setning du ser, én gang.</string>
     <string name="settings_as_you_read_detail">Legger til en knapp som fortsetter å oversette alt som ruller inn til du slår den av. Dette er den dyre.</string>
+    <string name="settings_ai_translation">KI-oversettelse</string>
+    <string name="settings_use_ai">Bruk en oversettelsestjeneste</string>
+    <string name="settings_use_ai_detail">Av slår Lukia opp ett ord i en gratis ordbok og gjør ingenting annet – ingen nøkkel å skrive inn, ingen knapper i leseren. På kan den oversette hele setninger og avsnitt gjennom en tjeneste du setter opp og betaler for per avsnitt. Å slå den av beholder alt du har satt opp.</string>
     <string name="settings_translation_service">Oversettelsestjeneste</string>
     <string name="settings_translation_service_footnote">Ingenting på denne siden gjør noe før dette er satt opp. Å slå opp et ord under Oversetting fungerer uten den; en hel setning gjør det ikke — den går til en modell du betaler for per avsnitt.</string>
     <string name="settings_address">Adresse</string>

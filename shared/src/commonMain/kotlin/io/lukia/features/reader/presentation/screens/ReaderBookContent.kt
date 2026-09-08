@@ -138,6 +138,19 @@ internal fun ReaderContent(
         onVisibleChange = onTranslationsVisibleChange,
     )
 
+    // What a gesture actually asks for, which is not always what it is set to.
+    // Nothing but a translation service answers a sentence or a paragraph, so
+    // with none set up - or with AI switched off altogether - a tap asks for the
+    // word and a hold asks for nothing, rather than asking for something that
+    // can only come back as an error.
+    //
+    // The page gets this and the panel below gets the setting itself, because
+    // the panel is where the reader changes it: shown the clamped value, its
+    // switch would write the clamp back and quietly lose the unit they chose.
+    val gesturesInForce = remember(gestures, translationServiceConfigured) {
+        if (translationServiceConfigured) gestures else gestures.withoutAModel()
+    }
+
     val translationPreferences = ReaderTranslationPreferences(
         targetLanguage = targetLanguage,
         gestures = gestures,
@@ -282,7 +295,7 @@ internal fun ReaderContent(
                                 onPassageInquiry = onPassageInquiry,
                                 onPassagesRequested = onPassagesRequested,
                                 translateOnScreen = translateOnScreen,
-                                gestures = gestures,
+                                gestures = gesturesInForce,
                                 sentencesOnPage = sentencesOnPage,
                                 renderPage = renderPage,
                             )
@@ -301,7 +314,7 @@ internal fun ReaderContent(
                                 onPassagesRequested = onPassagesRequested,
                                 onPagesChange = { paginated = it },
                                 translateOnScreen = translateOnScreen,
-                                gestures = gestures,
+                                gestures = gesturesInForce,
                                 openedAt = initialPosition,
                             )
                         }

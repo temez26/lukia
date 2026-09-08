@@ -411,6 +411,9 @@
     <string name="settings_on_screen_detail">Lisää painikkeen, joka kääntää kerran kaikki näkyvissä olevat lauseet.</string>
     <string name="settings_as_you_read_detail">Lisää painikkeen, joka jatkaa kääntämistä sitä mukaa kuin tekstiä vierii näkyviin, kunnes otat sen pois käytöstä. Tämä on se kallis.</string>
 
+    <string name="settings_ai_translation">Tekoälykäännös</string>
+    <string name="settings_use_ai">Käytä käännöspalvelua</string>
+    <string name="settings_use_ai_detail">Pois päältä Lukia hakee yksittäisen sanan ilmaisesta sanakirjasta eikä tee muuta – ei avainta syötettäväksi eikä säätimiä lukunäkymässä. Päällä se voi kääntää kokonaisia lauseita ja kappaleita palvelun kautta, jonka otat käyttöön ja josta maksat kappaleelta. Pois kytkeminen säilyttää kaiken määrittämäsi.</string>
     <string name="settings_translation_service">Käännöspalvelu</string>
     <string name="settings_translation_service_footnote">Mikään tällä sivulla ei tee mitään ennen kuin tämä on otettu käyttöön. Sanan hakeminen Kääntäminen-sivulta toimii ilman sitä; kokonainen lause ei toimi — se menee mallille, josta maksat kappaleelta.</string>
     <string name="settings_address">Osoite</string>

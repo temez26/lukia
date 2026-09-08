@@ -41,6 +41,7 @@ data class ProviderState(
  * it - a preview, a test - supplies only what it means to exercise.
  */
 data class ProviderActions(
+    val onAiTranslationChange: (Boolean) -> Unit = {},
     val onProviderChange: (TranslationProvider) -> Unit = {},
     val onBaseUrlChange: (String) -> Unit = {},
     val onApiKeyChange: (String) -> Unit = {},
@@ -80,15 +81,16 @@ data class TranslatingActions(
 fun rememberProviderActions(viewModel: SettingsViewModel): ProviderActions =
     remember(viewModel) {
         ProviderActions(
+            onAiTranslationChange = viewModel::setAiTranslation,
             onProviderChange = viewModel::setProvider,
             onBaseUrlChange = viewModel::onBaseUrlEdited,
             onApiKeyChange = viewModel::setApiKey,
             onModelChange = viewModel::setModel,
             onModelChoose = viewModel::chooseModel,
-            onLoadModels = viewModel::loadAvailableModels,
-            onLoadChosenModel = viewModel::loadChosenModel,
+            onLoadModels = viewModel.probe::loadAvailableModels,
+            onLoadChosenModel = viewModel.probe::loadChosenModel,
             onTimeoutChange = viewModel::setTimeoutSeconds,
-            onTestConnection = viewModel::testConnection,
+            onTestConnection = viewModel.probe::testConnection,
             onWordLookupChange = viewModel::setWordLookup,
             onGoogleApiKeyChange = viewModel::setGoogleApiKey,
             onWordSiteChange = viewModel::setWordSite,

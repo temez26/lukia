@@ -50,7 +50,12 @@ class AiGestureUnitsTest {
                 SettingsBody(
                     settings = AppSettings(),
                     reader = ReaderSettings(),
-                    translation = TranslationSettings().withGestures(gestures),
+                    // With the switch on: everything this test is about is
+                    // behind it, and off the page shows the switch and nothing
+                    // else - see `AiSwitchSection`.
+                    translation = TranslationSettings()
+                        .withAiTranslation(true)
+                        .withGestures(gestures),
                     providerState = ProviderState(),
                     onSettingsChange = {},
                     onReaderChange = {},

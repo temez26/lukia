@@ -41,6 +41,7 @@ class TranslationSettingsRepositoryTest {
         TranslationSettingsRepository(store, secrets).update(
             TranslationSettings(
                 targetLanguage = TargetLanguage.Finnish,
+                aiTranslation = true,
                 provider = TranslationProvider.OpenAi,
             ).withModel("gpt-4o-mini").withApiKey("sk-test"),
         )
@@ -273,10 +274,38 @@ class TranslationSettingsRepositoryTest {
     /** A local server needs no key, so having none is not being unconfigured. */
     @Test
     fun aLocalServerIsReadyWithoutAKey() {
-        val settings = TranslationSettings(provider = TranslationProvider.Local)
+        val settings = TranslationSettings(
+            aiTranslation = true,
+            provider = TranslationProvider.Local,
+        )
 
         assertNull(settings.apiKey)
         assertTrue(settings.isConfigured)
+    }
+
+    /**
+     * A key in the file and no switch beside it is an install from before the
+     * switch existed, and is read as a reader who went and set a service up -
+     * not as one whose sentences quietly stopped being translated on an update.
+     */
+    @Test
+    fun anInstallFromBeforeTheSwitchKeepsItsService() {
+        val store = FakeSettingsStore()
+        val secrets = FakeSecretStore()
+        secrets.putSecret("translation.apiKey.Anthropic", "sk-test")
+
+        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+
+        assertTrue(reopened.aiTranslation)
+        assertTrue(reopened.isConfigured)
+    }
+
+    /** And one with nothing set up starts where every other setting starts. */
+    @Test
+    fun andOneWithNothingSetUpStartsOff() {
+        val settings = TranslationSettingsRepository(FakeSettingsStore(), secrets).settings.value
+
+        assertFalse(settings.aiTranslation)
     }
 
     /** Pointing plain HTTP at the open internet is not a setup this will use. */

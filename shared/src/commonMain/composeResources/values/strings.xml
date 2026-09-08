@@ -489,6 +489,9 @@
     <string name="settings_as_you_read_detail">Adds a button that goes on translating whatever scrolls into view until you turn it off. This is the expensive one.</string>
 
     <!-- Who answers. -->
+    <string name="settings_ai_translation">AI translation</string>
+    <string name="settings_use_ai">Use a translation service</string>
+    <string name="settings_use_ai_detail">Off, Lukia looks a single word up in a free dictionary and does nothing else — no key to enter, no controls in the reader. On, it can translate whole sentences and paragraphs through a service you set up and pay for by the passage. Turning it off keeps everything you have set up.</string>
     <string name="settings_translation_service">Translation service</string>
     <string name="settings_translation_service_footnote">Nothing under this page does anything until this is set up. Looking a word up under Translating works without it; a whole sentence does not — it goes to a model you pay for by the passage.</string>
     <string name="settings_address">Address</string>

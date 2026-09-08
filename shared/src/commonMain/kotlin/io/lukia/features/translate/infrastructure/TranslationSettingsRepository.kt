@@ -42,6 +42,8 @@ class TranslationSettingsRepository(
 
     private fun load(): TranslationSettings {
         val defaults = TranslationSettings()
+        val keys = readKeys()
+        val baseUrls = readPerProvider(KEY_BASE_URL)
 
         return TranslationSettings.stored(
             targetLanguage = store.readEnum(
@@ -49,10 +51,18 @@ class TranslationSettingsRepository(
                 TargetLanguage.entries,
                 defaults.targetLanguage,
             ),
+            // Off on a fresh install like everything else translating does.
+            // An install that predates the switch has never written it, and is
+            // read as on if it has a key or an address stored for any provider -
+            // which is a reader who went and set a service up, and whose app
+            // should not quietly stop translating sentences on an update.
+            aiTranslation = store.getString(KEY_AI_TRANSLATION)
+                ?.let { it.equals("true", ignoreCase = true) }
+                ?: (keys.isNotEmpty() || baseUrls.isNotEmpty()),
             provider = store.readEnum(KEY_PROVIDER, TranslationProvider.entries, defaults.provider),
             models = readPerProvider(KEY_MODEL),
-            keys = readKeys(),
-            baseUrls = readPerProvider(KEY_BASE_URL),
+            keys = keys,
+            baseUrls = baseUrls,
             timeouts = readTimeouts(),
             wordLookup = store.readEnum(KEY_WORD_LOOKUP, WordLookup.entries, defaults.wordLookup),
             wordSite = store.readEnum(KEY_WORD_SITE, WordSite.entries, defaults.wordSite),
@@ -69,6 +79,7 @@ class TranslationSettingsRepository(
 
     private fun save(settings: TranslationSettings) {
         store.putString(KEY_TARGET_LANGUAGE, settings.targetLanguage.name)
+        store.putString(KEY_AI_TRANSLATION, settings.aiTranslation.toString())
         store.putString(KEY_PROVIDER, settings.provider.name)
 
         writePerProvider(KEY_MODEL, settings.storedModels())
@@ -190,6 +201,7 @@ class TranslationSettingsRepository(
 
     private companion object {
         const val KEY_TARGET_LANGUAGE = "translation.targetLanguage"
+        const val KEY_AI_TRANSLATION = "translation.ai"
         const val KEY_PROVIDER = "translation.provider"
         const val KEY_MODEL = "translation.model"
         const val KEY_API_KEY = "translation.apiKey"

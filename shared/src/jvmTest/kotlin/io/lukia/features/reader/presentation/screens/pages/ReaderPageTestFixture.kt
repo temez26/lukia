@@ -156,6 +156,11 @@ internal fun ComposeUiTest.setPageReader(
                 onPassageSelected = onPassageSelected,
                 onPassageHold = onPassageHold,
                 gestures = gestures,
+                // A reader with somewhere for a sentence to go, which is what
+                // [TranslatingReader] describes. Without it a gesture set past
+                // the word is taken back to the word before the page sees it -
+                // see `ReaderBookContent`.
+                translationServiceConfigured = true,
                 sentencesOnPage = { sentences },
                 renderPage = { _, _ -> null },
             )

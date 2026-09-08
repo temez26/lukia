@@ -39,13 +39,20 @@ import kotlin.test.Test
 @OptIn(ExperimentalTestApi::class)
 class SettingsAreasTest {
 
-    private fun ComposeUiTest.setSettings(settings: AppSettings = AppSettings()) {
+    private fun ComposeUiTest.setSettings(
+        settings: AppSettings = AppSettings(),
+        /**
+         * With AI switched on unless a test says otherwise, because most of what
+         * this file asks about is behind that switch - see `AiSwitchSection`.
+         */
+        translation: TranslationSettings = TranslationSettings().withAiTranslation(true),
+    ) {
         setContent {
             LukiaTheme(darkTheme = false) {
                 SettingsBody(
                     settings = settings,
                     reader = ReaderSettings(),
-                    translation = TranslationSettings(),
+                    translation = translation,
                     providerState = ProviderState(),
                     onSettingsChange = {},
                     onReaderChange = {},
@@ -116,6 +123,23 @@ class SettingsAreasTest {
         onNodeWithText("Translation service").assertExists()
         onNodeWithText("Asking for more than a word").assertExists()
         onNodeWithText("Translating ahead").assertExists()
+    }
+
+    /**
+     * And with the switch off, that page is the switch and nothing else. The
+     * point of it is that Lukia is then the app it is without a model, and a
+     * page still offering an API key is not that.
+     */
+    @Test
+    fun andNoneOfItWhileTheSwitchIsOff() = runComposeUiTest {
+        setSettings(translation = TranslationSettings())
+
+        open(SettingsArea.AiTranslation)
+
+        onNodeWithText("Use a translation service").assertExists()
+        onNodeWithText("Translation service").assertDoesNotExist()
+        onNodeWithText("Asking for more than a word").assertDoesNotExist()
+        onNodeWithText("Translating ahead").assertDoesNotExist()
     }
 
     /**

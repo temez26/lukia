@@ -371,6 +371,9 @@
     <string name="settings_translating_ahead_footnote">Obie są nowe i obie są wolne i kosztowne: tłumaczą cały ekran naraz zamiast fragmentu, który wskazałeś. Wyłączone, dopóki o nie nie poprosisz, i przez ten czas całkowicie ukryte przed czytnikiem.</string>
     <string name="settings_on_screen_detail">Dodaje przycisk, który raz tłumaczy każde widoczne zdanie.</string>
     <string name="settings_as_you_read_detail">Dodaje przycisk, który tłumaczy dalej wszystko, co wjeżdża na ekran, dopóki go nie wyłączysz. To ten kosztowny.</string>
+    <string name="settings_ai_translation">Tłumaczenie AI</string>
+    <string name="settings_use_ai">Użyj usługi tłumaczenia</string>
+    <string name="settings_use_ai_detail">Wyłączone — Lukia sprawdza pojedyncze słowo w darmowym słowniku i nic więcej: żadnego klucza do wpisania, żadnych przycisków w czytniku. Włączone — może tłumaczyć całe zdania i akapity przez usługę, którą konfigurujesz i opłacasz za fragment. Wyłączenie zachowuje wszystko, co skonfigurowano.</string>
     <string name="settings_translation_service">Usługa tłumaczenia</string>
     <string name="settings_translation_service_footnote">Nic na tej stronie nie działa, dopóki nie zostanie to skonfigurowane. Sprawdzenie słowa w sekcji Tłumaczenie działa bez tego; całe zdanie już nie: trafia do modelu opłacanego za każdy fragment.</string>
     <string name="settings_address">Adres</string>

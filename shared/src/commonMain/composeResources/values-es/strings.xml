@@ -351,6 +351,9 @@
     <string name="settings_translating_ahead_footnote">Ambas son nuevas, y ambas son lentas y caras: traducen una pantalla entera de una vez en lugar del pasaje que has señalado. Desactivadas hasta que las pidas, y mientras tanto ocultas del todo al lector.</string>
     <string name="settings_on_screen_detail">Añade un botón que traduce una vez cada frase que ves.</string>
     <string name="settings_as_you_read_detail">Añade un botón que sigue traduciendo todo lo que entra en pantalla hasta que lo apagues. Este es el caro.</string>
+    <string name="settings_ai_translation">Traducción con IA</string>
+    <string name="settings_use_ai">Usar un servicio de traducción</string>
+    <string name="settings_use_ai_detail">Apagado, Lukia busca una sola palabra en un diccionario gratuito y no hace nada más: ninguna clave que introducir, ningún control en el lector. Encendido, puede traducir frases y párrafos enteros mediante un servicio que configuras y pagas por pasaje. Apagarlo conserva todo lo que has configurado.</string>
     <string name="settings_translation_service">Servicio de traducción</string>
     <string name="settings_translation_service_footnote">Nada de esta página hace nada hasta que esto esté configurado. Buscar una palabra en Traducción funciona sin ello; una frase entera no: va a un modelo que pagas por pasaje.</string>
     <string name="settings_address">Dirección</string>

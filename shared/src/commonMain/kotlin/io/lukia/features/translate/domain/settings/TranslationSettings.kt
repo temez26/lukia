@@ -22,6 +22,21 @@ import io.lukia.features.translate.domain.provider.isAllowedTranslationEndpoint
  */
 data class TranslationSettings(
     val targetLanguage: TargetLanguage = TargetLanguage.Default,
+    /**
+     * Whether the reader wants a model involved in any of this at all.
+     *
+     * One switch over everything on the AI translation page, and off until it is
+     * asked for. Turned off, Lukia is the app it is without a service: a tap
+     * looks a single word up in a free dictionary, a hold opens what else that
+     * word means, and nothing on any page or in any bar offers to translate a
+     * sentence, spend a screenful of somebody's credit, or ask for a key.
+     *
+     * It gates [isConfigured] rather than sitting beside it, so nothing further
+     * on has to remember to ask both. What is stored under it - the key, the
+     * model, the address, the units a gesture was raised to - is kept exactly as
+     * the reader left it, and comes back the moment they turn it on again.
+     */
+    val aiTranslation: Boolean = false,
     val provider: TranslationProvider = TranslationProvider.Default,
     private val models: Map<TranslationProvider, String> = emptyMap(),
     private val keys: Map<TranslationProvider, String> = emptyMap(),
@@ -147,7 +162,7 @@ data class TranslationSettings(
      * the language or the gestures.
      */
     val isConfigured: Boolean
-        get() = (!provider.requiresKey || apiKey != null) && isEndpointAllowed
+        get() = aiTranslation && (!provider.requiresKey || apiKey != null) && isEndpointAllowed
 
     /**
      * The two expensive ways of translating, with any the reader has turned on
@@ -201,18 +216,20 @@ data class TranslationSettings(
 
     fun withNotes(notes: Boolean): TranslationSettings = copy(notes = notes)
 
+    fun withAiTranslation(on: Boolean): TranslationSettings = copy(aiTranslation = on)
+
     fun withBulkTranslation(bulk: BulkTranslation): TranslationSettings =
         copy(bulkTranslation = bulk)
 
-    /** What is stored for a provider that is not the one currently chosen. */
-    fun modelFor(provider: TranslationProvider): String =
-        models.entryFor(provider) ?: provider.defaultModel
-
-    fun apiKeyFor(provider: TranslationProvider): String? = keys.entryFor(provider)
-
-    fun baseUrlFor(provider: TranslationProvider): String =
-        baseUrls.entryFor(provider) ?: provider.defaultBaseUrl
-
+    /**
+     * What is stored for a provider that is not the one currently chosen - which
+     * is the whole point of keeping these per provider, and is checked by the
+     * repository's tests.
+     *
+     * The model, the key and the address had accessors of this shape too. They
+     * were read by nothing: everywhere in the app that wants one of those wants
+     * the current provider's, which is what the properties above give.
+     */
     fun timeoutSecondsFor(provider: TranslationProvider): Int =
         timeouts.timeoutFor(provider) ?: provider.defaultTimeoutSeconds
 
@@ -235,6 +252,7 @@ data class TranslationSettings(
          */
         fun stored(
             targetLanguage: TargetLanguage,
+            aiTranslation: Boolean = false,
             provider: TranslationProvider,
             models: Map<TranslationProvider, String>,
             keys: Map<TranslationProvider, String>,
@@ -249,6 +267,7 @@ data class TranslationSettings(
             bulkTranslation: BulkTranslation = BulkTranslation.Default,
         ) = TranslationSettings(
             targetLanguage = targetLanguage,
+            aiTranslation = aiTranslation,
             provider = provider,
             models = models,
             keys = keys,

@@ -64,7 +64,7 @@ class ReaderTranslationSettingsTest {
      */
     @Test
     fun andOnOneWhereNoServiceHasBeenSetUp() = runComposeUiTest {
-        setReader(width = PhoneWidth)
+        setReader(translationServiceConfigured = false, width = PhoneWidth)
 
         onNodeWithContentDescription("Reading settings").performClick()
 
@@ -154,6 +154,7 @@ class ReaderTranslationSettingsTest {
         setReader(
             gestures = TranslationGestures.of(),
             onTranslationGesturesChange = { gestures = it },
+            translationServiceConfigured = false,
             width = PhoneWidth,
         )
 

@@ -358,6 +358,9 @@
     <string name="settings_translating_ahead_footnote">Les deux sont récentes, et les deux sont lentes et coûteuses : elles traduisent un écran entier à la fois plutôt que le passage désigné. Désactivées tant que vous ne les demandez pas, et entièrement cachées au lecteur d\u2019ici là.</string>
     <string name="settings_on_screen_detail">Ajoute un bouton qui traduit une fois chaque phrase visible.</string>
     <string name="settings_as_you_read_detail">Ajoute un bouton qui continue de traduire tout ce qui défile jusqu\u2019à ce que vous l\u2019arrêtiez. C\u2019est celle qui coûte cher.</string>
+    <string name="settings_ai_translation">Traduction par IA</string>
+    <string name="settings_use_ai">Utiliser un service de traduction</string>
+    <string name="settings_use_ai_detail">Désactivé, Lukia cherche un mot isolé dans un dictionnaire gratuit et ne fait rien d’autre : aucune clé à saisir, aucune commande dans le lecteur. Activé, elle peut traduire des phrases et des paragraphes entiers via un service que vous configurez et payez au passage. Le désactiver conserve tous vos réglages.</string>
     <string name="settings_translation_service">Service de traduction</string>
     <string name="settings_translation_service_footnote">Rien sur cette page ne fonctionne tant que ceci n’est pas configuré. Chercher un mot sous Traduction fonctionne sans ; une phrase entière, non : elle part vers un modèle que vous payez au passage.</string>
     <string name="settings_address">Adresse</string>
