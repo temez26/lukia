@@ -530,6 +530,13 @@
     <string name="settings_nothing_recorded">Nothing recorded yet. Use the app as you did when it went wrong, then come back.</string>
     <string name="settings_showing_last">Showing the last %1$d of %2$d. Copy takes all of them.</string>
 
+    <!-- Which Lukia this is, and what it was built out of. -->
+    <string name="settings_about">About</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_licensed_under">Licensed under the Apache License 2.0.</string>
+    <string name="settings_open_source">Open-source licences</string>
+    <string name="settings_open_source_footnote">What Lukia is built from, and the terms each part comes under.</string>
+
     <!-- The statistics page. -->
     <string name="stats_entry">Your reading</string>
     <string name="stats_title">Reading</string>

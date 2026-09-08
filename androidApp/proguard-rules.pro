@@ -18,7 +18,14 @@
 
 # pdfbox-android resolves filters, fonts and COSName constants by name. Broad on
 # purpose: this is the biggest dependency in the app and so the most tempting to
-# shrink, and narrowing it needs a device test to be worth trusting.
+# shrink, and a narrower rule is only ever proved right by opening a real PDF on
+# a real device out of a build R8 has actually been through.
+#
+# That run exists - `:baselineprofile:connectedBenchmarkReleaseAndroidTest` drives
+# the shrunk app, and BUILD.md sets out the whole check. Narrow these when
+# somebody has run it against the narrowing, and not before: a keep rule that is
+# one class too tight fails as a blank page in somebody's book, months later,
+# with nothing in the build to have caught it.
 -keep class com.tom_roush.pdfbox.** { *; }
 -keep class com.tom_roush.fontbox.** { *; }
 -keep class com.tom_roush.harmony.** { *; }

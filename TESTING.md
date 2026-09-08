@@ -41,6 +41,16 @@ the wrong place — it runs once instead of three times, and never against the
   contract on the two platforms where it can be asked; covering iOS means an
   XCTest target in `iosApp`, which is a bundle with entitlements.
 
+- **The app after R8 has been through it.** `:androidApp:assembleRelease` runs
+  R8 on every pull request and proves it compiled; nothing anywhere runs the
+  shrunk app. That gap is real and it is where a missing keep rule lives - the
+  rules cover lookups R8 cannot see, so a wrong one fails at run time and never
+  at build time. The check is a pre-release step on a device rather than a CI
+  job, because the rows worth checking need a library with real books in it and
+  translation credentials; see
+  [BUILD.md](BUILD.md#before-a-release-does-the-shrunk-app-run). Do not read
+  a green `assembleRelease` as R8 being verified.
+
 # Where things stand
 
 | Suite | Tests | Runs on CI |

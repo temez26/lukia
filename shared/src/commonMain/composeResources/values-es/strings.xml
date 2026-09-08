@@ -389,6 +389,12 @@
     <string name="settings_record_problems_detail">Anota cuándo no se ha podido leer una portada, una página o una traducción, para que un problema que puedas describir tenga algo detrás. Desactivarlo borra lo registrado.</string>
     <string name="settings_nothing_recorded">Todavía no hay nada registrado. Usa la aplicación como cuando fue mal, y vuelve luego aquí.</string>
     <string name="settings_showing_last">Se muestran los últimos %1$d de %2$d. Copiar se los lleva todos.</string>
+
+    <string name="settings_about">Acerca de</string>
+    <string name="settings_version">Versión %1$s</string>
+    <string name="settings_licensed_under">Publicado bajo la Apache License 2.0.</string>
+    <string name="settings_open_source">Licencias de código abierto</string>
+    <string name="settings_open_source_footnote">De qué está hecho Lukia, y bajo qué términos se usa cada parte.</string>
     <string name="stats_entry">Tu lectura</string>
     <string name="stats_title">Lectura</string>
     <string name="stats_footnote">Se cuenta en este dispositivo, y se queda aquí.</string>

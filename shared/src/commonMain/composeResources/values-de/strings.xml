@@ -390,6 +390,12 @@
     <string name="settings_record_problems_detail">Vermerkt, wenn ein Cover, eine Seite oder eine Übersetzung nicht gelesen werden konnte, damit ein Problem, das Sie beschreiben können, etwas hinter sich hat. Dies auszuschalten löscht das Aufgezeichnete.</string>
     <string name="settings_nothing_recorded">Noch nichts aufgezeichnet. Nutzen Sie die App so wie damals, als es schiefging, und kommen Sie dann zurück.</string>
     <string name="settings_showing_last">Es werden die letzten %1$d von %2$d gezeigt. Kopieren nimmt alle.</string>
+
+    <string name="settings_about">Über</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_licensed_under">Lizenziert unter der Apache License 2.0.</string>
+    <string name="settings_open_source">Open-Source-Lizenzen</string>
+    <string name="settings_open_source_footnote">Woraus Lukia gebaut ist, und unter welchen Bedingungen jeder Teil steht.</string>
     <string name="stats_entry">Ihr Lesen</string>
     <string name="stats_title">Lesen</string>
     <string name="stats_footnote">Wird auf diesem Gerät gezählt und bleibt hier.</string>

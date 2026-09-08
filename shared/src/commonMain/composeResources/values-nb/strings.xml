@@ -389,6 +389,12 @@
     <string name="settings_record_problems_detail">Noterer når et omslag, en side eller en oversettelse ikke kunne leses, slik at et problem du kan beskrive har noe bak seg. Å slå dette av tømmer det som er notert.</string>
     <string name="settings_nothing_recorded">Ingenting notert ennå. Bruk appen slik du gjorde da det gikk galt, og kom så tilbake.</string>
     <string name="settings_showing_last">Viser de siste %1$d av %2$d. Kopier tar alle.</string>
+
+    <string name="settings_about">Om</string>
+    <string name="settings_version">Versjon %1$s</string>
+    <string name="settings_licensed_under">Utgitt under Apache License 2.0.</string>
+    <string name="settings_open_source">Lisenser for åpen kildekode</string>
+    <string name="settings_open_source_footnote">Hva Lukia er bygget av, og hvilke vilkår hver del kommer under.</string>
     <string name="stats_entry">Lesingen din</string>
     <string name="stats_title">Lesing</string>
     <string name="stats_footnote">Telles på denne enheten, og blir her.</string>

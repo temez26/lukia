@@ -18,6 +18,17 @@ dependencies {
     implementation(libs.koin.compose.viewmodel)
 }
 
+/**
+ * Who the Mac build is signed by, when anybody is.
+ *
+ * Absent for everyone but the release workflow, and the build stays usable
+ * without it - exactly as `ANDROID_KEYSTORE_PATH` leaves a local
+ * `assembleRelease` unsigned rather than failing on a secret the person running
+ * it was never meant to have. See BUILD.md for what each variable holds, and for
+ * what an unsigned DMG can and cannot do.
+ */
+val macSigningIdentity = providers.environmentVariable("MACOS_SIGNING_IDENTITY")
+
 compose.desktop {
     application {
         mainClass = "io.lukia.MainKt"
@@ -65,9 +76,58 @@ compose.desktop {
                 // Defaults to packageName, which is now a display name rather
                 // than an identifier - and macOS wants reverse-DNS here.
                 bundleID = "io.lukia"
+
+                // An unsigned DMG opens on the machine that built it and on no
+                // other: Gatekeeper refuses anything downloaded without a
+                // Developer ID signature, and from Sequoia the reader cannot
+                // even right-click past it. So signing is what makes the Mac
+                // build distributable at all, rather than a hardening step.
+                //
+                // Off unless the environment says otherwise, which keeps a local
+                // `packageDmg` working for whoever has no certificate - the same
+                // arrangement, and the same reason, as the Android keystore.
+                signing {
+                    sign.set(macSigningIdentity.isPresent)
+                    identity.set(macSigningIdentity)
+                    // A CI runner imports the certificate into a keychain of its
+                    // own and names it here; a developer's own login keychain is
+                    // found without being asked for.
+                    keychain.set(providers.environmentVariable("MACOS_SIGNING_KEYCHAIN"))
+                }
+
+                // Signing is what lets the DMG open; notarization is what stops
+                // macOS warning about it first. Apple's service is asked by the
+                // `notarizeDmg` task, so these being unset costs `packageDmg`
+                // nothing.
+                //
+                // Notarization needs the hardened runtime, which needs a JVM to
+                // be allowed to write executable memory. The Compose plugin's
+                // own default-entitlements.plist already grants exactly that
+                // - allow-jit, allow-unsigned-executable-memory and
+                // disable-library-validation - so there is no entitlements file
+                // to add here.
+                notarization {
+                    appleID.set(providers.environmentVariable("MACOS_NOTARIZATION_APPLE_ID"))
+                    password.set(providers.environmentVariable("MACOS_NOTARIZATION_PASSWORD"))
+                    teamID.set(providers.environmentVariable("MACOS_NOTARIZATION_TEAM_ID"))
+                }
             }
 
-            windows { iconFile.set(icons.resolve("lukia.ico")) }
+            windows {
+                iconFile.set(icons.resolve("lukia.ico"))
+
+                // What Windows knows one Lukia by across every version of it.
+                // Without it the plugin passes no --win-upgrade-uuid, jpackage
+                // invents one per build, and each MSI installs beside the last
+                // instead of replacing it - so a reader who updates twice has
+                // three Lukias in Add or Remove Programs and no way to tell
+                // which is which.
+                //
+                // **This must never change for the life of the app.** Changing
+                // it does not upgrade anybody; it makes every installed copy a
+                // different product from this one, permanently.
+                upgradeUuid = "DE25ED1A-8B48-420B-B720-5CB5C2E27FEA"
+            }
 
             linux {
                 iconFile.set(icons.resolve("lukia.png"))

@@ -178,8 +178,14 @@ jobs:
       # compose-stability.conf to types that still exist, which nothing else
       # notices - an entry that stops matching is ignored silently by the
       # compiler and costs the screens built on that type their skipping.
+      #
+      # checkAttribution is here for the same reason and reads the same way: it
+      # holds the third-party licence list against the version catalogue and
+      # NOTICE, so a dependency cannot arrive without the terms it comes under.
       - name: Check coding style
-        run: ./gradlew --continue ktlintCheck detekt checkFileLength checkComposeStability
+        run: >
+          ./gradlew --continue
+          ktlintCheck detekt checkFileLength checkComposeStability checkAttribution
 
       # Puts each detekt finding on the line that caused it in the pull request.
       # Merged into one file by the detektReportMerge task in build.gradle.kts.

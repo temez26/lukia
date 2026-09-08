@@ -438,6 +438,12 @@
     <string name="settings_nothing_recorded">Inget antecknat än. Använd appen som du gjorde när det gick fel, och kom sedan tillbaka.</string>
     <string name="settings_showing_last">Visar de senaste %1$d av %2$d. Kopiera tar alla.</string>
 
+    <string name="settings_about">Om</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_licensed_under">Licensierad under Apache License 2.0.</string>
+    <string name="settings_open_source">Licenser för öppen källkod</string>
+    <string name="settings_open_source_footnote">Vad Lukia är byggt av, och vilka villkor varje del kommer under.</string>
+
     <string name="stats_entry">Din läsning</string>
     <string name="stats_title">Läsning</string>
     <string name="stats_footnote">Räknas på den här enheten, och stannar här.</string>
