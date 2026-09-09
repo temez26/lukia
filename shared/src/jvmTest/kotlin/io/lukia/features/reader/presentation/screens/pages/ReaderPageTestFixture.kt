@@ -29,10 +29,10 @@ import io.lukia.features.reader.domain.page.PageWord
 import io.lukia.features.reader.domain.page.TextQuad
 import io.lukia.features.reader.domain.text.TextAnchor
 import io.lukia.features.reader.presentation.screens.ReaderContent
+import io.lukia.features.reader.presentation.screens.translation.TranslatingReader
 import io.lukia.features.reader.presentation.screens.translation.opening
 import io.lukia.features.reader.presentation.translation.PassageSelection
 import io.lukia.features.reader.presentation.translation.PassageTranslation
-import io.lukia.features.reader.presentation.screens.translation.TranslatingReader
 import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.shared.presentation.theme.LukiaTheme
 

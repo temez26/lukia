@@ -10,6 +10,7 @@ import io.lukia.core.domain.reading.FakePdfLayoutRepository
 import io.lukia.core.domain.reading.FakeReadingSessionRepository
 import io.lukia.core.domain.storage.FakeSecretStore
 import io.lukia.core.domain.storage.FakeSettingsStore
+import io.lukia.core.domain.text.PassageUnit
 import io.lukia.core.infrastructure.JvmDocumentWorkspace
 import io.lukia.core.infrastructure.shelve
 import io.lukia.core.infrastructure.testDatabase
@@ -29,7 +30,6 @@ import io.lukia.features.translate.domain.lookup.WordDictionary
 import io.lukia.features.translate.domain.lookup.WordEntry
 import io.lukia.features.translate.domain.lookup.WordMeaning
 import io.lukia.features.translate.domain.provider.FakeTranslator
-import io.lukia.core.domain.text.PassageUnit
 import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import kotlinx.coroutines.CoroutineDispatcher

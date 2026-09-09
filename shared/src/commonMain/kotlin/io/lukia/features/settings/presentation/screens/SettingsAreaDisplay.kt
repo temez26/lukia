@@ -3,8 +3,8 @@ package io.lukia.features.settings.presentation.screens
 import androidx.compose.runtime.Composable
 import io.lukia.resources.Res
 import io.lukia.resources.settings_about
-import io.lukia.resources.settings_area_appearance
 import io.lukia.resources.settings_area_ai_translation
+import io.lukia.resources.settings_area_appearance
 import io.lukia.resources.settings_area_reading
 import io.lukia.resources.settings_area_translating
 import org.jetbrains.compose.resources.stringResource

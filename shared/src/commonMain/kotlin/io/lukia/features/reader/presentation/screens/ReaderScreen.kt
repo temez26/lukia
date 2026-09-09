@@ -23,9 +23,9 @@ import io.lukia.features.reader.presentation.translation.setTranslationsVisible
 import io.lukia.features.reader.presentation.translation.shownTranslations
 import io.lukia.features.reader.presentation.translation.targetLanguage
 import io.lukia.features.reader.presentation.translation.translateOnScreen
-import io.lukia.features.reader.presentation.translation.translationServiceConfigured
 import io.lukia.features.reader.presentation.translation.translationGestures
 import io.lukia.features.reader.presentation.translation.translationNotes
+import io.lukia.features.reader.presentation.translation.translationServiceConfigured
 import io.lukia.features.reader.presentation.translation.translations
 import io.lukia.features.reader.presentation.translation.wordInquiry
 import io.lukia.shared.presentation.theme.Space

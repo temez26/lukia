@@ -17,7 +17,6 @@ import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.resources.Res
 import io.lukia.resources.gesture_off
-import io.lukia.resources.gesture_off
 import io.lukia.resources.passage_unit_paragraph
 import io.lukia.resources.passage_unit_word
 import io.lukia.resources.settings_area_ai_translation
