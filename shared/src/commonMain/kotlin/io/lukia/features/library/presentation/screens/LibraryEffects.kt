@@ -6,10 +6,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import io.lukia.core.infrastructure.AppCommand
-import io.lukia.core.infrastructure.AppCommands
 import io.lukia.features.library.presentation.model.LibraryMessage
 import io.lukia.features.library.presentation.model.displayText
-import org.koin.compose.koinInject
 
 /**
  * What the library screen does besides draw itself.
@@ -25,6 +23,12 @@ internal fun LibraryEffects(
     snackbarHostState: SnackbarHostState,
     onRefresh: () -> Unit,
     onClearMessage: () -> Unit,
+    /**
+     * What the app was asked for from outside its own screens, waiting for the
+     * screen that can carry it out. Null where nothing has been asked, which is
+     * every platform without a menu bar and most of the time on the one with it.
+     */
+    command: AppCommand?,
     onCommand: (AppCommand) -> Unit,
 ) {
     // Read through the state rather than captured, so a caller passing a fresh
@@ -32,7 +36,7 @@ internal fun LibraryEffects(
     // which for the first of them would be a re-read of the whole library.
     val refresh by rememberUpdatedState(onRefresh)
     val clear by rememberUpdatedState(onClearMessage)
-    val command by rememberUpdatedState(onCommand)
+    val carryOut by rememberUpdatedState(onCommand)
 
     // Fires again each time the grid is re-entered from the detail screen, which
     // may have favourited or removed a book behind its back.
@@ -54,13 +58,15 @@ internal fun LibraryEffects(
         }
     }
 
-    // What a desktop menu bar asked for - see [AppCommands]. Collected here
-    // rather than in the screen because it is one more standing arrangement and
-    // draws nothing, which is what this function is for. Nothing arrives on the
-    // platforms with no menu bar, so the collector simply waits there.
-    val commands: AppCommands = koinInject()
-
-    LaunchedEffect(commands) {
-        commands.commands.collect { requested -> command(requested) }
+    // What a desktop menu bar asked for - see [AppCommand]. Handed down already
+    // taken rather than collected here, which is the one thing this must not do:
+    // the menu bar belongs to the window and is live on every screen, while this
+    // composable exists only while the library is on screen. `DesktopShell` does
+    // the collecting, for as long as there is a window to collect for.
+    //
+    // The same command twice running is carried out once - the key does not
+    // change - which is what a menu item held down should do.
+    LaunchedEffect(command) {
+        command?.let(carryOut)
     }
 }

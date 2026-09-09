@@ -36,6 +36,15 @@ fun LibraryScreen(
     onDocumentClick: (DocumentInfo) -> Unit = {},
     onDocumentDetails: (DocumentInfo) -> Unit = {},
     onSettings: () -> Unit = {},
+    /**
+     * Something asked of the app from outside its own screens - a desktop menu
+     * item, or the keyboard shortcut standing in for one where there is no menu
+     * bar. Carried out here because every one of them already has a control on
+     * this screen; taken off the window by `DesktopShell`, which is what is
+     * still there to take it while a book is being read.
+     */
+    command: AppCommand? = null,
+    onClearCommand: () -> Unit = {},
     showSearch: Boolean = true,
     /** The way to the reader's own page, supplied by the shell - see `MobileShell`. */
     statsButton: @Composable () -> Unit = {},
@@ -69,7 +78,11 @@ fun LibraryScreen(
         snackbarHostState = snackbarHostState,
         onRefresh = viewModel::refresh,
         onClearMessage = viewModel::clearMessage,
-        onCommand = requests::carryOut,
+        command = command,
+        onCommand = { requested ->
+            requests.carryOut(requested)
+            onClearCommand()
+        },
     )
 
     Box(modifier = Modifier.fillMaxSize()) {
