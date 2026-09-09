@@ -1,3 +1,12 @@
+# Contributing
+
+## Git Branching
+
+- Always create a new branch from `dev` when starting new work.
+- Never make changes directly on `main` or `dev`.
+- The `main` branch should only receive changes merged from `dev`.
+- Use descriptive branch names that clearly indicate the purpose of the work.
+
 # Pull Request Guidelines
 
 Use the following structure for every pull request:
