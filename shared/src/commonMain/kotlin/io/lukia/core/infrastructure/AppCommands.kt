@@ -28,6 +28,13 @@ enum class AppCommand {
  * A channel rather than a shared flow, again per [DocumentInbox]: nothing may be
  * lost while the library is starting, and a menu item pressed once must not
  * replay into a resubscribe and open two file panels.
+ *
+ * Collected by whatever lives as long as the menu does, which is the shell
+ * rather than any screen - see `DesktopShell`. That is the half [DocumentInbox]
+ * gets right by being collected on a ViewModel scope, and the half this is easy
+ * to get wrong: a channel hands each command to exactly one collector, so a
+ * collector that comes and goes with a screen does not miss commands, it banks
+ * them and carries them out whenever it next appears.
  */
 class AppCommands {
 
