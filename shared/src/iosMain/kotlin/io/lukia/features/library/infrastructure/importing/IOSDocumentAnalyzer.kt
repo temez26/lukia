@@ -4,9 +4,12 @@ import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.domain.document.PickedDocument
-import io.lukia.core.infrastructure.toByteArray
 import io.lukia.features.library.domain.DocumentAnalyzer
+import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.withContext
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSFileSize
 import platform.Foundation.NSFileType
@@ -14,7 +17,7 @@ import platform.Foundation.NSFileTypeDirectory
 import platform.Foundation.NSNumber
 import platform.Foundation.NSURL
 
-@OptIn(ExperimentalForeignApi::class)
+@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 class IOSDocumentAnalyzer(
     private val diagnostics: Diagnostics = Diagnostics.None,
 ) : DocumentAnalyzer {
@@ -59,10 +62,12 @@ class IOSDocumentAnalyzer(
         val contents = if (type == DocumentType.UNKNOWN) {
             DocumentContents.Empty
         } else {
-            runCatching {
-                fileManager.contentsAtPath(path)?.toByteArray()
-            }.getOrNull()
-                ?.let { extractContents(type, it, diagnostics) }
+            // Opened rather than read - see [DocumentSource]. The handle is
+            // opened on the dispatcher that waits on disks and the extraction
+            // runs on the one sized to the cores, which is where the import
+            // already is: what the extraction does is inflate and render, and
+            // the reads it makes through the handle are kilobytes.
+            openedSource(url, size)?.use { extractContents(type, it, diagnostics) }
                 ?: DocumentContents.Empty
         }
 
@@ -75,4 +80,7 @@ class IOSDocumentAnalyzer(
             metadata = contents.metadata,
         )
     }
+
+    private suspend fun openedSource(url: NSURL, size: Long): IOSDocumentSource? =
+        withContext(Dispatchers.IO) { IOSDocumentSource.open(url, size) }
 }

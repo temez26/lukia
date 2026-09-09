@@ -37,15 +37,19 @@ fun Modifier.scaleOnPress(
     interactionSource: MutableInteractionSource,
     pressedScale: Float = 0.9f,
 ): Modifier {
-    val scale by animateFloatAsState(
+    // Held as state and read inside the layer rather than here. Read during
+    // composition, every frame of the settle would recompose whatever is being
+    // pressed - a button and its label, or a whole card of the shelf - to change
+    // a number the layer could have read for itself.
+    val scale = animateFloatAsState(
         targetValue = if (interactionSource.collectIsPressedAsState().value) pressedScale else 1f,
         animationSpec = LukiaMotion.gentle(),
         label = "pressScale",
     )
 
     return graphicsLayer {
-        scaleX = scale
-        scaleY = scale
+        scaleX = scale.value
+        scaleY = scale.value
     }
 }
 
@@ -87,14 +91,15 @@ fun Modifier.hoverLift(
     hoveredScale: Float = 1.03f,
     pressedScale: Float = 1f,
 ): Modifier {
-    val press by animateFloatAsState(
+    // Read where it is used, for the reason [scaleOnPress] holds its own back.
+    val press = animateFloatAsState(
         targetValue = if (interactionSource.collectIsPressedAsState().value) pressedScale else 1f,
         animationSpec = LukiaMotion.gentle(),
         label = "cardPress",
     )
 
     return graphicsLayer {
-        val scale = (1f + (hoveredScale - 1f) * fraction) * press
+        val scale = (1f + (hoveredScale - 1f) * fraction) * press.value
         scaleX = scale
         scaleY = scale
         translationY = -lift.toPx() * fraction

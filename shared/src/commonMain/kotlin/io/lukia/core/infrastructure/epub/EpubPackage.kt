@@ -1,6 +1,7 @@
 package io.lukia.core.infrastructure.epub
 
 import io.lukia.core.domain.document.BookMetadata
+import io.lukia.core.infrastructure.ByteSource
 import io.lukia.core.infrastructure.archive.ZipArchiveReader
 import io.lukia.core.infrastructure.archive.decodePercentEncoding
 import io.lukia.core.infrastructure.archive.resolveArchivePath
@@ -96,9 +97,12 @@ internal class EpubPackage private constructor(
 
     companion object {
 
-        fun open(epubBytes: ByteArray): EpubPackage? {
-            val zip = ZipArchiveReader(epubBytes)
+        fun open(epub: ByteSource): EpubPackage? = open(ZipArchiveReader(epub))
 
+        /** For a book already in memory, and for tests. */
+        fun open(epubBytes: ByteArray): EpubPackage? = open(ZipArchiveReader(epubBytes))
+
+        private fun open(zip: ZipArchiveReader): EpubPackage? {
             val document = packageDocument(zip) ?: return null
             val contents = readContents(document.xml, document.directory) ?: return null
 

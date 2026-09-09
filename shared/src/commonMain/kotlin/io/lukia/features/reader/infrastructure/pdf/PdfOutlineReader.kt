@@ -1,6 +1,6 @@
 package io.lukia.features.reader.infrastructure.pdf
 
-import io.lukia.core.infrastructure.pdf.PdfByteSource
+import io.lukia.core.infrastructure.ByteSource
 import io.lukia.core.infrastructure.pdf.PdfObjectIndex
 import io.lukia.core.infrastructure.pdf.PdfValue
 import io.lukia.core.infrastructure.pdf.asArray
@@ -20,7 +20,7 @@ import io.lukia.features.reader.domain.outline.OutlineEntry
  * Every step returns nothing rather than failing: a book whose chapter list
  * cannot be read still opens and still turns pages.
  */
-internal class PdfOutlineReader(private val source: PdfByteSource) {
+internal class PdfOutlineReader(private val source: ByteSource) {
 
     /**
      * The document's chapters, flattened in reading order. Empty when the

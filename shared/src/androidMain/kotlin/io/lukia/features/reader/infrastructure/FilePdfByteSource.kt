@@ -1,6 +1,6 @@
 package io.lukia.features.reader.infrastructure
 
-import io.lukia.core.infrastructure.pdf.PdfByteSource
+import io.lukia.core.infrastructure.ByteSource
 import java.io.File
 import java.io.IOException
 import java.io.RandomAccessFile
@@ -13,7 +13,7 @@ import java.io.RandomAccessFile
  * the whole file to find a chapter list is exactly the allocation an Android
  * device cannot afford.
  */
-internal class FilePdfByteSource(file: File) : PdfByteSource, AutoCloseable {
+internal class FilePdfByteSource(file: File) : ByteSource, AutoCloseable {
 
     private val handle = RandomAccessFile(file, "r")
 

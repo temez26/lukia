@@ -3,6 +3,7 @@ package io.lukia.features.library.infrastructure.importing.cover
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.infrastructure.epub.MinimalEpub
 import io.lukia.core.infrastructure.shrinkCoverImage
+import io.lukia.features.library.infrastructure.importing.openedDocument
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
 import java.awt.image.BufferedImage
@@ -53,7 +54,7 @@ class StoredCoverTest {
 
     @Test
     fun aRenderedPdfPageIsStoredAtTheSizeTheLibraryKeeps() {
-        val cover = extractCover(DocumentType.PDF, singlePagePdf())
+        val cover = openedDocument(singlePagePdf()) { extractCover(DocumentType.PDF, it) }
 
         assertNotNull(cover)
         assertTrue(longestEdgeOf(cover) <= MaxStoredCoverEdge)
@@ -62,7 +63,9 @@ class StoredCoverTest {
 
     @Test
     fun anEpubsOwnArtworkIsStoredAtTheSizeTheLibraryKeeps() {
-        val cover = extractCover(DocumentType.EPUB, epubWithCover(noisyImage(2000, 3000)))
+        val cover = openedDocument(epubWithCover(noisyImage(2000, 3000))) {
+            extractCover(DocumentType.EPUB, it)
+        }
 
         assertNotNull(cover)
         assertTrue(longestEdgeOf(cover) <= MaxStoredCoverEdge)
@@ -78,7 +81,7 @@ class StoredCoverTest {
     fun artworkTooLargeToStoreAndImpossibleToShrinkIsDropped() {
         val notAnImage = Random(0).nextBytes(MaxStoredCoverBytes + 1)
 
-        assertNull(extractCover(DocumentType.EPUB, epubWithCover(notAnImage)))
+        assertNull(openedDocument(epubWithCover(notAnImage)) { extractCover(DocumentType.EPUB, it) })
     }
 
     /** Noise rather than a flat colour: a blank image compresses to nothing. */

@@ -2,6 +2,7 @@ package io.lukia.core.infrastructure.diagnostics
 
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.features.library.infrastructure.importing.extractContents
+import io.lukia.features.library.infrastructure.importing.openedDocument
 import io.lukia.features.reader.infrastructure.text.decodeText
 import java.io.ByteArrayOutputStream
 import java.util.zip.ZipEntry
@@ -42,9 +43,9 @@ class DiagnosticsRedactionTest {
         // Damaged on purpose, and carrying every identifying string in its
         // bytes - so both extractions fail with the title and the author within
         // reach of whatever gets written down.
-        extractContents(DocumentType.EPUB, damagedBook(), diagnostics)
-        extractContents(DocumentType.PDF, damagedBook(), diagnostics)
-        extractContents(DocumentType.DOCX, damagedBook(), diagnostics)
+        openedDocument(damagedBook()) { extractContents(DocumentType.EPUB, it, diagnostics) }
+        openedDocument(damagedBook()) { extractContents(DocumentType.PDF, it, diagnostics) }
+        openedDocument(damagedBook()) { extractContents(DocumentType.DOCX, it, diagnostics) }
 
         assertRecordedNothingIdentifying(buffer)
     }

@@ -7,8 +7,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
@@ -65,8 +68,16 @@ private object AppOpening {
     /** How far into the reveal the app is, in milliseconds, for every screen taking part. */
     val elapsed = Animatable(0f)
 
-    /** Whether the opening is still going on, as a screen composing now finds it. */
-    var running = false
+    /**
+     * Whether the opening is still going on, as a screen composing now finds it.
+     *
+     * Observable rather than a plain flag, so that the screens taking part are
+     * told when it ends. What they do with that is put their layers down - see
+     * [launchReveal] - which is the difference between an opening that costs a
+     * compositing layer per element for a second and one that costs it for as
+     * long as the app is open.
+     */
+    var running by mutableStateOf(false)
         private set
 
     fun claim(): Boolean {
@@ -150,6 +161,12 @@ class LaunchReveal internal constructor(
     internal val travel: Float,
 ) {
     /**
+     * Whether there is nothing left to reveal, which is what [launchReveal] asks
+     * before it puts a layer on anything.
+     */
+    internal val finished: Boolean get() = !playing
+
+    /**
      * How far into its arrival the element at [index] is, from 0 to 1. Always 1
      * when the reveal is not playing, so callers need no branch of their own.
      */
@@ -184,7 +201,12 @@ class LaunchReveal internal constructor(
  */
 @Composable
 fun rememberLaunchReveal(): LaunchReveal {
-    val playing = remember { AppOpening.running }
+    // Two questions, and only the first of them is settled once. Whether this
+    // screen was there as the app opened is a fact about the screen; whether the
+    // opening is still going on is a fact about the app, read so that the reveal
+    // can be seen to end and every element taking part can drop its layer.
+    val joined = remember { AppOpening.running }
+    val playing = joined && AppOpening.running
     val motion = LocalMotionStyle.current
 
     return remember(playing, motion) {
@@ -207,13 +229,24 @@ fun rememberLaunchReveal(): LaunchReveal {
  * The progress is read inside the `graphicsLayer` block, so each frame re-draws
  * the layer without recomposing anything - which matters when the elements being
  * revealed are a grid of book covers.
+ *
+ * Nothing at all once the reveal is over, which is nearly all of the app's life.
+ * A `graphicsLayer` is a compositing layer whether or not it changes anything,
+ * and left on unconditionally this put one behind every cover on the shelf, every
+ * row of the contents and every card on the home screen for as long as the
+ * process lived - to go on multiplying an alpha of one. See [LaunchReveal.finished]
+ * for what tells it the opening has ended.
  */
 fun Modifier.launchReveal(
     reveal: LaunchReveal,
     index: Int,
     rise: Dp = DefaultRise,
-): Modifier = graphicsLayer {
-    val progress = LukiaMotion.Standard.transform(reveal.progressFor(index))
-    alpha = progress
-    translationY = rise.toPx() * reveal.travel * (1f - progress)
+): Modifier = if (reveal.finished) {
+    this
+} else {
+    graphicsLayer {
+        val progress = LukiaMotion.Standard.transform(reveal.progressFor(index))
+        alpha = progress
+        translationY = rise.toPx() * reveal.travel * (1f - progress)
+    }
 }

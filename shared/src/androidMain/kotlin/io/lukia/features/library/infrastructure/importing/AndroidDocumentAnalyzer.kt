@@ -8,6 +8,8 @@ import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.domain.document.PickedDocument
 import io.lukia.features.library.domain.DocumentAnalyzer
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class AndroidDocumentAnalyzer(
     private val context: Context,
@@ -15,14 +17,14 @@ class AndroidDocumentAnalyzer(
 ) : DocumentAnalyzer {
 
     override suspend fun exists(document: PickedDocument): Boolean =
-        sizeOf(Uri.parse(document.location)) != null
+        withContext(Dispatchers.IO) { sizeOf(Uri.parse(document.location)) != null }
 
     override suspend fun analyze(
         document: PickedDocument,
     ): DocumentInfo {
         val uri = Uri.parse(document.location)
 
-        val size = sizeOf(uri)
+        val size = withContext(Dispatchers.IO) { sizeOf(uri) }
         require(size != null) { "File does not exist: ${document.location}" }
 
         val type = DocumentType.fromExtension(document.extension)
@@ -30,10 +32,12 @@ class AndroidDocumentAnalyzer(
         val contents = if (type == DocumentType.UNKNOWN) {
             DocumentContents.Empty
         } else {
-            runCatching {
-                context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
-            }.getOrNull()
-                ?.let { extractContents(type, it, diagnostics) }
+            // Opened rather than read - see [DocumentSource]. Opening moves to
+            // the dispatcher that waits on providers, because a document URI is
+            // answered by whichever one owns it and that may be a cloud drive;
+            // the extraction stays on the dispatcher sized to the cores, where
+            // the import already is, because what it does is inflate and render.
+            openedSource(uri)?.use { extractContents(type, it, diagnostics) }
                 ?: DocumentContents.Empty
         }
 
@@ -46,6 +50,9 @@ class AndroidDocumentAnalyzer(
             metadata = contents.metadata,
         )
     }
+
+    private suspend fun openedSource(uri: Uri): AndroidDocumentSource? =
+        withContext(Dispatchers.IO) { AndroidDocumentSource.open(context, uri) }
 
     /**
      * The document's size, or null when there is no document there any more.

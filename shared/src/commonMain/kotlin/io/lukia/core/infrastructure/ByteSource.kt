@@ -1,14 +1,19 @@
-package io.lukia.core.infrastructure.pdf
+package io.lukia.core.infrastructure
 
 /**
- * Random access to a PDF's bytes.
+ * Random access to a document's bytes.
  *
  * An interface rather than a [ByteArray] because a book can be hundreds of
- * megabytes and the outline is a few kilobytes of it: the reader scans in
- * windows and then reads only the objects it needs, instead of holding the whole
- * file in memory to find its chapter list.
+ * megabytes and what is wanted out of it is rarely more than a few kilobytes: a
+ * PDF's outline, a ZIP's central directory, one cover image out of an EPUB. The
+ * whole file loaded to find any of those is the largest allocation this app ever
+ * makes, and it makes it for every book somebody imports.
+ *
+ * Not tied to any one format. It began as the PDF reader's own and became this
+ * when the import needed the same thing of an EPUB - both want a window of a
+ * file, and neither wants the file.
  */
-internal interface PdfByteSource {
+internal interface ByteSource {
 
     val size: Long
 
@@ -20,8 +25,8 @@ internal interface PdfByteSource {
     fun read(offset: Long, length: Int): ByteArray
 }
 
-/** For a PDF already in memory, and for tests. */
-internal class ByteArrayPdfSource(private val bytes: ByteArray) : PdfByteSource {
+/** For a document already in memory, and for tests. */
+internal class ByteArraySource(private val bytes: ByteArray) : ByteSource {
 
     override val size: Long = bytes.size.toLong()
 

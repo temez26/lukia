@@ -167,7 +167,12 @@ fun BookCover(
     val art = rememberCoverArt(cover)
     val baseColor = remember(title) { bookCoverColor(title) }
 
-    val artworkAlpha by animateFloatAsState(
+    // Kept as state and read where it is drawn. A shelf being scrolled decodes a
+    // cover for every card that comes into view, and read during composition each
+    // of those fades would recompose its whole card - the tile, the gradient, the
+    // border and the artwork - once a frame for a quarter of a second, on the
+    // frames the reader is scrolling through.
+    val artworkAlpha = animateFloatAsState(
         targetValue = if (art is CoverArt.Artwork) 1f else 0f,
         animationSpec = LukiaMotion.standard(),
         label = "coverArtwork",
@@ -195,7 +200,7 @@ fun BookCover(
         contentAlignment = Alignment.Center,
     ) {
         when (art) {
-            is CoverArt.Artwork -> CoverArtwork(cover = art.cover, alpha = artworkAlpha)
+            is CoverArt.Artwork -> CoverArtwork(cover = art.cover, alpha = artworkAlpha::value)
 
             CoverArt.Absent -> Text(
                 text = title.trim().firstOrNull()?.uppercase() ?: "?",
@@ -232,11 +237,11 @@ fun BookCover(
  * fade in together as one thing.
  */
 @Composable
-private fun CoverArtwork(cover: DecodedCover, alpha: Float) {
+private fun CoverArtwork(cover: DecodedCover, alpha: () -> Float) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .graphicsLayer { this.alpha = alpha },
+            .graphicsLayer { this.alpha = alpha() },
     ) {
         Image(
             bitmap = cover.backdrop,
