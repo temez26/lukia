@@ -8,11 +8,9 @@ import kotlin.test.assertNull
  * The two shapes a PDF string takes, and the escapes inside them.
  *
  * This is where a chapter title arrives from, so every case below is a title a
- * real book has: a heading with a parenthetical in it, a dash written as an
- * octal escape because the producer would not emit the byte plainly, a title
- * wrapped across two lines in the source file. Getting any of them wrong
- * truncates the title at that point rather than failing, which is why it needs
- * pinning rather than watching.
+ * real book has: a heading with a parenthetical, a dash written as an octal
+ * escape, a title wrapped across two lines of the source file. Getting any wrong
+ * truncates the title there rather than failing, which is why it needs pinning.
  */
 class PdfStringParsingTest {
 

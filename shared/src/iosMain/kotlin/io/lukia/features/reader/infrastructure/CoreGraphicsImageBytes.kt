@@ -157,14 +157,14 @@ private fun CGDataProviderRef.sampledImage(
 /**
  * The picture's transparency, as a mask CoreGraphics can apply.
  *
- * Inverted on the way through: a PDF's soft mask is opacity, where zero is
- * see-through, and a CoreGraphics mask is coverage, where zero is painted. The
- * decode array is what turns one into the other without touching the samples.
+ * Inverted on the way through: a PDF's soft mask is opacity, zero being
+ * see-through, while a CoreGraphics mask is coverage, zero being painted. The
+ * decode array turns one into the other without touching the samples.
  *
- * Only a mask stored as samples is used. One stored as a JPEG would have to be
- * decoded and inverted a pixel at a time, and a soft mask is a greyscale ramp
- * that nobody stores lossily - so the rare file that does gets its picture
- * without transparency rather than a pass over every pixel of it.
+ * Only a mask stored as samples is used. One stored as a JPEG would be decoded
+ * and inverted a pixel at a time, and a soft mask is a greyscale ramp nobody
+ * stores lossily - so the rare file that does gets its picture without
+ * transparency rather than a pass over every pixel.
  */
 @OptIn(ExperimentalForeignApi::class)
 private fun CGPDFDictionaryRef.softMask(): CGImageRef? = memScoped {

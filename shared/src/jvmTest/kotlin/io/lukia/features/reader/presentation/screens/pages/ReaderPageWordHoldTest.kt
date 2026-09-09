@@ -22,12 +22,11 @@ import kotlin.test.assertNull
  * Holding a word on a page of a fixed-layout document, which is what opens
  * everything else that word means.
  *
- * The panel matters more here than anywhere else in the app. A PDF's page is a
- * picture and cannot be re-set, so a translated word is *covered* by the answer
- * drawn over it - and the answer is several times the size of the word. Almost
- * every gesture aimed at such a word therefore lands on the panel rather than on
- * the page, and if the panel did not tell a hold from a tap the whole feature
- * would be unreachable on a PDF.
+ * The panel matters more here than anywhere else. A PDF's page is a picture and
+ * cannot be re-set, so a translated word is *covered* by an answer several times
+ * its size: almost every gesture aimed at that word lands on the panel rather
+ * than the page, and a panel that could not tell a hold from a tap would make
+ * the whole feature unreachable on a PDF.
  */
 @OptIn(ExperimentalTestApi::class)
 class ReaderPageWordHoldTest {

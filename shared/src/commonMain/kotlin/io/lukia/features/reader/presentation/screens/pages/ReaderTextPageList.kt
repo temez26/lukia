@@ -67,11 +67,10 @@ internal fun TextPageList(
      * Where the reader left off last time, or null while the stored position is
      * still being read.
      *
-     * The difference between the two matters now that a book can be laid out
-     * faster than its position can be read back: a book that opened at its first
-     * page because nobody had said otherwise *yet* would start following a
-     * reader who had not arrived, and the place they actually left off would
-     * arrive to find the book already claiming to be somewhere.
+     * The difference matters now that a book can be laid out faster than its
+     * position is read back: opening at page one because nobody had said
+     * otherwise *yet* starts following a reader who has not arrived, and the
+     * real position arrives to find the book already claiming to be somewhere.
      */
     openedAt: ReadingProgress?,
 ) {

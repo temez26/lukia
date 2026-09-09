@@ -68,10 +68,10 @@ class ReaderWordHoldTest {
      * hold's.
      *
      * A trackpad has no finger to hold anything down with - or rather it has
-     * one, and holding it there for half a second is a thing somebody does once
-     * and then stops doing. Two fingers on the pad is what every desktop already
-     * means "tell me about this" with, so it asks at once and it asks about the
-     * word rather than about whatever the hold is set to.
+     * one, and holding it there for half a second is something somebody does
+     * once. Two fingers on the pad is what every desktop already means "tell me
+     * about this" with, so it asks at once, and about the word rather than about
+     * whatever the hold is set to.
      */
     @Test
     fun theSecondMouseButtonAsksAboutTheWordRatherThanHoldingIt() = runComposeUiTest {

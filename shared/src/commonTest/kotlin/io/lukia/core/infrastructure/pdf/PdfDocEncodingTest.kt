@@ -7,12 +7,11 @@ import kotlin.test.assertEquals
  * The two ways a PDF spells text, and the stretch where getting it wrong is
  * invisible until somebody reads a chapter list.
  *
- * PDFDocEncoding is Latin-1 apart from 0x18-0x1F and 0x80-0xA0, and those two
- * stretches are exactly where a typeset book's punctuation lives. Read as
- * Latin-1, an em dash in "Chapter One - The Whale" comes back as a stray
- * quotation mark, an ellipsis as a dagger, and a curly apostrophe as a
- * left-pointing angle. Nothing else in the suite reads a byte through this
- * table.
+ * PDFDocEncoding is Latin-1 apart from 0x18-0x1F and 0x80-0xA0, which is exactly
+ * where a typeset book's punctuation lives. Read as Latin-1, an em dash in
+ * "Chapter One - The Whale" comes back as a stray quotation mark, an ellipsis as
+ * a dagger, a curly apostrophe as an angle bracket. Nothing else in the suite
+ * reads a byte through this table.
  */
 class PdfDocEncodingTest {
 

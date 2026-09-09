@@ -8,14 +8,13 @@ import kotlin.test.assertNull
 /**
  * A language tag as a language, on iOS.
  *
- * The rule being pinned is the one the JVM test of the same name pins - the
- * region is a distinction for a spell checker, not for a reader - and it is
- * pinned separately here because this platform reaches a different table and had
- * drifted from it: `localizedStringForLanguageCode` is given a language, and
- * handed a whole tag it answers nothing.
+ * The rule is the one the JVM test of the same name pins - a region is a
+ * distinction for a spell checker, not a reader - pinned again here because this
+ * platform reaches a different table and had drifted:
+ * `localizedStringForLanguageCode` wants a language and answers nothing to a tag.
  *
- * Asserted against each other rather than against words, because the words
- * depend on the language the simulator is set to and the rule does not.
+ * Asserted against each other rather than against words, the words depending on
+ * the simulator's language and the rule not.
  */
 class LanguageNamesTest {
 

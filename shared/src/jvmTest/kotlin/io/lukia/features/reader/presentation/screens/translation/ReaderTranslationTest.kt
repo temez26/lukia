@@ -22,13 +22,12 @@ import kotlin.test.assertNotNull
  * The reflowable reader as somebody actually uses it: point at a sentence, see
  * it change, point at it again to get the original back.
  *
- * Composed rather than unit-tested because what is worth proving here is that a
- * tap on particular words reaches the right sentence of the right block, and
- * that a translation is drawn where the sentence was. Both are questions about
- * layout, which nothing below the screen can answer. How display offsets map
- * back to sentences once text has been replaced is settled deterministically in
- * `ParagraphTextTest` instead - through a layout it would only be settled to
- * within a font metric.
+ * Composed rather than unit-tested because what is worth proving is that a tap
+ * on particular words reaches the right sentence of the right block, and that a
+ * translation is drawn where the sentence was - both questions about layout,
+ * which nothing below the screen can answer. How display offsets map back to
+ * sentences once text has been replaced is settled deterministically in
+ * `ParagraphTextTest` instead, a layout settling it only to within a font metric.
  */
 @OptIn(ExperimentalTestApi::class)
 class ReaderTranslationTest {

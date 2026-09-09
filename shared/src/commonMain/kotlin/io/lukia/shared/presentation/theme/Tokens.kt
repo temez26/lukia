@@ -9,11 +9,10 @@ import androidx.compose.ui.unit.dp
  * The spacing scale, on a 4dp grid with two half-steps for the gaps that sit
  * between a label and the thing it labels.
  *
- * Small gaps used to be written as literals at every call site, which is how two
- * rows that should have matched came to sit 6dp and 8dp apart. Structural
- * measurements - the inset from the window edge, the gap between sections, a
- * panel's own padding - are not here: those change with the window and live in
- * [LukiaDimens].
+ * Small gaps used to be literals at every call site, which is how two rows that
+ * should have matched came to sit 6dp and 8dp apart. Structural measurements -
+ * the window inset, the gap between sections, a panel's padding - change with
+ * the window and live in [LukiaDimens].
  */
 object Space {
     val xxs: Dp = 2.dp
@@ -64,10 +63,9 @@ object LukiaAlpha {
      * button, and nothing else so far.
      *
      * In the content colour at this strength rather than in `outlineVariant`,
-     * which is what separates two rows of one surface and is deliberately
-     * invisible next to a boundary. A control's own edge is held to 3:1 against
-     * the surface behind it, and this is the lowest opacity that reaches it in
-     * every palette, light and dark.
+     * which separates two rows of one surface and is deliberately invisible next
+     * to a boundary. A control's edge is held to 3:1 against the surface behind
+     * it, and this is the lowest opacity reaching that in every palette.
      */
     const val Border = 0.5f
 }

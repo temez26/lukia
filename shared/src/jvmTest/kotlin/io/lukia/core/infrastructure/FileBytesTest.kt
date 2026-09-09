@@ -12,11 +12,11 @@ import kotlin.test.assertTrue
  * Bytes on and off the disk, on the desktop - and the same rules the iOS test of
  * this name pins.
  *
- * Written because the two had drifted on the one thing that matters here. What
- * goes through these is the converted text of a book, which is a container that
- * means nothing until it is complete, and iOS wrote it through a scratch file
- * while the JVM and Android wrote straight over the old one. A write cut short
- * there left a truncated file under the name the reader's library points at.
+ * Written because the two had drifted on the one thing that matters: what goes
+ * through these is a book's converted text, a container that means nothing until
+ * it is complete, and iOS wrote it through a scratch file while the JVM and
+ * Android wrote straight over the old one. A write cut short there left a
+ * truncated file under the name the library points at.
  */
 class FileBytesTest {
 

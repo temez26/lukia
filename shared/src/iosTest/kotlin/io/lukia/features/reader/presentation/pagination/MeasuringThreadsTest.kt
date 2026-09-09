@@ -22,11 +22,10 @@ import kotlin.test.assertTrue
  * A book is measured on one thread here, and laying one out does not end the
  * app.
  *
- * Compose lays text out through one cache of styles shared by the whole process,
- * and on this platform that cache is a map with no lock on it - see
- * [maxParallelMeasurers]. A book measured on four threads at once used to take
- * the app down with a ConcurrentModificationException from inside the layout, a
- * second after the reader had opened.
+ * Compose lays text out through one cache of styles shared by the process, and
+ * on this platform that cache is a map with no lock - see
+ * [maxParallelMeasurers]. A book measured on four threads at once took the app
+ * down with a ConcurrentModificationException a second after the reader opened.
  */
 class MeasuringThreadsTest {
 

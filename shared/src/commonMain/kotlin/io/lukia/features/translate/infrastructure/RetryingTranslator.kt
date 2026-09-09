@@ -36,12 +36,11 @@ private val MAX_BACKOFF = 4.seconds
 /**
  * The longest wait this will accept from a service that named one.
  *
- * A `Retry-After` is obeyed rather than argued with - it is the only party that
- * knows when the limit resets - but only up to here. Past this the honest thing
- * is to stop and say so: a sentence that arrives forty seconds after the tap is
- * one the reader gave up on thirty seconds ago, and holding the request open
- * blocks the two that [io.lukia.features.reader.presentation.translation.TranslationSession]
- * allows at once.
+ * A `Retry-After` is obeyed rather than argued with - only the service knows
+ * when its limit resets - but only up to here. Past this the honest thing is to
+ * stop and say so: a sentence arriving forty seconds after the tap was given up
+ * on thirty seconds ago, and holding the request open blocks the two that
+ * [io.lukia.features.reader.presentation.translation.TranslationSession] allows.
  */
 private val MAX_HONOURED_RETRY_AFTER = 10.seconds
 
@@ -119,11 +118,10 @@ internal class RetryingTranslator(
      * How long to wait before asking again, or null when asking again is not
      * worth doing.
      *
-     * The service's own answer wins when it gave one, because it is the only
-     * party that knows when its limit resets. Otherwise the wait doubles with
-     * each attempt and is then cut by a random fraction - the jitter is what
-     * keeps a screenful of passages that all failed together from all coming
-     * back together, which is how a rate limit renews itself.
+     * The service's own answer wins when it gave one, being the only party that
+     * knows when its limit resets. Otherwise the wait doubles per attempt and is
+     * cut by a random fraction: the jitter keeps a screenful of passages that
+     * failed together from coming back together, which renews the rate limit.
      */
     private fun TranslationFailureException.backoffFor(attempt: Int): Duration? {
         if (!kind.isWorthRetrying) return null

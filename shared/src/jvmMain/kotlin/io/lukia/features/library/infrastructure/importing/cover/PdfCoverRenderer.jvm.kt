@@ -9,12 +9,11 @@ import javax.imageio.ImageIO
 /**
  * Only the one failure this promises to absorb.
  *
- * PDFBox raises [IOException] for the file it cannot make sense of - malformed,
- * truncated, or not a PDF at all - and that is what "this book has no cover"
- * means here. Anything else is a fault in this code or in the renderer, and it
- * belongs to `extractCover`, which is already the boundary: it records what it
- * absorbed against the import before returning null. A catch-all here would
- * return the same null and write nothing down.
+ * PDFBox raises [IOException] for a file it cannot make sense of - malformed,
+ * truncated, or not a PDF - and that is what "this book has no cover" means.
+ * Anything else is a fault in this code or the renderer and belongs to
+ * `extractCover`, which records what it absorbed against the import before
+ * returning null. A catch-all here would return the same null and write nothing.
  */
 internal actual fun renderPdfCover(pdfBytes: ByteArray): ByteArray? {
     return try {

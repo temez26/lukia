@@ -14,12 +14,11 @@ import org.koin.compose.viewmodel.koinViewModel
  * The diagnostics group with its own state behind it, ready to be dropped into
  * whichever way Settings is being shown.
  *
- * Kept apart from the group itself so that `DiagnosticsSettings` stays a
- * composable that takes values and reports changes - which is what lets the
- * settings body be composed in a test with no dependency graph behind it.
- *
- * The view model is resolved here and nowhere higher, so a caller that never
- * shows this never asks the graph for one.
+ * Kept apart from the group itself so `DiagnosticsSettings` stays a composable
+ * that takes values and reports changes, which is what lets the settings body be
+ * composed in a test with no dependency graph behind it. The view model is
+ * resolved here and nowhere higher, so a caller that never shows this never asks
+ * the graph for one.
  */
 @Composable
 internal fun DiagnosticsGroup(

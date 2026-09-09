@@ -6,12 +6,11 @@ import kotlin.jvm.JvmInline
  * Passages already translated, kept so that the same words are never sent twice.
  *
  * A port rather than a class because what is behind it is a storage decision:
- * today a table, tomorrow possibly nothing at all on a platform that would
- * rather not keep the reader's book on disk. Nothing above this line changes
- * either way.
+ * today a table, tomorrow nothing at all on a platform that would rather not
+ * keep the reader's book on disk.
  *
- * Reading is a write as far as this is concerned - [get] marks the entry as
- * used, which is what decides who survives the next trim.
+ * Reading is a write here - [get] marks the entry as used, which is what decides
+ * who survives the next trim.
  */
 interface TranslationCache {
 
@@ -55,9 +54,9 @@ data class CacheIdentity(
      * [io.lukia.features.translate.infrastructure.TRANSLATION_PROMPT_VERSION].
      *
      * Null for a dictionary and for Google, which are handed a word and no
-     * instructions whatsoever. Their answers do not change when this app changes
-     * its mind about how to ask, so filing them under a version would throw away
-     * a perfectly good lookup at every update.
+     * instructions at all: their answers do not change when this app changes its
+     * mind about how to ask, and filing them under a version would throw away a
+     * good lookup at every update.
      */
     val promptVersion: String? = null,
 )
@@ -122,15 +121,13 @@ private fun TranslationContext.appendTo(builder: StringBuilder) {
 }
 
 /**
- * FNV-1a, which is written out here rather than taken from the platform because
- * this key is written to disk: a value whose meaning came from `String.hashCode`
- * would be a cache that quietly emptied itself the day a runtime changed its
- * mind about hashing.
+ * FNV-1a written out rather than taken from the platform, because this key goes
+ * to disk: built on `String.hashCode` it would be a cache that quietly emptied
+ * itself the day a runtime changed its mind about hashing.
  *
- * The two halves of the key differ by more than their starting value - a
- * different prime, and the bytes read the other way - because two runs of the
- * same function over the same bytes are not two independent chances of telling
- * two passages apart.
+ * The two halves differ by more than their starting value - a different prime,
+ * and the bytes read the other way - because two runs of one function over the
+ * same bytes are not two independent chances of telling two passages apart.
  */
 private fun ByteArray.fnv1a(offset: Long, prime: Long, reversed: Boolean): Long {
     var hash = offset

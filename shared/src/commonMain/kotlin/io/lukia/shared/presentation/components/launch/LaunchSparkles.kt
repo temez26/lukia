@@ -44,13 +44,11 @@ private val UnitSparkle = Path().apply {
 /**
  * The soft glints that come and go around the mark while it settles.
  *
- * One canvas draws all five, and the shared [elapsedMillis] clock is read inside
- * the draw block: the sparkles are the only thing on screen changing every
- * frame, and they change without recomposing anything.
- *
- * They are timed to be finished before the launch animation hands over, so the
- * screen the reader is left looking at is the app rather than the tail of an
- * effect.
+ * One canvas draws all five, reading the shared [elapsedMillis] clock inside the
+ * draw block: they are the only thing on screen changing every frame, and they
+ * change without recomposing anything. Timed to finish before the launch
+ * animation hands over, so what the reader is left looking at is the app rather
+ * than the tail of an effect.
  */
 @Composable
 internal fun LaunchSparkles(

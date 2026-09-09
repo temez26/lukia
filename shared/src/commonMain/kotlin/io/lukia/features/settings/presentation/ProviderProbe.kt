@@ -73,11 +73,11 @@ class ProviderProbe(
      * Asks the server to have the chosen model loaded, and shows how that goes.
      *
      * Also what the reader taps to try again after typing a model name by hand,
-     * which is the other way of ending up with one that is not loaded.
+     * the other way of ending up with one that is not loaded.
      *
-     * Every trigger of this replaces the last: a reader running down a list of
-     * models leaves one request per model behind them otherwise, each holding a
-     * server hostage while it loads something already abandoned.
+     * Every trigger replaces the last: running down a list of models otherwise
+     * leaves a request per model behind, each holding a server hostage while it
+     * loads something already abandoned.
      */
     fun loadChosenModel() {
         stopWarmingUp()

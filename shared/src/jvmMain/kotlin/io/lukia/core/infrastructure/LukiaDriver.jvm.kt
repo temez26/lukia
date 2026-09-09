@@ -14,15 +14,14 @@ import java.util.Properties
 /**
  * The library database, beside the desktop build's other stored state.
  *
- * The schema is created on a database that has none, which is what the first
- * run of the app finds. Later versions arrive as migrations; SQLDelight tracks
- * which have been applied through the file's own `user_version`, and runs the
- * whole run of them inside one transaction - so an update that fails leaves the
- * database at the version it was, rather than part way to a version no code
- * knows how to finish.
+ * The schema is created on a database that has none, which is what a first run
+ * finds. Later versions arrive as migrations, tracked through the file's own
+ * `user_version` and run inside one transaction - so an update that fails leaves
+ * the database where it was rather than part way to a version no code knows how
+ * to finish.
  *
  * A file that cannot be read as a database at all is put aside rather than
- * allowed to fail every launch for ever. See [quarantine].
+ * failing every launch for ever. See [quarantine].
  */
 fun lukiaSqlDriver(
     /** Injectable so tests can work in a temporary directory. */

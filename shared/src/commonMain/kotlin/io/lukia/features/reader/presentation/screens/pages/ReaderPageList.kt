@@ -161,10 +161,9 @@ internal fun PageList(
  * scroll, two become a zoom. A plain transform gesture would swallow both.
  *
  * A composable extension rather than a `composed` modifier: `composed` makes a
- * chain opaque to Compose's modifier comparison, so the whole chain it appears in
- * is rebuilt on every recomposition instead of being reused. The `rememberUpdated`
- * values below are what let the gesture keep a single `pointerInput` across a
- * changing scale, which is the thing that actually matters here.
+ * chain opaque to Compose's modifier comparison, so the whole chain is rebuilt
+ * on every recomposition instead of reused. The `rememberUpdated` values below
+ * are what let the gesture keep one `pointerInput` across a changing scale.
  */
 @Composable
 internal fun Modifier.pinchToZoom(

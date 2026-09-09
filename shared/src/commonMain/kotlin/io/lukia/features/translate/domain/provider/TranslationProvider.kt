@@ -4,11 +4,10 @@ package io.lukia.features.translate.domain.provider
  * Who does the translating.
  *
  * Three entries rather than two implementations: [OpenAi] and [Local] speak the
- * same wire format, because everything that runs a model locally - LM Studio,
+ * same wire format, since everything that runs a model locally - LM Studio,
  * Ollama, llama.cpp's server, vLLM - exposes OpenAI's chat endpoint. They are
- * separate here only because they are configured differently and fail
- * differently, and telling somebody "your key was rejected" when they have no
- * key is not help.
+ * apart only because they are configured and fail differently, and "your key was
+ * rejected" is no help to somebody who has no key.
  */
 enum class TranslationProvider(
     /** Where requests go unless the reader says otherwise. */
@@ -22,12 +21,11 @@ enum class TranslationProvider(
     /**
      * How long this is allowed to say nothing before the wait is given up on.
      *
-     * Silence rather than total duration, because the two providers fail on
-     * opposite scales: a hosted service that has not answered in a minute is
-     * not going to, while a local server given a model it has not loaded yet
-     * spends minutes reading a file off disk before it can say a word. One
-     * number for both is either a hosted request that hangs or a local one that
-     * is abandoned while it is still working.
+     * Silence rather than total duration, because the two fail on opposite
+     * scales: a hosted service silent for a minute is not going to answer, while
+     * a local server spends minutes reading an unloaded model off disk before it
+     * can say a word. One number for both either hangs the hosted request or
+     * abandons the local one while it is still working.
      */
     val defaultTimeoutSeconds: Int,
     /**

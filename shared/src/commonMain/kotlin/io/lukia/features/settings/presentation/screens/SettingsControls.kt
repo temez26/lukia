@@ -36,14 +36,14 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * The parts of the app somebody comes to Settings to change.
  *
- * Five rather than the ten sections behind them, because a settings page is
- * read by somebody who already knows what they want to change and is looking for
- * where it lives. Ten equally-weighted boxes in one column is a list to search;
- * five segments across the top is a question with an answer.
+ * Five rather than the ten sections behind them: a settings page is read by
+ * somebody who knows what they want to change and is looking for where it lives.
+ * Ten equally-weighted boxes in a column is a list to search; five segments
+ * across the top is a question with an answer.
  *
- * The order is how often they are opened, which is also how much machinery each
- * one asks the reader to think about: what the app looks like, how books are
- * set, what is translated, who is doing it, and last of all which Lukia this is.
+ * Ordered by how often they are opened, which is also how much machinery each
+ * asks the reader to think about: what the app looks like, how books are set,
+ * what is translated, who does it, and last which Lukia this is.
  */
 enum class SettingsArea {
 
@@ -83,12 +83,11 @@ enum class SettingsArea {
      * Which Lukia this is, what it was built from, and the record of what went
      * wrong while it ran.
      *
-     * A segment of its own rather than a group repeated under all the others.
-     * It sat at the foot of every page so the version would always be a scroll
-     * away, which made the four groups end in a paragraph about licences that
-     * had nothing to do with any of them - and made the page longer, on every
-     * one of them, for a thing somebody looks at twice a year. A segment is one
-     * press, which is not further away than the bottom of a scrolling page.
+     * A segment rather than a group repeated under all the others. It sat at
+     * the foot of every page so the version was always a scroll away, which
+     * ended all four groups in a paragraph about licences that had nothing to do
+     * with them, and lengthened every page for a thing looked at twice a year.
+     * One press is not further away than the bottom of a scrolling page.
      */
     About,
     ;

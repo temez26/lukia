@@ -15,14 +15,13 @@ import kotlin.test.assertNotSame
 /**
  * The graph installs the crash hook without anybody asking for it.
  *
- * Worth a test of its own because of how it fails if it is wrong: nothing
- * throws, nothing is missing, the app runs exactly as it does now - and the file
- * is simply never written, which nobody finds out until they go looking for a
- * crash report that was never there.
+ * Worth a test of its own for how it fails: nothing throws, nothing is missing,
+ * the app runs exactly as it does - and the file is never written, which nobody
+ * finds out until they go looking for a crash report that was never there.
  *
- * Started for real rather than through `koinApplication`, since creating the
- * eager instances is what `startKoin` does and is precisely the thing under
- * test. Everything that would touch the reader's own files is replaced.
+ * Started for real rather than through `koinApplication`, creating the eager
+ * instances being what `startKoin` does and precisely what is under test.
+ * Everything that would touch the reader's own files is replaced.
  */
 class CrashHookStartupTest {
 

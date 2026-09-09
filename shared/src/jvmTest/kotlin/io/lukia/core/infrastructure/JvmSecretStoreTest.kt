@@ -62,10 +62,10 @@ class JvmSecretStoreTest {
      * somebody's API key.
      *
      * Asserted where the permission bits exist, which is macOS and Linux.
-     * Windows has none to read - what keeps the file to its owner there is the
-     * ACL inherited from the user's own profile directory, which this file
-     * neither sets nor can portably be asked about, so the test says nothing
-     * about it rather than asserting something that is not this code's doing.
+     * Windows has none to read: what keeps the file to its owner there is the
+     * ACL inherited from the profile directory, which this code neither sets nor
+     * can portably ask about, so the test says nothing rather than asserting
+     * something that is not its doing.
      */
     @Test
     fun theFileIsReadableOnlyByItsOwner() {

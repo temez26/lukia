@@ -1,20 +1,17 @@
 -- Ties a reading position and a chosen layout to the book they are about, so
 -- that removing the book removes them. See `ReadingPosition.sq`.
 --
--- Until now this was `RemoveDocumentUseCase`'s doing: four writes, to four
--- stores, in a row. A process that died between the first and the third - and
--- removing a book is a thing readers do just before closing the app - left a
--- position and a layout for a book no longer on any shelf. Nothing lists them,
--- nothing sweeps them, and nothing can ever reach them again, so they were
--- permanent. The rule belongs in the schema, where one `DELETE` carries it out
--- atomically whatever the app does next.
+-- Until now this was `RemoveDocumentUseCase`'s doing: four writes to four stores
+-- in a row. A process dying between the first and the third - and removing a
+-- book is something readers do just before closing the app - left a position and
+-- a layout for a book on no shelf, which nothing lists, sweeps or can reach
+-- again. The rule belongs in the schema, where one `DELETE` carries it out
+-- atomically.
 --
--- The rows already orphaned go first, and they have to: SQLite checks a new
--- foreign key as the rows are copied into the rebuilt table, so a position
--- pointing at a book that is gone would fail this migration and take the whole
--- upgrade with it. What is dropped is exactly what could no longer be read - a
--- page number for a book the library does not have - and what is kept is every
--- position and layout belonging to a book still on a shelf.
+-- The already-orphaned rows go first, and must: SQLite checks a new foreign key
+-- as rows are copied into the rebuilt table, so a position pointing at a missing
+-- book would fail this migration and take the whole upgrade with it. What is
+-- dropped is exactly what could no longer be read.
 DELETE FROM reading_position WHERE location NOT IN (SELECT location FROM document);
 DELETE FROM reader_layout WHERE location NOT IN (SELECT location FROM document);
 
@@ -23,10 +20,10 @@ DELETE FROM reader_layout WHERE location NOT IN (SELECT location FROM document);
 -- triggers and views that neither table has. The copy is a few numbers per book
 -- somebody has actually opened, so it costs nothing even for a large library.
 --
--- No `PRAGMA foreign_keys = OFF` around it, which that procedure asks for. It
--- would be a no-op: every driver runs a migration inside a transaction, and
--- that pragma does nothing inside one. It is not needed either - the orphans
--- are already gone, and nothing points at either of these tables.
+-- No `PRAGMA foreign_keys = OFF` around it, which that procedure asks for: it
+-- would be a no-op, since every driver runs a migration inside a transaction and
+-- the pragma does nothing there. Nor is it needed - the orphans are gone and
+-- nothing points at either table.
 CREATE TABLE reading_position_rebuilt (
     location TEXT NOT NULL PRIMARY KEY REFERENCES document(location) ON DELETE CASCADE,
     pageIndex INTEGER NOT NULL,

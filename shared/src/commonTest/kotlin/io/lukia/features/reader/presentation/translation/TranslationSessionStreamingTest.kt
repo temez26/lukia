@@ -163,12 +163,11 @@ class TranslationSessionStreamingTest {
     /**
      * Every half-written sentence the passage was shown as, in order.
      *
-     * Collected rather than sampled, because what is being asserted is how many
-     * times the map was rebuilt - and the value it settled on says nothing about
-     * that. Only the ones carrying text: the empty `Loading` that says the tap
-     * landed is put by the tap itself, not by the throttle, and one collector
-     * seeing it and another not is a fact about `StateFlow` conflation rather
-     * than about the code under test.
+     * Collected rather than sampled, because what is asserted is how many times
+     * the map was rebuilt and the value it settled on says nothing about that.
+     * Only the ones carrying text: the empty `Loading` saying the tap landed is
+     * put by the tap, not the throttle, and one collector seeing it and another
+     * not is a fact about `StateFlow` conflation, not about the code.
      */
     private fun TestScope.watch(session: TranslationSession): List<String> {
         val seen = mutableListOf<String>()

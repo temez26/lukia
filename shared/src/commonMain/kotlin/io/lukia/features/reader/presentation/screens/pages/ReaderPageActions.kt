@@ -21,10 +21,9 @@ import io.lukia.features.translate.domain.MAX_TRANSLATABLE_CHARS
 /**
  * What a tap, a long press and a call for the whole page mean on one page.
  *
- * Remembered per page rather than rebuilt every composition, because a fresh set
- * of callbacks for every block on every recomposition would make every one of
- * those blocks recompose too - which is the exact cost the sliced translations
- * exist to avoid.
+ * Remembered per page rather than rebuilt every composition: fresh callbacks for
+ * every block on every recomposition would recompose every one of those blocks -
+ * the exact cost the sliced translations exist to avoid.
  *
  * The callbacks are read through [rememberUpdatedState] rather than captured, so
  * remembering these does not pin the reader of a moment ago.

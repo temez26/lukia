@@ -16,13 +16,13 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * The way in to the reading statistics: a mark on the library's bar.
  *
- * A control of its own rather than a row in the actions menu. That menu is about
- * the library - importing books, tidying the shelf, the app's settings - and how
- * much somebody has read is not one of the things done to a shelf.
+ * A control of its own rather than a row in the actions menu: that menu is about
+ * the library - importing books, tidying the shelf, settings - and how much
+ * somebody has read is not something done to a shelf.
  *
- * It reaches for nothing and holds no state. Every screen in this app splits
- * into a half that resolves dependencies and a half that draws, and a control
- * that injected would put a dependency graph behind every bar it sits on.
+ * It reaches for nothing and holds no state, following the app's split between a
+ * half that resolves dependencies and a half that draws. Injecting here would
+ * put a dependency graph behind every bar it sits on.
  */
 @Composable
 fun StatsButton(

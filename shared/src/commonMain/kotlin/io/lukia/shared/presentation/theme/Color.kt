@@ -27,10 +27,10 @@ private class Surfaces(
      * the value on a settings row, a book's format and size, the words of a
      * quotation.
      *
-     * Held to 4.5:1 against all three surfaces above it rather than to a shade
-     * that looked right on white. Apple's own secondaryLabel is 3.4:1 on white
-     * and 2.8:1 on a recessed fill, and this app sets whole quoted paragraphs of
-     * a book in it - see `QuoteBlock`.
+     * Held to 4.5:1 against all three surfaces above rather than to a shade
+     * that looked right on white: Apple's own secondaryLabel is 3.4:1 on white
+     * and 2.8:1 on a recessed fill, and this app sets whole quoted paragraphs in
+     * it - see `QuoteBlock`.
      */
     val secondaryLabel: Color,
     val separator: Color,
@@ -185,13 +185,11 @@ private fun surfacesFor(palette: AppPalette, darkTheme: Boolean): Surfaces = whe
  * [opposite] is the same palette at the other lightness, and is what fills
  * Material's `inverse` roles.
  *
- * Those roles are not decoration and are not optional: `Snackbar` and
- * `PlainTooltip` are painted entirely out of them, and both were therefore
- * wearing Material's own baseline neutrals - a cold lilac-grey - on top of the
- * Paper palette's warm surfaces, because the app had never set them. Nothing
- * here is computed by inverting a channel; the light theme's inverse surface is
- * literally the dark theme's card, which has already been held to the same
- * contrast as every other colour in this file.
+ * Those roles are not optional: `Snackbar` and `PlainTooltip` are painted
+ * entirely out of them, and both wore Material's baseline neutrals - a cold
+ * lilac-grey - over the Paper palette's warm surfaces until the app set them.
+ * Nothing here inverts a channel: the light theme's inverse surface is literally
+ * the dark theme's card, already held to the same contrast as everything else.
  */
 private fun Surfaces.scheme(darkTheme: Boolean, opposite: Surfaces): ColorScheme {
     val base = if (darkTheme) darkColorScheme() else lightColorScheme()
@@ -247,14 +245,14 @@ private fun ColorScheme.withAccent(
 /**
  * Black or white, whichever can be read on this colour.
  *
- * Every accent used to be labelled in white, which is right for the seven deep
- * ones a light theme picks and wrong for the seven pale ones a dark theme does:
- * white on the dark side's green measured 2.0:1, its amber 2.1:1, and a filled
- * button is the one place in the app where the label has nowhere else to go.
+ * Every accent used to be labelled in white: right for the seven deep ones a
+ * light theme picks, wrong for the seven pale ones a dark theme does - white on
+ * the dark side's green measured 2.0:1, its amber 2.1:1, and a filled button is
+ * the one place a label has nowhere else to go.
  *
- * Decided from the colour rather than from which theme is on, because the two
- * are not the same question - a palette's own accent, a chosen one and the error
- * colour all arrive here, and only the colour knows how light it is.
+ * Decided from the colour rather than from which theme is on: a palette's own
+ * accent, a chosen one and the error colour all arrive here, and only the colour
+ * knows how light it is.
  */
 private fun Color.readableOn(): Color =
     if (luminance() > OnColorThreshold) Color.Black else Color.White

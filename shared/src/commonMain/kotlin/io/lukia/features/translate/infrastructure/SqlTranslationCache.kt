@@ -63,12 +63,11 @@ class SqlTranslationCache(
     /**
      * The write, the count and the trim are one transaction.
      *
-     * Two passages translated at once is the ordinary case - the reader taps a
-     * paragraph and the app asks about several sentences - and apart, each of
-     * them counted a table the other was still writing to. Both then saw the
-     * ceiling passed, and both trimmed: a tenth of the cache thrown away twice
-     * for one entry over the line, including entries written since the count
-     * that decided it.
+     * Two passages at once is the ordinary case - a tapped paragraph asks about
+     * several sentences - and apart, each counted a table the other was still
+     * writing to. Both then saw the ceiling passed and both trimmed: a tenth of
+     * the cache thrown away twice for one entry over the line, including entries
+     * written since the count that decided it.
      */
     override suspend fun put(key: TranslationCacheKey, translation: Translation) =
         withContext(dispatcher) {

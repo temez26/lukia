@@ -21,12 +21,12 @@ internal sealed interface CachedPage {
  * often it is asked about.
  *
  * A port rather than a class for the same reason [TranslationCache] is one: what
- * is behind it is a storage decision. Nothing here is the reader's own writing -
- * it is somebody else's encyclopaedia, cached - so a platform that would rather
- * keep none of it can answer null to everything and lose nothing but requests.
+ * is behind it is a storage decision. Nothing here is the reader's own writing,
+ * only somebody else's encyclopaedia cached, so a platform that would rather
+ * keep none of it can answer null throughout and lose nothing but requests.
  *
- * Reading is a write as far as this is concerned: a page read back is marked as
- * used, which is what decides who survives the next trim.
+ * Reading is a write here: a page read back is marked as used, which decides who
+ * survives the next trim.
  */
 internal interface WiktionaryPageCache {
 

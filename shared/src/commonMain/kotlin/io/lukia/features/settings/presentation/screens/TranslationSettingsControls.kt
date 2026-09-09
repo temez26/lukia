@@ -92,15 +92,13 @@ internal fun ServerModels(
 /**
  * Whether the model the reader just picked is loaded and ready.
  *
- * The whole point of showing this is that the waiting has to happen somewhere.
- * A server holding a different model has to read this one off disk before it
- * can answer anything, and that is minutes for a large one - so it is spent
- * here, watched, rather than on the first sentence tapped in a book, where it
- * looks like the app has stopped.
+ * The point of showing this is that the waiting has to happen somewhere. A
+ * server holding a different model reads this one off disk before it can answer
+ * anything - minutes for a large one - so it is spent here, watched, rather than
+ * on the first sentence tapped in a book, where it looks like a hang.
  *
- * The button stays available once it has worked, because the reader can type a
- * model name by hand instead of picking one, and because a server restarted
- * since is a server that has forgotten.
+ * The button stays available once it has worked: a model name can be typed by
+ * hand instead of picked, and a server restarted since has forgotten.
  */
 @Composable
 internal fun ModelReadinessRow(
@@ -150,11 +148,9 @@ internal fun ModelReadinessRow(
  *
  * Silence rather than total time, which is why the number can be this large
  * without a slow answer hanging the reader: a provider still sending is never
- * given up on, and one that has stopped is given up on after this.
- *
- * The typed text is kept here rather than pushed straight into settings so that
- * a field being cleared to retype it does not momentarily mean "no wait at
- * all". What leaves this composable is only ever a number.
+ * given up on. The typed text is kept here rather than pushed straight into
+ * settings, so a field cleared to retype it does not momentarily mean "no wait
+ * at all" - what leaves this composable is only ever a number.
  */
 @Composable
 internal fun TimeoutField(

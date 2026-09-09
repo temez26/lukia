@@ -9,13 +9,11 @@ import platform.Foundation.localizedStringForLanguageCode
  *
  * `localizedStringForLanguageCode` wants a language and is given a tag: handed
  * "pt-BR" or "zh-Hant" it answers nothing, where Android and the desktop name
- * the language and ignore the rest. A book whose metadata carries a region is
- * ordinary, so without this the same shelf reads "Portuguese" on one platform
- * and "pt-BR" on another.
+ * the language and ignore the rest. Metadata carrying a region is ordinary, so
+ * without this a shelf reads "Portuguese" on one platform and "pt-BR" on another.
  *
- * Both separators are cut because both turn up in the wild: BCP 47 writes a tag
- * with hyphens and a POSIX locale writes it with an underscore, and an EPUB's
- * language element has been seen carrying either.
+ * Both separators are cut because both turn up: BCP 47 uses hyphens, a POSIX
+ * locale an underscore, and an EPUB's language element has carried either.
  */
 internal actual fun languageDisplayName(tag: String): String? {
     val language = tag.substringBefore('-').substringBefore('_')

@@ -145,9 +145,8 @@ class PdfPageTextTest {
      *
      * `AndroidPdfPageTextTest` reads the same bytes through pdfbox-android and
      * `PdfKitPageTextTest` through PDFKit, and neither runs on CI. A fixture
-     * that quietly stopped drawing anything would leave both of them asserting
-     * about an empty page, and nobody would find out until somebody plugged in a
-     * phone. This is the one place that fails first.
+     * that quietly stopped drawing anything would leave both asserting about an
+     * empty page until somebody plugged in a phone. This fails first.
      */
     @Test
     fun theHandWrittenFixtureHasWordsOnIt() = runTest {

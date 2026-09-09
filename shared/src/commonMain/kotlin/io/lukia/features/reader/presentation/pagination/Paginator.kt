@@ -9,11 +9,11 @@ import kotlin.time.TimeSource
 /**
  * Lays a reflowable book out as pages that each fit the window.
  *
- * The rule is the one a printed book follows: fill the page with whole blocks
- * for as long as the next one fits, start a new page when it does not, and open
- * every chapter on a page of its own. A block too tall for any page - which is
- * a book's doing rather than the reader's - is cut at a line, and its second
- * half opens the next page still knowing which block of which chapter it is.
+ * The rule a printed book follows: fill the page with whole blocks while the
+ * next one fits, start a new page when it does not, open every chapter on a page
+ * of its own. A block too tall for any page - the book's doing rather than the
+ * reader's - is cut at a line, its second half opening the next page still
+ * knowing which block of which chapter it is.
  *
  * [pageHeightPx] is the room a page has for text, inside whatever margin the
  * sheet is drawn with. Nothing here knows about the sheet, the margins or the
@@ -199,11 +199,10 @@ private class PageBuilder(
      * [block] cut to fill what is left of the page - the head that fits, the
      * tail that does not, and how many characters the head took.
      *
-     * Null when the block should go on as it is: because it fits, or because
-     * there is nothing inside it to cut between. The room left on the page is
-     * filled rather than wasted, because a block this size is a run of text with
-     * no end in sight and starting it on a fresh page would not make it fit
-     * either.
+     * Null when the block should go on as it is - it fits, or there is nothing
+     * inside it to cut between. The room left is filled rather than wasted: a
+     * block this size is a run of text with no end in sight, and a fresh page
+     * would not make it fit either.
      */
     private fun cutToFill(block: TextBlock): Triple<TextBlock, TextBlock, Int>? {
         val available = availablePx()

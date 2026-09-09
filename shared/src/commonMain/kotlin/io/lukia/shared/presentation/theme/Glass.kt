@@ -44,13 +44,11 @@ data class GlassStyle(
     /**
      * Opacity of a panel or a menu.
      *
-     * Higher than [chromeAlpha], and close to opaque, because these carry rows of
-     * text over a page that is still there behind them. Real glass stays legible
+     * Higher than [chromeAlpha] and close to opaque, because these carry rows
+     * of text over a page still there behind them. Real glass stays legible
      * because the system blurs what is behind it into a wash; without that blur
-     * the page's own type shows through the panel's, and every extra percent of
-     * translucency is bought with legibility rather than depth. The gain is
-     * biggest on Apple platforms, where the chrome was the most translucent to
-     * begin with.
+     * the page's own type shows through the panel's, and translucency is bought
+     * with legibility rather than depth.
      */
     val panelAlpha: Float,
     /** Brightness of the specular highlight along the top edge. */

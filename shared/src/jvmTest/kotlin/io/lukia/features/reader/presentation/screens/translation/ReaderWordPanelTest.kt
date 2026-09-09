@@ -250,11 +250,11 @@ class ReaderWordPanelTest {
      * The panel leaves with the word still in it.
      *
      * Without that it empties the instant the word goes: the surface loses every
-     * line it was sized by, drops to the height of its own padding, and only then
-     * begins to fade - which reads as the box collapsing rather than closing.
+     * line it was sized by, drops to the height of its padding, and only then
+     * fades - which reads as collapsing rather than closing.
      *
-     * The clock is held so the closing can be looked at halfway through, which is
-     * the only moment this is a question at all.
+     * The clock is held so the closing can be looked at halfway through, the only
+     * moment this is a question at all.
      */
     @Test
     fun theWordIsStillInThePanelWhileItCloses() = runComposeUiTest {

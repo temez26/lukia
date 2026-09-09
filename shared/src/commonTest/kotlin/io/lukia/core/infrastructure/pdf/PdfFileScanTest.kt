@@ -9,12 +9,11 @@ import kotlin.test.assertTrue
 /**
  * The one pass over a file that finds where its objects sit.
  *
- * Everything above this reads objects by number, so an object this misses does
- * not come back damaged - it comes back missing, and a book loses whichever
- * piece it was. The window is the reason that is worth pinning: a long book is
- * read a megabyte at a time, and an object header that lands across a boundary
- * is only found because the windows overlap. Nothing else in the suite has a
- * fixture long enough to reach that.
+ * Everything above reads objects by number, so an object this misses does not
+ * come back damaged - it comes back missing, and a book loses whichever piece it
+ * was. The window is why that is worth pinning: a long book is read a megabyte
+ * at a time, and a header landing across a boundary is only found because the
+ * windows overlap. Nothing else has a fixture long enough to reach that.
  */
 class PdfFileScanTest {
 

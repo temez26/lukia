@@ -17,14 +17,13 @@ import org.jetbrains.compose.resources.StringResource
  * The three places the tab bar goes, in the order they sit along the bottom of
  * the screen.
  *
- * Ordered by how often a reader wants them rather than by how much each one
- * holds: home is where the app opens, search is what you reach for when you
- * know what you want, and the library itself - the largest of the three, and
- * the only one that was here before - is the one you go to deliberately.
+ * Ordered by how often a reader wants them rather than by how much each holds:
+ * home is where the app opens, search is for when you know what you want, and
+ * the library - the largest, and the only one that was here before - is the one
+ * you go to deliberately.
  *
- * Three and no more. A fourth tab is where a bar starts being a menu, and
- * everything else this app does either belongs to one book or belongs in
- * settings.
+ * Three and no more: a fourth tab is where a bar starts being a menu, and
+ * everything else belongs either to one book or in settings.
  */
 internal enum class MobileTab(
     /**

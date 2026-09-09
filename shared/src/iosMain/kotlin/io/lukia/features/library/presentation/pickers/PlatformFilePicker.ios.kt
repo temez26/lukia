@@ -16,12 +16,10 @@ import platform.darwin.NSObject
 /**
  * The types the document picker will let through.
  *
- * Word documents and Markdown have no constant of their own in
- * `UniformTypeIdentifiers`, so they are looked up by extension - which resolves
- * to whatever the system has registered for them, and to nothing at all on a
- * system that has registered neither. Anything that does not resolve is dropped
- * rather than passed on: a null in this list would be a picker that shows no
- * files at all.
+ * Word documents and Markdown have no constant in `UniformTypeIdentifiers`, so
+ * they are looked up by extension - resolving to whatever the system registered,
+ * or to nothing where it registered neither. Anything unresolved is dropped: a
+ * null in this list is a picker that shows no files at all.
  */
 @OptIn(ExperimentalForeignApi::class)
 private fun supportedContentTypes(): List<UTType> = listOfNotNull(

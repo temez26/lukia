@@ -20,11 +20,10 @@ import kotlin.test.assertEquals
  * The Reading group's half of the seam between what somebody chooses in Settings
  * and what a book is then set in.
  *
- * These settings were reachable only from the reader's own panel, beside an open
- * book. Worth testing that the second way in reaches the same place: the reader
- * has been proved to obey whatever settings it is handed, and the store to
- * remember whatever it is given, and neither says anything about whether this
- * screen puts one into the other.
+ * These settings were once reachable only from the reader's own panel, beside an
+ * open book. The second way in is worth testing: the reader is proved to obey
+ * whatever settings it is handed and the store to remember what it is given, and
+ * neither says whether this screen puts one into the other.
  */
 class SettingsViewModelReadingTest {
 

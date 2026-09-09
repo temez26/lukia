@@ -12,15 +12,13 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * What the five segments across the top of Settings are called.
  *
- * About borrows the name of the group inside it rather than taking one of its
- * own: the segment and the group are the same thing now, and two resources
- * holding the same word is two chances for a translation to disagree with
- * itself.
+ * About borrows the name of the group inside it: the segment and the group are
+ * the same thing now, and two resources holding one word is two chances for a
+ * translation to disagree with itself.
  *
- * The AI translation segment reads "Beta", which is not what its resource is
- * named after. The key says what is behind the segment and the word says what
- * state it is in - and the word is the one that has to fit in a segment beside
- * four others.
+ * The AI translation segment reads "Beta", which its resource is not named
+ * after: the key says what is behind the segment, the word says what state it is
+ * in - and the word is the one that has to fit beside four others.
  */
 @Composable
 internal fun SettingsArea.displayTitle(): String = when (this) {

@@ -32,13 +32,13 @@ import kotlin.test.Test
  * are set to.
  *
  * Every one of these was a `clickable` with a colour change: the app knew a
- * filter was on and drew it as a fill measuring 1.1:1 against the chip beside
- * it, and told a screen reader only that there was a button called "Fiction".
- * A switch beside a label was worse - it announced "on, switch", with the word
- * saying *what* was on a separate stop before it.
+ * filter was on, drew it as a fill measuring 1.1:1 against the chip beside it,
+ * and told a screen reader only that there was a button called "Fiction". A
+ * switch beside a label was worse, announcing "on, switch" with the word saying
+ * *what* was on a separate stop before it.
  *
- * Asserted through the semantics tree because that is what assistive technology
- * reads. A state that is only painted is a state only some people have.
+ * Asserted through the semantics tree, which is what assistive technology reads:
+ * a state that is only painted is a state only some people have.
  */
 @OptIn(ExperimentalTestApi::class)
 class ControlSemanticsTest {

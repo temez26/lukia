@@ -23,15 +23,15 @@ import io.lukia.shared.presentation.theme.LukiaMotion
 /**
  * The filled heart shown over a favourited book's cover.
  *
- * Ink rather than accent, and on the same frosted backing the percentage sits
- * on, so the two marks a cover can wear read as one family. The accent belongs
- * to the progress bar, which is the one mark on a cover that means a quantity.
+ * Ink rather than accent, on the same frosted backing the percentage sits on, so
+ * the two marks a cover can wear read as one family. The accent belongs to the
+ * progress bar, the one mark on a cover that means a quantity.
  *
- * Decorative, and stays out of the accessibility tree - not because the state
- * does not matter but because whatever the badge is drawn on carries it: a
- * `BookCard` names itself with the word for a favourite, so a shelf can be heard
- * as well as looked at. Before that the state was announced only by the menu row
- * that toggles it, so finding the favourites meant opening a menu on every cover.
+ * Decorative, and out of the accessibility tree - not because the state does not
+ * matter but because what the badge is drawn on carries it: a `BookCard` names
+ * itself with the word for a favourite, so a shelf can be heard as well as
+ * looked at. Before that, finding the favourites meant opening a menu on every
+ * cover.
  */
 @Composable
 fun FavoriteBadge(

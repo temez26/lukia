@@ -35,11 +35,10 @@ private const val TotalMillis = StaggerMillis * MaxStaggered + ElementMillis
  * How long the reveal waits before its clock starts.
  *
  * It starts under the launch animation rather than after it - see
- * [LaunchTiming.ContentArrivalMillis]. Waiting for the mark to be gone first
- * would leave an empty screen behind it and then assemble the library in front
- * of the reader, which is the one moment in the app where that is most obvious.
- * Starting early instead means the mark dissolves off a screen whose top has
- * already settled, with only the lower rows still arriving.
+ * [LaunchTiming.ContentArrivalMillis]. Waiting for the mark to go would leave an
+ * empty screen behind it and then assemble the library in front of the reader.
+ * Starting early, the mark dissolves off a screen whose top has already settled,
+ * with only the lower rows still arriving.
  */
 private const val StartDelayMillis = LaunchTiming.ContentArrivalMillis
 
@@ -51,13 +50,13 @@ private val DefaultRise: Dp = 14.dp
  * something any one screen owns.
  *
  * Process-scoped on purpose: this is the app opening rather than a screen being
- * composed, so coming back to the library from a book must not replay it, and an
- * Android configuration change - which recreates the activity without the
- * process stopping - is not a launch either.
+ * composed, so coming back to the library from a book must not replay it - nor
+ * must an Android configuration change, which recreates the activity without
+ * stopping the process.
  *
  * One clock, so a screen composing while it runs joins the stagger part-way
- * through rather than starting its own: an element's turn comes at a fixed point
- * after launch, not after whenever it happened to be composed.
+ * through: an element's turn comes at a fixed point after launch, not after
+ * whenever it was composed.
  */
 private object AppOpening {
 
@@ -132,10 +131,10 @@ internal fun rememberAppOpening(): Boolean {
  * is drawn, in the manner of an iOS app coming to the foreground.
  *
  * One clock drives every element rather than each running its own delayed
- * animation. That is what keeps the stagger honest - an element's turn comes at a
- * fixed point after launch, not at a fixed point after whenever it happened to be
- * composed - and it means a library scrolled during the reveal does not hand its
- * later rows an animation that launch has long since finished.
+ * animation, which is what keeps the stagger honest: an element's turn comes at
+ * a fixed point after launch, not after whenever it was composed, so a library
+ * scrolled during the reveal does not hand its later rows an animation launch
+ * has long since finished.
  */
 @Stable
 class LaunchReveal internal constructor(
@@ -177,12 +176,11 @@ class LaunchReveal internal constructor(
  * This screen's share of the app's opening, or a reveal already over when the
  * app opened before this screen existed.
  *
- * Decided once, as the screen composes, and never revisited: whether a screen
- * was there as the app opened is a fact about that screen, and a reveal that
- * could start later is a screen change wearing the launch animation's clothes.
- * It used to be claimed by whichever screen asked first, which is how the
- * library came to play the app's opening - once, minutes in - as the animation
- * for switching to its tab.
+ * Decided once as the screen composes and never revisited: whether a screen was
+ * there as the app opened is a fact about that screen, and a reveal that could
+ * start later is a screen change in the launch animation's clothes. Claimed by
+ * whichever screen asked first, it once played the app's opening - minutes in -
+ * as the animation for switching to the library tab.
  */
 @Composable
 fun rememberLaunchReveal(): LaunchReveal {

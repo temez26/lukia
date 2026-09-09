@@ -4,14 +4,14 @@ package io.lukia.features.translate.infrastructure.wiktionary
  * A Wiktionary page cut into the sections its headings mark out.
  *
  * The query API hands a page over as one run of text with its headings still
- * wrapped in `=` signs, and everything downstream of here wants to ask which
- * part of the page a line came from: senses, related words, or one of the
- * sections that are about the word without saying what it means.
+ * wrapped in `=` signs, and everything downstream asks which part of the page a
+ * line came from: senses, related words, or a section about the word that never
+ * says what it means.
  *
- * [level] is how deep the heading is - `== Englanti ==` is 2 and
- * `=== Verbi ===` is 3 - which is the only thing that says whether a section is
- * inside another one or beside it. That matters because a word's related terms
- * sit under its part of speech while the next language sits beside it.
+ * [level] is how deep the heading is - `== Englanti ==` is 2, `=== Verbi ===` is
+ * 3 - the only thing saying whether a section is inside another or beside it,
+ * which matters because related terms sit under a part of speech while the next
+ * language sits beside it.
  */
 internal data class WikiSection(
     val title: String,

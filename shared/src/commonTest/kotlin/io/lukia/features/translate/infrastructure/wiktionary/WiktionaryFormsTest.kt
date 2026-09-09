@@ -9,14 +9,14 @@ import kotlin.test.assertTrue
 /**
  * Following a word to the one it is a form of.
  *
- * The case that made the dictionary useless on real prose. A book is written in
- * inflected words, and a wiki's page for one of them is usually not a definition
- * at all - `values` answers `monikkomuoto sanasta value`, which tells somebody
- * who wanted `arvo` only that they have more looking up to do.
+ * The case that made the dictionary useless on real prose. Books are written in
+ * inflected words, and a wiki's page for one is usually not a definition at all:
+ * `values` answers `monikkomuoto sanasta value`, telling somebody who wanted
+ * `arvo` only that they have more looking up to do.
  *
- * What is worth holding here is both halves of that: which lines are pointers,
- * and which are definitions that merely look like one. Following the wrong word
- * is worse than not following.
+ * Both halves are worth holding - which lines are pointers, and which are
+ * definitions that merely look like one. Following the wrong word is worse than
+ * not following.
  */
 class WiktionaryFormsTest {
 

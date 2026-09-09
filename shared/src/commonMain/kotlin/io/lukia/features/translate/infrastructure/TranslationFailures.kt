@@ -13,15 +13,13 @@ import kotlin.coroutines.cancellation.CancellationException
 /**
  * What to tell the reader when the request never came back at all.
  *
- * Running out of patience and finding nothing there are one failed request to
- * this code and two completely different situations to the person holding the
- * phone. Told apart here because the advice is opposite: a server that is not
- * running has to be started, and one that is thinking has to be waited for -
- * and being told to check whether a server is running while it is busy loading
- * a model is how somebody ends up restarting the thing that was working.
- *
- * That confusion is what this whole file exists to end. Every provider maps its
- * transport failures through here so the two never get the same words again.
+ * Running out of patience and finding nothing there are one failed request here
+ * and two different situations to the person holding the phone. Told apart
+ * because the advice is opposite: a server that is not running has to be
+ * started, one that is thinking has to be waited for - and "check whether the
+ * server is running" while it loads a model is how somebody restarts the thing
+ * that was working. Every provider maps its transport failures through here so
+ * the two never get the same words.
  */
 internal fun Throwable.asTranslationFailure(
     settings: TranslationSettings,
@@ -40,13 +38,12 @@ internal fun Throwable.asTranslationFailure(
 /**
  * Whether the connection was open and simply stopped producing anything.
  *
- * Both of these mean that; which is thrown depends on the engine and on where
- * in the request the waiting happened rather than on anything the reader did.
+ * Both mean that; which is thrown depends on the engine and on where in the
+ * request the waiting happened, not on anything the reader did.
  *
- * Deliberately not a connect timeout. Nothing accepting a connection is a
- * server that is not there, however long it was given - and it is the one
- * timeout the reader cannot lengthen, since opening a connection is the part
- * that takes the same time everywhere.
+ * Deliberately not a connect timeout: nothing accepting a connection is a server
+ * that is not there, however long it was given - and it is the one timeout the
+ * reader cannot lengthen, opening a connection taking the same time everywhere.
  */
 private val Throwable.isSilence: Boolean
     get() = this is SocketTimeoutException || this is HttpRequestTimeoutException
@@ -74,14 +71,12 @@ private fun TranslationSettings.unreachable(): String = when (provider) {
  * Runs [block] and lets nothing out of it that the reader cannot read.
  *
  * Every provider had written this ladder out for itself, and the middle rung is
- * the one worth having once: a failure that has already been turned into words -
- * a rejected key, a model that is not there - must not be turned into them a
- * second time, or "check your API key" becomes "could not reach the translation
- * service".
+ * the one worth having once: a failure already turned into words - a rejected
+ * key, a missing model - must not be turned into them again, or "check your API
+ * key" becomes "could not reach the translation service".
  *
- * Cancellation is not a failure and is never described. A reader who turned the
- * page while a sentence was in flight has not been told anything went wrong,
- * because nothing did.
+ * Cancellation is not a failure and is never described: a reader who turned the
+ * page mid-sentence is told nothing went wrong, because nothing did.
  */
 @Suppress("TooGenericExceptionCaught")
 internal inline fun <T> translating(

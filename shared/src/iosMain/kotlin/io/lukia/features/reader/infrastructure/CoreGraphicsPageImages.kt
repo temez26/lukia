@@ -181,13 +181,12 @@ private class PageWalk(
 
     /**
      * A form is a piece of a page drawn as a unit, and a figure placed by a
-     * word processor is routinely one - so its own program is run here, under
-     * the transformation that placed it, or the picture inside it would never
-     * be reached.
+     * word processor is routinely one - so its program is run here under the
+     * transformation that placed it, or the picture inside is never reached.
      *
-     * What the form's own `q` and `Q` left behind is dropped on the way out.
-     * A malformed one can restore a state it never saved, and letting it take
-     * the page's transformations with it would move everything drawn after it.
+     * What the form's own `q` and `Q` left behind is dropped on the way out: a
+     * malformed one can restore a state it never saved, taking the page's
+     * transformations with it and moving everything drawn after.
      */
     private fun enterForm(
         stream: CGPDFStreamRef,

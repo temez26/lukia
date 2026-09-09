@@ -197,15 +197,14 @@ internal fun TranslationPanel(
 /**
  * The size the page's type was set at, worked back from the boxes it reports.
  *
- * There is no honest way to derive this. What a renderer calls a glyph's bounds
- * differs between them - some give the ink, some the em box, some the whole line
- * - and the file itself is not asked. So this is calibrated against real pages
- * rather than reasoned out, and it is the one number here to reach for when a
- * translation comes out the wrong size beside the words it covers.
+ * There is no honest way to derive this: what a renderer calls a glyph's bounds
+ * differs between them - the ink, the em box, the whole line - and the file is
+ * not asked. Calibrated against real pages rather than reasoned out, and the one
+ * number to reach for when a translation comes out the wrong size.
  *
- * A little over parity. Under it the translation reads as a caption stuck on the
- * page; far over it, which is where this landed on the first attempt, the words
- * spill out of the line they belong to.
+ * A little over parity: under it the translation reads as a caption stuck on the
+ * page, and far over it - where this first landed - the words spill out of the
+ * line they belong to.
  */
 private const val TYPE_OF_GLYPHS = 1.15f
 

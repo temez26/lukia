@@ -35,12 +35,10 @@ data class WordInquiry(
  * What has become of the word on the page, which is what the panel can offer to
  * do about it.
  *
- * The three are what holding a word used to do on its own, gathered into one
- * place because the hold now opens this panel instead: a translated word could
- * be put back, a word put back could be brought forward again, and one that
- * failed could be asked about again. Nothing is lost by moving them in here -
- * each is one press either way - and what is gained is that the gesture no
- * longer means three things depending on what happened last.
+ * The three are what holding a word used to do on its own, gathered here because
+ * the hold now opens this panel instead. Nothing is lost by moving them in -
+ * each is still one press - and the gesture no longer means three things
+ * depending on what happened last.
  */
 @Immutable
 sealed interface WordOnThePage {
@@ -50,10 +48,9 @@ sealed interface WordOnThePage {
      * has asked about it yet.
      *
      * Reached only by the gesture that asks what a word means outright - the
-     * second mouse button, two fingers on a trackpad - which is a question about
-     * the word rather than a request to translate the page. A hold cannot arrive
-     * here: its first job is translating, and it opens this panel only once that
-     * has happened.
+     * second mouse button, two fingers on a trackpad - a question about the word
+     * rather than a request to translate the page. A hold cannot arrive here:
+     * its first job is translating, and it opens this panel only after that.
      */
     data object Untouched : WordOnThePage
 
@@ -66,12 +63,11 @@ sealed interface WordOnThePage {
     /**
      * Looking it up failed, and [error] says why.
      *
-     * The reason a failure opens this panel at all rather than quietly asking
-     * again. A word the reader's own service could not answer is exactly the
-     * word they want to take somewhere else, and asking the same service a
-     * second time is the one thing least likely to help - so the dictionary is
-     * read, the site is offered, and asking again is one of the things on the
-     * panel rather than the only thing the gesture can do.
+     * Why a failure opens this panel rather than quietly asking again: a word
+     * the reader's own service could not answer is exactly the word they want to
+     * take elsewhere, and asking that service twice is least likely to help. So
+     * the dictionary is read, the site is offered, and asking again is one of
+     * the things on the panel rather than the only thing the gesture can do.
      */
     data class Failed(val error: AppError) : WordOnThePage
 }

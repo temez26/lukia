@@ -20,14 +20,13 @@ import androidx.compose.ui.Alignment
 /**
  * The app's motion vocabulary.
  *
- * Every animation in Lukia is built from what is here rather than from a
- * hand-picked duration at the call site. The point is not the individual
- * numbers - it is that a menu opening, a screen arriving and a card being
- * pressed all move at rates that are recognisably related, which is most of what
- * makes motion read as one piece of software rather than several.
+ * Every animation is built from what is here rather than from a duration picked
+ * at the call site. The point is not the numbers but that a menu opening, a
+ * screen arriving and a card being pressed move at related rates, which is most
+ * of what makes motion read as one piece of software.
  *
  * The timings follow Apple's convention that things leave faster than they
- * arrive: an entrance is being watched, an exit is already being scrolled past.
+ * arrive: an entrance is watched, an exit is already being scrolled past.
  */
 object LukiaMotion {
 
@@ -54,12 +53,11 @@ object LukiaMotion {
      * A list unfolding to a height greater than the surface holding it - see
      * [disclosureIn].
      *
-     * Longer than [LargeMillis], which is not a mistake and not a flourish. A
+     * Longer than [LargeMillis], which is neither a mistake nor a flourish: a
      * screen pushing over another travels its whole distance in front of the
-     * reader; a list opening inside a capped, scrolling panel spends much of its
-     * travel below the panel's bottom edge, so only the part that fits is
-     * actually watched. Timed like a screen push, what the reader sees is over
-     * in half of it.
+     * reader, while a list opening inside a capped, scrolling panel spends much
+     * of its travel below the panel's edge. Timed like a screen push, what the
+     * reader sees is over in half of it.
      */
     const val UnfoldMillis = 520
 

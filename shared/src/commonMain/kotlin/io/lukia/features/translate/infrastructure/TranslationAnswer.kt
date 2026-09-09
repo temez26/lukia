@@ -44,12 +44,11 @@ internal fun readTranslatedPassage(answer: String, json: Json): Translation {
  *
  * A dropped connection ends a stream exactly as a finished answer does, so
  * without [endedProperly] half a translation is indistinguishable from all a
- * model had to say - and the half that parses is the dangerous one, because it
- * goes into the book looking whole. What is asked here is the cheap version of
- * that question: an answer that still reads as a translation is taken, and one
- * that does not is blamed on the stream that stopped rather than on the model,
- * which is both true and the difference between a failure worth asking again
- * about and one that never will be.
+ * model had to say - and the half that parses is the dangerous one, since it
+ * goes into the book looking whole. The cheap version of that question is asked:
+ * an answer still reading as a translation is taken, one that does not is blamed
+ * on the stream rather than the model - true, and the difference between a
+ * failure worth asking again about and one that never will be.
  */
 internal fun readStreamedPassage(
     answer: String,

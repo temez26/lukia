@@ -142,12 +142,11 @@ class ProgressivePaginationTest {
      * A book is handed over on a clock, not once per run.
      *
      * A long book is a hundred runs, and a hundred books arriving is the
-     * reader's list rebuilt a hundred times, the contents put back on their
-     * pages a hundred times and the position followed across a hundred
-     * re-layouts. The clock here is the test's own and never moves, so what
-     * comes out is what the throttle allows at its narrowest: the first
-     * beginning, because somebody is waiting for it, and the finished book,
-     * because it is the only one that can say how long the book is.
+     * reader's list rebuilt, the contents put back on their pages and the
+     * position followed across a re-layout, a hundred times over. The clock here
+     * is the test's own and never moves, so out comes what the throttle allows
+     * at its narrowest: the first beginning, which somebody is waiting for, and
+     * the finished book, the only one that can say how long it is.
      *
      * Twenty chapters cut into several runs, and still two.
      */

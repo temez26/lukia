@@ -19,12 +19,10 @@ import io.lukia.shared.presentation.theme.Space
 /**
  * The controls, in both themes.
  *
- * Every variant of a control in one frame rather than one preview each: what
- * these are for is catching the variant that stopped matching its neighbours -
- * a ghost button in the wrong tint, a disabled state that reads as enabled -
- * and that is a comparison, not a picture.
- *
- * Grouped in a file of their own so a component's own file stays the component.
+ * Every variant in one frame rather than one preview each: these exist to catch
+ * the variant that stopped matching its neighbours - a ghost button in the wrong
+ * tint, a disabled state that reads as enabled - which is a comparison, not a
+ * picture. In a file of their own so a component's file stays the component.
  */
 @Composable
 private fun ControlGallery(dark: Boolean) {

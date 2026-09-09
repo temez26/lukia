@@ -5,13 +5,11 @@ package io.lukia.shared.presentation.components.launch
  *
  * Apart from the canvas that draws them - see [LaunchSparkles] - because that
  * file builds its star as a top-level [androidx.compose.ui.graphics.Path], which
- * on Android is the platform's own `android.graphics.Path` and needs a graphics
- * stack to load at all. In one file, asking when the third sparkle ends meant
- * initialising a drawing primitive, so the test pinning this timeline failed on
- * the unmocked framework rather than on the timeline.
- *
- * So the numbers live here, depending on nothing, and the drawing depends on
- * them.
+ * on Android is `android.graphics.Path` and needs a graphics stack to load at
+ * all. In one file, asking when the third sparkle ends initialised a drawing
+ * primitive, and the test pinning this timeline failed on the unmocked framework
+ * rather than on the timeline. So the numbers depend on nothing, and the drawing
+ * depends on them.
  */
 
 /** How long one sparkle takes to arrive, hold and go. */

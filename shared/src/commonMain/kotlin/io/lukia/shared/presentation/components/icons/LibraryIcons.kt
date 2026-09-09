@@ -83,13 +83,12 @@ fun HeartGlyph(
  * An open book, for the control that turns a cover into the way into it.
  *
  * A play triangle would be the obvious mark and the wrong one: it is the idiom
- * of something that runs on its own while you watch, and reading is neither. An
- * open book says what pressing this does in the only vocabulary the app has.
+ * of something that runs on its own while you watch, and reading is neither.
  *
- * Drawn as two filled leaves rather than as an outline. The mark appears at
- * roughly half the size of the disc behind it, and at that size a stroked book
- * silts up into a smudge - filled pages hold their shape. The gap left between
- * them is the spine, showing the disc through rather than a drawn line.
+ * Drawn as two filled leaves rather than an outline. The mark appears at about
+ * half the size of the disc behind it, and at that size a stroked book silts up
+ * into a smudge. The gap between the leaves is the spine, showing the disc
+ * through rather than a drawn line.
  */
 @Composable
 fun OpenBookGlyph(
@@ -141,13 +140,12 @@ fun OpenBookGlyph(
 
 /**
  * A plus: adding a book to the library, on the empty state and on the import
- * action. Two crossed strokes rather than a glyph with a shape of its own,
- * because "add" is the one idea in the set that every reader already reads
- * without being told.
+ * action. Two crossed strokes rather than a glyph of its own, "add" being the
+ * one idea in the set every reader reads without being told.
  *
- * Turned 45 degrees it is also the app's close mark - see [OverlayPanel] - which
- * is one drawing serving "put this here" and "take this away" rather than two
- * marks that would have to be kept in step with each other.
+ * Turned 45 degrees it is also the app's close mark - see [OverlayPanel] - one
+ * drawing serving "put this here" and "take this away" rather than two marks
+ * kept in step by hand.
  */
 @Composable
 fun PlusGlyph(

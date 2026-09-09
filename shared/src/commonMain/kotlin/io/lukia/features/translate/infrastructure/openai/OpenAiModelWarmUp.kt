@@ -31,12 +31,11 @@ private const val WARM_UP_PROMPT = "Hi"
 /**
  * Has a locally hosted model loaded before anybody needs it.
  *
- * The wait this removes is real and it is only the first one: a large model is
- * read off disk into memory the first time it is asked to run, which can take
- * minutes, and every request after that is fast. Paying it here means paying it
- * on the settings screen, where a reader has just chosen a model and expects
- * something to happen - rather than on the first sentence they tap three
- * chapters into a book.
+ * The wait this removes is only the first one: a large model is read off disk
+ * the first time it is asked to run, which can take minutes, and every request
+ * after is fast. Paid here it is paid on the settings screen, where a reader has
+ * just chosen a model and expects something to happen - rather than on the first
+ * sentence they tap three chapters into a book.
  */
 class OpenAiModelWarmUp(
     private val client: HttpClient,

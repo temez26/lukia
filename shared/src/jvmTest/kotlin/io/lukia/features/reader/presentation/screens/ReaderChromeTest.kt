@@ -174,12 +174,12 @@ class ReaderChromeTest {
      * That the page indicator is drawn as a label and pressed as a control.
      *
      * Held to a control's height, its fill was a 44dp slab around one 13sp line
-     * - most of the inside of the toolbar tinted grey. The fill is drawn to its
-     * own label now, and this is the half of that change that could go wrong:
-     * what got smaller is the drawing, not what a thumb has to hit.
+     * - most of the toolbar tinted grey. The fill is drawn to its own label now,
+     * and this is the half that could go wrong: what got smaller is the drawing,
+     * not what a thumb has to hit.
      *
-     * Pressed above the label rather than on it, which is where the fill used to
-     * reach and where a thumb aiming at the middle of the bar still lands.
+     * Pressed above the label rather than on it, where the fill used to reach
+     * and where a thumb aiming at the middle of the bar still lands.
      */
     @Test
     fun thePageIndicatorIsPressedWellPastWhatItDraws() = runComposeUiTest {

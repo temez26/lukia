@@ -18,11 +18,10 @@ private const val CREDIT_BALANCE = "credit balance"
  * What went wrong, in words a reader can act on and a kind this app can.
  *
  * A rejected key, a busy service and an account with no credit are one HTTP
- * failure to this code and three completely different afternoons to the person
- * holding the phone - one is a trip to Settings, one is waiting a moment, and
- * one is a billing page. They are told apart here rather than all becoming
- * "something went wrong", and the kind travels with the words so that the one
- * of them worth trying again is the only one that is - see
+ * failure here and three different afternoons to the person holding the phone: a
+ * trip to Settings, a moment's wait, a billing page. Told apart rather than all
+ * becoming "something went wrong", with the kind travelling beside the words so
+ * that only the one worth trying again is - see
  * [io.lukia.features.translate.infrastructure.RetryingTranslator].
  */
 internal suspend fun HttpResponse.asTranslationFailure(

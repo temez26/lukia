@@ -5,19 +5,16 @@
 -- already and has no second way of being read, so a row for one would be a
 -- choice that was never offered.
 --
--- A table of its own for the same reason `reading_position` is one: it belongs
--- to the handful of books somebody has actually opened and chosen for, not to
--- every book on the shelf, and a column on `document` would be written by the
--- reader into a row the import owns.
+-- A table of its own for `reading_position`'s reason: it belongs to the handful
+-- of books somebody has opened and chosen for, and a column on `document` would
+-- have the reader writing into a row the import owns.
 --
--- The layout is stored under its own name rather than as a flag, so a third way
--- of reading a document - should there ever be one - is a value here and not a
--- migration. `PdfLayout` decides what an unreadable name means, which is the
--- default, exactly as the key-value settings do.
+-- Stored under its own name rather than as a flag, so a third way of reading a
+-- document would be a value here and not a migration. `PdfLayout` decides what
+-- an unreadable name means, as the key-value settings do.
 --
--- Keyed to `document` and cascading, for the reason `reading_position` is - see
--- the note there. A choice about how to read a book that is no longer in the
--- library is not a choice anybody can reach.
+-- Keyed to `document` and cascading, for `reading_position`'s reason - see the
+-- note there. A choice about a book no longer in the library is unreachable.
 CREATE TABLE reader_layout (
     location TEXT NOT NULL PRIMARY KEY REFERENCES document(location) ON DELETE CASCADE,
     layout TEXT NOT NULL

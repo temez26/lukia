@@ -12,11 +12,10 @@ import io.lukia.features.library.presentation.browser.DesktopPicks
  * The desktop's way of choosing books, which is not the same on every desktop.
  *
  * macOS opens `NSOpenPanel` - the Finder panel every other application there
- * opens, with the reader's sidebar and their recent places, and nothing this app
- * could draw would be a better one. Everywhere else the panel is drawn over the
- * library instead - see `PlatformPickerHost` - because what the alternative
- * offered was a window drawn by Java in neither the app's design nor the
- * system's.
+ * opens, with the reader's own sidebar and recent places, and nothing this app
+ * could draw would be better. Everywhere else the panel is drawn over the
+ * library instead - see `PlatformPickerHost` - the alternative being a window
+ * drawn by Java in neither the app's design nor the system's.
  */
 @Composable
 actual fun rememberPlatformFilePicker(): PlatformFilePickerState = remember {

@@ -5,14 +5,14 @@ import io.lukia.features.translate.domain.settings.TargetLanguage
 /**
  * The address to open for one word, or null when there is nothing to open.
  *
- * Null rather than a best effort, because the two ways this fails are both ways
- * the reader would be sent nowhere useful: a template they have not filled in
- * yet, and one that does not name the word at all. Opening a browser on a search
- * page with no search in it is worse than the button doing nothing.
+ * Null rather than a best effort: both ways this fails - a template not filled
+ * in yet, and one that does not name the word - send the reader nowhere useful,
+ * and a browser opened on a search page with no search in it is worse than a
+ * button doing nothing.
  *
- * A site that names none of the languages simply does not get them - most
- * dictionaries are a single pair and settle it themselves - so the placeholders
- * are replaced where they appear rather than required.
+ * A site naming none of the languages simply does not get them - most
+ * dictionaries are a single pair and settle it themselves - so placeholders are
+ * replaced where they appear rather than required.
  */
 fun WordSite.urlFor(
     template: String,
@@ -51,11 +51,10 @@ private const val WORD_PLACEHOLDER = "{word}"
  * The language on its own, without the script or the region a document may have
  * written after it.
  *
- * Every site here takes the short form - `zh` rather than `zh-Hans`, and there is
- * no Wiktionary at `pt-BR.wiktionary.org` - and a tag with a subtag on it is the
- * ordinary case in an EPUB rather than the exception. It is also what a site's
- * own names for languages are keyed by, so this happens before the lookup rather
- * than instead of it.
+ * Every site here takes the short form - `zh` rather than `zh-Hans`, and there
+ * is no Wiktionary at `pt-BR.wiktionary.org` - while a tag with a subtag is the
+ * ordinary case in an EPUB. It is also what a site's own language names are
+ * keyed by, so this happens before the lookup rather than instead of it.
  */
 private fun String.shortTag(): String = trim().substringBefore('-').lowercase()
 

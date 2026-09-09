@@ -138,12 +138,12 @@ class ReaderPageGestureTest {
     /**
      * A tap on the translation itself puts the book's own words back.
      *
-     * This is the whole of what a reader does with a translation once they have
-     * read it, and on a page it used to do nothing. The panel is not drawn
-     * inside the words it replaces - a page is a picture and cannot be re-set,
-     * so the translation is laid over it, starting at the passage's corner and
-     * running as far as it needs. Hit-testing the passage's own rectangles
-     * therefore missed nearly all of what the reader could see and tap on.
+     * The whole of what a reader does with a translation once they have read it,
+     * and on a page it used to do nothing. The panel is not drawn inside the
+     * words it replaces - a page is a picture and cannot be re-set, so the
+     * translation is laid over it from the passage's corner and runs as far as
+     * it needs. Hit-testing the passage's own rectangles therefore missed nearly
+     * all of what the reader could see and tap on.
      */
     @Test
     fun tappingASentencesTranslationOnAPagePutsTheSentenceBack() = runComposeUiTest {

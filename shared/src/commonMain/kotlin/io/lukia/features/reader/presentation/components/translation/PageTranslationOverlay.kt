@@ -170,11 +170,10 @@ internal fun PageTranslationOverlay(
  * Everything on this page the reader has asked about, gathered together.
  *
  * Paragraphs, sentences and single words in one list, because what is done with
- * any of them is the same: mark where it is, and cover it once there is
- * something to put in its place. Each is only on the page while nothing larger
- * has been translated over the top of it - a paragraph asked about whole leaves
- * none of its sentences showing, and a translated sentence leaves none of its
- * words.
+ * each is the same: mark where it is, cover it once there is something to put in
+ * its place. Each is on the page only while nothing larger has been translated
+ * over it - a paragraph asked about whole leaves none of its sentences showing,
+ * and a translated sentence none of its words.
  */
 private fun markedPassages(
     sentences: List<PageSentence>,

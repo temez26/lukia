@@ -28,11 +28,9 @@ import io.lukia.shared.presentation.theme.LukiaMotion
  * settles back when it is let go.
  *
  * Used on the drawn chrome - the library's add button, the reader's toolbar - in
- * place of a Material ripple, which is the wrong idiom for a translucent circular
- * control and looks it.
- *
- * The caller passes the same [interactionSource] to its `clickable`, which is
- * what connects the press to the scale.
+ * place of a Material ripple, which is the wrong idiom for a translucent
+ * circular control and looks it. The caller passes the same [interactionSource]
+ * to its `clickable`, which is what connects the press to the scale.
  */
 @Composable
 fun Modifier.scaleOnPress(
@@ -55,12 +53,11 @@ fun Modifier.scaleOnPress(
  * How far this element is hovered, from 0 to 1, animated.
  *
  * Desktop-only in practice: touch platforms never report hover, so anything
- * driven by this stays at rest on phones and tablets without needing a platform
- * check of its own.
+ * driven by this rests on phones and tablets without a platform check.
  *
- * Returned as a value rather than applied as a modifier because callers use it
- * for more than one thing at once - a lift, a shadow that grows with it, a glyph
- * that warms to the accent colour - and all of them should move together.
+ * A value rather than a modifier because callers use it for several things at
+ * once - a lift, a shadow growing with it, a glyph warming to the accent colour
+ * - and all of them should move together.
  */
 @Composable
 fun rememberHoverFraction(interactionSource: MutableInteractionSource): Float {

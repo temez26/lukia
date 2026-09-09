@@ -163,11 +163,10 @@ val translateModule = module {
  * Who is being asked, closely enough that nobody else's answer can be mistaken
  * for theirs.
  *
- * The address is part of the name for a server the reader points at themselves
- * and only for one of those. Two machines on a desk both answering to
- * `local-model` are two different models with one name, and a cache that knew
- * only the name would hand one machine's work back as the other's; a hosted
- * service has one address and putting it in would say nothing.
+ * The address is part of the name only for a server the reader points at
+ * themselves: two machines on a desk both answering to `local-model` are two
+ * models with one name, and a cache knowing only the name hands one machine's
+ * work back as the other's. A hosted service has one address, so it says nothing.
  */
 private fun TranslationSettings.translatorName(): String = when {
     provider.hasConfigurableEndpoint -> "${provider.name}/$model@$baseUrl"

@@ -39,10 +39,10 @@ enum class GlyphWeight(internal val ratio: Float) {
      * A step lighter, for the two places where the family weight is genuinely
      * wrong rather than merely inherited.
      *
-     * The tab bar is one: its marks repeat across the bottom of every screen and
-     * at full weight three of them read as a row of blobs. A rule drawn *inside*
-     * another glyph is the other - the untranslated line inside the translation
-     * mark's page frame is lighter than the frame around it on purpose, and that
+     * The tab bar is one: its marks repeat across the bottom of every screen,
+     * and at full weight three of them read as a row of blobs. A rule drawn
+     * *inside* another glyph is the other - the untranslated line in the
+     * translation mark is lighter than the frame around it on purpose, and that
      * contrast is what the glyph is made of.
      */
     Light(LightRatio),

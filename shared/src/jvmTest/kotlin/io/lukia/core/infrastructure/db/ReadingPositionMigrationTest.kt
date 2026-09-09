@@ -15,11 +15,10 @@ import kotlin.test.assertTrue
  * A library that was read before the app recorded which book was read last has
  * to survive the version that started recording it.
  *
- * The positions themselves are the thing to protect: they are where somebody is
- * in a book they are part way through, and losing them to a schema change is
- * losing the one piece of state the app cannot re-derive from the files. So the
- * old schema is written out verbatim and opened with the current driver, exactly
- * as an existing installation would be.
+ * The positions are the thing to protect: where somebody is in a book they are
+ * part way through, and the one piece of state the app cannot re-derive from the
+ * files. So the old schema is written out verbatim and opened with the current
+ * driver, exactly as an installation would be.
  */
 class ReadingPositionMigrationTest {
 

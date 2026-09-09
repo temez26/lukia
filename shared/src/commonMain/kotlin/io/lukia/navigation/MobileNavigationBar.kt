@@ -62,13 +62,13 @@ private val InlineTabIconSize: Dp = 20.dp
  * How much room the bar takes at the bottom of the screen, system inset
  * included.
  *
- * The tab screens read this to know where their content has to stop. The bar is
- * drawn over them rather than beside them - it is one strip shared by three
- * screens, and re-laying the whole screen out on every tab change to make room
- * for something that never moves would be work for nothing.
+ * The tab screens read this to know where their content stops. The bar is drawn
+ * over them rather than beside them: it is one strip shared by three screens,
+ * and re-laying every screen out on each tab change to make room for something
+ * that never moves would be work for nothing.
  *
  * A short window gets the shorter bar, and every screen behind it is handed the
- * smaller inset without knowing that anything changed.
+ * smaller inset without knowing anything changed.
  */
 @Composable
 internal fun mobileNavBarHeight(): Dp =

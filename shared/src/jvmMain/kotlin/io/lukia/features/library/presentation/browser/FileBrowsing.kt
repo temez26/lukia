@@ -20,14 +20,13 @@ internal data class BrowserEntry(
 /**
  * What is worth showing in [folder], in the order a file panel shows it.
  *
- * Folders first and then books, each run sorted by name the way a reader reads
- * names - case and accents ignored, so `epub` files do not sit in a block after
- * `EPUB` ones. Everything else in the folder is left out: this is a way to find
- * a book, not a file manager, and a list padded with settings files and disk
- * images is a longer list to search for the one thing being looked for.
+ * Folders first and then books, each run sorted the way a reader reads names -
+ * case and accents ignored, so `epub` files do not sit in a block after `EPUB`
+ * ones. Everything else is left out: this is a way to find a book, not a file
+ * manager, and settings files and disk images only lengthen the search.
  *
  * Hidden entries are skipped for the same reason, and an unreadable folder is an
- * empty one - a permission the reader does not have is not something they can do
+ * empty one - a permission the reader lacks is not something they can do
  * anything about from here.
  */
 internal fun listFolder(folder: File, foldersOnly: Boolean): List<BrowserEntry> {
@@ -55,12 +54,11 @@ private fun List<File>.asEntries(isFolder: Boolean): List<BrowserEntry> =
  * rest of them could be.
  *
  * Offered because the alternative is opening at one folder and walking up out of
- * it. The named places come first because that is where books actually are, and
- * the drives after them because on Windows they are the only way to reach
- * anything that is not under the home folder.
+ * it. The named places first, being where books actually are, then the drives -
+ * on Windows the only way to reach anything outside the home folder.
  *
  * Only what exists: a machine with no `Downloads` should not offer one, and an
- * empty card reader should not be a place to look.
+ * empty card reader is not a place to look.
  */
 internal fun browserPlaces(): List<BrowserEntry> {
     val home = File(System.getProperty("user.home").orEmpty())

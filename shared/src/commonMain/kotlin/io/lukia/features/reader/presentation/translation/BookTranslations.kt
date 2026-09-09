@@ -7,14 +7,13 @@ import io.lukia.features.reader.domain.text.TextAnchor
  * Every translation in the open book, filed by where it belongs.
  *
  * Translating one sentence must not be an event for the rest of the book. Handed
- * the whole map, every page and paragraph on screen looks at it again whenever
- * any sentence anywhere changes state - re-splitting text, rebuilding annotated
- * strings, re-laying out paragraphs nobody touched - all to arrive at "still
- * exactly as it was".
+ * the whole map, every page on screen looks at it again whenever any sentence
+ * anywhere moves - re-splitting text, rebuilding annotated strings, re-laying
+ * out paragraphs nobody touched - to arrive at "still exactly as it was".
  *
  * Split into slices that compare equal when nothing in them moved, the work
- * lands only where it is: tapping a sentence on page five leaves pages four and
- * six untouched, because what they are handed is the same value it was.
+ * lands only where it is: tapping a sentence on page five leaves four and six
+ * untouched, because what they are handed is the same value it was.
  */
 @Immutable
 class BookTranslations private constructor(

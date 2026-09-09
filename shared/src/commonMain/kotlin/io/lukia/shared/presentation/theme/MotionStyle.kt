@@ -42,9 +42,8 @@ data class MotionStyle(
      * from the edge rather than cross-fading in place.
      *
      * One flag rather than four because they are one decision - whether motion
-     * here is something to be noticed or something to be got through - and a
-     * reader who has asked for the sparkles to stop has not asked to keep the
-     * parallax.
+     * is to be noticed or to be got through - and somebody who asked for the
+     * sparkles to stop has not asked to keep the parallax.
      */
     val flourishes: Boolean,
 )
@@ -99,13 +98,12 @@ private val StandardMotion = MotionStyle(stretch = 1f, travel = 1f, flourishes =
  * The style this app moves in: what the reader chose, held under what the device
  * asked for.
  *
- * The system caps rather than decides. A device set to reduce motion is a floor
- * nothing in the app may go above - somebody who turned it on did so for a
- * reason that a reading app is not entitled to overrule, and [AppMotion.Playful]
- * chosen before it was turned on is not consent to keep the sparkles. Below the
- * cap the reader's own choice still applies, which is why this is not simply
- * `if (reduced) Calm`: a reader who has asked for less motion than the system
- * did still gets less.
+ * The system caps rather than decides. A device set to reduce motion is a
+ * ceiling the app may not go above - that setting was turned on for a reason a
+ * reading app cannot overrule, and [AppMotion.Playful] chosen beforehand is not
+ * consent to keep the sparkles. Below the cap the reader's own choice still
+ * applies, which is why this is not `if (reduced) Calm`: somebody asking for
+ * less motion than the system did still gets less.
  */
 internal fun motionFor(motion: AppMotion, systemReducesMotion: Boolean): MotionStyle =
     if (systemReducesMotion) motionStyleFor(AppMotion.Calm) else motionStyleFor(motion)

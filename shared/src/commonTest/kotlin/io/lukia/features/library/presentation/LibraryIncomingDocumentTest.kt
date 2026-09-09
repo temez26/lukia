@@ -23,12 +23,12 @@ import kotlin.test.assertTrue
  * A book handed to Lukia by another app - shared out of a mail message, opened
  * from Files, tapped in a browser's downloads.
  *
- * What is pinned here is the ordering the whole feature rests on: the document
- * is copied into storage the app owns *before* anything about it is written to
- * the shelf. What arrives is readable only while the grant that delivered it
- * lasts - on Android an `ACTION_VIEW` grant cannot be made persistable at all -
- * so a library entry addressed the way the sender addressed it would open once
- * and then fail for good, with nothing on the shelf to say why.
+ * Pinned here is the ordering the feature rests on: the document is copied into
+ * storage the app owns *before* anything is written to the shelf. What arrives
+ * is readable only while the grant that delivered it lasts - on Android an
+ * `ACTION_VIEW` grant cannot be made persistable at all - so an entry addressed
+ * the way the sender addressed it opens once and then fails for good, with
+ * nothing on the shelf to say why.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class LibraryIncomingDocumentTest {

@@ -13,10 +13,10 @@ import androidx.compose.ui.unit.dp
  * tablets and small desktop windows are Medium, and a comfortably sized desktop
  * window is Expanded.
  *
- * [Large] exists because three buckets stop being enough on a desktop. Without
- * it a 900dp window and a maximised 2560dp monitor were handed identical
- * metrics, so the monitor spent most of its width on empty margin either side of
- * a grid sized for the smaller of the two.
+ * [Large] exists because three stop being enough on a desktop: without it a
+ * 900dp window and a maximised 2560dp monitor got identical metrics, and the
+ * monitor spent most of its width on margin either side of a grid sized for the
+ * smaller.
  */
 enum class WindowWidthClass {
     Compact,
@@ -38,15 +38,14 @@ enum class WindowWidthClass {
 /**
  * Window height buckets, on Material's own breakpoints.
  *
- * Width alone cannot answer every layout question, and the one it kept getting
- * wrong is the phone turned on its side. A 390x844 phone in landscape is 844dp
- * wide - Medium, which is what a small tablet reports - and 390dp tall, which
- * nothing else in the app is. Everything sized against the width therefore grew,
- * and the vertical room it grew into was not there.
+ * Width alone kept getting the phone on its side wrong: a 390x844 phone in
+ * landscape is 844dp wide - Medium, what a small tablet reports - and 390dp
+ * tall, which nothing else in the app is. Everything sized against the width
+ * grew, into vertical room that was not there.
  *
- * [Compact] is the bucket that matters: it is a phone in landscape, and the
- * split-screen half of a tablet. Chrome that costs a fixed number of points has
- * to cost fewer of them here, because the points are what has run out.
+ * [Compact] is the bucket that matters - a phone in landscape, and the
+ * split-screen half of a tablet - where chrome costing a fixed number of points
+ * has to cost fewer, the points being what ran out.
  */
 enum class WindowHeightClass {
     Compact,

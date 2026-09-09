@@ -20,13 +20,12 @@ private const val MAX_SENSES = 12
 /**
  * The whole of what Wiktionary has to say about one word.
  *
- * The same pages the reader's in-line lookup reads and a different amount of
- * them - see [WiktionaryTranslator], which keeps three. This is what answers
- * when the reader holds a word they have already looked up and asks what else it
- * means, so cutting the answer short would be cutting away the reason they
- * asked.
+ * The same pages the in-line lookup reads and a different amount of them - see
+ * [WiktionaryTranslator], which keeps three. This answers a reader holding a
+ * word they have already looked up to ask what else it means, so cutting the
+ * answer short cuts away the reason they asked.
  *
- * Offered whatever the word lookup is set to, because it costs nothing and needs
+ * Offered whatever the word lookup is set to, costing nothing and needing
  * nothing set up: somebody translating with a model still has a word the model
  * chose one sense of, and this is where the others are.
  */
@@ -41,8 +40,8 @@ internal class WiktionaryDictionary(
      * That is the one thing the panel exists to show and the one thing that
      * cannot go over a word in the book - see
      * [io.lukia.features.translate.domain.lookup.WordEntry.form]. Refusing it
-     * here would leave the reader holding a word to be told twice that it could
-     * not be translated, with the answer thrown away in between.
+     * here tells the reader twice that the word could not be translated, with
+     * the answer thrown away in between.
      */
     override suspend fun define(word: String, targetLanguage: TargetLanguage): WordEntry {
         val term = word.trim()

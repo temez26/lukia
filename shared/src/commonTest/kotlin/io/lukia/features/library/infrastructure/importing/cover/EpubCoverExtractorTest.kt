@@ -9,8 +9,8 @@ import kotlin.test.assertNull
  * The picture the library shows beside a book's title, found inside the book.
  *
  * The two ways a book declares one are the whole of this: EPUB 3 marks the
- * manifest item with a property, EPUB 2 points at it from a `<meta>` in the
- * metadata, and a shelf of bought books has both on it.
+ * manifest item with a property, EPUB 2 points at it from a `<meta>`, and a
+ * shelf of bought books has both on it.
  *
  * In `commonTest` against [MinimalEpub] rather than in `jvmTest` against a zip
  * the JDK wrote, so the same archive is opened on the desktop, on a device and

@@ -155,11 +155,9 @@ class TranslationSession(
      * Puts one passage back to the book's own words, or forward to its
      * translation again.
      *
-     * Named rather than left inside the tap handler because the word panel needs
-     * the way back to the book's own word too.
-     *
-     * Only a passage with an answer. One still arriving and one that failed have
-     * nothing to flip between.
+     * Named rather than left inside the tap handler because the word panel
+     * needs the way back to the book's own word too. Only a passage with an
+     * answer: one still arriving and one that failed have nothing to flip.
      */
     fun flip(anchor: TextAnchor) {
         val current = kept[anchor] as? PassageTranslation.Ready ?: return
@@ -211,12 +209,9 @@ class TranslationSession(
      * book's own words.
      *
      * A real change to each passage rather than a filter laid over them: a
-     * filter would be a second opinion about what is on screen, so a tap while
-     * it was on would flip a sentence underneath it and the reader would not
-     * find out until they turned the filter off.
-     *
-     * Only the ones that have an answer - a passage still arriving or failed has
-     * nothing to show or to hide.
+     * filter is a second opinion about what is on screen, so a tap while it was
+     * on would flip a sentence underneath it and nobody would find out until the
+     * filter came off. Only the ones with an answer.
      */
     fun showTranslations(showing: Boolean) {
         var changed = false

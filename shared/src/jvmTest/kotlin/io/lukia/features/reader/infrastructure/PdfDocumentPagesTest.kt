@@ -134,14 +134,12 @@ class PdfDocumentPagesTest {
      * The chapter list is read as the book is opened, not the first time
      * somebody asks for it.
      *
-     * Asserted by asking after the file has been given back, which is the one
-     * way from outside to tell the two apart. It matters because everything
-     * else that reads this document is serialised against everything else that
-     * draws from it, and a plain `val` has no way to join that - so the list
-     * being finished before the document is shared is what keeps a chapter list
-     * being read off a page being drawn. It is also what lets an opening the
-     * reader has already abandoned ask for one without reaching into a document
-     * that was closed underneath it.
+     * Asserted by asking after the file has been given back, the one way from
+     * outside to tell the two apart. Everything else that reads this document is
+     * serialised against everything that draws from it, and a plain `val` cannot
+     * join that - so the list finishing before the document is shared is what
+     * keeps a chapter list off a page being drawn, and what lets an opening the
+     * reader has abandoned ask for one without reaching into a closed document.
      */
     @Test
     fun theChaptersAreReadAsTheBookOpensRatherThanWhenAskedFor() {

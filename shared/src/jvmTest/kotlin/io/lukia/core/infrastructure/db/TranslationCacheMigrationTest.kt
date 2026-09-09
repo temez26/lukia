@@ -15,11 +15,10 @@ import kotlin.test.assertTrue
  * A library stored before translations were ever cached has to survive the
  * version that started caching them.
  *
- * The failure this guards against is quieter than a missing column but not much
- * kinder: the table is absent, every lookup throws, and translating stops
- * working entirely on exactly the installations that have been used the longest.
- * So the old schema is written out verbatim and opened with the current driver,
- * exactly as an existing installation would be.
+ * The failure is quieter than a missing column and not much kinder: the table is
+ * absent, every lookup throws, and translating stops working on exactly the
+ * installations used longest. So the old schema is written out verbatim and
+ * opened with the current driver, exactly as an installation would be.
  */
 class TranslationCacheMigrationTest {
 

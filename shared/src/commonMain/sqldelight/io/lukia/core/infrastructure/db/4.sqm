@@ -1,20 +1,17 @@
 -- Clears cover art too large to read back.
 --
--- Android hands a query's results over through a CursorWindow of two megabytes,
--- and a row that will not fit in one does not come back short: the read of the
--- whole table throws, so a single oversized cover took the entire library off
--- the screen and left a retry button where the books had been. Covers were
--- stored exactly as they were rendered or found until this version - a PDF page
--- at its own size, a publisher's artwork at 1600x2400 - and one image-heavy
--- book was enough to pass that limit on its own.
+-- Android hands query results over through a two-megabyte CursorWindow, and a
+-- row too large does not come back short: the read of the whole table throws, so
+-- one oversized cover took the entire library off the screen and left a retry
+-- button. Covers were stored exactly as rendered or found until this version - a
+-- PDF page at its own size, artwork at 1600x2400 - and one image-heavy book
+-- passed the limit on its own.
 --
--- The limit here is `MaxStoredCoverBytes`, which is what the import now holds
--- new covers to. `length()` on a BLOB counts bytes, so this reads no artwork to
--- decide.
+-- The limit is `MaxStoredCoverBytes`, what the import now holds new covers to.
+-- `length()` on a BLOB counts bytes, so this decodes no artwork to decide.
 --
--- Cleared rather than re-made: the cover would have to be rendered from the
--- file again, and a migration runs at startup, on the main thread, for a library
--- whose files may since have moved. Those books show the monogram the library
--- draws for a book with no cover until they are refreshed or imported again,
--- which now stores one that fits.
+-- Cleared rather than re-made: the cover would have to be rendered from the file
+-- again, and a migration runs at startup, on the main thread, for a library
+-- whose files may have moved. Those books show the monogram until they are
+-- refreshed or imported again.
 UPDATE document SET coverImage = NULL WHERE length(coverImage) > 1000000;

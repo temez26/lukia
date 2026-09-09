@@ -11,12 +11,11 @@ import kotlin.test.assertTrue
 /**
  * What the database does when a book leaves the library.
  *
- * `RemoveDocumentUseCase` asks for the position and the layout by name, and this
- * is not about that: it is about what happens when only the first of its four
- * writes lands - the app is killed, the process dies, the desktop build is quit
- * mid-operation. Before the key, that left a position and a layout for a book on
- * no shelf: nothing lists them, nothing sweeps them, nothing can reach them, so
- * they stayed for the life of the install.
+ * `RemoveDocumentUseCase` asks for the position and the layout by name; this is
+ * about only the first of its four writes landing - the app killed, the process
+ * dead, the desktop build quit mid-operation. Before the key that left a
+ * position and a layout for a book on no shelf: nothing lists them, nothing
+ * sweeps them, nothing can reach them, and they stayed for the install's life.
  */
 class RemovedBookCascadeTest {
 

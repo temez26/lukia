@@ -34,10 +34,10 @@ class CachingTranslator(
      * [ConfiguredTranslator] resolves per request: it is a setting, and the
      * reader can change it with the book open.
      *
-     * Per request rather than one answer for the whole app, because a word and a
+     * Per request rather than one answer for the app, because a word and a
      * sentence do not go to the same place - see [WordLookupTranslator] - and a
-     * cache that filed both under the translator's name would hand back the
-     * model's answer to somebody who had since switched words to a dictionary.
+     * cache filing both under the translator's name hands the model's answer to
+     * somebody who has since switched words to a dictionary.
      */
     private val answering: (TranslationRequest) -> CacheIdentity,
 ) : Translator {

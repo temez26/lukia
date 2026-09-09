@@ -12,12 +12,11 @@ import kotlinx.serialization.json.Json
 /**
  * What went wrong, in words a reader can act on and a kind this app can.
  *
- * Every case here is one where the obvious reading of the response is the wrong
- * one, and each of them sends the reader somewhere different: a rejected key is
- * a trip to Settings, an account with no credit is a billing page, a rate limit
- * is a moment's wait, and a model this server has never heard of is a name to
- * correct. The kind travels beside the words so that only the failure worth
- * asking again about is asked again - see
+ * Every case here is one where the obvious reading of the response is wrong, and
+ * each sends the reader somewhere different: a rejected key to Settings, an
+ * account with no credit to a billing page, a rate limit to a moment's wait, an
+ * unknown model to a name to correct. The kind travels beside the words so only
+ * the failure worth asking again about is - see
  * [io.lukia.features.translate.infrastructure.RetryingTranslator].
  */
 internal suspend fun HttpResponse.asTranslationFailure(

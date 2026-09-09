@@ -38,12 +38,11 @@ import org.jetbrains.compose.resources.stringResource
  * owed, which model, how long to wait, and a way to find out whether any of that
  * was right.
  *
- * Marked as beta for the whole group rather than switch by switch, because what
- * is unfinished is the thing they have in common. Everything above this reaches
- * a published API that answers a word in a tenth of a second for nothing;
- * everything in here reaches a model that takes seconds, bills for them, and
- * fails in ways an address and a key cannot tell apart. A reader should know
- * which of the two they are setting up before they paste a key into it.
+ * Marked beta for the whole group rather than switch by switch, because what is
+ * unfinished is what they have in common. Everything above this reaches a
+ * published API that answers a word in a tenth of a second for nothing; this
+ * reaches a model that takes seconds, bills for them, and fails in ways an
+ * address and a key cannot tell apart. Worth knowing before pasting in a key.
  */
 @Composable
 internal fun TranslationServiceSection(

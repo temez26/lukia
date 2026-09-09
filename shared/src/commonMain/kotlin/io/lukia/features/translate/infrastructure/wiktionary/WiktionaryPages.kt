@@ -151,13 +151,12 @@ internal class WiktionaryPages(
     /**
      * The page as the wiki itself gives it, remembered on the way past.
      *
-     * A request that fails outright is not remembered. What fails there is a
-     * network or a wiki having a bad minute, and a remembered failure would be a
-     * word that could never be looked up again without clearing storage - the
-     * same reasoning as
+     * A request that fails outright is not remembered: what failed is a network
+     * or a wiki having a bad minute, and remembering it would be a word that
+     * could never be looked up again without clearing storage - the same
+     * reasoning as
      * [io.lukia.features.translate.infrastructure.CachingTranslator]. A wiki
-     * that answers "there is no such page" has not failed, and that answer is
-     * kept like any other.
+     * answering "there is no such page" has not failed, and is kept.
      */
     private suspend fun fetch(word: String, wiki: String): String? {
         val response = client.get("https://$wiki.wiktionary.org/w/api.php") {

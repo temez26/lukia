@@ -54,15 +54,15 @@ private fun String.hostOf(): String {
 /**
  * Whether a host is this machine or something on the same network.
  *
- * The private ranges are the ones set aside for exactly this - a home or office
- * network - plus loopback, link-local, and the address an Android emulator
- * reaches its host on. A name is trusted only when it is one of the local ones;
- * anything else resolves somewhere this code cannot see.
+ * The private ranges set aside for a home or office network, plus loopback,
+ * link-local, and the address an Android emulator reaches its host on. A name is
+ * trusted only when it is one of the local ones; anything else resolves
+ * somewhere this code cannot see.
  *
- * Carrier-grade NAT (100.64/10) is deliberately not here. It looks private and
- * is not the reader's: it is the address space an internet provider puts
- * between its customers, so a passage sent there in the clear crosses somebody
- * else's network to reach a stranger's machine.
+ * Carrier-grade NAT (100.64/10) is deliberately absent: it looks private and is
+ * not the reader's, being the space an internet provider puts between its
+ * customers, so a passage sent there in the clear crosses somebody else's
+ * network to reach a stranger's machine.
  */
 private fun String.isPrivateAddress(): Boolean {
     val host = lowercase()

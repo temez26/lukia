@@ -50,13 +50,12 @@ internal class ReaderTranslationUi(
  * What translating is *set* to do, as opposed to what it is doing - the language
  * the book is read into and what a thumb on the page asks for.
  *
- * Apart from [ReaderTranslationUi] because the two answer different questions
- * and are shown in different places. Those are the controls of a session: press
- * this now, keep doing it, put them away. These are standing preferences that
- * live on the settings screen as well, and are repeated in the reader's panel
- * because they are the two somebody wants to change with a book open - a
- * sentence that came back in the wrong language, or a tap that keeps translating
- * a paragraph they were only skimming.
+ * Apart from [ReaderTranslationUi] because the two answer different questions.
+ * Those are a session's controls: press this now, keep doing it, put them away.
+ * These are standing preferences, living on the settings screen too and repeated
+ * in the reader's panel because they are what somebody wants to change with a
+ * book open - a sentence back in the wrong language, or a tap that keeps
+ * translating a paragraph they were only skimming.
  */
 internal class ReaderTranslationPreferences(
     val targetLanguage: TargetLanguage,

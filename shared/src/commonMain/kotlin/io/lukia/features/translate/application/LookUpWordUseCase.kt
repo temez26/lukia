@@ -40,10 +40,9 @@ class LookUpWordUseCase(
  * all - a dictionary that answered with blank lines has failed without saying
  * so, the same reasoning as a translation that came back blank.
  *
- * A word with no senses and a form is not nothing. What the reader held is an
- * inflection of a word the dictionary has no page for, and saying which
- * inflection is the whole of what this panel can offer them - see
- * [WordEntry.form].
+ * A word with no senses but a form is not nothing: what the reader held is an
+ * inflection of a word the dictionary has no page for, and naming the inflection
+ * is the whole of what this panel can offer - see [WordEntry.form].
  */
 private fun WordEntry.withRealSenses(): Result<WordEntry> {
     val real = meanings

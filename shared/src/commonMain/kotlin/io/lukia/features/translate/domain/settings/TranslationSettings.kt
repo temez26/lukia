@@ -147,15 +147,14 @@ data class TranslationSettings(
     /**
      * True once there is enough here to actually ask for a translation.
      *
-     * About the translation service and nothing else, which is to say about the
-     * part of this that runs on a model. A whole sentence has nowhere else to
-     * go - see [io.lukia.features.translate.infrastructure.WordLookupTranslator]
-     * - so this is what the expensive controls are offered on.
+     * About the translation service and nothing else - the part of this that
+     * runs on a model. A whole sentence has nowhere else to go - see
+     * [io.lukia.features.translate.infrastructure.WordLookupTranslator] - so
+     * this is what the expensive controls are offered on.
      *
-     * A word is never waiting on it. Both of [WordLookup]'s answers are web APIs
-     * that need nothing set up, so pointing at one word works on an install
-     * nobody has configured, and nothing in the reader asks this before offering
-     * the language or the gestures.
+     * A word never waits on it: both of [WordLookup]'s answers are web APIs that
+     * need nothing set up, so pointing at a word works on an install nobody has
+     * configured, and nothing asks this before offering the gestures.
      */
     val isConfigured: Boolean
         get() = aiTranslation && (!provider.requiresKey || apiKey != null) && isEndpointAllowed
@@ -164,11 +163,10 @@ data class TranslationSettings(
      * The two expensive ways of translating, with any the reader has turned on
      * taken back off while there is nothing that could carry them out.
      *
-     * Both work a paragraph at a time, and a paragraph has nowhere to go but the
-     * translation service. Left as the reader set them, a fresh install with a
-     * dictionary and no service would offer a button whose only outcome is a
-     * failure - and would go on offering it for as long as the flag sat in the
-     * settings file.
+     * Both work a paragraph at a time, and a paragraph has nowhere to go but
+     * the translation service. Left as the reader set them, a fresh install with
+     * a dictionary and no service offers a button whose only outcome is a
+     * failure, for as long as the flag sits in the settings file.
      */
     val offeredBulkTranslation: BulkTranslation
         get() = if (isConfigured) bulkTranslation else BulkTranslation.Default

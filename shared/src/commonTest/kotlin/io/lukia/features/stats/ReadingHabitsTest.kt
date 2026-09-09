@@ -16,13 +16,12 @@ import kotlin.test.assertTrue
 /**
  * What the reader's sittings add up to, on a fixed day in a fixed place.
  *
- * Both are fixed on purpose: "how many days in a row" is a question whose answer
- * changes at midnight, and a test that asked it of the real clock would be a
- * test that failed overnight.
+ * Both are fixed on purpose: "how many days in a row" changes its answer at
+ * midnight, and asking it of the real clock is a test that fails overnight.
  *
- * The day chosen is a Tuesday, so the calendar week the chart draws - Monday to
- * Sunday - has one day behind today, five ahead of it, and a boundary two days
- * back that a rolling seven-day window would not have had.
+ * A Tuesday, so the calendar week the chart draws - Monday to Sunday - has one
+ * day behind today, five ahead, and a boundary two days back that a rolling
+ * seven-day window would not have had.
  */
 class ReadingHabitsTest {
 

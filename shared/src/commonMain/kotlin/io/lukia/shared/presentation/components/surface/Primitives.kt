@@ -144,13 +144,12 @@ fun SectionLabel(
  * One group of a settings-style page: a quiet header above a rounded surface,
  * with any explanation set below it rather than inside.
  *
- * The shape iOS gives a grouped list, and the shape both the settings page and
- * the statistics are built from - which is why it lives here rather than inside
- * either of them.
+ * The shape iOS gives a grouped list, and what both the settings page and the
+ * statistics are built from - hence here rather than inside either.
  *
- * [color] is passed on to the [GroupCard] and matters for the same reason: what
- * a group has to contrast with differs between a screen laid on the window
- * background and a panel laid on a raised surface.
+ * [color] is passed on to the [GroupCard]: what a group has to contrast with
+ * differs between a screen on the window background and a panel on a raised
+ * surface.
  */
 @Composable
 fun GroupSection(

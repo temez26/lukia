@@ -10,11 +10,11 @@ import kotlin.test.assertTrue
  * Turning the matrix a PDF draws a picture with into a rectangle on the page as
  * it is read.
  *
- * Two conversions at once, and both are easy to get subtly wrong: PDF measures
- * upwards from the bottom left and everything above this measures downwards from
- * the top left, and a page may be stored a quarter-turn from the way it is
- * shown. Getting either wrong puts a picture somewhere else in the book - which
- * is not a crash, and so is exactly the kind of thing only a test finds.
+ * Two conversions at once, both easy to get subtly wrong: PDF measures upwards
+ * from the bottom left where everything above measures downwards from the top
+ * left, and a page may be stored a quarter-turn from the way it is shown. Either
+ * wrong puts a picture somewhere else in the book - not a crash, and so exactly
+ * what only a test finds.
  */
 class PdfImagePlacementTest {
 

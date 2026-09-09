@@ -176,13 +176,13 @@ private fun GestureSection(
  * Who answers about a single word, which need not be who translates a sentence.
  *
  * On this page rather than beside the translation service, because both answers
- * are ordinary web APIs that need nothing filled in - which is the whole of what
- * a reader gets on an app they have just installed, and the reason a word is
- * where the two settings pages divide.
+ * are ordinary web APIs that need nothing filled in - the whole of what a reader
+ * gets on a freshly installed app, and the reason a word is where the two
+ * settings pages divide.
  *
- * The service used to be a third choice here. It is the one thing on this page
- * that could not answer until the reader had gone and set something up, for the
- * one unit that never needed it - see [WordLookup].
+ * The service used to be a third choice here: the one thing on this page that
+ * could not answer until something had been set up, for the one unit that never
+ * needed it - see [WordLookup].
  */
 @Composable
 private fun WordLookupSection(

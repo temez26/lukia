@@ -26,12 +26,12 @@ import org.jetbrains.compose.resources.stringResource
  * What every translation choice is called, and what is worth saying under it.
  *
  * These used to be fields on the enums, which put four paragraphs of settings
- * copy inside `domain` - where a string resource cannot follow, because reading
- * one takes a composition and because pointing a domain package at the UI is the
- * one direction `ArchitectureTest` exists to prevent.
+ * copy inside `domain` - where a string resource cannot follow, reading one
+ * taking a composition, and where pointing at the UI is the one direction
+ * `ArchitectureTest` exists to prevent.
  *
- * What a passage unit is called is not here but in `core.presentation`, beside
- * the type - a tap on a sentence is a question about the page whether or not
+ * What a passage unit is called lives in `core.presentation` beside the type
+ * instead: a tap on a sentence is a question about the page whether or not
  * anything translates it.
  */
 

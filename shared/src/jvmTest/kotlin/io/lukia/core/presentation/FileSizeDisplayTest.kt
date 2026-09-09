@@ -69,14 +69,13 @@ class FileSizeDisplayTest {
     }
 
     /**
-     * The reason the figure stopped being built with string interpolation. Most
-     * of Europe writes the decimal mark as a comma, and "1.5 MB" was a full stop
+     * Why the figure stopped being built with string interpolation: most of
+     * Europe writes the decimal mark as a comma, and "1.5 MB" was a full stop
      * wherever the app ran.
      *
-     * Both halves show here now that German is translated: the comma comes from
-     * the platform's formatter and the "kB" from `values-de`. It read "1,5 KB"
-     * while German had only the number formatting and fell back to the English
-     * unit, which is what this asserted before.
+     * Both halves show now that German is translated - the comma from the
+     * platform's formatter, the "kB" from `values-de`. It read "1,5 KB" while
+     * German had only the number formatting, which is what this asserted before.
      */
     @Test
     fun theDecimalMarkFollowsTheLocale() {

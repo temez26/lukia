@@ -25,11 +25,11 @@ class ArchitectureTest {
      * Whichever import breaks the loop is the one to delete; the entry naming that loop
      * then fails as stale, and the rule tightens on its own.
      *
-     * Empty, and the intention is that it stays that way. The one loop it held -
-     * library to settings to reader and back - was broken at its thinnest edge: the
-     * reader wanted one method of the library's repository, so the reading half of that
-     * repository became `core.domain.document.DocumentCatalogue` and the arrow went
-     * away. The statistics screen's arrow went with it, for the same reason.
+     * Empty, and meant to stay that way. The one loop it held - library to
+     * settings to reader and back - was broken at its thinnest edge: the reader
+     * wanted one method of the library's repository, so the reading half of it
+     * became `core.domain.document.DocumentCatalogue`. The statistics screen's
+     * arrow went the same way.
      */
     private val allowedCycles = emptySet<String>()
 

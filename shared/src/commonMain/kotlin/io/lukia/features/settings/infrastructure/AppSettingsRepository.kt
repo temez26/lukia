@@ -14,11 +14,9 @@ import kotlinx.coroutines.flow.StateFlow
  * The app's own settings, live and persisted.
  *
  * Held as one [StateFlow] and read at the root of the app, so changing the theme
- * repaints every screen at once rather than only the one that changed it - and it
- * is already in place the next time the app opens, before anything is drawn.
- *
- * A single instance is shared by the app, which is why it is a `single` in the
- * dependency graph.
+ * repaints every screen rather than only the one that changed it, and is already
+ * in place the next time the app opens, before anything is drawn. Shared, hence
+ * a `single` in the dependency graph.
  */
 class AppSettingsRepository(
     private val store: SettingsStore,

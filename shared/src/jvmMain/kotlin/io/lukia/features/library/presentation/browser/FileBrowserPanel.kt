@@ -53,14 +53,13 @@ private val PanelWidth: Dp = 520.dp
 /**
  * Choosing a book or a folder, inside the app's own window.
  *
- * On macOS the app still uses the system's own `NSOpenPanel`, which is what
- * every other application there opens. Windows and Linux could only offer
- * Swing's chooser, a window drawn by Java in neither the app's design nor the
- * system's, arriving outside the app looking like a different program. A panel
- * over the library is smaller than either, and is at least Lukia's.
+ * On macOS the app still uses the system's own `NSOpenPanel`. Windows and Linux
+ * could only offer Swing's chooser: a window drawn by Java in neither the app's
+ * design nor the system's, arriving outside the app looking like a different
+ * program. A panel over the library is smaller and is at least Lukia's.
  *
  * It shows only what a reader can act on - folders, and the formats the library
- * reads - so the list is a list of books rather than of files.
+ * reads - so the list is of books rather than of files.
  */
 @Composable
 internal fun FileBrowserPanel(

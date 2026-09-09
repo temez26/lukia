@@ -7,15 +7,13 @@ import io.lukia.features.translate.domain.settings.TargetLanguage
 /**
  * What a book is, told to whatever is doing the translating.
  *
- * The point of this type is that a sentence out of a book is not a sentence out
- * of nowhere. "He drew his piece" is a weapon in a thriller and a chess move in
- * a memoir of tournaments, and no amount of looking at those four words settles
- * which. The title, the genre and the paragraph around the sentence are what
- * settle it - so they travel with every request, and a provider that can use
- * them does.
+ * A sentence out of a book is not a sentence out of nowhere. "He drew his piece"
+ * is a weapon in a thriller and a chess move in a tournament memoir, and no
+ * amount of looking at the four words settles which; the title, the genre and
+ * the surrounding paragraph do. So they travel with every request.
  *
- * A provider that cannot - a word-for-word dictionary API - simply ignores this,
- * which is why it is part of the request rather than part of the prompt.
+ * A provider that cannot use them - a word-for-word dictionary API - ignores
+ * this, which is why it is part of the request rather than of the prompt.
  */
 data class TranslationContext(
     val bookTitle: String? = null,
@@ -50,12 +48,12 @@ data class TranslationContext(
 /**
  * The context a book gives a passage, from what the document said about itself.
  *
- * [bookTitle] is passed in rather than read from the metadata alone because the
- * reader already knows what it is calling this book on screen, and a document
- * that declares no title of its own still has a name worth sending.
+ * [bookTitle] is passed in rather than read from the metadata, because a
+ * document that declares no title of its own still has the name the app is
+ * calling it on screen, and that is worth sending.
  *
  * Both lists are trimmed: an EPUB can file itself under thirty BISAC headings,
- * and the thirtieth says less about the book than the first three do.
+ * and the thirtieth says less than the first three.
  */
 fun BookMetadata?.asTranslationContext(
     bookTitle: String? = null,
@@ -88,14 +86,12 @@ data class Translation(
 /**
  * Whatever can turn a passage into another language.
  *
- * The whole feature is written against this one function. What is behind it -
- * a model running on the device, an API with a key, a dictionary lookup - is a
- * choice made once in the dependency graph, and nothing above this line knows
- * which was made.
+ * The whole feature is written against this one function. What is behind it - a
+ * model on the device, an API with a key, a dictionary lookup - is chosen once
+ * in the dependency graph, and nothing above this line knows which.
  *
- * Throws rather than returning a [Result]: the failures here are network and
- * configuration failures, which the use case narrows in one place along with
- * everything else that can go wrong.
+ * Throws rather than returning a [Result]: these are network and configuration
+ * failures, which the use case narrows in one place along with everything else.
  */
 fun interface Translator {
 
@@ -104,11 +100,11 @@ fun interface Translator {
      * as more of it does, and is never called with anything the finished
      * [Translation] will contradict - only with less of it.
      *
-     * It exists because a passage is not worth waiting for in silence. A model
-     * on the reader's own machine writes a sentence over several seconds, and
-     * showing those seconds as a blank space is the difference between a slow
-     * translation and one that looks broken. Whatever has nothing to report as
-     * it goes - a cache, a dictionary lookup - simply never calls it.
+     * A passage is not worth waiting for in silence: a model on the reader's
+     * own machine writes a sentence over several seconds, and showing those
+     * seconds as a blank space is the difference between a slow translation and
+     * a broken one. Whatever has nothing to report as it goes - a cache, a
+     * dictionary lookup - simply never calls it.
      */
     suspend fun translate(
         request: TranslationRequest,

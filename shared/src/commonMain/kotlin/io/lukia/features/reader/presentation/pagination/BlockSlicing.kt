@@ -8,12 +8,11 @@ import io.lukia.features.reader.domain.text.splitIntoSentences
  * A block cut in two at a character offset, for a block too tall to fit on the
  * page it landed on.
  *
- * Cutting a block is a last resort rather than the normal way a page is filled -
- * pages are made of whole paragraphs wherever a paragraph fits on one. But a
- * book is not obliged to be made of paragraphs: books produced from generated
- * output carry single "paragraphs" of tens of thousands of characters, and a
- * reader that refuses to cut them shows one of them as a page taller than any
- * screen with no way to see the bottom of it.
+ * A last resort rather than how a page is normally filled - pages are made of
+ * whole paragraphs wherever one fits. But a book is not obliged to be made of
+ * paragraphs: generated output carries single "paragraphs" of tens of thousands
+ * of characters, and refusing to cut those shows a page taller than any screen
+ * with no way to see the bottom of it.
  */
 internal fun TextBlock.cutAt(offset: Int): Pair<TextBlock, TextBlock>? = when (this) {
     is TextBlock.Heading -> text.cutAt(offset)?.let { (head, tail) ->
@@ -46,11 +45,10 @@ internal fun TextBlock.cutAt(offset: Int): Pair<TextBlock, TextBlock>? = when (t
 /**
  * How many of a block's sentences are behind [offset].
  *
- * What a slice of a block needs in order to say which sentences are on it, so
- * that a sentence translated on the page it ends on is the same sentence to the
- * book as it was on the page it started on. A cut that falls inside a sentence
- * counts it to both halves - each page really does hold part of it, and the
- * alternative is one of the two halves having no sentence at all under the
+ * What a slice needs to say which sentences are on it, so a sentence translated
+ * on the page it ends on is the same sentence to the book as on the page it
+ * started. A cut inside a sentence counts it to both halves - each page really
+ * does hold part of it, and otherwise one half has no sentence at all under the
  * reader's finger.
  */
 internal fun sentencesBefore(text: String, offset: Int): Int =

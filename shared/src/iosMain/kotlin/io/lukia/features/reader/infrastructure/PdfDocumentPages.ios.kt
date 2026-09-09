@@ -82,11 +82,11 @@ private class IOSDocumentPages(private val document: PDFDocument) : DocumentPage
 
     /**
      * Read as the document is opened, which is [DocumentPages]'s contract and
-     * here the only way it can be safe: the walk reaches into the same
-     * [PDFDocument] [renderPage] draws from, and PDFKit does not promise a
-     * document is thread-safe. A plain `val` cannot take [renderLock], so its
-     * only protection is finishing before anybody else has the document -
-     * `PdfDocumentPages.jvm.kt` is in the same position for its own reason.
+     * here the only safe way: the walk reaches into the same [PDFDocument]
+     * [renderPage] draws from, and PDFKit promises nothing about threads. A
+     * plain `val` cannot take [renderLock], so its only protection is finishing
+     * before anybody else has the document - `PdfDocumentPages.jvm.kt` is in the
+     * same position for its own reason.
      *
      * Nobody waits longer for it: opening already runs off the main thread, and
      * both ways out of here read the outline anyway.

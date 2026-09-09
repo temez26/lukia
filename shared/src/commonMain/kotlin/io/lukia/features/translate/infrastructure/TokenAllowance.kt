@@ -35,11 +35,10 @@ internal fun tokenAllowanceFor(passage: String): Int =
  * What a character of the answer is worth in tokens, pessimistically.
  *
  * The reader is translating *into* their own language, and the languages that
- * tokenize worst are the ones this is most used for: a tokenizer trained mostly
- * on English splits Finnish or Hungarian into pieces of two or three characters
- * where it would have taken an English word whole. Guessing four characters a
- * token - the English figure - would put the ceiling under the answer for
- * exactly the readers who need it most.
+ * tokenize worst are the ones this is most used for: a tokenizer trained on
+ * English splits Finnish or Hungarian into pieces of two or three characters
+ * where it would take an English word whole. The English figure of four would
+ * put the ceiling under the answer for exactly the readers who need it most.
  */
 private const val CHARS_PER_TOKEN = 2
 

@@ -81,11 +81,10 @@ internal fun AnimatedContentTransitionScope<NavBackStackEntry>.popExit(
  * Whether this move should change one screen for another where it stands rather
  * than push one over the other.
  *
- * True between tabs, which are peers - none of them is behind any other, and a
- * push would be a claim about where they sit that the bar underneath flatly
- * contradicts. True for every move on the calmest of the motion presets, where
- * the fact that a book sits on top of the library is not worth a screen-sized
- * movement to say.
+ * True between tabs, which are peers: none is behind any other, and a push would
+ * claim an order the bar underneath flatly contradicts. True for every move on
+ * the calmest motion preset, where a book sitting on top of the library is not
+ * worth a screen-sized movement to say.
  */
 internal fun AnimatedContentTransitionScope<NavBackStackEntry>.changesInPlace(
     motion: MotionStyle,
@@ -109,14 +108,13 @@ private const val TabShiftFraction = 0.08f
 /**
  * How long the arriving tab waits before it starts.
  *
- * Without it both screens sit at half opacity in the middle of the change and a
- * grid of covers ghosts through another grid of covers. Letting the old one get
- * most of the way out first is what turns two screens overlapping into one
- * screen replacing another.
+ * Without it both screens sit at half opacity mid-change and a grid of covers
+ * ghosts through another grid of covers. Letting the old one get most of the way
+ * out is what turns two screens overlapping into one replacing another.
  *
  * Written as what is left of a screen-sized move once the arrival has taken its
- * own time, rather than as a number of its own, so that changing tabs and
- * pushing a book over them take exactly as long as each other.
+ * own time, rather than as a number of its own, so changing tabs and pushing a
+ * book over them take exactly as long.
  */
 private const val TabEnterDelayMillis = LukiaMotion.LargeMillis - LukiaMotion.StandardMillis
 

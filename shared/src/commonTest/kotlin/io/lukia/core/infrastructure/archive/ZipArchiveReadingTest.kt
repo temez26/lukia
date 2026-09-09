@@ -10,12 +10,11 @@ import kotlin.test.assertTrue
  * The archive reader, on every platform rather than only on the one with a
  * `java.util.zip` to write the fixture with.
  *
- * `ZipArchiveReaderTest` in `jvmTest` covers the deflated entries and the size
- * caps, which need a compressor. What is here is the part that has to be true
- * wherever the app runs: the central directory is found and read, an entry's
- * data begins where its *local* header says it does rather than where the
- * directory's copy does, and a damaged archive gives up nothing rather than
- * raising.
+ * `ZipArchiveReaderTest` in `jvmTest` covers the deflated entries and size caps,
+ * which need a compressor. Here is what must be true wherever the app runs: the
+ * central directory is found and read, an entry's data begins where its *local*
+ * header says rather than where the directory's copy does, and a damaged archive
+ * gives up nothing rather than raising.
  */
 class ZipArchiveReadingTest {
 

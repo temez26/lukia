@@ -68,12 +68,11 @@ internal object LaunchTiming {
      * that is the point.
      *
      * The library finishes loading somewhere in this stretch, and a spinner
-     * giving way to a grid of covers is exactly the kind of change that should
-     * happen behind something opaque rather than in front of the reader. By the
-     * time the mark begins to dissolve the top of the screen has settled and
-     * only the lower rows are still coming in, so what is uncovered is a screen
-     * that was already there rather than one that starts assembling itself the
-     * moment it is looked at.
+     * giving way to a grid of covers should happen behind something opaque
+     * rather than in front of the reader. By the time the mark dissolves the top
+     * of the screen has settled and only the lower rows are still arriving, so
+     * what is uncovered was already there rather than starting to assemble
+     * itself the moment it is looked at.
      */
     const val ContentArrivalMillis = 480
 
@@ -148,9 +147,9 @@ private const val GlowExtent = 2f
  * that grows out to meet it.
  *
  * [content] is composed underneath from the first frame rather than after the
- * animation, so the screen behind the mark is loaded, laid out and part-way
- * through its own arrival by the time the dissolve starts: the handover is a
- * cover being taken off a screen that was there all along, not a swap.
+ * animation, so by the time the dissolve starts the screen behind the mark is
+ * loaded, laid out and part-way through its own arrival: a cover taken off a
+ * screen that was there all along, not a swap.
  *
  * One clock drives every part of it. Two would drift, in the one place the whole
  * effect is judged.

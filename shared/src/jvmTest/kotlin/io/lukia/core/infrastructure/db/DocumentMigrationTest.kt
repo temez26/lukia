@@ -13,12 +13,10 @@ import kotlin.test.assertTrue
  * A library stored by the version before metadata existed has to survive the
  * version that added it.
  *
- * This is the one change in the schema's life so far that an installed copy of
- * the app has to be carried across, and the failure mode is the worst kind: the
- * columns are missing, every query naming them throws, and the reader's whole
- * library appears to have vanished. So the old schema is written out verbatim -
- * see [versionOneDatabase] - and opened with the current driver, exactly as an
- * existing installation would be.
+ * The failure mode is the worst kind: the columns are missing, every query
+ * naming them throws, and the reader's whole library appears to have vanished.
+ * So the old schema is written out verbatim - see [versionOneDatabase] - and
+ * opened with the current driver, exactly as an installation would be.
  */
 class DocumentMigrationTest {
 

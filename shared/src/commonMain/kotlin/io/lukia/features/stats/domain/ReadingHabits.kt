@@ -85,13 +85,11 @@ data class ReadingHabits(
 /**
  * Reduces every sitting ever recorded to what the statistics show.
  *
- * A pure function of the sittings and the day it is asked on, so the same
- * history gives the same answer wherever it is asked and can be tested without
- * a clock or a database.
+ * A pure function of the sittings and the day it is asked on, so it answers the
+ * same everywhere and can be tested without a clock or a database.
  *
  * [zone] is the reader's own, because a day is a local thing: a sitting at
- * eleven at night in Helsinki is that day's reading and not the next one's,
- * whatever UTC thinks.
+ * eleven at night in Helsinki is that day's reading, whatever UTC thinks.
  */
 internal fun readingHabits(
     sessions: List<ReadingSession>,
@@ -132,12 +130,11 @@ internal fun readingHabits(
 /**
  * The calendar week [day] falls in, Monday first.
  *
- * A calendar week rather than the last seven days, because seven bars ending on
- * today are seven weekdays in an order that changes daily - a chart whose labels
- * read "Thu Fri Sat Sun Mon Tue Wed" is read as broken before it is read as
- * rolling. Monday first because that is where a week starts everywhere this app
- * is written for, and because it keeps the two days off together at the end
- * where the shape of a weekend is visible.
+ * A calendar week rather than the last seven days: seven bars ending on today
+ * are weekdays in an order that changes daily, and labels reading "Thu Fri Sat
+ * Sun Mon Tue Wed" are read as broken before they are read as rolling. Monday
+ * first because that is where a week starts everywhere this app is written for,
+ * and it keeps the two days off together where a weekend has a shape.
  */
 private fun weekOf(day: LocalDate): List<LocalDate> {
     val monday = day.minusDays(day.dayOfWeek.isoDayNumber - 1)

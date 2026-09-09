@@ -11,14 +11,14 @@ import platform.Foundation.dataWithContentsOfURL
  * A book handed to Lukia by another app, arriving from `onOpenURL` - see
  * `iOSApp.swift`.
  *
- * Called from Swift, which is why this is a plain top-level function taking a
- * string: a `DocumentInbox` is a Kotlin type the app shell has no reason to know
- * about, and the shell's whole job is to pass on a URL and forget it.
+ * Called from Swift, hence a plain top-level function taking a string: a
+ * `DocumentInbox` is a Kotlin type the app shell has no reason to know about,
+ * and the shell's job is to pass on a URL and forget it.
  *
- * The security scope is claimed and given back around the read rather than held.
- * A URL delivered this way is only readable between those two calls, and a scope
- * left open is a file the system cannot let go of; taking a copy inside the
- * window is exactly what the inbox is for.
+ * The security scope is claimed and given back around the read rather than held:
+ * the URL is only readable between those two calls, and a scope left open is a
+ * file the system cannot let go of. Taking a copy inside that window is what the
+ * inbox is for.
  */
 @OptIn(ExperimentalForeignApi::class)
 fun deliverIncomingDocument(url: String) {

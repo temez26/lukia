@@ -19,10 +19,9 @@ import platform.Foundation.writeToFile
  * reason: they are the app's own state rather than files the reader put in the
  * Files app themselves.
  *
- * Not in Documents in particular. That folder is the one `UIFileSharingEnabled`
+ * Not in Documents in particular: that is the folder `UIFileSharingEnabled`
  * publishes - see `Info.plist` - and a reader looking into it should find the
- * books they put there, not a second copy of every book they have ever shared in
- * under a hashed name.
+ * books they put there, not a hashed-name copy of everything ever shared in.
  *
  * The location handed back is a `file://` URL, which is what the picker stores
  * too, so the analyser and the workspace meet the same shape either way.

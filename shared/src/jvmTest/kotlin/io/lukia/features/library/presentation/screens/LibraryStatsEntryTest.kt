@@ -22,10 +22,10 @@ import kotlin.test.assertTrue
 /**
  * How the reader reaches their reading statistics from the library.
  *
- * The way in used to be a row in the actions menu, which is the app's list of
- * things done to a shelf - importing, tidying, settings. How much somebody has
- * read is not one of those, so it has a control of its own on the bar, and these
- * pin both halves of that: that it is there, and that it is not in the menu.
+ * The way in used to be a row in the actions menu, the app's list of things done
+ * to a shelf - importing, tidying, settings. How much somebody has read is not
+ * one of those, so it has a control on the bar, and these pin both halves: that
+ * it is there, and that it is not in the menu.
  *
  * The bar takes the control as a slot rather than building it, so what is filled
  * in here is what `MobileShell` and `DesktopShell` fill in for real.

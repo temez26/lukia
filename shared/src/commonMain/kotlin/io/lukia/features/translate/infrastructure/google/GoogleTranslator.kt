@@ -33,14 +33,12 @@ private const val CLOUD_ENDPOINT = "https://translation.googleapis.com/language/
  * The endpoint the web page and the browser extensions use.
  *
  * Not a published API. It takes no key and costs nothing, which is why it is
- * here at all, and Google is under no obligation to keep it working, answering
- * in this shape, or answering this device at all - it limits by address, and a
- * reader looking up a great many words may find it stops. Using it is also
- * outside Google's terms.
+ * here, and Google is under no obligation to keep it working, answering in this
+ * shape, or answering this device at all - it limits by address. Using it is
+ * also outside Google's terms.
  *
- * So it is the fallback rather than the default: the moment a reader puts a key
- * in Settings, every request goes to the supported one instead. Anybody relying
- * on this for real reading should add a key.
+ * So it is the fallback rather than the default: the moment a key is put in
+ * Settings, every request goes to the supported endpoint instead.
  */
 private const val PUBLIC_ENDPOINT = "https://translate.googleapis.com/translate_a/single"
 
@@ -49,13 +47,12 @@ private const val PUBLIC_ENDPOINT = "https://translate.googleapis.com/translate_
  *
  * Offered for single words only - see
  * [io.lukia.features.reader.domain.text.WordLookup]. A word is the one thing a
- * translator with no context can be relied on for, and the one thing a reader
- * may reasonably want answered in a tenth of a second rather than in two
- * seconds by a model.
+ * translator with no context can be relied on for, and the one thing worth
+ * answering in a tenth of a second rather than in two seconds by a model.
  *
- * Which of the two endpoints is used comes from whether the reader has given a
- * key. Both answer the same question and neither is asked anything about the
- * book, so nothing above this line changes with the choice.
+ * Which endpoint is used follows from whether the reader has given a key. Both
+ * answer the same question and neither is told anything about the book, so
+ * nothing above this line changes with the choice.
  */
 class GoogleTranslator(
     private val client: HttpClient,
@@ -127,10 +124,9 @@ class GoogleTranslator(
      * with names.
      *
      * It comes back as `[[["translated","original",...],...],...]` - one entry
-     * per piece it decided to split the text into, each with the translation
-     * first. A word is one piece, but the pieces are joined anyway rather than
-     * assuming so: it costs a line and it is the difference between a correct
-     * answer and half of one the first time somebody looks up a hyphenated word.
+     * per piece it split the text into, translation first. A word is one piece,
+     * but they are joined rather than assuming so: a line's work, and the
+     * difference between a correct answer and half of one on a hyphenated word.
      */
     private suspend fun askPublicly(request: TranslationRequest): String {
         val response = client.get(PUBLIC_ENDPOINT) {

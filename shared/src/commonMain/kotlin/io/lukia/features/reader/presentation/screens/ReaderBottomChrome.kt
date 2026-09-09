@@ -14,15 +14,13 @@ import io.lukia.shared.presentation.theme.bottomChromeOut
 /**
  * The bar under the book: how far through it this page is.
  *
- * The mirror of [ReaderTopChrome] on purpose - same measure, same inset, same
- * rules about when it is there. Shown with the toolbar and only with it: a line
- * and a figure left burning along the bottom of a page somebody has just cleared
- * are two things still asking to be looked at.
+ * The mirror of [ReaderTopChrome] on purpose - same measure, same inset, shown
+ * with the toolbar and only with it: a line left burning along the bottom of a
+ * page somebody has just cleared is still asking to be looked at.
  *
  * Floats over the page rather than taking a row of its own, unlike the toolbar
- * above, which the pages leave room for. Reserving a row here too would cost
- * every page a band of height for chrome that is away for most of the reading,
- * and would re-lay the whole book out to do it.
+ * above: reserving a row would cost every page a band of height for chrome that
+ * is away for most of the reading, and re-lay the whole book out to do it.
  */
 @Composable
 internal fun ReaderBottomChrome(

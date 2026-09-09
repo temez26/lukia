@@ -111,10 +111,9 @@ class TranslationSessionMemoryTest {
      * in front of them.
      *
      * Every request ends by putting its answer back, so one left running
-     * arrives into whatever book replaced the one it was asked about - and its
-     * anchor points at a sentence that book may not have. A reader who taps
-     * three passages and then presses Try again on a book that would not open
-     * is exactly this.
+     * arrives into whatever book replaced the one it was asked about, anchored
+     * to a sentence that book may not have. Tapping three passages and then
+     * pressing Try again on a book that would not open is exactly this.
      */
     @Test
     fun clearingStopsTheRequestsStillOnTheirWay() = runTest {

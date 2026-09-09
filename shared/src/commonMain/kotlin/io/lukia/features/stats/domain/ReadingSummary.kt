@@ -31,11 +31,10 @@ data class ReadingSummary(
  * The counted part: what a reader can be told about their reading without being
  * told about any particular book.
  *
- * Every number here is derived from the positions the app already stores, and
- * nothing is tracked to produce them: where each book was left off is enough to
- * say how much has been read and how much is left. Anything that needs a clock -
- * hours, days in a row - is in [ReadingHabits] instead, counted from the
- * sittings the reader recorded rather than inferred from a page number.
+ * Every number is derived from the positions the app already stores, and nothing
+ * is tracked to produce them: where each book was left off says how much has
+ * been read and how much is left. Anything needing a clock - hours, days in a
+ * row - is in [ReadingHabits] instead, counted from recorded sittings.
  */
 data class ReadingStats(
     val booksInLibrary: Int,
@@ -105,13 +104,11 @@ private const val RecentLimit = 5
  * Everything the statistics screen shows about reading, worked out in one pass over
  * the library and the positions stored against it.
  *
- * A pure function of the two, so it is the same answer wherever it is asked and
- * can be tested without a database. Positions are joined onto the library
- * rather than counted on their own, so that a reader who removed a book from
- * their library does not go on being credited with reading it. The schema now
- * says the same thing - a position is deleted with the book it is about - and
- * this is still the join rather than a count, because a pure function of two
- * lists should not depend on which of them was written by whom.
+ * A pure function of the two, testable without a database. Positions are joined
+ * onto the library rather than counted alone, so a book removed from the library
+ * stops being credited. The schema now says the same - a position is deleted
+ * with its book - but this stays a join, because a pure function of two lists
+ * should not depend on who wrote them.
  */
 internal fun readingSummary(
     documents: List<DocumentInfo>,

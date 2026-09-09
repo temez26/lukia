@@ -75,10 +75,9 @@ fun Modifier.menuGesture(
  * A press of the second mouse button - a right click, or two fingers on a
  * trackpad, which the machine reports as the same thing.
  *
- * Answered on the press rather than on the release, so the menu is open by the
- * time the second finger lifts. A light two-finger tap and a full click down on
- * the pad arrive here identically; which of them the trackpad sends is the
- * system's own setting rather than anything this can ask for.
+ * Answered on the press rather than the release, so the menu is open by the time
+ * the second finger lifts. A light two-finger tap and a full click arrive
+ * identically; which the trackpad sends is the system's setting, not this one's.
  *
  * Its own modifier rather than desktop's `onClick(PointerMatcher…)`, which
  * cannot be written in code the phone compiles too. Touch never reports a second

@@ -176,11 +176,10 @@ internal fun DocumentPage(
  * Asks for everything written on this page, when the reader asks for what is in
  * front of them.
  *
- * A page is either on screen or it is not - there is nothing on it that can be
- * half of it - so unlike a paragraph of set text this needs nothing measured.
- * Being composed at all is close enough: the list keeps a page or two either
- * side, and translating one page ahead of somebody reading forward is what they
- * asked for anyway.
+ * A page is either on screen or it is not, so unlike a paragraph of set text
+ * this needs nothing measured: being composed at all is close enough. The list
+ * keeps a page or two either side, and translating one page ahead of somebody
+ * reading forward is what they asked for anyway.
  */
 @Composable
 private fun TranslateWhatIsOnThisPage(
@@ -215,14 +214,14 @@ private fun TranslateWhatIsOnThisPage(
  * The gestures a page of a fixed-layout document answers.
  *
  * A PDF's page answers the same gestures as set text, down to the word and up to
- * the paragraph: the words, the sentences and the blocks they sit in are all
- * inferred back out of the glyphs and where they landed, so each of them has a
- * piece of the page of its own to be pointed at and drawn over.
+ * the paragraph: words, sentences and blocks are all inferred back out of the
+ * glyphs and where they landed, so each has a piece of the page of its own to be
+ * pointed at and drawn over.
  *
  * A composable extension rather than a `composed` modifier, for the reason given
  * on [Modifier.pinchToZoom]: everything here is read through
- * [rememberUpdatedState] so that one `pointerInput` survives a changing scale, a
- * changing set of translations and a caller handing down fresh lambdas.
+ * [rememberUpdatedState], so one `pointerInput` survives a changing scale, a
+ * changing set of translations and fresh lambdas from the caller.
  */
 @Composable
 private fun Modifier.passageTaps(
@@ -287,8 +286,7 @@ private fun Modifier.passageTaps(
  * A held word goes to whoever can tell whether it has been answered already,
  * which is what decides between asking about it and opening what else it means -
  * see `ReaderViewModel.onPassageHold`. A questioned one goes straight to what it
- * means, answered or not. Everything else is the gesture the reader set it to,
- * unchanged.
+ * means, answered or not; everything else is the gesture the reader set it to.
  */
 private fun answer(
     selection: PassageSelection?,

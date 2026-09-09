@@ -72,12 +72,10 @@ internal data class OutputConfig(
 /**
  * One event out of a streamed answer.
  *
- * The stream carries more kinds of event than this reads - a message opening
- * and closing, a content block opening and closing, a ping to keep the
- * connection warm - and all of them arrive as this shape with their unread
- * fields absent. What is read is the two that carry anything: a delta with a
- * piece of the answer on it, and the delta at the end that says why the model
- * stopped.
+ * The stream carries more kinds than this reads - messages and content blocks
+ * opening and closing, pings to keep the connection warm - all arriving as this
+ * shape with their unread fields absent. Only two carry anything: a delta with a
+ * piece of the answer, and the delta saying why the model stopped.
  */
 @Serializable
 internal data class MessagesEvent(

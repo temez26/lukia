@@ -87,12 +87,10 @@ internal fun paginateProgressively(
 /**
  * Sets every run of the book going, to be measured as a measurer comes free.
  *
- * Which measurer a run gets is settled by where the run is in the book rather
- * than by whoever is free, so that a re-layout asks the same measurer about the
- * same chapters and what it has cached is still worth something. A lock per
- * measurer is what keeps two runs off the same one, and holding them all is also
- * what keeps the number of runs being measured at once down to the number of
- * measurers there are.
+ * Which measurer a run gets is settled by where it sits in the book rather than
+ * by who is free, so a re-layout asks the same measurer about the same chapters
+ * and its cache is still worth something. A lock per measurer keeps two runs off
+ * one, and having only so many locks is what bounds how many run at once.
  */
 private suspend fun dispatchRuns(
     sections: List<TextSection>,

@@ -24,10 +24,10 @@ private val BaseTextSize: TextUnit = 17.sp
 /**
  * How body text is set under the current settings.
  *
- * The one place the three typography settings turn into an actual style, so
- * every block in a book is measured against the same body - a heading is this
- * scaled up, a quotation is this indented, and nothing has a size of its own
- * that would stop following the reader's chosen one.
+ * The one place the three typography settings turn into a style, so every block
+ * is measured against the same body - a heading is this scaled up, a quotation
+ * this indented, and nothing has a size of its own that would stop following the
+ * reader's.
  *
  * Leading is a multiple of the size rather than a fixed distance, which is what
  * keeps "Relaxed" relaxed at every text size instead of tightening as the type

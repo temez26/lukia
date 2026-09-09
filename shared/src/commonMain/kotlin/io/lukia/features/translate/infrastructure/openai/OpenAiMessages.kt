@@ -31,11 +31,10 @@ internal data class ChatRequest(
      * The same ceiling under the name the hosted service now insists on.
      *
      * `max_tokens` is deprecated there and outright rejected by every model that
-     * thinks before it answers - which is now most of what anybody would choose.
-     * A reader who types the name of a current model and gets "unsupported
-     * parameter" back has been failed by this app rather than by their key, so
-     * the hosted service is sent the new name and the servers on people's own
-     * machines go on being sent the one they implement.
+     * thinks before it answers, which is most of what anybody would now choose.
+     * "Unsupported parameter" for a current model's name is this app failing the
+     * reader rather than their key - so the hosted service is sent the new name,
+     * and servers on people's own machines the one they implement.
      */
     @SerialName("max_completion_tokens") val maxCompletionTokens: Int? = null,
     /**
@@ -80,11 +79,11 @@ internal data class ChatChunk(
      * finish it - a model unloaded mid-answer, a context window overrun that
      * only became apparent once generation started, a proxy losing its upstream.
      *
-     * It arrives as an ordinary chunk on a stream that has already answered 200,
-     * so a reader of `choices` alone sees a chunk with no text in it and then a
-     * stream that simply ends. That is how these used to reach the reader as
-     * "that was not a translation", which is true and says nothing about the
-     * server having explained itself perfectly clearly.
+     * It arrives as an ordinary chunk on a stream that already answered 200, so
+     * reading `choices` alone sees a chunk with no text and then a stream that
+     * ends. That is how these used to reach the reader as "that was not a
+     * translation" - true, and silent about the server having explained itself
+     * perfectly clearly.
      */
     val error: ChatErrorBody? = null,
 ) {

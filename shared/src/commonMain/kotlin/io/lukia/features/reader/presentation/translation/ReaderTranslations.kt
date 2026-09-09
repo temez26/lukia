@@ -73,11 +73,11 @@ internal class ReaderTranslations(
      * What is standing, with anything the reader has since turned off taken out
      * of it.
      *
-     * Masked here rather than guarded at every place that could set it, so that
+     * Masked here rather than guarded at every place that could set it, so
      * turning "keep translating" off in Settings stops it at once - including
-     * while it is running, with a book open, halfway down a chapter. A setting
-     * that only took effect the next time it was switched on would leave the
-     * expensive one running after the reader had told it to stop.
+     * mid-chapter, while it is running. A setting that only took effect the next
+     * time it was switched on would leave the expensive one running after the
+     * reader had told it to stop.
      */
     val onScreen: StateFlow<TranslateOnScreen> =
         combine(_onScreen, bulkTranslation) { standing, offered ->
@@ -288,10 +288,9 @@ internal class ReaderTranslations(
  * Builds one of these once there is a scope to run it in.
  *
  * The scope belongs to the ViewModel and cannot be injected beside the two
- * dependencies above it, so without this the ViewModel would have to be handed
- * both of them - two dependencies it never uses itself, held only to pass on.
- * What it is handed instead is the one thing it actually needs, which is a way
- * to make a [ReaderTranslations].
+ * dependencies above it, so without this the ViewModel would hold both - two
+ * dependencies it never uses, kept only to pass on. It is handed a way to make a
+ * [ReaderTranslations] instead.
  *
  * Public only because it names a ViewModel's dependency, and that ViewModel is
  * reached from outside this feature.

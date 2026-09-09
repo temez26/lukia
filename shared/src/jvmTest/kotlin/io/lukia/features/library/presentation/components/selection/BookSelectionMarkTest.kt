@@ -23,14 +23,13 @@ import kotlin.test.assertEquals
 class BookSelectionMarkTest {
 
     /**
-     * Counted rather than measured, and counted across frames of the animation
-     * rather than across a change: the angle moving is the point, and what must
-     * not move with it is what each frame costs.
+     * Counted rather than measured, across frames of the animation rather than
+     * across a change: the angle moving is the point, and what must not move
+     * with it is what each frame costs.
      *
      * It is also what lets a test reach idle while a shelf is being selected
-     * from. A composition invalidated on every frame is never idle, and a
-     * `waitForIdle` waiting for that one to settle waits until the suite gives
-     * up on it.
+     * from: a composition invalidated every frame is never idle, and a
+     * `waitForIdle` on it waits until the suite gives up.
      */
     @Test
     fun theRockingDoesNotRecomposeTheCardItRocks() = runComposeUiTest {

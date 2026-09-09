@@ -72,13 +72,12 @@ internal fun PlacesRow(
 /**
  * Where the reader is, as the folders they came through.
  *
- * Every one of them is a way back, which is what makes this a control rather
- * than a caption: walking out of four folders by pressing a back button four
- * times is four presses to undo one wrong turn.
+ * Each is a way back, which makes this a control rather than a caption: walking
+ * out of four folders with a back button is four presses to undo one wrong turn.
  *
  * It scrolls sideways and is drawn from the deepest folder outwards, so the
- * folder actually being looked at is the one on screen when the path is longer
- * than the panel is wide.
+ * folder being looked at is the one on screen when the path is longer than the
+ * panel is wide.
  */
 @Composable
 internal fun PathBar(

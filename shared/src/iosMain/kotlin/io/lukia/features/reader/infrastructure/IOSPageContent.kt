@@ -27,11 +27,10 @@ internal actual fun openPdfPageContent(path: String): PageContent =
  * What is on a PDF's pages on iOS: the words from PDFKit, the pictures from
  * CoreGraphics underneath it.
  *
- * Takes the document rather than opening one, because it is used both ways: the
- * open book reads through the same document it draws from, and a conversion
- * opens documents of its own to read several pages at once. [lock] is shared
- * with whatever else touches the document, since PDFKit does not promise one is
- * safe to use from two threads.
+ * Takes the document rather than opening one, being used both ways: the open
+ * book reads through the same document it draws from, and a conversion opens its
+ * own to read several pages at once. [lock] is shared with whatever else touches
+ * the document, PDFKit promising nothing about two threads.
  */
 @OptIn(ExperimentalForeignApi::class)
 internal class IOSPageContent(

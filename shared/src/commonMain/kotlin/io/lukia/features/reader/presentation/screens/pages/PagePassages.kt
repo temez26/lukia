@@ -14,11 +14,10 @@ import io.lukia.features.translate.domain.MAX_TRANSLATABLE_CHARS
  * What one page of a fixed-layout document can be asked about, and how a point
  * on it becomes a passage.
  *
- * Its own value rather than a handful of callbacks inside the page, for the same
- * reason [rememberPageActions] is one for set text: the page is a composable
- * that also draws a picture and answers a pinch, and where the reader's finger
- * landed in a book is not a drawing problem. Held here it can be reasoned about,
- * and tested, without composing anything.
+ * Its own value rather than callbacks inside the page, for the same reason
+ * [rememberPageActions] is one for set text: the page already draws a picture
+ * and answers a pinch, and where a finger landed in a book is not a drawing
+ * problem. Held here it can be reasoned about, and tested, uncomposed.
  *
  * Everything it is asked is in the *file's* own units. What relates those to the
  * pixels on screen is the one scale the page keeps, and it belongs there.
@@ -49,11 +48,9 @@ internal class PagePassages(
      * paragraphs, one request each, rather than every sentence on it.
      *
      * A page is thirty or forty sentences and a handful of paragraphs, and the
-     * difference between the two is most of what translating a page costs - see
-     * `ReaderPageActions.bulkPassages` for the measurements.
-     *
-     * A block too long to send whole falls back to its own sentences, which is
-     * what this used to do for all of them - see [MAX_TRANSLATABLE_CHARS].
+     * difference is most of what translating a page costs - see
+     * `ReaderPageActions.bulkPassages`. A block too long to send whole falls
+     * back to its own sentences - see [MAX_TRANSLATABLE_CHARS].
      */
     fun all(): List<PassageSelection> = sentences
         .groupBy { it.blockIndex }

@@ -43,15 +43,14 @@ internal fun openDocuments(title: String): List<File> {
 /**
  * The window the dialog belongs to.
  *
- * Without an owner the panel is not the app's: it is not app-modal, and it can
- * end up behind the window that opened it with nothing on screen explaining why
- * the app has stopped responding. Compose's own handle on its window is
- * internal, so the owner is taken from the focus manager - which, at the moment
- * a reader has just pressed a button in that window, is answering about that
- * window.
+ * Without an owner the panel is not the app's: not app-modal, and able to end up
+ * behind the window that opened it with nothing explaining why the app has
+ * stopped responding. Compose's handle on its window is internal, so the owner
+ * comes from the focus manager - which, just after a button in that window was
+ * pressed, is answering about that window.
  *
- * Null is an acceptable answer and the same one the app gave before: a dialog
- * with no owner, rather than no dialog.
+ * Null is acceptable and is what the app gave before: a dialog with no owner
+ * rather than no dialog.
  */
 private fun ownerFrame(): Frame? {
     val active: Window? = KeyboardFocusManager.getCurrentKeyboardFocusManager().activeWindow
@@ -62,15 +61,14 @@ private fun ownerFrame(): Frame? {
 /**
  * A folder, on the one platform that will give one.
  *
- * Setting this property puts `NSOpenPanel` into directory mode, so a reader
- * choosing where their books live gets the Finder panel rather than a drawn
- * approximation of one. The property is read when the dialog is shown and put
- * back afterwards, since it would otherwise turn the *file* panel into a folder
- * panel the next time one opened.
+ * Setting this property puts `NSOpenPanel` into directory mode, so choosing
+ * where books live gets the Finder panel rather than an approximation of one.
+ * The property is read when the dialog is shown and put back after, or it would
+ * turn the *file* panel into a folder panel the next time one opened.
  *
  * Windows and Linux have no equivalent - `FileDialog` there cannot select a
- * directory at all - and browse the app's own panel instead, so they never reach
- * this. See `PlatformFolderPicker.jvm`.
+ * directory - and browse the app's own panel instead, never reaching this. See
+ * `PlatformFolderPicker.jvm`.
  */
 internal fun openFolder(title: String): File? {
     System.setProperty(APPLE_DIRECTORY_MODE, "true")

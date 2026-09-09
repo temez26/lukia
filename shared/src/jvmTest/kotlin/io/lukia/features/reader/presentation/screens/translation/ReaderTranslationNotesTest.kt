@@ -14,13 +14,12 @@ import kotlin.test.assertEquals
 /**
  * The translator's asides, and the reader who would rather have their page back.
  *
- * They were the only place a dictionary's other senses could be read for most of
- * this app's life. Holding a word opens all of them now, at length and out of the
- * way of the prose - so a reader who has found that can turn the ones under the
- * paragraph off.
+ * For most of this app's life they were the only place a dictionary's other
+ * senses could be read. Holding a word opens all of them now, at length and out
+ * of the prose's way, so the ones under the paragraph can be turned off.
  *
- * A failure is not one of them, and stays whatever the setting says: a passage
- * marked as translated with nothing to show and no reason given is a reader
+ * A failure is not one of them and shows whatever the setting says: a passage
+ * marked translated with nothing to show and no reason given is a reader
  * wondering what happened.
  */
 @OptIn(ExperimentalTestApi::class)

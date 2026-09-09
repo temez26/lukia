@@ -36,13 +36,12 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * The word the reader held, and what the page says that word is.
  *
- * A book is written in inflected words, and a wiki's page for one of them often
- * only says which word it is a form of - so the entry that comes back is the
- * base form's. Saying so is worth a line: a reader who held `skills` and is
- * being shown the senses of `skill` should be able to see that, both to trust
- * the answer and because `monikkomuoto sanasta skill` is half of learning the
- * word. It is the half that cannot go over the word in the book, which is the
- * whole reason it is here.
+ * Books are written in inflected words, and a wiki's page for one often only
+ * says which word it is a form of, so the entry that comes back is the base
+ * form's. Saying so is worth a line: a reader shown the senses of `skill` after
+ * holding `skills` should see that, both to trust the answer and because
+ * `monikkomuoto sanasta skill` is half of learning the word - the half that
+ * cannot go over the word in the book.
  */
 @Composable
 internal fun WordHeading(inquiry: WordInquiry) {
@@ -84,14 +83,13 @@ private fun WordEntry.formOf(held: String): String? = when {
 /**
  * How much room the entry is given before there is one.
  *
- * The panel opens on a word and then waits on a wiki, so what it has to show at
- * the moment it arrives is a line saying so. Given only that line it opened as a
- * sliver and leapt to full height a moment later, which reads as two things
- * happening rather than one.
+ * The panel opens on a word and then waits on a wiki, so all it has to show on
+ * arrival is a line saying so. Given only that, it opened as a sliver and leapt
+ * to full height a moment later - two things happening rather than one.
  *
- * About the three senses a short entry comes back with, so it opens at roughly
- * the size it will settle at. A longer entry still grows into place, and that
- * growth is animated rather than snapped.
+ * About the three senses a short entry comes back with, so it opens near the
+ * size it will settle at. A longer entry still grows, animated rather than
+ * snapped.
  */
 private val EntryMinHeight: Dp = 76.dp
 
@@ -99,11 +97,9 @@ private val EntryMinHeight: Dp = 76.dp
  * Everything the dictionary had about the word: what it is, what it means, and
  * what the entry lists beside it.
  *
- * The answer cross-dissolves in over the line that was waiting for it, on the
- * app's own swap - the same one every screen uses to trade a loading state for
- * its content - while the height it needs is eased into rather than jumped to.
- * Together those are what make the entry arrive in the panel rather than replace
- * it.
+ * The answer cross-dissolves over the line that was waiting for it, on the app's
+ * own swap, while the height it needs is eased into rather than jumped to -
+ * together, an entry arriving in the panel rather than replacing it.
  */
 @Composable
 internal fun WordEntryBody(state: UiState<WordEntry>, modifier: Modifier = Modifier) {
@@ -175,11 +171,11 @@ private fun WordEntryDetails(entry: WordEntry) {
  * What the word means as one part of speech, under the name of that part of
  * speech.
  *
- * Kept apart rather than run together because a word is not one word. Somebody
- * who held `means` in a book about averages is looking for `keskiarvo`, and an
- * entry that opened with `ilkeä` and carried on into `tarkoittaa` without saying
- * which was which would read as one word with three unrelated meanings - which
- * is exactly what it is, and exactly what the headings are for.
+ * Kept apart rather than run together, because a word is not one word. Somebody
+ * who held `means` in a book about averages wants `keskiarvo`, and an entry
+ * opening with `ilkeä` and carrying on into `tarkoittaa` without saying which is
+ * which reads as one word with three unrelated meanings - which is what it is,
+ * and what the headings are for.
  */
 @Composable
 private fun WordMeaningBlock(meaning: WordMeaning) {

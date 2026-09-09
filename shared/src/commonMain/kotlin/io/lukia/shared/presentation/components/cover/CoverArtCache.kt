@@ -34,10 +34,9 @@ internal const val MaxCoverEdge = 800
  * covers so that one enormous cover cannot occupy the space of twenty ordinary
  * ones.
  *
- * Eight million pixels is around 32MB once each is four bytes, and rather more
- * than a screenful of grid - so scrolling down a shelf and back up again finds
- * its covers already decoded, while a library of any size still costs a fixed
- * and modest amount of memory.
+ * Eight million pixels is around 32MB at four bytes each, and rather more than a
+ * screenful of grid - so scrolling down a shelf and back finds its covers still
+ * decoded, while a library of any size costs a fixed amount of memory.
  */
 internal const val CoverPixelBudget = 8_000_000
 
@@ -74,11 +73,10 @@ internal object CoverArtCache {
      * The artwork for [cover] if it has already been decoded, answered without
      * suspending.
      *
-     * This is what lets a cover the app already has in memory be drawn on the
-     * frame its card is composed on. [artworkFor] cannot: it suspends, so even a
-     * hit arrives a frame or more later, and until it does the card shows the
-     * blank tile underneath - which is the flicker that runs through a shelf of
-     * covers every time one comes back on screen.
+     * What lets a cover already in memory be drawn on the frame its card is
+     * composed on. [artworkFor] cannot: it suspends, so even a hit arrives a
+     * frame or more later, and until then the card shows the blank tile
+     * underneath - the flicker that runs through a shelf on every scroll back.
      */
     fun peek(key: String): DecodedCover? = decoded[key]
 

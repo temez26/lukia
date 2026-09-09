@@ -94,15 +94,14 @@ class SchemaVersionJumpTest {
     /**
      * Every table, column, foreign key and index the database has.
      *
-     * Read through the pragmas rather than compared as the `CREATE` text in
-     * `sqlite_master`, because that text is whatever was typed: a column added
-     * by `ALTER TABLE` is appended to it verbatim, so a table migrated into the
-     * right shape and one created in it are identical databases with different
-     * strings. The pragmas answer about the schema instead of about the source.
+     * Read through the pragmas rather than compared as `sqlite_master`'s
+     * `CREATE` text, which is whatever was typed: a column added by `ALTER
+     * TABLE` is appended verbatim, so a table migrated into the right shape and
+     * one created in it are identical databases with different strings. The
+     * pragmas answer about the schema rather than the source.
      *
-     * Indexes SQLite makes for itself are left out - it names them after the
-     * table and creates them from the primary key, so they say nothing the
-     * columns have not already said.
+     * Indexes SQLite makes for itself are left out: named after the table and
+     * built from the primary key, they say nothing the columns have not.
      */
     private fun structureOf(driver: SqlDriver): List<String> {
         val tables = driver.rows(

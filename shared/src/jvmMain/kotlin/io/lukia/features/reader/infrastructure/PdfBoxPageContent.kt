@@ -27,14 +27,14 @@ internal actual fun openPdfPageContent(path: String): PageContent =
 /**
  * What is on a PDF's pages, read through PDFBox.
  *
- * Takes the document rather than opening one, because it is used both ways: the
- * open book reads through the same document it draws from, and a conversion
- * opens documents of its own to read several pages at once. [owned] is which of
- * the two this is, and so whether closing it closes the document.
+ * Takes the document rather than opening one, being used both ways: the open
+ * book reads through the same document it draws from, and a conversion opens its
+ * own to read several pages at once. [owned] says which, and so whether closing
+ * this closes the document.
  *
- * [lock] is shared with whatever else touches the document. PDFBox keeps
- * mutable state inside one, so two pages read at once - or a page read while
- * another is drawn - corrupt each other's output.
+ * [lock] is shared with whatever else touches the document: PDFBox keeps mutable
+ * state inside one, so two pages read at once - or a page read while another is
+ * drawn - corrupt each other's output.
  */
 internal class PdfBoxPageContent(
     private val document: PDDocument,

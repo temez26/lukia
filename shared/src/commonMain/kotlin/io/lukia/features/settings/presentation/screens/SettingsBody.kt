@@ -66,12 +66,12 @@ private const val AreaSettleMillis = LukiaMotion.StandardMillis
 /**
  * The settings themselves, without the chrome around them.
  *
- * Shared, because these are shown two ways - as a screen of its own on a phone,
- * and as a panel over the library on anything wider - and a setting must not
- * appear or read differently depending on which one you reached.
+ * Shared, because these are shown two ways - a screen of its own on a phone, a
+ * panel over the library on anything wider - and a setting must not read
+ * differently depending on which one you reached.
  *
- * It keeps its title where the library dropped one. The library is the app's home
- * and needs no introduction; arriving here from a menu does.
+ * It keeps its title where the library dropped one: the library is the app's
+ * home and needs no introduction, arriving here from a menu does.
  */
 @Composable
 internal fun SettingsBody(
@@ -95,11 +95,9 @@ internal fun SettingsBody(
     /**
      * The diagnostics group, which sits under About - see `DiagnosticsSettings`.
      * A slot rather than more parameters because it is the one group here with a
-     * view model of its own, and this body has to stay composable without a
-     * dependency graph behind it.
-     *
-     * Composed only while the developer settings are on - see
-     * [AppSettings.developerMode] - so the graph is never asked for its view
+     * view model of its own, and this body stays composable without a dependency
+     * graph behind it. Composed only while the developer settings are on - see
+     * [AppSettings.developerMode] - so the graph is never asked for that view
      * model on a page that would not show it.
      */
     diagnostics: (@Composable () -> Unit)? = null,

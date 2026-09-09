@@ -41,12 +41,11 @@ import org.koin.compose.viewmodel.koinViewModel
  * The app as a phone holds it: three screens side by side under a tab bar, with
  * a book, its details and the settings pushing over the whole thing.
  *
- * The three tabs share one [LibraryViewModel], held here rather than taken
- * separately by each destination. They are three views of one library - where
- * you left off, what you searched for, and the shelf itself - and three
- * ViewModels would mean three reads of a database whose every row carries a
- * cover image, kept in step by hope. Sharing it is also what lets "See All"
- * under a home row put the library tab into the state that row is a sample of.
+ * The three tabs share one [LibraryViewModel] rather than each taking its own.
+ * They are three views of one library - where you left off, what you searched
+ * for, the shelf itself - and three ViewModels would be three reads of a
+ * database whose every row carries a cover image, kept in step by hope. Sharing
+ * it also lets "See All" put the library tab into the state its row samples.
  */
 @Composable
 internal fun MobileShell(library: LibraryViewModel = koinViewModel()) {
@@ -208,12 +207,11 @@ private fun NavGraphBuilder.tabDestination(
  * The bar, arriving and leaving with the screens that own it.
  *
  * It slides down rather than fading, so opening a book reads as the bar being
- * covered by the book rather than as chrome quietly disappearing.
+ * covered rather than as chrome quietly disappearing.
  *
- * At the same pace as the screen that covers it: the bar leaving and the book
- * arriving are one movement, so a preset that stretches the one has to stretch
- * the other, or the bar is still on its way out from under a screen that has
- * finished arriving.
+ * At the same pace as the screen covering it: the two are one movement, so a
+ * preset stretching one must stretch the other, or the bar is still on its way
+ * out from under a screen that has finished arriving.
  */
 @Composable
 private fun BottomBar(

@@ -6,14 +6,12 @@ import kotlin.native.setUnhandledExceptionHook
 /**
  * Kotlin/Native's own hook, which is the only one that sees a Kotlin failure.
  *
- * `NSSetUncaughtExceptionHandler` is the obvious thing to reach for here and is
- * the wrong one: it catches Objective-C exceptions, and a Kotlin exception
- * reaching the top of a Kotlin coroutine is not one. It would install cleanly
- * and then never fire.
+ * `NSSetUncaughtExceptionHandler` is the obvious thing to reach for and the
+ * wrong one: it catches Objective-C exceptions, and a Kotlin exception reaching
+ * the top of a coroutine is not one. It installs cleanly and never fires.
  *
- * After the hook returns, the runtime ends the process - so whatever is done
- * here has to be done by then, which is why it writes one small file and nothing
- * else.
+ * The runtime ends the process once the hook returns, so whatever is done here
+ * has to be done by then - which is why it writes one small file and no more.
  */
 @OptIn(ExperimentalNativeApi::class)
 internal actual fun installCrashHook(onCrash: (Throwable) -> Unit) {

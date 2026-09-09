@@ -197,10 +197,9 @@ private fun GestureSettings(
  * What translating is doing right now, written out as a button and two switches.
  *
  * The same three things the toolbar offers a pointed-at window - see
- * [TranslationControls] - but named. A tooltip is what tells a reader with a
- * mouse which glyph is which, and a phone has no hover to show one, so the
- * controls that were three unlabelled marks squeezed into a thumb-sized bar
- * become rows that say what they are.
+ * [TranslationControls] - but named. A tooltip tells a reader with a mouse which
+ * glyph is which, and a phone has no hover, so three unlabelled marks squeezed
+ * into a thumb-sized bar become rows that say what they are.
  *
  * Empty on a window whose toolbar carries them, so that each control is in
  * exactly one place whatever the window is doing.

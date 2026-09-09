@@ -194,10 +194,10 @@ class ReaderPageTranslationTest {
      * nothing on it, the same page while the answer is on its way, and then the
      * translation over the words.
      *
-     * Worth composing rather than asserting on the states themselves because
+     * Worth composing rather than asserting on the states themselves, because
      * the overlay walks away from a page nobody has touched without looking at
-     * it - and a page that stayed walked away from once it *had* been touched
-     * would be a translation that arrived and was never drawn.
+     * it - and staying walked away once it *had* been touched would be a
+     * translation that arrived and was never drawn.
      */
     @Test
     fun aPageIsMarkedOnlyOnceItsTranslationArrives() = runComposeUiTest {

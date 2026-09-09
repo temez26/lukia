@@ -12,10 +12,9 @@ import kotlin.test.assertTrue
  * outline and the metadata both stand on.
  *
  * Tested here rather than only through `PdfOutlineReader` and
- * `PdfMetadataReader` because those two only ever see the paths a well-formed
- * 1.4 file takes. The three cases below - a file that packs its objects into a
- * stream, a file whose encryption was taken off, and a file that is still
- * encrypted - are each a whole branch that no other test reaches, and each one
+ * `PdfMetadataReader`, which only ever see the paths a well-formed 1.4 file
+ * takes. The three cases below - objects packed into a stream, encryption taken
+ * off, encryption still on - are each a branch no other test reaches, and each
  * costs a reader their chapter list when it is wrong.
  */
 class PdfObjectIndexTest {

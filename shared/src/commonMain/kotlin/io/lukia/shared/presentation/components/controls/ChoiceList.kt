@@ -55,13 +55,12 @@ enum class ChoiceDensity {
 /**
  * One choice from a list too long to be a row of segments.
  *
- * A list rather than a menu because that is what this is for - seventeen
- * languages chosen once, in a screen or a panel that already scrolls. A popup
- * would hide the setting behind a tap and put a scrolling list inside a
- * scrolling page.
+ * A list rather than a menu, this being for seventeen languages chosen once in a
+ * screen that already scrolls: a popup would hide the setting behind a tap and
+ * put a scrolling list inside a scrolling page.
  *
  * Each row carries radio-button semantics, so assistive technology reads the
- * group as a single choice rather than as a column of unrelated buttons.
+ * group as one choice rather than a column of unrelated buttons.
  */
 @Composable
 fun <T> ChoiceList(

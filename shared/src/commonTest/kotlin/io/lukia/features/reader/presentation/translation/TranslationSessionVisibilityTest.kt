@@ -119,13 +119,11 @@ class TranslationSessionVisibilityTest {
      * The other half of leaving a page alone, and the half that costs money.
      *
      * A passage that failed is kept as a failure, and translating the page again
-     * - which happens on every settle, every re-layout, every time the reader
-     * comes back to it - must not ask about it again. A service that refused a
-     * passage once refuses it just as firmly the fortieth time, and each refusal
-     * is a request somebody pays for.
+     * - on every settle, every re-layout, every return to it - must not ask
+     * again. A service that refused a passage once refuses it as firmly the
+     * fortieth time, and each refusal is a request somebody pays for.
      *
-     * Tapping it is still how the reader retries: that is a gesture, and this is
-     * not.
+     * Tapping it is still how the reader retries: that is a gesture, this is not.
      */
     @Test
     fun aPassageThatFailedIsNotAskedAboutAgainWhenThePageIsSweptAgain() = runTest {
