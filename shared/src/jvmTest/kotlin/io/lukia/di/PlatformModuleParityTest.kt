@@ -7,12 +7,10 @@ import kotlin.test.fail
 /**
  * Holds the three platform modules to the same set of bindings.
  *
- * [AppGraphTest] resolves a graph, which is the stronger check - and it can only
- * ever do it for one platform. It runs on the JVM, so it builds `jvmMain`'s
- * `platformModule`; Android's needs a `Context` and iOS's a keychain, and neither
- * can be built where that test runs. So the registration Android forgot is found
- * by opening the screen that needs it, on a device, which is the failure this
- * whole class of test exists to move earlier.
+ * [AppGraphTest] resolves a graph, the stronger check, but only for one
+ * platform: it runs on the JVM and builds `jvmMain`'s `platformModule`, where
+ * Android's needs a `Context` and iOS's a keychain. So a registration Android
+ * forgot is otherwise found by opening the screen that needs it, on a device.
  *
  * Read as text for the same reason [io.lukia.ArchitectureTest] is: what is being
  * checked is what each file declares, and reading the declarations needs neither

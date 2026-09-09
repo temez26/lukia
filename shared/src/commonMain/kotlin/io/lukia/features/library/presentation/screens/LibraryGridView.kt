@@ -171,12 +171,11 @@ internal fun LibraryGrid(
         // thing in it.
         //
         // Only on an unnarrowed library. A slot offering to add a book to a
-        // filtered view promises something it cannot keep: import a PDF while the
-        // grid is showing favourites, and the book lands in the library but not
-        // on the screen that just took it, which reads as having swallowed it.
-        // Left out of a search that found nothing for the same reason - the
-        // notice above is the whole answer, and a lone slot beneath it would look
-        // like a result.
+        // filtered view promises what it cannot keep: import a PDF while the
+        // grid shows favourites and the book lands in the library but not on the
+        // screen that took it, which reads as having swallowed it. Left out of
+        // an empty search for the same reason - the notice above is the whole
+        // answer, and a lone slot beneath it would look like a result.
         if (!query.isNarrowed && books.isNotEmpty()) {
             item(key = "import", contentType = "import") {
                 // Drawn as whichever the shelf is laid out as, for the same

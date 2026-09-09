@@ -108,19 +108,18 @@ private class InkGlyph(
  * How tall a glyph is reported to be, as a proportion of the size its type was
  * set at.
  *
- * PDFKit is alone in reporting the ink: an `e` comes back half as tall as an
- * `l` beside it, because that is how much of the page each one actually marks.
- * Every other reader reports a box derived from the font, the same for every
- * character of a line, and the shared inference that turns glyphs into
- * paragraphs is calibrated against that - see `BLOCK_GAP_RATIO`, which measures
- * the space between two lines against the height of the glyphs on them.
+ * PDFKit alone reports the ink: an `e` comes back half as tall as an `l` beside
+ * it, because that is how much of the page each marks. Every other reader
+ * reports a box derived from the font, the same for every character of a line,
+ * and the shared inference that turns glyphs into paragraphs is calibrated
+ * against that - see `BLOCK_GAP_RATIO`.
  *
  * Left as ink, a page of prose reads as a page of headings: the tallest letter
- * of a line stands a third higher than the middling letter of the page, which is
- * the whole of what marks a heading out. So the ink is replaced here by the one
- * height the file really states, and this is the proportion of it the other
- * platforms report - which is what makes the same book come apart into the same
- * paragraphs whichever device it is opened on.
+ * of a line stands a third higher than the page's middling letter, which is the
+ * whole of what marks a heading out. So the ink is replaced by the one height
+ * the file states, and this is the proportion of it the other platforms report -
+ * which is what makes the same book come apart into the same paragraphs on every
+ * device.
  */
 private const val GLYPH_HEIGHT_RATIO = 0.58f
 

@@ -16,23 +16,20 @@ internal class PdfRect(val x: Float, val y: Float, val width: Float, val height:
  * Where a picture drawn on a PDF page lands, in the space the rest of the page
  * is measured in.
  *
- * A PDF draws an image by transforming the unit square, so what the file states
- * is a matrix and what this needs is a rectangle: the translation is the corner
- * and the scale is the size, both in the page's own units and measured upwards
- * from the bottom left, which is how PDF measures and how nothing else here
- * does. What comes back is measured downwards from the top left of the page as
- * it is displayed - the space [TextQuad] is defined in, and the space the
- * glyphs are already reported in, which is what lets a picture be ordered among
- * the paragraphs it was printed between.
+ * A PDF draws an image by transforming the unit square, so the file states a
+ * matrix where this needs a rectangle: the translation is the corner, the scale
+ * is the size, both measured upwards from the bottom left as PDF measures and
+ * nothing else here does. What comes back is measured downwards from the top
+ * left - the space [TextQuad] and the glyphs are already in, which is what lets
+ * a picture be ordered among the paragraphs it was printed between.
  *
- * [page] is the page's own box before any rotation is applied - not the shape it
- * is shown at - and [rotation] is the quarter-turns the file asks for, which a
- * scanner or a spreadsheet in landscape routinely does.
+ * [page] is the page's own box before rotation, not the shape it is shown at,
+ * and [rotation] is the quarter-turns the file asks for - which a scanner or a
+ * landscape spreadsheet routinely does.
  *
- * The maths is common code rather than repeated per platform because it is the
- * same maths: every PDF library hands over the same matrix, and getting the
- * rotation wrong on one platform only would put a plate in a different place in
- * the same book on two devices.
+ * Common code rather than repeated per platform because it is the same maths:
+ * every PDF library hands over the same matrix, and getting the rotation wrong
+ * on one platform would put a plate in two places in the same book.
  */
 internal fun pdfImageBounds(drawn: PdfRect, page: PageSize, rotation: Int): TextQuad {
     // A matrix may scale negatively, which flips the image and puts its corner

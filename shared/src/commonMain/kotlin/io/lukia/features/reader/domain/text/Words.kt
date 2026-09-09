@@ -5,9 +5,8 @@ package io.lukia.features.reader.domain.text
  * from.
  *
  * [start] and [end] index the whole passage rather than the sentence, exactly as
- * [Sentence] does, so a word can be highlighted and replaced by the same code
- * that handles a sentence without anything having to remember which of the two
- * it is looking at.
+ * [Sentence] does, so one piece of code highlights and replaces either without
+ * remembering which it is looking at.
  *
  * [sentenceIndex] travels with it because a word alone is not addressable: the
  * fourth word of a paragraph means nothing once a sentence before it has been

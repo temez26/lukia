@@ -28,14 +28,13 @@ internal sealed interface DesktopPick {
  *
  * Held here rather than beside the button that opened it, because the panel is
  * drawn once at the root of the app - see `PlatformPickerHost` - and the two
- * sides have to be able to find each other. It is process-scoped for the same
- * reason the window is: there is one app, one window, and at most one question
- * being put to the reader in it.
+ * sides have to find each other. Process-scoped for the reason the window is:
+ * one app, one window, at most one question being put to the reader.
  *
- * A second request while one is open replaces it rather than queueing behind it.
- * There is no way to make one - every control that opens this is behind the
- * panel while it is up - and answering a question nobody can still remember
- * asking would be worse than dropping it.
+ * A second request while one is open replaces it rather than queueing. There is
+ * no way to make one - every control that opens this is behind the panel while
+ * it is up - and answering a question nobody remembers asking is worse than
+ * dropping it.
  */
 internal object DesktopPicks {
 

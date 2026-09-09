@@ -28,21 +28,18 @@ internal actual fun openPdfPageContent(path: String): PageContent =
  * What is on a page of a PDF on Android: the words, and the pictures.
  *
  * Android's own [android.graphics.pdf.PdfRenderer] draws pages and says nothing
- * about what is on them - it grew a text API only in API 35, which is far above
- * this app's minimum, and has never had one for images. So the file is opened a
- * second time, by a library that can read it, purely to answer "what does this
- * page say, what is drawn on it, and where".
+ * about what is on them - it grew a text API only at API 35, far above this
+ * app's minimum, and has never had one for images. So the file is opened a
+ * second time by a library that can read it.
  *
  * Opened lazily and only once: most books are never asked either question, and a
- * reader who asks one of them will ask it again. The handle is given back with
- * the document it belongs to.
+ * reader who asks one will ask again. The handle is given back with the document
+ * it belongs to.
  *
- * This is the same library the desktop uses, repackaged - which is why what
- * follows reads like its counterpart in `PdfDocumentPages.jvm.kt` and
- * `PdfBoxPageImages.kt` despite sharing no code with them. The two libraries
- * have different package names, different image types and different ways of
- * being opened; everything after the glyphs and the pictures come out is common
- * code.
+ * The same library the desktop uses, repackaged - which is why this reads like
+ * `PdfDocumentPages.jvm.kt` and `PdfBoxPageImages.kt` while sharing no code with
+ * them: different package names, image types and ways of being opened.
+ * Everything after the glyphs and pictures come out is common code.
  */
 internal class AndroidPageContent(private val file: File) : PageContent {
 

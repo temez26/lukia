@@ -20,12 +20,11 @@ import kotlin.test.assertTrue
  * often the reader is shown how far it has got.
  *
  * The throttle is not a detail. `put` copies the whole map of translations, and
- * the screen above files every passage in the book by where it belongs each time
- * that map changes - so publishing every token is the book's translations
- * rebuilt tens of times a second, on the thread that draws, for a word or two of
- * text. It is also invisible when it breaks: everything still works, just badly,
- * and the only sign is somebody saying the page stutters while a sentence comes
- * back.
+ * the screen above refiles every passage in the book each time it changes - so
+ * publishing every token rebuilds the book's translations tens of times a
+ * second, on the thread that draws, for a word or two of text. It is also
+ * invisible when it breaks: everything still works, just badly, and the only
+ * sign is somebody saying the page stutters.
  *
  * Assertable at all only because the session takes its clock as a parameter -
  * the scheduler below is the test's virtual one, so "eighty milliseconds later"

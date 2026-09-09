@@ -21,17 +21,16 @@ private const val DOCUMENT_DIRECTORY = "word"
  * Reads a Word document into the reader's blocks.
  *
  * A `.docx` is a ZIP whose `word/document.xml` is the document: a flat run of
- * paragraphs, each carrying its style by name and its text split into runs that
- * change whenever the formatting does. That flatness is the whole difficulty -
- * unlike an EPUB, the file states no divisions at all, so where one section ends
- * and the next begins has to be read off the headings, which is what
- * [sectionText] does.
+ * paragraphs, each naming its style, with text split into runs that change with
+ * the formatting. That flatness is the difficulty - unlike an EPUB the file
+ * states no divisions, so section boundaries have to be read off the headings,
+ * which is what [sectionText] does.
  *
- * What is deliberately not read: page geometry, columns, headers and footers,
- * fields, and the numbering definitions that would give an ordered list its real
- * numbers. Those describe a document as printed, and this reader is re-setting
- * it to be read on a screen at whatever size the reader asked for - a page
- * break from a file that was laid out for A4 means nothing here.
+ * Deliberately not read: page geometry, columns, headers and footers, fields,
+ * and the numbering definitions that would give an ordered list its real
+ * numbers. Those describe a document as printed, and this re-sets it for a
+ * screen at whatever size the reader asked for - a page break laid out for A4
+ * means nothing here.
  *
  * Returns null when the archive holds no document part, which is the one thing
  * that makes a file not a `.docx` at all.

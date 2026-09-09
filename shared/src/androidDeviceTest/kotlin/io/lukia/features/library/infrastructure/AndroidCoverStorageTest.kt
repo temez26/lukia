@@ -72,21 +72,19 @@ class AndroidCoverStorageTest {
     }
 
     /**
-     * The reason the limit exists, kept as a test so that it is a fact about the
+     * The reason the limit exists, kept as a test so it is a fact about the
      * platform rather than a claim in a comment - and written to hold on every
-     * version of it, because the two no longer agree.
+     * version, because they no longer agree.
      *
      * Up to Android 14 a cover this size throws on the way back and takes the
-     * shelf with it. Android 16 grows the window to the row instead and hands
-     * back a twenty-five megabyte blob without complaint, while still reporting
-     * the same two-megabyte window size. Asserting the throw alone therefore
-     * fails on a new device and passes on an old one, which says nothing about
-     * either.
+     * shelf with it. Android 16 grows the window to the row instead and returns
+     * a twenty-five megabyte blob without complaint, while still reporting the
+     * same two-megabyte window size. Asserting the throw alone would fail on a
+     * new device and pass on an old one.
      *
-     * What is pinned instead is what has to be true on both: the shelf either
-     * arrives whole or fails in a way the app can recognise. It never comes back
-     * short, and the failure is never something other than the row being too
-     * large - either of which would be a library quietly losing books.
+     * Pinned instead is what holds on both: the shelf arrives whole or fails
+     * recognisably. It never comes back short, and the failure is never anything
+     * but the row being too large - either would be a library losing books.
      */
     @Test
     fun aCoverOverTheWindowNeverLeavesTheLibraryShort() = runTest {

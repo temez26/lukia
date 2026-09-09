@@ -163,11 +163,11 @@ fun Modifier.hoverHighlight(
  * Everything a control does to show it is being pointed at, focused or pressed,
  * in the order the app draws them.
  *
- * These three always travelled together and were written out separately at every
- * call site, which is how three of them came to be written out with one missing:
- * the home shelf's "see all" and both of the recent-search rows had a hover wash
- * and a pointer cursor and no focus ring at all, so tabbing through the library
- * landed on them invisibly.
+ * These three always travelled together and were written out at every call site,
+ * which is how three of them came to be written with one missing: the home
+ * shelf's "see all" and both recent-search rows had a hover wash and a pointer
+ * cursor and no focus ring, so tabbing through the library landed on them
+ * invisibly.
  *
  * Separate from [pressable] because a control that toggles or selects rather than
  * clicks needs the same feedback and its own semantics - see `LukiaChip` and

@@ -43,14 +43,12 @@ sealed interface AppError {
      *
      * [explanation] is prose somebody wrote on purpose - "check the server is
      * running", "that passage is too long" - and never a throwable's own
-     * message. The two used to share this field, and the difference matters
-     * because `AppErrorDisplay` puts whatever is here on screen: a decoder's
-     * message is addressed to whoever wrote the decoder, and on the desktop it
-     * is routinely a file path with the reader's own name in it.
+     * message. `AppErrorDisplay` puts whatever is here on screen, and a
+     * decoder's message is addressed to whoever wrote the decoder; on the
+     * desktop it is routinely a file path with the reader's own name in it.
      *
-     * So the field holds one kind of thing, and [toAppError] no longer fills
-     * it. What is lost that way is recorded where the throwable still had a
-     * stack trace, rather than carried up to a screen that cannot use it.
+     * So [toAppError] no longer fills this field. What is lost that way is
+     * recorded where the throwable still had a stack trace.
      */
     data class Unexpected(val explanation: String? = null) : AppError
 }
@@ -76,15 +74,13 @@ fun AppError.asFailure(): Result<Nothing> = Result.failure(AppErrorException(thi
  *
  * Deliberately lossy for that second kind. A throwable's `message` is written
  * for whoever wrote the code that threw it, and this is the one place it could
- * reach a screen - `FileNotFoundException` says
- * `/Users/someone/Documents/...`, and Ktor puts the whole request URL in one.
- * Nothing here can tell those from the sentences the app writes for readers,
- * so it keeps neither and lets [AppError.Unexpected] speak for itself.
+ * reach a screen - `FileNotFoundException` says `/Users/someone/Documents/...`,
+ * and Ktor puts the whole request URL in one. Nothing here can tell those from
+ * the sentences the app writes for readers, so it keeps neither.
  *
- * The message is not the loss it looks like: by the time a throwable arrives
- * here it has crossed a `withContext` and the coroutine machinery, and the
- * frames worth having are long gone. Whatever raised it is close to something
- * that absorbed it, and that is where it is worth writing down.
+ * Less is lost than it looks: by the time a throwable arrives here it has
+ * crossed a `withContext` and the coroutine machinery, and the frames worth
+ * having are gone. Whatever raised it is where it is worth writing down.
  */
 fun Throwable.toAppError(): AppError = when (this) {
     is AppErrorException -> error

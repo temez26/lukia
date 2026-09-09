@@ -22,26 +22,24 @@ import kotlin.time.TimeSource
 /**
  * A book laid out for the window, a longer beginning of it at a time.
  *
- * What this is for is the wait somebody sits through to read a page. Measuring a
- * long book is seconds of work - a few thousand paragraphs, each one laid out
- * against the font at the size asked for - and measuring all of it before
- * showing any of it means the reader watches a spinner for the last chapter of a
- * book they opened to read the first line of.
+ * This is about the wait somebody sits through to read a page. Measuring a long
+ * book is seconds of work - a few thousand paragraphs, each laid out against the
+ * font at the size asked for - and doing all of it before showing any means the
+ * reader watches a spinner for the last chapter of a book they opened to read
+ * the first line of.
  *
  * So the book is cut into runs that lay out independently - see [chunkStarts] -
- * and what comes out of here is the beginning of the book, then more of it, then
- * all of it. Every one of those is a real book as far as anything above is
- * concerned: its pages are the pages that book will have, and only how many
- * there turn out to be is still moving.
+ * and what comes out is the beginning of the book, then more, then all of it.
+ * Each is a real book as far as anything above is concerned: its pages are the
+ * pages that book will have, and only how many is still moving.
  *
- * Where the runs are measured, and whether any two of them are measured at the
- * same time, is the platform's to say - see [measuringContext] - and is the
- * smaller half of this. What somebody waiting on a book notices is that the
- * first run arrives before the last one has been started, which is true on one
- * thread as much as on four.
+ * Where the runs are measured, and whether two go at once, is the platform's to
+ * say - see [measuringContext] - and is the smaller half of this. What somebody
+ * waiting notices is the first run arriving before the last has started, which
+ * is true on one thread as much as on four.
  *
- * The pages themselves are exactly the pages a single pass would have produced.
- * Nothing here changes where a page ends; it changes when the reader is told.
+ * The pages are exactly the pages a single pass would have produced. Nothing
+ * here changes where a page ends; it changes when the reader is told.
  *
  * [sizesPerWorker] is asked for one measurer per worker rather than handed one,
  * because measuring text is not something two threads may do through the same
@@ -130,14 +128,13 @@ private suspend fun dispatchRuns(
  * run that finished early cannot be shown until everything in front of it has -
  * there would be no saying what number its first page was.
  *
- * Not once per run, though. A long book is a hundred of them, and a hundred
- * books arriving is a hundred times that the reader's list is rebuilt, the
- * contents are put back on their pages and the position is followed across a
- * re-layout. Held to one every [PUBLISH_INTERVAL] instead, which is often enough
- * that the page count climbs while somebody watches it and rare enough to cost
- * nothing. The first goes out at once, because it is the one somebody is waiting
- * for, and the last always goes out, because it is the only one that can say the
- * book is now as long as it is going to be.
+ * Not once per run, though: a long book is a hundred of them, and a hundred
+ * books arriving means a hundred rebuilds of the reader's list, the contents put
+ * back on their pages and the position followed across a re-layout. Held to one
+ * every [PUBLISH_INTERVAL] instead - often enough that the page count climbs
+ * while somebody watches, rare enough to cost nothing. The first goes out at
+ * once, being the one somebody is waiting for, and the last always goes out,
+ * being the only one that can say the book is as long as it will get.
  */
 private suspend fun FlowCollector<PaginatedBook>.emitInOrder(
     runs: ReceiveChannel<Deferred<PaginatedChunk>>,

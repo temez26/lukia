@@ -27,12 +27,11 @@ import io.lukia.shared.presentation.theme.LukiaMotion
  * on, so the two marks a cover can wear read as one family. The accent belongs
  * to the progress bar, which is the one mark on a cover that means a quantity.
  *
- * Decorative, and stays out of the accessibility tree - but not because the
- * state does not matter. It is carried by whatever the badge is drawn on: a
- * `BookCard` names itself with the word for a favourite in it, so a shelf can be
- * heard as well as looked at. Before that the only place the state was announced
- * was the menu row that toggles it, which meant opening a menu on every cover in
- * turn to find out which books were favourites.
+ * Decorative, and stays out of the accessibility tree - not because the state
+ * does not matter but because whatever the badge is drawn on carries it: a
+ * `BookCard` names itself with the word for a favourite, so a shelf can be heard
+ * as well as looked at. Before that the state was announced only by the menu row
+ * that toggles it, so finding the favourites meant opening a menu on every cover.
  */
 @Composable
 fun FavoriteBadge(

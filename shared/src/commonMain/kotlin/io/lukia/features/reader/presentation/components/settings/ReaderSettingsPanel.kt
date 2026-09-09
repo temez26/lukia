@@ -87,17 +87,15 @@ private val WidePanelMaxHeight: Dp = 520.dp
  * have nothing to act on - they are shown, and disabled, rather than hidden, so
  * they are not mistaken for missing.
  *
- * [layout] is null for every document that has no choice to make about how it is
- * read, which is every format except PDF. The control is left out altogether
- * there rather than shown disabled: unlike the typography settings, which a PDF
- * really does have and cannot use, this is a question that was never asked of an
- * EPUB.
+ * [layout] is null for every format except PDF, which is every document with no
+ * choice to make about how it is read. The control is left out rather than
+ * disabled: unlike the typography settings, which a PDF has and cannot use, this
+ * is a question that was never asked of an EPUB.
  *
- * [translationSection] is translating, at the top of the panel: the language and
- * the gestures on every window, and on a phone - whose toolbar has no room for
- * them - the controls a wider window's toolbar carries as glyphs. Empty when
- * nothing is set up to translate with, so the panel neither knows nor cares what
- * translating is.
+ * [translationSection] sits at the top: the language and gestures on every
+ * window, plus - on a phone, whose toolbar has no room - the controls a wider
+ * toolbar carries as glyphs. Empty when nothing is set up to translate with, so
+ * the panel neither knows nor cares what translating is.
  */
 @Composable
 internal fun ReaderSettingsPanel(

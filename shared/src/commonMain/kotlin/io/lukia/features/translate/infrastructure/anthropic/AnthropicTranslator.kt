@@ -67,12 +67,11 @@ private fun String.takesEffort(): Boolean = !contains("haiku", ignoreCase = true
  * pasted in while a book is open works on the very next tap - and so does
  * changing the model or the language mid-chapter.
  *
- * The answer is streamed. A hosted service is fast enough that this is not
- * about the waiting so much as about what the waiting looks like: a model
- * thinking about an idiom says nothing for a second or two, and a stream turns
- * that into a sentence being written rather than into a pause that might be a
- * failure. It also means one wait can be told from the other - see
- * [translationTimeouts].
+ * The answer is streamed. A hosted service is fast enough that this is less
+ * about the waiting than what the waiting looks like: a model thinking about an
+ * idiom says nothing for a second or two, and a stream turns that into a
+ * sentence being written rather than a pause that might be a failure. It also
+ * lets one wait be told from the other - see [translationTimeouts].
  */
 class AnthropicTranslator(
     private val client: HttpClient,

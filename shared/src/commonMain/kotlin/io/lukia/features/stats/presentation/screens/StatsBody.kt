@@ -91,12 +91,11 @@ internal fun StatsBody(
 /**
  * Everything below the title, which is everything that has to be counted first.
  *
- * One wait for the whole page rather than one per card. Every figure here comes
- * from a single read of the library and the sittings recorded against it, so
- * three sections each deciding for themselves whether they had anything yet
- * meant three of them appearing at three different moments - and the two that
- * sit highest shoving the rest of the page down as they did, in the middle of
- * the screen still sliding in over the shelf.
+ * One wait for the whole page rather than one per card. Every figure comes from
+ * a single read of the library and its sittings, so three sections each deciding
+ * for themselves whether they had anything yet appeared at three different
+ * moments - the two highest shoving the rest of the page down as they did, in
+ * the middle of the screen still sliding in over the shelf.
  *
  * The swap is the app's own - see `UiStateContent`, which does this for a screen
  * where this does it for a section of one. Keyed on which state it is rather

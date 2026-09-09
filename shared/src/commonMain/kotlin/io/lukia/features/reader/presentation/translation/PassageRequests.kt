@@ -35,11 +35,10 @@ internal fun ReaderDocument.translationRequest(
 /**
  * What a passage sits under, for one that carries no chapter of its own.
  *
- * A reflowable book's section usually names itself, so the screen already knows
- * and this is not asked. What does not name itself is a page of a PDF, and every
- * section of a PDF being read as text - the reader made those sections, one per
- * page of the file, and a page has no title. The book's own table of contents
- * does know, and it has been read already.
+ * A reflowable book's section usually names itself, so this is not asked. What
+ * does not is a page of a PDF, and every section of a PDF read as text - the
+ * reader made those, one per page of the file, and a page has no title. The
+ * book's own table of contents does know, and has been read already.
  *
  * Both anchors are looked up the same way because both are asking the same
  * question of the same list: an outline entry addresses a page in a fixed-layout

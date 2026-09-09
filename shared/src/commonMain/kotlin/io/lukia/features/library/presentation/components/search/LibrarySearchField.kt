@@ -73,10 +73,10 @@ internal fun searchFieldHeight(): Dp {
  * The field takes a focus ring rather than changing shape or size when it gains
  * focus, so nothing below it moves as the keyboard opens.
  *
- * It sizes itself to the window it is in. A phone's field is a thumb target
- * carrying 17pt text; a desktop's sits in a toolbar row beside the filter, and
- * wearing phone proportions there is most of what makes a desktop window look
- * like a scaled-up phone.
+ * It sizes itself to the window: a phone's field is a thumb target carrying 17pt
+ * text, while a desktop's sits in a toolbar row beside the filter - phone
+ * proportions there are most of what makes a desktop window look like a
+ * scaled-up phone.
  */
 @Composable
 internal fun LibrarySearchField(

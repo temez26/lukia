@@ -15,20 +15,18 @@ import platform.CoreGraphics.CGPDFStreamRef
  * Every picture a book has already been asked for, so that each one is decoded
  * once however many pages draw it.
  *
- * The same saving the other two platforms make, and made the same way - see
- * `PdfFigureBytes` on the desktop for what it is worth and why. What differs is
- * how a picture is recognised. PDFBox hands over the object the file keeps an
- * image in, so two pages drawing one mark reach the same object and that is the
- * whole of the question. CoreGraphics hands over a pointer whose lifetime it
- * does not describe, and a pointer that has been reused for a different stream
- * would show one picture in place of another - a bug nobody could explain from
- * what they were looking at. So a picture is known here by its own bytes.
+ * The same saving the other two platforms make - see `PdfFigureBytes` on the
+ * desktop for what it is worth. What differs is how a picture is recognised:
+ * PDFBox hands over the object the file keeps an image in, so two pages drawing
+ * one mark reach the same object. CoreGraphics hands over a pointer whose
+ * lifetime it does not describe, and one reused for a different stream would
+ * show one picture in place of another - a bug nobody could explain from what
+ * they were looking at. So a picture is known here by its own bytes.
  *
- * Which costs something, and is why [MAX_FIGURE_BYTES] exists: the bytes have
- * to be unpacked out of the file to be compared, and holding them is what makes
- * the comparison exact rather than a hash that two pictures could share. What
- * this cache is for is furniture - a mark, a banner, a watermark, the things a
- * book puts on every page - and furniture is small. A plate is not repeated, so
+ * Which costs something, and is why [MAX_FIGURE_BYTES] exists: the bytes must be
+ * unpacked to be compared, and holding them is what makes the comparison exact
+ * rather than a hash two pictures could share. This cache is for furniture - a
+ * mark, a banner, a watermark - which is small. A plate is not repeated, so
  * remembering one would cost the memory and save nothing.
  */
 @OptIn(ExperimentalForeignApi::class)

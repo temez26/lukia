@@ -69,18 +69,16 @@ internal sealed interface CoverArt {
 /**
  * Decodes a cover, off the main thread and only once.
  *
- * A stored cover is around 800 pixels along its longer edge, and artwork stored
- * before covers were held to a size can be several times that - so decoding one
- * costs megabytes and a measurable pause. Doing that inside composition, as this
- * once did, meant every card scrolled into view stalled the frame it appeared
- * on, so a fast scroll through a large library stuttered on all three platforms.
+ * A stored cover is around 800 pixels along its longer edge, and older artwork
+ * several times that, so decoding one costs megabytes and a measurable pause.
+ * Doing it inside composition, as this once did, stalled the frame every card
+ * appeared on and stuttered a fast scroll on all three platforms.
  *
  * The bytes are read here too, one cover at a time, rather than travelling with
  * the book - see [CoverArtSource]. What comes back is kept in [CoverArtCache],
- * shrunk to the size it is actually drawn at and held to a fixed budget. That is
- * what makes scrolling back up a long shelf free rather than a second read of
- * everything on the way, without a library of any size costing more memory than
- * a library of twenty books.
+ * shrunk to the size it is drawn at and held to a fixed budget, which makes
+ * scrolling back up a long shelf free without a large library costing more
+ * memory than a small one.
  */
 @Composable
 internal fun rememberCoverArt(cover: CoverArtSource?): CoverArt {
@@ -151,11 +149,11 @@ internal fun bookCoverColor(seed: String): Color {
  * cover arriving is a settle rather than a pop - and a card that is scrolled past
  * before its artwork lands never flashes a monogram it was not going to keep.
  *
- * The artwork is fitted rather than cropped. Every shelf in the app draws its
- * covers at one set of proportions, and books do not come at one set of
- * proportions - so filling the tile means cutting the sides off a wide cover and
- * the title off a tall one. Fitted, the whole cover is there, and what fills the
- * space around it is the cover itself - see [CoverArtwork].
+ * The artwork is fitted rather than cropped. Every shelf draws its covers at one
+ * set of proportions and books do not come at one, so filling the tile cuts the
+ * sides off a wide cover and the title off a tall one. Fitted, the whole cover
+ * is there, and what fills the space around it is the cover itself - see
+ * [CoverArtwork].
  */
 @Composable
 fun BookCover(
@@ -221,16 +219,14 @@ fun BookCover(
  *
  * A fitted cover leaves space wherever its proportions differ from the shelf's,
  * and a flat fill there reads as a coloured stripe above and below every book -
- * a grid of them looks like bunting rather than like a shelf. Filling it with a
- * blurred, dimmed blow-up of the same artwork is what makes the card read as one
- * object, which is the trick Apple Books and every music app have used for
- * years: the eye takes it as the cover's own light spilling out.
+ * a grid of them looks like bunting. Filling it with a blurred, dimmed blow-up
+ * of the same artwork makes the card read as one object: the eye takes it as the
+ * cover's own light spilling out.
  *
- * The blur is the shrink. The backdrop is the artwork resampled down to a couple
- * of dozen pixels and then drawn back up across the whole card - bilinear
- * filtering turns that into a soft wash for nothing, and unlike a real blur it
- * costs the same on every platform and every Android version. A `Modifier.blur`
- * here would do nothing at all below Android 12.
+ * The blur is the shrink. The backdrop is the artwork resampled to a couple of
+ * dozen pixels and drawn back up across the card - bilinear filtering makes that
+ * a soft wash for nothing, and unlike a real blur it costs the same everywhere.
+ * A `Modifier.blur` here would do nothing below Android 12.
  *
  * One layer for all three pieces, so the backdrop, its dimming and the cover
  * fade in together as one thing.

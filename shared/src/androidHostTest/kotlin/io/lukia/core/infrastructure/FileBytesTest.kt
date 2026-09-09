@@ -15,17 +15,15 @@ import kotlin.test.assertTrue
  * Bytes on and off the disk, on Android - the same rules the desktop and iOS
  * tests of this name pin.
  *
- * The platform this was missing on is the one it was written for. What goes
- * through these is the converted text of a book, which is a container that means
- * nothing until it is complete, and Android is the implementation that has to
+ * What goes through these is the converted text of a book - a container that
+ * means nothing until complete - and Android is the implementation that has to
  * put a scratch file into place by hand: `java.nio.file` arrived at API 26 and
- * desugaring does not back-fill it, so the desktop's atomic move is not
- * available here. A rule that has to be kept by hand is exactly the one worth a
- * test.
+ * desugaring does not back-fill it, so the desktop's atomic move is unavailable
+ * here. A rule kept by hand is the one worth a test.
  *
- * On the host rather than on a device: nothing below reaches further into
- * Android than a cache directory, and a test that needs an emulator is a test
- * that does not run.
+ * On the host rather than a device: nothing below reaches further into Android
+ * than a cache directory, and a test that needs an emulator is one that does not
+ * run.
  */
 @RunWith(RobolectricTestRunner::class)
 class FileBytesTest {

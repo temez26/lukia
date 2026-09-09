@@ -3,11 +3,11 @@ package io.lukia.core.infrastructure.archive
 /**
  * A ZIP archive written by hand, with every entry stored rather than deflated.
  *
- * The reader beside this is common code that until now was only ever handed an
- * archive by `jvmTest`, through `java.util.zip`. That leaves the format as the
- * JDK happens to write it standing in for the format, on the two platforms that
- * have no JDK - so this writes the bytes out itself, and the same fixture is
- * then read on the desktop, on a device and in the simulator.
+ * The reader beside this is common code, and was only ever handed an archive by
+ * `jvmTest` through `java.util.zip` - which let the JDK's idea of the format
+ * stand in for the format on the two platforms with no JDK. This writes the
+ * bytes itself, so one fixture is read on the desktop, on a device and in the
+ * simulator.
  *
  * Stored because there is a zlib decompressor in common code and no compressor.
  * `ZipArchiveReaderTest` covers the deflated half on the JVM, where one exists.

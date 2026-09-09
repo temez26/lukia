@@ -149,12 +149,11 @@ private const val GlowExtent = 2f
  *
  * [content] is composed underneath from the first frame rather than after the
  * animation, so the screen behind the mark is loaded, laid out and part-way
- * through its own arrival by the time the dissolve starts. That is what the
- * handover is - not a screen being swapped for another, but a cover being taken
- * off one that was there all along.
+ * through its own arrival by the time the dissolve starts: the handover is a
+ * cover being taken off a screen that was there all along, not a swap.
  *
- * One clock drives every part of it. Two would drift, and the drift would land
- * in the one place the whole effect is judged.
+ * One clock drives every part of it. Two would drift, in the one place the whole
+ * effect is judged.
  */
 @Composable
 fun LaunchSplash(modifier: Modifier = Modifier, content: @Composable () -> Unit) {

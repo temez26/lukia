@@ -7,13 +7,12 @@ import io.lukia.features.reader.domain.text.TextBlock
 /**
  * Reads a Markdown file as the document it describes.
  *
- * Markdown is read here as prose with structure, not as a step on the way to
- * HTML. The parts that survive are the parts a reader can see - headings, lists,
- * quotations, code, emphasis and rules - and the parts that exist only to become
- * something else are dropped: a link keeps its text and loses its address, since
- * there is nowhere in a book to go, and an image keeps its alt text and loses
- * its file, since a `.md` is a single file with no container and whatever it
- * points at was never imported alongside it.
+ * Markdown is read as prose with structure, not as a step towards HTML. What
+ * survives is what a reader can see - headings, lists, quotations, code,
+ * emphasis, rules - and what exists only to become something else is dropped: a
+ * link keeps its text and loses its address, since there is nowhere in a book to
+ * go, and an image keeps its alt text and loses its file, since a `.md` has no
+ * container and whatever it points at was never imported alongside it.
  *
  * The dialect is the common core: what is written in a README rather than the
  * full CommonMark grammar. Tables, footnotes, reference links, HTML blocks and

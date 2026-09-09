@@ -110,22 +110,20 @@ fun stateSwapIn(durationMillis: Int = LukiaMotion.StandardMillis): EnterTransiti
  * A list opening underneath the row that disclosed it - see `PanelDisclosureRow`.
  *
  * Height only, and downwards. Left to itself `AnimatedVisibility` grows a child
- * from its bottom end, which uncovers the list from its top left corner and
- * reads as a list being dragged diagonally out of the row above it. Nothing
- * moves sideways when a panel gets taller, so nothing here should draw as
- * though it does.
+ * from its bottom end, uncovering the list from its top left corner as though it
+ * were being dragged diagonally out of the row above. Nothing moves sideways
+ * when a panel gets taller.
  *
- * [LukiaMotion.UnfoldMillis] rather than any of the durations a menu or a screen
- * gets, because this is neither. Seventeen languages are some seven hundred
- * points of rows opening inside a panel capped at five hundred and sixty, so a
- * good half of the growth happens below the panel's bottom edge where nobody is
- * watching it - and a clock set by the whole distance spends only half of itself
- * on the part that can be seen.
+ * [LukiaMotion.UnfoldMillis] rather than a menu's or a screen's duration,
+ * because this is neither: seventeen languages are some seven hundred points of
+ * rows opening inside a panel capped at five hundred and sixty, so half the
+ * growth happens below the panel's edge where nobody sees it - and a clock set
+ * by the whole distance spends only half of itself on the visible part.
  *
- * The fade is shorter than the growth on purpose. It keeps a half-height row
+ * The fade is shorter than the growth on purpose: it keeps a half-height row
  * from being briefly readable in a space too short to hold it, and finishing
- * first means the rows are solid while the space around them is still settling -
- * one movement to watch rather than two ending together.
+ * first leaves the rows solid while the space around them settles - one movement
+ * to watch rather than two ending together.
  */
 fun disclosureIn(): EnterTransition = expandVertically(
     animationSpec = tween(LukiaMotion.UnfoldMillis, easing = LukiaMotion.Standard),

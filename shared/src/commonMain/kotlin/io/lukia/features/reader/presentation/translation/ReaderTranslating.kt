@@ -77,11 +77,10 @@ fun ReaderViewModel.onPassageSelected(selection: PassageSelection) {
  * it is a word, and something has already become of it.
  *
  * A failure counts. It used to fall through and quietly ask the same service
- * again, which is the one thing least likely to help: a word the reader's own
- * translator could not answer is exactly the word they want to take somewhere
- * else. So it opens the panel too, where the dictionary is read, the site is
- * offered, and asking again is one of the things on offer rather than the only
- * thing the gesture can do.
+ * again, the thing least likely to help: a word the reader's own translator
+ * could not answer is exactly the one they want to take elsewhere. So it opens
+ * the panel too, where the dictionary is read, the site is offered, and asking
+ * again is one option rather than the only one.
  *
  * A word still arriving is the one state left out - it has nothing more to say
  * yet, and it is about to.
@@ -110,14 +109,12 @@ fun ReaderViewModel.onPassageHold(selection: PassageSelection) {
  * A word the reader asked about outright, which opens what it means whether or
  * not anything has become of it yet.
  *
- * The difference from [onPassageHold] is the whole reason the two are separate.
- * A hold is the reader's own gesture with their own setting behind it, and its
- * first job is translating - so it opens this panel only on a word that has
- * already been answered, and a word nobody has touched is translated instead.
- * This has no setting and one job. It is the second mouse button, which
- * everywhere else in the app opens the menu belonging to the thing under it
- * rather than doing something to that thing first, and a reader who asks what a
- * word means should not have to translate it first to find out.
+ * The difference from [onPassageHold] is why the two are separate. A hold is the
+ * reader's own gesture with their own setting behind it, and its first job is
+ * translating, so it opens this panel only on an already-answered word. This has
+ * no setting and one job: it is the second mouse button, which everywhere else
+ * opens the menu belonging to the thing under it rather than acting on that
+ * thing first.
  *
  * Which leaves a word with nothing on the page and a panel open about it - see
  * [WordOnThePage.Untouched], where the one button offers to translate it after

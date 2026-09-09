@@ -6,11 +6,10 @@ import io.lukia.features.reader.domain.text.TextAnchor
 /**
  * Every translation in the open book, filed by where it belongs.
  *
- * The reason this exists is that translating one sentence must not be an event
- * for the rest of the book. Handed the whole map, every page and every paragraph
- * on screen has to look at it again each time any sentence anywhere changes
- * state - re-splitting text, rebuilding annotated strings, re-laying out
- * paragraphs nobody touched - which is a lot of work to arrive at "still
+ * Translating one sentence must not be an event for the rest of the book. Handed
+ * the whole map, every page and paragraph on screen looks at it again whenever
+ * any sentence anywhere changes state - re-splitting text, rebuilding annotated
+ * strings, re-laying out paragraphs nobody touched - all to arrive at "still
  * exactly as it was".
  *
  * Split into slices that compare equal when nothing in them moved, the work

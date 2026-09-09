@@ -48,17 +48,14 @@ compose.desktop {
             // launch with a JVM error, while `run` - which uses the full JDK - stays happy.
             modules("java.instrument", "java.management", "java.sql", "jdk.unsupported")
 
-            // What the installers offer to open. Together with `main`'s
-            // arguments - which is how every desktop hands an application the
-            // document it was asked to open - this is what makes double-clicking
-            // a book in a file manager land it on Lukia's shelf.
+            // What the installers offer to open. With `main`'s arguments - how
+            // every desktop hands an application the document it was asked to
+            // open - this is what lands a double-clicked book on Lukia's shelf.
             //
-            // The same five formats the Android manifest and the iOS Info.plist
-            // list, and offered on the same terms: these are formats Lukia
-            // reads, not formats it owns, so nothing here asks to become the
-            // system default. Each desktop adds Lukia to the list of
-            // applications that can open one and leaves the reader's own choice
-            // where it was.
+            // The same five formats the Android manifest and iOS Info.plist
+            // list, on the same terms: formats Lukia reads, not formats it owns,
+            // so nothing here asks to become the system default. Each desktop
+            // adds Lukia to the list and leaves the reader's choice where it was.
             fileAssociation("application/pdf", "pdf", "PDF document")
             fileAssociation("application/epub+zip", "epub", "EPUB book")
             fileAssociation(
@@ -77,15 +74,15 @@ compose.desktop {
                 // than an identifier - and macOS wants reverse-DNS here.
                 bundleID = "io.lukia"
 
-                // An unsigned DMG opens on the machine that built it and on no
+                // An unsigned DMG opens on the machine that built it and no
                 // other: Gatekeeper refuses anything downloaded without a
                 // Developer ID signature, and from Sequoia the reader cannot
-                // even right-click past it. So signing is what makes the Mac
-                // build distributable at all, rather than a hardening step.
+                // right-click past it. Signing is what makes the Mac build
+                // distributable at all, rather than a hardening step.
                 //
-                // Off unless the environment says otherwise, which keeps a local
-                // `packageDmg` working for whoever has no certificate - the same
-                // arrangement, and the same reason, as the Android keystore.
+                // Off unless the environment says otherwise, so a local
+                // `packageDmg` still works without a certificate - the same
+                // arrangement as the Android keystore.
                 signing {
                     sign.set(macSigningIdentity.isPresent)
                     identity.set(macSigningIdentity)
@@ -95,17 +92,15 @@ compose.desktop {
                     keychain.set(providers.environmentVariable("MACOS_SIGNING_KEYCHAIN"))
                 }
 
-                // Signing is what lets the DMG open; notarization is what stops
-                // macOS warning about it first. Apple's service is asked by the
-                // `notarizeDmg` task, so these being unset costs `packageDmg`
-                // nothing.
+                // Signing lets the DMG open; notarization stops macOS warning
+                // about it first. Only `notarizeDmg` asks Apple's service, so
+                // leaving these unset costs `packageDmg` nothing.
                 //
-                // Notarization needs the hardened runtime, which needs a JVM to
-                // be allowed to write executable memory. The Compose plugin's
-                // own default-entitlements.plist already grants exactly that
-                // - allow-jit, allow-unsigned-executable-memory and
-                // disable-library-validation - so there is no entitlements file
-                // to add here.
+                // Notarization needs the hardened runtime, which needs a JVM
+                // allowed to write executable memory. The Compose plugin's
+                // default-entitlements.plist already grants exactly that -
+                // allow-jit, allow-unsigned-executable-memory and
+                // disable-library-validation - so no entitlements file is added.
                 notarization {
                     appleID.set(providers.environmentVariable("MACOS_NOTARIZATION_APPLE_ID"))
                     password.set(providers.environmentVariable("MACOS_NOTARIZATION_PASSWORD"))
@@ -116,12 +111,11 @@ compose.desktop {
             windows {
                 iconFile.set(icons.resolve("lukia.ico"))
 
-                // What Windows knows one Lukia by across every version of it.
-                // Without it the plugin passes no --win-upgrade-uuid, jpackage
-                // invents one per build, and each MSI installs beside the last
-                // instead of replacing it - so a reader who updates twice has
-                // three Lukias in Add or Remove Programs and no way to tell
-                // which is which.
+                // What Windows knows one Lukia by across every version. Without
+                // it the plugin passes no --win-upgrade-uuid, jpackage invents
+                // one per build, and each MSI installs beside the last instead
+                // of replacing it - so a reader who updates twice has three
+                // Lukias in Add or Remove Programs.
                 //
                 // **This must never change for the life of the app.** Changing
                 // it does not upgrade anybody; it makes every installed copy a

@@ -10,19 +10,17 @@ import kotlinx.coroutines.flow.receiveAsFlow
  * The hand-off between the platform delivering a document and the library
  * importing it.
  *
- * It exists because the two ends cannot see each other. A document arrives in
- * `Activity.onNewIntent` or a SwiftUI `onOpenURL` - outside the composition
- * entirely, and often before there is one - while the thing that imports it is a
- * ViewModel scoped to a screen that may not have been built yet.
+ * The two ends cannot see each other: a document arrives in
+ * `Activity.onNewIntent` or a SwiftUI `onOpenURL`, outside the composition and
+ * often before there is one, while what imports it is a ViewModel scoped to a
+ * screen that may not exist yet.
  *
- * A channel rather than a [kotlinx.coroutines.flow.StateFlow] or a replaying
- * shared flow, for two reasons that both matter here. Nothing may be lost: a
- * book delivered during a cold start is queued until the library starts
- * collecting, where a flow with no replay would drop it and a flow with replay
- * would re-import it on every resubscribe. And nothing may be delivered twice: a
- * channel hands each document to exactly one collector, so a rotation - which
- * rebuilds the composition but not the process - does not add the same book to
- * the shelf again.
+ * A channel rather than a [kotlinx.coroutines.flow.StateFlow] or replaying
+ * shared flow, because nothing may be lost or delivered twice. A book delivered
+ * during a cold start is queued until the library collects - no-replay would
+ * drop it, replay would re-import on every resubscribe - and a channel hands
+ * each document to exactly one collector, so a rotation (which rebuilds the
+ * composition but not the process) does not shelve the same book again.
  */
 class DocumentInbox {
 

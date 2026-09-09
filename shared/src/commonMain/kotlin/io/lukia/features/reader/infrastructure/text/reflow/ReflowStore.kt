@@ -11,22 +11,21 @@ import io.lukia.features.reader.domain.ReflowableContent
 /**
  * Where a converted book is kept, so that a PDF read as text is read once.
  *
- * Converting a book is the most expensive thing the reader does: every page of
- * the file is opened, its characters are read out with their positions, and the
- * whole of it is inferred back into paragraphs. On a long book that is seconds
- * of work and a progress bar - and before this, it was seconds of work every
- * time somebody looked at the same book the other way and looked back.
+ * Converting a book is the most expensive thing the reader does: every page
+ * opened, its characters read out with their positions, the whole inferred back
+ * into paragraphs. On a long book that is seconds of work and a progress bar -
+ * and before this, seconds every time somebody looked at the same book the other
+ * way and looked back.
  *
- * The note is written beside the working copy it was made from, under the same
- * name. That is not tidiness: every workspace discards a document by deleting
- * everything whose name begins with that document's own prefix, so a book
- * removed from the library takes its conversion with it without the workspace
- * being told that conversions exist. What guards the rest is the length of the
- * copy the note was made from - see `asRecord`.
+ * The note is written beside the working copy under the same name, which is not
+ * tidiness: a workspace discards a document by deleting everything whose name
+ * begins with that document's prefix, so a removed book takes its conversion
+ * with it without the workspace being told conversions exist. The length of the
+ * copy guards the rest - see `asRecord`.
  *
- * Best effort throughout. A conversion that cannot be written is a conversion
- * that happens again next time, which is what used to happen every time, so
- * there is nothing here worth failing an open over or telling the reader about.
+ * Best effort throughout: a conversion that cannot be written happens again next
+ * time, which is what used to happen every time, so there is nothing here worth
+ * failing an open over or telling the reader about.
  */
 internal fun storedReflow(path: String): ReflowableContent? {
     val sourceSize = fileSizeBytes(path) ?: return null

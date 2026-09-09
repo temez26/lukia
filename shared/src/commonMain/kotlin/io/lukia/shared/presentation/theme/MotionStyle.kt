@@ -9,17 +9,16 @@ import io.lukia.core.domain.AppMotion
 /**
  * How much the app moves, as the parts of the app that move actually read it.
  *
- * [LukiaMotion] stays the vocabulary - the curves and the durations everything
- * is built from - and this turns that vocabulary up or down. Keeping them apart
- * is what stops a preset from being a second set of animations to maintain: a
- * menu opening at [LukiaMotion.StandardMillis] does not know a preset exists,
- * and the four places that shape the app's *big* movements read this.
+ * [LukiaMotion] stays the vocabulary - the curves and durations everything is
+ * built from - and this turns it up or down. Keeping them apart stops a preset
+ * from being a second set of animations to maintain: a menu opening at
+ * [LukiaMotion.StandardMillis] does not know a preset exists, and only the four
+ * places shaping the app's *big* movements read this.
  *
  * Deliberately not applied to the small things - a press shrinking a button, a
  * badge popping, a hairline appearing. Those are feedback rather than motion:
  * they answer "did that work", they are over before they can be watched, and
- * scaling them would make a preset a change to how responsive the app feels
- * rather than to how much it moves.
+ * scaling them would make a preset a change to how responsive the app feels.
  */
 @Immutable
 data class MotionStyle(
@@ -73,11 +72,10 @@ internal fun <T> MotionStyle.exit(): FiniteAnimationSpec<T> =
  * For a screen's own content settling in, once the screen it is on has finished
  * arriving.
  *
- * Two animations at once is one too many. Content moving while the screen
- * carrying it is still sliding is two movements the eye has to separate, and it
- * spends on that content exactly the frames the slide needed. Waiting a
- * screen-sized move keeps the content still while the screen travels, and moves
- * it once the screen has stopped.
+ * Content moving while the screen carrying it is still sliding is two movements
+ * the eye has to separate, and it spends on that content exactly the frames the
+ * slide needed. Waiting a screen-sized move keeps the content still while the
+ * screen travels, and moves it once the screen has stopped.
  *
  * The wait is written as [LukiaMotion.LargeMillis] rather than as a number of
  * its own, so it stays exactly as long as the push it is waiting for at any

@@ -43,11 +43,10 @@ private const val MaxHeightFraction = 0.88f
 /**
  * Something shown over the screen it was opened from, rather than instead of it.
  *
- * This is the wide-window answer to a pushed screen. On a phone, going to a
- * screen and coming back is right, because a phone has room for one thing at a
- * time. On a desktop it is a poor trade: what you were doing disappears and has
- * to be rebuilt in your head on the way back. Here it stays where it was, dimmed
- * behind, and the panel is a glance rather than a journey.
+ * The wide-window answer to a pushed screen. A phone has room for one thing at a
+ * time, so going and coming back is right there; on a desktop what you were
+ * doing disappears and has to be rebuilt in your head on the way back. Here it
+ * stays where it was, dimmed behind, and the panel is a glance not a journey.
  *
  * Draws nothing at all once closed and settled, so callers can leave it in the
  * tree unconditionally.

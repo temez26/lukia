@@ -9,14 +9,13 @@ import kotlinx.coroutines.flow.asStateFlow
  * so every screen reading it sees the same value change at the same moment, and
  * saved whenever it actually does change.
  *
- * The settings holders across the app all wanted this same three-step set - guard,
- * publish, persist - and each was writing it out again. The guard is the step
- * worth having in one place: without it a screen that re-sends the value it is
- * already showing writes to the store on every recomposition.
+ * The settings holders all wanted the same three-step set - guard, publish,
+ * persist - and each wrote it out again. The guard is the step worth sharing:
+ * without it a screen that re-sends the value it is already showing writes to
+ * the store on every recomposition.
  *
- * Reading is the caller's job and stays there, because no two of these read alike
- * - one enum, eight keys, a secret store beside the settings file. Only [save] is
- * given here, and only [initial] is asked for.
+ * Reading stays the caller's job, because no two of these read alike - one enum,
+ * eight keys, a secret store beside the settings file.
  */
 class PersistedSettings<T>(
     initial: T,

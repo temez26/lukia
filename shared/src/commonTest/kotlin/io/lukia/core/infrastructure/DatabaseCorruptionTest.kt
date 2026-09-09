@@ -8,12 +8,11 @@ import kotlin.test.assertTrue
  * What counts as a database being unreadable, and - the half that matters more -
  * what does not.
  *
- * Answering yes here puts a reader's library aside and starts them an empty one.
- * That is the right thing to do to a file SQLite cannot read, because the app
- * would otherwise fail at every launch for ever with nothing the reader can do
- * about it; it is the wrong thing to do to a disk that was full for a moment or
- * a migration with a bug in it, both of which get better on their own and
- * neither of which should cost anybody their shelves.
+ * Answering yes puts a reader's library aside and starts them an empty one. That
+ * is right for a file SQLite cannot read, since the app would otherwise fail at
+ * every launch for ever; it is wrong for a momentarily full disk or a buggy
+ * migration, which get better on their own and should not cost anybody their
+ * shelves.
  *
  * In `commonTest` because there is nothing platform-specific about it and there
  * are three platforms that need it to be right - see `LukiaDriver.jvm.kt` and

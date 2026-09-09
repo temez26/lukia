@@ -6,12 +6,11 @@ import io.lukia.core.domain.AppErrorException
 /**
  * What went wrong, told apart by what the reader would have to do about it.
  *
- * Every one of these used to arrive as the same thing: a sentence of prose in an
- * [AppError.Unexpected], or - worse - a bare [AppError.TranslationFailed] that
- * said only that translating did not work. The words were often right and
- * nothing above them could act on any of it, because a sentence is not something
- * code can branch on. This is the half that is: which kind of failure it was,
- * kept beside the words rather than instead of them.
+ * These all used to arrive as the same thing: a sentence of prose in an
+ * [AppError.Unexpected], or a bare [AppError.TranslationFailed] saying only that
+ * translating did not work. The words were often right and nothing above could
+ * act on them, because a sentence is not something code can branch on. This is
+ * the half that is, kept beside the words rather than instead of them.
  *
  * Two things read it. [RetryingTranslator] asks whether asking again could
  * possibly help - a busy service yes, a rejected key never - and the case order

@@ -8,9 +8,8 @@ import platform.Foundation.localizedStringForLanguageCode
  * Cut down to the language subtag before it is looked up.
  *
  * `localizedStringForLanguageCode` wants a language and is given a tag: handed
- * "pt-BR" or "zh-Hant" it answers nothing at all, where Android and the desktop
- * both name the language and ignore the rest - `Locale.getDisplayLanguage` is
- * about the language and nothing else. A book whose metadata carries a region is
+ * "pt-BR" or "zh-Hant" it answers nothing, where Android and the desktop name
+ * the language and ignore the rest. A book whose metadata carries a region is
  * ordinary, so without this the same shelf reads "Portuguese" on one platform
  * and "pt-BR" on another.
  *

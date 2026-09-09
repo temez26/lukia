@@ -14,21 +14,18 @@ import kotlinx.serialization.json.Json
 /**
  * A converted book written down, so that converting it was work done once.
  *
- * Two shapes of thing to keep, and they are kept apart. The words and the
- * structure are small and awkward - nested, optional, seven kinds of block -
- * which is what a serialiser is for. The pictures are neither: they are already
- * encoded images, sometimes tens of megabytes of them, and putting those
- * through JSON would spell every byte as four characters of text to be spelled
- * back on the way out.
+ * Two shapes of thing, kept apart. The words and structure are small and awkward
+ * - nested, optional, seven kinds of block - which is what a serialiser is for.
+ * The pictures are neither: already-encoded images, sometimes tens of megabytes,
+ * which through JSON would spell every byte as four characters of text.
  *
- * So the record is a frame: a little header, the structure as JSON with each
- * picture named by the position it will be found at, and then the pictures laid
- * end to end exactly as they came out of the file.
+ * So the record is a frame: a small header, the structure as JSON with each
+ * picture named by the offset it will be found at, then the pictures laid end to
+ * end exactly as they came out of the file.
  *
- * Nothing here is a public format. It is this app's own note to itself about a
- * file it has already read, and a note it cannot make sense of is thrown away
- * and made again - which is what [MAGIC] and [VERSION] are for, and what makes
- * changing any of this safe.
+ * Not a public format - this app's own note to itself about a file it has read.
+ * A note it cannot make sense of is thrown away and made again, which is what
+ * [MAGIC] and [VERSION] are for and what makes changing any of this safe.
  */
 private const val MAGIC = "LUKIATEXT"
 
@@ -40,19 +37,17 @@ private val format = Json { ignoreUnknownKeys = true }
 /**
  * This book as bytes, tied to the size of the file it was read out of.
  *
- * [sourceSize] is the whole of the check that the note still describes the
- * book, and what it is measured against matters: the working copy in app
- * storage, not the file the reader imported. That copy is what both ways of
- * reading a book read, so a note that matches it is a note about the same book
- * the pages would show - and a copy made again from a changed original comes
- * back a different length.
+ * [sourceSize] is the whole check that the note still describes the book, and
+ * what it measures matters: the working copy in app storage, not the imported
+ * file. That copy is what both ways of reading a book read, so a note matching
+ * it describes the same book the pages would show - and a copy remade from a
+ * changed original comes back a different length.
  *
- * A length rather than a hash of the contents, because the alternative is
- * reading hundreds of megabytes of PDF on the way into every book, which is the
- * cost this whole file exists to avoid. What that leaves through is a
- * replacement of exactly the same length as what it replaced, which would also
- * leave the drawn pages showing the old book - so the two stay in step either
- * way.
+ * A length rather than a hash, because hashing means reading hundreds of
+ * megabytes of PDF on the way into every book - the cost this file exists to
+ * avoid. What slips through is a replacement of exactly the same length, which
+ * would also leave the drawn pages showing the old book, so the two stay in
+ * step either way.
  */
 internal fun ReflowableContent.asRecord(sourceSize: Long): ByteArray {
     val figures = mutableListOf<ByteArray>()

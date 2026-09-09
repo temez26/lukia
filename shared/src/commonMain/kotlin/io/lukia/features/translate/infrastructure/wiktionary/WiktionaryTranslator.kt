@@ -98,11 +98,10 @@ private fun WordEntry.readings(): List<String> = (
  * the panel, which has room to list them.
  *
  * Which reading is kept is the first one the page wrote and nothing cleverer. A
- * word has as many meanings as it has parts of speech, and which one a sentence
- * meant is settled by the sentence - so a dictionary, which is handed one word
- * and no sentence, cannot be right about it. What it can be is short, and
- * honest that there is more: see [WordEntry.meanings], which the panel shows in
- * full.
+ * word has as many meanings as parts of speech, and which a sentence meant is
+ * settled by the sentence - so a dictionary handed one word and no sentence
+ * cannot be right about it. What it can be is short, and honest that there is
+ * more: see [WordEntry.meanings], which the panel shows in full.
  */
 private fun String.oneReading(): String {
     val defined = substringAfter(')', missingDelimiterValue = this)

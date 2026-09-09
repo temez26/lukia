@@ -48,17 +48,16 @@ internal interface BlockSizes {
 /**
  * How tall each block of a book comes to, at one width and one type size.
  *
- * The book is cut into pages by asking this rather than by drawing anything: a
- * page is only a page if what is on it was known to fit before it was composed,
- * and laying the whole book out in the window to find out where the screenfuls
- * end would be composing every chapter to show one of them.
+ * The book is cut into pages by asking this rather than by drawing: a page is
+ * only a page if what is on it was known to fit before it was composed, and
+ * laying the whole book out to find where the screenfuls end would compose every
+ * chapter to show one.
  *
- * Every measurement is taken against the same styles and the same insets the
- * blocks are actually drawn with - see `BlockStyle` - so this is a rehearsal of
- * the layout rather than an estimate of it. Two things it cannot know about are
- * a figure it has not been given the shape of, and a translation that has not
- * arrived: the first is asked of [figureHeight], and the second moves the text
- * after it has been paginated, which is what the block height animation is for.
+ * Measured against the same styles and insets the blocks are drawn with - see
+ * `BlockStyle` - so this is a rehearsal of the layout rather than an estimate.
+ * Two things it cannot know: a figure whose shape it was not given, asked of
+ * [figureHeight]; and a translation that has not arrived, which moves the text
+ * after pagination and is what the block height animation is for.
  */
 internal class BlockMetrics(
     private val measurer: TextMeasurer,

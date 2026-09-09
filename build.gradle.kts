@@ -109,18 +109,14 @@ abstract class CheckKotlinFileLength : DefaultTask() {
  *
  * The file tells the Compose compiler which of the app's value types are immutable when
  * it cannot see that for itself - see the file's own header. Entries are matched as plain
- * strings, and a line that matches nothing is not an error to anybody: not to the
- * compiler, not to Gradle, and not to a build log. It is a type that quietly stopped being
- * declared stable, and screens built on it that went back to recomposing wholesale with
- * nothing on screen to say so.
+ * strings, so a line matching nothing is an error to nobody: not the compiler, not Gradle,
+ * not the build log. It is a type that quietly stopped being declared stable, and screens
+ * built on it silently recomposing wholesale again. This has happened - the file's header
+ * records the reader profile's types outliving the screen that used them, caught by a
+ * person reading the file.
  *
- * Which has happened. The file's own header records the reader profile's types sitting in
- * it for a while after the statistics screen replaced them, noticed by somebody reading
- * the file rather than by anything failing.
- *
- * What it cannot check is whether a line is still worth having. A class the compiler has
- * since learned to prove stable by itself is redundant rather than broken, and nothing
- * about that is wrong.
+ * It cannot check whether a line is still *worth* having: a class the compiler has since
+ * learned to prove stable is redundant rather than broken.
  */
 abstract class CheckComposeStabilityConfig : DefaultTask() {
 
@@ -213,18 +209,17 @@ abstract class CheckComposeStabilityConfig : DefaultTask() {
 /**
  * Fails when the attribution list, the version catalogue and `NOTICE` disagree.
  *
- * Apache-2.0 section 4 asks a distribution to carry the licence and the copyright
- * notices of what it redistributes, and the list of what that is has to come from
- * somewhere. A hand-written one is right on the day it is written and wrong by the
- * next dependency; the alternative is a licence plugin, which for seventeen names
- * costs more than it settles - see the header of `config/attribution/dependencies.txt`.
+ * Apache-2.0 section 4 asks a distribution to carry the licence and copyright notices of
+ * what it redistributes. A hand-written list is right the day it is written and wrong by
+ * the next dependency; a licence plugin costs more than it settles for seventeen names -
+ * see the header of `config/attribution/dependencies.txt`.
  *
- * So the list is hand-written and this is what stops it drifting. Every module the
- * catalogue declares is either claimed by an attribution's Maven group or listed in
- * `not-distributed.txt` with the reason it ships in nothing, which makes a new
- * dependency a decision between the two rather than something that can be forgotten.
- * It reads both ways, as the architecture allow-lists do: an attribution whose groups
- * match nothing left the catalogue and has to go with it.
+ * So the list is hand-written and this stops it drifting. Every module the catalogue
+ * declares is either claimed by an attribution's Maven group or listed in
+ * `not-distributed.txt` with the reason it ships in nothing, making a new dependency a
+ * decision rather than something forgettable. It reads both ways, as the architecture
+ * allow-lists do: an attribution whose groups match nothing left the catalogue and goes
+ * with it.
  *
  * **What it cannot check** is the entries that name no group - a runtime arriving
  * underneath something the catalogue does name, which the catalogue can therefore

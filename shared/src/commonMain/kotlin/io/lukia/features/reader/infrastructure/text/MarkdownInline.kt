@@ -6,17 +6,16 @@ import io.lukia.features.reader.domain.text.TextRun
 /**
  * The emphasis inside a line.
  *
- * Marks are toggled as they are met rather than matched as opening and closing
- * pairs. Proper delimiter matching exists to settle cases like `a * b * c`,
- * where the asterisks are arithmetic; toggling gets those wrong and gets every
- * well-formed line right, which for reading a book is the trade worth making -
- * the alternative is a page of CommonMark's delimiter-run rules in the middle of
- * a reader.
+ * Marks are toggled as they are met rather than matched as pairs. Proper
+ * delimiter matching exists to settle cases like `a * b * c`, where the
+ * asterisks are arithmetic; toggling gets those wrong and every well-formed line
+ * right, which for reading a book beats a page of CommonMark's delimiter-run
+ * rules in the middle of a reader.
  *
- * The second of the two stages a Markdown file goes through - see
- * `MarkdownTextReader`, which decides what each *line* is before this decides
- * what is inside it. Separate files because the two share nothing but the text:
- * one is about the shape of a document and this is about the shape of a sentence.
+ * The second of two stages - `MarkdownTextReader` decides what each *line* is
+ * before this decides what is inside it. Separate files because they share
+ * nothing but the text: one is the shape of a document, this is the shape of a
+ * sentence.
  */
 internal fun markdownRuns(source: String): List<TextRun> = InlineRuns(source).read()
 

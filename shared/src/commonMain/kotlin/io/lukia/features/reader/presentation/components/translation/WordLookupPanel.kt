@@ -42,19 +42,18 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * Everything else the reader can ask about a word they have already looked up.
  *
- * Opened by holding that word, which is the gesture that used to put the book's
- * own word back and now offers that as one of three things - so nothing the hold
- * could do before has gone, and two things it could not do are here.
+ * Opened by holding that word: the hold now offers putting the book's own word
+ * back as one of three things, so nothing it could do before has gone.
  *
- * A panel rather than a menu anchored at the finger, and for the same reason the
- * reader's other panels are panels: what is in it is a dictionary entry of
- * several lines, which is not a menu row, and a panel is the one shape in this
- * app that can be as tall as its contents on a phone and on a desktop alike.
+ * A panel rather than a menu anchored at the finger, for the reason the reader's
+ * other panels are panels: a dictionary entry of several lines is not a menu
+ * row, and a panel is the one shape here that can be as tall as its contents on
+ * a phone and a desktop alike.
  *
  * It is also where everything about a word that is not a translation lives -
- * which form it is, which part of speech, what the entry lists beside it. None
- * of that can stand over a word in a paragraph, and all of it is what somebody
- * learning the language held the word to find out. See [WordEntryBody].
+ * which form, which part of speech, what the entry lists beside it. None of that
+ * can stand over a word in a paragraph, and all of it is what somebody learning
+ * the language held the word to find out. See [WordEntryBody].
  *
  * The dictionary is asked whatever the word lookup setting is, because it costs
  * nothing and because somebody reading with a model has a word the model chose
@@ -174,14 +173,14 @@ private fun WordLookupActions(
  * saying it twice.
  *
  * A reader whose word lookup *is* the dictionary gets one failure, not two: the
- * service that could not answer the word in the paragraph is the same service
- * this panel just asked, and it comes back with the same sentence. Printed in
- * both places it reads as two things having gone wrong.
+ * service that could not answer the word in the paragraph is the one this panel
+ * just asked, and it returns the same sentence. Printed twice it reads as two
+ * things having gone wrong.
  *
- * Silent too for a word the panel has already explained. A word held because it
- * had no direct translation is being told why one line further up, in the form
- * the wiki gave it, and repeating the direction that got them here would be the
- * panel telling somebody to open the panel.
+ * Silent too for a word the panel has already explained: one held because it had
+ * no direct translation is being told why a line further up, and repeating the
+ * direction that got them here would be the panel telling somebody to open the
+ * panel.
  */
 private fun WordInquiry.unansweredBy(): AppError? {
     val failed = (onThePage as? WordOnThePage.Failed)?.error ?: return null

@@ -45,14 +45,13 @@ class LibraryIncomingDocumentTest {
      * A test with a library that is listening to [inbox], and a say in when that
      * library comes into being - which one of these needs to delay.
      *
-     * Not a [io.lukia.MainDispatcherTest], unlike its neighbours. That installs
-     * a main dispatcher carrying a scheduler of its own, which is enough while a
-     * test only calls into the ViewModel: the call runs eagerly and has finished
-     * by the time it returns. The inbox is collected rather than called, and a
-     * document already waiting in it when collection starts is handed over
-     * through a suspension that the test's own scheduler has to run - so the two
-     * have to share one, or `aBookDeliveredBeforeTheLibraryExistsIsNotLost`
-     * passes for the wrong reason.
+     * Not a [io.lukia.MainDispatcherTest], unlike its neighbours: that installs
+     * a main dispatcher with a scheduler of its own, which is enough while a
+     * test only calls into the ViewModel. The inbox is collected rather than
+     * called, and a document already waiting when collection starts is handed
+     * over through a suspension the test's own scheduler has to run - so the two
+     * must share one, or `aBookDeliveredBeforeTheLibraryExistsIsNotLost` passes
+     * for the wrong reason.
      *
      * The library's scope is cancelled before the dispatcher goes back, because
      * it is not a child of the test's: left running, its collector outlives the

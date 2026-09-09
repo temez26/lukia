@@ -16,12 +16,12 @@ import kotlinx.coroutines.withContext
  * two on a zoomed-in desktop, and about 64 MB either way.
  *
  * The budget is the whole of it, with no floor of pages under it. There used to
- * be one, of three, so that the page being read could not be evicted - but a
- * count cannot say that where a budget in pixels is the point: three sheets of
- * a PDF zoomed in on a desktop are seventy megabytes, which is over this budget
- * rather than under it, and on a phone with little memory to spare that floor
- * was the ceiling. What actually protects the page being read is that the last
- * one stored always survives, and the last one stored is the one just asked for.
+ * be one, of three, so the page being read could not be evicted - but a count
+ * cannot express that where a pixel budget is the point: three sheets of a PDF
+ * zoomed in on a desktop are seventy megabytes, over this budget rather than
+ * under, and on a phone that floor was the ceiling. What protects the page being
+ * read is that the last one stored always survives, and that is the one just
+ * asked for.
  */
 private const val MAX_CACHED_PIXELS = 16_000_000
 
@@ -52,10 +52,9 @@ internal class RenderedPageCache {
      * page draw it once between them.
      *
      * The reader asks twice as a matter of course: each page draws the one after
-     * it so that arriving there is not a wait, and that page then asks for
-     * itself as it is composed. Both miss the cache - neither has finished, so
-     * there is nothing in it to find - and without this the most expensive thing
-     * the reader does happens twice for every page turned.
+     * it so arriving is not a wait, and that page then asks for itself as it is
+     * composed. Both miss the cache, since neither has finished, so without this
+     * the most expensive thing the reader does happens twice per page turned.
      *
      * A gate rather than a shared result: the second caller waits, and finds the
      * page in the cache the moment the first is done. If the first is cancelled

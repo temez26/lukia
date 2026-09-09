@@ -79,16 +79,14 @@ fun ReadingProgressOverlay(
  * same fact about the same book seen from two distances. Callers place it inside
  * whatever clips the cover, so it stops exactly where the rounded corners do.
  *
- * Painted rather than laid out. The filled part is a fraction of the bar's real
- * width, and every way of expressing that through layout - a nested
- * `fillMaxWidth(fraction)`, a weighted row - measures its fraction against
- * constraints a parent has already fixed, and lands the fill somewhere other
- * than against the leading edge.
+ * Painted rather than laid out: the filled part is a fraction of the bar's real
+ * width, and every layout way of saying that - a nested `fillMaxWidth(fraction)`,
+ * a weighted row - measures against constraints a parent already fixed and lands
+ * the fill somewhere other than the leading edge.
  *
- * The track is nearly opaque, in the theme's surface rather than in a black
- * wash: this sits directly on artwork that may be any colour at all, and a
- * translucent track picks up whatever is behind it just when the bar most needs
- * to be read against it.
+ * The track is nearly opaque, in the theme's surface rather than a black wash:
+ * this sits directly on artwork of any colour, and a translucent track picks up
+ * whatever is behind it just when the bar most needs to be read against it.
  */
 @Composable
 fun ReadingProgressBar(

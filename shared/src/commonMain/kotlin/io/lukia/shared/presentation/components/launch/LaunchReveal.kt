@@ -50,15 +50,14 @@ private val DefaultRise: Dp = 14.dp
  * The app's opening, as a moment in the life of the process rather than
  * something any one screen owns.
  *
- * Process-scoped on purpose: this is about the app opening, not about a screen
- * being composed, so coming back to the library from a book must not replay it,
- * and an Android configuration change - which recreates the activity without the
- * process ever having stopped - is not a launch either.
+ * Process-scoped on purpose: this is the app opening rather than a screen being
+ * composed, so coming back to the library from a book must not replay it, and an
+ * Android configuration change - which recreates the activity without the
+ * process stopping - is not a launch either.
  *
- * One clock, so that a screen composing while it runs joins the stagger part-way
- * through rather than starting one of its own. That is the whole point of it
- * being shared: an element's turn comes at a fixed point after launch, not at a
- * fixed point after whenever it happened to be composed.
+ * One clock, so a screen composing while it runs joins the stagger part-way
+ * through rather than starting its own: an element's turn comes at a fixed point
+ * after launch, not after whenever it happened to be composed.
  */
 private object AppOpening {
 

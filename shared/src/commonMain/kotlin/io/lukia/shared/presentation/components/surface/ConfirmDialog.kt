@@ -13,11 +13,10 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * Asks before something that cannot be taken back.
  *
- * A platform dialog rather than one of this app's own panels, and deliberately
- * so: a modal question is the one piece of chrome that must be unmistakably not
- * part of the page behind it, must trap focus, and must be reachable by every
- * assistive technology on every platform. That is a great deal to re-earn for
- * the sake of matching a house style, on the one surface where being surprising
+ * A platform dialog rather than one of this app's own panels: a modal question
+ * must be unmistakably not part of the page behind it, must trap focus, and must
+ * be reachable by every assistive technology on every platform. That is a great
+ * deal to re-earn for a house style, on the one surface where being surprising
  * is the point.
  *
  * [confirmLabel] names the action rather than agreeing with the question - a

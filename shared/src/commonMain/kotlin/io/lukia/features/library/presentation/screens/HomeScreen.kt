@@ -39,17 +39,15 @@ import org.koin.compose.viewmodel.koinViewModel
  * Where the mobile app opens: what you were reading, what has just arrived, what
  * is nearly done, and the rest of the library sampled a row at a time.
  *
- * It is a way back in rather than a place to work. A press on a cover does the
- * one thing this screen is for, which is to open the book, and a long press
- * offers the same menu the shelf hangs off its own covers - the one gesture a
- * reader has already learned, answered the same way in both places. Picking
- * several books at once is still the shelf's, and the menu row that starts it
- * goes there first; see [LibraryShelfUi.selectingOn].
+ * A way back in rather than a place to work: a press opens the book, and a long
+ * press offers the same menu the shelf hangs off its covers - one learned
+ * gesture answered the same way in both places. Picking several books at once
+ * stays the shelf's; see [LibraryShelfUi.selectingOn].
  *
- * The library it draws from is the shared one - see `MobileShell` - so the rows
- * are already loaded by the time the tab is first looked at, and favouriting a
- * book on the library tab moves it onto the Favorites row here without either
- * screen having to tell the other.
+ * It draws from the shared library - see `MobileShell` - so the rows are already
+ * loaded when the tab is first looked at, and favouriting a book on the library
+ * tab moves it onto the Favorites row here without either screen telling the
+ * other.
  */
 @Composable
 internal fun HomeScreen(

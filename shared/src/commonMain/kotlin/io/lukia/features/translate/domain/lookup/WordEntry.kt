@@ -21,19 +21,17 @@ data class WordMeaning(
  * A dictionary's whole answer about one word, as opposed to the line of it that
  * fits over the word in the book.
  *
- * The same source as
- * [io.lukia.features.reader.domain.text.WordLookup.Wiktionary] and a
- * different question. Translating a word has to end in one thing the reader can
- * put in place of it, so what goes on the page is one reading of one sense; this
- * is what somebody asks when that was not enough, and cutting it would be
- * cutting away the reason they asked.
+ * The same source as [io.lukia.features.reader.domain.text.WordLookup.Wiktionary]
+ * and a different question. Translating a word ends in one thing the reader can
+ * put in its place, so the page gets one reading of one sense; this is what
+ * somebody asks when that was not enough.
  *
- * [form] is here because a book is written in inflected words. A wiki's page for
- * one of them is usually not a definition - it says which word the form belongs
- * to and stops - so the entry that comes back is the base form's, and what the
- * held word actually was would be lost if the entry could not carry it. Which is
- * the half a language learner most wants: `arvo` answers "what does this say",
- * and `monikkomuoto sanasta value` answers "why does it look like that".
+ * [form] is here because books are written in inflected words. A wiki's page for
+ * one is usually not a definition - it names the word the form belongs to and
+ * stops - so the entry that comes back is the base form's, and what the held
+ * word actually was would be lost. That is the half a language learner most
+ * wants: `arvo` answers "what does this say", `monikkomuoto sanasta value`
+ * answers "why does it look like that".
  */
 data class WordEntry(
     /**

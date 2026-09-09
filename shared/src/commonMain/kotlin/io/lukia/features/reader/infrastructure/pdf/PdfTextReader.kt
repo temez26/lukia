@@ -22,20 +22,17 @@ import kotlinx.coroutines.sync.withLock
 /**
  * A PDF read as text the reader can re-set, rather than as pages it draws.
  *
- * What this is for is everything a fixed layout costs: type at the size the
- * reader chose rather than the size the file was made at, lines that break where
- * the window ends, and - the reason most people ask for it - a translation set
- * in the paragraph it belongs to instead of floating over the page in a panel.
- * A PDF converted here reaches the reader as exactly what an EPUB reaches it as,
- * so everything above this point treats the two the same and none of it needed
- * changing.
+ * This buys back everything a fixed layout costs: type at the size the reader
+ * chose, lines that break where the window ends, and - the reason most people
+ * ask - a translation set in its own paragraph rather than floating over the
+ * page in a panel. A PDF converted here reaches the reader as exactly what an
+ * EPUB does, so everything above treats the two the same.
  *
  * The page's own layout is gone: columns, tables and the placing of a footnote
- * were all decisions about a page, and there is no page any more. What comes
- * back is the words in reading order, as paragraphs, headings and list items,
- * with the pictures among them where they were printed. A reader who wants the
- * page as its maker set it turns this off, which is why it is a setting and not
- * a conversion.
+ * were decisions about a page, and there is no page any more. What comes back is
+ * the words in reading order, as paragraphs, headings and list items, with the
+ * pictures where they were printed. A reader who wants the page as its maker set
+ * it turns this off, which is why it is a setting and not a conversion.
  *
  * Null when the document has nothing to re-set - a scan, or pages that are each
  * one photograph. A book of pictures of words is not a book of words, and the
@@ -110,17 +107,15 @@ internal suspend fun readPdfAsText(
 /**
  * Every page of the file read back as blocks, in order.
  *
- * The readers divide the book between them and take a run of pages each, so a
- * conversion finishes in about as long as the slowest run rather than as long
- * as all of them. Runs rather than every nth page because each handle parses
- * what it touches and keeps it: a handle that reads a quarter of the book holds
- * a quarter of the book's structure, where four handles reading every fourth
- * page would each end up holding the lot.
+ * The readers take a run of pages each, so a conversion finishes in about as
+ * long as the slowest run rather than all of them. Runs rather than every nth
+ * page because each handle keeps what it parses: a handle reading a quarter of
+ * the book holds a quarter of its structure, where four handles reading every
+ * fourth page would each end up holding the lot.
  *
- * Nothing here needs the book in order, which is what makes it divisible at
- * all - inferring one page's blocks is a question about that page. What does
- * need the order is the caller, and it gets it: each reader hands back its own
- * run, and the runs are laid end to end.
+ * Nothing here needs the book in order - inferring one page's blocks is a
+ * question about that page - which is what makes it divisible. The caller does
+ * need the order, and gets it: the runs are laid end to end.
  */
 private suspend fun readPages(
     readers: List<PageContent>,
@@ -177,11 +172,10 @@ private suspend fun PageContent.blocksOn(
  * Joins a paragraph that ran over the foot of one page onto the head of the
  * next.
  *
- * A page break in a PDF falls wherever the paper ended, which is very often in
- * the middle of a sentence. Left alone, each half arrives as a paragraph of its
- * own - so the re-set book is full of paragraphs that stop mid-thought and
- * others that begin with a lower-case word, which is the tell-tale of a badly
- * converted book.
+ * A page break falls wherever the paper ended, very often mid-sentence. Left
+ * alone each half arrives as its own paragraph, so the re-set book is full of
+ * paragraphs stopping mid-thought and others opening on a lower-case word - the
+ * tell-tale of a badly converted book.
  *
  * The tail is joined onto the page it started on rather than the page it
  * finished on, so that every page of the file keeps its section - see the note

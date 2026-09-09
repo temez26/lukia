@@ -13,17 +13,15 @@ import io.lukia.core.domain.diagnostics.info
  * The app's schema, with what it does to somebody's library written down.
  *
  * Wrapping the schema rather than registering migration callbacks with the
- * drivers: each of the three takes those through a parameter of its own, so the
- * callback route is the same small change written three different ways and got
- * wrong three different ways. A schema is one interface on every platform.
+ * drivers: each of the three takes those through its own parameter, so that
+ * route is one small change written - and got wrong - three different ways. A
+ * schema is one interface on every platform.
  *
- * What this can and cannot see is worth being plain about. [create] and
- * [migrate] are called only on the run that actually creates or migrates, so a
- * reader who turns diagnostics on *after* a bad update finds nothing here about
- * it - the migration already happened, and it does not happen twice. What this
- * covers is the reader who already had diagnostics on when the update landed,
- * and - once a crash leaves a file behind - the migration that took the app down
- * with it.
+ * [create] and [migrate] run only on the run that actually creates or migrates,
+ * so a reader who turns diagnostics on *after* a bad update finds nothing here:
+ * the migration already happened and does not happen twice. What is covered is
+ * the reader who had diagnostics on when the update landed, and - once a crash
+ * leaves a file behind - the migration that took the app down with it.
  */
 fun SqlSchema<QueryResult.Value<Unit>>.recordingTo(
     diagnostics: Diagnostics,

@@ -21,15 +21,14 @@ private const val DERIVED_LEVELS = 2
  * headings where the book did not list them.
  *
  * Plenty of books declare a navigation document of eleven chapters and nothing
- * else, while every one of those chapters is divided into a dozen named parts in
- * its own markup. Taking the book at its word there leaves a contents panel that
- * can only reach the openings of chapters, in exactly the books - long technical
- * ones - where getting to a named part matters most.
+ * else, while each of those chapters is divided into a dozen named parts in its
+ * own markup. Taking the book at its word leaves a contents panel that reaches
+ * only chapter openings, in exactly the long technical books where getting to a
+ * named part matters most.
  *
- * Only where the book said nothing, though. A chapter the contents already
- * describes the inside of is left exactly as it was written: the book's own
- * account of itself is better than one read off its headings, and adding to it
- * would list every section twice.
+ * Only where the book said nothing: a chapter the contents already describes the
+ * inside of is left as written, because the book's own account of itself beats
+ * one read off its headings, and adding to it would list every section twice.
  */
 internal fun List<OutlineEntry>.withSectionHeadings(
     sections: List<TextSection>,

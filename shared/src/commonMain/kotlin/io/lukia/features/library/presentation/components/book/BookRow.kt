@@ -67,13 +67,12 @@ private val ProgressBarHeight: Dp = 3.dp
  *
  * The list is for the library that has outgrown its covers. A grid is how a
  * shelf is browsed - a jacket is recognised before a title is read - but past a
- * few hundred books browsing stops working and searching starts, and a row fits
- * the author, the format and the position that a cover has no room for.
+ * few hundred books browsing gives way to searching, and a row fits the author,
+ * format and position a cover has no room for.
  *
- * Deliberately not jiggling while the shelf is being selected from, unlike the
- * cards. The rocking says "these are loose objects you can pick up", which is
- * true of a grid of covers and not of a list - every list that has ever asked
- * this question has asked it with a column of circles instead, and so does this.
+ * Deliberately not jiggling during selection, unlike the cards: the rocking says
+ * "loose objects you can pick up", which is true of a grid of covers and not of
+ * a list. A list asks with a column of circles instead, and so does this.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

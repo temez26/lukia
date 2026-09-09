@@ -126,17 +126,15 @@ abstract class ReaderViewModelTestCase {
      * Lets each ViewModel finish before taking its world away.
      *
      * Opening a book starts two pieces of real work - the copy and then the
-     * outline - and cancelling a coroutine that is inside a blocking read does
-     * not stop it: it still has to resume, on a main dispatcher that
-     * [resetMain] would by then have removed. Waiting for the work to land
-     * first is what makes that impossible rather than unlikely.
+     * outline - and cancelling a coroutine inside a blocking read does not stop
+     * it: it still has to resume, on a main dispatcher [resetMain] would by then
+     * have removed.
      *
-     * Clearing the store only *starts* the cancelling, so the scopes are then
-     * waited on rather than given a moment: a coroutine cancelled inside a
-     * blocking read still has to reach its next suspension point, and one
-     * still resuming while [resetMain] runs throws into whichever test happens
-     * to be starting next. Joining the scope is the moment that is over, and
-     * it is the same moment on a loaded machine as on an idle one.
+     * Clearing the store only *starts* the cancelling, so the scopes are joined
+     * rather than given a moment: a cancelled coroutine still has to reach its
+     * next suspension point, and one resuming while [resetMain] runs throws into
+     * whichever test starts next. Joining is the moment that is over, and it is
+     * the same moment on a loaded machine as on an idle one.
      *
      * The open document is closed last for a related reason: its file handle
      * has to be given back before the directory underneath it goes, and
@@ -172,20 +170,18 @@ abstract class ReaderViewModelTestCase {
     /**
      * The state once the document has finished opening, one way or the other.
      *
-     * A book that opened is waited for twice, because opening one publishes the
+     * A book that opened is waited for twice, because opening publishes the
      * state part-way through the work: `uiState` leaves `Loading`, and the same
      * coroutine goes on to settle the layout choice, read the stored position
-     * and then the outline. The app never sees that gap - its main dispatcher
-     * is one thread, so the tail is one turn and nothing can observe the middle
-     * of it. Here the tail resumes on whichever pool thread finished the copy,
-     * while the test resumes on its own, so a wait that ended at the first
+     * and then the outline. The app never sees that gap - its main dispatcher is
+     * one thread. Here the tail resumes on whichever pool thread finished the
+     * copy while the test resumes on its own, so a wait ending at the first
      * signal would read [ReaderViewModel.layoutOffered] or
-     * [ReaderViewModel.textExtraction] while they were still being set.
+     * [ReaderViewModel.textExtraction] mid-write.
      *
-     * The outline is the last of it, and it is reached from the coroutine that
-     * set the rest - so waiting for it is waiting for all of it, whatever
-     * thread each part ran on. Anything the opening learns to set after the
-     * outline needs this wait extended to cover it.
+     * The outline is the last of it and is reached from the coroutine that set
+     * the rest, so waiting for it waits for all of it. Anything the opening
+     * learns to set after the outline needs this wait extended.
      */
     protected suspend fun ReaderViewModel.settled(): UiState<ReaderDocument> {
         val state = uiState.first { it !is UiState.Loading }

@@ -36,11 +36,10 @@ value class TranslationCacheKey(val value: String)
  *
  * The second half is what lets one word be paid for once. A model is handed the
  * paragraph and the title and uses both - "he drew his piece" is a weapon or a
- * chess move depending on them - so its answer belongs to the passage in that
- * book and nowhere else. A dictionary and Google are handed the word and the
- * language and nothing else whatsoever: their answer for `values` is the same
- * answer in every paragraph of every book on the shelf, and keyed by the book it
- * would be fetched again for each of them.
+ * chess move depending on them - so its answer belongs to that passage in that
+ * book. A dictionary and Google are handed the word and the language and nothing
+ * else: their answer for `values` is the same in every book on the shelf, and
+ * keyed by the book it would be fetched again for each.
  *
  * Read per request rather than settled once, because which of the two answers a
  * word is a setting the reader can change with the book open - see
@@ -68,24 +67,23 @@ data class CacheIdentity(
  * answer - and of nothing that does not.
  *
  * The passage, the language wanted, who would be asked, and - for whoever is
- * asked in words - which wording they were asked in. Leave any of those out and
- * the cache starts answering a question nobody asked: switching between two
- * models to compare them is a real thing readers do, and a cache that ignored
- * the model would hand them the same sentence twice and prove nothing. The
- * wording is there for the same reason one update further out: an answer given
- * to instructions this build has since rewritten is an answer to a question it
- * no longer asks.
+ * asked in words - which wording they were asked in. Leave any out and the cache
+ * answers a question nobody asked: readers do switch between two models to
+ * compare them, and a cache ignoring the model would hand them the same sentence
+ * twice. The wording is there for the same reason one update further out: an
+ * answer to instructions this build has since rewritten answers a question it no
+ * longer asks.
  *
- * The book and the paragraph only for whoever reads them. That is the whole of
+ * The book and the paragraph only for whoever reads them, which is the whole of
  * how a word looked up in one book is already answered in the next - see
- * [CacheIdentity]. Putting them in regardless was not merely wasteful: it filed
- * a dictionary's answer under the paragraph it happened to be read in, so the
- * same word four pages later was a fresh lookup with an identical answer.
+ * [CacheIdentity]. Including them regardless filed a dictionary's answer under
+ * the paragraph it happened to be read in, so the same word four pages later was
+ * a fresh lookup with an identical answer.
  *
  * Hashed rather than stored whole because the surrounding text is up to a page
- * of the book: keyed by the text itself, the cache would be a slow second copy
- * of the library. The two hashes below give 128 bits together, at which a
- * collision in a table of a few thousand entries is not a thing that happens.
+ * of the book: keyed by the text itself the cache would be a slow second copy of
+ * the library. The two hashes give 128 bits together, at which a collision in a
+ * table of a few thousand entries does not happen.
  */
 fun translationCacheKey(
     request: TranslationRequest,

@@ -11,11 +11,11 @@ import org.junit.Test
  * Writes the list of methods worth compiling ahead of time, and the shorter list
  * of the ones a launch cannot start without.
  *
- * What this walks is what a reader does in the first few seconds of a cold
- * start: the app opens, the shelf arrives, and they move along the tab bar. Every
- * class loaded and method run on that path goes into `baseline-prof.txt`, and the
- * installer compiles them at install time instead of leaving the JIT to catch up
- * while somebody is watching.
+ * Walks the first few seconds of a cold start: the app opens, the shelf
+ * arrives, and the reader moves along the tab bar. Every class loaded and method
+ * run on that path goes into `baseline-prof.txt`, and the installer compiles
+ * them at install time instead of leaving the JIT to catch up while somebody is
+ * watching.
  *
  * It is generated rather than written:
  *
@@ -32,18 +32,15 @@ import org.junit.Test
  * changes shape.
  *
  * The same walk also writes the *startup* profile - see [includeInStartupProfile]
- * below - which is a different thing put to a different use. The baseline
- * profile tells the installer what to compile; the startup profile tells R8 how
- * to lay the dex files out, so the classes a launch touches sit together instead
- * of being scattered through the app and read a page at a time. It is worth
- * having on the same walk because the walk is already the launch, and it needs
- * `dexLayoutOptimization` in :androidApp to be used at all.
+ * below - which is put to a different use: the baseline profile tells the
+ * installer what to compile, the startup profile tells R8 how to lay the dex
+ * files out so the classes a launch touches sit together rather than scattered
+ * and read a page at a time. It needs `dexLayoutOptimization` in :androidApp to
+ * be used at all.
  *
- * What it does not cover is reading a book. The generator walks a library that
- * is empty - a fresh emulator has imported nothing - so the reader is reached
- * by nothing here. Covering it needs a book to open, which means a PDF shipped
- * beside this and a provider to hand it over with; the paths below are the ones
- * every launch takes, which is what a baseline profile is mostly for.
+ * Reading a book is not covered: the generator walks an empty library - a fresh
+ * emulator has imported nothing - so nothing here reaches the reader. Covering
+ * it would need a PDF shipped beside this and a provider to hand it over.
  */
 class StartupProfile {
 

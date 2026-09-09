@@ -115,11 +115,11 @@ sealed interface TextBlock {
  * One division of a reflowable book: a chapter, or a slice of one long unbroken
  * document.
  *
- * What the book states about itself, not what the reader shows. The reader shows
- * pages, and a page is cut from this run of blocks to fit the window it is being
- * read in - so a section may be a page, or twenty, or share one with the section
- * after it. Nothing outside the layout addresses a book by section: the
- * scrubber, the remembered position and the table of contents all count pages.
+ * What the book states about itself, not what the reader shows. Pages are cut
+ * from this run of blocks to fit the window, so a section may be one page, or
+ * twenty, or share one with the section after it. Nothing outside the layout
+ * addresses a book by section - the scrubber, the remembered position and the
+ * table of contents all count pages.
  *
  * A section is still where a chapter begins, which is why pages are never cut
  * across one that names itself - a chapter opens a page of its own.

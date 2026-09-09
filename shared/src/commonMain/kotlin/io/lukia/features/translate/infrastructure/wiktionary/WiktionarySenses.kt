@@ -35,16 +35,15 @@ internal data class WiktionaryReading(
  * What one Wiktionary page actually says about [word].
  *
  * A page is every language that spells the word this way, each with its parts of
- * speech, its senses, and after them its inflections, its derived terms and its
- * references. What has to come out of it is one language's worth of that.
+ * speech, its senses, and after them its inflections, derived terms and
+ * references. What has to come out is one language's worth of that.
  *
  * One language and all of its parts of speech, which is the split that matters.
  * `mean` is an adjective that is `ilkeä`, a noun that is `keskiarvo` and a verb
- * that is `tarkoittaa`, and which one a sentence meant is settled by the
- * sentence - so a dictionary that keeps one of them has thrown away the answer
- * two times in three. The next language along is different: a word spelled the
- * same way in Spanish is not this word at all, and mixing the two would hand
- * back the Finnish for a French homograph.
+ * that is `tarkoittaa`, and which a sentence meant is settled by the sentence -
+ * so keeping one throws away the answer two times in three. The next language
+ * along is different: a word spelled the same way in Spanish is not this word,
+ * and mixing them would hand back the Finnish for a French homograph.
  *
  * Three rules find the senses inside that, and the last two were learned the
  * hard way from a page that put `support (monikko supports)` on the page in
@@ -59,10 +58,10 @@ internal data class WiktionaryReading(
  *    sense.
  *  - Where the language ends, the entry ends. See [languageLevel].
  *
- * [limit] is how many senses one part of speech may keep, and it is what
- * separates the two things that ask this. A word being replaced in the line it
- * sits on can only carry a few before the paragraph stops being readable; a
- * reader who opened the entry on purpose asked for the entry.
+ * [limit] is how many senses one part of speech may keep, and separates the two
+ * callers: a word replaced in the line it sits on can carry only a few before
+ * the paragraph stops being readable, while a reader who opened the entry on
+ * purpose asked for the entry.
  */
 internal fun String.reading(word: String, limit: Int): WiktionaryReading {
     val sections = sections()

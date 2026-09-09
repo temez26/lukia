@@ -21,14 +21,13 @@ internal class HtmlContent(
 /**
  * Turns a chapter of XHTML into the blocks the reader draws.
  *
- * This is where an EPUB stops being a web page and becomes a book. The
- * translation is deliberately lossy: an EPUB may carry any HTML at all, with
- * stylesheets that position, colour and size every word of it, and honouring
- * that faithfully means writing a browser. What is kept instead is the
- * structure a book is actually made of - headings, paragraphs, lists, quotations,
- * emphasis, illustrations - which is also exactly what survives being re-set at
- * the reader's chosen size, and what a stylesheet cannot be allowed to override
- * if the type size in the settings panel is to mean anything.
+ * This is where an EPUB stops being a web page and becomes a book. Deliberately
+ * lossy: an EPUB may carry any HTML at all, with stylesheets that position,
+ * colour and size every word, and honouring that faithfully means writing a
+ * browser. What is kept is the structure a book is made of - headings,
+ * paragraphs, lists, quotations, emphasis, illustrations - which is also what
+ * survives being re-set at the reader's chosen size, and what a stylesheet
+ * cannot be allowed to override if the type size setting is to mean anything.
  *
  * [image] is asked for an illustration's bytes by the `src` written in the file;
  * returning null leaves that figure out, which is what happens for a book that

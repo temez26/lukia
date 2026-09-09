@@ -90,24 +90,21 @@ private const val TRANSLATION_KEY = "\"translation\""
  * As much of the translation as has arrived, out of an answer that is still
  * arriving.
  *
- * A provider streaming its reply sends the JSON object a few characters at a
- * time, so for most of the wait there is no object to parse - only a prefix of
- * one. Nothing that expects valid JSON can read that, which would leave the
- * reader looking at a blank space until the last character landed and make a
- * model writing steadily for five seconds indistinguishable from one that has
- * hung.
+ * A streamed reply arrives a few characters at a time, so for most of the wait
+ * there is only a prefix of the JSON object. Nothing expecting valid JSON can
+ * read that, which would leave the reader looking at blank space until the last
+ * character landed and make a model writing steadily for five seconds look like
+ * one that has hung.
  *
  * So the value is read out by hand rather than parsed: found by its key,
- * unescaped as far as it goes, and cut off wherever the text currently ends.
- * Null until the key itself has arrived, and null for an answer that never
- * mentions it - a model writing a paragraph of prose has not begun translating
- * anything, and showing its preamble in place of the sentence would be worse
- * than showing nothing.
+ * unescaped as far as it goes, cut off where the text currently ends. Null until
+ * the key has arrived, and null for an answer that never mentions it - a model
+ * writing prose has not begun translating, and showing its preamble in place of
+ * the sentence is worse than showing nothing.
  *
- * What this returns is only ever a prefix of what [readTranslatedPassage] will
- * return from the finished answer. It deliberately does not judge whether the
- * answer was any good: that is still the parser's job, once there is a whole
- * one to judge.
+ * What comes back is only ever a prefix of what [readTranslatedPassage] returns
+ * from the finished answer, and deliberately does not judge whether the answer
+ * was any good: that is the parser's job once there is a whole one.
  */
 internal fun translationSoFar(answer: String): String? {
     val opening = answer.openingQuoteOfTranslation() ?: return null

@@ -53,18 +53,17 @@ private class LukiaCallback(
      *
      * Foreign keys are off by default in SQLite, so without this the
      * `ON DELETE CASCADE` on `reading_position` and `reader_layout` is a
-     * comment - see `ReadingPosition.sq`. Write-ahead logging is what lets the
-     * shelf be read while the sitting behind it is written, and is asked for
-     * explicitly rather than left to the platform, whose default has changed
-     * across the range of versions this app supports. `busy_timeout` is what
-     * keeps a second write landing at once from failing outright - see
-     * [BusyTimeoutMillis].
+     * comment - see `ReadingPosition.sq`. Write-ahead logging lets the shelf be
+     * read while the sitting behind it is written, and is asked for explicitly
+     * because the platform default has changed across the versions this app
+     * supports. `busy_timeout` keeps a second concurrent write from failing
+     * outright - see [BusyTimeoutMillis].
      *
-     * The timeout is asked for with `query` rather than `execSQL`, because a
-     * `PRAGMA` that sets a value also answers with it. Android's `execSQL`
-     * refuses any statement that returns a row, and the refusal arrives here -
-     * inside the open - so the whole database failed to open and every screen
-     * that reads one showed its "something went wrong".
+     * The timeout uses `query` rather than `execSQL` because a `PRAGMA` that
+     * sets a value also answers with it, and Android's `execSQL` refuses any
+     * statement returning a row. That refusal arrives here, inside the open, so
+     * the database failed to open and every screen reading it showed
+     * "something went wrong".
      */
     override fun onConfigure(db: SupportSQLiteDatabase) {
         db.setForeignKeyConstraintsEnabled(true)

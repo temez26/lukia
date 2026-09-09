@@ -21,16 +21,14 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * The gesture that asks for the menu belonging to whatever is under it.
  *
- * Two gestures, because the two kinds of machine this app runs on do not share
- * one. A finger has only the clock to say it means something other than a tap,
- * so it holds. A pointer has a second button - which on a laptop is two fingers
- * on the trackpad - and every desktop already means "tell me about this" with
- * it, at once and without the wait.
+ * Two gestures, because the two kinds of machine do not share one. A finger has
+ * only the clock to say it means something other than a tap, so it holds. A
+ * pointer has a second button - two fingers on a trackpad - which every desktop
+ * already means "tell me about this" with, at once and without the wait.
  *
- * Neither is offered on the other's machine. A press and hold with a mouse is
- * half a second of nothing happening followed by a menu that could have been
- * there immediately, and it is not a gesture anybody who uses a desktop reaches
- * for - so on those machines it is gone rather than merely second best.
+ * Neither is offered on the other's machine: a press and hold with a mouse is
+ * half a second of nothing followed by a menu that could have been immediate,
+ * and is not a gesture desktop users reach for.
  *
  * The haptic belongs to the hold alone. It is what tells a finger that it has
  * held long enough, and a mouse has nothing to be told.

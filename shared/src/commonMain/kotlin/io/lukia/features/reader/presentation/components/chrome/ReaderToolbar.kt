@@ -65,22 +65,20 @@ internal fun readerToolbarHeight(): Dp = LocalLukiaMetrics.current.iconButton
 /**
  * The reader's chrome: leaving the book, where you are in it, and how it reads.
  *
- * A capsule that takes its own row rather than floating over the page. Two
- * reasons: nothing ever passes underneath it, so the page is never partly
- * covered by the thing telling you which page it is; and with no moving content
- * behind it the translucency costs nothing to draw.
+ * A capsule that takes its own row rather than floating over the page: nothing
+ * passes underneath it, so the page is never partly covered by the thing telling
+ * you which page it is, and with no moving content behind it the translucency
+ * costs nothing to draw.
  *
- * [GlassSurface] resolves per platform on its own - the translucent, specular
- * treatment on Apple platforms and a flatter elevated surface elsewhere - so the
- * bar is native-looking on iOS without the other platforms being handed an iOS
- * look. See `GlassStyle` for why that is a drawn approximation rather than a
- * system material.
+ * [GlassSurface] resolves per platform - translucent and specular on Apple
+ * platforms, a flatter elevated surface elsewhere - so the bar looks native on
+ * iOS without handing the other platforms an iOS look. See `GlassStyle` for why
+ * it is a drawn approximation rather than a system material.
  *
- * [title] is drawn only where there is room for it. A phone puts three controls
- * at arm's length from each other and that is the whole bar; a desktop window is
- * wide enough that the same three, pushed to the extremes, read as a bar with a
- * hole in it - and wide enough to say which book is open, which is what a window
- * on a desktop is expected to do.
+ * [title] is drawn only where there is room. Three controls at arm's length is
+ * the whole bar on a phone; a desktop window is wide enough that the same three
+ * pushed to the extremes read as a bar with a hole in it - and wide enough to
+ * say which book is open, which a desktop window is expected to do.
  */
 @Composable
 internal fun ReaderToolbar(
@@ -109,13 +107,12 @@ internal fun ReaderToolbar(
         BoxWithConstraints {
             // What the middle of the bar may take, whatever is written in it.
             //
-            // A Row measures the children that named no weight first, in order,
-            // handing each one everything still unclaimed - so the page
-            // indicator, which is as wide as the chapter name inside it, could
-            // take the whole bar and leave the settings and translation controls
-            // after it measured at nothing. That is not a bar that overflows: it
-            // is a bar whose controls silently disappear, which is what a long
-            // chapter title actually did.
+            // A Row measures unweighted children first, in order, handing each
+            // everything still unclaimed - so the page indicator, as wide as the
+            // chapter name inside it, could take the whole bar and leave the
+            // settings and translation controls measured at nothing. Not a bar
+            // that overflows: a bar whose controls silently disappear, which is
+            // what a long chapter title did.
             //
             // Half is enough for a chapter to be worth naming and leaves the
             // other half for the controls either side, which is where the eye
@@ -286,12 +283,11 @@ internal fun PageIndicatorButton(
         ) {
             // What is drawn, which is the label and a little air around it.
             //
-            // The fill used to be the target: held to the same height, it was a
+            // The fill used to be the target: held to the same height it was a
             // 44dp slab around one 13sp line on every device with a thumb, so
-            // most of the inside of the toolbar was tinted grey and read as a
-            // background rather than as something to press. Splitting the two
-            // keeps the target Apple asks for and gives back the air either
-            // side of it that made the bar look like a bar.
+            // most of the toolbar's inside was tinted grey and read as a
+            // background rather than something to press. Splitting the two keeps
+            // Apple's target and gives back the air that made the bar a bar.
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier

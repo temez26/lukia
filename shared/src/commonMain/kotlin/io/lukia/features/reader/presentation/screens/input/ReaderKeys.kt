@@ -24,12 +24,12 @@ import io.lukia.features.reader.presentation.screens.ReaderChromeState
  * three things below all hang off one element, and threaded through the screen
  * they read as layout when none of them draws anything.
  *
- * The reader takes the keyboard as it opens, so the shortcuts work without a
- * click first, and takes it back whenever it loses it entirely. Losing it is not
+ * The reader takes the keyboard as it opens, so shortcuts work without a click
+ * first, and takes it back whenever it loses it entirely. Losing it is not
  * hypothetical: pressing a toolbar button moves focus into the chrome, and
- * hiding the chrome then takes the focused control out of the window - which
- * leaves nothing focused, and so nothing for a key press to reach. That is the
- * reader who put the bar away and found their shortcuts had gone with it.
+ * hiding the chrome takes that control out of the window - leaving nothing
+ * focused, so nothing for a key press to reach. That is the reader who put the
+ * bar away and found their shortcuts had gone with it.
  *
  * Only when it is lost altogether. Focus on a control in the chrome is left
  * where it is, and the handler here runs after that control has had its say - so

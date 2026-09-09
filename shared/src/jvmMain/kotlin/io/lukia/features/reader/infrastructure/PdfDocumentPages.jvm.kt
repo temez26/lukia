@@ -73,19 +73,18 @@ private class PdfBoxDocumentPages(private val document: PDDocument) : DocumentPa
      * Read as the document is opened, which is the contract [DocumentPages]
      * states - and here it is also the only way it can be safe.
      *
-     * The walk parses objects out of the same PDFBox document [renderPage]
-     * draws from, and PDFBox shares mutable state across the two. Everything
-     * else that touches the document once it is open takes [renderLock]; a
-     * plain `val` cannot, so the only lock available to it is being finished
-     * before anybody else has the document at all. Left until something asked,
-     * this ran on a dispatcher of its own beside a page being drawn - one
-     * document, two threads, and the corruption the lock exists to prevent.
+     * The walk parses objects out of the same PDFBox document [renderPage] draws
+     * from, and PDFBox shares mutable state across the two. Everything else
+     * touching the open document takes [renderLock]; a plain `val` cannot, so
+     * its only protection is finishing before anybody else has the document.
+     * Left until something asked, this ran on its own dispatcher beside a page
+     * being drawn - one document, two threads, and the corruption the lock
+     * exists to prevent.
      *
-     * Nobody waits longer for it. Opening already runs off the main thread, and
-     * the outline is read on both ways out of here anyway - the text path asks
-     * for it, and the reader reads it beside the open book. What this walks is
-     * structure the open has already parsed, not the file: the scan that would
-     * be too much to do up front belongs to Android, whose renderer has no
+     * Nobody waits longer for it: opening already runs off the main thread, and
+     * the outline is read on both ways out of here anyway. What this walks is
+     * structure the open has already parsed rather than the file - the scan that
+     * would be too much up front belongs to Android, whose renderer has no
      * outline of its own, and stays lazy there.
      */
     override val outline: List<OutlineEntry>? = readOutline()

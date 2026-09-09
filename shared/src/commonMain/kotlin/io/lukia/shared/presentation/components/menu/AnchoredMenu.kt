@@ -61,13 +61,12 @@ private val MenuInset = Space.lg
  * A [Popup] rather than a `DropdownMenu`: these wear the app's translucent chrome
  * and its corner radii, and Material's own elevation and shape are not that.
  *
- * Dismissal is the caller's to complete. The popup is deliberately non-focusable
- * so a press outside it reaches the page underneath, which means every screen
- * showing one of these also places an [ActionMenuScrim] behind it. A focusable
- * popup would swallow that press - leaving the scrim, the way out of the menu,
- * never seeing the tap - and on Android would take focus while a long press was
- * still in progress, so the tail of that gesture read as an outside touch and
- * closed the menu before it had drawn.
+ * Dismissal is the caller's to complete: the popup is deliberately non-focusable
+ * so a press outside reaches the page underneath, which is why every screen
+ * showing one also places an [ActionMenuScrim] behind it. A focusable popup
+ * would swallow that press - leaving the scrim, the way out, never seeing the
+ * tap - and on Android would take focus mid-long-press, so the tail of that
+ * gesture read as an outside touch and closed the menu before it had drawn.
  */
 @Composable
 fun AnchoredMenu(
@@ -123,16 +122,15 @@ fun AnchoredMenu(
  * [icon] is handed both the tint and an already-sized modifier, so the glyphs
  * down a menu are the same size without every caller having to say so.
  *
- * [selected] is for a menu that is a list of choices rather than a list of
- * actions - which format to show, which order to sort in. The tick sits at the
- * end of the row, in the accent colour, which is where iOS puts the mark on a
- * chosen menu item, and the row carries the selected flag so the mark is
- * announced rather than only drawn.
+ * [selected] is for a menu of choices rather than actions - which format to
+ * show, which order to sort in. The tick sits at the end of the row in the
+ * accent colour, where iOS puts it, and the row carries the selected flag so the
+ * mark is announced rather than only drawn.
  *
- * The role stays [Role.Button] either way. A row that is a choice is still a
- * button that is currently the chosen one - which is how the platforms
- * themselves announce a ticked menu item - and a menu cannot tell an unticked
- * choice from a plain action to say anything more precise.
+ * The role stays [Role.Button] either way: a row that is a choice is still a
+ * button that happens to be the chosen one, which is how the platforms announce
+ * a ticked menu item, and a menu cannot tell an unticked choice from a plain
+ * action to say anything more precise.
  */
 @Composable
 fun MenuRow(

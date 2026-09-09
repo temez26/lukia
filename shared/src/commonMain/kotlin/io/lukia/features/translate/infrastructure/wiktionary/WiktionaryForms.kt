@@ -12,19 +12,18 @@ private const val MIN_BASE_LENGTH = 2
 /**
  * The word this entry only points at, or null when it defines something itself.
  *
- * A wiki's page for an inflected form is often not a definition at all. Looking
- * up `values` on the Finnish Wiktionary answers `monikkomuoto sanasta value` -
- * "plural of value" - which is a fact about grammar and no help whatsoever to
- * somebody who wanted to know it means `arvo`. Without this the reader is told
- * what their word is a form of and left to look that up themselves, which on a
- * language that inflects everything is most of the words in the book.
+ * A wiki's page for an inflected form is often not a definition. Looking up
+ * `values` on the Finnish Wiktionary answers `monikkomuoto sanasta value` -
+ * "plural of value" - a fact about grammar and no help to somebody who wanted
+ * `arvo`. Without this the reader is told what their word is a form of and left
+ * to look that up, which in a language that inflects everything is most of the
+ * book.
  *
  * What makes a line a pointer is the small word in front of the last one. Every
  * language writes these the same way round - `plural of value`,
  * `monikkomuoto sanasta value`, `böjningsform av värde` - and putting the weight
- * on that word is what lets an irregular form be followed at all: `juoksi` and
- * `juosta` share four letters and `went` and `go` share none, so nothing about
- * the two words themselves could have said they belong together.
+ * there is what lets an irregular form be followed at all: `juoksi` and `juosta`
+ * share four letters and `went` and `go` share none.
  *
  * Three things are accepted as a pointer, in descending order of how sure they
  * are, because following the wrong word is worse than not following:

@@ -43,22 +43,20 @@ private val ChipPadding: Dp = 10.dp
 /**
  * One filter, as a small standing control.
  *
- * A chip rather than another segmented control: these are independent of one
- * another - a format and a category can both be set - and a segmented track says
- * the opposite, that exactly one of its segments is true at a time. They also
- * come and go with the library, and a row of chips can grow one without every
- * other one getting narrower.
+ * A chip rather than another segmented control: these are independent - a format
+ * and a category can both be set - where a segmented track says exactly one of
+ * its segments is true. They also come and go with the library, and a row of
+ * chips can grow one without every other getting narrower.
  *
- * A chip with a [chevron] opens a menu of values and shows the chosen one in
- * place of its own name; one without is a switch that is either on or off. Both
- * read as set the same way - filled in the accent colour - so a reader can see
- * what is narrowing their library without reading any of the labels.
+ * A chip with a [chevron] opens a menu and shows the chosen value in place of
+ * its own name; one without is a switch. Both read as set the same way - filled
+ * in the accent colour - so a reader sees what is narrowing their library
+ * without reading the labels.
  *
- * Which is exactly why it is [toggleable] rather than clickable. Being set is
- * carried by a fill measuring 1.1:1 against the chip beside it and by nothing
- * else: a reader who cannot separate those two, or who is hearing the row rather
- * than looking at it, was told only that there was a button called "Fiction" -
- * never whether the shelf in front of them was filtered by it.
+ * Which is why it is [toggleable] rather than clickable: being set is carried by
+ * a fill measuring 1.1:1 against the chip beside it and by nothing else, so a
+ * reader who cannot separate those two, or who is hearing the row, was told only
+ * that there was a button called "Fiction".
  */
 @Composable
 fun LukiaChip(

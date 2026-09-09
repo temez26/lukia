@@ -35,37 +35,30 @@ private val ReadableMediaTypes = setOf(
  * they are read in.
  *
  * The spine is taken as given wherever the book has divided itself: one spine
- * item becomes one section, even where that means a section holding three lines
- * of front matter. A book states its own divisions, and re-dividing them by
- * looking at the headings would be overruling the person who made it - the
- * reader would open at "chapter 4" and find itself somewhere the book never
- * said was a place.
+ * item becomes one section, even where that holds three lines of front matter.
+ * Re-dividing by looking at the headings would overrule the person who made the
+ * book - the reader would open at "chapter 4" somewhere the book never said was
+ * a place.
  *
- * A book that has not divided itself is the case that rule cannot cover. Tools
- * like Leanpub's write every chapter of a book into one file and address them by
- * anchor, and taking the spine at its word there gives a reader four sections,
- * one of which is the entire book - no working scrubber, no usable contents, and
- * a section too large to lay out smoothly. Such a file is divided by
- * [sectionStarts], the same rule every undivided format gets, and its anchors
- * are what put the table of contents back on the right sections.
+ * A book that has not divided itself is what that rule cannot cover. Tools like
+ * Leanpub's write every chapter into one file and address them by anchor, so
+ * taking the spine at its word gives four sections, one of which is the entire
+ * book - no working scrubber, no usable contents, and a section too large to lay
+ * out smoothly. Those are divided by [sectionStarts], the rule every undivided
+ * format gets, and their anchors put the contents back on the right sections.
  *
- * The files are read at the same time as each other and assembled in the order
- * the spine states. Reading one is decompressing it, decoding whatever encoding
- * it was written in, and parsing the markup - the most expensive thing done to a
- * book before it is measured, and a book is dozens of files of it. Nothing in
- * one file depends on another, and the archive they come out of is read-only
- * once it has been indexed, so there is nothing to divide but the work.
+ * The files are read concurrently: reading one means decompressing, decoding its
+ * encoding and parsing the markup - the most expensive thing done to a book
+ * before measuring, times dozens of files. Nothing in one file depends on
+ * another and the indexed archive is read-only, so there is nothing to divide
+ * but the work. They are assembled in spine order all the same: which finished
+ * first is a fact about the device, not about the book.
  *
- * Assembled in reading order all the same. Which file finished first is a fact
- * about the device; which order they are read in is the book.
- *
- * Read whole before the reader is shown any of it, which was measured against
- * the alternative and is the faster of the two. Handing chapters over as they
- * were parsed, so that the first could be measured while the rest were still
- * being read, sounds like the shorter wait and is not: parsing and measuring
- * both use every core there is, so running them at the same time only takes
- * cores away from the measuring - which is the half the reader is actually
- * waiting on. Two full-speed passes beat two half-speed ones.
+ * Read whole before the reader sees any of it, which measured faster than the
+ * alternative. Handing chapters over as they were parsed, so the first could be
+ * measured while the rest were read, sounds shorter and is not: parsing and
+ * measuring both use every core, so overlapping them only takes cores from the
+ * measuring - the half the reader is actually waiting on.
  *
  * Returns null when the file is not an EPUB this can make sense of, which the
  * caller turns into a format the reader cannot open rather than an empty book.

@@ -3,16 +3,14 @@ package io.lukia.features.translate.infrastructure
 /**
  * How much a model is allowed to write for one passage.
  *
- * Two things have to fit inside this, and only one of them is the translation.
- * Every model worth running now thinks before it answers, and on both wire
- * formats that thinking is charged to the same allowance as the reply - so this
- * is a ceiling on the two together, not on the answer.
+ * Two things fit inside this and only one is the translation: every model worth
+ * running thinks before it answers, and on both wire formats that thinking is
+ * charged to the same allowance as the reply.
  *
  * The thinking is also the half that cannot be predicted from the passage. It is
- * never shown to the reader and arrives on a field of its own, so from outside
- * there is no difference between a model that spent its whole allowance
- * reasoning and one that was still writing: the stream simply ends, saying
- * "length", with nothing to read.
+ * never shown and arrives on its own field, so from outside there is no
+ * difference between a model that spent its allowance reasoning and one still
+ * writing: the stream ends saying "length", with nothing to read.
  *
  * That is what a flat 1024 did to a paragraph. Measured against a local model:
  *
@@ -22,13 +20,13 @@ package io.lukia.features.translate.infrastructure
  *     one paragraph, 4096 allowed  ->  stopped on its own after 497 tokens
  *
  * A sentence never noticed the ceiling and a paragraph could not get under it,
- * which is exactly the shape the reader saw: sentences translated, paragraphs
- * reported themselves as too long - while the same model, asked the same thing
- * with no ceiling set, translated them perfectly well.
+ * which is what the reader saw: sentences translated, paragraphs reporting
+ * themselves as too long, while the same model with no ceiling set translated
+ * them perfectly well.
  *
- * So the allowance follows the passage, over a floor with room for a model to
- * think about a short one. It costs nothing to set high: it is a ceiling, and a
- * model that says everything in fifty tokens is charged for fifty.
+ * So the allowance follows the passage, over a floor with room to think about a
+ * short one. It costs nothing to set high: it is a ceiling, and a model that
+ * says everything in fifty tokens is charged for fifty.
  */
 internal fun tokenAllowanceFor(passage: String): Int =
     (passage.length / CHARS_PER_TOKEN * ANSWER_HEADROOM).coerceIn(MIN_TOKENS, MAX_TOKENS)

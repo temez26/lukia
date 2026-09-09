@@ -26,15 +26,13 @@ import kotlin.test.assertTrue
 /**
  * A PDF read back as text on iOS, through PDFKit.
  *
- * These are written against whole sentences rather than glyph positions because
- * the two things that were wrong were only visible as sentences. PDFKit numbers
- * the characters of a page in one space and writes the page's text in another -
- * the text has a line break at the end of every line and the numbering does not
- * - so reading them as the same number handed each line the boxes of the line
- * above, one letter further out on every line down the page. And PDFKit reports
- * the ink a character actually marks rather than the height of its type, which
- * made every paragraph stand taller than the middle of its own page and so read
- * as a heading.
+ * Written against whole sentences rather than glyph positions, because the two
+ * things that were wrong were only visible as sentences. PDFKit numbers a page's
+ * characters in one space and writes its text in another - the text has a line
+ * break at the end of every line and the numbering does not - so reading them as
+ * the same number handed each line the boxes of the line above, one letter
+ * further out down the page. And PDFKit reports the ink a character marks rather
+ * than the height of its type, which made every paragraph read as a heading.
  *
  * Both come out as text that is technically present and impossible to read,
  * which no assertion about a rectangle would have caught.

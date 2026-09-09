@@ -4,16 +4,15 @@ package io.lukia.core.infrastructure.archive
  * Inflates a raw (headerless) DEFLATE stream, as used inside ZIP entries.
  *
  * Returns fewer bytes than [uncompressedSize] when the stream ends early, so a
- * caller that does not know the decoded size up front can pass a ceiling and
- * read the real length from what comes back. A stream cut short is not a
- * failure: what was decoded before it ran out is a prefix of the real thing, and
- * a chapter of a damaged book is worth more to a reader than nothing at all.
+ * caller that does not know the decoded size can pass a ceiling and read the
+ * real length from what comes back. A stream cut short is not a failure: what
+ * was decoded is a prefix of the real thing, and a chapter of a damaged book
+ * beats nothing.
  *
- * Throws when the data is not a DEFLATE stream, which is a different thing and
- * has to stay distinguishable from the first: every caller here wraps this in
- * `runCatching`, and that wrapping means nothing on a platform that answers a
- * stream of rubbish with an empty array. Said here rather than left to each
- * implementation because it is the half the three of them had drifted on.
+ * Throws when the data is not a DEFLATE stream, which must stay distinguishable
+ * from that: every caller wraps this in `runCatching`, which means nothing on a
+ * platform that answers rubbish with an empty array. Stated here rather than
+ * left to each implementation because it is the half the three had drifted on.
  */
 internal expect fun inflateRaw(compressedData: ByteArray, uncompressedSize: Int): ByteArray
 

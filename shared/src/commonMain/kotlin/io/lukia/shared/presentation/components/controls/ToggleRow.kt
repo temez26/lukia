@@ -20,22 +20,20 @@ import org.jetbrains.compose.resources.stringResource
  * Makes a row carrying a label and a switch into one control that says what it
  * is as well as what it is set to.
  *
- * A `Switch` composed beside a `Text` is two things to a screen reader and one
- * thing to everybody else. The switch knows its role and its value and has no
- * name; the label is a line of prose that happens to sit next to it. What a
- * reader hears is "on, switch" - the word saying *what* is on is a separate stop
- * before it, and on a settings screen of eleven of these that is eleven switches
- * announced identically.
+ * A `Switch` beside a `Text` is two things to a screen reader and one to
+ * everybody else: the switch knows its role and value and has no name, and the
+ * label is prose that happens to sit next to it. What a reader hears is "on,
+ * switch", with the word saying *what* is on a separate stop before it - eleven
+ * switches announced identically on a settings screen.
  *
- * So the row is the control. It carries the name, the role and the state, and
- * the switch inside it is handed `onCheckedChange = null` - which is how
- * Material says "drawn here, but something outside it is the control". A press
- * anywhere along the row toggles it, which is what both platforms do with their
- * own settings rows and what a thumb expects of one.
+ * So the row is the control, carrying the name, role and state, and the switch
+ * inside is handed `onCheckedChange = null` - Material's way of saying "drawn
+ * here, but something outside is the control". A press anywhere along the row
+ * toggles it, as both platforms' own settings rows do.
  *
- * [label] is the name and nothing else. Whatever sentence explains the setting
+ * [label] is the name and nothing else. The sentence explaining the setting
  * stays where it is: it is help rather than a name, and a name read out with a
- * paragraph behind it is a name nobody waits through.
+ * paragraph behind it is one nobody waits through.
  */
 @Composable
 fun Modifier.toggleRow(

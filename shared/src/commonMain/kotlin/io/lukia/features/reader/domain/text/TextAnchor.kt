@@ -3,11 +3,10 @@ package io.lukia.features.reader.domain.text
 /**
  * Where in a book a translated sentence lives.
  *
- * Held as indices rather than as text offsets or as the sentence itself, so
- * that it survives everything the reader does to a book while it is open: a
- * reflowable book re-set at a larger type size has the same sentence in the
- * same block, and a page redrawn at a different width has the same sentence on
- * the same page. An anchor built from offsets would be stale the moment
+ * Held as indices rather than text offsets or the sentence itself, so it
+ * survives everything the reader does to an open book: re-set at a larger type
+ * size, the sentence is still in the same block; redrawn at a different width,
+ * still on the same page. An anchor built from offsets would be stale the moment
  * somebody pinched the screen.
  *
  * The two shapes mirror [io.lukia.features.reader.domain.ReaderContent]: a book

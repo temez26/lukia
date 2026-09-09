@@ -47,17 +47,15 @@ private const val DeveloperTaps = 7
 /**
  * Which Lukia this is, and what it was built out of.
  *
- * Sits at the foot of the page beside Diagnostics rather than becoming a fifth
- * segment, for the reason that group gives: the four segments are the things
- * somebody came to Settings to change, and neither of these is one of them. The
- * version is here because it is the first question every bug report asks and the
- * app had nowhere to answer it - `LukiaVersion` reached a diagnostic report and a
- * crash note and never a screen.
+ * At the foot of the page beside Diagnostics rather than a fifth segment, for
+ * the reason that group gives: the four segments are what somebody came to
+ * Settings to change, and neither of these is. The version is here because it is
+ * the first question every bug report asks and the app had nowhere to answer it
+ * - `LukiaVersion` reached a diagnostic report and a crash note, never a screen.
  *
  * Unlike Diagnostics it needs nothing from the graph, so it is composed directly
- * rather than passed in as a slot. [version] and [attributions] are parameters
- * with the real values as defaults, which is what keeps this previewable and lets
- * a test hand it a list it wrote itself.
+ * rather than passed as a slot. [version] and [attributions] default to the real
+ * values, which keeps this previewable and lets a test supply its own list.
  */
 @Composable
 internal fun AboutSettings(

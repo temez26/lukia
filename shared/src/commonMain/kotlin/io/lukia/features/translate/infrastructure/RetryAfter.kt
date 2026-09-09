@@ -10,11 +10,10 @@ import io.ktor.http.HttpHeaders
  * when it says, it is obeyed - see [RetryingTranslator]. Null when it said
  * nothing, which is the ordinary case and is what the backoff there is for.
  *
- * Only the seconds form is read. The HTTP date form is allowed by the spec and
- * is not what any of these services send; parsing a date against a device clock
- * that may be wrong, to decide how long to wait before translating a sentence,
- * would be more ways to be wrong than the feature has uses for. An unreadable
- * value is treated as no value rather than as zero, because zero here would mean
+ * Only the seconds form is read. The HTTP date form the spec allows is not what
+ * these services send, and parsing a date against a possibly-wrong device clock
+ * to decide how long to wait is more ways to be wrong than this needs. An
+ * unreadable value is no value rather than zero, because zero would mean
  * "immediately" - the one answer a service asking for a pause did not give.
  */
 internal fun HttpResponse.retryAfterSeconds(): Int? =

@@ -16,16 +16,15 @@ import io.lukia.features.reader.domain.text.TextRun
  * One page of a PDF, read as the things written on it rather than as marks in
  * places.
  *
- * Everything here is inference, because a PDF states none of it. What the file
- * holds is glyphs and positions; that a run of them is a heading, that the line
- * alone at the foot of the page is the page number rather than a sentence, that
- * two lines set close together are one paragraph - all of it has to be read back
- * out of size and position, and all of it is sometimes wrong.
+ * Everything here is inference, because a PDF states none of it: the file holds
+ * glyphs and positions, and that a run of them is a heading, that the line alone
+ * at the foot is a page number, that two close lines are one paragraph all have
+ * to be read back out of size and position - and are all sometimes wrong.
  *
- * That is the trade the reader is making by asking for a PDF as text, and the
- * rules below take the side of keeping words: a heading missed reads as a
- * paragraph, which is a small loss, while a paragraph dropped as furniture is
- * text the reader came for and cannot see. So each rule is deliberately narrow.
+ * That is the trade a reader makes by asking for a PDF as text, and the rules
+ * below take the side of keeping words: a missed heading reads as a paragraph,
+ * while a paragraph dropped as furniture is text the reader came for and cannot
+ * see. So each rule is deliberately narrow.
  */
 internal fun pdfPageBlocks(
     glyphs: List<PageGlyph>,
@@ -94,16 +93,15 @@ private fun TextQuad.isPageBackground(page: PageSize, pageHasText: Boolean): Boo
  * The size the page's ordinary text is set at, as the middle of every glyph on
  * it.
  *
- * The median rather than the most common value or an average: a page is mostly
- * body text, so the middle of it is body text however many headings, footnotes
- * and page numbers are set around it - and unlike an average, one huge title
- * cannot drag it.
+ * The median rather than a mode or an average: a page is mostly body text, so
+ * its middle is body text however many headings and page numbers surround it,
+ * and unlike an average one huge title cannot drag it.
  *
- * Per page rather than per document, which is what makes it affordable: the
- * alternative is holding every glyph of every page to measure them together. It
- * costs the pages that are nothing but large type - a title page, a part
- * opening - where the median is the large type and nothing reads as a heading.
- * Those pages have no body text for a heading to stand out from anyway.
+ * Per page rather than per document, which is what makes it affordable - the
+ * alternative holds every glyph of every page to measure them together. It costs
+ * the pages that are nothing but large type, where the median is that type and
+ * nothing reads as a heading; those pages have no body text for a heading to
+ * stand out from anyway.
  */
 private fun List<GlyphLine>.bodyHeight(): Float {
     // Into an array of numbers rather than through a chain of lists. Every page
@@ -260,16 +258,14 @@ private fun Float.differsInSizeFrom(other: Float): Boolean {
  * Whether it is worth setting this line out in order to ask whether it opens a
  * list item.
  *
- * The question below costs the line's whole text, and is asked of every line of
- * the book - where all but a handful are prose, which cannot open one. A list
- * item begins with its marker, so what the marker would have to be is the first
- * character the line has: if that is not one, no amount of what follows it can
- * make the line a bullet.
+ * The question below costs the line's whole text and is asked of every line in
+ * the book, where all but a handful are prose. A list item begins with its
+ * marker, so the marker has to be the line's first character; if it is not one,
+ * nothing that follows can make the line a bullet.
  *
- * Never wrong in the direction that matters. A line this turns away is a line
- * whose written text could not have started with a marker either, since the
- * inferred spaces the setting adds are trimmed off the front of it just as the
- * blank glyphs are skipped here.
+ * Never wrong in the direction that matters: a line turned away here could not
+ * have started with a marker in its written text either, since the inferred
+ * spaces are trimmed off the front just as the blank glyphs are skipped here.
  */
 private fun GlyphLine.mayOpenAnItem(): Boolean {
     val opening = firstOrNull { it.text.isNotBlank() }?.text?.trimStart() ?: return false

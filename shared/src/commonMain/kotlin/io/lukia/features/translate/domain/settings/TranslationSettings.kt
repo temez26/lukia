@@ -9,32 +9,30 @@ import io.lukia.features.translate.domain.provider.isAllowedTranslationEndpoint
  * What translating is set to do, as opposed to the reader's own presentation
  * settings or the app's theme.
  *
- * Its own value rather than a field on the app's settings, so that everything
- * this feature needs to be configured stays inside the feature - which is also
- * what lets the reader read it without depending on the settings screen that
- * writes it.
+ * Its own value rather than a field on the app's settings, so this feature's
+ * configuration stays inside the feature - which also lets the reader read it
+ * without depending on the settings screen that writes it.
  *
- * Everything a provider needs is kept per provider rather than as one set of
- * fields the current one owns. Somebody comparing a local model against a
- * hosted one switches back and forth repeatedly, and a design that cleared the
- * key each time would make that unbearable - so a provider remembers its own
- * key, its own model and its own address whether or not it is the one in use.
+ * Kept per provider rather than as one set of fields the current one owns:
+ * somebody comparing a local model against a hosted one switches back and forth
+ * repeatedly, and clearing the key each time would make that unbearable. So a
+ * provider remembers its own key, model and address whether or not it is in use.
  */
 data class TranslationSettings(
     val targetLanguage: TargetLanguage = TargetLanguage.Default,
     /**
      * Whether the reader wants a model involved in any of this at all.
      *
-     * One switch over everything on the AI translation page, and off until it is
-     * asked for. Turned off, Lukia is the app it is without a service: a tap
-     * looks a single word up in a free dictionary, a hold opens what else that
-     * word means, and nothing on any page or in any bar offers to translate a
-     * sentence, spend a screenful of somebody's credit, or ask for a key.
+     * One switch over everything on the AI translation page, off until asked
+     * for. Turned off, Lukia is the app it is without a service: a tap looks a
+     * word up in a free dictionary, a hold opens what else it means, and nothing
+     * anywhere offers to translate a sentence, spend a screenful of somebody's
+     * credit, or ask for a key.
      *
      * It gates [isConfigured] rather than sitting beside it, so nothing further
-     * on has to remember to ask both. What is stored under it - the key, the
-     * model, the address, the units a gesture was raised to - is kept exactly as
-     * the reader left it, and comes back the moment they turn it on again.
+     * on has to remember to ask both. What is stored under it - key, model,
+     * address, the units a gesture was raised to - is kept as the reader left it
+     * and comes back the moment they turn it on again.
      */
     val aiTranslation: Boolean = false,
     val provider: TranslationProvider = TranslationProvider.Default,
@@ -75,12 +73,10 @@ data class TranslationSettings(
      * Whether the translator's asides are set under the paragraph they belong
      * to - a remark about an ambiguous word, a dictionary's other senses.
      *
-     * Off, with everything else translating does. They were once the only place
-     * those senses could be read at all, which is why they used to be on; they
-     * have somewhere better to be now - holding a word opens every sense it has,
-     * at length and out of the way of the prose, see
-     * [io.lukia.features.reader.presentation.translation.WordInquiry] - so a
-     * page that starts out as the book set it costs the reader nothing.
+     * Off, with everything else translating does. They used to be on because
+     * they were the only place those senses could be read; holding a word now
+     * opens every sense at length and out of the way of the prose - see
+     * [io.lukia.features.reader.presentation.translation.WordInquiry].
      *
      * Never covers a failure. A passage marked as translated with nothing to
      * show and no reason given is a reader wondering what happened, and that is

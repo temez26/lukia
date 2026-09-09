@@ -87,29 +87,25 @@ internal fun SelectionMark(
  * one iPad has used for deleting apps since the beginning, and which readers
  * recognise before they have read a word of the bar above it.
  *
- * Every card is given its own timing from [seed], because a shelf rocking in
- * perfect unison reads as the whole page moving rather than as each book being
- * loose. The angle is deliberately under a degree and a half: enough to be
- * unmistakable at a glance, little enough that the titles stay readable while
- * somebody picks their way along a row.
+ * Each card takes its own timing from [seed], because a shelf rocking in unison
+ * reads as the whole page moving rather than each book being loose. The angle is
+ * under a degree and a half: unmistakable at a glance, small enough that titles
+ * stay readable.
  *
  * Zero when the shelf is not being selected from, and the animation does not
- * exist at all then - a library of a hundred cards each running a forever
- * animation is a hundred recompositions a frame for a mode nobody is in.
+ * exist then - a hundred cards each running a forever animation is a hundred
+ * recompositions a frame for a mode nobody is in.
  *
  * Zero too where the app has been asked to move less. This is the app's one
- * animation with no end: a hundred covers rocking for as long as somebody takes
- * to pick their way along a shelf, which is exactly the shape of motion a
- * vestibular disorder cannot sit through and exactly what a device set to reduce
- * motion is asking not to see. The bar above still says the shelf is being
- * picked from, and every cover still wears its own tick.
+ * endless animation, and a hundred covers rocking for as long as somebody picks
+ * along a shelf is exactly what a device set to reduce motion is asking not to
+ * see. The bar above still says the shelf is being picked from, and every cover
+ * still wears its own tick.
  *
- * Handed back as state to be read where the card is drawn, never unwrapped
- * here - the same arrangement as `passageSweep`, and for the same reason. A
- * function that returns a value cannot restart on its own, so reading the
- * animation here would put the read in the caller's scope and recompose the
- * whole card sixty times a second: which is the cost above, paid by the mode
- * somebody *is* in rather than the one they are not.
+ * Handed back as state to be read where the card is drawn, never unwrapped here
+ * - as `passageSweep` is, and for the same reason: a function that returns a
+ * value cannot restart on its own, so reading the animation here would recompose
+ * the whole card sixty times a second.
  */
 @Composable
 internal fun jiggleAngle(active: Boolean, seed: Int): State<Float> {

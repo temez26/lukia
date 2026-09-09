@@ -39,13 +39,13 @@ private val RowPadding: Dp = 12.dp
  * [Comfortable] is a settings screen: a page of its own, scrolled to on purpose,
  * where a choice is worth a full row and a line of explanation under it.
  *
- * [Compact] is a panel that opened over something else - the reader's, which is
- * capped at a few hundred points and carries a dozen other settings under this
- * one. There the same seventeen languages are taller than the panel twice over,
- * and everything below them is off the bottom of it. So the rows shrink to the
- * height of a menu row, the second line comes up beside the first, and the rules
- * between them go: a list this long reads as a list without them, and seventeen
- * hairlines inside a small panel are a texture rather than a structure.
+ * [Compact] is a panel over something else - the reader's, capped at a few
+ * hundred points with a dozen other settings under this one, where seventeen
+ * languages are twice the panel's height and push everything below off the
+ * bottom. So the rows shrink to a menu row's height, the second line comes up
+ * beside the first, and the rules between them go: a list this long reads as one
+ * without them, and seventeen hairlines in a small panel are texture rather than
+ * structure.
  */
 enum class ChoiceDensity {
     Comfortable,

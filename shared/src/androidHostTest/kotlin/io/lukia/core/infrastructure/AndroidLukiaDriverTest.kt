@@ -16,15 +16,14 @@ import kotlin.test.assertTrue
 /**
  * How the Android build opens its database.
  *
- * `LukiaDriverTest` asks the same questions of the desktop build, and the answer
- * there says nothing about here: the two drivers share the settings and no code
- * at all. The desktop hands its over as connection properties, iOS as a driver
- * configuration, and Android as statements run against the open connection - so
- * this is the one of the three where opening the database can fail on the way
- * in, and it did. A `PRAGMA` that sets a value also answers with it, and
- * Android's `execSQL` refuses any statement that returns a row; the refusal
- * arrived inside `onConfigure`, so every screen that reads the library showed
- * "something went wrong" and no book could be opened at all.
+ * `LukiaDriverTest` asks the same of the desktop build, and its answer says
+ * nothing about here: the drivers share settings and no code. The desktop passes
+ * them as connection properties, iOS as a driver configuration, Android as
+ * statements against the open connection - so Android is the one where opening
+ * can fail on the way in, and it did. A `PRAGMA` that sets a value also answers
+ * with it, and Android's `execSQL` refuses any statement returning a row; the
+ * refusal arrived inside `onConfigure`, so every screen reading the library
+ * showed "something went wrong" and no book could be opened.
  *
  * On the host: Robolectric runs the platform's real SQLite, which is what makes
  * these worth asking here rather than on a device.

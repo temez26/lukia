@@ -9,18 +9,16 @@ import io.lukia.features.translate.domain.lookup.WordSite
 /**
  * One word the reader has stopped on and asked about properly.
  *
- * The line that goes over a word in the book has to be one thing, short enough
- * to stand where the word stood - see
- * [io.lukia.features.reader.domain.text.WordLookup]. That is the right answer
- * to "what does this say" and the wrong one to "what does this mean", which is
- * the question somebody learning the language is actually asking. This is what
- * the second question opens.
+ * The line that goes over a word in the book must be short enough to stand where
+ * the word stood - see [io.lukia.features.reader.domain.text.WordLookup]. That
+ * answers "what does this say" and not "what does this mean", which is what
+ * somebody learning the language is asking. This is what that second question
+ * opens.
  *
- * Both halves of the answer are offered rather than one of them, because they
- * are not the same kind of help: [entry] is every sense the word has, read out
- * of a dictionary and shown here, and [site] is somebody else's page about it -
- * the inflections, the etymology, the example sentences - which this app has no
- * business reproducing and every reason to link to.
+ * Both halves are offered because they are different kinds of help: [entry] is
+ * every sense the word has, read out of a dictionary and shown here, and [site]
+ * is somebody else's page about it - inflections, etymology, examples - which
+ * this app has no business reproducing and every reason to link to.
  */
 @Immutable
 data class WordInquiry(

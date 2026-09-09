@@ -27,16 +27,15 @@ private const val PAGE_COUNT = 348
  *
  * Where the book opened is settled once per opening and never moved off that
  * page - see `ReaderViewModel.initialPosition` - so it is an instruction to
- * carry out, not a position to follow. Anything that starts the effect again
- * hands it the same instruction, and carrying it out a second time takes the
- * reader back to where they were an hour ago.
+ * carry out, not a position to follow. Anything that restarts the effect hands
+ * it the same instruction, taking the reader back to where they were an hour
+ * ago.
  *
  * The case that matters most is a turned device, which takes the composition
- * down and leaves the ViewModel standing. That one cannot be driven from here -
- * `StateRestorationTester.emulateSaveAndRestore` is not implemented for skiko,
- * so it wants a device to check - but a restarted effect is the whole of the
- * mechanism either way, and a stored position arriving late is a second real
- * way to reach it.
+ * down and leaves the ViewModel standing. That cannot be driven from here -
+ * `StateRestorationTester.emulateSaveAndRestore` is not implemented for skiko -
+ * but a restarted effect is the whole mechanism either way, and a stored
+ * position arriving late is a second real way to reach it.
  */
 class ReaderOpeningPositionTest {
 

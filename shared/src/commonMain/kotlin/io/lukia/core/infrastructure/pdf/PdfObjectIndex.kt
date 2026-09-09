@@ -30,20 +30,18 @@ internal class PdfObjectIndex(private val source: PdfByteSource) {
      * back as ciphertext, so a chapter list read from one would be gibberish -
      * better to report no outline than a page of mojibake.
      *
-     * Read from the newest trailer, and only from that one, because that is
-     * what decides it. Two things this must not do, both of which take
-     * perfectly readable books away from the reader:
+     * Read from the newest trailer and only that one, because it is what
+     * decides. Two tempting alternatives both take readable books away:
      *
-     * Looking for the bytes `/Encrypt` anywhere in the file - the sequence
-     * turns up inside the compressed streams of a long document often enough
-     * to matter, and a file that says nothing about encryption in its trailer
-     * is not encrypted however many times those nine bytes appear in it.
+     * Scanning for the bytes `/Encrypt` anywhere in the file - the sequence
+     * turns up inside the compressed streams of a long document, and a file
+     * whose trailer says nothing about encryption is not encrypted however
+     * often those nine bytes appear.
      *
-     * Asking whether *any* trailer names an /Encrypt. A file that has had its
-     * encryption removed keeps the trailer that declared it, as an earlier
-     * revision, and appends one that does not; the last word is the current
-     * one. This is how the shops that sell DRM-free copies of encrypted books
-     * produce them, so it is common rather than exotic.
+     * Asking whether *any* trailer names an /Encrypt - a file whose encryption
+     * was removed keeps the declaring trailer as an earlier revision and
+     * appends one that does not. This is how shops produce DRM-free copies of
+     * encrypted books, so it is common rather than exotic.
      */
     val isEncrypted: Boolean by lazy {
         currentTrailer()?.get("Encrypt") != null

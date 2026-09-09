@@ -96,13 +96,13 @@ fun <T> UiStateContent(
  * This state, or null while the screen is still in a first wait short enough
  * not to be worth mentioning.
  *
- * A screen is usually waiting underneath a screen change: a book opened from the
- * shelf arrives on a push. One that opens in eighty milliseconds used to show a
- * spinner and cross-fade it away halfway through that push - three movements
- * over each other, and which of them the reader caught depended on how fast the
- * file opened. Held back for the length of the push instead, a book that opens
- * quickly is simply there when the screen lands, and one that does not gets a
- * spinner once the screen is still enough to read it on.
+ * A screen is usually waiting underneath a screen change - a book opened from
+ * the shelf arrives on a push. One that opened in eighty milliseconds used to
+ * show a spinner and cross-fade it away halfway through that push: three
+ * movements over each other, and which the reader caught depended on how fast
+ * the file opened. Held back for the length of the push, a book that opens
+ * quickly is simply there when the screen lands, and a slow one gets a spinner
+ * once the screen is still enough to read it on.
  *
  * Only the first wait. Once a screen has drawn anything it keeps drawing:
  * blanking a page somebody is already looking at because it is being read again

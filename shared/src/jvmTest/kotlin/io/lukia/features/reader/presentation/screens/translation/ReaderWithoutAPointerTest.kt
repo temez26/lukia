@@ -18,11 +18,11 @@ import kotlin.test.assertTrue
 /**
  * That the reader can be used by somebody who cannot point at a word.
  *
- * Everything this app is for used to be a coordinate. Translating a sentence was
- * a tap on that sentence, looking a word up was a hold on that word, and both
- * were reached through `pointerInput` and nothing else - so a reader working by
- * voice, by switch, by keyboard or through a screen reader could open a book,
- * turn its pages, and do none of the things the book was opened in this app for.
+ * Everything this app is for used to be a coordinate: translating a sentence was
+ * a tap on it, looking a word up was a hold on it, and both were reached through
+ * `pointerInput` and nothing else - so a reader working by voice, switch,
+ * keyboard or screen reader could open a book, turn its pages, and do none of
+ * the things the book was opened in this app for.
  *
  * A screen reader lands on the paragraph, which is what speaks; the action to
  * translate it is therefore on the paragraph rather than on the block around it.

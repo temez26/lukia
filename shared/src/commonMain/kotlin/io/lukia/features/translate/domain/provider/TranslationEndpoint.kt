@@ -3,30 +3,25 @@ package io.lukia.features.translate.domain.provider
 /**
  * Whether an address is one this app will send a passage to unencrypted.
  *
- * Pointing the reader at their own machine means plain HTTP: a model server on
- * a laptop has no certificate, and telling somebody to obtain one before they
- * can translate a sentence is not a real answer. So cleartext is allowed - but
- * only to their own machine or their own network, never across the internet.
+ * Pointing the reader at their own machine means plain HTTP: a model server on a
+ * laptop has no certificate, and telling somebody to obtain one before they can
+ * translate a sentence is not a real answer. So cleartext is allowed to their
+ * own machine or network, never across the internet - what travels here is a
+ * sentence out of a book somebody is reading and that book's title, which over a
+ * LAN is between them and their own computer and over the open internet is
+ * between them and everyone on the way.
  *
- * The distinction matters because what travels here is a sentence out of a book
- * somebody is reading, along with the title of that book. Over a LAN that is
- * between them and their own computer. Over the open internet in plain text it
- * is between them and everyone on the way.
+ * This is the whole restriction on both platforms, and has to be. Android's
+ * network security configuration matches on domains and cannot say "private
+ * ranges only"; iOS stopped applying transport security to numeric addresses in
+ * iOS 10, so `http://8.8.8.8` is a request the system is happy to make. Neither
+ * platform refuses this on the app's behalf.
  *
- * This is the whole of the restriction on both platforms, and it has to be.
- * Android's network security configuration matches on domains and cannot say
- * "private ranges only"; iOS stopped applying transport security to numeric
- * addresses altogether in iOS 10, so `http://8.8.8.8` is a request the system
- * is perfectly happy to make. Neither platform will refuse this on the app's
- * behalf, so nothing else does.
- *
- * Everything it cannot decide, it refuses. A name that resolves to a private
- * address, an address written in a form not recognised here - each is a
- * translation that does not happen rather than a passage sent in the clear, and
- * https is always available to whoever meant it.
- *
- * HTTPS is accepted anywhere. This only ever refuses plain HTTP to a public
- * address, which is the one case that is a mistake rather than a choice.
+ * Everything it cannot decide, it refuses: a name resolving to a private
+ * address, an address in an unrecognised form. Each is a translation that does
+ * not happen rather than a passage sent in the clear, and https is always
+ * available to whoever meant it - this only ever refuses plain HTTP to a public
+ * address, the one case that is a mistake rather than a choice.
  */
 fun isAllowedTranslationEndpoint(url: String): Boolean {
     val trimmed = url.trim()

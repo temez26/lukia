@@ -24,12 +24,11 @@ data class Sentence(
  * than a reading, and a whole paragraph replaced at once loses the place the
  * reader had in it.
  *
- * Deliberately a heuristic rather than a language model of punctuation. It gets
- * decimals, initials and the common abbreviations right, and a sentence it
- * splits one clause early costs the reader a second tap - which is a far
- * cheaper failure than the alternative of not offering sentences at all.
- * Whitespace between sentences belongs to neither of them, so a highlight sits
- * on the words rather than trailing into the gap after them.
+ * Deliberately a heuristic rather than a model of punctuation: it gets decimals,
+ * initials and common abbreviations right, and a split one clause early costs
+ * the reader a second tap - far cheaper than not offering sentences at all.
+ * Whitespace between sentences belongs to neither, so a highlight sits on the
+ * words rather than trailing into the gap.
  */
 fun splitIntoSentences(text: String): List<Sentence> {
     val sentences = mutableListOf<Sentence>()

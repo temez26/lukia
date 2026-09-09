@@ -8,36 +8,32 @@ import androidx.compose.ui.unit.dp
  * Tuning for the translucent "glass" chrome - the reader's toolbar and panels,
  * the menus, the circular chrome buttons - that sits above scrolling content.
  *
- * IMPORTANT - what this is, what it is not, and why it cannot be the real thing:
+ * IMPORTANT - this is a hand-drawn approximation, and cannot be the real thing:
  *
  * Apple's Liquid Glass is a system material (`UIGlassEffect`, `.glassEffect()`).
- * JetBrains' own guidance is that a Compose Multiplatform app gets it only
- * through a native SwiftUI shell, because the system renders it through native
- * `TabView`, `NavigationStack` and toolbar APIs - which means it reaches an app's
- * tab bar and navigation bar, and nothing else. It cannot be applied to a
- * component Compose draws, because Compose does not draw with UIKit: it renders
- * its own tree through Skia. A button or a search field composed in Kotlin is
- * therefore out of its reach, whatever the shell around it.
+ * Per JetBrains' guidance a Compose Multiplatform app gets it only through a
+ * native SwiftUI shell, since the system renders it through native `TabView`,
+ * `NavigationStack` and toolbar APIs - so it reaches the tab bar and navigation
+ * bar and nothing else. It cannot apply to a component Compose draws: Compose
+ * renders its own tree through Skia rather than UIKit, so a button composed in
+ * Kotlin is out of reach whatever the shell around it.
  *
- * There is one escape hatch, and it is worth knowing its shape before reaching
- * for it. `UIKitInteropProperties(placedAsOverlay = true)` - experimental, since
- * Compose Multiplatform 1.10 - draws an interop view *above* the Compose canvas,
- * so a real `UIVisualEffectView` can sit over Compose content. Above, though, is
- * the whole problem: the native view covers whatever Compose drew beneath it, so
- * anything inside that glass has to be native too. It buys a natively blurred
- * bar containing native controls, not a Compose control on native glass. By
- * default interop goes the other way - underneath, with Compose punching a hole
- * to reveal it - which cannot carry Compose content on top either.
+ * The one escape hatch is `UIKitInteropProperties(placedAsOverlay = true)`
+ * (experimental, since Compose Multiplatform 1.10), which draws an interop view
+ * *above* the Compose canvas so a real `UIVisualEffectView` can sit over it.
+ * Above is the problem: the native view covers whatever Compose drew beneath, so
+ * anything inside that glass must be native too - a natively blurred bar of
+ * native controls, not a Compose control on native glass. Default interop goes
+ * the other way, underneath with Compose punching a hole, which cannot carry
+ * Compose content on top either.
  *
- * `Modifier.blur()` is no substitute on any platform: it blurs a composable's
- * *own children*, not the backdrop behind it, and it is a no-op on Android below
- * API 31 (this app's minSdk is 23).
+ * `Modifier.blur()` is no substitute anywhere: it blurs a composable's *own
+ * children* rather than the backdrop, and is a no-op below API 31 (minSdk 23).
  *
- * So this is a hand-drawn approximation - layered translucency, a specular top
- * highlight and a hairline border - and it is one deliberately, on every
- * platform. It is tuned to be most pronounced on Apple platforms, where the look
- * is native, and more opaque elsewhere so the chrome stays legible without the
- * blur that would normally carry it.
+ * So: layered translucency, a specular top highlight and a hairline border, on
+ * every platform. Tuned most pronounced on Apple platforms where the look is
+ * native, and more opaque elsewhere so the chrome stays legible without the blur
+ * that would normally carry it.
  */
 data class GlassStyle(
     /**

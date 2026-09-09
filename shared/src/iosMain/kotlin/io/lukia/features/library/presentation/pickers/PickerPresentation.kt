@@ -10,21 +10,19 @@ import platform.UIKit.UIWindowScene
 /**
  * Presents [viewController] over whatever the reader is currently looking at.
  *
- * Written once because both pickers need it and both were finding the window
- * the same wrong way: `UIApplication.windows` is deprecated from iOS 15 and
- * answers every window the process has in no promised order, so its first entry
- * is the app's own only until something else - a keyboard, an alert, a system
- * sheet - puts a window of its own in front. Presenting from the wrong one is
- * not an error; it is a picker that never appears, and a reader who pressed
- * "Add books" and got nothing.
+ * Written once because both pickers need it and both found the window the same
+ * wrong way: `UIApplication.windows` is deprecated from iOS 15 and answers every
+ * window in no promised order, so its first entry is the app's own only until a
+ * keyboard, an alert or a system sheet puts one in front. Presenting from the
+ * wrong window is not an error - it is a picker that never appears, and a reader
+ * who pressed "Add books" and got nothing.
  *
- * Asked of the foreground scene instead, which is the answer that has been right
- * since iOS 13 and is the only one Apple offers now.
+ * Asked of the foreground scene instead, right since iOS 13 and the only answer
+ * Apple offers now.
  *
- * The chain of already-presented controllers is walked to the end for the same
- * reason. Both pickers can be reached from inside the settings sheet, and UIKit
- * refuses - silently - to present a second thing from a controller that is
- * already presenting one.
+ * The chain of already-presented controllers is walked to the end because both
+ * pickers can be reached from inside the settings sheet, and UIKit silently
+ * refuses to present a second thing from a controller already presenting one.
  */
 internal fun presentOverApp(viewController: UIViewController) {
     val top = topViewController() ?: return

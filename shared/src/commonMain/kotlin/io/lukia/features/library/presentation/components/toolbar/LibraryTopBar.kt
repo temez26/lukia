@@ -73,16 +73,14 @@ private fun searchPlaceholder(searchableCount: Int): String {
 /**
  * The library's bar: search and the actions button, on one row.
  *
- * The search field lives up here rather than in the scrolling content because it
- * is the one control worth being able to reach without scrolling back to the top
- * of a long library - and because a field beside the button that opens the app's
- * other actions is what the row is for. Everything that describes the library
- * rather than acting on it stays below, in the content, where it can scroll away.
+ * The search field lives up here because it is the one control worth reaching
+ * without scrolling back to the top of a long library. Everything that describes
+ * the library rather than acting on it stays below, where it can scroll away.
  *
  * Where the field is not wanted - see [showSearch] - the row carries the
- * screen's name instead. That is a concession to the tab bar underneath it and
- * to nothing else: a screen one of three tabs leads to has to confirm which of
- * the three was pressed, where the only screen a desktop window has does not.
+ * screen's name instead. That is a concession to the tab bar underneath and
+ * nothing else: a screen one of three tabs leads to has to confirm which was
+ * pressed; the only screen a desktop window has does not.
  *
  * [collapsedProgress] is a lambda rather than a value so that scrolling redraws
  * this bar without recomposing it - it is read only inside draw and layer blocks.

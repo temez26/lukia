@@ -12,15 +12,13 @@ import io.lukia.features.translate.domain.translationCacheKey
  * about before.
  *
  * This is where the feature stops costing money to re-read a chapter. Without
- * it, closing a book and opening it again throws away every translation in it,
- * and the second read of a page is charged exactly like the first - which is the
- * one thing a reader working through a book in a language they are learning will
- * do constantly.
+ * it, reopening a book throws away every translation in it and the second read
+ * of a page is charged like the first - which is what a reader working through a
+ * book in a language they are learning does constantly.
  *
- * A decorator rather than a step inside the use case because caching is not
- * something translating a passage needs to know about: the port is
- * [Translator], this is a [Translator], and the composition happens once in the
- * dependency graph.
+ * A decorator rather than a step inside the use case, because caching is not
+ * something translating a passage needs to know about: the port is [Translator],
+ * this is a [Translator], and the composition happens once in the graph.
  *
  * A failure is not cached. What fails here is a key, a network or a service
  * having a bad minute, all of which are worth trying again - and a remembered

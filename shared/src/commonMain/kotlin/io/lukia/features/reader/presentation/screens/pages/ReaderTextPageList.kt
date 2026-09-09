@@ -40,12 +40,11 @@ import io.lukia.features.translate.domain.settings.TranslationGestures
  * and holds only what was measured to fit it, which is what makes "page 42 of
  * 380" a real answer rather than a count of chapters.
  *
- * The measure never exceeds the window. Above 100% a PDF page is deliberately
- * drawn wider than the space available and panned, because that is the only way
- * to get closer to type whose size was fixed when the file was made; text has no
- * such problem, and a line of prose running off both edges of the window is not
- * a way to read anything. So the width presets set the measure up to the width
- * available and stop there, and getting closer is what the text size is for -
+ * The measure never exceeds the window. Above 100% a PDF page is drawn wider
+ * than the space and panned, the only way to get closer to type whose size was
+ * fixed when the file was made; text has no such problem, and a line of prose
+ * running off both edges is not a way to read anything. So the width presets
+ * stop at the width available, and getting closer is what the text size is for -
  * which is also what a pinch does here.
  */
 @Composable
@@ -150,15 +149,13 @@ internal fun TextPageList(
  * The page a stored position names in this layout of the book.
  *
  * The stored page number itself, wherever the book is the length it was stored
- * against - which is what reopening a book almost always is: the same window,
- * the same type, the same book, and so the same pages. No arithmetic can improve
- * on the number that was written down.
+ * against - which reopening almost always is: the same window, type and book,
+ * and so the same pages. No arithmetic improves on the number written down.
  *
- * It is also the only reading of a stored position that can be answered before
- * the book has been laid out from end to end, which is what lets the reader be
- * put on their page while the later chapters are still being measured. A
- * fraction has to be multiplied by a page count, and a page count is the one
- * thing a book that is still growing does not have.
+ * It is also the only reading answerable before the book has been laid out end
+ * to end, which is what lets the reader be put on their page while later
+ * chapters are still being measured: a fraction needs a page count, and a page
+ * count is what a growing book does not have.
  *
  * A finished book of a different length is a book that has been re-set since -
  * a larger type, a turned phone - and there the fraction is the better answer,
@@ -177,31 +174,27 @@ private fun PaginatedBook.openingPage(openedAt: ReadingProgress): Int {
 /**
  * Keeps the reader where they were when the book is laid out again.
  *
- * A page number does not survive a re-layout: the same place in a book set one
- * step larger is a different page, and a hundred pages further into a long one.
- * What is followed instead is the place - the block at the top of the page they
- * were on - which is a fact about the book rather than about this layout of it.
- * Without this, changing the type size would move the reader to somewhere else
- * in the book, which is the one thing a settings panel must never do.
+ * A page number does not survive a re-layout: the same place set one step larger
+ * is a different page, and a hundred pages further into a long book. What is
+ * followed instead is the place - the block at the top of the page they were on
+ * - a fact about the book rather than about this layout. Without this, changing
+ * the type size would move the reader somewhere else in the book.
  *
- * The first layout has no place to go back to, so it goes to [openedAt] instead
- * - see [openingPage]. Nothing happens at all until that is known, because a
- * book that started following the reader before they had been put anywhere would
- * take its own first page for their place and never move off it. That is not a
- * hypothetical: a book is now laid out faster than its position is read back.
+ * The first layout has no place to go back to, so it goes to [openedAt] - see
+ * [openingPage]. Nothing happens until that is known, because a book that
+ * started following the reader before they were put anywhere would take its own
+ * first page for their place and never move off it. Not hypothetical: a book is
+ * now laid out faster than its position is read back.
  *
- * This runs again every time more of a book arrives - a book is laid out a run
- * at a time, and each run makes it longer - so it moves the reader only where
- * they are not already. Without that, a book still being measured would snap
- * back to the top of the page every time it grew, under the finger of somebody
- * scrolling through it.
+ * This runs again every time more of the book arrives, so it moves the reader
+ * only where they are not already. Without that, a book still being measured
+ * would snap back to the top of the page every time it grew.
  *
  * The place is saved rather than merely remembered, because it is the only
  * record of where the reader is now: [openedAt] is where the book *opened* and
- * is deliberately never moved off that. A rotation takes the composition down
- * and leaves the ViewModel standing, so a place held in `remember` came back
- * null and sent the reader to the page they opened at - discarding the whole
- * sitting, and then storing that as their position.
+ * never moves. A rotation takes the composition down and leaves the ViewModel
+ * standing, so a place held in `remember` came back null and sent the reader to
+ * the page they opened at - discarding the sitting, then storing that.
  */
 @Composable
 private fun FollowPlaceAcrossLayout(

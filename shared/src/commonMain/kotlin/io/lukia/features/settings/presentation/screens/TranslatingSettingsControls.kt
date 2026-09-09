@@ -40,16 +40,16 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * What is translated, when, and into what.
  *
- * Everything a reader can use on the day they install the app, and nothing
- * else. The language, what a thumb on the page does, what answers about a single
- * word, and where they are sent to read more about one - all of it reached over
- * an ordinary web API, free, with nothing to fill in.
+ * Everything a reader can use on the day they install the app and nothing else:
+ * the language, what a thumb on the page does, what answers about a single word,
+ * and where they are sent to read more - all over an ordinary web API, free,
+ * with nothing to fill in.
  *
  * What only a model can do is a separate page - see [AiTranslationSettings]. A
  * word is the one thing a service that knows nothing about the book can be
- * relied on for, and it is also the only thing a dictionary has an entry for, so
- * the line between the two pages falls exactly there: a word here, a sentence
- * and a paragraph and a screenful at a time over there.
+ * relied on for, and the only thing a dictionary has an entry for, so the line
+ * falls exactly there: a word here; a sentence, a paragraph and a screenful at a
+ * time over there.
  *
  * The language comes first because it is the one setting nothing works without,
  * and the one most people came here to change.
@@ -121,12 +121,11 @@ internal fun TranslatingSettings(
  * What a thumb on the page does: one word translated, and that word asked to say
  * more.
  *
- * Two gestures with one job each, written as switches rather than as a row of
- * units to choose between. The units are still there - a tap can be raised to
- * the sentence or the paragraph - but only a translation service can answer
- * either, so that choice went where the service is and this became the question
- * a reader can actually answer on the day they install the app: does a tap do
- * anything, and does a hold.
+ * Two gestures with one job each, written as switches rather than a row of units
+ * to choose between. The units still exist - a tap can be raised to the sentence
+ * or the paragraph - but only a translation service can answer either, so that
+ * choice went where the service is, leaving the question a reader can answer on
+ * day one: does a tap do anything, and does a hold.
  *
  * The switch says only whether a tap translates. How much it asks for is a
  * separate setting on the AI translation page - see

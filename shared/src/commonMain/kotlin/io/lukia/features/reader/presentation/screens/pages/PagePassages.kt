@@ -49,16 +49,15 @@ internal class PagePassages(
      * paragraphs, one request each, rather than every sentence on it.
      *
      * A page is thirty or forty sentences and a handful of paragraphs, and the
-     * difference between asking about them one way and the other is most of what
-     * translating a page costs. Measured against a model running on the reader's
-     * own machine, on twelve sentences of one block:
+     * difference between the two is most of what translating a page costs.
+     * Measured on a local model, twelve sentences of one block:
      *
      *     a request per sentence, four at once   44s, 7,500 tokens
      *     the paragraph, in one request          12s, 1,000 tokens
      *
-     * Nearly all of that is the same work repeated. Each of those requests
-     * carried the standing instructions, the book, and the rest of the page as
-     * context - so the page was read once per sentence on it.
+     * Nearly all of that is repeated work: each request carried the standing
+     * instructions, the book and the rest of the page as context, so the page
+     * was read once per sentence on it.
      *
      * A block too long to send whole falls back to its own sentences, which is
      * what this used to do for all of them - see [MAX_TRANSLATABLE_CHARS].
@@ -114,14 +113,12 @@ internal class PagePassages(
      * there can only mean that passage, and what the reader wants is the book's
      * words back.
      *
-     * It has to be asked separately because the translation is not drawn inside
-     * the words it replaces. A page cannot be re-set the way a reflowable book
-     * can, so the panel is laid over the page - starting at the passage's corner
-     * and free to run wider and further down than the passage ever did, since a
-     * translation is rarely the length of what it stands for. Hit-testing the
-     * original's own rectangles therefore misses most of what the reader can
-     * see, and misses a single word almost entirely: its panel is several times
-     * the size of the word under it.
+     * Asked separately because the translation is not drawn inside the words it
+     * replaces: a page cannot be re-set the way a reflowable book can, so the
+     * panel is laid over it, starting at the passage's corner and free to run
+     * wider and further down than the passage did. Hit-testing the original's
+     * rectangles therefore misses most of what the reader can see - and misses a
+     * single word almost entirely, its panel being several times the word's size.
      */
     fun translationAt(x: Float, y: Float, translations: SentenceTranslations): PassageSelection? {
         val sentence = sentences.sentenceAt(x, y) ?: return null

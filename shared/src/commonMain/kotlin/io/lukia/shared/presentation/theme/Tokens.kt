@@ -97,12 +97,12 @@ object LukiaElevation {
  * the back control a screen scrolls under, the edge a column must not end hard
  * against - rather than the gap between two things on the page.
  *
- * Here because each of them was written out once per screen. The settings body,
- * the book detail body and the statistics body each carried a private
- * `TopChromeClearance` of 68dp under identical documentation, and the library
- * grid, the search results and the home rows each carried their own 24dp tail.
- * Three copies of a number is three chances for two screens that scroll under
- * the same control to stop agreeing about where it ends.
+ * Here because each was written out once per screen: the settings, book detail
+ * and statistics bodies each carried a private `TopChromeClearance` of 68dp
+ * under identical documentation, and the library grid, search results and home
+ * rows each carried their own 24dp tail. Three copies of a number is three
+ * chances for two screens under the same control to stop agreeing about where it
+ * ends.
  */
 object Clearance {
 
@@ -133,23 +133,21 @@ val FocusRingWidth: Dp = 2.dp
 /**
  * The size of the things a user points at.
  *
- * Split from [LukiaDimens] because these answer a different question. Layout
- * metrics ask how much room there is; these ask what is doing the pointing. A
- * finger needs [MinTouchTarget] whatever the window; a mouse cursor is a few
- * pixels across and a 44dp button under one is mostly padding - which is most of
- * what makes a desktop window look like a scaled-up phone.
+ * Split from [LukiaDimens] because these answer a different question: layout
+ * metrics ask how much room there is, these ask what is doing the pointing. A
+ * finger needs [MinTouchTarget] whatever the window; a 44dp button under a mouse
+ * cursor is mostly padding, which is most of what makes a desktop window look
+ * like a scaled-up phone.
  *
- * Window width used to stand in for the input device here, as it still does for
- * tooltips and the search field's proportions. It cannot: those are questions
- * about room, and this is not. A 1024dp iPad is pointed at with a finger and was
- * being handed 32dp controls and 24dp icon buttons - under Apple's 44pt floor
- * and Material's 48dp one - and so, for as long as it was turned, was an
- * ordinary phone in landscape at 844dp.
+ * Window width used to stand in for the input device, as it still does for
+ * tooltips and the search field's proportions. It cannot here: a 1024dp iPad is
+ * pointed at with a finger and was handed 32dp controls and 24dp icon buttons -
+ * under Apple's 44pt floor and Material's 48dp one - and so was an ordinary
+ * phone turned to landscape at 844dp.
  *
- * So this asks the platform instead, which is the same thing `App` already asks
- * to decide which navigation the app has. A build somebody holds is touched at
- * every window size it can be turned to; a desktop is pointed at whether or not
- * its window is small.
+ * So this asks the platform instead, as `App` already does to decide which
+ * navigation the app has: a build somebody holds is touched at every window size
+ * it can be turned to, and a desktop is pointed at however small its window.
  */
 @Immutable
 data class LukiaMetrics(

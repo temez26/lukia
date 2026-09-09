@@ -28,20 +28,18 @@ internal const val NOTE_SCALE = 0.82f
 /**
  * What the translator had to say about this paragraph, under it.
  *
- * Two different things share this line, because they belong in the same place:
- * a remark about an ambiguous word, and the reason a passage could not be
- * translated at all. Under rather than beside, because a note set into the prose
- * is a footnote in the middle of a sentence and the reader is here to read the
- * book.
+ * Two things share this line because they belong in the same place: a remark
+ * about an ambiguous word, and the reason a passage could not be translated.
+ * Under rather than beside, because a note set into the prose is a footnote in
+ * the middle of a sentence.
  *
- * A failure has to appear somewhere. Marked only by a pair of dots it says
- * nothing about what went wrong, which leaves somebody looking at a mark and
- * wondering whether anything is happening.
+ * A failure has to appear somewhere: marked only by a pair of dots it says
+ * nothing about what went wrong, leaving somebody wondering whether anything is
+ * happening at all.
  *
- * Single words have both as much as sentences do - a word asked about on its own
- * is usually the ambiguous one, so its note is the one most worth reading - and
- * they are gathered in reading order with the sentences they sit in rather than
- * in a list of their own.
+ * Single words get both as much as sentences do - a word asked about alone is
+ * usually the ambiguous one - and are gathered in reading order with the
+ * sentences they sit in rather than in a list of their own.
  */
 @Composable
 internal fun TranslatorsRemarks(

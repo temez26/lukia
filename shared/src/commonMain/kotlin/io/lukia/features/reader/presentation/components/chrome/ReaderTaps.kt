@@ -19,27 +19,24 @@ import kotlinx.coroutines.withTimeoutOrNull
 /**
  * What a finger on the book means: a passage, or the chrome.
  *
- * A passage takes one tap and the chrome takes two. That asymmetry is the whole
- * reason this exists rather than
+ * A passage takes one tap and the chrome takes two. That asymmetry is why this
+ * exists rather than
  * [androidx.compose.foundation.gestures.detectTapGestures]: a single tap that
- * misses - the gap between two sentences, the ragged end of the last line, a
- * translation the reader meant to put back - was read as a tap on the page, and
- * a tap on the page threw the toolbar over the words they were reading. One miss
+ * misses - the gap between two sentences, the ragged end of a line - was read as
+ * a tap on the page, which threw the toolbar over the words being read. One miss
  * should cost nothing.
  *
- * A tap that does land on a passage is acted on at once, with no wait to see
- * whether a second follows. That is the part `detectTapGestures` cannot do:
- * given a double-tap handler it delays *every* tap by the double-tap window,
- * which in a reading app is a third of a second of nothing happening each time
- * somebody asks about a sentence. Here [onTap] itself says whether the text
- * answered, and only an unanswered tap waits.
+ * A tap that lands on a passage is acted on at once, with no wait for a second.
+ * That is what `detectTapGestures` cannot do: given a double-tap handler it
+ * delays *every* tap by the double-tap window, a third of a second of nothing
+ * happening each time somebody asks about a sentence. Here [onTap] says whether
+ * the text answered, and only an unanswered tap waits.
  *
- * A press of the second mouse button - which on a laptop is two fingers on the
- * trackpad - is its own question, answered at once rather than after the half
- * second a hold takes. It is not a hold with a mouse attached: a hold is the
- * reader's own gesture with their own setting behind it, and this is what every
- * desktop already means "tell me about this" with. Which is why it goes to
- * [onQuestion] rather than to [onHold].
+ * The second mouse button - two fingers on a trackpad - is its own question,
+ * answered at once rather than after the half second a hold takes. It goes to
+ * [onQuestion] rather than [onHold] because a hold is the reader's own gesture
+ * with their own setting behind it, while this is what every desktop already
+ * means "tell me about this" with.
  *
  * @param onHold where a finger was held down.
  * @param onQuestion where the second mouse button was pressed.
@@ -107,11 +104,10 @@ private suspend fun AwaitPointerEventScope.awaitTap(
  * The press that begins a gesture, whichever button made it.
  *
  * Written out rather than left to [awaitFirstDown], which on desktop answers to
- * the primary mouse button and nothing else - so the second button never began a
- * gesture at all, and the branch above it could not be reached however the event
- * was read. The behaviour differs between desktop and Android for reasons
- * Compose itself calls a thing to be aligned one day, which is reason enough not
- * to build a gesture on top of it.
+ * the primary mouse button only - so the second button never began a gesture and
+ * the branch above could not be reached. The behaviour differs between desktop
+ * and Android for reasons Compose itself calls a thing to align one day, which
+ * is reason enough not to build a gesture on it.
  *
  * The two buttons a reader has are taken and the rest are left. A middle click
  * is a scroll on most machines and a paste on some, and neither is a question

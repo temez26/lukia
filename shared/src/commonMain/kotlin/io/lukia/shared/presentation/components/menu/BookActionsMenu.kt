@@ -21,10 +21,10 @@ import org.jetbrains.compose.resources.stringResource
  * Actions for one book, hanging under whatever opened it - a card in the library
  * grid, or the cover on the detail screen.
  *
- * Under rather than over: a menu covering the book it acts on hides the very
- * thing the reader is choosing about, and on a phone a card is narrower than this
- * menu, so an overlaid menu swallows it whole. This is also where the library's
- * own menu sits under its button, which is what makes the two read as one app.
+ * Under rather than over: a menu covering the book it acts on hides the thing
+ * the reader is choosing about, and on a phone a card is narrower than the menu,
+ * so an overlaid one swallows it whole. The library's own menu sits under its
+ * button for the same reason, which is what makes the two read as one app.
  *
  * [onShowDetails] and [onSelectBooks] are left out where they have nowhere to
  * go: the details when they are already on screen, and selecting when the menu

@@ -7,14 +7,14 @@ import io.lukia.core.domain.document.DocumentType
  * Everything the reader has asked of their library: which shelf they are on,
  * what they have narrowed it to, what they typed, and the order they want it in.
  *
- * One value rather than a field per control. The library is narrowed in one
- * place from it, which is what stops a filter and a count disagreeing about the
- * same library, and it makes "clear all of this" a single expression rather than
- * something every new filter has to remember to join.
+ * One value rather than a field per control: the library is narrowed from it in
+ * one place, which stops a filter and a count disagreeing about the same
+ * library, and makes "clear all of this" one expression rather than something
+ * every new filter has to remember to join.
  *
  * The refinements are single-valued - one format, one category - rather than
  * sets. Two categories at once is a question a reader almost never has, and
- * offering it turns every menu row into a checkbox and the chip above it into a
+ * offering it turns every menu row into a checkbox and the chip above into a
  * list that no longer fits.
  */
 @Immutable

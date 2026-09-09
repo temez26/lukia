@@ -4,16 +4,15 @@ package io.lukia.core.domain.document
  * What books this device has, for whoever only needs to look one up.
  *
  * The reader opens a book by location and the statistics screen counts what is
- * on the shelf; neither puts anything there or takes anything away. Kept apart
- * from the library's own `LibraryRepository`, which extends this with the four
- * operations that change what is on the shelf, so that asking what is on it does
- * not come with the ability to empty it.
+ * on the shelf; neither adds or removes anything. Kept apart from the library's
+ * `LibraryRepository`, which extends this with the four operations that change
+ * the shelf, so asking what is on it does not come with the ability to empty it.
  *
  * Here rather than in the library feature for the same reason
- * [io.lukia.core.domain.reading.ReadingProgressRepository] is here: three
- * features read it, it is written entirely in types this package already owns,
- * and a port two features share is not one feature's property. The implementation
- * stays where the storage is - see `features/library/infrastructure`.
+ * [io.lukia.core.domain.reading.ReadingProgressRepository] is: three features
+ * read it, it is written entirely in types this package owns, and a port two
+ * features share is not one feature's property. The implementation stays where
+ * the storage is - see `features/library/infrastructure`.
  */
 interface DocumentCatalogue {
 

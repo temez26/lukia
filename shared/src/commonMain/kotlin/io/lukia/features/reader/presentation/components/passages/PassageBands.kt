@@ -27,19 +27,16 @@ private val HighlightBleed: Dp = 2.5.dp
  * How far above and below the baseline the highlight reaches, in multiples of
  * the size the type is set at.
  *
- * Measured from the baseline rather than taken in from the edges of the line,
- * which is what this used to do and why the highlight sat high on the words.
- * A line box is the type plus its leading, and that leading is not shared out
- * evenly: it is split in proportion to the ascent and the descent, so most of it
- * lands above - and it is trimmed off the first line of a paragraph altogether.
- * The middle of that box is nowhere in particular, and a shape centred on it is
- * centred on nothing.
+ * Measured from the baseline rather than in from the edges of the line, which is
+ * what this used to do and why the highlight sat high on the words. A line box
+ * is the type plus its leading, and that leading is split in proportion to the
+ * ascent and descent - so most lands above, and it is trimmed off a paragraph's
+ * first line altogether. The middle of that box is nowhere in particular.
  *
- * The baseline is where the type actually sits, on every line, trimmed or not.
- * These two reach past the ascenders and past the descenders by about as much
- * again, which puts the middle of the shape slightly above the baseline - which
- * is where the weight of a line of mixed-case text is, and so where the eye
- * reads the middle of it to be.
+ * The baseline is where the type sits on every line, trimmed or not. These two
+ * reach past the ascenders and descenders by about as much again, putting the
+ * middle of the shape slightly above the baseline - where the weight of a line
+ * of mixed-case text is, and so where the eye reads its middle to be.
  */
 private const val BAND_ABOVE_BASELINE = 0.86f
 private const val BAND_BELOW_BASELINE = 0.30f

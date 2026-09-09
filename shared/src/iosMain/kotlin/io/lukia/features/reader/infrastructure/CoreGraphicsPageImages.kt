@@ -45,26 +45,24 @@ import platform.CoreGraphics.kCGPDFCropBox
  * The pictures on one page of a PDF, in the places they were drawn.
  *
  * A PDF has no list of the pictures on a page - it has a program that draws
- * them, and where each one lands depends on the transformations in force when
- * the drawing instruction is reached. So the only way to know both what a
- * picture is and where it went is to run the page as a renderer would and stop
- * at each image.
+ * them, and where each lands depends on the transformations in force when the
+ * instruction is reached. So the only way to know what a picture is and where it
+ * went is to run the page as a renderer would and stop at each image.
  *
- * PDFKit, which draws the pages this reader shows, has no way to ask that
- * question: it renders a page or hands over its text, and what is on the page
- * is not part of its vocabulary. So this drops to CoreGraphics, which will run
- * a page's program and call back on the operators it is asked about - four of
- * them here, the two that save and restore the transformation, the one that
- * changes it, and the one that draws something the page named.
+ * PDFKit, which draws the pages this reader shows, cannot answer that: it
+ * renders a page or hands over its text, and what is on the page is not in its
+ * vocabulary. So this drops to CoreGraphics, which runs a page's program and
+ * calls back on four operators - the two that save and restore the
+ * transformation, the one that changes it, and the one that draws.
  *
  * [figures] belongs to the document rather than to the page, and is what keeps
  * a mark printed on every leaf from being decoded on every leaf - see
  * [CoreGraphicsFigureBytes].
  *
- * Not found: an image written into the page's program rather than named by it,
- * the inline image. CoreGraphics does not offer its data to a scanner at all,
- * and the format exists for the small marks a page draws by hand - a rule, a
- * bullet - which are already below the size worth carrying into the text.
+ * Not found: the inline image, written into the page's program rather than named
+ * by it. CoreGraphics does not offer its data to a scanner, and the format
+ * exists for the small marks a page draws by hand - a rule, a bullet - already
+ * below the size worth carrying into the text.
  */
 @OptIn(ExperimentalForeignApi::class)
 internal fun coreGraphicsPageImages(

@@ -22,38 +22,29 @@ import kotlin.time.TimeSource
 /**
  * How many translated passages one open book keeps.
  *
- * Far more than a reader gets through in a sitting, and small enough that the
- * map is cheap to copy - which it is on every single state change, because the
- * whole screen reads it. Without a ceiling, a long evening with a long book
- * turns every tap into a copy of every translation made since it was opened.
- *
- * What falls out is the least recently touched, which is the part of the book
- * furthest behind the reader. Tapping it again asks for it again - and by then
- * the answer is in the stored cache, so asking costs nothing.
+ * The map is copied on every state change - the whole screen reads it - so
+ * without a ceiling a long evening turns every tap into a copy of every
+ * translation made since the book was opened. What falls out is the least
+ * recently touched, which is the part of the book furthest behind the reader;
+ * tapping it again hits the stored cache, so asking costs nothing.
  */
 private const val MAX_KEPT_PASSAGES = 400
 
 /**
  * How many passages a standing order has in flight at once.
  *
- * One tap has never needed this. Translating what is on screen does, and the
- * number matters more than it looks, because a model on the reader's own
- * machine is one machine: asking it four things at once does not answer them
- * four times faster, it answers all four at the end. Measured on a local model,
- * four blocks of a page:
+ * A model on the reader's own machine is one machine: four requests at once are
+ * answered all at the end, not four times faster. Measured locally, four blocks
+ * of a page:
  *
- *     one at a time    34s in total, and one arrived every 8s
- *     two at a time    23s in total, first one at 12s
- *     four at once     18s in total, and nothing at all until 18s
+ *     one at a time    34s total, one arriving every 8s
+ *     two at a time    23s total, first at 12s
+ *     four at once     18s total, nothing until 18s
  *
- * Two, because a page filling in steadily is worth more to somebody reading it
- * than the same page finishing four seconds sooner all at once - and because
- * whatever the reader taps has to get past this, and the fewer are in front of
- * it the sooner it does.
- *
- * A hosted service would take more without noticing. It is not given more
- * because it does not need it: what is in flight here is now a paragraph at a
- * time rather than a sentence, so a screenful is a handful of requests.
+ * Two, because a page filling in steadily beats one finishing four seconds
+ * sooner all at once, and because whatever the reader taps queues behind these.
+ * A hosted service could take more but does not need it - a request is now a
+ * paragraph rather than a sentence, so a screenful is a handful of them.
  */
 private const val MAX_AT_ONCE = 2
 
@@ -72,15 +63,12 @@ private val SHOW_ARRIVING_EVERY = 80.milliseconds
  *
  * A tap is one gesture with three meanings, decided by what the passage is
  * already showing: an untouched sentence is translated, a translated one flips
- * back to the original, and one showing the original flips forward again. That
- * is the whole of "back and forth" - and holding it here rather than in the
- * screen is what makes it something that can be tested without composing
- * anything.
+ * back to the original, and one showing the original flips forward again.
+ * Holding that here rather than in the screen is what makes it testable without
+ * composing anything.
  *
- * Translations are kept for as long as the book is open, up to
- * [MAX_KEPT_PASSAGES] of them. A reader comparing two renderings of the same
- * line flips between them for free, and a chapter read twice is not paid for
- * twice - the part that survives closing the book is
+ * Translations are kept while the book is open, up to [MAX_KEPT_PASSAGES], so
+ * flipping between two renderings is free. What survives closing the book is
  * [io.lukia.features.translate.infrastructure.CachingTranslator]'s doing rather
  * than this one's.
  */
@@ -91,21 +79,19 @@ class TranslationSession(
      * How the throttle in [showAsItArrives] tells the time.
      *
      * A parameter because it is the only way to hold that throttle to anything:
-     * it is the difference between a streamed answer costing one rebuild of the
-     * book's translations every eighty milliseconds and one per token, and on
-     * the monotonic clock a test can only assert which of those happened by
+     * on the monotonic clock a test can only assert whether a streamed answer
+     * rebuilt the book's translations per token or per eighty milliseconds by
      * waiting for real time to pass.
      */
     private val timeSource: TimeSource = TimeSource.Monotonic,
 ) {
 
     /**
-     * What is on screen, and the order it was last touched in - which is what
-     * decides who is forgotten first once [MAX_KEPT_PASSAGES] is reached.
+     * What is on screen, in last-touched order - which decides who is forgotten
+     * first once [MAX_KEPT_PASSAGES] is reached.
      *
-     * Only ever read and written from whatever thread the taps arrive on, which
-     * is the one the reader's [scope] runs on. The flow beside it is what
-     * everything else sees.
+     * Only ever touched from the thread taps arrive on, the one the reader's
+     * [scope] runs on. The flow beside it is what everything else sees.
      */
     private val kept = LinkedHashMap<TextAnchor, PassageTranslation>()
 
@@ -120,13 +106,11 @@ class TranslationSession(
      * a translation asked for before a book was put away arrives into the book
      * that replaced it - anchored at a sentence that may no longer be there.
      *
-     * A list of jobs rather than a scope of their own, because a scope of their
-     * own is a job nobody ever completes, and anything waiting for the reader's
-     * work to finish waits for that one forever. Held to the same rule as
-     * [kept]: only ever touched from the thread the taps arrive on, which is
-     * what [prune] is for - finished jobs are dropped as new ones are added
-     * rather than as each of them ends, since the end of one happens wherever
-     * it happened to end.
+     * A list rather than a scope of their own, because such a scope is a job
+     * nobody ever completes, and anything awaiting the reader's work waits for
+     * it forever. Held to [kept]'s rule of the tap thread only, which is what
+     * [prune] is for: finished jobs are dropped as new ones are added rather
+     * than as each ends, since each ends wherever it happened to.
      */
     private val asking = mutableListOf<Job>()
 
@@ -172,10 +156,8 @@ class TranslationSession(
      * Puts one passage back to the book's own words, or forward to its
      * translation again.
      *
-     * What a second gesture on an answered passage has always done, named so
-     * that something other than a gesture can ask for it: the reader can now
-     * hold a word to open what else it means, and the way back to the book's own
-     * word went with it into that panel.
+     * Named rather than left inside the tap handler because the word panel needs
+     * the way back to the book's own word too.
      *
      * Only a passage with an answer. One still arriving and one that failed have
      * nothing to flip between.
@@ -189,11 +171,10 @@ class TranslationSession(
     /**
      * [waitsItsTurn] is false for the passage the reader pointed at.
      *
-     * They are looking at it and it is one request, while the standing order
-     * behind it may be a page of them. Measured on a local model, a tap made to
-     * queue behind a page being translated took twenty seconds where the same
-     * tap on its own took six - which is the reader's own gesture stuck in a
-     * queue they did not ask for, and the thing [MAX_AT_ONCE] exists to bound
+     * It is one request, while the standing order behind it may be a page of
+     * them. Measured on a local model, a tap queued behind a page being
+     * translated took twenty seconds where the same tap alone took six -
+     * the reader's own gesture stuck in a queue [MAX_AT_ONCE] exists to bound
      * rather than to cause.
      */
     private fun fetch(anchor: TextAnchor, request: TranslationRequest, waitsItsTurn: Boolean) {
@@ -230,15 +211,13 @@ class TranslationSession(
      * Shows every translation at once, or puts every one of them back to the
      * book's own words.
      *
-     * A real change to each passage rather than a filter laid over them, because
-     * a filter would be a second opinion about what is on screen: a tap while it
-     * was on would flip a sentence underneath it and the reader would not find
-     * out until they turned the filter off. What this does instead is what the
-     * reader would have done by tapping every marked passage in turn.
+     * A real change to each passage rather than a filter laid over them: a
+     * filter would be a second opinion about what is on screen, so a tap while
+     * it was on would flip a sentence underneath it and the reader would not
+     * find out until they turned the filter off.
      *
-     * Only the ones that have an answer. A passage still arriving is left to
-     * arrive, and one that failed is left failed - neither has anything to show
-     * or to hide.
+     * Only the ones that have an answer - a passage still arriving or failed has
+     * nothing to show or to hide.
      */
     fun showTranslations(showing: Boolean) {
         var changed = false
@@ -282,18 +261,16 @@ class TranslationSession(
      * Puts a streamed answer on the page as it is written, but no more often
      * than [SHOW_ARRIVING_EVERY].
      *
-     * Every piece used to be published, and each one costs far more than it
-     * looks: [put] copies the whole map, and the screen above files every
-     * passage in the book by where it belongs each time that map changes - see
-     * `BookTranslations`. At a token apiece that is the book's translations
-     * rebuilt tens of times a second, on the thread that draws, for the sake of
-     * a word or two of text.
+     * [put] copies the whole map, and the screen above refiles every passage in
+     * the book each time that map changes - see `BookTranslations`. Publishing
+     * every piece meant that work tens of times a second, on the thread that
+     * draws, for the sake of a word or two of text.
      *
-     * On a clock rather than on a count of pieces, because how much text a
-     * piece carries is the service's business rather than this one's. The first
-     * goes up at once all the same, because it is the one that tells the reader
-     * the tap landed. The last is not waited for: the finished answer is put
-     * straight afterwards and says everything a final piece would have.
+     * On a clock rather than a count of pieces, because how much text a piece
+     * carries is the service's business rather than this one's. The first goes
+     * up at once all the same, because it is what tells the reader the tap
+     * landed. The last is not waited for: the finished answer is put straight
+     * afterwards and says everything a final piece would have.
      */
     private suspend fun Flow<String>.showAsItArrives(anchor: TextAnchor) {
         var shown: TimeMark? = null

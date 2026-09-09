@@ -8,17 +8,15 @@ import io.lukia.features.reader.domain.text.TextRun
 /**
  * Reads a plain text file as paragraphs.
  *
- * All this format states is where the line breaks are, which leaves one real
- * decision: whether a line break ends a paragraph. It cannot, because the
- * overwhelming majority of `.txt` books are hard-wrapped at some column the
- * writer's editor chose - honouring every break in one of those produces a book
- * of one-line paragraphs with a ragged edge that no longer matches the width it
- * is being read at. So a paragraph ends at a blank line, and single breaks
- * inside one are the wrapping they almost always are.
+ * All this format states is where the line breaks are, leaving one decision:
+ * whether a line break ends a paragraph. It cannot, because most `.txt` books
+ * are hard-wrapped at whatever column the writer's editor chose, and honouring
+ * every break there produces one-line paragraphs with a ragged edge that no
+ * longer matches the width being read at. So a paragraph ends at a blank line,
+ * and single breaks inside one are the wrapping they almost always are.
  *
- * A file that is not wrapped that way loses nothing: its paragraphs are already
- * separated by blank lines, or they are single long lines, and both come out
- * right.
+ * A file not wrapped that way loses nothing: its paragraphs are already
+ * separated by blank lines, or are single long lines, and both come out right.
  */
 internal fun readPlainText(
     bytes: ByteArray,

@@ -173,16 +173,14 @@ class LibraryViewModel(
      * The books the grid draws: everything [query] asks for, in the order it
      * asks for.
      *
-     * Every part of working this out - the filtering, the sorting, and the pass
-     * that builds [library] behind it - is done on [dispatcher] and handed back
-     * finished. The screen collects a list, so changing a filter costs it a
-     * recomposition rather than a search through the whole library on the frame
-     * the reader is watching.
+     * The filtering, the sorting and the pass that builds [library] all run on
+     * [dispatcher] and are handed back finished, so changing a filter costs the
+     * screen a recomposition rather than a search through the whole library on
+     * the frame the reader is watching.
      *
-     * The work is moved with `withContext` inside each transform rather than
-     * with `flowOn`, which would put a channel between the ViewModel and the
-     * screen: the computing is what has to leave the main thread, not the
-     * handing over of the answer.
+     * Moved with `withContext` inside each transform rather than with `flowOn`,
+     * which would put a channel between the ViewModel and the screen: the
+     * computing has to leave the main thread, not the handing over.
      */
     val books: StateFlow<List<LibraryBook>> = combine(library, _query) { books, query ->
         withContext(dispatcher) { books.matching(query) }

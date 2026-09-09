@@ -8,14 +8,14 @@ import java.io.File
  * Puts books handed to the desktop app from outside it into the app's inbox,
  * for the library to take when it next looks.
  *
- * The desktop's two ways of being handed one, and the counterpart to
+ * The desktop's two ways of being handed one - named on the command line, or
+ * dropped on the window - and the counterpart to
  * `Context.deliverIncomingDocuments` on Android and `deliverIncomingDocument` on
- * iOS: a file named on the command line - which is how every desktop opens a
- * document with an application - and a file dropped on the window.
+ * iOS.
  *
- * The inbox is resolved here rather than injected into the window, so that
- * `main` stays a thing that starts the app rather than a second place that knows
- * how the app is wired together.
+ * The inbox is resolved here rather than injected into the window, so `main`
+ * stays a thing that starts the app rather than a second place that knows how it
+ * is wired together.
  *
  * Anything that is not a file is dropped without a word. A reader who drags a
  * folder onto the window has not asked for every file under it to be imported,

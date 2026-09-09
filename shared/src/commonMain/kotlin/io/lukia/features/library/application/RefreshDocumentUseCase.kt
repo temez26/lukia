@@ -14,16 +14,13 @@ import kotlinx.coroutines.withContext
  * import could not make sense of - or an edition of the file that has been
  * replaced on disk since - is picked up without removing and re-adding it.
  *
- * There is otherwise no way to ask for this: a folder rescan leaves alone
- * everything already on the shelf, which is what makes rescanning a large
- * library cheap, and that has to be a deliberate action rather than a side
- * effect of importing.
+ * There is otherwise no way to ask for this: a folder rescan leaves everything
+ * already shelved alone, which is what makes rescanning a large library cheap.
  *
- * It is also the only thing that can find out a book's file has gone, and the
- * only thing that writes that down - see the note on `fileExists` in
- * `Document.sq`, which calls a rescan the thing that corrects it. Nothing else
- * looks: asking after every book on a shelf of five thousand is five thousand
- * trips to a file system or a content provider, which is not something to do
+ * It is also the only thing that finds out a book's file has gone, and the only
+ * thing that writes that down - see the note on `fileExists` in `Document.sq`.
+ * Nothing else looks: asking after every book on a shelf of five thousand is
+ * five thousand trips to a file system or content provider, not something to do
  * because a library was opened.
  */
 class RefreshDocumentUseCase(

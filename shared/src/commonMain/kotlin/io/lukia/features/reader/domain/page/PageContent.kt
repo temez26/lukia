@@ -5,11 +5,10 @@ package io.lukia.features.reader.domain.page
  * them.
  *
  * Split out of [DocumentPages] because re-setting a PDF as text needs this half
- * of it and no more - and needs several at once. The conversion reads a book
- * through as many handles as there are cores to read it with, and a handle
- * opened for that should not also open a renderer, measure every page and walk
- * the table of contents: the document it was opened beside has done all three
- * already, and doing them again per core is the parallelism paying itself back.
+ * and no more - and needs several at once. The conversion reads a book through
+ * one handle per core, and such a handle should not also open a renderer,
+ * measure every page and walk the contents: the document it was opened beside
+ * did all three already, and repeating them per core spends the parallelism.
  *
  * Holds an open handle on the file and is [AutoCloseable] for that reason -
  * whoever opens one owns closing it.

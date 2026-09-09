@@ -24,17 +24,16 @@ import platform.CoreGraphics.CGPDFStreamRef
  * The colour space a PDF image's samples are written in, as CoreGraphics needs
  * it to make sense of them.
  *
- * A PDF names its colour spaces in its own vocabulary, and half of them are
- * descriptions of a space rather than a space: an ICC profile with a component
- * count, a palette with a base space of its own, a name that stands for an
- * entry in the page's resources. CoreGraphics wants a `CGColorSpace`, so the
- * description has to be followed to whichever real space it ends at.
+ * A PDF names colour spaces in its own vocabulary, and half of them describe a
+ * space rather than being one: an ICC profile with a component count, a palette
+ * with a base space, a name standing for an entry in the page's resources.
+ * CoreGraphics wants a `CGColorSpace`, so the description is followed to
+ * whichever real space it ends at.
  *
- * What is not followed: `Separation`, `DeviceN` and `Lab`. Each of those is a
- * space plus a function that converts out of it, and running that function is a
- * colour engine rather than a lookup. An image in one of them is left behind
- * rather than shown in the wrong colours - and in a book they are separation
- * plates and spot inks, which is print machinery rather than illustration.
+ * Not followed: `Separation`, `DeviceN` and `Lab`, each a space plus a function
+ * that converts out of it - a colour engine rather than a lookup. An image in
+ * one is left behind rather than shown in the wrong colours, and in a book they
+ * are separation plates and spot inks, print machinery rather than illustration.
  *
  * The caller owns what comes back and releases it.
  */

@@ -54,22 +54,19 @@ private const val ReadControlFraction = 0.30f
  * A book's cover, which is also the way into the book.
  *
  * The cover is the button rather than carrying one: this screen exists to open
- * one book, and a separate Read control below the artwork is a second thing to
- * aim at for an action the cover is already standing for. Pressing it opens the
- * book; a long press opens the same actions menu the artwork carries elsewhere
- * in the app.
+ * one book, so a separate Read control below the artwork would be a second thing
+ * to aim at for what the cover already stands for. A long press opens the same
+ * actions menu the artwork carries elsewhere.
  *
- * Where the reader got to is drawn as a bar flush along the bottom edge, inside
- * the cover's own corner radius, so it reads as part of the artwork rather than
- * as a widget parked underneath it. It is present whenever the book has been
- * opened, hover or not - it is information, not an affordance.
+ * Progress is drawn flush along the bottom edge, inside the cover's own corner
+ * radius, so it reads as part of the artwork rather than a widget parked under
+ * it. Shown whenever the book has been opened, hover or not - it is information,
+ * not an affordance.
  *
- * The play control appears differently depending on what is doing the pointing.
- * Under a mouse the cover dims and the control fades up, so at rest the artwork
- * is unobscured. On a touch screen there is no hover to reveal anything with, so
- * the control sits there at rest with only its own backing behind it - a
- * permanently dimmed cover would be a poor trade for an affordance a tap would
- * have found anyway.
+ * The play control depends on what is pointing. Under a mouse the cover dims and
+ * it fades up, leaving the artwork unobscured at rest. A touch screen has no
+ * hover to reveal it, so it sits there with only its own backing - a permanently
+ * dimmed cover would be a poor trade for an affordance a tap would have found.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

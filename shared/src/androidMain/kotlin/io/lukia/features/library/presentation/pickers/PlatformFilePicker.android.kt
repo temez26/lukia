@@ -17,17 +17,15 @@ import io.lukia.core.domain.document.PickedDocument
  * What the system picker will let through.
  *
  * Markdown is claimed both ways on purpose: providers disagree about what a
- * `.md` file is, and one that reports it as plain text would otherwise be greyed
- * out in the picker for a format this app reads perfectly well. The text
- * wildcard covers the rest of that disagreement - `text/x-markdown` and the
- * like.
+ * `.md` file is, and one reporting it as plain text would otherwise be greyed
+ * out for a format this app reads perfectly well. The text wildcard covers the
+ * rest of that disagreement - `text/x-markdown` and the like.
  *
- * `application/octet-stream` is here for the same reason and is the widest of
- * them: it is what a provider reports for a file it could not classify at all,
- * which on many devices is every EPUB and every Word document sitting in
- * Downloads. It lets through a few files this app cannot read, and the import
- * says so plainly when it meets one - a better trade than a picker that greys
- * out the book the reader is pointing at.
+ * `application/octet-stream` is the widest, and is what a provider reports for a
+ * file it could not classify at all - on many devices, every EPUB and Word
+ * document in Downloads. It lets through a few files this app cannot read, and
+ * the import says so plainly; better than greying out the book the reader is
+ * pointing at.
  */
 private val SUPPORTED_MIME_TYPES = arrayOf(
     "application/pdf",

@@ -71,19 +71,18 @@ internal class ReaderTranslationPreferences(
  * Whether the controls belong in the toolbar, which is a question about how much
  * bar there is and nothing else.
  *
- * A window being pointed at has room for three more glyphs beside the title and
- * a mouse to hover each one for a tooltip. A phone has neither: the same three
- * pushed its back button, its place in the book and its settings into each
- * other, and left the reader guessing at three unlabelled marks. There they move
- * into the panel instead - see [ReaderTranslationSettings].
+ * A window being pointed at has room for three more glyphs beside the title, and
+ * a mouse to hover each for a tooltip. A phone has neither: the same three
+ * crowded its back button, its place in the book and its settings together and
+ * left the reader guessing at unlabelled marks, so there they move into the
+ * panel - see [ReaderTranslationSettings].
  *
- * The two are exclusive, so that the controls are in exactly one place whatever
- * the window is doing.
+ * Exclusive, so the controls are in exactly one place whatever the window does.
  *
- * They used to ask first whether anything was set up to translate with. Nothing
- * does now: both of a word's answers are web APIs that need nothing, so there is
- * always something. What still needs a model asks for itself - the two bulk
- * controls are behind `offered`, which is empty without a service.
+ * No longer conditioned on something being set up to translate with: both of a
+ * word's answers are web APIs that need nothing. What still needs a model asks
+ * for itself - the two bulk controls are behind `offered`, empty without a
+ * service.
  */
 internal val ReaderTranslationUi.inToolbar: Boolean
     @Composable get() = isWideWindow
@@ -99,13 +98,13 @@ internal val ReaderTranslationUi.inPanel: Boolean
  * [ReaderTranslationSettings].
  *
  * Two buttons rather than one with a mode, because they answer different
- * questions: "do this page" is something a reader does at a page they are stuck
- * on, and "keep doing it" is a decision about the rest of the session. Folding
- * them together would make the first one a two-step operation.
+ * questions: "do this page" is what a reader does at a page they are stuck on,
+ * "keep doing it" is a decision about the rest of the session. Folding them
+ * together makes the first a two-step operation.
  *
  * The standing one shows its state in its own colour rather than by changing
- * shape - it is the one control in the bar that stays on after it is pressed,
- * and a tinted glyph is how the rest of the app says that.
+ * shape - it is the one control in the bar that stays on after a press, and a
+ * tinted glyph is how the rest of the app says that.
  *
  * Shown at all only when something is set up to translate with. A button that
  * can only produce an error is worse than no button.

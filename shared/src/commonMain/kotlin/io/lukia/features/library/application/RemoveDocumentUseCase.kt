@@ -11,29 +11,24 @@ import io.lukia.features.library.domain.LibraryRepository
  * removing a book here means "stop listing it", not "delete it".
  *
  * What the app kept for itself does go: the working copy, the copy of a book
- * that was handed to the app rather than fetched by it, where the reader had got
- * to, and how they chose to read it. All of them exist only to serve a book that
- * is in the library, and anything kept for a book nobody can see is state with
- * no way to reach it.
+ * handed to the app rather than fetched by it, where the reader had got to, and
+ * how they chose to read it. All exist only to serve a shelved book, and
+ * anything kept for a book nobody can see is unreachable state.
  *
- * Five writes to five stores, and only the ones in the database can be made one
- * thing: two of these are files on disk, so nothing that removes a book can ever
- * be a single atomic act. What the schema does instead is make the part that
- * matters survive being interrupted - the position and the layout are keyed to
- * the book and cascade when it goes, see `ReadingPosition.sq` - so a process that
- * dies part way through this leaves no state a reader could never reach.
+ * Two of the five stores are files on disk, so removing a book can never be one
+ * atomic act. The schema makes the part that matters survive interruption - the
+ * position and layout cascade off the book, see `ReadingPosition.sq`.
  *
- * The order is what does the rest, and it is deliberate: the files go first and
- * the row that names them goes last. A row is the only thing that remembers where
- * a book's copies were filed - both are named after a hash of the location - so a
- * process that died between dropping the row and deleting the copies would leave
- * whole books on the device that nothing could ever name again. The other way
- * round the interruption costs nothing: a row whose working copy has gone is
- * repaired by the next open, which simply makes the copy again.
+ * The order does the rest: files first, the row that names them last. A row is
+ * the only thing that remembers where a book's copies were filed - both are
+ * named after a hash of the location - so dying between dropping the row and
+ * deleting the copies would strand whole books nothing could name again. The
+ * other way round costs nothing: a row whose working copy has gone is repaired
+ * by the next open, which makes the copy again.
  *
- * They are still asked for by name here. The cascade is a property of one store;
+ * All five are still asked for by name. The cascade is a property of one store;
  * this is the operation, and reading it should say what removing a book means
- * without knowing which of the five happens to enforce it.
+ * without knowing which store enforces what.
  */
 class RemoveDocumentUseCase(
     private val repository: LibraryRepository,

@@ -6,21 +6,19 @@ import java.awt.GraphicsEnvironment
 /**
  * Where the desktop window was last left, and how big.
  *
- * Kept because the alternative is what the app did before: every launch opened
- * Compose's default 800x600 in the middle of the screen, whatever the reader had
- * arranged the session before. On a large monitor that is also the wrong size in
- * a way that carries through the whole app - it lands in the Medium width class,
- * so the desktop metrics the design system defines for Expanded and Large
- * windows were only ever reached by dragging the window out by hand, every time.
+ * Without this every launch opened Compose's default 800x600 in the middle of
+ * the screen, whatever the reader had arranged the session before. On a large
+ * monitor that is also the wrong size in a way that carries through the app - it
+ * lands in the Medium width class, so the Expanded and Large desktop metrics
+ * were only reached by dragging the window out by hand, every time.
  *
- * Stored through [SettingsStore] rather than in a file of its own: it is a
- * handful of short values that have to be there before the first frame, which is
- * exactly what that store is for.
+ * Stored through [SettingsStore] rather than a file of its own: a handful of
+ * short values that have to be there before the first frame.
  *
- * Nothing here is trusted on the way back in. A stored position is only good for
- * the display arrangement it was written on, so [saved] answers with no position
- * at all for one that no longer lands on a display this machine has - and the
- * caller opens where it would have on a first run.
+ * Nothing is trusted on the way back in. A stored position is only good for the
+ * display arrangement it was written on, so [saved] answers with no position for
+ * one that no longer lands on a display this machine has, and the caller opens
+ * where it would have on a first run.
  *
  * [screens] is a parameter so the rule above can be tested against an
  * arrangement rather than against whatever monitors the test machine has.
@@ -94,16 +92,14 @@ data class ScreenArea(val x: Int, val y: Int, val width: Int, val height: Int)
 /**
  * Whether a window opened at this position could be reached.
  *
- * The title bar is the whole of the test, because it is the only part of a
- * window that can be used to move the rest: a body hanging off the bottom of a
- * display is a window the reader fixes in a second, and a title bar on a monitor
- * that has since been unplugged is a window they cannot touch at all. That is
- * not a rare arrangement either - a laptop docked to a second screen and then
- * undocked is the ordinary way to end a working day.
+ * The title bar is the whole test, being the only part of a window that can move
+ * the rest: a body hanging off the bottom of a display is fixed in a second, and
+ * a title bar on a monitor since unplugged is a window nobody can touch. Not a
+ * rare arrangement - a laptop docked to a second screen and then undocked is the
+ * ordinary way to end a working day.
  *
  * Enough of the bar has to land on one display for there to be something to take
- * hold of; a sliver at the far edge of a screen is not a window that has been
- * restored, it is one that has been hidden.
+ * hold of: a sliver at the far edge is a window hidden rather than restored.
  *
  * An empty list of screens is a headless JVM rather than a machine with no
  * monitors, so there is nothing to check against and the position stands.

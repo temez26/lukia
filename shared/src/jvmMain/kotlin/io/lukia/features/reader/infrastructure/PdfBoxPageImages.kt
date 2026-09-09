@@ -15,17 +15,14 @@ import java.awt.geom.Point2D
  * The pictures on one page of a PDF, in the places they were drawn.
  *
  * A PDF has no list of the pictures on a page - it has a program that draws
- * them, and where each one lands depends on the transformations in force when
- * the drawing instruction is reached. So the only way to know both what a
- * picture is and where it went is to walk the page as a renderer would and stop
- * at each image.
+ * them, and where each lands depends on the transformations in force when the
+ * instruction is reached. So the only way to know what a picture is and where it
+ * went is to walk the page as a renderer would and stop at each image.
  *
  * That is what [PDFGraphicsStreamEngine] is: a renderer with nothing behind it.
- * Every method below except [ImageCollector.drawImage] is a painting
- * instruction being deliberately ignored - the lines, curves and fills of the
- * page are exactly what this is not interested in - and the engine still has to
- * be told, because it is the running of the whole program that puts each image
- * where it belongs.
+ * Every method below except [ImageCollector.drawImage] is a painting instruction
+ * deliberately ignored, and the engine still has to be told - it is the running
+ * of the whole program that puts each image where it belongs.
  *
  * [figures] belongs to the document rather than to the page, and is what keeps
  * a mark printed on every leaf from being decoded on every leaf - see

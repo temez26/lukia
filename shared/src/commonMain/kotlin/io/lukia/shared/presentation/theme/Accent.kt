@@ -12,12 +12,12 @@ import io.lukia.core.domain.AppPalette
  * colours where Apple has one, pulled a shade darker on the light side where the
  * system colour was chosen for a bar rather than for a word.
  *
- * How much darker is measured rather than judged. Every one of these is the
- * accent colour of a [io.lukia.shared.presentation.components.controls.ButtonVariant.Ghost]
- * button, which is accent-coloured *text* - so each is held to 4.5:1 against the
- * palest and the deepest surface of every palette it can be chosen in, which is
- * `surfaceVariant` in each case. Apple's own systemBlue is 3.3:1 there and was
- * what the whole app's tinted text was set in.
+ * How much darker is measured rather than judged. Each is the colour of a
+ * [io.lukia.shared.presentation.components.controls.ButtonVariant.Ghost]
+ * button - accent-coloured *text* - so each is held to 4.5:1 against
+ * `surfaceVariant`, the palest and deepest surface of every palette it can be
+ * chosen in. Apple's own systemBlue is 3.3:1 there, and was what the whole app's
+ * tinted text was set in.
  */
 internal object Accents {
     val Blue = Color(0xFF0061CC)

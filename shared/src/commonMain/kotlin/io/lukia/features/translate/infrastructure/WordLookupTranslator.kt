@@ -10,12 +10,12 @@ import io.lukia.features.translate.domain.settings.WordLookup
  * Sends a single word wherever the reader has said single words should go, and
  * everything larger to the translator.
  *
- * The split is at the word rather than anywhere else because that is where the
- * book stops mattering. Which sense of "piece" a sentence means is settled by
- * the paragraph around it, and a service that is handed neither cannot do better
- * than guess - so a sentence goes to the translator whatever this is set to. A
- * word on its own is the one case where a dictionary is not a worse answer but a
- * different and often better one: it gives every sense rather than choosing.
+ * The split is at the word because that is where the book stops mattering. Which
+ * sense of "piece" a sentence means is settled by the paragraph around it, and a
+ * service handed neither can only guess - so a sentence goes to the translator
+ * whatever this is set to. A word alone is the one case where a dictionary is
+ * not a worse answer but a different and often better one: every sense rather
+ * than one chosen.
  *
  * Read per request, like everything else here that is a setting: a reader
  * comparing a dictionary against Google does it with the book open.

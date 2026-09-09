@@ -7,12 +7,12 @@ import androidx.compose.runtime.remember
 /**
  * Where a book's artwork comes from: what identifies it, and how to fetch it.
  *
- * A cover used to travel with the book it belongs to, as bytes on the stored
- * entry. That meant the shelf carried the artwork of every book on it for as
- * long as it was on screen - a hundred kilobytes each, a few hundred megabytes
- * for a large library - to draw the dozen covers the reader could actually see.
+ * A cover used to travel with its book as bytes on the stored entry, so the
+ * shelf carried the artwork of every book on it - a hundred kilobytes each, a
+ * few hundred megabytes for a large library - to draw the dozen covers the
+ * reader could see.
  *
- * This is the handle that replaced them. Nothing is read until a card is drawn,
+ * This is the handle that replaced them: nothing is read until a card is drawn,
  * what is read is decoded and let go of, and what is kept is the decoded artwork
  * in [CoverArtCache], under a budget that does not grow with the library.
  *

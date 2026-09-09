@@ -151,11 +151,10 @@ internal fun TranslationPanel(
             // At least as wide as what it replaces, and free to be wider.
             //
             // A word is the case that needs this: its panel is only as wide as
-            // the word underneath it, and a translation is very often longer
-            // than the word it stands for - so held to that width it wrapped,
-            // and one word became two lines sitting over the line below. Bounded
-            // by what is left of the page so it grows into the margin rather
-            // than off the edge of it.
+            // the word underneath, and a translation is often longer than what
+            // it stands for - so held to that width it wrapped, and one word
+            // became two lines over the line below. Bounded by what is left of
+            // the page, so it grows into the margin rather than off the edge.
             .widthIn(
                 min = width + Bleed * 2,
                 max = (available - left + Bleed).coerceAtLeast(width + Bleed * 2),

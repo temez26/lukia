@@ -196,25 +196,23 @@ internal fun CodeBlock(block: TextBlock.Code, style: TextStyle) {
  * the book is still perfectly readable without it, and a row of error icons down
  * a chapter is worse than a chapter with a gap.
  *
- * Drawn no larger than the illustration actually is, and centred when that is
- * narrower than the measure. Filling the width regardless is what a cover wants
- * and what nothing else does: books carry ornaments, symbols and inline marks of
- * a few dozen pixels, and stretched to the measure each of them becomes a
- * full-width picture of a tiny image. The rule is the one a browser follows -
- * its own size, shrunk to fit where there is not room for it.
+ * Drawn no larger than the illustration actually is, and centred when narrower
+ * than the measure. Filling the width regardless is what a cover wants and
+ * nothing else does: books carry ornaments and inline marks of a few dozen
+ * pixels, each of which stretched to the measure becomes a full-width picture of
+ * a tiny image. The rule is the browser's - its own size, shrunk where there is
+ * not room.
  *
- * [size] is the reader's own say over that, for the books the rule does not
- * suit: diagrams saved small, and plates meant to fill the page. See [FigureSize].
+ * [size] is the reader's say over that, for the books the rule does not suit:
+ * diagrams saved small, plates meant to fill the page. See [FigureSize].
  *
- * [maxHeight] is how tall it may be drawn, which on a paginated book is the page
- * it was put on. A plate taller than the page is scaled down to fit rather than
- * running off the bottom of it, so an illustration is always seen whole.
+ * [maxHeight] is how tall it may be drawn, which on a paginated book is its
+ * page. A plate taller than the page is scaled down rather than running off the
+ * bottom, so an illustration is always seen whole.
  *
- * A press lifts it out of the page at the size of the window - see
- * [FigureViewer]. Every rule above is about fitting a picture into a column of
- * prose, and a diagram or a table that has been fitted into one is often no
- * longer readable; this is the way to look at it properly without turning every
- * other picture in the book up to match.
+ * A press lifts it out at the size of the window - see [FigureViewer]. Every
+ * rule above fits a picture into a column of prose, and a diagram or table
+ * fitted into one is often no longer readable.
  */
 @Composable
 internal fun FigureBlock(

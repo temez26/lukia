@@ -13,14 +13,12 @@ import kotlin.test.assertNull
  * Android's `BitmapFactory` returns null for bytes it cannot read, and Compose's
  * decoder hands that null straight into an `ImageBitmap` rather than raising -
  * so the decode appears to succeed and the NullPointerException arrives at
- * whichever line first asks how wide the picture is. That was three lines apart
- * in the paginator, a composition away in the reader's page, and a cache away on
- * the library shelf.
+ * whichever line first asks how wide the picture is: three lines away in the
+ * paginator, a composition away in the reader's page, a cache away on the shelf.
  *
- * The first test is what would have caught the crash. The second is why it is a
- * device test and not a common one: it asserts the platform's own behaviour, so
- * a Compose release that starts raising here instead turns it red, and the
- * comment above is the thing to correct.
+ * The first test is what would have caught the crash. The second is why this is
+ * a device test - it asserts the platform's own behaviour, so a Compose release
+ * that starts raising instead turns it red, and this comment is what to correct.
  */
 class AndroidImageDecodingTest {
 

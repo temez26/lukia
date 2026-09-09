@@ -65,18 +65,17 @@ enum class SettingsArea {
     /**
      * Everything translating does that only a model can do.
      *
-     * Named, on the segment itself, for the state all of it is in: Beta. It was
-     * called Providers, which described an address, a key and a timeout and said
-     * nothing about why a reader would open it - and put the dictionary that
-     * needs none of them on the same page as the service that is all of them.
-     * The enum keeps the longer name because it says what the page holds; the
-     * segment says what a reader is walking into.
+     * The segment is named for the state all of it is in: Beta. It was called
+     * Providers, which described an address, a key and a timeout, said nothing
+     * about why a reader would open it, and put the dictionary that needs none
+     * of them beside the service that is all of them. The enum keeps the longer
+     * name because it says what the page holds; the segment says what a reader
+     * is walking into.
      *
-     * Apart from Translating because it is the group that can be filled in
-     * wrongly, and the one that costs money. Somebody changing the language they
-     * read into should not have to scroll past an API key to reach it, and
-     * should not be offered a gesture asking for a paragraph that nothing on
-     * their device can translate.
+     * Apart from Translating because this is the group that can be filled in
+     * wrongly and the one that costs money. Somebody changing the language they
+     * read into should not scroll past an API key to reach it, nor be offered a
+     * gesture asking for a paragraph nothing on their device can translate.
      */
     AiTranslation,
 
@@ -107,17 +106,16 @@ enum class SettingsArea {
 /**
  * A switch for one setting, saying as little about it as the setting allows.
  *
- * Which is usually nothing. A setting on this page is named in a few words and
- * left at that: a row that carried a mark opening a paragraph about itself made
- * every group a page to read before it could be used, and the group above the
- * rows already explains what the group is for. [detail] is the exception - a
- * line short enough to be read whether or not anybody wanted it, for the
- * settings that cost money or throw something away, because a warning nobody
- * asked for is still a warning worth giving.
+ * Usually nothing. A setting here is named in a few words and left at that: a
+ * row carrying a mark that opened a paragraph about itself made every group a
+ * page to read before it could be used, and the group heading already says what
+ * the group is for. [detail] is the exception - a line short enough to be read
+ * whether or not anybody wanted it, for the settings that cost money or throw
+ * something away.
  *
- * The switch is the control, and it is the only part of the row that is. The
- * whole row used to be, which reads well on a phone's settings list and badly
- * here: a reader reaching for the words about a setting flipped it instead.
+ * The switch is the only part of the row that is a control. The whole row used
+ * to be, which reads well on a phone's settings list and badly here: a reader
+ * reaching for the words about a setting flipped it instead.
  *
  * The label takes the width and wraps; the switch keeps its own. Without that
  * the two shared a row with no rule about who gave way, and a long label - "Hold

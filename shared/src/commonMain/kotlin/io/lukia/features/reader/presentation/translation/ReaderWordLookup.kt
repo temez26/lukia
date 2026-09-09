@@ -16,12 +16,11 @@ import kotlinx.coroutines.launch
 /**
  * The one word the reader is currently asking about, and nothing else.
  *
- * Apart from [ReaderTranslations] because it is a different thing with a
- * different lifetime: that one holds every passage in the book for as long as
- * the book is open, and this holds at most one word for as long as a panel is.
- * Only one, deliberately - a second word asked about while the first is still
- * arriving replaces it, because the panel the answer goes into is the same panel
- * and the reader has already moved on.
+ * Apart from [ReaderTranslations] because the lifetimes differ: that holds every
+ * passage for as long as the book is open, this holds at most one word for as
+ * long as a panel is. Only one, deliberately - a second word asked about while
+ * the first is still arriving replaces it, because the answer goes into the same
+ * panel and the reader has moved on.
  *
  * The dictionary is asked whatever the word lookup setting says, and that is the
  * point rather than an oversight: somebody translating with a model has a word

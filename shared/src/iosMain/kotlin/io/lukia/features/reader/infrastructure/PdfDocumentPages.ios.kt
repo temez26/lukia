@@ -86,11 +86,10 @@ private class IOSDocumentPages(private val document: PDFDocument) : DocumentPage
      *
      * The walk reaches into the same [PDFDocument] [renderPage] draws from, for
      * its root and for the index of every page an entry points at. Everything
-     * else that touches the document once it is open takes [renderLock]; a
-     * plain `val` cannot, so the only lock available to it is being finished
-     * before anybody else has the document at all. Left until something asked,
-     * this ran on a dispatcher of its own beside a page being drawn - and
-     * PDFKit does not promise a document is safe to use from two threads.
+     * else touching the open document takes [renderLock]; a plain `val` cannot,
+     * so its only protection is finishing before anybody else has the document.
+     * Left until something asked, this ran on its own dispatcher beside a page
+     * being drawn - and PDFKit does not promise a document is thread-safe.
      *
      * Nobody waits longer for it: opening already runs off the main thread, and
      * the outline is read on both ways out of here anyway - the text path asks

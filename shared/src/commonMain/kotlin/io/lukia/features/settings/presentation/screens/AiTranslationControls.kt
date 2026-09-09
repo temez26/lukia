@@ -42,23 +42,21 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * Everything translating does that only a model can do.
  *
- * A page of its own, and the segment for it reads "Beta" - which is the
- * shortest true thing that can be said about everything on it. It was called
- * Providers, which described the fields in it - an address, a key, a model name,
- * a timeout - and said nothing about why a reader would open it. What is
- * actually behind it is one decision: whether this reader has an AI translation
- * service, and what they want it to do.
+ * A page of its own, whose segment reads "Beta" - the shortest true thing that
+ * can be said about all of it. It was called Providers, which described the
+ * fields (an address, a key, a model name, a timeout) and said nothing about why
+ * a reader would open it. Behind it is one decision: whether this reader has an
+ * AI translation service, and what they want it to do.
  *
  * Everything answerable without one went to Translating, including the two
- * groups that choose who answers about a single word. A word is where the line
+ * groups choosing who answers about a single word. A word is where the line
  * falls: a dictionary has an entry for one and none for a sentence.
  *
- * A switch over the whole of it comes first, and while it is off it is the only
- * thing here - see [AiSwitchSection]. Then the service, because nothing under
- * that does anything until it is set up; then how much of the book a gesture may
- * ask it for; and last the two ways of asking it for more than the reader
- * pointed at, which is the order of how much of the reader's money each one can
- * spend.
+ * A switch over the whole of it comes first, and is the only thing here while it
+ * is off - see [AiSwitchSection]. Then the service, since nothing under it works
+ * until that is set up; then how much of the book a gesture may ask for; and
+ * last the two ways of asking for more than the reader pointed at - the order of
+ * how much of their money each can spend.
  */
 @Composable
 internal fun AiTranslationSettings(
@@ -164,13 +162,13 @@ private fun AiSwitchSection(
  * what this group is named for asking past. Off is "no, this gesture does not
  * ask for more than a word".
  *
- * What that leaves differs by gesture, and only because their other halves are
+ * What that leaves differs by gesture, only because their other halves are
  * elsewhere. A tap goes on translating the word, since whether it translates at
- * all is the switch on the Translating page - and off here writes the word to
+ * all is the switch on the Translating page - so off here writes the word to
  * that tap rather than turning it off, which is what the two used to do to each
- * other while they shared one field. A hold translates nothing, since it has no
- * other job than this one: holding a word for what else it means is its own
- * switch, on the Translating page, and is not affected.
+ * other while they shared one field. A hold translates nothing, having no other
+ * job: holding a word for what else it means is its own switch on the
+ * Translating page, unaffected.
  */
 @Composable
 private fun GestureUnitSection(

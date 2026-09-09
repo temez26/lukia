@@ -12,10 +12,9 @@ package io.lukia.features.translate.domain.provider
  * has somewhere to be shown, rather than on the first sentence they tap in the
  * middle of a chapter.
  *
- * A port of its own rather than a method on [Translator] for the same reason
- * [ModelCatalogue] is: it is asked once while setting things up, by the screen
- * that does the setting up, and a translator that cannot answer it translates
- * perfectly well.
+ * A port of its own rather than a method on [Translator], for [ModelCatalogue]'s
+ * reason: it is asked once by the screen doing the setting up, and a translator
+ * that cannot answer it translates perfectly well.
  */
 fun interface ModelWarmUp {
 

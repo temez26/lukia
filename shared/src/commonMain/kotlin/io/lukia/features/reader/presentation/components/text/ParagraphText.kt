@@ -18,10 +18,10 @@ import io.lukia.features.reader.domain.text.Word
  * words ended up in it.
  *
  * The ranges travel with the text because replacing anything moves everything
- * after it. A tap gives back an offset into the text on screen, and without
- * these ranges that offset would be read against the paragraph the book wrote
- * rather than the one the reader is looking at - so the first translation in a
- * paragraph would quietly break tapping on everything below it.
+ * after it. A tap gives back an offset into the text on screen, which without
+ * these would be read against the paragraph the book wrote rather than the one
+ * the reader is looking at - so the first translation in a paragraph would
+ * quietly break tapping on everything below it.
  *
  * [sentences] and [words] are also what the marks are drawn from. Nothing here
  * carries a colour: which passages are marked, and how, changes on every tap,
@@ -79,12 +79,11 @@ internal fun interface ShownTranslation {
  * were, and the emphasis the author put on the words either side of it survives
  * - which a paragraph flattened to plain text and rebuilt would lose.
  *
- * A translated sentence is set in the paragraph's own face rather than in the
- * runs it replaces. Emphasis inside a sentence belongs to the particular words
- * that carried it, and carrying "the third word was italic" across into a
- * language whose third word is somewhere else entirely would be inventing a
- * claim the author never made. A single word is different: it replaces exactly
- * one run's worth of text, so it keeps whatever that word was set in.
+ * A translated sentence is set in the paragraph's own face rather than the runs
+ * it replaces: emphasis belongs to the particular words that carried it, and
+ * carrying "the third word was italic" into a language whose third word is
+ * elsewhere invents a claim the author never made. A single word is different -
+ * it replaces exactly one run's text, so it keeps what that word was set in.
  *
  * A sentence translated as a whole has no words of its own left on the page, so
  * none are recorded for it - which is also what stops a long press inside a

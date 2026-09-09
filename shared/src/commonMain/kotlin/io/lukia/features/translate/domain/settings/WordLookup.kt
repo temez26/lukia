@@ -3,19 +3,17 @@ package io.lukia.features.translate.domain.settings
 /**
  * What answers when the reader asks about a single word.
  *
- * Only a word. A sentence out of a book is not a sentence out of nowhere - which
- * sense of "piece" is meant is settled by the paragraph around it and by what the
- * book is - and that is the whole reason the translator is given all of it. A
- * word is the one case where something that knows none of that can still be
- * right, and where a reader may well prefer it: a dictionary gives every sense a
- * word has rather than the one a model chose.
+ * Only a word. Which sense of "piece" a sentence means is settled by the
+ * paragraph around it and by what the book is, which is why the translator is
+ * given all of it. A word is the one case where something knowing none of that
+ * can still be right, and where a reader may prefer it: a dictionary gives every
+ * sense rather than the one a model chose.
  *
- * Both of these are ordinary web APIs that need nothing set up, which is what
- * makes a word the one thing Lukia can always answer. The translation service
- * used to be a third choice here and is not any more: it is the page the reader
- * has to go and configure, it is the one that costs money, and offering it for
- * the one unit that never needed it made the app look as though it could not
- * translate anything until a key was pasted in.
+ * Both are ordinary web APIs needing nothing set up, which is what makes a word
+ * the one thing Lukia can always answer. The translation service used to be a
+ * third choice here: it is the page the reader has to configure and the one that
+ * costs money, and offering it for the unit that never needed it made the app
+ * look unable to translate anything until a key was pasted in.
  */
 enum class WordLookup {
 

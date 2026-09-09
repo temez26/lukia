@@ -6,15 +6,13 @@ import io.lukia.core.domain.text.PassageUnit
  * What a tap and a long press on the book ask for.
  *
  * Each does exactly one thing, always. An earlier version had a tap mean the
- * sentence except on a word that had already been translated, where it meant the
- * word - which reads well as a sentence and terribly as a gesture: the same
- * finger in the same place did different things depending on what had happened
- * there before. A gesture the reader has set is a gesture that does that.
+ * sentence except on an already-translated word, where it meant the word - which
+ * reads well as a sentence and terribly as a gesture: the same finger in the
+ * same place did different things depending on what had happened there before.
  *
- * Everything here starts off. A reading app that translates the moment a thumb
- * brushes the page is one that spends somebody's money before they have said
- * what it is for. So the book behaves like a book until the reader asks for
- * something else.
+ * Everything here starts off. An app that translates the moment a thumb brushes
+ * the page spends somebody's money before they have said what it is for, so the
+ * book behaves like a book until the reader asks for something else.
  *
  * Repeating a gesture on a passage it has already been used on is what puts the
  * book's own words back, and repeating it again brings the translation back - so
@@ -25,15 +23,14 @@ data class TranslationGestures(
      * Whether a tap translates what is under it at all.
      *
      * Its own field, apart from [tapUnit], because the two are set in two places
-     * and must not be able to undo each other. Whether a tap translates is a
-     * switch on the Translating page, where it belongs to everybody: a word goes
-     * to a dictionary that needs nothing set up. How much it asks for is on the
-     * AI translation page, because only a model answers a sentence.
+     * and must not undo each other. Whether a tap translates is a switch on the
+     * Translating page, where it belongs to everybody - a word goes to a
+     * dictionary that needs nothing set up. How much it asks for is on the AI
+     * translation page, because only a model answers a sentence.
      *
-     * They were one nullable field once, and the two controls wrote it in turn -
-     * so a reader who set the unit row to "off" on one page found the switch on
-     * the other page had turned itself off, and a reader who touched the unit row
-     * with the switch off turned translating on without asking for it.
+     * They were one nullable field once, written by both controls in turn - so
+     * setting the unit row to "off" turned the other page's switch off, and
+     * touching the unit row with the switch off turned translating on unasked.
      */
     val tapTranslates: Boolean = false,
     /**
@@ -59,16 +56,14 @@ data class TranslationGestures(
      * means - every sense a dictionary has for it, and a way through to a site
      * about it.
      *
-     * Its own setting rather than something [longPress] implies, because the two
-     * are not the same question. A reader who has set their hold to the sentence
-     * has said what they want translated; they have said nothing about whether a
-     * word they already looked up should be able to tell them more. Tied to the
-     * unit, that reader could never reach any of it - which is exactly what
-     * happened before this existed.
+     * Its own setting rather than something [longPress] implies, because they
+     * are different questions. A reader who set their hold to the sentence has
+     * said what they want translated, not whether an already-looked-up word
+     * should tell them more - and tied to the unit, that reader could never
+     * reach any of it, which is what happened before this existed.
      *
-     * So it applies whatever the hold is set to, including off, and it applies
-     * only to a word that has an answer on the page already. A word nobody has
-     * asked about is not a word with more to say.
+     * So it applies whatever the hold is set to, including off, and only to a
+     * word that already has an answer on the page.
      */
     val wordDetails: Boolean = false,
 ) {
@@ -95,10 +90,9 @@ data class TranslationGestures(
      * tap asks for the word, and a hold translates nothing.
      *
      * A view rather than a change. Nothing but a model answers a sentence or a
-     * paragraph, so with none set up - or with AI switched off altogether - a
-     * gesture set to one of them could only come back as an error. What the
-     * reader chose is left in the settings untouched and is what they get back
-     * the moment there is a service again.
+     * paragraph, so with none set up - or AI switched off - a gesture set to one
+     * could only come back as an error. What the reader chose stays in the
+     * settings and returns the moment there is a service again.
      *
      * A tap still translates if it was translating, and holding a word for what
      * else it means still works: both are answered by a dictionary that needs

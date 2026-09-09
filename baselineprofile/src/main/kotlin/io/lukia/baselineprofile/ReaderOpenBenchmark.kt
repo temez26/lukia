@@ -16,12 +16,11 @@ import java.util.regex.Pattern
 /**
  * How long a book takes to become readable, measured on a real device.
  *
- * The number this exists for is the one a reader actually waits through: the
- * time between pressing a book and the first page of it being on screen. It is
- * timed here rather than read off a metric because no metric the harness
- * collects knows what "the book is open" means - a reader can be looking at a
- * spinner, or at a sheet the book has not been laid out onto yet, and neither of
- * those is the book being open. A page carrying its own "Page n of m" is.
+ * The number is the one a reader actually waits through: pressing a book to the
+ * first page of it being on screen. Timed here rather than read off a metric
+ * because no metric the harness collects knows what "the book is open" means -
+ * a spinner and a sheet not yet laid out are both not it. A page carrying its
+ * own "Page n of m" is.
  *
  * Run it against a device that already holds the two books below:
  *
@@ -33,9 +32,8 @@ import java.util.regex.Pattern
  *
  * The last flag is not optional on a device somebody reads on. Without it the
  * build uninstalls the app when the run finishes, and Android takes the library
- * with it - every book, every position, and the permission the app was granted
- * to read the folder they came from. The measurement is worth nothing next to
- * that, so back the database up before running this anyway:
+ * with it - every book, every position, and the folder permission. Back the
+ * database up before running this anyway:
  *
  * ```
  * adb shell run-as io.lukia cat databases/lukia.db > lukia.db
@@ -45,19 +43,17 @@ import java.util.regex.Pattern
  * are logged under [LOG_TAG], because they are wall-clock measurements this
  * takes itself rather than metrics the harness collected.
  *
- * Measured against a book already in the library rather than a fixture shipped
- * beside this. What is worth measuring is the reading of a real book - a
- * ten-megabyte collection of four - and a generated one would measure the
- * generator's idea of a book instead. The cost is that this cannot run on an
- * empty device, which is why it is not part of `connectedCheck`. Point it at a
- * book of your own by adding a test beside the one below; the title is whatever
- * the library's search finds it by.
+ * Measured against a book already in the library rather than a shipped fixture:
+ * a generated book would measure the generator's idea of one instead of a real
+ * ten-megabyte collection. The cost is that this cannot run on an empty device,
+ * which is why it is not part of `connectedCheck`. Point it at a book of your
+ * own by adding a test beside the one below, named by whatever the library's
+ * search finds it by.
  *
- * A PDF read as text is deliberately not covered. What that opening waits on is
- * every page's text being read out of the file, which is a cost this measures
- * nothing about and which no layout can shorten - and it needs a book the reader
- * has already chosen to read as text, which is a setting rather than a fact
- * about the file.
+ * A PDF read as text is deliberately not covered: that opening waits on every
+ * page's text being read out of the file, which no layout can shorten, and it
+ * needs a reader who has already chosen to read it that way - a setting rather
+ * than a fact about the file.
  */
 @OptIn(ExperimentalMetricApi::class)
 class ReaderOpenBenchmark {
@@ -82,14 +78,13 @@ class ReaderOpenBenchmark {
      */
     private fun measureOpening(title: String) = rule.measureRepeated(
         packageName = PACKAGE,
-        // Not what this is for - the opening is timed below - but it is the
-        // other half of the same question: holding a long book as pages that
-        // have been measured is memory, and this is what it costs.
+        // Not what this is for - the opening is timed below - but the other
+        // half of the same question: holding a long book as measured pages is
+        // memory, and this is what it costs.
         //
-        // Deliberately not frame timing. A benchmark that walks through the app
-        // does not reliably produce frames inside the window being traced, and a
-        // metric that sometimes collects nothing fails the run rather than
-        // reporting one.
+        // Deliberately not frame timing: a benchmark that walks through the app
+        // does not reliably produce frames inside the traced window, and a
+        // metric that sometimes collects nothing fails the run.
         metrics = listOf(MemoryUsageMetric(MemoryUsageMetric.Mode.Max)),
         iterations = ITERATIONS,
         // Deliberately no startupMode. A cold one kills the app between the

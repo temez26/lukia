@@ -65,16 +65,14 @@ private class Sitting(val start: TimeMark) {
  * Records how long one book is read for.
  *
  * A sitting begins when the book opens and runs until the reader has left it
- * alone for [IdleAfter]; turning a page after that begins a new one. That is the
- * whole model, and it is deliberately simple - the app cannot see whether
- * anybody is looking at the screen, so it counts the time a book was open and
- * being turned, and says so.
+ * alone for [IdleAfter]; a page turn after that begins a new one. Deliberately
+ * simple - the app cannot see whether anybody is looking at the screen, so it
+ * counts the time a book was open and being turned, and says so.
  *
- * All of it happens inside one coroutine, woken either by a page turn or by its
- * own clock. That is what keeps the sitting's state free of locks, and it is
- * also why the coroutine runs on [dispatcher] rather than on whatever the scope
- * came with: this is a timer and a database write, neither of which has any
- * business on the thread that draws.
+ * All inside one coroutine, woken by a page turn or by its own clock, which is
+ * what keeps the sitting's state free of locks. It runs on [dispatcher] rather
+ * than whatever the scope came with: this is a timer and a database write,
+ * neither of which belongs on the thread that draws.
  *
  * Time is measured from a monotonic source rather than from the wall clock, so a
  * device that corrects its clock mid-chapter cannot record a sitting of minus an

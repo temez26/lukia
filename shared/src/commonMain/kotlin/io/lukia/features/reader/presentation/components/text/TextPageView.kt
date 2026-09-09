@@ -20,15 +20,15 @@ import io.lukia.features.translate.domain.settings.TranslationGestures
 /**
  * One page of a reflowable book, set at the reader's chosen size.
  *
- * Everything here is measured against [style] rather than given a size of its
- * own: a heading is the body size scaled up, the space between blocks is a
- * proportion of the leading. That is what makes the text size setting act on the
- * whole page instead of only on its paragraphs - a book at 200% with the same
- * gaps it had at 100% reads as text that has outgrown its own layout.
+ * Everything is measured against [style] rather than given a size of its own: a
+ * heading is the body size scaled up, the gap between blocks a proportion of the
+ * leading. That is what makes the text size setting act on the whole page rather
+ * than only its paragraphs - a book at 200% with its 100% gaps reads as text
+ * that has outgrown its own layout.
  *
- * What is on the page was chosen to fit it before any of this was drawn, by
+ * What is on the page was chosen to fit before any of this was drawn, by
  * measuring the same blocks against the same styles - see `BlockMetrics`. This
- * draws what it is given and does not re-decide anything.
+ * draws what it is given and re-decides nothing.
  *
  * Each block is handed only its own slice of the translations. That is what
  * keeps translating one sentence from being work for the rest of the page: a

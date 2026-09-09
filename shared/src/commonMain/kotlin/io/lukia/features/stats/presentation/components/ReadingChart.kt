@@ -67,14 +67,13 @@ private const val FutureTrackShare = 0.45f
 /**
  * The week, Monday to Sunday, as seven bars.
  *
- * A chart rather than seven numbers because the question it answers is a shape:
- * whether the reading is every day or all at the weekend, whether this week is
- * like the last one. Numbers in a row are read one at a time and compared by
- * hand; bars are compared by looking.
+ * A chart rather than seven numbers because the question is a shape: every day
+ * or all at the weekend, this week against the last. Numbers in a row are
+ * compared by hand; bars are compared by looking.
  *
- * Scaled to the reader's own busiest day rather than to a fixed number of hours.
- * There is no such thing as a normal amount of reading, and a chart scaled to
- * somebody else's hour would show most people a row of stubs.
+ * Scaled to the reader's own busiest day rather than a fixed number of hours:
+ * there is no normal amount of reading, and a chart scaled to somebody else's
+ * hour would show most people a row of stubs.
  *
  * Each day takes an equal share of the width rather than only the room its own
  * label needs, so the columns stay on a grid whatever the labels say and the
@@ -108,16 +107,15 @@ internal fun ReadingChart(
 /**
  * How much of the chart has grown, from nothing to its full height.
  *
- * One animation for the seven bars rather than one apiece. They are the same
- * movement at the same moment, so seven clocks can only disagree about it - and
- * a bar grows by being measured taller, which made seven of them seven layout
- * passes a frame for a picture that tells one story.
+ * One animation for the seven bars rather than one apiece: they are the same
+ * movement at the same moment, so seven clocks can only disagree - and a bar
+ * grows by being measured taller, so seven of them were seven layout passes a
+ * frame for one picture.
  *
- * It waits out the screen change before it starts - see [afterScreenChange] -
- * because this chart arrives on a screen that is still sliding in from the edge,
- * and a chart growing through a push is the push's frames spent twice. A reader
- * who has asked the app to stop flourishing gets the finished chart and no
- * growth at all.
+ * It waits out the screen change - see [afterScreenChange] - because this chart
+ * arrives on a screen still sliding in, and a chart growing through a push
+ * spends the push's frames twice. A reader who asked the app to stop flourishing
+ * gets the finished chart and no growth at all.
  */
 @Composable
 private fun chartGrowth(): Float {

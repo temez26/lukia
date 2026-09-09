@@ -88,11 +88,10 @@ fun LukiaTheme(
             // Material's own floor, told what this app's floor is.
             //
             // The modifier behind it expands what a control can be *hit* on
-            // without changing what is drawn, which is exactly the trade a
-            // 32dp mark beside a search term needs: keep the small ✕, give the
-            // thumb something to aim at. Material defaults it to its own 48dp;
-            // this app has decided on Apple's 44 and sizes every other control
-            // to it, so leaving the two floors different would mean one number
+            // without changing what is drawn - the trade a 32dp mark beside a
+            // search term needs: keep the small ✕, give the thumb something to
+            // aim at. Material defaults to its own 48dp where this app uses
+            // Apple's 44, and leaving the two different would mean one number
             // for the controls the app draws and another for the ones it
             // borrows.
             //

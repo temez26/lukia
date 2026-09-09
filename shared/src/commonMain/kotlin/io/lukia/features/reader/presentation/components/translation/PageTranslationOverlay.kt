@@ -32,15 +32,15 @@ import io.lukia.shared.presentation.theme.LukiaMotion
  * What has been translated on one page of a fixed-layout document, drawn over
  * the page itself.
  *
- * A PDF's page is a picture. Nothing here can re-set it the way a reflowable
- * book is re-set, so a translation is laid over the words it stands for: the
- * original is covered in the page's own colour and the new sentence written in
- * its place, sitting exactly where the reader was already looking.
+ * A PDF's page is a picture, and nothing here can re-set it the way a reflowable
+ * book is re-set. So a translation is laid over the words it stands for: the
+ * original covered in the page's own colour, the new sentence written in its
+ * place, exactly where the reader was already looking.
  *
- * Everything is measured in the page's own units and scaled by [scale], which
- * is the one number that relates the file to whatever width the page is
- * currently drawn at - so this stays correct through a pinch, a resize and a
- * change of reading width without recalculating anything.
+ * Everything is measured in the page's own units and scaled by [scale], the one
+ * number relating the file to the width it is currently drawn at - so this stays
+ * correct through a pinch, a resize and a change of reading width without
+ * recalculating anything.
  */
 @Composable
 internal fun PageTranslationOverlay(
@@ -104,14 +104,14 @@ internal fun PageTranslationOverlay(
             // sentence: they all draw into the same page.
             //
             // The same soft highlight the set text is marked with, so moving
-            // between a PDF and an EPUB is not moving between two different
-            // readers. Faint enough to leave somebody else's typesetting
-            // perfectly readable underneath it.
+            // between a PDF and an EPUB is not moving between two readers, and
+            // faint enough to leave somebody else's typesetting readable under
+            // it.
             //
             // A passage with something to put on the page brings its own
-            // highlight with it - see TranslationPanel - so it is left out of
-            // the bands above; drawing one here as well would leave the wider of
-            // the two showing round the edges of the narrower.
+            // highlight - see TranslationPanel - so it is left out of the bands
+            // above; drawing one here too would leave the wider of the two
+            // showing round the edges of the narrower.
             .drawBehind { drawPassageBands(bands, markColors, sweep.value) },
     ) {
         marked.forEach { passage ->

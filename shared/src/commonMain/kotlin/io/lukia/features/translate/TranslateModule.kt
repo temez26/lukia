@@ -71,9 +71,9 @@ val translateModule = module {
     // else in the app.
     //
     // The two wrappers around it are where translating stops costing anything it
-    // does not have to: the same passage is asked for once, and only once ever.
-    // Both are translators themselves, so nothing above this line knows they are
-    // there - which is also why the order is decided here and only here.
+    // need not: the same passage is asked for once, and only once ever. Both are
+    // translators themselves, so nothing above knows they are there - which is
+    // why the order is decided here and only here.
     single<Translator> {
         val settings: TranslationSettingsRepository = get()
 

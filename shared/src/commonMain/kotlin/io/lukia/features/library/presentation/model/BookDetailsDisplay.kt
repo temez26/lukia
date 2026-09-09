@@ -18,14 +18,14 @@ import org.jetbrains.compose.resources.stringResource
  *
  * Known only for a book that has been opened: the length travels with the stored
  * reading position rather than being read from the file, so the library can say
- * how far through a book someone is without opening it. A book nobody has opened
- * therefore has no length to show, and showing nothing is the honest answer -
- * the alternative is opening every book in the library to fill in a row.
+ * how far through a book someone is without opening it. Showing nothing for an
+ * unopened book is the honest answer - the alternative is opening every book in
+ * the library to fill in a row.
  *
- * Pages either way, and the same pages the reader itself counts. A PDF's were
- * set when the file was made; a reflowable book's are set by the reader, so this
- * is how long the book was in the window it was last read in rather than a
- * property of the file - which is also why it changes when the type size does.
+ * Pages either way, and the same pages the reader counts. A PDF's were set when
+ * the file was made; a reflowable book's are set by the reader, so this is how
+ * long the book was in the window it was last read in - which is why it changes
+ * with the type size.
  */
 @Composable
 fun BookDetails.lengthLabel(): String? {

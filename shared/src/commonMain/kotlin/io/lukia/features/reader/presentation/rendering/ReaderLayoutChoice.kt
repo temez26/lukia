@@ -49,17 +49,15 @@ internal class ReaderLayoutChoice(
      * Whether this book is one the choice applies to at all, which is to say a
      * PDF.
      *
-     * Learned from the book the first time it opens, and then kept - which is
-     * the whole point of it living here rather than being read off whatever is
-     * open. Converting a PDF to text is seconds of work during which nothing is
-     * open, and a control that appeared only alongside an open book went missing
-     * for exactly that stretch: the reader who had just asked for the
-     * conversion, watched the progress and thought better of it had no way back.
+     * Learned the first time the book opens and then kept, which is why it lives
+     * here rather than being read off whatever is open. Converting a PDF to text
+     * is seconds during which nothing is open, and a control that appeared only
+     * alongside an open book went missing for exactly that stretch - so a reader
+     * who asked for the conversion and thought better of it had no way back.
      *
      * Not known before a book has ever opened, so the first opening of one
-     * stored as text - which is a book converted once and closed before it
-     * finished - still has to wait. What that used to be, every reopening of
-     * every book read as text, is now answered from the conversion kept beside
+     * stored as text - converted once and closed before it finished - still has
+     * to wait. Every later reopening is answered from the conversion kept beside
      * the file.
      */
     val offered: StateFlow<Boolean> = _offered.asStateFlow()
@@ -81,15 +79,14 @@ internal class ReaderLayoutChoice(
      * The choice this book should be opened as: what was stored for it, or what
      * has been chosen since.
      *
-     * Read from the store once. Afterwards the choice in hand is the newer of
-     * the two by definition, and re-reading would undo a choice whose write
-     * failed - which would show the reader the setting they did not pick beside
-     * the book they did.
+     * Read from the store once: afterwards the choice in hand is the newer by
+     * definition, and re-reading would undo a choice whose write failed, showing
+     * the reader a setting they did not pick beside the book they did.
      *
-     * A book with nothing stored for it, and a store that cannot be read at all,
-     * both open as whatever new books are set to open as. The two are worth
-     * collapsing: neither is a choice the reader made about this book, and there
-     * is nothing better to show them than the one they made about all of them.
+     * A book with nothing stored, and a store that cannot be read at all, both
+     * open as new books are set to. Neither is a choice the reader made about
+     * this book, and there is nothing better to show than the one they made
+     * about all of them.
      */
     suspend fun restore(): PdfLayout {
         _noTextLayer.value = false
@@ -125,12 +122,11 @@ internal class ReaderLayoutChoice(
      * same answer - and so that what the settings panel shows is what the reader
      * is looking at.
      *
-     * [openedAs] is what this opening asked for, and is judged against rather
-     * than against the choice in hand. Opening a book runs on past the moment
-     * the reader can see it, so a reader who changes the layout in that window
-     * leaves two openings in flight - and the older one is reporting on a book
-     * already abandoned. Read against the current choice, it would answer
-     * "this has no text in it" about the wrong document and put the reader's new
+     * Judged against [openedAs] rather than the choice in hand. Opening runs on
+     * past the moment the reader can see the book, so changing the layout in
+     * that window leaves two openings in flight and the older reports on a book
+     * already abandoned. Read against the current choice it would answer "this
+     * has no text in it" about the wrong document, putting the reader's new
      * choice back to what they had just moved away from.
      */
     suspend fun settle(document: ReaderDocument, openedAs: PdfLayout) {

@@ -24,26 +24,23 @@ private const val FALLBACK_WIKI = "en"
 /**
  * One word's page, off whichever Wiktionary is most likely to have it.
  *
- * Asked of the reader's own Wiktionary - a Finnish reader is asking
+ * Asked of the reader's own Wiktionary - a Finnish reader asks
  * `fi.wiktionary.org`, whose entry for an English word is written in Finnish -
- * and only of the English one when that has no page at all. That fallback is
- * real and will fire: the smaller Wiktionaries are far thinner than the English
- * one, and a word missing from a reader's own leaves them with an English
- * definition, which is worse than their language and better than nothing.
+ * and of the English one only when that has no page at all. That fallback fires
+ * often: the smaller Wiktionaries are far thinner, and an English definition is
+ * worse than the reader's language and better than nothing.
  *
- * Read through the query API rather than the REST one, which is the whole reason
- * this ever answered in English. Wikimedia's `page/definition` endpoint is neat,
- * returns senses already parsed, and exists only on the English Wiktionary -
- * every other wiki answers it with a 404, so every lookup fell through to
- * English however the reader had set their language. The query API is older,
- * hands back the page as text rather than as senses, and is on every wiki there
- * is.
+ * Read through the query API rather than the REST one, which is why this ever
+ * answered in English. Wikimedia's `page/definition` endpoint returns senses
+ * already parsed and exists only on the English Wiktionary - every other wiki
+ * 404s it, so every lookup fell through to English however the reader had set
+ * their language. The query API is older, hands back page text rather than
+ * senses, and is on every wiki there is.
  *
  * Its own type rather than part of the translator that first needed it, because
- * two things now ask this question of the same wikis: a word being translated in
- * the line it sits on, and the whole entry the reader asked to see. What differs
- * between them is how much of the page they keep - see [reading] - and that is
- * not a reason to fetch it two ways.
+ * two things now ask the same wikis: a word translated in the line it sits on,
+ * and the whole entry the reader asked to see. They differ only in how much of
+ * the page they keep - see [reading] - which is no reason to fetch it twice.
  *
  * Nothing here is configured and nothing is charged. It also never sees the
  * book: a dictionary cannot use a paragraph.
@@ -60,21 +57,20 @@ internal class WiktionaryPages(
      * What a wiki has to say about one word, with a page that only says which
      * word it is a form of followed to the word itself.
      *
-     * That last part is most of what makes this useful on real prose. A book is
-     * written in inflected words, and a wiki's page for one of them is often not
-     * a definition: `values` answers `monikkomuoto sanasta value` and nothing
-     * else, which tells a reader who wanted `arvo` only that they have more
-     * looking up to do. See [baseForm].
+     * That last part is most of what makes this useful on real prose: books are
+     * written in inflected words, and a wiki's page for one is often not a
+     * definition - `values` answers `monikkomuoto sanasta value` and nothing
+     * else. See [baseForm].
      *
-     * Followed once and no further. A chain of pointers is not a thing wikis
-     * write, and a lookup that could walk one would be a lookup that could loop.
+     * Followed once and no further. Wikis do not write chains of pointers, and a
+     * lookup that could walk one could loop.
      *
-     * What the word's own page said becomes [WordEntry.form] either way - the
+     * What the word's own page said becomes [WordEntry.form] either way: the
      * grammar is worth keeping whether or not the base form answered, and it is
-     * the one thing that explains why the reader is being shown a word they did
-     * not hold. A base form with no entry of its own therefore leaves an entry
-     * with a form and no senses, which is an answer rather than a failure: it
-     * has somewhere to go, which is the panel, and nowhere to go on the page.
+     * what explains why the reader is shown a word they did not hold. A base
+     * form with no entry of its own leaves a form and no senses, which is an
+     * answer rather than a failure - it has the panel to go to, and nowhere to
+     * go on the page.
      *
      * [WordEntry.word] is the word actually defined, which is not always the one
      * that was asked about. Whoever shows it can say so.
@@ -137,11 +133,10 @@ internal class WiktionaryPages(
      *
      * Asked of the wiki only where nobody has asked before. One word can be four
      * requests - the reader's wiki and the English one, each for the word and
-     * again for the word it turns out to be a form of - and the reader who holds
-     * it, reads the panel, closes it and holds it again was making all of them
-     * twice. Both answers are kept, the page and the absence of one, because a
-     * word missing from the reader's own wiki is the case that costs two
-     * requests rather than one.
+     * again for the form it turns out to be - and a reader who holds it, reads
+     * the panel, closes it and holds it again made all four twice. Both answers
+     * are kept, the page and the absence of one, because a word missing from the
+     * reader's own wiki is the case that costs two requests rather than one.
      *
      * What is asked of the wiki itself, and what becomes of the answer, is
      * [fetch]'s.

@@ -27,15 +27,14 @@ data class ProviderState(
 /**
  * Everything about who answers, wherever it is shown.
  *
- * Grouped by what it changes rather than by which page shows it, which are no
- * longer the same thing: the two settings that choose who answers about a single
- * word are on the Translating page, beside the language, because a dictionary
- * needs nothing set up. The rest is on the AI translation page.
+ * Grouped by what it changes rather than which page shows it, which are no
+ * longer the same: the two settings choosing who answers about a single word are
+ * on the Translating page beside the language, because a dictionary needs
+ * nothing set up. The rest is on the AI translation page.
  *
- * Gathered rather than passed one by one because they travel together through
- * four composables that do nothing with them, and a screen whose signature is
- * twenty callbacks is a screen that cannot be split - see the parameter limits
- * in `CODING_STYLE.md`.
+ * Gathered rather than passed one by one because they travel through four
+ * composables that do nothing with them, and a screen whose signature is twenty
+ * callbacks cannot be split - see the parameter limits in `CODING_STYLE.md`.
  *
  * Every one defaults to doing nothing, so a caller rendering the page to look at
  * it - a preview, a test - supplies only what it means to exercise.

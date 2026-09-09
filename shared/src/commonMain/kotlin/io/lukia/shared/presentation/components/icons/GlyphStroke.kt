@@ -10,22 +10,18 @@ import androidx.compose.ui.unit.dp
 /**
  * How heavily the app's glyphs are stroked.
  *
- * Every mark in Lukia is drawn rather than imported, and every one of them lays
- * its geometry out as fractions of the box it is handed - so a glyph already
- * scales. Its stroke did not: each was written as a literal dp at the call site,
- * which is how one icon family came to be drawn at 1.6, 1.8 and 2.0dp, with two
- * of the comments claiming a match that the numbers did not make. `SearchGlyph`
- * said it was "drawn at the same stroke weight as the chevrons" at 1.8 against
- * their 2.0; `DisclosureChevron` said it was drawn at `BackChevron`'s weight at
- * 1.6 against the same 2.0.
+ * Every mark here is drawn rather than imported, laying its geometry out as
+ * fractions of the box it is handed - so a glyph already scales. Its stroke did
+ * not: each was a literal dp at the call site, which is how one icon family came
+ * to be drawn at 1.6, 1.8 and 2.0dp with two comments claiming a match the
+ * numbers did not make.
  *
- * A fixed stroke is also a different mark at every size the app draws it. These
- * glyphs are asked for at 15dp under a pointer, 18 and 20dp under a thumb, 24dp
- * on the tab bar and larger again on an empty state - so a single 2.0dp line is
- * an eighth of the small one and a twelfth of the large, and the same icon reads
- * as bold in a menu and as hairline on a page. Optical size is the thing being
- * fixed here: the stroke is a fraction of what the glyph is actually drawn at,
- * so the family holds one weight across every slot it appears in.
+ * A fixed stroke is also a different mark at every size. These glyphs are asked
+ * for at 15dp under a pointer, 18 and 20dp under a thumb, 24dp on the tab bar
+ * and larger on an empty state, so one 2.0dp line is an eighth of the small and
+ * a twelfth of the large - the same icon bold in a menu and hairline on a page.
+ * Making the stroke a fraction of the drawn size holds one optical weight across
+ * every slot.
  *
  * The fraction is clamped at both ends. Below the floor a mark starts
  * disappearing into the display's own pixel grid; above the ceiling a glyph the

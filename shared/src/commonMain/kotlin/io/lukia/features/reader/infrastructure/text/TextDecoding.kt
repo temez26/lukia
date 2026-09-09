@@ -9,21 +9,19 @@ import io.lukia.core.domain.diagnostics.warn
  * most likely was.
  *
  * UTF-8 first, because everything made this century is UTF-8 and the encoding is
- * self-checking: byte sequences that are not valid UTF-8 are overwhelmingly not
- * UTF-8 at all. A file that fails that test is read as Windows-1252 instead,
- * which is what a plain text file written on Windows and never given an encoding
- * actually is - and the difference is visible, since the bytes it disagrees with
- * Latin-1 about are exactly the curly quotes, dashes and ellipses that fill
- * ordinary prose.
+ * self-checking: bytes that are not valid UTF-8 overwhelmingly are not UTF-8. A
+ * file that fails is read as Windows-1252, which is what an unlabelled plain
+ * text file written on Windows actually is - and the choice is visible, since
+ * the bytes it disagrees with Latin-1 about are exactly the curly quotes, dashes
+ * and ellipses that fill ordinary prose.
  *
- * There is no way to be certain here. Nothing in a `.txt` file says what it is,
- * so this is a decision made on the reader's behalf; getting it wrong turns
- * punctuation into noise, and refusing to guess turns the whole file into it.
+ * Certainty is impossible: nothing in a `.txt` says what it is. Guessing wrong
+ * turns punctuation into noise; refusing to guess turns the whole file into it.
  *
- * Line endings are settled here too, so that no reader above has to ask which
- * machine a file was written on. Every one of them was undoing it separately,
- * which is three chances to forget - and the one that forgot would show a book
- * whose every paragraph ended in a character nobody can see.
+ * Line endings are settled here too, so no reader above has to ask which machine
+ * a file came from. Each was undoing it separately - three chances to forget,
+ * and the one that forgot showed a book whose every paragraph ended in a
+ * character nobody can see.
  */
 internal fun decodeText(
     bytes: ByteArray,

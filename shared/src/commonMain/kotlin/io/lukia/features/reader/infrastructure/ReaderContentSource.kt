@@ -53,25 +53,22 @@ internal suspend fun openReaderContent(
  * photograph.
  *
  * The file is read once and given back: what comes out is the whole book's text,
- * held in memory like any other reflowable book, and nothing is drawn from the
- * file afterwards. That is also why this cannot be part of [openReaderContent],
- * which is not suspending: reading a page's text is, and there are hundreds of
- * pages here rather than one.
+ * held in memory like any other reflowable book. That is why this cannot be part
+ * of the non-suspending [openReaderContent] - reading a page's text suspends,
+ * and there are hundreds of pages here.
  *
  * Hundreds of pages is also why the file is opened more than once - see
- * [readersFor]. Reading a page is the longest thing the app does and one
- * handle can only do it one page at a time, so the book is divided between as
- * many handles as the device has cores to read them with.
+ * [readersFor]. Reading a page is the longest thing the app does and one handle
+ * does one page at a time, so the book is divided between as many handles as the
+ * device has cores.
  *
- * Read once in a stronger sense as well: what comes out is kept beside the file
- * - see [storedReflow] - so that a reader who looks at the same book as pages
- * and then as text again is not made to wait through the whole conversion a
- * second time.
+ * The result is kept beside the file - see [storedReflow] - so a reader who
+ * looks at the same book as pages and then as text again does not wait through
+ * the conversion twice.
  *
- * A file with no text in it is not remembered as such. It costs a scan of the
- * file to find out again, but only if somebody asks for the same scan as text
- * twice, and writing down an absence is a thing to get wrong for the sake of a
- * case the reader has already been told about.
+ * A file with no text is not remembered as such: finding out again costs one
+ * scan, and only if somebody asks twice, where writing down an absence is a
+ * thing to get wrong for a case the reader has already been told about.
  */
 internal suspend fun openPdfAsText(
     path: String,

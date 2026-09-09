@@ -80,12 +80,11 @@ internal object MinimalPdf {
      * The same three pages, with the catalog and the whole outline packed into
      * an object stream instead of written into the file directly.
      *
-     * This is what a PDF 1.5 or later writes, which is nearly everything
-     * produced since about 2005: the small objects are gathered into one stream
-     * and only the streams themselves are left addressable. Nothing else in
-     * these tests reaches that path - [withOutline] writes a 1.4 file and the
-     * desktop's PDFBox fixtures write one too - so without this the whole of
-     * `expandObjectStream` goes unexercised.
+     * What PDF 1.5 and later writes, which is nearly everything produced since
+     * about 2005: small objects gathered into one stream, only the streams
+     * themselves addressable. Nothing else here reaches that path - [withOutline]
+     * and the desktop's PDFBox fixtures both write 1.4 - so without this the
+     * whole of `expandObjectStream` goes unexercised.
      *
      * The stream carries no filter, which is legal and is the only way to write
      * one from common code: there is a zlib decompressor here and no compressor.

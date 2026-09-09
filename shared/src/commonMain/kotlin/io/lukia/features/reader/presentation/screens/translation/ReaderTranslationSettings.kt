@@ -48,18 +48,17 @@ import org.jetbrains.compose.resources.stringResource
  * wider window gets. Then what translating is *set* to do: the language, and
  * what a thumb on the page asks for.
  *
- * Those two settings are on the settings screen as well, and are here too
- * because they are the ones a reader wants mid-chapter: a sentence that came
- * back in a language they did not want, or a tap that keeps translating a whole
- * paragraph they were only skimming. Leaving the book, crossing two screens and
- * coming back is a long way round for a control that acts on the page in front
- * of them - and unlike everything else in Settings, both of these are answered
- * by looking at the book rather than at the setting.
+ * Those two settings are on the settings screen as well, and are here because
+ * they are the ones a reader wants mid-chapter: a sentence that came back in the
+ * wrong language, or a tap that keeps translating a paragraph they were only
+ * skimming. Leaving the book and crossing two screens is a long way round for a
+ * control that acts on the page in front of them - and unlike everything else in
+ * Settings, both are judged by looking at the book rather than at the setting.
  *
  * Shown always, because there is always something to translate with: a word goes
- * to a dictionary or to Google, neither of which needs anything set up. What
- * needs a model is behind its own question - the two bulk controls, and whether
- * a gesture may ask for more than a word.
+ * to a dictionary or to Google, neither needing setup. What needs a model is
+ * behind its own question - the two bulk controls, and whether a gesture may ask
+ * for more than a word.
  *
  * At the top rather than after the type settings: this is the one group here
  * that changes what is written on the page rather than how it is set.
@@ -140,10 +139,10 @@ internal fun ReaderTranslationSettings(
  * settings screen makes - see `TranslatingSettings` and `GestureUnitSection`.
  *
  * The units are stacked under their labels on every window, unlike everything
- * else in the panel. These are the only controls here with four segments of real
- * words in them, and the wide layout's control column cuts "Sentence" and
- * "Paragraph" to stubs - a control whose choices cannot be read is worse than a
- * row that does not line up with the ones below it.
+ * else in the panel: they are the only controls here with four segments of real
+ * words, and the wide layout's control column cuts "Sentence" and "Paragraph" to
+ * stubs. A control whose choices cannot be read is worse than a row that does
+ * not line up.
  */
 @Composable
 private fun GestureSettings(
@@ -259,10 +258,9 @@ private fun ReaderTranslationSessionControls(
  * been pushed off the bottom of a phone.
  *
  * Compact even so - see [ChoiceDensity]. The settings screen's rows are a page's
- * worth of row each, and seventeen of those opened inside a panel capped at a
- * few hundred points is a list twice as tall as the thing holding it: the reader
- * scrolls through languages to get back to the text size. Here they are the
- * height of the rows the panel is otherwise built from.
+ * worth each, and seventeen of those inside a panel capped at a few hundred
+ * points is a list twice as tall as what holds it, so the reader scrolls through
+ * languages to get back to the text size.
  */
 @Composable
 private fun TargetLanguageSetting(

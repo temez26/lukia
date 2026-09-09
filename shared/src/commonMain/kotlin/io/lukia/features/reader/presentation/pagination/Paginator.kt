@@ -44,12 +44,11 @@ internal fun paginate(
 /**
  * One run of a book's sections, laid out on pages of its own.
  *
- * The same rule as [paginate] applied to part of a book, so that the parts can
- * be laid out at the same time as each other and shown as they arrive. What
- * makes that give the same book back is where the runs are cut: a run begins at
- * a section that opens a page, so it begins with an empty page exactly as a
- * whole book does, and nothing on its first page could have been carried over
- * from the run before. See `chunkStarts`.
+ * The same rule as [paginate] applied to part of a book, so the parts can be
+ * laid out concurrently and shown as they arrive. What makes that give the same
+ * book back is where the runs are cut: a run begins at a section that opens a
+ * page, so it starts empty exactly as a whole book does and nothing on its first
+ * page was carried over from the run before. See `chunkStarts`.
  *
  * [firstSection] is where this run begins in the book, because a page has to be
  * able to say which section of the book its blocks came from, not which section
@@ -89,11 +88,10 @@ internal suspend fun paginateChunk(
  * no chapter breaks to cut at is one run and one freeze, which is why this is
  * inside the walk over the blocks rather than between the runs.
  *
- * On a clock rather than on a count of blocks, because how long a block takes to
- * measure is a fact about the device and the block rather than about the book: a
- * paragraph and a page of preformatted code are not the same work. Where the
- * measuring has a thread to itself this costs a comparison per block and yields
- * to nobody.
+ * On a clock rather than a count of blocks, because how long a block takes is a
+ * fact about the device and the block: a paragraph and a page of preformatted
+ * code are not the same work. Where the measuring has a thread to itself this
+ * costs a comparison per block and yields to nobody.
  */
 private class Breather(private val timeSource: TimeSource = TimeSource.Monotonic) {
 
@@ -110,16 +108,15 @@ private class Breather(private val timeSource: TimeSource = TimeSource.Monotonic
 /**
  * A small part of a frame rather than a whole one.
  *
- * What is felt as a stutter is a frame that came late, and a frame comes late by
- * however long the thread was busy when it was due. So this is the size of the
- * delay the measuring can impose on a page being scrolled onto the screen, and
- * wants to be short against the sixteen milliseconds a frame has - not close to
- * half of it. Scrolling a reflowable book is itself most of a frame's work,
- * since the pages coming into view are being set as they arrive.
+ * A stutter is a frame that came late, by however long the thread was busy when
+ * it was due. So this is the delay the measuring can impose on a page being
+ * scrolled in, and wants to be short against the sixteen milliseconds a frame
+ * has - not half of it. Scrolling a reflowable book is itself most of a frame's
+ * work, since the pages coming into view are set as they arrive.
  *
- * The cost of a shorter one is the handing over itself, which is a trip through
- * the run loop and some tens of microseconds - about a percent of the measuring
- * at this size, and nothing where the measuring has a thread to itself.
+ * The cost of a shorter one is the handover: a trip through the run loop and
+ * some tens of microseconds - about a percent of the measuring at this size, and
+ * nothing where the measuring has a thread to itself.
  */
 private val BREATH = 2.milliseconds
 

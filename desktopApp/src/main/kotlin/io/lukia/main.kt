@@ -232,17 +232,14 @@ private fun ComposeWindow.acceptBooksDroppedOnIt() {
  * The window's own menus, on the one desktop where they belong at the top of the
  * screen rather than at the top of the window.
  *
- * macOS keeps this in its own menu bar, where every application has one and a
- * reader looks up for it. Windows and Linux draw it as a strip inside the
- * window - a row of chrome above a library that already carries search, the
- * statistics and its own actions menu, saying "File" and nothing else. That is
- * the whole menu bar's width spent on one word, over an app whose every other
- * surface is a floating panel.
+ * macOS keeps this in its own menu bar, where a reader looks up for it. Windows
+ * and Linux draw it as a strip inside the window - a whole bar's width saying
+ * "File" and nothing else, over a library that already carries search, the
+ * statistics and its own actions menu.
  *
- * So it is built on macOS only. Nothing is lost with it: adding books, adding a
- * folder and the settings are all in the library's actions menu, and the
- * shortcuts that were the menu's other job are handled by the window itself -
- * see [requestedBy].
+ * So it is built on macOS only, and nothing is lost with it: adding books,
+ * adding a folder and the settings are all in the library's actions menu, and
+ * the shortcuts are handled by the window itself - see [requestedBy].
  *
  * Settings sits under File rather than in the application menu it would occupy
  * on macOS, because that menu belongs to the JVM and is not Compose's to add to.

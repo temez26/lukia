@@ -148,12 +148,11 @@ private val TilePath = Path().apply {
  * The app's mark, drawn rather than loaded: four page leaves fanning open from a
  * shared spine, on the near-black tile the launcher icon wears.
  *
- * Vector geometry rather than a packaged bitmap because this is the one image
- * the app draws at whatever size the window asks for, and because a splash that
- * has to decode a PNG before it can show anything is a splash arriving after the
- * moment it exists for. Every platform gets the same mark from the same source.
- * It is also what makes [fan] possible at all - a leaf can only be turned about
- * the spine while it is still a leaf rather than a pixel.
+ * Vector geometry rather than a packaged bitmap: this is the one image drawn at
+ * whatever size the window asks for, a splash that must decode a PNG first
+ * arrives after the moment it exists for, and every platform gets the same mark
+ * from one source. It is also what makes [fan] possible - a leaf can only turn
+ * about the spine while it is still a leaf rather than a pixel.
  *
  * [fan] is how far open the fan is: 0 leaves the leaves stacked behind the front
  * one, a closed book, and 1 is the mark as the icon draws it. It is a lambda

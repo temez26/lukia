@@ -30,14 +30,12 @@ private const val MaxCauses = 3
  * open it.
  *
  * Written to a file rather than held like the rest of the record, because the
- * buffer dies with the process and this is about the one failure that kills it.
- * It is app-private, it is never sent anywhere, and the reader can read it,
- * copy it or delete it.
+ * buffer dies with the process and this is about the failure that kills it. It
+ * is app-private, never sent, and the reader's to read, copy or delete.
  *
- * [entries] is whatever the buffer held when the app died, which is nothing at
- * all unless diagnostics were already on. That is the consent split and it needs
- * no code: a stack trace is about the app, and the breadcrumbs leading to it are
- * about a reader's afternoon, so the second half only exists if it was asked for.
+ * [entries] is whatever the buffer held, which is nothing unless diagnostics
+ * were already on - the consent split, needing no code: a stack trace is about
+ * the app, the breadcrumbs are about a reader's afternoon.
  */
 fun crashReport(
     failure: Throwable,

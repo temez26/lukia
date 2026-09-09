@@ -53,13 +53,11 @@ private val PanelWidth: Dp = 520.dp
 /**
  * Choosing a book or a folder, inside the app's own window.
  *
- * The alternative is the desktop's own open panel, and on macOS that is what the
- * app still uses - `NSOpenPanel` is the panel every other application there
- * opens, with the reader's sidebar and their idea of where files live. What
- * Windows and Linux could offer instead was Swing's chooser, which is a window
- * drawn by Java in neither the app's design nor the system's, and which arrives
- * outside the app looking like it belongs to a different program. A panel over
- * the library is a smaller thing than either, and it is at least Lukia's.
+ * On macOS the app still uses the system's own `NSOpenPanel`, which is what
+ * every other application there opens. Windows and Linux could only offer
+ * Swing's chooser, a window drawn by Java in neither the app's design nor the
+ * system's, arriving outside the app looking like a different program. A panel
+ * over the library is smaller than either, and is at least Lukia's.
  *
  * It shows only what a reader can act on - folders, and the formats the library
  * reads - so the list is a list of books rather than of files.

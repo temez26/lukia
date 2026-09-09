@@ -50,26 +50,23 @@ private val ShareWidth: Dp = 34.dp
  * of the window: where the book starts, how far along it they are, and the share
  * of it behind them.
  *
- * One bar rather than a figure floating over a hairline. The two were the same
- * fact drawn twice at opposite scales - a chip in the corner and a rule welded to
- * the window edge - and read as two pieces of chrome that happened to arrive
- * together. Set end to end, the "0" and the percentage are the ends of the same
- * scale and the track between them is the reading of it.
+ * One bar rather than a figure floating over a hairline: the two were the same
+ * fact drawn twice at opposite scales, reading as two pieces of chrome that
+ * happened to arrive together. Set end to end, the "0" and the percentage are
+ * the ends of one scale and the track between them is the reading of it.
  *
  * The zero is what makes it a scale rather than a stripe. A part-filled bar with
- * nothing at either end says "some", and the figure alone says how much without
- * saying of what; the two together say where the book begins and how far in this
- * page is.
+ * bare ends says "some", and the figure alone says how much without saying of
+ * what.
  *
- * Wears the toolbar's own glass capsule, at the same measure and the same inset
- * from the window - see [ReaderToolbar]. They are the two halves of one piece of
- * chrome and they arrive together, so they are built alike.
+ * Wears the toolbar's glass capsule at the same measure and inset - see
+ * [ReaderToolbar]; they are two halves of one piece of chrome.
  *
- * Not a control. There is a scrubber in the contents panel for going somewhere,
- * and it is reached from the toolbar this appears opposite.
+ * Not a control: the scrubber for going somewhere is in the contents panel,
+ * reached from the toolbar this appears opposite.
  *
  * The page is read here and nowhere else, so turning one redraws this bar rather
- * than the reader around it, and the `derivedStateOf` keeps that to once per page
+ * than the reader around it, and `derivedStateOf` keeps that to once per page
  * rather than once per scrolled pixel.
  */
 @Composable

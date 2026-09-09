@@ -40,17 +40,14 @@ private val CoverMonogramSize = 26.sp
 /**
  * One book on a home row: its cover, its title, and who wrote it.
  *
- * Deliberately not [BookCard]. That card belongs to a grid a shelf is being
- * worked on - it carries a selection mark, a hovering menu trigger and the
- * jiggle that goes with picking books off a shelf - and none of that belongs on
- * a screen whose whole job is to be a way back into a book. A press opens the
- * book, and that is what the screen is for.
+ * Deliberately not [BookCard]. That card belongs to a shelf being worked on - a
+ * selection mark, a hovering menu trigger, the jiggle of picking books up - and
+ * none of it belongs on a screen whose whole job is a way back into a book.
  *
- * A long press is the exception, and it is the same gesture that opens the same
- * menu on the shelf. A reader who has learned that holding a cover offers what
- * can be done with the book does not expect the gesture to be missing from the
- * screen they see most - and a home row is exactly where a book turns out to be
- * finished with, or a favourite, or gone.
+ * A long press is the exception, opening the same menu as on the shelf: a reader
+ * who has learned that gesture does not expect it missing from the screen they
+ * see most, and a home row is exactly where a book turns out to be finished
+ * with, or a favourite, or gone.
  *
  * [width] is set by the row rather than by the card, because the rows are not
  * all the same: where a reader left off is worth more room than what happens to

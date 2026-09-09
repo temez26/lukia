@@ -7,20 +7,18 @@ import kotlin.test.assertNull
 /**
  * That bytes which are not a picture come back as nothing, on every platform.
  *
- * The point of the function under test is that the platforms disagree about how
- * to fail: Skia raises, Android returns a null bitmap wrapped in an `ImageBitmap`
- * that throws on the first question asked of it. Only one of those is caught by
- * catching around the call, which is why the reader crashed paginating a book
- * with an undecodable plate. So these run wherever the common tests run - the
- * JVM on CI, the simulator beside it - and the Android half is pinned by
- * `AndroidImageDecodingTest`, which needs a device to say anything at all.
+ * The function under test exists because the platforms disagree about how to
+ * fail: Skia raises, Android returns a null bitmap wrapped in an `ImageBitmap`
+ * that throws on the first question asked of it. Catching around the call
+ * catches only one, which is why the reader crashed paginating a book with an
+ * undecodable plate. So these run wherever the common tests run, and the Android
+ * half is pinned by `AndroidImageDecodingTest`, which needs a device.
  *
- * That a picture which *is* a picture decodes is not here, and cannot be: these
- * also run against the Android target on the host, where `BitmapFactory` is a
- * stub that decodes nothing. So each platform pins the decoding half where a
- * real decoder answers - `DesktopImageDecodingTest`, `IOSImageDecodingTest` and
- * `AndroidImageDecodingTest` - and what is common here is the failing half,
- * which is the half the reader crashed on.
+ * That a real picture decodes cannot be here: these also run against the Android
+ * target on the host, where `BitmapFactory` is a stub that decodes nothing. Each
+ * platform pins the decoding half where a real decoder answers -
+ * `DesktopImageDecodingTest`, `IOSImageDecodingTest`, `AndroidImageDecodingTest`
+ * - and what is common here is the failing half the reader crashed on.
  */
 class ImageDecodingTest {
 

@@ -52,17 +52,15 @@ private const val MaxShelfSegments = 4
  * What the library is narrowed to - inside the grid, so it scrolls away rather
  * than taking a permanent row.
  *
- * This is where a large title would go, and it is deliberately not one. A screen
- * that shows books does not need a word telling the reader they are books; the
- * row is worth more as controls.
+ * Where a large title would go, and deliberately not one: a screen that shows
+ * books does not need a word telling the reader they are books, and the row is
+ * worth more as controls.
  *
- * Two rows, because they answer two different questions. The shelves are where
- * the reader is - part way through, not started, finished - and exactly one of
- * them is true at a time, which is what a segmented control says. The filters
- * under them are properties of the books, any number of which can be on at once,
- * which is what a row of chips says. Both arrive already reduced to what this
- * library can actually offer, and an empty-handed control is left off rather
- * than shown with nothing to choose.
+ * Two rows for two questions. Shelves are where the reader is - part way
+ * through, not started, finished - exactly one at a time, which is what a
+ * segmented control says. The filters under them are properties of the books,
+ * any number at once, which is what a row of chips says. Both arrive reduced to
+ * what this library can offer, and an empty-handed control is left off.
  *
  * How many books there are is not here: it is in the search field, which is the
  * one place the number answers a question the reader is actually asking.

@@ -21,9 +21,10 @@ import kotlinx.coroutines.launch
  *
  * Everything here is a question put to somebody else's machine - what models it
  * has, whether it will load one, whether it can translate a sentence - and none
- * of it is a setting. Gathered like [io.lukia.features.reader.presentation.translation.ReaderTranslations]
+ * is a setting. Gathered as
+ * [io.lukia.features.reader.presentation.translation.ReaderTranslations] is
  * beside `ReaderViewModel`: the view model stays about what the reader changes,
- * and everything that can hang, fail or be retried is on one page.
+ * and everything that can hang, fail or be retried is in one place.
  *
  * Only ever asked about the provider the reader has chosen. Each of these reads
  * the settings at the moment it runs, so a probe started after a key was pasted

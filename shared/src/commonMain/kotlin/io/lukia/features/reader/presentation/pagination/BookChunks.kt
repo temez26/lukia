@@ -6,24 +6,22 @@ import io.lukia.features.reader.domain.text.TextSection
  * Where a book can be cut into runs that lay out on their own, as the index of
  * the section each run begins at.
  *
- * The cut is only ever made at a section that names itself, because that is the
- * one place where laying the rest out separately changes nothing: a named
- * section opens a page of its own - see [paginate] - so the page before it was
- * already finished, and nothing on either side of the cut could have been on the
- * same page as anything on the other. A book cut here and reassembled is the
- * same book, page for page, as one laid out end to end. `PaginatorTest` holds
- * that to be true.
+ * The cut is only made at a section that names itself, the one place where
+ * laying the rest out separately changes nothing: a named section opens a page
+ * of its own - see [paginate] - so the page before it was already finished, and
+ * nothing either side of the cut could have shared a page. A book cut here and
+ * reassembled is page for page the same as one laid out end to end;
+ * `PaginatorTest` holds that.
  *
- * Which is what lets the reader show a book before it has finished measuring
- * one: the runs are measured at the same time as each other, and each one that
- * arrives adds real pages to the end of what is already on screen.
+ * Which is what lets the reader show a book before it has finished measuring:
+ * the runs are measured concurrently, and each that arrives adds real pages to
+ * the end of what is on screen.
  *
  * Runs are not made as small as the cuts allow. A chapter is often a page or
- * two, and a thousand of them would be a thousand pieces of work to hand around
- * for no more parallelism than a few dozen gives - so a run is grown until it
- * holds [MIN_BLOCKS_PER_CHUNK] blocks and cut at the first chapter after that.
- * A book with no named sections at all cannot be cut anywhere, and comes back as
- * one run, which is what it was before any of this.
+ * two, and a thousand of them is a thousand pieces of work for no more
+ * parallelism than a few dozen gives - so a run grows to [MIN_BLOCKS_PER_CHUNK]
+ * blocks and is cut at the first chapter after that. A book with no named
+ * sections cannot be cut anywhere and comes back as one run.
  */
 internal fun chunkStarts(sections: List<TextSection>): List<Int> {
     if (sections.isEmpty()) return emptyList()

@@ -59,12 +59,11 @@ private const val OUT_OF_ROOM = "length"
  * prompt and the answer is read forgivingly. Pretending otherwise would mean
  * every local setup failing on its first sentence.
  *
- * The answer is streamed, which matters most for exactly those local setups: a
- * model on somebody's own machine writes at the speed of their hardware, and
- * asking for the reply piece by piece is what turns that wait into a sentence
- * appearing rather than a blank space that may or may not be broken. It is also
- * what keeps a slow model from being mistaken for a stopped one - see
- * [translationTimeouts].
+ * The answer is streamed, which matters most for those local setups: a model on
+ * somebody's own machine writes at the speed of their hardware, and asking piece
+ * by piece turns that wait into a sentence appearing rather than a blank space
+ * that may or may not be broken. It also keeps a slow model from being mistaken
+ * for a stopped one - see [translationTimeouts].
  */
 class OpenAiTranslator(
     private val client: HttpClient,

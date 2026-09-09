@@ -27,16 +27,14 @@ enum class DiagnosticArea { Import, Reading, Translation, Storage }
  *
  * The app absorbs failures on purpose in a dozen places - a cover that will not
  * decode, a page that will not parse, a file whose encoding was guessed at -
- * because none of them is worth failing an import or closing a book over. What
- * the reader gets is a grey placeholder, a blank page, mojibake; what a
- * maintainer gets, without this, is a bug report describing one of those and
- * nothing else at all.
+ * because none is worth failing an import or closing a book over. The reader
+ * gets a grey placeholder, a blank page, mojibake; without this, a maintainer
+ * gets a bug report describing one of those and nothing else.
  *
- * Not suspending, and it takes no dispatcher. Every call site is inside a parser
- * or a decoder that is not a coroutine and has no business becoming one in order
- * to say that a cover failed to decode - a dispatcher is injected for work, and
- * an entry is a record rather than work. Implementations must keep [record] to
- * an in-memory append for the same reason.
+ * Not suspending, and takes no dispatcher: every call site is a parser or
+ * decoder that is not a coroutine and has no business becoming one to say a
+ * cover failed to decode. An entry is a record rather than work, so
+ * implementations must keep [record] to an in-memory append.
  */
 interface Diagnostics {
 

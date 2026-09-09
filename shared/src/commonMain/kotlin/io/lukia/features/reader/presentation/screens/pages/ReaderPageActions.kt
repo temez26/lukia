@@ -141,25 +141,22 @@ private fun PageBlock.passageActions(
 /**
  * One block of the book, as the passages a standing order asks about.
  *
- * The paragraph whole, in one request, rather than a request per sentence in it.
- * Measured against a model running on the reader's own machine, on a block of
- * twelve sentences:
+ * The paragraph whole, in one request, rather than one per sentence. Measured on
+ * a local model, a block of twelve sentences:
  *
  *     a request per sentence, four at once   44s, 7,500 tokens
  *     the paragraph, in one request          12s, 1,000 tokens
  *
- * Nearly all of that difference is the same work done over and over. Every one
- * of those twelve requests carried the standing instructions, the book, and the
- * whole paragraph as context - so the model read the paragraph twelve times to
- * translate it once, and thought about it twelve times over.
+ * Nearly all the difference is repeated work: each of the twelve requests
+ * carried the standing instructions, the book and the whole paragraph as
+ * context, so the model read the paragraph twelve times to translate it once.
  *
- * Two blocks still go as sentences. One too long to send in a single request,
- * which is a document with no sentence punctuation to speak of rather than a
- * long paragraph - see [MAX_TRANSLATABLE_CHARS]. And a paragraph the layout cut
- * across two pages, because a piece of a paragraph is not one: the answer is
- * filed under the block, and the piece on the other page would show the same
- * translation over its own different words. Sentences are anchored finely enough
- * to survive being split, which is why they were what this sent before.
+ * Two kinds of block still go as sentences. One too long for a single request,
+ * which means a document with no sentence punctuation rather than a long
+ * paragraph - see [MAX_TRANSLATABLE_CHARS]. And a paragraph the layout cut
+ * across two pages: the answer is filed under the block, so the piece on the
+ * other page would show the same translation over its own different words.
+ * Sentences are anchored finely enough to survive being split.
  */
 private fun PageBlock.bulkPassages(
     chapterTitle: String?,

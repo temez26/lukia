@@ -45,15 +45,15 @@ import org.jetbrains.compose.resources.stringResource
  * into it - what it is called and who wrote it, what the publisher said about
  * it, and its particulars underneath.
  *
- * Shared, because this is shown two ways - as a screen of its own on a phone, and
- * as a panel over the library on anything wider - and the two must not drift into
- * saying different things about the same book. Only the chrome around it and the
- * room it leaves for that chrome differ, which is what [topClearance] and
+ * Shared, because this is shown two ways - a screen of its own on a phone, a
+ * panel over the library on anything wider - and the two must not drift into
+ * saying different things about the same book. Only the surrounding chrome and
+ * the room left for it differ, which is what [topClearance] and
  * [bottomClearance] are for.
  *
- * Sections earn their place: a book whose file carries no blurb has no About, and
- * one that named no publisher has no publisher row. A heading over an empty space
- * tells the reader only that the app expected something it did not get.
+ * Sections earn their place: no blurb means no About, no publisher means no
+ * publisher row. A heading over an empty space only tells the reader the app
+ * expected something it did not get.
  */
 @Composable
 internal fun BookDetailBody(

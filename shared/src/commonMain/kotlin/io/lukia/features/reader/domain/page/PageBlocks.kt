@@ -125,16 +125,15 @@ internal fun GlyphBlock.placedText(): PlacedText {
 /**
  * The same words, without the map back to the page underneath them.
  *
- * What re-setting a PDF as text needs and all it needs: it asks whether a block
- * is a heading, a bullet or a paragraph, and every one of those questions is
- * about the characters. The owners are a [PlacedGlyph] per character of the
- * book - a few hundred thousand of them on a long one - allocated to be read
- * once and dropped, which on a phone is most of what the conversion costs the
- * collector.
+ * All that re-setting a PDF as text needs: whether a block is a heading, a
+ * bullet or a paragraph are all questions about the characters. The owners are a
+ * [PlacedGlyph] per character - a few hundred thousand on a long book -
+ * allocated to be read once and dropped, which on a phone is most of what the
+ * conversion costs the collector.
  *
  * They are still exactly what pointing at a sentence needs, which is why both
- * ways of writing a block out are here and share the one set of rules about
- * where the spaces go.
+ * ways of writing a block out live here and share one set of rules about where
+ * the spaces go.
  */
 internal fun GlyphBlock.written(): String = written { _, _, _ -> }
 

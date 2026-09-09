@@ -59,14 +59,13 @@ import org.jetbrains.compose.resources.stringResource
  * Menu open state is owned by the grid rather than the card, so opening one menu
  * closes any other; the card only reports that a menu was asked for.
  *
- * The card carries its feedback as motion rather than as a ripple: it shrinks
- * under a press and, on desktop, lifts and casts a deeper shadow under the
- * pointer. A ripple washing across a book cover reads as a defect in the artwork.
+ * Feedback is motion rather than a ripple - it shrinks under a press and, on
+ * desktop, lifts under the pointer - because a ripple washing across a book
+ * cover reads as a defect in the artwork.
  *
- * Nothing here clips. The cover casts its shadow deliberately outside its own
- * bounds, and a clip anywhere up the chain crops that shadow to a hard edge -
- * which is what used to make a hovered card look as though its shadow had been
- * cut off square, more visibly the further it lifted.
+ * Nothing here clips: the cover casts its shadow outside its own bounds, and a
+ * clip anywhere up the chain crops that shadow square, more visibly the further
+ * the card lifts.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

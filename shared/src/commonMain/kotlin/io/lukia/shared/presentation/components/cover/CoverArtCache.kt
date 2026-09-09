@@ -18,12 +18,11 @@ import kotlin.concurrent.Volatile
  * How large a cover is kept once decoded, along its longer edge.
  *
  * The import holds a stored cover to this same edge, so most artwork arrives
- * here already this size. What this still catches is what was stored before it
- * did - a library imported by an earlier version can hold a publisher's artwork
- * at 1600x2400. A cell in the grid is around 150dp - four hundred and something
- * pixels on a phone - so one of those is a bitmap several times larger than
- * anything that will be drawn from it, and on a shelf of two hundred books that
- * difference is the difference between scrolling and stuttering.
+ * already this size. What this catches is what was stored before it did - a
+ * library imported by an earlier version can hold artwork at 1600x2400. A grid
+ * cell is around 150dp, four hundred and something pixels on a phone, so one of
+ * those is several times larger than anything drawn from it - and on a shelf of
+ * two hundred books that is the difference between scrolling and stuttering.
  *
  * Sized for the largest a cover is ever drawn, which is the detail screen rather
  * than the grid.
@@ -46,16 +45,15 @@ internal const val CoverPixelBudget = 8_000_000
  * The covers already decoded, most recently used last.
  *
  * A cache rather than decoding per card, as this once did: decoding costs several
- * megabytes and a measurable pause, and a fast scroll through a large library was
- * paying it again for every cover that came back into view. Bounded rather than
- * unbounded, because a whole library's worth of decoded artwork is hundreds of
- * megabytes and the crash that follows is a worse answer than a stutter.
+ * megabytes and a measurable pause, and a fast scroll through a large library
+ * paid it again for every cover that came back into view. Bounded, because a
+ * whole library of decoded artwork is hundreds of megabytes and the crash that
+ * follows is worse than a stutter.
  *
- * Keyed on the book rather than on the bytes. The bytes are no longer around to
- * key on: they are read one cover at a time, decoded, and let go of - see
- * [CoverArtSource] - which is what keeps a library of any size out of memory.
- * Two copies of one book each decode their own, which is the price of not
- * holding every cover in the library to compare them by.
+ * Keyed on the book rather than the bytes, which are no longer around to key on:
+ * they are read one cover at a time, decoded, and let go of - see
+ * [CoverArtSource]. Two copies of one book each decode their own, the price of
+ * not holding every cover in the library to compare them by.
  */
 internal object CoverArtCache {
 

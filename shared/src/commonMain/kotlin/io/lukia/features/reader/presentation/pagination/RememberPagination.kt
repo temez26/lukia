@@ -26,22 +26,18 @@ import io.lukia.features.reader.domain.text.TextSection
  * of a page, the type size - and never on anything else: a translation arriving
  * or a page being scrolled past is not a reason to lay a book out again.
  *
- * The measuring happens off the main thread, on as many of them as the device
- * has to spare and the platform's text stack allows, and arrives in pieces - see
+ * The measuring happens off the main thread, on as many as the device and the
+ * platform's text stack allow, and arrives in pieces - see
  * [paginateProgressively] and [maxParallelMeasurers]. What comes back first is a
- * true beginning of the book rather than the whole of it, which is what lets
- * somebody start reading a long book while its later chapters are still being
- * measured. The previous layout stays on screen until the new one
- * has reached the page being read, because blanking a page somebody is looking
- * at would be a worse answer than a page that is briefly a line too long.
+ * true beginning of the book, which is what lets somebody start reading while
+ * the later chapters are still being measured. The previous layout stays on
+ * screen until the new one reaches the page being read: blanking a page somebody
+ * is looking at is worse than a page briefly a line too long.
  *
- * [openingPage] is the page the reader is being put on, and is how far the
- * layout has to have got before it is worth showing: a book that opened at its
- * first page while somebody was five chapters in would be showing them the wrong
- * book. It is null while the stored position is still being read, and a book
- * with nowhere settled to open at is not one to show a beginning of - so nothing
- * goes out until it is known, which is what it was before any of this was
- * measured a run at a time.
+ * [openingPage] is the page the reader is being put on, and how far the layout
+ * must have got before it is worth showing - a book opening at page one while
+ * somebody is five chapters in shows them the wrong book. It is null while the
+ * stored position is still being read, and nothing goes out until it is known.
  */
 @Composable
 internal fun rememberPagination(
@@ -133,18 +129,16 @@ internal fun rememberPagination(
  * How tall each of a book's illustrations comes out, remembered once.
  *
  * A figure is held as the bytes the book stores, and the only way to learn its
- * proportions is to decode it. That is done here rather than in the measurer so
- * that it is done once per book instead of once per layout - and only the size
- * is kept, because a book's plates decoded all at once are more memory than
- * every word in it.
+ * proportions is to decode it - done here rather than in the measurer so it
+ * happens once per book instead of once per layout. Only the size is kept: a
+ * book's plates decoded at once are more memory than every word in it.
  *
  * One of these belongs to one worker and is asked only from it, which is what
- * makes an ordinary map the right thing to keep the answers in.
+ * makes an ordinary map the right place for the answers.
  *
- * The answer is the height the page will actually give it, which is not always
- * the height of the measure: an illustration is drawn no larger than it is - see
- * `FigureBlock` - so a small one takes a small amount of the page, and a
- * measurement that assumed otherwise would leave a hole under every ornament.
+ * The answer is the height the page will actually give it, not the height of the
+ * measure: an illustration is drawn no larger than it is - see `FigureBlock` -
+ * so assuming otherwise would leave a hole under every ornament.
  *
  * A plate that cannot be decoded is nothing tall, which is exactly what is drawn
  * for it: the reader shows no broken-image mark, so the page must not leave a

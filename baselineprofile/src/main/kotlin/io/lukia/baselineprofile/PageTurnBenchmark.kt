@@ -14,17 +14,13 @@ import java.util.regex.Pattern
 /**
  * What turning a page costs, in frames, on a real device.
  *
- * This is the app's most repeated action by a very long way - a reader turns a
- * page every minute or so for hours - and it is the one thing here where the
- * budget is not "fast enough" but "never late". A dropped frame while a book is
- * opening is a stutter in something that was always going to take a moment; a
- * dropped frame under a finger dragging a page is the page catching on it.
+ * The app's most repeated action by a long way, and the one place where the
+ * budget is "never late" rather than "fast enough": a dropped frame under a
+ * finger dragging a page is the page catching on it.
  *
- * Frame timing rather than a wall clock, which is the opposite of
- * [ReaderOpenBenchmark] and for the opposite reason. There, nothing the harness
- * collects knows what "the book is open" means. Here the question *is* the
- * frames: a scroll produces a run of them inside the traced window reliably,
- * because scrolling is what the measured block does and nothing else.
+ * Frame timing rather than [ReaderOpenBenchmark]'s wall clock, because here the
+ * frames *are* the question - the measured block scrolls and does nothing else,
+ * so it reliably produces a run of them inside the traced window.
  *
  * Run it against a device that already holds the book below:
  *
@@ -38,25 +34,21 @@ import java.util.regex.Pattern
  * spelled out in [ReaderOpenBenchmark]: without it the build uninstalls the app
  * and Android takes the whole library with it. Back the database up first.
  *
- * Against a real book in a real library rather than a fixture, for the same
- * reason [ReaderOpenBenchmark] is - and so this cannot run on an empty device,
- * which is why it is not part of `connectedCheck`.
+ * A real book rather than a fixture, for [ReaderOpenBenchmark]'s reason - so
+ * this cannot run on an empty device, and is not part of `connectedCheck`.
  *
- * Two books rather than one, because a page turn is two different pieces of work
- * depending on what is being read, and one number over both would hide whichever
- * is worse:
+ * Two books, because a page turn is two different pieces of work and one number
+ * over both would hide whichever is worse:
  *
- *  - a PDF turns to a page that has to be *drawn*, from the file, at the width
- *    the window is now - see `RenderedPageCache`. The page ahead is drawn while
- *    the current one is being read, so a steady reader should never wait; a fast
- *    one outruns it.
- *  - a reflowed book turns to a page that was measured when the book was laid
- *    out, and whose text, marks and translations are composed as it arrives.
+ *  - a PDF page is *drawn* from the file at the width the window is now - see
+ *    `RenderedPageCache`, which draws the next page ahead, so only a reader who
+ *    outruns it waits.
+ *  - a reflowed page was measured when the book was laid out, and has its text,
+ *    marks and translations composed as it arrives.
  *
- * What is deliberately not measured here is the first turn after opening. That
- * one is the opening still finishing - a long book is laid out a run at a time
- * behind the reader - and it belongs to [ReaderOpenBenchmark]'s question rather
- * than to this one. [WARM_UP_TURNS] is what puts it out of the way.
+ * The first turn after opening is deliberately excluded: it is the opening still
+ * finishing, which is [ReaderOpenBenchmark]'s question. [WARM_UP_TURNS] puts it
+ * out of the way.
  */
 class PageTurnBenchmark {
 

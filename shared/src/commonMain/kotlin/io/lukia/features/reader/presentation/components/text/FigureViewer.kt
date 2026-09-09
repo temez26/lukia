@@ -64,27 +64,25 @@ private const val MaxScale = 8f
  * One illustration, on its own over the book.
  *
  * A plate in an EPUB is laid out to the measure of a page of prose, and a
- * diagram, a map or a page of music set at that width is a picture of something
- * unreadable. There is nowhere else to go for it either: the reader's image size
- * setting acts on every figure in the book at once, and turning the whole book's
- * pictures up to read one table and back down afterwards is not a thing anybody
- * does. So a press on a figure lifts that one out to the size of the window.
+ * diagram, map or page of music set at that width is a picture of something
+ * unreadable. The image size setting acts on every figure at once, and nobody
+ * turns the whole book's pictures up to read one table and back down again. So a
+ * press lifts that one figure out to the size of the window.
  *
  * Fit against the whole window rather than drawn at its own size, so the
  * sixteen-pixel ornament and the two-thousand-pixel plate both arrive as large
- * as they can usefully be - which for the small one is the only way it is ever
- * seen at all.
+ * as they usefully can - which for the small one is the only way it is ever seen.
  *
- * A [Popup] rather than something inside the page: the figure is in a lazy list
- * inside the reader's own chrome, and drawn there it would be clipped by the
- * page it came from. Focusable, unlike the app's menus, because it covers
- * everything and should take Escape and Back for itself rather than leaving them
- * to close the book underneath it.
+ * A [Popup] rather than something inside the page: the figure sits in a lazy
+ * list inside the reader's chrome, where it would be clipped by the page it came
+ * from. Focusable, unlike the app's menus, because it covers everything and
+ * should take Escape and Back rather than leaving them to close the book
+ * underneath.
  *
- * Arrives the way every panel in the app arrives - see [popoverTransition] - so
- * that a picture opening reads as one more of this app's surfaces rather than as
- * a viewer bolted onto it. The scrim only fades: a full-window fill scaled from
- * 0.92 would show a band of the unfaded page down each edge on the way in.
+ * Arrives as every panel does - see [popoverTransition] - so a picture opening
+ * reads as one of this app's surfaces rather than a viewer bolted on. The scrim
+ * only fades: a full-window fill scaled from 0.92 would show a band of unfaded
+ * page down each edge on the way in.
  *
  * Draws nothing once closed and settled, so [FigureBlock] can leave it in the
  * tree and let it animate itself out.
@@ -168,16 +166,16 @@ internal fun FigureViewer(
  * The illustration itself: as large as the window allows, and larger again on
  * request.
  *
- * Two ways in to the same scale, because two kinds of device are looking at it.
- * A pinch is what a phone does and a desktop cannot; a double press is what a
- * mouse has, and is a step rather than a slide because a mouse has no way to say
- * how far. Both settle through the same pair of values, so a pinch after a double
- * press continues from where the press left it.
+ * Two ways in to the same scale, for two kinds of device. A pinch is what a
+ * phone does and a desktop cannot; a double press is what a mouse has, and is a
+ * step rather than a slide because a mouse cannot say how far. Both settle
+ * through the same pair of values, so a pinch after a double press continues
+ * from where the press left it.
  *
- * A pinch zooms about the fingers rather than about the middle of the window,
- * which is the difference between reading the corner of a map and watching it
- * slide away from under them. Panning is bounded by how much of the picture is
- * actually off-screen, so it cannot be pushed out of the window and lost.
+ * A pinch zooms about the fingers rather than the middle of the window - the
+ * difference between reading the corner of a map and watching it slide away.
+ * Panning is bounded by how much of the picture is actually off-screen, so it
+ * cannot be pushed out of the window and lost.
  *
  * An unzoomed press closes, which is what a picture held up over a book should
  * do. Once it has been zoomed it does not - at that point a press is somebody

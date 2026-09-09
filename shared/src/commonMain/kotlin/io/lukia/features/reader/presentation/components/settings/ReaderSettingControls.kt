@@ -101,12 +101,11 @@ internal fun SettingGroup(
 
             // Fixed rather than a floor, and the label weighted against it.
             //
-            // A Row measures the children that named no weight first, handing
-            // each one everything still unclaimed - and a segmented control
-            // fills whatever width it is offered. Given a floor, it took the
-            // whole row and the label beside it was measured at nothing: the
-            // wide panel drew six unlabelled tracks, and which of them set the
-            // typeface and which the line spacing was left to be guessed at.
+            // A Row measures unweighted children first, handing each everything
+            // still unclaimed, and a segmented control fills whatever it is
+            // offered. Given a floor it took the whole row and the label beside
+            // it measured at nothing: the wide panel drew six unlabelled tracks,
+            // leaving typeface and line spacing to be guessed at.
             //
             // The panel is a fixed [ReaderPanelWidth] wide, so this leaves the
             // label a known measure rather than whatever is left over, and

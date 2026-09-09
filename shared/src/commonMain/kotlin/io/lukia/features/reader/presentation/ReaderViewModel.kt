@@ -94,15 +94,15 @@ class ReaderViewModel(
      * Where to open, once it is known - null while the book is still being
      * opened and the stored position still being read.
      *
-     * The length the position was stored against travels with it, because a
-     * reflowable book's pages are the reader's own: the same book is a different
-     * number of pages in a different window, and a page number only says where
-     * somebody was alongside the count it was one of.
+     * The length it was stored against travels with it, because a reflowable
+     * book's pages are the reader's own: the same book is a different number of
+     * pages in a different window, so a page number only means something
+     * alongside the count it was one of.
      *
-     * Settled once per opening and never changed afterwards, so the screen can
-     * treat it as an instruction to carry out rather than a position to keep
-     * following. A value that tracked the reader would send them back to where
-     * they started every time it arrived.
+     * Settled once per opening and never changed, so the screen can treat it as
+     * an instruction to carry out rather than a position to follow - a value
+     * that tracked the reader would send them back to the start every time it
+     * arrived.
      */
     val initialPosition: StateFlow<ReadingProgress?> = record.initialPosition
 
@@ -291,15 +291,13 @@ class ReaderViewModel(
     private fun reopen() {
         // Stopped first, before any of the putting back.
         //
-        // Everything below this line is about a book that is no longer being
-        // opened, and an opening still in flight through it is one that can
-        // still publish - putting the book it was told to abandon back over the
-        // top of the reset, and leaving its file handle where nothing will
-        // close it. The app never sees that: its main dispatcher is one thread
-        // and none of this suspends, so no other coroutine can get in between.
-        // Cancelling here rather than on the way into [open] is what makes that
-        // a property of this code rather than of the dispatcher it happens to
-        // be running on.
+        // Everything below is about a book no longer being opened, and an
+        // opening still in flight can still publish - putting the abandoned book
+        // back over the top of the reset, and leaving its file handle where
+        // nothing will close it. The app never sees that, since its main
+        // dispatcher is one thread and none of this suspends; cancelling here
+        // rather than on the way into [open] makes that a property of this code
+        // rather than of the dispatcher.
         //
         // The chapter list goes with it. It is not part of the opening - see
         // [outlining] - so cancelling that alone left it running against a

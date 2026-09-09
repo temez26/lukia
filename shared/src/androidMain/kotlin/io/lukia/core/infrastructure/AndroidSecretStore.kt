@@ -32,14 +32,13 @@ class AndroidSecretStore(context: Context) : SecretStore {
     override fun getSecret(key: String): String? {
         val stored = preferences.getString(key, null) ?: return null
 
-        // A secret that cannot be decrypted is gone, and there is nothing to
-        // recover. The way that happens is a restore: the key is generated in
-        // this device's keystore and never leaves it, so preferences carried
-        // onto another phone arrive as ciphertext with nothing to open it.
-        // Changing the screen lock does not do it - that invalidates keys bound
-        // to the user's authentication, and this one deliberately is not, see
-        // below. Reported as absent rather than as a failure, so the reader is
-        // asked for the key again.
+        // A secret that cannot be decrypted is gone, with nothing to recover.
+        // That happens on a restore: the key is generated in this device's
+        // keystore and never leaves it, so preferences carried onto another
+        // phone arrive as ciphertext with nothing to open them. Changing the
+        // screen lock does not do it - that invalidates keys bound to the user's
+        // authentication, and this one deliberately is not, see below. Reported
+        // as absent rather than a failure, so the reader is asked again.
         return runCatching { decrypt(stored) }.getOrNull()
     }
 
@@ -92,18 +91,15 @@ class AndroidSecretStore(context: Context) : SecretStore {
             )
                 .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                 .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                // Deliberately requiring no authentication: a book is read on
-                // a train with the screen on, and a translation that failed
-                // until the reader authenticated again would be a worse trade
-                // than the one this is making.
+                // Deliberately requiring no authentication: a book is read on a
+                // train with the screen on, and a translation that failed until
+                // the reader authenticated again is the worse trade.
                 //
                 // What that gives up is worth naming. The key can be used
                 // whenever this app can run, so it defends the ciphertext
-                // against being carried off the device - an extracted
-                // preferences file, an image of the storage, a backup - and not
-                // against code already running as this app on an unlocked
-                // phone. Requiring authentication would move that line, at the
-                // cost of the case this is built for.
+                // against leaving the device - an extracted preferences file, an
+                // image of the storage, a backup - and not against code already
+                // running as this app on an unlocked phone.
                 .build(),
         )
 

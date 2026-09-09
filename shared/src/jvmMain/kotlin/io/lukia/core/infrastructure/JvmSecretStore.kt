@@ -10,18 +10,17 @@ import java.util.Properties
  * Secrets in a file only their owner can open.
  *
  * The weakest of the three platforms, and worth being plain about: the desktop
- * has no secret store this can reach without taking on a dependency and a
- * process call per platform - the macOS keychain, libsecret and DPAPI are three
- * different mechanisms, two of which can block on a prompt. So this does the
- * one thing that is genuinely available: keeps secrets out of the ordinary
- * settings file and restricts the file to the account that owns it.
+ * has no secret store reachable without a dependency and a process call per
+ * platform - the macOS keychain, libsecret and DPAPI are three mechanisms, two
+ * of which can block on a prompt. So this does the one thing genuinely
+ * available: keeps secrets out of the ordinary settings file and restricts that
+ * file to the account that owns it.
  *
- * That defends against the realistic desktop case - another account on the same
- * machine, a backup that copies the app's directory - and not against something
- * already running as this user. Anything running as this user can also read the
- * keychain entries that any other approach here would create, so the difference
- * is smaller than it sounds; but it is not nothing, and it is not encryption,
- * and calling it encryption would be worse than the gap itself.
+ * That defends against another account on the same machine and a backup copying
+ * the app's directory, not against something already running as this user -
+ * which could read the keychain entries any other approach would create anyway.
+ * It is not nothing, and it is not encryption; calling it encryption would be
+ * worse than the gap itself.
  */
 class JvmSecretStore(
     /** Injectable so tests can work in a temporary directory. */

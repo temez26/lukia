@@ -19,20 +19,18 @@ import kotlin.test.assertNull
 /**
  * The three questions About exists to answer, asked of the group itself.
  *
- * `LukiaVersion` reached a diagnostic report and a crash note long before it
- * reached a screen, so the version being on the page is the whole of the first
- * one - and it is asserted against the generated constant rather than against a
- * number written here, because a test that agreed with itself about the version
- * would pass through a release that forgot to change it.
+ * The first is the version, asserted against the generated constant rather than
+ * a number written here: a test that agreed with itself about the version would
+ * pass through a release that forgot to change it.
  *
- * The second is the licence list, which is what Apache-2.0 section 4 asks a
- * distribution to carry. It is behind a mark until it is asked for, so both
- * halves of that are worth holding: nobody reading Settings has seventeen
- * licences put in front of them, and nobody looking for one has to leave the app.
+ * The second is the licence list, which Apache-2.0 section 4 asks a distribution
+ * to carry. It is behind a mark until asked for, so both halves are worth
+ * holding: nobody reading Settings has seventeen licences put in front of them,
+ * and nobody looking for one has to leave the app.
  *
  * The third is the way in to the developer settings, which is the version line
- * and nothing else - so the count that opens them is worth pinning down. Nothing
- * on the page says it is there.
+ * and nothing else - so the count that opens them is worth pinning down, since
+ * nothing on the page says it is there.
  */
 @OptIn(ExperimentalTestApi::class)
 class AboutSettingsTest {

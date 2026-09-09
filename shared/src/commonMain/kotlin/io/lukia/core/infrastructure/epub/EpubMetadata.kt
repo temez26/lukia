@@ -8,15 +8,15 @@ import io.lukia.core.infrastructure.xml.xmlEvents
  * The Dublin Core block an EPUB's package document opens with, which is where a
  * book states its title, who wrote it and who published it.
  *
- * Scoped to the `<metadata>` element rather than read from the package document
- * at large: `<title>` is a Dublin Core element in there and an ordinary one
- * everywhere else, and a walk that did not stop at `</metadata>` would happily
- * take a stylesheet's name as the book's.
+ * Scoped to the `<metadata>` element rather than the package document at large:
+ * `<title>` is a Dublin Core element in there and an ordinary one everywhere
+ * else, so a walk that did not stop at `</metadata>` would take a stylesheet's
+ * name as the book's.
  *
- * Element names arrive from [xmlEvents] already lower-cased and stripped of
- * their prefix, so `dc:creator` is matched here as `creator`. That also means an
- * EPUB using a different prefix for Dublin Core - which the specification allows
- * - is read correctly without a namespace table.
+ * Element names arrive from [xmlEvents] lower-cased and stripped of their
+ * prefix, so `dc:creator` is matched as `creator` - which also means an EPUB
+ * using a different Dublin Core prefix, as the specification allows, is read
+ * correctly without a namespace table.
  */
 internal fun readEpubMetadata(packageXml: String): BookMetadata {
     val fields = DublinCore()

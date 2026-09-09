@@ -12,19 +12,18 @@ import kotlin.test.assertTrue
  * A reader who skipped every update in between.
  *
  * The migration tests beside this each take one step and say what it did to the
- * data. This one asks the other question: whether the steps still add up. An app
- * is updated by whoever opens the store when they feel like it, so the install
- * arriving at the current version from six versions back is the ordinary case
- * rather than the unusual one - and the way that goes wrong is not a query
- * failing loudly but a table quietly ending up a column, a default or a foreign
- * key different from the one every generated statement was written against.
+ * data. This asks whether the steps still add up. An install arriving at the
+ * current version from six back is the ordinary case, and the way it goes wrong
+ * is not a query failing loudly but a table quietly ending up a column, a
+ * default or a foreign key different from what every generated statement was
+ * written against.
  *
- * It is also what catches the cheapest mistake there is to make here: a column
- * added to a `.sq` file with no `.sqm` beside it. That compiles, generates,
- * and passes every test written against a database created from scratch - and
- * throws on the first query of the first launch after an update, for readers who
- * had the app already and for nobody who installs it new. Here the walk up from
- * an old version simply never gains the column, and the comparison says so.
+ * It also catches the cheapest mistake here: a column added to a `.sq` file with
+ * no `.sqm` beside it. That compiles, generates, and passes every test written
+ * against a database created from scratch - then throws on the first query of
+ * the first launch after an update, for everyone who had the app already and
+ * nobody who installs it new. Here the walk up from an old version never gains
+ * the column, and the comparison says so.
  */
 class SchemaVersionJumpTest {
 

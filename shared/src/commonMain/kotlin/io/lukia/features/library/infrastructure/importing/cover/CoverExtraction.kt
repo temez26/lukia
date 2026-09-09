@@ -19,16 +19,16 @@ internal const val MaxStoredCoverEdge = 800
 /**
  * The most a cover may weigh, whatever it is a picture of.
  *
- * Android reads query results through a CursorWindow of two megabytes, and a row
- * too large for one does not come back short - the read of the whole table
- * throws, which takes the entire library off the screen and leaves a retry
- * button in its place. One book's cover art is never worth that, so anything
- * still this large after shrinking is stored as no cover at all.
+ * Android reads query results through a two-megabyte CursorWindow, and a row too
+ * large does not come back short - the read of the whole table throws, taking
+ * the entire library off screen and leaving a retry button. One book's cover is
+ * never worth that, so anything still this large after shrinking is stored as no
+ * cover at all.
  *
- * Well under the two megabytes so that the rest of the row - a description a
- * publisher wrote at length, a list of subjects - has room beside it. Shrinking
- * puts an ordinary cover an order of magnitude below this; what this catches is
- * an image no platform decoder recognised and so could not be shrunk.
+ * Well under two megabytes so the rest of the row - a long publisher description,
+ * a list of subjects - has room beside it. Shrinking puts an ordinary cover an
+ * order of magnitude below this; what this catches is an image no platform
+ * decoder recognised and so could not shrink.
  */
 internal const val MaxStoredCoverBytes = 1_000_000
 

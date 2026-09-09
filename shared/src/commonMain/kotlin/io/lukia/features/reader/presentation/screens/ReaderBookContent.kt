@@ -140,9 +140,8 @@ internal fun ReaderContent(
 
     // What a gesture actually asks for, which is not always what it is set to.
     // Nothing but a translation service answers a sentence or a paragraph, so
-    // with none set up - or with AI switched off altogether - a tap asks for the
-    // word and a hold asks for nothing, rather than asking for something that
-    // can only come back as an error.
+    // with none set up - or AI switched off - a tap asks for the word and a hold
+    // asks for nothing, rather than for something that can only fail.
     //
     // The page gets this and the panel below gets the setting itself, because
     // the panel is where the reader changes it: shown the clamped value, its
@@ -256,12 +255,11 @@ internal fun ReaderContent(
                 // it is - see [behindOverlay]. The panel dims the page and its
                 // scrim catches the pointer, which is where its modality used to
                 // stop: Tab walked through the dimming into the chrome behind,
-                // and a screen reader's swipe-next left the panel after its last
-                // button and carried on into the book.
+                // and a screen reader's swipe-next carried on into the book.
                 //
                 // Wrapped rather than given a modifier, for the reason
                 // `LibraryScreen` wraps its own: the panel is a sibling of all
-                // of this, and a composable cannot quieten the ones beside it.
+                // this, and a composable cannot quieten the ones beside it.
                 Box(
                     modifier = Modifier
                         .fillMaxSize()

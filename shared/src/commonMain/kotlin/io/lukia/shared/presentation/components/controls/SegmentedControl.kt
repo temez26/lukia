@@ -93,12 +93,11 @@ fun <T> SegmentedControl(
             .background(
                 MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (enabled) 1f else 0.5f),
             )
-            // Fixed rather than a floor, unlike every other control in this
-            // file. The pill and the segments inside all fill this height, and
-            // `fillMaxHeight` inside a container that wraps its content
-            // resolves against whatever the parent offered - which for a track
-            // in a settings column is the whole window. A floor here is a
-            // segmented control the height of the screen.
+            // Fixed rather than a floor, unlike every other control here. The
+            // pill and segments all fill this height, and `fillMaxHeight` inside
+            // a container that wraps its content resolves against whatever the
+            // parent offered - for a track in a settings column, the whole
+            // window. A floor here is a control the height of the screen.
             //
             // What that costs is headroom: a segment's `labelSmall` is a 32dp
             // line at the largest OS font scale, and this track is 44dp with

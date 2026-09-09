@@ -72,10 +72,9 @@ private val InfoMaxHeight: Dp = 360.dp
 /**
  * The mark beside a setting that explains it, and the card it opens.
  *
- * Settings on this app's pages used to carry their explanation as prose under
- * every group and under every switch - true, but a page somebody opened to
- * change one thing read as an essay about all of them. The words are the same
- * words; what changed is that they arrive when they are asked for.
+ * Settings used to carry their explanation as prose under every group and every
+ * switch, so a page somebody opened to change one thing read as an essay about
+ * all of them. Same words; they now arrive when asked for.
  *
  * [label] is what a screen reader announces the mark as, so it should name the
  * setting rather than the mark - "About Motion", not "Help".

@@ -55,12 +55,10 @@ private val EdgeStroke: Dp = 1.dp
 /**
  * The light that travels along a passage while it is being translated.
  *
- * A sweep rather than a spinner, and rather than the breath this used to be: the
- * reader is looking at their own book, and something turning in the middle of a
- * paragraph is a piece of software asking to be watched. A light moving along
- * the words says which passage is being worked on and that it is still being
- * worked on, in the place the answer is going to appear, without ever being the
- * thing on the page worth looking at.
+ * A sweep rather than a spinner: something turning in the middle of a paragraph
+ * is a piece of software asking to be watched. A light moving along the words
+ * says which passage is being worked on, in the place the answer will appear,
+ * without ever being the thing on the page worth looking at.
  *
  * The band is a fraction of the passage rather than a fixed width, so a word and
  * a long sentence take the same time to cross - and it starts and ends clear of
@@ -175,14 +173,12 @@ internal fun passageSweep(active: Boolean): State<Float> {
  *
  * Behind the words rather than beside them, because there is nowhere beside them
  * to stand: the room between one sentence and the next is a single space, about
- * four points, and no mark and its gaps will fit in that without landing on the
- * neighbouring word. Anything drawn behind the text has exactly as much room as
- * the text does.
+ * four points, and no mark fits there without landing on the neighbouring word.
  *
- * One rounded rectangle per line rather than one round the whole passage. A
+ * One rounded rectangle per line rather than one round the whole passage: a
  * sentence beginning halfway along one line and ending halfway along another
- * covers two ribbons of the page, and a single box round both of them would
- * cover two half-lines it has nothing to do with.
+ * covers two ribbons of the page, and a single box round both would cover two
+ * half-lines it has nothing to do with.
  */
 internal fun DrawScope.drawPassageBands(
     bands: List<PassageBand>,

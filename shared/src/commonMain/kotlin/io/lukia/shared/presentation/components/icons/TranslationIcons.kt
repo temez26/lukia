@@ -14,10 +14,9 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 // Glyphs for the translation controls.
 //
 // The three sit side by side and answer three different questions, so they are
-// drawn as three different shapes rather than as three arrangements of one. An
-// earlier set gave all three the same highlighted-passage capsule and varied
-// only what was written inside it, which at the 17-20dp these are drawn at made
-// them one button repeated three times.
+// three shapes rather than three arrangements of one. An earlier set gave all
+// three the same highlighted-passage capsule and varied only what was inside,
+// which at the 17-20dp these are drawn at made them one button three times.
 //
 // What they share instead is the filled bar: the mark a translated passage
 // leaves in the book. It sits inside a page for "this page", under a pair of

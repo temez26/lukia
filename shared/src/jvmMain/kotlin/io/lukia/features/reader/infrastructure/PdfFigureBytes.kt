@@ -39,17 +39,16 @@ private const val MAX_REMEMBERED_BYTES = 32 * 1024 * 1024
  *
  * This is the difference between converting a book and waiting for one. A
  * publisher's mark, a journal's banner, a watermark: PDFs draw these on every
- * single page, and a page's picture is not a picture until it has been decoded
- * out of whatever the file packed it in and encoded back into something the
- * reader can hold. On a three-hundred page book that was three hundred decodes
- * and three hundred JPEGs of one logo, of which two hundred and ninety-nine
- * were then thrown away by the very code that noticed they were all the same.
+ * page, and a picture is not a picture until it has been decoded out of whatever
+ * the file packed it in and encoded back into something the reader can hold. On
+ * a three-hundred page book that was three hundred decodes and three hundred
+ * JPEGs of one logo, of which all but one were then thrown away by the very code
+ * that noticed they were the same.
  *
  * Keyed by the object the file keeps the picture in rather than by its bytes,
- * which is what makes the saving arrive before the work rather than after it: a
- * PDF stores one copy of a repeated image and names it from each page, so two
- * pages drawing the same mark reach the same object, and this can answer
- * without decoding anything.
+ * which makes the saving arrive before the work rather than after: a PDF stores
+ * one copy of a repeated image and names it from each page, so two pages drawing
+ * the same mark reach the same object and this answers without decoding.
  *
  * Lives exactly as long as the conversion does - the document is opened to be
  * read as text and closed at the end of it - so there is no eviction here, only
@@ -88,14 +87,13 @@ internal class PdfFigureBytes {
  * use.
  *
  * Shrunk on the way out of the file wherever the file will do it: PDFBox can
- * decode every second, fourth or eighth pixel of an image, and a plate stored
- * at print resolution is otherwise decoded whole - a three-thousand pixel
- * square is thirty-six megabytes of pixels built to be thrown away by the next
- * line. That is a saving in memory rather than in time; the file is still read
- * through either way, and what this avoids is the peak, which on a phone is the
- * difference between a slow conversion and a killed one. Subsampling is exact
- * rather than smooth, so what it leaves is still trimmed to the ceiling by the
- * ordinary scaling below.
+ * decode every second, fourth or eighth pixel, and a plate stored at print
+ * resolution is otherwise decoded whole - a three-thousand pixel square is
+ * thirty-six megabytes built to be thrown away by the next line. A saving in
+ * memory rather than time, since the file is read through either way; what it
+ * avoids is the peak, which on a phone is the difference between a slow
+ * conversion and a killed one. Subsampling is exact rather than smooth, so what
+ * it leaves is still trimmed to the ceiling by the scaling below.
  *
  * JPEG unless the image has transparency to keep, which is the trade a browser
  * makes with the same images: a photograph as PNG is several times the size for

@@ -10,13 +10,12 @@ import java.io.File
 /**
  * The desktop's own open panel.
  *
- * [FileDialog] rather than Swing's `JFileChooser`, which is what the app used
- * to open. A `JFileChooser` is drawn by Java: on macOS it is a dialog that looks
- * nothing like the Finder panel every other application opens, and on Windows it
- * is the old common dialog rather than the Explorer one. `FileDialog` is a thin
- * wrapper over `NSOpenPanel` and over the platform dialog on Windows, so what
- * the reader gets is the panel they already know - with their sidebar, their
- * recent places, and their idea of where files live.
+ * [FileDialog] rather than Swing's `JFileChooser`, which this used to open. A
+ * `JFileChooser` is drawn by Java: on macOS a dialog that looks nothing like the
+ * Finder panel every other application opens, on Windows the old common dialog
+ * rather than the Explorer one. `FileDialog` is a thin wrapper over
+ * `NSOpenPanel` and the Windows platform dialog, so the reader gets the panel
+ * they know - their sidebar, their recent places.
  *
  * The trade is the filter. `FilenameFilter` is honoured on macOS and Linux and
  * ignored by the Windows dialog, which reads a glob out of the file field

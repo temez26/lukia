@@ -34,15 +34,13 @@ import androidx.compose.ui.graphics.lerp as lerpColor
  * The slot at the end of a library laid out as a list.
  *
  * The same thing as [ImportBookCard] and deliberately not the same shape. A card
- * is a blank cover among covers, which is what the end of a grid should look
- * like; drawn in a list, where a row is one column wide, that cover was as wide
- * as the window and half again as tall - one enormous empty rectangle under the
- * books, which is what this replaces.
+ * is a blank cover among covers, right for the end of a grid; drawn in a list,
+ * where a row is one column wide, that cover was as wide as the window and half
+ * again as tall - one enormous empty rectangle under the books.
  *
  * So it is a row among rows: a blank where the jacket goes, and beside it the
- * two words a book's title would be on. The cover does not hinge open here -
- * there is no spine to hinge on at this size, and a swing that small reads as a
- * flicker rather than as a book being opened.
+ * two words a title would occupy. The cover does not hinge open here - there is
+ * no spine to hinge on at this size, and a swing that small reads as a flicker.
  */
 @Composable
 internal fun ImportBookRow(

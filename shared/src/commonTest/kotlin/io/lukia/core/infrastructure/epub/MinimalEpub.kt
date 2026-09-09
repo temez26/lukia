@@ -6,13 +6,12 @@ import io.lukia.core.infrastructure.archive.storedZip
  * A complete, valid EPUB written by hand, with a container, a package document
  * and whatever entries a test asks for.
  *
- * Hand-written for the same reason [io.lukia.core.infrastructure.pdf.MinimalPdf]
- * is: the archive reader and the package it opens are common code, and until
- * this existed the only thing that ever handed them an archive was `jvmTest`,
- * through `java.util.zip`. So the format the reader meets on iOS - the one
- * Calibre and Sigil write - was never read by a test, and a difference between
- * the JDK's zip and everybody else's would have shown up as a book that opens
- * on the desktop and not on a phone.
+ * Hand-written for [io.lukia.core.infrastructure.pdf.MinimalPdf]'s reason: the
+ * archive reader and the package it opens are common code, and until this
+ * existed only `jvmTest` ever handed them an archive, through `java.util.zip`.
+ * The format the reader meets on iOS - what Calibre and Sigil write - was never
+ * read by a test, so a difference between the JDK's zip and everybody else's
+ * would have shown up as a book that opens on the desktop and not on a phone.
  *
  * The archive itself is written by [storedZip], which is where the format's own
  * bytes are laid out.

@@ -62,28 +62,25 @@ import org.jetbrains.compose.resources.stringResource
  * at.
  *
  * The sentences, the words and the set text are all remembered against what they
- * are built from, because a book is thousands of these and none of the
- * splitting or the styling should happen again every time anything on the page
- * changes.
+ * are built from, because a book is thousands of these and none of the splitting
+ * or styling should happen again whenever anything on the page changes.
  *
  * Which passages are marked, and how, is drawn over the finished text rather
  * than written into it. That is what makes a tap feel like a tap: pointing at a
- * sentence changes nothing about the paragraph, so nothing is re-split, re-built
- * or re-laid out, and the mark is a repaint. Only the arrival of translated
- * words is a change to the text at all.
+ * sentence changes nothing about the paragraph, so the mark is a repaint. Only
+ * the arrival of translated words changes the text at all.
  *
- * When they do arrive the paragraph changes length, and everything below it has
- * to move. Two animations carry that: the text cross-fades between its two
- * settings, and the block eases into its new height - so the page settles rather
- * than jumping, and the eye can follow the line it was on to where it went.
+ * When they do, the paragraph changes length and everything below has to move.
+ * Two animations carry that - the text cross-fades between its two settings and
+ * the block eases into its new height - so the page settles rather than jumping
+ * and the eye can follow the line it was on.
  *
- * Every one of those gestures is a point on the page, and a point on the page is
- * the one thing a reader working by voice, by switch or by keyboard does not
- * have. So the paragraph also carries the ask as an action of its own - see
- * [translationAction]. It is the whole block rather than the sentence under the
- * finger, because the finger is what named the sentence; the block is the
- * largest passage that is unambiguous without one, and it is already the unit
- * the reader's own "translate what is on screen" works in.
+ * Every one of those gestures is a point on the page, which is the one thing a
+ * reader working by voice, switch or keyboard does not have. So the paragraph
+ * also carries the ask as an action - see [translationAction]. It is the whole
+ * block rather than the sentence under the finger, because the block is the
+ * largest passage that is unambiguous without one, and is already the unit
+ * "translate what is on screen" works in.
  */
 @Composable
 internal fun ProseText(
@@ -374,10 +371,9 @@ private fun LayoutCoordinates.isOnScreen(): Boolean {
  * looks like the page catching up with itself, while the reverse opens a gap
  * before anything arrives to fill it.
  *
- * Both are the app's own durations, on the app's own curve - a long tail out of
- * a quick start, which is what lets the eye stay on the line it was reading
- * while the line travels. See [LukiaMotion], which is where every other timing
- * in the app comes from; a page re-setting itself is not a special case.
+ * Both are the app's own durations on its own curve - a long tail out of a quick
+ * start, which is what lets the eye stay on the line while it travels. See
+ * [LukiaMotion]: a page re-setting itself is not a special case.
  */
 private const val TRANSLATION_FADE_MILLIS = LukiaMotion.QuickMillis
 private const val TRANSLATION_SETTLE_MILLIS = LukiaMotion.StandardMillis

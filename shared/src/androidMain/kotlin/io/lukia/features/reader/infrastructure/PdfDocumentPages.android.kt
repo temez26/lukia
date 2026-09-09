@@ -60,17 +60,16 @@ private class AndroidDocumentPages(
     /**
      * Whether the book has been given back.
      *
-     * Read inside [renderLock], which is what makes it worth having: the reader
-     * asks for several pages as it scrolls and they queue, so a page that was
-     * waiting its turn when the reader left the book would otherwise reach a
-     * renderer that had been closed while it waited. Leaving the book is the
-     * common way to arrive there - the pages ahead are still being drawn.
+     * Read inside [renderLock], which is what makes it worth having: pages queue
+     * as the reader scrolls, so one waiting its turn when the reader leaves the
+     * book would otherwise reach a renderer closed while it waited. Leaving the
+     * book with pages ahead still being drawn is the common way there.
      *
-     * It does not cover a page already inside [PdfRenderer.render] when the
-     * book is closed. Closing cannot take the lock, because it happens on the
-     * thread that draws and one page can be most of a second; shutting that
-     * window means a close that can suspend, which is a change to every
-     * platform and to what owns a document.
+     * It does not cover a page already inside [PdfRenderer.render] when the book
+     * is closed. Closing cannot take the lock - it happens on the drawing thread
+     * and one page can be most of a second - and shutting that window means a
+     * close that can suspend, a change to every platform and to what owns a
+     * document.
      */
     @Volatile
     private var closed = false
@@ -79,19 +78,17 @@ private class AndroidDocumentPages(
      * Measured as the document opens, which is where the other platforms measure
      * theirs.
      *
-     * Every one of these is a page opened through [PdfRenderer] - a JNI call
-     * each, and hundreds of them on a long book - so where this runs decides
-     * whether opening a book stutters. It used to be lazy, on the argument that
-     * a document opened for some other reason should not pay for a list nobody
-     * asks it for. Nobody was saved: both ways out of here force it, the reader
-     * as it lays out its page slots and the text conversion as it starts. What
-     * the laziness actually did was move hundreds of JNI calls onto whichever
-     * thread asked first - and the reader asks from composition, so a long PDF
-     * paid for its own page list on the main thread, on the frames the screen
-     * carrying it was still arriving on.
+     * Each is a page opened through [PdfRenderer] - one JNI call apiece, and
+     * hundreds on a long book - so where this runs decides whether opening a
+     * book stutters. It used to be lazy, to spare a document opened for some
+     * other reason. That saved nobody: both ways out of here force it anyway
+     * (the reader laying out page slots, the text conversion starting), and
+     * laziness only moved those JNI calls onto whichever thread asked first -
+     * the reader asks from composition, so a long PDF paid for its page list on
+     * the main thread while its own screen was still arriving.
      *
-     * Nobody waits longer for it now: opening already runs off the main thread -
-     * see `OpenDocumentUseCase`, which is the only place documents are opened.
+     * Nobody waits longer now: opening already runs off the main thread - see
+     * `OpenDocumentUseCase`, the only place documents are opened.
      */
     override val pageSizes: List<PageSize> = List(renderer.pageCount) { index ->
         renderer.openPage(index).use { page ->
@@ -110,11 +107,10 @@ private class AndroidDocumentPages(
      * Lazy so that opening a book never pays for a chapter list until something
      * asks for one, and so the file is not scanned on the way to the first page.
      *
-     * Lazy is safe here in a way it is not on the platforms whose renderer has
-     * an outline of its own: this reads the file through a handle of its own
-     * rather than through [renderer], so a chapter list being read while a page
-     * is being drawn is two readers of one file rather than two users of one
-     * document. That is why this one is not read up front as they are.
+     * Lazy is safe here in a way it is not on platforms whose renderer has an
+     * outline of its own: this reads the file through its own handle rather than
+     * through [renderer], so a chapter list read while a page is drawn is two
+     * readers of one file rather than two users of one document.
      */
     override val outline: List<OutlineEntry>? by lazy {
         FilePdfByteSource(file).use { PdfOutlineReader(it).read() }
@@ -127,16 +123,16 @@ private class AndroidDocumentPages(
      */
     private val content = lazy { AndroidPageContent(file) }
 
-    // Serialised with drawing for the same reason drawing is serialised with
-    // itself: this opens its own handle on the same file, and a page being read
-    // while another is being drawn is contention over one document either way.
-    // The content keeps a lock of its own as well, for the documents a
-    // conversion opens where there is no renderer to contend with.
+    // Serialised with drawing for the reason drawing is serialised with itself:
+    // this opens its own handle on the same file, so a page read while another
+    // is drawn is contention over one document. The content keeps its own lock
+    // too, for the documents a conversion opens with no renderer to contend
+    // with.
     //
-    // Off the main thread before touching [content], the way drawing already is.
-    // The lock only suspends, but the first caller through here also opens the
-    // file a second time with a library that can read it, and a PDF being parsed
-    // where it was asked for is a PDF being parsed on the thread that draws.
+    // Off the main thread before touching [content], as drawing already is: the
+    // lock only suspends, but the first caller through here also opens the file
+    // a second time with a library that can read it, and a PDF parsed where it
+    // was asked for is a PDF parsed on the thread that draws.
     override suspend fun pageText(index: Int): List<PageGlyph>? =
         withContext(Dispatchers.IO) {
             renderLock.withLock {

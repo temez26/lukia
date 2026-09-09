@@ -60,9 +60,8 @@ internal fun HideChromeWhileScrolling(
  * the fraction of the book that was stored - see [TextPageList].
  *
  * Where the reader stopped is recorded when a scroll settles rather than as it
- * moves: a fling through a long book passes hundreds of pages nobody saw, and
- * storing each of them would be hundreds of writes to arrive at the one page
- * that mattered.
+ * moves: a fling passes hundreds of pages nobody saw, and storing each would be
+ * hundreds of writes to arrive at the one that mattered.
  *
  * [laidOut] is false while a reflowable book is still being measured, and is
  * what keeps a position from being stored against a length that is still
@@ -84,15 +83,13 @@ internal fun KeepReadingPosition(
 
         // Only a list that has not been anywhere yet.
         //
-        // [initialPosition] is where the book *opened* and is deliberately
-        // never moved off that, so this is an instruction to carry out once
-        // rather than a position to keep following. A turned device runs it
-        // again - the composition goes down and the ViewModel stands - and
-        // without this the reader is sent back to where they started, and then
-        // that is stored as where they got to. A list that is already
-        // somewhere has either been scrolled by the reader or has just
-        // restored its own position, and both are a better answer than this
-        // one.
+        // [initialPosition] is where the book *opened* and never moves off that,
+        // so this is an instruction to carry out once rather than a position to
+        // follow. A turned device runs it again - the composition goes down and
+        // the ViewModel stands - and without this the reader is sent back to
+        // where they started, which is then stored as where they got to. A list
+        // already somewhere has been scrolled or has restored its own position,
+        // and both beat this one.
         if (listState.firstVisibleItemIndex != 0) return@LaunchedEffect
         if (listState.firstVisibleItemScrollOffset != 0) return@LaunchedEffect
 
@@ -103,17 +100,16 @@ internal fun KeepReadingPosition(
     // lambda each composition does not tear this down and rebuild it mid-scroll.
     val settled by rememberUpdatedState(onPageSettled)
 
-    // Restarted when the length changes, not only when the book does. A
-    // reflowable book has no pages until it has been laid out for this window -
-    // which happens after the document arrives - and a reader who opens a book
-    // and never scrolls would otherwise have their position recorded against a
-    // length of nothing, and so not recorded at all.
+    // Restarted when the length changes, not only when the book does: a
+    // reflowable book has no pages until laid out for this window, which happens
+    // after the document arrives, so a reader who never scrolls would otherwise
+    // have their position recorded against a length of nothing.
     //
     // Nothing at all until the book has been measured to the end. A page number
     // is only a position alongside the count it is one of, and the count of a
-    // book still being laid out is on its way to several times what it says -
-    // so a sitting that ended in that window stored a page four hundred of
-    // sixty, and reopening it read that as two thirds of the way through.
+    // book still being laid out is on its way to several times what it says - so
+    // a sitting ending in that window stored page four hundred of sixty, and
+    // reopening read that as two thirds of the way through.
     LaunchedEffect(listState, document, pageCount, laidOut) {
         if (document == null || !laidOut) return@LaunchedEffect
 

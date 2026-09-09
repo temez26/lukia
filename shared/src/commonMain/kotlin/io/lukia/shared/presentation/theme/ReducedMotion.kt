@@ -10,20 +10,18 @@ import androidx.compose.runtime.Composable
  * Skia rather than through the system's animators, so nothing the reader turned
  * off in Settings reaches a single frame of this app on its own.
  *
- * It matters here more than it would in most apps. Reduced motion is asked for
- * by people for whom motion is not a preference - vestibular disorders, migraine,
- * motion sickness - and this app rocks every cover on a shelf while books are
- * being picked, runs a light along a sentence while it waits for a translation,
- * and fans a mark open on every launch.
+ * It matters here more than in most apps: reduced motion is asked for by people
+ * for whom motion is not a preference - vestibular disorders, migraine, motion
+ * sickness - and this app rocks every cover on a shelf while books are picked,
+ * runs a light along a sentence while a translation arrives, and fans a mark
+ * open on every launch.
  *
- * Read as a composable rather than as a value because it is a live setting on
- * both platforms: somebody who turns it on mid-session should not have to
- * restart a reading app to be believed.
+ * Read as a composable rather than a value because it is live on both platforms:
+ * somebody who turns it on mid-session should not restart to be believed.
  *
- * See [motionFor], which is what the answer is actually used for - and note that
- * it caps rather than replaces the reader's own choice. The system says how much
- * motion is allowed; [io.lukia.core.domain.AppMotion] says how much of what is
- * left the reader wants.
+ * See [motionFor], which caps rather than replaces the reader's own choice: the
+ * system says how much motion is allowed, and [io.lukia.core.domain.AppMotion]
+ * says how much of what is left the reader wants.
  */
 @Composable
 expect fun systemReducesMotion(): Boolean

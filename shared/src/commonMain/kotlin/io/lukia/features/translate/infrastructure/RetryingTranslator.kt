@@ -48,17 +48,17 @@ private val MAX_HONOURED_RETRY_AFTER = 10.seconds
 /**
  * A translator that gives a momentary failure a second chance.
  *
- * Nothing in this app used to retry anything. Every failure was final at the
- * first attempt, which for a network-facing feature means the reader sees a rate
- * limit that had already expired, a 529 from a service shedding load for two
- * seconds, and a connection dropped as a phone moved between networks - all of
- * them reported as though translating were broken.
+ * Nothing here used to retry. Every failure was final at the first attempt,
+ * which for a network-facing feature means the reader sees a rate limit that had
+ * already expired, a 529 from a service shedding load for two seconds, and a
+ * connection dropped as a phone changed networks - all reported as though
+ * translating were broken.
  *
  * What is retried is decided by type rather than guessed from a message - see
  * [TranslationFailureKind.isWorthRetrying]. A rejected key, an account with no
- * credit, a model that does not exist and a passage the model declined are all
- * states that will still be true in a second, so each of them fails at once and
- * the reader is sent to fix the thing that is actually wrong.
+ * credit, a missing model and a passage the model declined will all still be
+ * true in a second, so each fails at once and sends the reader to fix the thing
+ * that is actually wrong.
  *
  * ### Where this sits, and why
  *
@@ -66,16 +66,15 @@ private val MAX_HONOURED_RETRY_AFTER = 10.seconds
  *
  *     Coalescing -> Caching -> Retrying -> the provider
  *
- * Below the cache so that a retried success is stored once and a remembered
- * passage never retries anything. Below the coalescer so that a page whose
- * running header appears eight times is one attempt sequence rather than eight -
- * mounting a retry storm against a service that has just asked to be left alone
- * is precisely the wrong response to a rate limit.
+ * Below the cache so a retried success is stored once and a remembered passage
+ * never retries. Below the coalescer so a page whose running header appears
+ * eight times is one attempt sequence rather than eight - a retry storm against
+ * a service that has just asked to be left alone is the wrong answer to a rate
+ * limit.
  *
- * Re-asking is safe because there is nothing to be idempotent about: a
- * translation request creates nothing at the far end and reads nothing that
- * changes. What it does cost is tokens, which is the other reason for the
- * ceiling on attempts and for the coalescer sitting above.
+ * Re-asking is safe because there is nothing to be idempotent about: a request
+ * creates nothing at the far end and reads nothing that changes. It does cost
+ * tokens, which is the other reason for the ceiling on attempts.
  */
 internal class RetryingTranslator(
     private val translator: Translator,

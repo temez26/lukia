@@ -10,21 +10,19 @@ import io.lukia.core.infrastructure.pdf.asText
  * What a PDF says about itself: its information dictionary, and the one field
  * worth having that PDF never put there - see [declaredLanguage].
  *
- * Much the poorest of the three sources, and treated accordingly. The format has
- * no notion of a publisher or an ISBN, and the fields it does have are filled in
- * by whatever produced the file - which for most PDFs is a word processor or a
- * print driver rather than a publisher.
+ * Much the poorest of the three sources. The format has no notion of a publisher
+ * or an ISBN, and the fields it does have are filled in by whatever produced the
+ * file - for most PDFs a word processor or print driver, not a publisher.
  *
- * So this is deliberately suspicious of what it reads. Producer and creator
- * strings are not taken as authorship at all, and a title that is plainly a file
- * name in disguise is dropped rather than shown to the reader as the book's -
- * "Microsoft Word - report_final_v3.docx" is the single most common `/Title` in
- * circulation, and showing it as a title is worse than showing none.
+ * So this is deliberately suspicious: producer and creator strings are not taken
+ * as authorship, and a title that is plainly a file name in disguise is dropped -
+ * "Microsoft Word - report_final_v3.docx" is the commonest `/Title` in
+ * circulation, and showing it is worse than showing none.
  *
- * This reaches across into the reader's PDF primitives on purpose. They are a
- * hand-written object parser that already knows how to find a dictionary in a
- * damaged file and decode its strings, and a second PDF parser living in the
- * import feature would be the same work done twice and wrong in different places.
+ * It reaches across into the reader's PDF primitives on purpose: they already
+ * know how to find a dictionary in a damaged file and decode its strings, and a
+ * second PDF parser in the import feature would be the same work done twice and
+ * wrong in different places.
  */
 internal fun extractPdfMetadata(pdfBytes: ByteArray): BookMetadata? {
     val index = runCatching { PdfObjectIndex(ByteArrayPdfSource(pdfBytes)) }.getOrNull()
@@ -57,18 +55,16 @@ internal fun extractPdfMetadata(pdfBytes: ByteArray): BookMetadata? {
  * What the document says it is written in.
  *
  * Alone among these in coming from the catalog rather than the information
- * dictionary: `/Lang` is a property of the document itself and PDF never gave
- * `/Info` a field for it. Read at all because a reader holding a word in a PDF
- * and taking it out to a dictionary was being sent there with no source
- * language - the site's own "any language" dash - while the same word in an EPUB
- * arrived with the pair the book declared.
+ * dictionary: `/Lang` is a property of the document and PDF never gave `/Info` a
+ * field for it. Read at all because a word held in a PDF reached a dictionary
+ * with no source language - the site's own "any language" dash - while the same
+ * word in an EPUB arrived with the pair the book declared.
  *
- * A BCP 47 tag as written, `en` or `en-GB`, and left as written: what is done
- * with it belongs to whoever is asking, and both of the things that ask - the
+ * A BCP 47 tag left exactly as written, because the two things that ask - the
  * translator's prompt and a dictionary's address - want different parts of it.
  *
- * Not every PDF has one. A file that says nothing still says nothing, and the
- * dash is the honest answer there rather than a guess at English.
+ * Not every PDF has one, and the dash is the honest answer there rather than a
+ * guess at English.
  */
 private fun PdfObjectIndex.declaredLanguage(): String? = resolve(catalog()?.get("Lang"))
     .asText

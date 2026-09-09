@@ -158,12 +158,11 @@ internal fun ComposeUiTest.setReader(
     // is written on it, because half these tests open on a book whose words have
     // already been replaced by their translations.
     //
-    // Except where the reader opens with the word panel already up. The book
+    // Except where the reader opens with the word panel already up: the book
     // behind an open panel is deliberately out of the accessibility tree - see
-    // `behindOverlay` - so there is no page node to wait for, and waiting for
-    // one would be waiting for the modality to fail. Nothing needs waiting for
-    // there either: the panel is composed in the same frame as the reader, and
-    // it is the only thing those tests read.
+    // `behindOverlay` - so there is no page node, and waiting for one would be
+    // waiting for the modality to fail. Nothing needs waiting for there anyway,
+    // since the panel is composed in the same frame as the reader.
     if (wordInquiry() != null) return
 
     waitUntil {

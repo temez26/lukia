@@ -8,11 +8,10 @@ import androidx.compose.runtime.Composable
  *
  * A page being read is a page nobody is touching, and every device treats "not
  * touched" as "not being used" - so without this a phone dims mid-paragraph and
- * locks a few seconds later, which is the oldest complaint there is about
- * reading on one.
+ * locks, the oldest complaint there is about reading on one.
  *
- * Held by the screen rather than set once at launch: the request lasts exactly
- * as long as a book is open, so closing the reader gives the device its own
+ * Held by the screen rather than set once at launch, so the request lasts
+ * exactly as long as a book is open and closing the reader gives the device its
  * timeout back without anything having to remember to.
  *
  * Nothing on the desktop, where the reader is one window among many and a

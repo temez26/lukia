@@ -16,17 +16,16 @@ import kotlinx.coroutines.withContext
 /**
  * The library, kept in the app's database so that it is still there next time.
  *
- * Reads and writes are moved off the caller's thread. Every caller is a
- * ViewModel scope, which is main-dispatched, and one of these reads carries the
- * cover art of every book in the library - hundreds of kilobytes at a time,
- * which is not something to do on the thread that draws.
+ * Reads and writes are moved off the caller's thread: every caller is a
+ * main-dispatched ViewModel scope, and one of these reads carries the cover art
+ * of every book - hundreds of kilobytes, not something to do on the thread that
+ * draws.
  *
- * Off it onto [ioDispatcher] rather than the default one, which is what this
- * used to do and what the other three of these already avoid. A query blocks
- * while SQLite reads the file, and the default dispatcher has one thread per
- * core - two on the phones this most matters on - so the read of the whole
- * library that every launch begins with was occupying half of the pool that
- * decodes the covers it just returned.
+ * Onto [ioDispatcher] rather than the default one, which this used to use. A
+ * query blocks while SQLite reads the file, and the default dispatcher has one
+ * thread per core - two on the phones this matters most on - so the whole-library
+ * read every launch begins with was occupying half the pool that decodes the
+ * covers it just returned.
  */
 class SqlLibraryRepository(
     database: LukiaDatabase,

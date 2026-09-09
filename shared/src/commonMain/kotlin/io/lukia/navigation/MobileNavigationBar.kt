@@ -81,21 +81,20 @@ private fun barContentHeight(): Dp =
 /**
  * The bar along the bottom of the mobile app.
  *
- * Built by hand rather than from Material's `NavigationBar` for the reason the
- * rest of this app's chrome is: Material draws a pill-shaped indicator that
- * slides behind the selected mark, which belongs to a different design language
- * than the drawn, Apple-proportioned controls every other screen here wears.
- * What marks the selected tab instead is colour and weight, which is what a tab
- * bar has always used.
+ * Built by hand rather than from Material's `NavigationBar`, for the reason the
+ * rest of this app's chrome is: Material slides a pill-shaped indicator behind
+ * the selected mark, which belongs to a different design language than the
+ * drawn, Apple-proportioned controls elsewhere here. Colour and weight mark the
+ * selected tab instead, as a tab bar always has.
  *
- * Labels are always shown. A bar of three unlabelled glyphs asks the reader to
- * learn what a house and a stack of books mean in this particular app, and the
- * room saved by dropping two words is room nothing else wanted.
+ * Labels are always shown: three unlabelled glyphs ask the reader to learn what
+ * a house and a stack of books mean in this app, and the room saved by dropping
+ * two words is room nothing else wanted.
  *
- * What a short window changes is where the label sits rather than whether it is
- * there. Stacked under the mark, a tab costs 52dp of a 390dp-tall landscape
- * phone; set beside it, the same tab costs 44dp and stays a full touch target -
- * which is the shape both platforms give a tab bar when the screen is turned.
+ * A short window changes where the label sits, not whether it is there. Stacked
+ * under the mark a tab costs 52dp of a 390dp-tall landscape phone; beside it the
+ * same tab costs 44dp and stays a full touch target - the shape both platforms
+ * give a tab bar when the screen is turned.
  */
 @Composable
 internal fun MobileNavigationBar(

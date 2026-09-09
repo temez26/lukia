@@ -8,19 +8,16 @@ import kotlinx.coroutines.sync.withLock
  * How much parsed page is kept, counted in the rectangles held rather than in
  * pages.
  *
- * A page is not a size. What this holds is a rectangle per line of every
- * sentence on a page and another per word in it, and how many that is has
- * nothing to do with the page and everything to do with what is written on it:
- * a novel's page is a few hundred, a two-column paper's with footnotes is
- * several thousand, and a budget in pages has to be set for one of the two. Set
- * for the novel it is the wrong bound on the paper; set for the paper it holds a
- * novel's whole chapter for a reader who has left it.
+ * A page is not a size. This holds a rectangle per line of every sentence and
+ * another per word, and how many depends entirely on what is written: a novel's
+ * page is a few hundred, a two-column paper with footnotes several thousand. A
+ * budget in pages set for the novel is the wrong bound on the paper; set for the
+ * paper it holds a whole chapter for a reader who has left it.
  *
- * Rectangles rather than bytes because a rectangle is the unit this can actually
- * count - four floats and an object header, near enough sixty bytes with the
- * list slot holding it, against a page's text which is a string it shares with
- * nobody. So the budget below is around six megabytes of geometry, which is the
- * same order as the covers and a quarter of what the drawn pages are allowed.
+ * Rectangles rather than bytes because a rectangle is the unit this can count -
+ * four floats and an object header, near enough sixty bytes with its list slot.
+ * So the budget below is around six megabytes of geometry, the same order as the
+ * covers and a quarter of what the drawn pages are allowed.
  *
  * Kept generous in the ordinary case: a hundred thousand rectangles is still
  * fifty pages of a novel, so a reader moving back and forth over a spread never

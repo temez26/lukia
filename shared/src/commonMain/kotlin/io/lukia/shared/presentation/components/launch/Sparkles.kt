@@ -4,16 +4,14 @@ package io.lukia.shared.presentation.components.launch
  * Where the launch sparkles are and when each of them happens.
  *
  * Apart from the canvas that draws them - see [LaunchSparkles] - because that
- * file builds its star as a top-level [androidx.compose.ui.graphics.Path], and a
- * path on Android is the platform's own `android.graphics.Path`. Loading it at
- * all needs a graphics stack, which a unit test on a desktop JVM does not have:
- * with the arrangement in the same file, asking when the third sparkle ends
- * meant initialising a drawing primitive, and the test that pins this timeline
- * failed on Android with the framework unmocked rather than on anything about
- * the timeline.
+ * file builds its star as a top-level [androidx.compose.ui.graphics.Path], which
+ * on Android is the platform's own `android.graphics.Path` and needs a graphics
+ * stack to load at all. In one file, asking when the third sparkle ends meant
+ * initialising a drawing primitive, so the test pinning this timeline failed on
+ * the unmocked framework rather than on the timeline.
  *
- * So the numbers live here, where they depend on nothing, and the drawing goes
- * on depending on them.
+ * So the numbers live here, depending on nothing, and the drawing depends on
+ * them.
  */
 
 /** How long one sparkle takes to arrive, hold and go. */

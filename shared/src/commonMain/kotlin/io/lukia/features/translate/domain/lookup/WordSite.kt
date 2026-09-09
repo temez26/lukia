@@ -5,16 +5,14 @@ package io.lukia.features.translate.domain.lookup
  *
  * The counterpart to [io.lukia.features.reader.domain.text.WordLookup], and
  * deliberately not part of it: that setting chooses who answers *inside* the
- * book, in a line over the word, and everything in it has to be something this
- * app can ask and read back. This one chooses where the reader is sent when a
- * line is not enough - a dictionary site with its inflections and its example
- * sentences, a translator with its alternatives - and what is there is somebody
- * else's page, opened in a browser and read as its authors laid it out.
+ * book, in a line over the word, so everything in it must be something this app
+ * can ask and read back. This chooses where the reader is sent when a line is
+ * not enough, and what is there is somebody else's page, opened in a browser.
  *
- * Which site is not a thing worth having opinions about, so there are none here
- * beyond a few that are known to work. A site is a name and an address with the
- * word written into it, and [Custom] is the whole point of that shape: anything
- * with a searchable URL is one line of settings away from being on this list.
+ * Which site is not worth having opinions about, so there are none here beyond a
+ * few known to work. A site is a name and an address with the word written into
+ * it, and [Custom] is the point of that shape: anything with a searchable URL is
+ * one line of settings away from being on this list.
  *
  * [urlTemplate] carries three placeholders, all optional:
  *

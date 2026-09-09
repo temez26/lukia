@@ -68,16 +68,14 @@ enum class AppAccent {
 /**
  * How much the app moves.
  *
- * Not a switch, because "animations off" and "animations on" are not the two
- * things people actually want. What varies between readers is how much motion
- * they want to notice: one finds it the difference between an app and a
- * document, another finds it something standing between them and the page, and
- * a reader who is sensitive to movement needs the second of those to be
- * available rather than polite.
+ * Not a switch, because what varies between readers is how much motion they want
+ * to notice: one finds it the difference between an app and a document, another
+ * finds it something standing between them and the page, and a reader sensitive
+ * to movement needs that second option to be real rather than polite.
  *
- * [Standard] is the default and is what the app was designed around. The other
- * two turn the same motion down and up rather than replacing it, so an app on
- * [Calm] is still recognisably this app.
+ * [Standard] is the default and what the app was designed around. The other two
+ * turn the same motion down and up rather than replacing it, so an app on [Calm]
+ * is still recognisably this app.
  */
 enum class AppMotion {
 

@@ -3,16 +3,15 @@ package io.lukia.features.reader.domain.outline
 /**
  * A document's outline is not always a table of contents.
  *
- * Word processors keep their own bookmarks in the file - the anchor a
- * cross-reference points at, the one a pasted DDE link left behind, the ones a
- * generated table of contents hangs off - and several of them export those into
- * the PDF's outline alongside the real headings. They come out as entries named
- * `__DdeLink__2128_1572349441` or `_Toc148392017`: machine names, in a list a
- * person is meant to read.
+ * Word processors keep their own bookmarks in the file - a cross-reference
+ * anchor, what a pasted DDE link left behind, what a generated contents hangs
+ * off - and several export them into the PDF's outline alongside the real
+ * headings, as `__DdeLink__2128_1572349441` or `_Toc148392017`: machine names in
+ * a list a person is meant to read.
  *
- * These are recognised by shape rather than by a list of names. Every one is a
- * known tool's prefix followed by an identifier and no spaces at all, which is
- * what a heading someone wrote never looks like.
+ * Recognised by shape rather than by a list of names: a known tool's prefix,
+ * then an identifier with no spaces at all, which is what a heading somebody
+ * wrote never looks like.
  */
 private val ProducerBookmark = Regex(
     "^(?:_{1,2}(?:DdeLink|RefHeading|RefNumPara|RefNumParaDoc|UnoMark|Fieldmark|" +

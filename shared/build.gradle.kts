@@ -13,33 +13,31 @@ plugins {
 /**
  * What the tests reach, measured - as a report to read, not a gate to pass.
  *
- * The JVM and Android targets are instrumented, which is Kover's own limit:
- * what `iosTest` and a device prove does not appear here at all. So the number
- * is honest about what those two runs reach and silent about the rest, and
- * treating it as a threshold to defend would mean writing tests for the
- * coverage rather than for the code.
+ * Only the JVM and Android targets are instrumented, which is Kover's own limit:
+ * what `iosTest` and a device prove does not appear here at all. Treating the
+ * number as a threshold to defend would mean writing tests for the coverage
+ * rather than for the code.
  *
- * The verification below is a floor rather than a target. It reads the layers
- * where a number means something - a use case either handles a case or does not
- * - and leaves out the ones where it does not: a composable's coverage is a
- * function of how many Compose UI suites happened to run on that machine, and
- * the generated database and resource classes were never anybody's to test.
+ * The verification below is a floor, not a target, and reads only the layers
+ * where a number means something - a use case either handles a case or does not.
+ * A composable's coverage is a function of which Compose UI suites happened to
+ * run on that machine, and the generated database and resource classes were
+ * never anybody's to test.
  *
- * Eighty against the eighty-six those layers stand at today. Far enough below to
- * survive a refactor that takes tests out with the code it covered, and near
- * enough to notice a feature arriving with none. A floor set at the current
- * number fails on the next commit; one set at half of it says nothing.
+ * Eighty against the eighty-six those layers stand at today: far enough below to
+ * survive a refactor that takes tests out with the code they covered, near
+ * enough to notice a feature arriving with none. A floor at the current number
+ * fails on the next commit; one at half of it says nothing.
  *
  * Eighty-six rather than the ninety-three the common layers alone reach, because
- * `androidMain` is in the denominator: the secret store, the folder scanner and
- * the page content reader are three of the least-tested files in the project and
- * all three are Android's. That is a finding rather than noise, which is why the
- * number is left aggregated instead of measured per target.
+ * `androidMain` is in the denominator - the secret store, the folder scanner and
+ * the page content reader are three of the least-tested files here and all three
+ * are Android's. A finding rather than noise, which is why the number is left
+ * aggregated instead of measured per target.
  *
- * `koverVerify` joins `check`, which already runs both of those suites. It is
- * not in the CI jobs: CI runs `jvmCommonTest` rather than `jvmTest` for the
- * reasons in TESTING.md, and a coverage number over part of the suite would be
- * worse than none.
+ * `koverVerify` joins `check`, which already runs both suites. It is not in the
+ * CI jobs: CI runs `jvmCommonTest` rather than `jvmTest` (see TESTING.md), and a
+ * coverage number over part of the suite would be worse than none.
  */
 kover {
     reports {

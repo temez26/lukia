@@ -61,15 +61,14 @@ fun translationHttpClient(): HttpClient = HttpClient {
  * the provider they are using.
  *
  * The total is deliberately unbounded and the silence is not. A single deadline
- * over the whole request cannot tell a model writing a long answer from a
- * server that has stopped talking, so it has to be set long enough for the
- * slowest legitimate answer - by which point it no longer catches anything.
- * Bounding the gaps instead gives up on a request the moment it stops making
- * progress, and never on one that is still arriving.
+ * over the whole request cannot tell a model writing a long answer from a server
+ * that has stopped talking, so it must be long enough for the slowest legitimate
+ * answer - by which point it catches nothing. Bounding the gaps gives up the
+ * moment a request stops making progress, and never on one still arriving.
  *
- * This is the whole reason a translation through a local model no longer fails
- * at thirty seconds: loading a model is one long silence, and it is the reader
- * who says how long a silence is too long.
+ * This is why a translation through a local model no longer fails at thirty
+ * seconds: loading a model is one long silence, and the reader says how long a
+ * silence is too long.
  */
 internal fun HttpRequestBuilder.translationTimeouts(settings: TranslationSettings) {
     timeout {

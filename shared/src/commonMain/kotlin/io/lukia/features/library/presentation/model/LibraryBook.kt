@@ -18,16 +18,15 @@ enum class ReadingStatus {
  * through it its reader is, and the handful of strings the screen searches and
  * sorts by.
  *
- * The keys are worked out once, when the library is read, rather than each time
- * a letter is typed into the search field. Lower-casing a title is nothing; a
- * thousand of them on every keystroke, on the thread that draws, is the
- * difference between a search field that keeps up with typing and one that does
- * not.
+ * The keys are worked out once, when the library is read, rather than on every
+ * keystroke. Lower-casing a title is nothing; a thousand of them per keystroke
+ * on the thread that draws is the difference between a search field that keeps
+ * up with typing and one that does not.
  *
- * Progress is folded in here rather than looked up beside the grid because the
- * library asks about it constantly - three of the shelves are defined by it, one
- * of the sorts orders by it, and every card draws a bar from it - and a lookup
- * per book per pass is a map probe the screen can simply not do.
+ * Progress is folded in rather than looked up beside the grid because the
+ * library asks constantly - three shelves are defined by it, one sort orders by
+ * it, every card draws a bar from it - and this spares a map probe per book per
+ * pass.
  */
 @Immutable
 data class LibraryBook(

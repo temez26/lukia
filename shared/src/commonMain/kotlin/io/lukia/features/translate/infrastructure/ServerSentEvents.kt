@@ -14,20 +14,18 @@ private const val END_OF_STREAM = "[DONE]"
  * a JSON object on each - so the reading of it is here rather than twice, and
  * what each of them makes of those objects stays in its own package.
  *
- * Only `data:` is looked at. The `event:` line beside it names the same thing
- * the payload already says about itself, the blank lines separate records, and
- * a line beginning with a colon is a comment a server sends to keep the
- * connection warm. None of those carry any of the answer - though the last of
- * them matters anyway, because arriving at all is what tells the socket timeout
- * that a model still thinking has not gone quiet.
+ * Only `data:` is looked at. The `event:` line names what the payload already
+ * says about itself, blank lines separate records, and a line beginning with a
+ * colon is a keep-warm comment. None carries any of the answer - though that
+ * last one matters anyway, because arriving at all tells the socket timeout that
+ * a model still thinking has not gone quiet.
  *
- * Returns whether the stream said goodbye rather than merely stopping. That is
- * the difference between an answer and half of one: a connection dropped in the
- * middle of a sentence closes exactly like a finished one, and read without this
- * the half that arrived is indistinguishable from all a model had to say. Each
- * provider decides what counts as goodbye for its own format - see
+ * Returns whether the stream said goodbye rather than merely stopping, which is
+ * the difference between an answer and half of one: a connection dropped
+ * mid-sentence closes exactly like a finished one. Each provider decides what
+ * counts as goodbye for its own format - see
  * [io.lukia.features.translate.infrastructure.anthropic.AnthropicTranslator] -
- * and this reports the one signal both of them can send.
+ * and this reports the one signal both can send.
  */
 internal suspend fun HttpResponse.forEachEventPayload(action: (String) -> Unit): Boolean {
     val body = bodyAsChannel()

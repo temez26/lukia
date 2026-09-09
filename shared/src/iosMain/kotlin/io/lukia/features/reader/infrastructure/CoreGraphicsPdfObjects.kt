@@ -46,15 +46,13 @@ import platform.CoreGraphics.kCGPDFObjectTypeStream
  * Reading a PDF's own objects through CoreGraphics.
  *
  * CoreGraphics answers every question about a PDF object by writing into an out
- * parameter and returning whether it managed to, which would put four lines of
- * `memScoped` around every field read. These turn each of them into the
- * nullable value the rest of the reader works in, and are the only place that
- * has to know about that convention.
+ * parameter and returning whether it managed, which would put four lines of
+ * `memScoped` around every field read. These turn each into the nullable value
+ * the rest of the reader works in, and are the only place that knows about that
+ * convention.
  *
- * Only the accessors the picture walk actually asks for are here. A PDF object
- * model is a large thing to write, and none of the rest of it is wanted: what
- * follows needs an XObject's type, its shape and its colour, and nothing else
- * about the file.
+ * Only the accessors the picture walk asks for are here: what follows needs an
+ * XObject's type, shape and colour, and nothing else about the file.
  */
 
 @OptIn(ExperimentalForeignApi::class)
