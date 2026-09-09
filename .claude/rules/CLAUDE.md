@@ -20,3 +20,4 @@ Follow these core software engineering principles in all code changes and archit
 
 ## Workflow
 - **Important**: At the beginning of a new chat, read the project's root `README.md` once before making suggestions or code changes.
+- **Git Branching**: main should only be merged into from dev. Always create a new branch from dev when creating new files or modifying existing files.
