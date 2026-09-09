@@ -52,13 +52,11 @@ private const val TYPE_OF_LINE = 0.66f
  * One passage's mark, as the rectangles it covers rather than as the text it
  * was worked out from.
  *
- * Held rather than derived where it is drawn, because the drawing happens far
- * more often than the geometry changes: a passage waiting on a translation
- * repaints on every frame of the sweep travelling along it, and where the words
- * went is settled by the layout and does not move between one of those frames
- * and the next. Worked out per frame, a page of marked sentences spent every
- * frame asking the layout the same questions and allocating the same rectangles
- * to hold the same answers.
+ * Held rather than derived where it is drawn, because drawing happens far more
+ * often than the geometry changes: a passage waiting on a translation repaints
+ * every frame of the sweep, while where the words went was settled by the layout
+ * and does not move. Per frame, a page of marked sentences asked the layout the
+ * same questions and allocated the same rectangles for the same answers.
  */
 @Immutable
 internal data class PassageBand(val style: PassageMarkStyle, val lines: List<Rect>)

@@ -272,11 +272,10 @@ private fun MutableList<TextBlock>.addParagraph(paragraph: DocxParagraph) {
 /**
  * Every list item gets a bullet, including the ones in a numbered list.
  *
- * A list's real numbers live in a separate numbering part, as a definition that
- * has to be resolved through an abstract definition, a level, an override chain
- * and a restart rule before the first item can be called "1." - and getting any
- * step of that wrong produces a list that is confidently misnumbered, which is
- * worse than a list of bullets. The items and their order, which is what the
- * text depends on, are both kept.
+ * A list's real numbers live in a separate numbering part, resolved through an
+ * abstract definition, a level, an override chain and a restart rule before the
+ * first item can be called "1." - and any step wrong produces a confidently
+ * misnumbered list, which is worse than bullets. The items and their order are
+ * both kept.
  */
 private const val LIST_MARKER = "•"

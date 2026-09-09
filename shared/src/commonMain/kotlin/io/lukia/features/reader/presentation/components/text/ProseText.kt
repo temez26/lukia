@@ -312,14 +312,14 @@ internal fun ProseText(
  * The one thing a paragraph can be asked without pointing at part of it: translate
  * it, or put the book's own words back.
  *
- * One action rather than two, named for what pressing it will do, because that is
- * what the gesture underneath already is - asking again about a passage that has
- * been answered is how a reader undoes it, and an action list offering both
- * directions at once would describe a control the app does not have.
+ * One action rather than two, named for what pressing it will do, because that
+ * is what the gesture underneath is: asking again about an answered passage is
+ * how a reader undoes it, and offering both directions at once would describe a
+ * control the app does not have.
  *
- * A custom action rather than a click. A click on a paragraph of a book means
- * something already - it is how the chrome comes back - and a paragraph that
- * announced itself as a button would be nine hundred buttons in a chapter.
+ * A custom action rather than a click: a click on a paragraph already means
+ * something - it is how the chrome comes back - and a paragraph announcing
+ * itself as a button would be nine hundred buttons in a chapter.
  */
 @Composable
 private fun translationAction(

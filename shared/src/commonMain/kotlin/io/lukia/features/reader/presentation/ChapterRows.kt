@@ -7,10 +7,10 @@ import io.lukia.features.reader.domain.outline.OutlineEntry
  * about it.
  *
  * A document's outline arrives flat, carrying only a level per entry, so whether
- * something is a chapter with sections under it or a section itself is not in the
- * entry - it is in what follows it. Working that out once, here, is what lets the
- * list draw a chapter differently from a section rather than indenting both and
- * hoping the reader counts pixels.
+ * something is a chapter with sections under it is not in the entry but in what
+ * follows it. Working that out once here lets the list draw a chapter
+ * differently from a section rather than indenting both and hoping the reader
+ * counts pixels.
  */
 internal data class ChapterRow(
     /** Position in the flat outline, which is what identifies a row to collapse. */

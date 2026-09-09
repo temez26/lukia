@@ -53,10 +53,9 @@ internal enum class ReaderCommand {
  * gives a keyboard. Nothing is only reachable by memorising a key.
  *
  * Bare keys rather than modifier combinations: there is nowhere in the reader to
- * type, so nothing to take the letters away, and a reading app whose page turn
- * needs two hands has missed the point. Anything a modifier is held down for is
- * left alone, so the platform's own shortcuts - a window closed, a screenshot
- * taken - still reach it.
+ * type, so nothing takes the letters away, and a page turn needing two hands has
+ * missed the point. Anything with a modifier held is left alone, so the
+ * platform's own shortcuts still reach it.
  */
 internal fun readerCommandFor(event: KeyEvent): ReaderCommand? {
     if (event.type != KeyEventType.KeyDown) return null

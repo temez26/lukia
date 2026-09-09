@@ -53,14 +53,13 @@ internal fun PageTranslationOverlay(
      * Somebody pointed at a translation, at this point of the page in the file's
      * own units.
      *
-     * The panel answers for itself rather than letting the tap fall through to
-     * the page, because it is not drawn inside the words it stands for: it
-     * starts at their corner and runs as wide and as far down as the
-     * translation needs. Most of what the reader can see of it is therefore over
-     * some other part of the page, or over no part of it at all - so a tap there
-     * reached the page and missed the passage, and putting the book's own words
-     * back meant hunting for whatever was left uncovered. A single word was
-     * nearly impossible: its panel is several times the size of the word.
+     * The panel answers for itself rather than letting the tap fall through,
+     * because it is not drawn inside the words it stands for: it starts at their
+     * corner and runs as wide and as far down as the translation needs. Most of
+     * it therefore covers some other part of the page or none at all, so a tap
+     * missed the passage and putting the book's words back meant hunting for
+     * whatever was uncovered - nearly impossible for a single word, whose panel
+     * is several times its size.
      */
     onTranslationPointedAt: (x: Float, y: Float, held: Boolean) -> Unit = { _, _, _ -> },
 ) {

@@ -215,9 +215,8 @@ private fun RowScope.TitleTrack(onBack: () -> Unit, title: String?) {
  * `derivedStateOf` is what keeps that to once per page instead of once per
  * scrolled pixel.
  *
- * It doubles as the button for the contents panel: it is already where the eye
- * goes to find out where it is in the book, and it costs the toolbar no width to
- * make it also the way to move.
+ * It doubles as the contents button: it is already where the eye goes to find
+ * out where it is, and costs the toolbar no width to make it the way to move too.
  */
 @Composable
 internal fun PageIndicatorButton(

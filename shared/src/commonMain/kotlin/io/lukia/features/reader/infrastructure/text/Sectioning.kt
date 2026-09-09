@@ -9,15 +9,12 @@ import io.lukia.features.reader.domain.text.plainText
 /**
  * How many blocks one section may hold before it is broken up.
  *
- * A section is one item in the reader's list, and an item is laid out in full
- * whenever it is drawn. A chapter of a few hundred paragraphs is nothing; a
- * document that is one unbroken run of ten thousand is a reader that stutters on
- * every scroll and a scrollbar that means nothing, because there is only one
- * thing to be anywhere within.
+ * A section is one item in the reader's list, laid out in full whenever drawn. A
+ * chapter of a few hundred paragraphs is nothing; one unbroken run of ten
+ * thousand stutters on every scroll and leaves a scrollbar that means nothing.
  *
- * Generously above any real chapter, so that a book which is properly divided is
- * divided exactly where its author divided it, and this only ever acts on the
- * documents that are not.
+ * Generously above any real chapter, so a properly divided book is divided where
+ * its author divided it and this only acts on documents that are not.
  */
 internal const val MAX_BLOCKS_PER_SECTION = 400
 
@@ -31,13 +28,13 @@ internal data class SectionedText(
  * The block each section begins at, dividing a flat run at the document's own
  * top-level headings and, wherever those run out, at [MAX_BLOCKS_PER_SECTION].
  *
- * Which level counts as top is whatever the document actually uses rather than a
- * fixed `<h1>`: plenty of documents start at level two, or number their headings
- * from wherever the template left off, and a book whose every heading is an
- * `<h2>` should still be divided at its chapters.
+ * Which level counts as top is whatever the document uses rather than a fixed
+ * `<h1>`: plenty start at level two, or number from wherever the template left
+ * off, and a book whose every heading is an `<h2>` should still be divided at
+ * its chapters.
  *
- * Empty for an empty document, and otherwise always starting at zero, so the
- * result addresses every block exactly once.
+ * Empty for an empty document, otherwise always starting at zero, so the result
+ * addresses every block exactly once.
  */
 internal fun sectionStarts(blocks: List<TextBlock>): List<Int> {
     val topLevel = topHeadingLevel(blocks)
@@ -63,14 +60,13 @@ internal fun sectionStarts(blocks: List<TextBlock>): List<Int> {
  * A flat run of blocks as a book the reader can show.
  *
  * The last stage of every format whose text arrives in one piece - DOCX,
- * Markdown and plain text - which each spelled it out for themselves. How the
- * blocks come out of the file is what those readers are for; what happens to
- * them afterwards is one question asked three times.
+ * Markdown, plain text - each of which spelled it out for itself. How the blocks
+ * come out of the file is what those readers are for; what happens afterwards is
+ * one question asked three times.
  *
- * A book with nothing in it comes back as an empty book rather than as no book
- * at all. The two are different things to tell a reader - "there is nothing to
- * read in this" against "this is not a file I can read" - and which one it is
- * is settled above, by there being no sections in it.
+ * A book with nothing in it comes back empty rather than as no book: "there is
+ * nothing to read in this" and "this is not a file I can read" are different
+ * things to tell a reader.
  */
 internal fun reflowableFrom(blocks: List<TextBlock>): ReflowableContent {
     val sectioned = sectionText(blocks)
@@ -118,14 +114,13 @@ private fun topHeadingLevel(blocks: List<TextBlock>): Int? =
 /**
  * The table of contents these sections offer.
  *
- * Two levels deep: the headings that divide the document, and the headings one
- * step under them. Deeper than that is a document's own numbering scheme rather
- * than a way to get around it, and a contents panel listing every sub-sub-heading
- * is one nobody can find a chapter in.
+ * Two levels deep: the headings that divide the document, and those one step
+ * under. Deeper is a numbering scheme rather than a way to get around, and a
+ * panel listing every sub-sub-heading is one nobody can find a chapter in.
  *
- * Sub-headings carry where in the section they sit as well as which section it
- * is, so that the layout can send the reader to the page the heading is actually
- * on rather than to the top of the chapter containing it.
+ * Sub-headings carry where in the section they sit as well as which section, so
+ * the layout can send the reader to the heading's own page rather than the top
+ * of the chapter.
  */
 private fun outlineOf(sections: List<TextSection>, topLevel: Int?): List<OutlineEntry> {
     if (topLevel == null) return emptyList()

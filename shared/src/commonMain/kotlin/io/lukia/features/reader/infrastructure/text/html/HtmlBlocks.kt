@@ -7,11 +7,11 @@ import io.lukia.features.reader.domain.text.TextBlock
  * A chapter of XHTML read into the blocks the reader draws, and the places
  * inside it that can be linked to.
  *
- * [anchors] maps an element's `id` to the block it sits at, which is what lets a
- * table of contents pointing at `chapter.xhtml#part-two` land somewhere other
- * than the top of the file. Books that hold every chapter in one file address
- * their chapters this way and no other, so without it their contents panel is
- * a row per chapter that all lead to the same place.
+ * [anchors] maps an element's `id` to the block it sits at, which lets a
+ * contents entry pointing at `chapter.xhtml#part-two` land somewhere other than
+ * the top of the file. Books holding every chapter in one file address them this
+ * way and no other, so without it their contents panel is a row per chapter all
+ * leading to the same place.
  */
 internal class HtmlContent(
     val blocks: List<TextBlock>,

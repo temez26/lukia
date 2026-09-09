@@ -16,15 +16,13 @@ import kotlinx.coroutines.flow.StateFlow
 /**
  * The reader's settings, live and persisted.
  *
- * Held as one [StateFlow] rather than read per screen so a change reaches the
- * open reader immediately and is still there the next time a book is opened.
- * A single instance is shared by the app, which is why it is a `single` in the
- * dependency graph.
+ * One [StateFlow] rather than read per screen, so a change reaches the open
+ * reader at once and is still there next time a book is opened - hence a
+ * `single` in the dependency graph.
  *
- * Each setting is stored under its own key. A value that cannot be read back -
- * written by an older build, or edited by hand into nonsense - falls back to
- * that setting's default rather than discarding the rest, so one bad key cannot
- * reset someone's whole reader.
+ * Each setting has its own key, and one that cannot be read back falls back to
+ * its own default rather than discarding the rest, so a single bad key cannot
+ * reset somebody's whole reader.
  */
 class ReaderSettingsRepository(
     private val store: SettingsStore,

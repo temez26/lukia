@@ -243,12 +243,11 @@ class ReaderViewModel(
     /**
      * The chapter list being read, so that a book put away can stop it.
      *
-     * Its own job rather than part of [opening], because it is deliberately not
-     * something the opening waits for - see [loadOutline]. That is also what
-     * made it outlive a reopening: cancelling the opening left this running,
-     * and it came back to publish the abandoned book's chapters over the ones
-     * being read, having gone to a document that had since been closed to get
-     * them.
+     * Its own job rather than part of [opening], which deliberately does not
+     * wait for it - see [loadOutline]. That is also what made it outlive a
+     * reopening: cancelling the opening left this running, to publish the
+     * abandoned book's chapters over the ones being read, having gone to a
+     * closed document to get them.
      */
     private var outlining: Job? = null
 

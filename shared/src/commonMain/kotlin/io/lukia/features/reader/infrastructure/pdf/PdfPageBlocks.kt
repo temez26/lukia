@@ -225,11 +225,9 @@ private fun bulletMarker(text: String): String? =
  *
  * The gap rule that made these blocks measures the space between lines against
  * their own height, so a heading set close above its paragraph takes the
- * paragraph with it - the heading's larger type is what widens the threshold
- * that should have separated them. A change of size between one line and the
- * next is the clearer signal, and the one a reader's eye uses: a title and the
- * prose under it are not the same thing however little air was left between
- * them.
+ * paragraph with it - its larger type widens the very threshold that should have
+ * separated them. A change of size between one line and the next is the clearer
+ * signal, and the one a reader's eye uses.
  */
 private fun GlyphBlock.splitAtSizeChanges(): List<GlyphBlock> {
     val parts = mutableListOf<MutableList<GlyphLine>>()

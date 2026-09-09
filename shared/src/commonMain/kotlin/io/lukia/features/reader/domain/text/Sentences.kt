@@ -91,11 +91,10 @@ private val ABBREVIATIONS = setOf(
  * Whether a sentence can end at [end] - which is to say, whether what follows
  * reads as the start of a new one.
  *
- * The lowercase test is what keeps dialogue in one piece. `"Run!" he shouted`
- * has a full ending inside the quotation marks and then carries straight on,
- * and every novel is full of the pattern; a reader who tapped that line and got
- * back two words of shouting would have to tap again for the half that said who
- * shouted them.
+ * The lowercase test keeps dialogue in one piece. `"Run!" he shouted` has a full
+ * ending inside the quotation marks and carries straight on, and every novel is
+ * full of it - a reader who tapped that line would otherwise get two words back
+ * and have to tap again for who shouted them.
  */
 private fun String.breaksAfter(end: Int): Boolean {
     if (end >= length) return true

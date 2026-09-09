@@ -9,9 +9,9 @@ package io.lukia.features.reader.domain.text
  * remembering which it is looking at.
  *
  * [sentenceIndex] travels with it because a word alone is not addressable: the
- * fourth word of a paragraph means nothing once a sentence before it has been
- * translated and is a different length, while the fourth word of the second
- * sentence is still the fourth word of the second sentence.
+ * fourth word of a paragraph means nothing once an earlier sentence has been
+ * translated to a different length, where the fourth word of the second sentence
+ * still is one.
  */
 data class Word(
     val sentenceIndex: Int,

@@ -43,13 +43,12 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * What a control gets in the wide layout. Fixed rather than a weight, so every
- * control in the panel starts at the same place down the column - five width
- * presets and two typeface options line up instead of each dividing whatever its
- * own label left over.
+ * control starts at the same place down the column instead of each dividing what
+ * its own label left over.
  *
  * Against [ReaderPanelWidth] less its insets this leaves a little over 120dp for
- * the label, which holds every setting name here on one line in English and
- * ellipsises rather than wraps in the languages where it does not.
+ * the label - every setting name on one line in English, ellipsised rather than
+ * wrapped where it is not.
  */
 private val WideControlWidth: Dp = 224.dp
 

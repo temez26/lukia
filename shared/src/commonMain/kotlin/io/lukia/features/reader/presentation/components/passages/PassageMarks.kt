@@ -137,13 +137,12 @@ internal fun passageMarkColors(): PassageMarkColors = MaterialTheme.colorScheme.
  * How far along the passage the sweep has travelled, or nothing when nothing is
  * being translated.
  *
- * Kept off unless something actually is: an infinite animation running behind a
- * page nobody is translating anything on is a frame of work every frame, for a
- * page that is not changing.
+ * Kept off unless something is: an infinite animation behind a page nobody is
+ * translating is a frame of work every frame for a page that is not changing.
  *
- * Restarted rather than reversed, and linear, because a light travelling one way
- * at a steady speed is a thing moving along the words - one that eased to a stop
- * and came back is a thing being animated at the reader.
+ * Restarted rather than reversed, and linear: a light travelling one way at a
+ * steady speed moves along the words, where one easing to a stop and coming back
+ * is a thing being animated at the reader.
  */
 @Composable
 internal fun passageSweep(active: Boolean): State<Float> {
@@ -194,13 +193,13 @@ internal fun DrawScope.drawPassageBands(
  * The highlight itself, over rectangles somebody else worked out.
  *
  * Takes rectangles rather than anything that knows about text, because the two
- * kinds of book arrive at them completely differently - one asks the layout
- * where a range of characters went, the other reads boxes out of a PDF - and
- * what a mark looks like should not be written twice for that.
+ * kinds of book arrive at them differently - one asks the layout where a range
+ * of characters went, the other reads boxes out of a PDF - and a mark's
+ * appearance should not be written twice for that.
  *
- * They are expected to have been worked out already rather than per frame - see
- * [PassageBands] - and to have had the empty ones taken out, which is why this
- * is reached through [drawPassageBands] rather than called directly.
+ * They are expected worked out already rather than per frame - see
+ * [PassageBands] - and with the empty ones removed, which is why this is reached
+ * through [drawPassageBands].
  */
 private fun DrawScope.drawPassageHighlight(
     drawn: List<Rect>,

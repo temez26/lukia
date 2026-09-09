@@ -4,13 +4,12 @@ package io.lukia.features.reader.domain.page
  * A rectangle on a page, in the page's own units.
  *
  * The same space [PageSize] is measured in - points, origin at the top left,
- * before any scaling the reader does to fit a window. That is what lets a quad
- * read off the file be drawn over a page rendered at any width: the reader
- * scales it by the one number it already has.
+ * before any scaling to fit a window - which is what lets a quad read off the
+ * file be drawn over a page rendered at any width.
  *
- * Top-left origin rather than the bottom-left one PDF itself uses, because
- * every platform the app draws on measures downwards. The conversion belongs
- * once, in whatever read the file, rather than at each place that draws.
+ * Top-left rather than PDF's own bottom-left origin, because every platform the
+ * app draws on measures downwards. The conversion belongs once, in whatever read
+ * the file, rather than at each place that draws.
  */
 data class TextQuad(
     val left: Float,
@@ -26,13 +25,13 @@ data class TextQuad(
  * One character of a page, and where it sits on it.
  *
  * The unit is whatever the platform can position - normally a character, and a
- * ligature or a composed mark where a font packs several into one. Nothing above
- * this cares which: the text is rebuilt from these in reading order, and a glyph
- * carrying two characters simply covers two.
+ * ligature or composed mark where a font packs several in. Nothing above cares:
+ * the text is rebuilt in reading order, and a glyph carrying two characters
+ * covers two.
  *
- * Deliberately not words or lines. Word boundaries in a PDF are inferred from
- * gaps rather than stored, and every producer infers them slightly differently -
- * so the inference is done once here rather than differently on three platforms.
+ * Deliberately not words or lines. A PDF infers word boundaries from gaps rather
+ * than storing them, and every producer infers slightly differently, so it is
+ * done once here rather than three ways on three platforms.
  */
 data class PageGlyph(
     val text: String,

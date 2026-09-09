@@ -208,11 +208,10 @@ private const val SENTENCE_ENDINGS = ".!?…:;\"”»)]"
 /**
  * Whether these two paragraphs are one paragraph the page break came between.
  *
- * Two signals, and both are needed: the first has to look unfinished, and the
- * second has to look like a continuation. Either alone is common enough
- * innocently - a heading carries no full stop, and a page can open on a
- * lower-case word that begins a genuine new paragraph in a language that sets
- * one that way - and joining two paragraphs that were never one is a mistake the
+ * Both signals are needed: the first must look unfinished and the second like a
+ * continuation. Either alone is innocently common - a heading carries no full
+ * stop, and a page can open on a lower-case word that begins a genuine new
+ * paragraph - and joining two paragraphs that were never one is a mistake the
  * reader cannot undo from the settings panel.
  */
 private fun continuesAcrossPages(before: String, after: String): Boolean {

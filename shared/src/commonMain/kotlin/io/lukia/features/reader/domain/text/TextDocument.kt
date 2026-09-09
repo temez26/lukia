@@ -30,13 +30,12 @@ fun List<TextRun>.isBlank(): Boolean = all { it.text.isBlank() }
  * How a book says one of its own paragraphs is set.
  *
  * The author's choice rather than the reader's, and about one paragraph rather
- * than about the book: a dedication, an epigraph, a line of verse, the caption
- * under a plate. The reader's own setting - see `TextAlignment` - decides
- * everything a book says nothing about, which is nearly all of it.
+ * than the book: a dedication, an epigraph, a line of verse, a plate's caption.
+ * The reader's own setting - see `TextAlignment` - decides everything a book
+ * says nothing about, which is nearly all of it.
  *
- * Named after what the markup says rather than after the writing direction,
- * because that is what it means: a book that asks for `right` is asking for the
- * right, whichever way it reads.
+ * Named after the markup rather than the writing direction, because that is what
+ * it means: a book asking for `right` is asking for the right.
  */
 enum class BlockAlignment {
     Left,
@@ -48,12 +47,11 @@ enum class BlockAlignment {
 /**
  * One thing on the page of a reflowable book.
  *
- * A deliberately short list. Everything a book actually needs to read correctly
- * is here, and nothing is here because a format happens to be able to express it
- * - EPUBs carry arbitrary HTML and stylesheets, and honouring all of that would
- * be building a browser rather than a reader. What the reader guarantees instead
- * is that the words arrive in the right order, in the right structure, set the
- * way the person reading them asked for.
+ * A deliberately short list: everything a book needs to read correctly, and
+ * nothing merely because a format can express it. EPUBs carry arbitrary HTML and
+ * stylesheets, and honouring that is building a browser. What is guaranteed
+ * instead is the words in the right order and structure, set the way the person
+ * reading them asked for.
  */
 sealed interface TextBlock {
 
@@ -96,14 +94,13 @@ sealed interface TextBlock {
     data class Code(val text: String) : TextBlock
 
     /**
-     * An illustration, held as the bytes the book stores rather than as a decoded
-     * image. A book can carry hundreds, and decoding every one when the book is
-     * opened would cost more memory than the text ever does - so this stays
-     * encoded until the reader actually scrolls to it.
+     * An illustration, held as the bytes the book stores rather than a decoded
+     * image: a book can carry hundreds, and decoding them all at open would cost
+     * more memory than the text does, so this stays encoded until the reader
+     * scrolls to it.
      *
-     * Identity equality, inherited from [Any]: two figures are the same figure
-     * when they are the same figure, and comparing megabytes of image data to
-     * answer that would be work done on every recomposition.
+     * Identity equality, inherited from [Any] - comparing megabytes of image
+     * data would be work done on every recomposition.
      */
     class Figure(val bytes: ByteArray, val description: String?) : TextBlock
 

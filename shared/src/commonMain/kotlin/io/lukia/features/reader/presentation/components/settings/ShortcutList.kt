@@ -33,15 +33,14 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * What the keys do, and the one thing the mouse does that nothing else says.
  *
- * Shortcuts nobody can find are shortcuts nobody has. The bar's own controls
- * carry theirs in a tooltip, but turning pages has no button to hang one off -
- * and this is the panel a reader opens when they want to know how the reader
- * works. Only in the wide layout, since only the windows with room for it have
- * keyboards.
+ * Shortcuts nobody can find are shortcuts nobody has. The bar's controls carry
+ * theirs in a tooltip, but turning pages has no button to hang one off, and this
+ * is the panel a reader opens to find out how the reader works. Wide layout
+ * only, since only those windows have keyboards.
  *
- * Which is also why the second mouse button is listed here among the keys rather
- * than beside the gesture settings: it does what a press and hold does, and it
- * exists for the machines that have no finger to hold anything with.
+ * Which is why the second mouse button is listed among the keys rather than
+ * beside the gesture settings: it does what a press and hold does, for machines
+ * with no finger to hold anything with.
  */
 @Composable
 internal fun ShortcutList(reflowable: Boolean, inset: Dp) {

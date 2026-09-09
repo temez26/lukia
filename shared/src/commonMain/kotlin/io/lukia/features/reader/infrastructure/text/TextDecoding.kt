@@ -93,11 +93,10 @@ private fun utf16(bytes: ByteArray): String? {
  * processor produces - which is precisely why a file that is one gets read as
  * the other and comes out full of replacement characters.
  *
- * Written as escapes rather than as the characters themselves: the table is only
- * correct if it is exactly thirty-two entries long with every one in its own
- * place, and that is not something the eye can check on a line of curly quotes.
- * The five positions Windows-1252 leaves undefined keep the code point of the
- * byte itself, exactly as Latin-1 would.
+ * Written as escapes rather than the characters themselves: the table is correct
+ * only if it is exactly thirty-two entries with each in its own place, which the
+ * eye cannot check on a line of curly quotes. The five positions Windows-1252
+ * leaves undefined keep the byte's own code point, as Latin-1 would.
  */
 private val Windows1252HighRange: CharArray = intArrayOf(
     0x20AC, 0x0081, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021, // 0x80-0x87

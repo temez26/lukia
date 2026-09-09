@@ -31,12 +31,11 @@ private class OpenBlock(
 /**
  * How a book asks for a paragraph to be set, out of the two ways books say it.
  *
- * The `align` attribute is by far the more common in the wild - a shelf of
- * twenty books uses it for hundreds of dedications, captions and epigraphs -
- * and an inline `text-align` is the modern spelling of the same thing. What a
- * stylesheet says is not read: that is a document of selectors and cascades
- * rather than a property on the element, and honouring it properly means
- * bringing a CSS engine to a book reader.
+ * The `align` attribute is far the more common in the wild - a shelf of twenty
+ * books uses it for hundreds of dedications, captions and epigraphs - and an
+ * inline `text-align` is the modern spelling. A stylesheet is not read: that is
+ * selectors and cascades rather than a property on the element, and honouring it
+ * properly means bringing a CSS engine to a book reader.
  */
 private fun XmlEvent.Open.declaredAlignment(): BlockAlignment? {
     val declared = attributes["align"]

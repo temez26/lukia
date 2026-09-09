@@ -21,9 +21,8 @@ import io.lukia.features.reader.infrastructure.text.reflow.storedReflow
  * when this app cannot read that format.
  *
  * The one place that decides which formats are readable, so adding another is a
- * branch here and a parser beside it rather than a change spread through the
- * reader. A format being importable and a format being readable are separate
- * questions - the library will hold a file this returns null for, and say so.
+ * branch here and a parser beside it. Importable and readable are separate
+ * questions: the library will hold a file this returns null for, and say so.
  *
  * [path] is always a working copy in app storage, never the file the user
  * imported.
@@ -96,15 +95,13 @@ internal suspend fun openPdfAsText(
 /**
  * How many handles on the file a conversion reads it through.
  *
- * One per core, up to a point. The point is [MAX_READERS], because the reading
- * is as much file and memory as it is arithmetic and a machine stops going
- * faster well before it runs out of cores - and because each handle parses and
- * holds its own share of the book, which is memory a phone has less of than it
- * has patience.
+ * One per core up to [MAX_READERS]: the reading is as much file and memory as
+ * arithmetic, so a machine stops going faster well before it runs out of cores -
+ * and each handle holds its own share of the book, which is memory a phone has
+ * less of than it has patience.
  *
- * One handle for a short document, whatever the machine. Opening a file four
- * times to read twelve pages costs more than reading them does, and a
- * conversion nobody waits for is not one worth dividing.
+ * One handle for a short document, whatever the machine: opening a file four
+ * times to read twelve pages costs more than reading them.
  */
 private fun readersFor(pageCount: Int): Int {
     if (pageCount < MIN_PAGES_TO_DIVIDE) return 1

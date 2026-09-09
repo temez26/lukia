@@ -41,14 +41,14 @@ internal class ProsePassages(
      * What the reader pointed at, for the unit the gesture is set to - or null
      * when the gesture reached nothing at all.
      *
-     * A gesture that is turned off reaches nothing rather than falling back to
-     * something narrower: off is off, and a long press that quietly translated a
-     * sentence because the word under it could not be found would be exactly the
-     * kind of thing that setting exists to stop.
+     * A gesture turned off reaches nothing rather than falling back to something
+     * narrower: off is off, and a long press quietly translating a sentence
+     * because the word under it was not found is what that setting exists to
+     * stop.
      *
      * The one place a gesture does not get what it asked for is a word it cannot
-     * find - the punctuation between two words belongs to neither - and there it
-     * gets nothing, not the sentence around it.
+     * find - punctuation between two words belongs to neither - and there it
+     * gets nothing rather than the sentence around it.
      */
     fun at(
         unit: PassageUnit?,

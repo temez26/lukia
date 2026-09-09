@@ -64,12 +64,10 @@ data class PageWord(
 /**
  * Reads a page's sentences off the characters it is made of.
  *
- * The geometry - which glyphs share a line, where one block ends and the next
- * begins, where the spaces between words go - is
- * [io.lukia.features.reader.domain.PageBlocks]'s doing and is shared with
- * everything else that reads a laid-out page. What is left here is the part that
- * is about sentences: cutting the text into them, and keeping each one attached
- * to the part of the page it covers.
+ * The geometry - which glyphs share a line, where blocks end, where the spaces
+ * go - is [io.lukia.features.reader.domain.PageBlocks]'s, shared with everything
+ * else that reads a laid-out page. What is left here is about sentences: cutting
+ * the text into them and keeping each attached to the page it covers.
  */
 fun pageSentences(glyphs: List<PageGlyph>): List<PageSentence> {
     val lines = glyphs.filter { it.text.isNotEmpty() }.intoLines()

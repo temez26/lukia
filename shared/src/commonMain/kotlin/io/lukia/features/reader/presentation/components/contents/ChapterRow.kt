@@ -78,13 +78,11 @@ private val CurrentMarkerWidth: Dp = 3.dp
 /**
  * One entry in the contents.
  *
- * What makes a chapter a chapter and a section a section is carried three ways
- * over, because indentation alone is not legible in a panel this narrow: a
- * chapter is set in a heavier, larger face, its sections in a lighter and
- * quieter one; every level of nesting adds a hairline guide down the start edge,
- * so a section is visibly hanging off something; and a chapter that has sections
- * carries the control that folds them away, which no section without its own
- * sub-sections does.
+ * Chapter against section is carried three ways over, because indentation alone
+ * is not legible in a panel this narrow: a chapter is set in a heavier, larger
+ * face; every level of nesting adds a hairline guide down the start edge, so a
+ * section visibly hangs off something; and only a chapter with sections carries
+ * the control that folds them away.
  */
 @Composable
 internal fun ChapterRowItem(

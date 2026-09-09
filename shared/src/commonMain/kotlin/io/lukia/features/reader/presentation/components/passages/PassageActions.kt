@@ -39,9 +39,8 @@ internal enum class WordGesture {
 /**
  * What a reader can ask of the passages in one block of a book.
  *
- * Four callbacks in one value because they always travel together and always
- * come from the same place, and because a paragraph inside a quotation should not
- * have to name all four at every hop on the way down.
+ * Four callbacks in one value because they travel together from the same place,
+ * and a paragraph inside a quotation should not name all four at every hop down.
  *
  * The block index is filled in on the way past, so nothing below the block has
  * to know where it sits in the book.

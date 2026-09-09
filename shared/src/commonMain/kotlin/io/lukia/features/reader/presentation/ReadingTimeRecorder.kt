@@ -19,11 +19,10 @@ import kotlin.time.TimeSource
  * How long a book has to be left alone before the reader is taken to have
  * stopped rather than to be reading slowly.
  *
- * Generous on purpose. A page of dense prose in a second language - which is
- * what this app is for - can take several minutes, and an app that stopped its
- * clock after two would tell its most careful readers they had read for a
- * quarter of the time they had. What it guards against is the book left open on
- * a desk overnight, not the reader who is thinking.
+ * Generous on purpose: a page of dense prose in a second language - what this
+ * app is for - can take several minutes, and a clock stopping after two would
+ * tell the most careful readers they had read a quarter of what they had. It
+ * guards against the book left open overnight, not the reader who is thinking.
  */
 internal val IdleAfter: Duration = 10.minutes
 

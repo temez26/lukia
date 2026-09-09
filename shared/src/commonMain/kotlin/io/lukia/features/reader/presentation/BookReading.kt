@@ -54,12 +54,11 @@ internal class BookReading(
      * opened - which is the same instruction, so an unread book is not a case
      * of its own.
      *
-     * A book nobody has opened is given a length of nothing rather than the
-     * document's own count. For a PDF the two would be the same; for a
-     * reflowable book the count here is a page count, and what the document can
-     * say is how many divisions it was written in - a different number in a
-     * different unit, and one this must not pass off as the other. Nothing is
-     * the honest answer, and the reader opens at the beginning either way.
+     * An unopened book is given a length of nothing rather than the document's
+     * own count. For a PDF the two agree; for a reflowable book this count is
+     * pages and the document can only say how many divisions it was written in -
+     * a different number in a different unit. Nothing is the honest answer, and
+     * the reader opens at the beginning either way.
      */
     suspend fun restore(document: ReaderDocument) {
         val stored = runCatchingApp { positions.progressFor(location) }.getOrNull()
@@ -116,9 +115,8 @@ internal class BookReading(
  * Builds one of these once there is a book and a scope to run it in.
  *
  * The same arrangement as [ReaderTranslationsFactory] and for the same reason:
- * the scope belongs to the ViewModel and cannot be injected beside the two
- * stores, so without this the ViewModel would hold both of them only to pass
- * them on.
+ * the scope belongs to the ViewModel and cannot be injected beside the stores,
+ * so without this the ViewModel would hold both only to pass them on.
  *
  * Public only because it names a ViewModel's dependency, and that ViewModel is
  * reached from outside this feature.

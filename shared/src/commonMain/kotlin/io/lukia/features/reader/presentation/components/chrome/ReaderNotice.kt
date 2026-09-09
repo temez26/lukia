@@ -33,10 +33,10 @@ private val NoticeMaxWidth: Dp = 420.dp
  * and a Material bar sliding in from the bottom edge would be the only part of
  * the reader that looks like the rest of the app.
  *
- * It takes itself away. What it says is never an action - it explains what the
- * app did and why - so leaving a dismiss button over the page would be asking
- * the reader to tidy up after a message they did not ask for. [onDismiss] fires
- * once it has been up long enough to read, and is what stops it coming back.
+ * It takes itself away. What it says is never an action, so a dismiss button
+ * over the page would ask the reader to tidy up after a message they never asked
+ * for. [onDismiss] fires once it has been up long enough to read, and is what
+ * stops it coming back.
  */
 @Composable
 internal fun ReaderNotice(

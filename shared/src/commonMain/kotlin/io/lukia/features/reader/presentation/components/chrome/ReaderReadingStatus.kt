@@ -119,13 +119,12 @@ internal fun ReaderReadingStatus(
 /**
  * One end of the scale.
  *
- * The zero is the quieter of the two on purpose: it never changes and is there to
- * be measured against rather than read, while the figure opposite it is the thing
- * the reader actually came to the bar for.
+ * The zero is the quieter on purpose: it never changes and is there to be
+ * measured against, where the figure opposite is what the reader came for.
  *
  * Both are held to the width of the longest figure either can hold, so the track
- * between them keeps one length for the whole book instead of shortening by a
- * character at 10% and again at 100%.
+ * keeps one length for the whole book instead of shortening a character at 10%
+ * and again at 100%.
  */
 @Composable
 private fun Marker(text: String, emphasised: Boolean) {
@@ -147,15 +146,12 @@ private fun Marker(text: String, emphasised: Boolean) {
 /**
  * The reading itself, between the two ends.
  *
- * Painted rather than laid out. The filled part is a fraction of the track's real
- * width, and expressing that through layout - a nested `fillMaxWidth(fraction)`,
- * a weighted row - measures the fraction against constraints a parent has already
- * fixed and lands the fill somewhere other than against the leading edge. The
- * same reason `ReadingProgressBar` is drawn.
+ * Painted rather than laid out, for `ReadingProgressBar`'s reason: the filled
+ * part is a fraction of the track's real width, and every layout way of saying
+ * that measures against constraints a parent already fixed.
  *
- * Rounded, unlike the rule this replaced: that one was welded to the window's own
- * edge and took its shape from it, and this one is a bar sitting inside a
- * capsule.
+ * Rounded, unlike the rule this replaced - that one was welded to the window's
+ * edge and took its shape; this is a bar inside a capsule.
  */
 @Composable
 private fun ProgressTrack(fraction: Float, modifier: Modifier = Modifier) {
