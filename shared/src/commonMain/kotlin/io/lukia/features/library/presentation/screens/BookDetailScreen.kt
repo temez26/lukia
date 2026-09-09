@@ -80,11 +80,6 @@ fun BookDetailScreen(
     )
 }
 
-/**
- * Stateless half of the screen, so the layout can be composed in a test or a
- * preview without a ViewModel or a dependency graph behind it. Every screen in
- * the app splits this way.
- */
 @Composable
 fun BookDetailContent(
     uiState: UiState<BookDetails>,

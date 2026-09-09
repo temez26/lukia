@@ -11,10 +11,10 @@ import android.provider.DocumentsContract
  * A storage provider holding a tree of folders and books, answering the one
  * query a folder scan makes: the children of a document id.
  *
- * A tree rather than a fake scanner, because what the scan is for is walking
- * somebody else's provider - the depth cap, the sub-folders, the row a provider
- * is allowed to return half of - and a stand-in for the provider would answer
- * all of that with whatever the stand-in was written to believe.
+ * A tree rather than a fake scanner, because the scan exists to walk somebody
+ * else's provider - the depth cap, the sub-folders, the half-row a provider may
+ * return - and a stand-in would answer all of that with whatever it was written
+ * to believe.
  *
  * [tree] maps a folder's document id to its children, each a name paired with
  * whether it is itself a folder.

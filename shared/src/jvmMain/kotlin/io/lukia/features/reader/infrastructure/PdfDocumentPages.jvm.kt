@@ -70,22 +70,18 @@ private class PdfBoxDocumentPages(private val document: PDDocument) : DocumentPa
         document.pages.withIndex().associate { (index, page) -> page.cosObject to index }
 
     /**
-     * Read as the document is opened, which is the contract [DocumentPages]
-     * states - and here it is also the only way it can be safe.
-     *
-     * The walk parses objects out of the same PDFBox document [renderPage] draws
-     * from, and PDFBox shares mutable state across the two. Everything else
-     * touching the open document takes [renderLock]; a plain `val` cannot, so
-     * its only protection is finishing before anybody else has the document.
-     * Left until something asked, this ran on its own dispatcher beside a page
-     * being drawn - one document, two threads, and the corruption the lock
-     * exists to prevent.
+     * Read as the document is opened, which is [DocumentPages]'s contract and
+     * here the only way it can be safe: the walk parses objects out of the same
+     * PDFBox document [renderPage] draws from, and PDFBox shares mutable state
+     * across the two. A plain `val` cannot take [renderLock], so its only
+     * protection is finishing before anybody else has the document. Left lazy,
+     * this ran on its own dispatcher beside a page being drawn - one document,
+     * two threads, and the corruption the lock exists to prevent.
      *
      * Nobody waits longer for it: opening already runs off the main thread, and
-     * the outline is read on both ways out of here anyway. What this walks is
-     * structure the open has already parsed rather than the file - the scan that
-     * would be too much up front belongs to Android, whose renderer has no
-     * outline of its own, and stays lazy there.
+     * what this walks is structure the open has already parsed rather than the
+     * file. The scan that would be too much up front belongs to Android, whose
+     * renderer has no outline of its own, and stays lazy there.
      */
     override val outline: List<OutlineEntry>? = readOutline()
 

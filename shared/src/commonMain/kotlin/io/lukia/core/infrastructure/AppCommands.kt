@@ -22,14 +22,12 @@ enum class AppCommand {
  * The hand-off between a desktop menu and the screen that can carry it out.
  *
  * The same shape as [DocumentInbox] and for the same reason: a menu bar belongs
- * to the window, which is created before there is a composition and knows
- * nothing about what is inside one, while what actually imports a book or opens
- * the settings is a screen deep inside it.
+ * to the window, created before there is a composition, while what imports a
+ * book or opens the settings is a screen deep inside one.
  *
- * A channel rather than a shared flow, again for the reasons set out on
- * [DocumentInbox]: nothing may be lost while the library is still starting, and
- * nothing may be replayed into a resubscribe - a menu item pressed once must not
- * open two file panels.
+ * A channel rather than a shared flow, again per [DocumentInbox]: nothing may be
+ * lost while the library is starting, and a menu item pressed once must not
+ * replay into a resubscribe and open two file panels.
  */
 class AppCommands {
 

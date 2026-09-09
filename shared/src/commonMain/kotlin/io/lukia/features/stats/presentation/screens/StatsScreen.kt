@@ -61,9 +61,6 @@ fun StatsScreen(
 }
 
 /**
- * Stateless half of the screen, matching the other screens so the layout can be
- * rendered without a ViewModel or dependency graph.
- *
  * Full-bleed like the settings and detail screens, so the page passes under the
  * floating back control rather than starting below a bar.
  */

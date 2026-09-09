@@ -40,11 +40,10 @@ dependencies {
  * made - see the :baselineprofile module for that.
  *
  * The baseline profile is installed and compiled without any of this. The
- * startup one is not used for anything at all unless this is asked for: it is
- * read by R8, which puts the classes a launch touches into the primary dex file
- * in the order the launch touches them, so opening the app reads a run of pages
- * rather than reaching across every dex file for each class in turn. That needs
- * R8, which the release build already runs.
+ * startup one does nothing unless this is asked for: it is read by R8, which
+ * puts the classes a launch touches into the primary dex file in the order it
+ * touches them, so opening reads a run of pages rather than reaching across
+ * every dex file. R8 already runs on the release build.
  */
 baselineProfile {
     dexLayoutOptimization = true

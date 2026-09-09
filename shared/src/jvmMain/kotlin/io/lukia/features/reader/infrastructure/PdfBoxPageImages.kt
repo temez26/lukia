@@ -61,9 +61,6 @@ private class ImageCollector(
             rotation = page.rotation,
         )
 
-        // Asked before the image is decoded: a page can carry hundreds of
-        // hairlines and gradient tiles, and decoding each one to find out it is
-        // two points tall is most of what reading a page would cost.
         if (!bounds.isWorthShowing()) return
 
         figures.of(pdImage)?.let { images += PageImage(it, bounds) }

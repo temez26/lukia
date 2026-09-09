@@ -19,13 +19,13 @@ import kotlin.test.assertTrue
  * Reading the words off a page, on Android.
  *
  * The desktop pins this in `PdfPageTextTest` and iOS in `PdfKitPageTextTest`;
- * this platform had neither, and it is the one with the most devices on it and
- * the most machinery in the way. `PdfRenderer` offers no text below API 35, so
- * Android reads through pdfbox-android instead - a whole second implementation,
- * with its own glyph stripping and its own lock around one shared document.
+ * this platform had neither, and has the most machinery in the way.
+ * `PdfRenderer` offers no text below API 35, so Android reads through
+ * pdfbox-android - a second implementation with its own glyph stripping and its
+ * own lock around one shared document.
  *
  * Runs against the same hand-written PDF the other two read, so a disagreement
- * between the three points at the platform rather than at the file.
+ * points at the platform rather than the file.
  */
 class AndroidPdfPageTextTest {
 

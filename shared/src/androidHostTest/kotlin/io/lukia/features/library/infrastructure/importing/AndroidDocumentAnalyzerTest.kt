@@ -18,14 +18,12 @@ import kotlin.test.assertTrue
  * What the importer learns about a book it was handed as a `content://` URI,
  * which is how every book picked on Android arrives.
  *
- * On the host rather than on a device. What is being asked here is what the
- * analyser does with a provider's answers - a size column that is there, one
- * that is not, a document that has gone - and a provider answering on the host
- * answers the same way. What genuinely needs a device stayed next door in
- * `androidDeviceTest`.
+ * On the host: what is asked is what the analyser does with a provider's answers
+ * - a size column present, absent, a document gone - and a provider answers the
+ * same way on the host. What needs a device stayed in `androidDeviceTest`.
  *
- * The provider is registered in code rather than declared in a manifest, so
- * there is one place that says which authority it answers on.
+ * The provider is registered in code rather than a manifest, so one place says
+ * which authority it answers on.
  */
 @RunWith(RobolectricTestRunner::class)
 class AndroidDocumentAnalyzerTest {

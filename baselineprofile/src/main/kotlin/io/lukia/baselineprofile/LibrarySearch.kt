@@ -10,11 +10,10 @@ import androidx.test.uiautomator.Until
  * Getting to a book, which is what every benchmark here does before it can
  * measure anything.
  *
- * Shared between them rather than written twice: both open a real book out of a
- * real library, so both have to launch the app, get back out of whatever the
- * last iteration left open, narrow the library to one title and find its row -
- * and none of that is what either of them is measuring. A second copy of it
- * would be a second thing to fix every time the library's chrome moves.
+ * Shared rather than written twice: both open a real book out of a real
+ * library, so both must launch the app, leave whatever the last iteration
+ * opened, narrow to one title and find its row - none of which either is
+ * measuring, and all of which would otherwise move with the library's chrome.
  */
 
 /** The package the benchmarks drive. */

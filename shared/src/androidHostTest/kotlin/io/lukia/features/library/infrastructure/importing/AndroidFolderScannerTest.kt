@@ -20,13 +20,10 @@ import kotlin.test.assertTrue
  * Walking a folder somebody granted through the picker, on Android.
  *
  * `JvmFolderScannerTest` pins the same rules against a directory on disk; this
- * pins them against a storage provider, which is the only way Android has of
- * reaching one. The two implementations share nothing at all - one lists a
- * `File`, the other pages a cursor per folder - so a rule proved on the desktop
- * says nothing about the platform most books are actually imported on.
- *
- * On the host: a provider answers a cursor the same way whether or not there is
- * a device under it.
+ * pins them against a storage provider, Android's only way of reaching one. The
+ * two share nothing - one lists a `File`, the other pages a cursor per folder -
+ * so a rule proved on the desktop says nothing about the platform most books are
+ * imported on. On the host: a provider answers a cursor the same way either way.
  */
 @RunWith(RobolectricTestRunner::class)
 class AndroidFolderScannerTest {

@@ -51,19 +51,13 @@ private val ShareWidth: Dp = 34.dp
  * of it behind them.
  *
  * One bar rather than a figure floating over a hairline: the two were the same
- * fact drawn twice at opposite scales, reading as two pieces of chrome that
- * happened to arrive together. Set end to end, the "0" and the percentage are
- * the ends of one scale and the track between them is the reading of it.
- *
- * The zero is what makes it a scale rather than a stripe. A part-filled bar with
- * bare ends says "some", and the figure alone says how much without saying of
- * what.
+ * fact drawn twice at opposite scales. Set end to end, the "0" and the
+ * percentage are the ends of one scale and the track between them reads it - a
+ * part-filled bar with bare ends only says "some".
  *
  * Wears the toolbar's glass capsule at the same measure and inset - see
- * [ReaderToolbar]; they are two halves of one piece of chrome.
- *
- * Not a control: the scrubber for going somewhere is in the contents panel,
- * reached from the toolbar this appears opposite.
+ * [ReaderToolbar]; they are two halves of one piece of chrome. Not a control:
+ * the scrubber for going somewhere is in the contents panel.
  *
  * The page is read here and nowhere else, so turning one redraws this bar rather
  * than the reader around it, and `derivedStateOf` keeps that to once per page

@@ -35,12 +35,11 @@ class IncomingDocument(
  * Where a document handed to the app is kept so that it survives the grant it
  * arrived under.
  *
- * Copying rather than referencing is not a preference here. On Android an
- * `ACTION_VIEW` grant cannot be made persistable at all, and on iOS an opened
- * URL is security-scoped; a library entry pointing at either would open once and
- * then fail for good, with nothing on the shelf to say why. This is also why
- * [DocumentWorkspace]'s rule - copy on first open, not on import - does not
- * reach these: there is nothing to copy from later.
+ * Copying rather than referencing is not a preference: an Android `ACTION_VIEW`
+ * grant cannot be made persistable, and an opened iOS URL is security-scoped, so
+ * a library entry pointing at either would open once and then fail for good.
+ * That is also why [DocumentWorkspace]'s copy-on-first-open rule does not reach
+ * these - there is nothing to copy from later.
  */
 interface IncomingDocumentStore {
 

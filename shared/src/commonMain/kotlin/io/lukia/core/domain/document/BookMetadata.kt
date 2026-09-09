@@ -3,15 +3,14 @@ package io.lukia.core.domain.document
 /**
  * What a document says about itself.
  *
- * Read out of the file at import time and stored beside the library entry, so
- * the detail screen can show a book's publisher without opening the book. Every
- * field is optional because every field is optional in every format that carries
- * them - a great many EPUBs name only a title and an author, and a PDF written
- * by a word processor often names nothing worth showing at all.
+ * Read out of the file at import and stored beside the library entry, so the
+ * detail screen can show a publisher without opening the book. Every field is
+ * optional because every format makes them so - many EPUBs name only a title and
+ * an author, and a PDF from a word processor often names nothing.
  *
- * Deliberately not a merge of "what the file says" and "what the app knows". The
- * file size, the format and where the file lives are facts about the file rather
- * than claims the document makes about itself, and they live on [DocumentInfo].
+ * Deliberately not a merge of "what the file says" and "what the app knows": the
+ * size, the format and where the file lives are facts about the file rather than
+ * claims the document makes, and live on [DocumentInfo].
  */
 data class BookMetadata(
     /**

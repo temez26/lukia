@@ -68,19 +68,15 @@ import org.jetbrains.compose.resources.stringResource
  * Which passages are marked, and how, is drawn over the finished text rather
  * than written into it. That is what makes a tap feel like a tap: pointing at a
  * sentence changes nothing about the paragraph, so the mark is a repaint. Only
- * the arrival of translated words changes the text at all.
+ * translated words change the text - and when they arrive the paragraph changes
+ * length, which two animations carry: the text cross-fades between its settings
+ * while the block eases into its new height, so the eye can follow the line.
  *
- * When they do, the paragraph changes length and everything below has to move.
- * Two animations carry that - the text cross-fades between its two settings and
- * the block eases into its new height - so the page settles rather than jumping
- * and the eye can follow the line it was on.
- *
- * Every one of those gestures is a point on the page, which is the one thing a
- * reader working by voice, switch or keyboard does not have. So the paragraph
- * also carries the ask as an action - see [translationAction]. It is the whole
- * block rather than the sentence under the finger, because the block is the
- * largest passage that is unambiguous without one, and is already the unit
- * "translate what is on screen" works in.
+ * Every one of those gestures is a point on the page, which a reader working by
+ * voice, switch or keyboard does not have. So the paragraph also carries the ask
+ * as an action - see [translationAction]. The whole block rather than the
+ * sentence under the finger, being the largest passage unambiguous without one,
+ * and already the unit "translate what is on screen" works in.
  */
 @Composable
 internal fun ProseText(

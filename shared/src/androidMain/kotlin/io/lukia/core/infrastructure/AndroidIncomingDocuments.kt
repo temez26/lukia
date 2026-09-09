@@ -12,11 +12,10 @@ import org.koin.mp.KoinPlatformTools
  * Puts whatever [intent] is carrying into the app's inbox, for the library to
  * take when it next looks.
  *
- * Called from the activity, which is the only thing given the grant that makes
- * a delivered document readable - and only for as long as it holds it. The
- * inbox is resolved here rather than injected there, so that `MainActivity`
- * stays a thing that starts the app rather than a second place that knows how
- * the app is wired together.
+ * Called from the activity, the only thing given the grant that makes a
+ * delivered document readable, and only while it holds it. The inbox is resolved
+ * here rather than injected there, so `MainActivity` stays a thing that starts
+ * the app rather than a second place that knows how it is wired together.
  */
 fun Context.deliverIncomingDocuments(intent: Intent) {
     val inbox = KoinPlatformTools.defaultContext().get().get<DocumentInbox>()
@@ -47,11 +46,10 @@ internal fun Intent.incomingDocuments(context: Context): List<IncomingDocument> 
 /**
  * One URI as something the app can keep.
  *
- * The read is deferred rather than done here because this is called from the
- * platform's own callback, which must not be made to wait on a hundred-megabyte
- * PDF. It has to happen soon all the same: an intent's grant lasts as long as
- * the task it was delivered to, so what reads this is the library, on the very
- * next turn - see `LibraryImportSession`.
+ * The read is deferred because this is called from the platform's own callback,
+ * which must not wait on a hundred-megabyte PDF - but it has to happen soon: an
+ * intent's grant lasts as long as the task it was delivered to, so the library
+ * reads it on the very next turn. See `LibraryImportSession`.
  *
  * The application context is held rather than the activity's, so a read that
  * lands just after the activity goes is still made against something alive.

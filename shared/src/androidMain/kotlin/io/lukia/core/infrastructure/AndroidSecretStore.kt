@@ -14,11 +14,11 @@ import javax.crypto.spec.GCMParameterSpec
 /**
  * Secrets encrypted by a key that never leaves the Android keystore.
  *
- * The ciphertext lives in ordinary preferences, which is fine, because the key
- * that would decrypt it does not: it is generated inside the keystore and can
- * only be used through it. On a device with hardware backing it is held in the
- * secure element, and on one without it is still outside this app's own storage.
- * Copying the preferences file off the device yields bytes nobody can read.
+ * The ciphertext lives in ordinary preferences, which is fine because the key
+ * does not: it is generated inside the keystore and can only be used through it,
+ * held in the secure element where there is hardware backing and outside this
+ * app's storage where there is not. Copying the preferences file off the device
+ * yields bytes nobody can read.
  *
  * Written against the platform rather than through `EncryptedSharedPreferences`
  * so that this depends on nothing beyond Android itself - and so it keeps

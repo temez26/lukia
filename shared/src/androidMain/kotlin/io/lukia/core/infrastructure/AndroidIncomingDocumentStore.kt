@@ -14,13 +14,12 @@ import java.io.File
  * Copies land in app-private internal storage and are then addressed through the
  * app's own [FileProvider].
  *
- * The provider is the point of this, and not decoration. Everything downstream -
- * the analyser reading the file's size, the workspace making a working copy of
- * it - reaches a document through `ContentResolver`, because that is what a
- * picked `content://` URI requires. A bare path would need both of them taught a
- * second way to open a document; a URI from a provider the app owns needs no
- * grant, cannot be revoked, and arrives at those two as the same kind of thing
- * the picker already hands them.
+ * The provider is the point of this. Everything downstream - the analyser
+ * reading the file's size, the workspace making a working copy - reaches a
+ * document through `ContentResolver`, because that is what a picked `content://`
+ * URI requires. A bare path would need both taught a second way to open one; a
+ * URI from a provider the app owns needs no grant, cannot be revoked, and
+ * arrives as the same kind of thing the picker already hands them.
  */
 class AndroidIncomingDocumentStore(
     private val context: Context,

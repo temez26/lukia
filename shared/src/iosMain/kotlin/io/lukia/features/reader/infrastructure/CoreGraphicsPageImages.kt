@@ -44,15 +44,11 @@ import platform.CoreGraphics.kCGPDFCropBox
 /**
  * The pictures on one page of a PDF, in the places they were drawn.
  *
- * A PDF has no list of the pictures on a page - it has a program that draws
- * them, and where each lands depends on the transformations in force when the
- * instruction is reached. So the only way to know what a picture is and where it
- * went is to run the page as a renderer would and stop at each image.
- *
- * PDFKit, which draws the pages this reader shows, cannot answer that: it
- * renders a page or hands over its text, and what is on the page is not in its
- * vocabulary. So this drops to CoreGraphics, which runs a page's program and
- * calls back on four operators - the two that save and restore the
+ * The page has to be run as a renderer would, for the reason `PdfBoxPageImages`
+ * gives on the desktop. PDFKit, which draws the pages this reader shows, cannot
+ * do it: it renders a page or hands over its text, and what is on the page is
+ * not in its vocabulary. So this drops to CoreGraphics, which runs a page's
+ * program and calls back on four operators - the two that save and restore the
  * transformation, the one that changes it, and the one that draws.
  *
  * [figures] belongs to the document rather than to the page, and is what keeps
@@ -176,9 +172,6 @@ private class PageWalk(
             rotation = rotation,
         )
 
-        // Asked before the image is decoded: a page can carry hundreds of
-        // hairlines and gradient tiles, and decoding each one to find out it is
-        // two points tall is most of what reading a page would cost.
         if (!bounds.isWorthShowing()) return
 
         figures.of(stream, dictionary, content)?.let {

@@ -27,8 +27,6 @@ class MetadataDisplayTest {
         metadata = metadata,
     )
 
-    // ------------------------------------------------------------------ title
-
     /** A book that names itself names itself better than the file name does. */
     @Test
     fun prefersTheTitleTheDocumentDeclares() {
@@ -46,8 +44,6 @@ class MetadataDisplayTest {
     fun aBlankDeclaredTitleIsNoTitle() {
         assertEquals("moby-dick", book(metadata = BookMetadata(title = "  ")).bookTitle())
     }
-
-    // -------------------------------------------------------------- published
 
     @Test
     fun takesTheYearOutOfAFullDate() {

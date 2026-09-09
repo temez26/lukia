@@ -245,14 +245,6 @@ class SettingsViewModel(
     }
 
     /**
-     * Whether the translator's asides are set under the paragraph they belong to.
-     *
-     * Worth turning off now that a word's senses have somewhere better to be -
-     * see [io.lukia.features.reader.presentation.translation.WordInquiry]. Not an
-     * [edit]: where a note is drawn says nothing about whether the translator
-     * works.
-     */
-    /**
      * Whether a model is involved in any of this at all - see
      * [io.lukia.features.translate.domain.settings.TranslationSettings.aiTranslation].
      *
@@ -264,6 +256,12 @@ class SettingsViewModel(
         translation.update(translation.settings.value.withAiTranslation(on))
     }
 
+    /**
+     * Whether the translator's asides are set under the paragraph they belong to.
+     *
+     * Not an [edit]: where a note is drawn says nothing about whether the
+     * translator works.
+     */
     fun setNotes(notes: Boolean) {
         translation.update(translation.settings.value.withNotes(notes))
     }

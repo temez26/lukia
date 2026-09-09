@@ -55,20 +55,19 @@ internal suspend fun openReaderContent(
  * The file is read once and given back: what comes out is the whole book's text,
  * held in memory like any other reflowable book. That is why this cannot be part
  * of the non-suspending [openReaderContent] - reading a page's text suspends,
- * and there are hundreds of pages here.
+ * and there are hundreds of pages.
  *
- * Hundreds of pages is also why the file is opened more than once - see
- * [readersFor]. Reading a page is the longest thing the app does and one handle
- * does one page at a time, so the book is divided between as many handles as the
- * device has cores.
+ * Hundreds is also why the file is opened more than once - see [readersFor].
+ * Reading a page is the longest thing the app does and one handle does one page
+ * at a time, so the book is divided between as many handles as there are cores.
  *
- * The result is kept beside the file - see [storedReflow] - so a reader who
- * looks at the same book as pages and then as text again does not wait through
- * the conversion twice.
+ * The result is kept beside the file - see [storedReflow] - so looking at the
+ * same book as pages and then as text again does not wait through the conversion
+ * twice.
  *
  * A file with no text is not remembered as such: finding out again costs one
  * scan, and only if somebody asks twice, where writing down an absence is a
- * thing to get wrong for a case the reader has already been told about.
+ * thing to get wrong.
  */
 internal suspend fun openPdfAsText(
     path: String,

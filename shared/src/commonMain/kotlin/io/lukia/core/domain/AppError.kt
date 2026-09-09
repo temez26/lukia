@@ -57,10 +57,9 @@ sealed interface AppError {
  * Carries an [AppError] through [Result], whose failure channel is typed to
  * [Throwable]. Not thrown across layers by hand - use [asFailure].
  *
- * Open so a feature can attach detail of its own to a failure without core
- * having to learn what that detail is. Everything here still reads it as an
- * app error and shows the same words; whoever inside the feature has a decision
- * to make catches the subclass and asks it - see
+ * Open so a feature can attach detail of its own without core learning what that
+ * detail is: everything here still reads it as an app error, and whoever has a
+ * decision to make catches the subclass - see
  * `features/translate/infrastructure/TranslationFailure.kt`.
  */
 open class AppErrorException(val error: AppError) : Exception(error.toString())
@@ -92,10 +91,10 @@ fun Throwable.toAppError(): AppError = when (this) {
  * swallowing it - a cancelled coroutine is how a scope shuts down, not a failure
  * to report, and catching it breaks structured concurrency.
  *
- * This is the boundary every ViewModel runs its work through: use cases wrap the
+ * The boundary every ViewModel runs its work through: use cases wrap the
  * failures they anticipate in a [Result] and let the rest throw, and this is
- * what makes sure the rest still reaches the user as an [AppError.Unexpected]
- * rather than dying inside the coroutine.
+ * what gets the rest to the user as an [AppError.Unexpected] rather than dying
+ * inside the coroutine.
  */
 // The one place a Throwable is caught on purpose. This is the boundary the rule
 // exists to protect - narrowing it to named types is exactly what it must not do,

@@ -8,9 +8,9 @@ import androidx.compose.ui.platform.LocalView
  * Set on the view rather than as a window flag.
  *
  * `keepScreenOn` reaches the same flag on whatever window the view is attached
- * to, and does it without the reader's screen having to find an Activity - which
- * it cannot honestly do from Compose, where the context it is handed may be a
- * wrapper around one or may not be an Activity at all.
+ * to, without the screen having to find an Activity - which it cannot honestly
+ * do from Compose, where the context handed to it may be a wrapper or may not be
+ * an Activity at all.
  *
  * Cleared on the way out rather than left set, because the flag belongs to the
  * window and the window outlives this screen.

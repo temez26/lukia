@@ -45,15 +45,13 @@ import org.jetbrains.compose.resources.stringResource
  * Opened by holding that word: the hold now offers putting the book's own word
  * back as one of three things, so nothing it could do before has gone.
  *
- * A panel rather than a menu anchored at the finger, for the reason the reader's
- * other panels are panels: a dictionary entry of several lines is not a menu
- * row, and a panel is the one shape here that can be as tall as its contents on
- * a phone and a desktop alike.
+ * A panel rather than a menu anchored at the finger: a dictionary entry of
+ * several lines is not a menu row, and a panel is the one shape here that can be
+ * as tall as its contents on a phone and a desktop alike.
  *
  * It is also where everything about a word that is not a translation lives -
- * which form, which part of speech, what the entry lists beside it. None of that
- * can stand over a word in a paragraph, and all of it is what somebody learning
- * the language held the word to find out. See [WordEntryBody].
+ * which form, which part of speech, what the entry lists beside it - none of
+ * which can stand over a word in a paragraph. See [WordEntryBody].
  *
  * The dictionary is asked whatever the word lookup setting is, because it costs
  * nothing and because somebody reading with a model has a word the model chose

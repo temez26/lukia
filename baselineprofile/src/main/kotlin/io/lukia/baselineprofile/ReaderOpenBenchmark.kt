@@ -16,11 +16,10 @@ import java.util.regex.Pattern
 /**
  * How long a book takes to become readable, measured on a real device.
  *
- * The number is the one a reader actually waits through: pressing a book to the
- * first page of it being on screen. Timed here rather than read off a metric
- * because no metric the harness collects knows what "the book is open" means -
- * a spinner and a sheet not yet laid out are both not it. A page carrying its
- * own "Page n of m" is.
+ * The number a reader actually waits through: pressing a book to its first page
+ * being on screen. Timed here rather than read off a metric because no metric
+ * the harness collects knows what "the book is open" means - a spinner and an
+ * unlaid-out sheet are both not it. A page carrying its own "Page n of m" is.
  *
  * Run it against a device that already holds the two books below:
  *
@@ -39,21 +38,19 @@ import java.util.regex.Pattern
  * adb shell run-as io.lukia cat databases/lukia.db > lukia.db
  * ```
  *
- * The frame timings come out in the benchmark's own report; the opening times
- * are logged under [LOG_TAG], because they are wall-clock measurements this
- * takes itself rather than metrics the harness collected.
+ * Frame timings come out in the benchmark's own report; the opening times are
+ * logged under [LOG_TAG], being wall-clock measurements this takes itself.
  *
- * Measured against a book already in the library rather than a shipped fixture:
- * a generated book would measure the generator's idea of one instead of a real
- * ten-megabyte collection. The cost is that this cannot run on an empty device,
- * which is why it is not part of `connectedCheck`. Point it at a book of your
- * own by adding a test beside the one below, named by whatever the library's
- * search finds it by.
+ * Measured against a book already in the library rather than a shipped fixture,
+ * which would measure the generator's idea of a book. The cost is that this
+ * cannot run on an empty device, so it is not part of `connectedCheck`. Point it
+ * at a book of your own by adding a test beside the one below, named by whatever
+ * the library's search finds it by.
  *
  * A PDF read as text is deliberately not covered: that opening waits on every
- * page's text being read out of the file, which no layout can shorten, and it
- * needs a reader who has already chosen to read it that way - a setting rather
- * than a fact about the file.
+ * page's text being read out of the file, which no layout can shorten, and needs
+ * a reader who already chose to read it that way - a setting rather than a fact
+ * about the file.
  */
 @OptIn(ExperimentalMetricApi::class)
 class ReaderOpenBenchmark {
@@ -118,12 +115,11 @@ class ReaderOpenBenchmark {
      * Runs [block] with the screen answered as it is asked rather than once the
      * app has nothing left to do.
      *
-     * Only around the measurement, and never around the walk that sets it up. A
-     * book still being laid out behind the page somebody is reading is never
-     * idle, so a measurement taken through the usual wait would be charged for
-     * exactly the work this exists to move off the reader's wait - and the more
-     * of it there was, the better the reading would look. Everywhere else the
-     * wait is what makes a query land on a screen that has stopped moving.
+     * Only around the measurement, never around the walk that sets it up. A book
+     * still being laid out is never idle, so a measurement taken through the
+     * usual wait would be charged for exactly the work this exists to move off
+     * the reader's wait. Everywhere else the wait is what makes a query land on
+     * a screen that has stopped moving.
      */
     private fun <T> withoutWaitingForIdle(block: () -> T): T {
         val configurator = Configurator.getInstance()

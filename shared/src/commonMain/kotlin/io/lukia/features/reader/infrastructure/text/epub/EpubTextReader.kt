@@ -47,18 +47,16 @@ private val ReadableMediaTypes = setOf(
  * out smoothly. Those are divided by [sectionStarts], the rule every undivided
  * format gets, and their anchors put the contents back on the right sections.
  *
- * The files are read concurrently: reading one means decompressing, decoding its
- * encoding and parsing the markup - the most expensive thing done to a book
- * before measuring, times dozens of files. Nothing in one file depends on
- * another and the indexed archive is read-only, so there is nothing to divide
- * but the work. They are assembled in spine order all the same: which finished
+ * The files are read concurrently - reading one means decompressing, decoding
+ * and parsing, the most expensive thing done to a book before measuring, times
+ * dozens of files - and assembled in spine order all the same: which finished
  * first is a fact about the device, not about the book.
  *
- * Read whole before the reader sees any of it, which measured faster than the
- * alternative. Handing chapters over as they were parsed, so the first could be
- * measured while the rest were read, sounds shorter and is not: parsing and
- * measuring both use every core, so overlapping them only takes cores from the
- * measuring - the half the reader is actually waiting on.
+ * Read whole before the reader sees any of it, which measured faster. Handing
+ * chapters over as they were parsed, so the first could be measured while the
+ * rest were read, sounds shorter and is not: parsing and measuring both use
+ * every core, so overlapping them only takes cores from the measuring - the half
+ * the reader is waiting on.
  *
  * Returns null when the file is not an EPUB this can make sense of, which the
  * caller turns into a format the reader cannot open rather than an empty book.

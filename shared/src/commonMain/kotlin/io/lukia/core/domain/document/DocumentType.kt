@@ -15,11 +15,10 @@ enum class DocumentType {
          * understands. Every platform analyzer and the folder scanners share it
          * so a picked file and a scanned one are always classified the same way.
          *
-         * Extensions rather than file contents, deliberately: this runs over
-         * every file in an imported folder, and sniffing hundreds of them would
-         * mean opening hundreds of files to decide whether to open them. What a
-         * file turns out not to be is settled later, when the reader tries to
-         * open it and says so.
+         * Extensions rather than contents: this runs over every file in an
+         * imported folder, and sniffing them would mean opening hundreds of
+         * files to decide whether to open them. What a file turns out not to be
+         * is settled later, when the reader tries to open it.
          */
         fun fromExtension(extension: String): DocumentType =
             byExtension[extension.lowercase()] ?: UNKNOWN

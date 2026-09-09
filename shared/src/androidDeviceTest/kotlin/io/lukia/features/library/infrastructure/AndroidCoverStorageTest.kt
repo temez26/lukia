@@ -41,13 +41,11 @@ private const val BookSizeBytes = 1024L
 /**
  * The limit on a stored cover, against the platform that imposes it.
  *
- * Android hands a query's results over through a CursorWindow, and on the
- * versions Lukia opens on - it goes back to API 23 - that window is the two
- * megabytes `config_cursorWindowSize` still says it is. A row too large for one
- * does not come back short there: the read throws. That read is the whole
+ * Android hands query results over through a CursorWindow, which back to API 23
+ * is the two megabytes `config_cursorWindowSize` still says it is. A row too
+ * large does not come back short - the read throws, and that read is the whole
  * library, so one book's cover art could empty the shelf and leave a retry
- * button in its place, which is what importing a batch of books with large
- * covers used to do.
+ * button. Which is what importing books with large covers used to do.
  */
 class AndroidCoverStorageTest {
 

@@ -87,7 +87,6 @@ class XmlEventsTest {
         assertEquals("kept", text)
     }
 
-    /** A `>` inside an attribute is part of its value, not the end of the tag. */
     @Test
     fun anAngleBracketInsideAnAttributeDoesNotEndTheTag() {
         val open = xmlEvents("""<img alt="a > b" src="x.png"/>""")

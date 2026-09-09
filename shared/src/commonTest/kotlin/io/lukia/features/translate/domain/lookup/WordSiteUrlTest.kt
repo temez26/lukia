@@ -62,7 +62,6 @@ class WordSiteUrlTest {
         assertEquals("https://www.sanakirja.org/search.php?q=whale&l=3&l2=-1", url)
     }
 
-    /** And a book that declared no language at all is the same question. */
     @Test
     fun aBookThatDeclaredNoLanguageIsAskedAcrossAllOfThem() {
         val url = WordSite.Sanakirja.urlFor(

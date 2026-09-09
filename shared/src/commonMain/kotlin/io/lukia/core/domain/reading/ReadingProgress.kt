@@ -7,11 +7,10 @@ package io.lukia.core.domain.reading
  * document, so that a library can say how far through a book its reader is
  * without opening the file to find out how long it is.
  *
- * For a fixed-layout document the two are pages the file itself has. For a
- * reflowable one they are pages the reader set, in the window and at the type
- * size it was last read at - so the pair means something together and neither
- * half means much alone. That is why they are stored and replaced together, and
- * why every reading of them here is a ratio rather than a count.
+ * For a fixed-layout document the two are pages the file has; for a reflowable
+ * one they are pages the reader set, in the window and type size it was last
+ * read at - so the pair means something together and neither half alone. Hence
+ * stored and replaced together, and read here as a ratio rather than a count.
  */
 data class ReadingProgress(
     val pageIndex: Int,
@@ -31,13 +30,11 @@ data class ReadingProgress(
      * measure against.
      *
      * Counted from the page the reader is *on* rather than the pages behind
-     * them: a book open at page one is a page into it, and a bar showing nothing
-     * at all on a book the reader is looking at is a claim they can see is
-     * wrong. A book on its last page is full.
+     * them: a book open at page one is a page into it, and an empty bar on a
+     * book they are looking at is a claim they can see is wrong.
      *
-     * Lives here rather than on either of the two screens that draw it, so the
-     * bar on a library card and the percentage on the detail screen can never
-     * disagree about the same book.
+     * Here rather than on either screen that draws it, so the bar on a library
+     * card and the percentage on the detail screen cannot disagree.
      */
     val fraction: Float?
         get() {

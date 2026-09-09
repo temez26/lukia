@@ -19,21 +19,19 @@ import kotlinx.coroutines.withTimeoutOrNull
 /**
  * What a finger on the book means: a passage, or the chrome.
  *
- * A passage takes one tap and the chrome takes two. That asymmetry is why this
- * exists rather than
- * [androidx.compose.foundation.gestures.detectTapGestures]: a single tap that
- * misses - the gap between two sentences, the ragged end of a line - was read as
- * a tap on the page, which threw the toolbar over the words being read. One miss
- * should cost nothing.
+ * A passage takes one tap and the chrome takes two, which is why this exists
+ * rather than [androidx.compose.foundation.gestures.detectTapGestures]: a single
+ * tap that misses - the gap between two sentences, the ragged end of a line -
+ * was read as a tap on the page and threw the toolbar over the words being read.
  *
- * A tap that lands on a passage is acted on at once, with no wait for a second.
- * That is what `detectTapGestures` cannot do: given a double-tap handler it
- * delays *every* tap by the double-tap window, a third of a second of nothing
- * happening each time somebody asks about a sentence. Here [onTap] says whether
- * the text answered, and only an unanswered tap waits.
+ * A tap that lands on a passage is acted on at once, which is the other thing
+ * `detectTapGestures` cannot do: given a double-tap handler it delays *every*
+ * tap by the double-tap window, a third of a second each time somebody asks
+ * about a sentence. Here [onTap] says whether the text answered, and only an
+ * unanswered tap waits.
  *
  * The second mouse button - two fingers on a trackpad - is its own question,
- * answered at once rather than after the half second a hold takes. It goes to
+ * answered at once rather than after a hold's half second. It goes to
  * [onQuestion] rather than [onHold] because a hold is the reader's own gesture
  * with their own setting behind it, while this is what every desktop already
  * means "tell me about this" with.

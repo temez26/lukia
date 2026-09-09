@@ -67,17 +67,16 @@ class ReaderViewModel(
     internal val translation = translations.create(viewModelScope)
 
     /**
-     * Whether this book is read as its own pages or as text, and what came of
-     * asking for the second - see [ReaderLayoutChoice].
-     */
-
-    /**
      * Where this book was left off and how long it has been read for - see
      * [BookReading]. It writes as it goes, so leaving the reader needs nothing
      * from here.
      */
     private val record = reading.create(location, viewModelScope)
 
+    /**
+     * Whether this book is read as its own pages or as text, and what came of
+     * asking for the second - see [ReaderLayoutChoice].
+     */
     private val layoutChoice = ReaderLayoutChoice(location, layoutRepository) {
         settingsRepository.settings.value.defaultPdfLayout
     }
@@ -242,16 +241,6 @@ class ReaderViewModel(
     }
 
     /**
-     * Read in the background as soon as the book is open, rather than when the
-     * contents panel asks for it.
-     *
-     * On platforms whose PDF renderer has no outline of its own, this means
-     * scanning the file - far too much to do while the reader waits with a panel
-     * open, and far too much to do on the thread drawing the pages. Starting it
-     * here means it is almost always ready before anyone looks.
-     */
-
-    /**
      * The chapter list being read, so that a book put away can stop it.
      *
      * Its own job rather than part of [opening], because it is deliberately not
@@ -263,6 +252,15 @@ class ReaderViewModel(
      */
     private var outlining: Job? = null
 
+    /**
+     * Read in the background as soon as the book is open, rather than when the
+     * contents panel asks for it.
+     *
+     * On platforms whose PDF renderer has no outline of its own this means
+     * scanning the file - far too much to do while the reader waits with a panel
+     * open, and far too much for the thread drawing the pages. Starting it here
+     * means it is almost always ready before anyone looks.
+     */
     private fun loadOutline(document: ReaderDocument) {
         outlining = viewModelScope.launch {
             val entries = withContext(outlineDispatcher) {

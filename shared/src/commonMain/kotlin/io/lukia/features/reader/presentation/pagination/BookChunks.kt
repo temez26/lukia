@@ -8,20 +8,16 @@ import io.lukia.features.reader.domain.text.TextSection
  *
  * The cut is only made at a section that names itself, the one place where
  * laying the rest out separately changes nothing: a named section opens a page
- * of its own - see [paginate] - so the page before it was already finished, and
- * nothing either side of the cut could have shared a page. A book cut here and
- * reassembled is page for page the same as one laid out end to end;
- * `PaginatorTest` holds that.
- *
- * Which is what lets the reader show a book before it has finished measuring:
- * the runs are measured concurrently, and each that arrives adds real pages to
- * the end of what is on screen.
+ * of its own - see [paginate] - so nothing either side of the cut could have
+ * shared a page. A book cut here and reassembled is page for page the same as
+ * one laid out end to end; `PaginatorTest` holds that. Which is what lets the
+ * reader see a book before it has finished measuring.
  *
  * Runs are not made as small as the cuts allow. A chapter is often a page or
  * two, and a thousand of them is a thousand pieces of work for no more
  * parallelism than a few dozen gives - so a run grows to [MIN_BLOCKS_PER_CHUNK]
  * blocks and is cut at the first chapter after that. A book with no named
- * sections cannot be cut anywhere and comes back as one run.
+ * sections comes back as one run.
  */
 internal fun chunkStarts(sections: List<TextSection>): List<Int> {
     if (sections.isEmpty()) return emptyList()

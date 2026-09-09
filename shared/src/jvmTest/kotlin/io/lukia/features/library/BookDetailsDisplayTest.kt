@@ -23,8 +23,6 @@ import kotlin.test.assertNull
  */
 class BookDetailsDisplayTest {
 
-    // ---------------------------------------------------------------- authors
-
     @Test
     fun oneAuthorIsJustTheName() {
         assertEquals(
@@ -56,8 +54,6 @@ class BookDetailsDisplayTest {
     fun noAuthorsIsNoLine() {
         assertNull(composed { BookMetadata().authorLine() })
     }
-
-    // ----------------------------------------------------------------- length
 
     /** The length travels with the stored position, so an unopened book has none. */
     @Test
@@ -99,8 +95,6 @@ class BookDetailsDisplayTest {
 
         assertEquals("1 page", composed { details.lengthLabel() })
     }
-
-    // --------------------------------------------------------------- progress
 
     @Test
     fun anUnopenedBookReportsThatItHasNotBeenStarted() {

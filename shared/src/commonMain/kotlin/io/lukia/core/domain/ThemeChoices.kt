@@ -3,14 +3,13 @@ package io.lukia.core.domain
 /**
  * Which set of colours the app wears.
  *
- * [System] is the default and stays the default: an app that ignores the device's
- * own choice is the one that looks wrong at night. The other two exist because
- * following the system is a preference, not a law - a reader who wants the app
- * dark on a light phone should be able to say so.
+ * [System] is and stays the default: an app that ignores the device's own choice
+ * is the one that looks wrong at night. The other two exist because following
+ * the system is a preference rather than a law.
  *
- * What each is called on the settings screen lives in `ThemeChoicesDisplay.kt`,
- * not here: a name is something the reader reads, and this file is read by the
- * code that stores the setting.
+ * What each is called on the settings screen lives in `ThemeChoicesDisplay.kt`:
+ * a name is something the reader reads, and this file is read by the code that
+ * stores the setting.
  */
 enum class AppTheme {
     System,
@@ -21,15 +20,13 @@ enum class AppTheme {
 /**
  * Which family of colours the app wears, as opposed to how light or dark it is.
  *
- * Three looks rather than a colour picker: what a reading app's surfaces are made
- * of - paper or glass, warm or cool - is a decision somebody makes once and then
- * stops thinking about, and the three here are the ones worth having. A picker
- * would let a reader build something they have to read a book through.
+ * Three looks rather than a colour picker: what a reading app's surfaces are
+ * made of is decided once and then stopped thinking about, and a picker would
+ * let a reader build something they have to read a book through.
  *
- * Named for what they look like rather than for where they came from. Two of them
- * are modelled on other reading apps, and a reader choosing between "Readest" and
- * "Readwise" would be choosing between two words that describe nothing; a reader
- * choosing between paper and slate already knows what they are getting.
+ * Named for what they look like rather than where they came from. Two are
+ * modelled on other reading apps, and choosing between "Readest" and "Readwise"
+ * is choosing between two words that describe nothing.
  */
 enum class AppPalette {
 
@@ -47,13 +44,12 @@ enum class AppPalette {
  * The one colour the app uses to mean "this is yours": the progress along a
  * cover, the button that does the thing, the row that is chosen.
  *
- * Presets rather than a wheel, and every one of them checked against both the
- * light and the dark surfaces of all three palettes - a reader cannot pick
- * something they then cannot read.
+ * Presets rather than a wheel, each checked against the light and dark surfaces
+ * of all three palettes, so a reader cannot pick something they cannot read.
  *
  * [Themed] is the default and is not a colour: it is whichever accent the chosen
- * palette brings with it, so picking a palette gets its whole look rather than
- * its surfaces with somebody else's highlight.
+ * palette brings, so picking a palette gets its whole look rather than its
+ * surfaces with somebody else's highlight.
  */
 enum class AppAccent {
     Themed,

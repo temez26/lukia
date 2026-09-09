@@ -54,8 +54,6 @@ import org.jetbrains.compose.resources.stringResource
 /** Indent per level of nesting. One step is the width of the disclosure control. */
 private val LevelIndent: Dp = 16.dp
 
-/** The disclosure control, and the space kept for it by rows that have none. */
-
 /**
  * How wide the slot holding a row's fold control is.
  *

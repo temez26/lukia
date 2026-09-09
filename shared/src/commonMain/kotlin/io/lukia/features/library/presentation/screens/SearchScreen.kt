@@ -89,10 +89,6 @@ internal fun SearchScreen(
 }
 
 /**
- * Stateless half of the screen, so the layout can be composed in a test or a
- * preview without a ViewModel or a dependency graph behind it. Every screen in
- * the app splits this way.
- *
  * [results] arrives already found and ordered - the matching is the ViewModel's
  * work, done off the thread that draws - so this screen only ever lists what it
  * is handed.

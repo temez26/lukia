@@ -10,15 +10,12 @@ import kotlin.test.assertNull
 /**
  * The reader's translation key, held by a key that never leaves the keystore.
  *
- * On a device rather than on the host, and it is the reason the Android floor is
- * API 23: `AndroidKeyStore` is the platform, not a library, and Robolectric's
- * stand-in for it would prove that a stand-in round-trips a string. What is
- * being asked here is whether the real keystore generates a key, keeps it, and
- * gives back what was put in - and only a keystore can answer that.
+ * On a device rather than the host, and the reason the Android floor is API 23:
+ * `AndroidKeyStore` is the platform, not a library, and Robolectric's stand-in
+ * would only prove that a stand-in round-trips a string.
  *
- * The desktop's twin is `JvmSecretStoreTest` and iOS's is `IOSSecretStoreTest`.
- * All three pin the same contract; each is written against the store its
- * platform actually has.
+ * `JvmSecretStoreTest` and `IOSSecretStoreTest` pin the same contract against
+ * the store their own platform has.
  */
 class AndroidSecretStoreTest {
 

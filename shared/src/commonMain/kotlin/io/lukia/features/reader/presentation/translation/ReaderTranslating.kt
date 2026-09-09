@@ -56,7 +56,6 @@ val ReaderViewModel.translationNotes: StateFlow<Boolean>
 val ReaderViewModel.wordInquiry: StateFlow<WordInquiry?>
     get() = translation.words.inquiry
 
-/** A passage the reader pointed at. */
 fun ReaderViewModel.onPassageSelected(selection: PassageSelection) {
     val document = uiState.value.dataOrNull ?: return
 

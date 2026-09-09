@@ -18,12 +18,11 @@ interface SettingsStore {
      * what is stored.
      *
      * Part of the contract rather than an implementation's private thrift,
-     * because of how these are written: a settings holder saves every one of its
-     * keys whenever any one of them changes - see
-     * [io.lukia.core.infrastructure.PersistedSettings] - so a reader who changes
-     * the type size writes eight keys of which seven are unchanged. Each store
-     * already holds its values in memory, so answering "same as before" is free,
-     * and it is the difference between one write to disk and eight.
+     * because a settings holder saves every one of its keys whenever any changes
+     * - see [io.lukia.core.infrastructure.PersistedSettings] - so changing the
+     * type size writes eight keys of which seven are unchanged. Each store holds
+     * its values in memory, so answering "same as before" is free and is the
+     * difference between one write to disk and eight.
      */
     fun putString(key: String, value: String)
 }

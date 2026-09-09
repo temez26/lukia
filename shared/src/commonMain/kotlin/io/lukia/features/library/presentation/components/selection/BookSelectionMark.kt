@@ -83,9 +83,8 @@ internal fun SelectionMark(
 }
 
 /**
- * The small rocking that says a shelf can be rearranged rather than read - the
- * one iPad has used for deleting apps since the beginning, and which readers
- * recognise before they have read a word of the bar above it.
+ * The small rocking that says a shelf can be rearranged rather than read - iPad's
+ * gesture for deleting apps, recognised before the bar above it is read.
  *
  * Each card takes its own timing from [seed], because a shelf rocking in unison
  * reads as the whole page moving rather than each book being loose. The angle is
@@ -94,13 +93,9 @@ internal fun SelectionMark(
  *
  * Zero when the shelf is not being selected from, and the animation does not
  * exist then - a hundred cards each running a forever animation is a hundred
- * recompositions a frame for a mode nobody is in.
- *
- * Zero too where the app has been asked to move less. This is the app's one
- * endless animation, and a hundred covers rocking for as long as somebody picks
- * along a shelf is exactly what a device set to reduce motion is asking not to
- * see. The bar above still says the shelf is being picked from, and every cover
- * still wears its own tick.
+ * recompositions a frame for a mode nobody is in. Zero too under reduce-motion:
+ * this is the app's one endless animation, and exactly what that setting is
+ * asking not to see. The bar and every cover's tick still say what is happening.
  *
  * Handed back as state to be read where the card is drawn, never unwrapped here
  * - as `passageSweep` is, and for the same reason: a function that returns a

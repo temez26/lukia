@@ -115,10 +115,6 @@ internal fun HomeScreen(
 }
 
 /**
- * Stateless half of the screen, so the layout can be composed in a test or a
- * preview without a ViewModel or a dependency graph behind it. Every screen in
- * the app splits this way.
- *
  * [rows] arrives already grouped and ordered - see `homeRows` - so this screen
  * only ever draws what it is handed.
  */

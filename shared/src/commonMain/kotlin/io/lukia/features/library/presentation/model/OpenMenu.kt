@@ -11,10 +11,8 @@ package io.lukia.features.library.presentation.model
  */
 internal sealed interface OpenMenu {
 
-    /** The actions menu in the bar. */
     data object Bar : OpenMenu
 
-    /** The import card's "where from" menu. */
     data object Import : OpenMenu
 
     /** One book's actions, by the location that identifies it. */

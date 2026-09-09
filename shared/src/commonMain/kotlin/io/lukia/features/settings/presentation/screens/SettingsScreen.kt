@@ -63,9 +63,6 @@ fun SettingsScreen(
 }
 
 /**
- * Stateless half of the screen, matching the other screens so the layout can be
- * rendered without a ViewModel or dependency graph.
- *
  * This screen keeps a title where the library dropped one. A pushed screen has to
  * say what it is - the library is the app's home and needs no introduction, but
  * arriving here from a menu does.

@@ -49,7 +49,6 @@ class TranslationSessionStreamingTest {
         assertTrue(shown.size in 2..5, "twenty tokens were shown as ${shown.size} rebuilds: $shown")
     }
 
-    /** And what is left on the page afterwards is the whole translation. */
     @Test
     fun theWholeTranslationIsWhatIsLeftOnThePage() = runTest {
         val session = streaming(tokens = 20, apart = 10L)

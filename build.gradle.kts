@@ -168,11 +168,10 @@ abstract class CheckComposeStabilityConfig : DefaultTask() {
      * The types one file declares, by fully qualified name, with nesting tracked by
      * indentation.
      *
-     * Indentation rather than a parser, because the only question is whether a name is
-     * declared here at all, and every file in the project is ktlint-formatted - so a
-     * nested declaration is indented and a top-level one is not. A misread can only add a
-     * name that is not really there, which makes the check more forgiving rather than
-     * less: it can miss a stale line, and it cannot invent one.
+     * Indentation rather than a parser: the only question is whether a name is declared
+     * here at all, and every file is ktlint-formatted, so a nested declaration is indented
+     * and a top-level one is not. A misread can only add a name that is not there, which
+     * makes the check more forgiving rather than less.
      */
     private fun File.declaredTypeNames(): List<String> {
         val text = readText()

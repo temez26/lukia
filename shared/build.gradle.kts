@@ -14,15 +14,14 @@ plugins {
  * What the tests reach, measured - as a report to read, not a gate to pass.
  *
  * Only the JVM and Android targets are instrumented, which is Kover's own limit:
- * what `iosTest` and a device prove does not appear here at all. Treating the
- * number as a threshold to defend would mean writing tests for the coverage
- * rather than for the code.
+ * what `iosTest` and a device prove does not appear here. Treating the number as
+ * a threshold to defend would mean writing tests for the coverage.
  *
  * The verification below is a floor, not a target, and reads only the layers
  * where a number means something - a use case either handles a case or does not.
- * A composable's coverage is a function of which Compose UI suites happened to
- * run on that machine, and the generated database and resource classes were
- * never anybody's to test.
+ * A composable's coverage is a function of which Compose UI suites ran on that
+ * machine, and generated database and resource classes were never anybody's to
+ * test.
  *
  * Eighty against the eighty-six those layers stand at today: far enough below to
  * survive a refactor that takes tests out with the code they covered, near
@@ -30,14 +29,13 @@ plugins {
  * fails on the next commit; one at half of it says nothing.
  *
  * Eighty-six rather than the ninety-three the common layers alone reach, because
- * `androidMain` is in the denominator - the secret store, the folder scanner and
- * the page content reader are three of the least-tested files here and all three
- * are Android's. A finding rather than noise, which is why the number is left
- * aggregated instead of measured per target.
+ * `androidMain` is in the denominator - the secret store, folder scanner and
+ * page content reader are three of the least-tested files here and all Android's.
+ * A finding rather than noise, which is why it is left aggregated.
  *
- * `koverVerify` joins `check`, which already runs both suites. It is not in the
- * CI jobs: CI runs `jvmCommonTest` rather than `jvmTest` (see TESTING.md), and a
- * coverage number over part of the suite would be worse than none.
+ * `koverVerify` joins `check`, which already runs both suites. Not in the CI
+ * jobs: CI runs `jvmCommonTest` rather than `jvmTest` (see TESTING.md), and a
+ * coverage number over part of the suite is worse than none.
  */
 kover {
     reports {
@@ -151,11 +149,10 @@ val generateLukiaVersion = tasks.register("generateLukiaVersion") {
  * What the app ships that somebody else wrote, written into common code so the
  * About screen can show it.
  *
- * Generated from `config/attribution/dependencies.txt` for the reason
- * [generateLukiaVersion] is generated from `gradle.properties`: the same list is
- * read by three things - this, `NOTICE`, and `checkAttribution` in the root build
- * - and three hand-kept copies of a licence notice is three chances to ship the
- * wrong one. The text file is the one a person edits.
+ * Generated from `config/attribution/dependencies.txt`, as [generateLukiaVersion]
+ * is from `gradle.properties`: the same list is read by this, `NOTICE` and
+ * `checkAttribution`, and three hand-kept copies of a licence notice is three
+ * chances to ship the wrong one. The text file is the one a person edits.
  */
 val attributionSource = layout.settingsDirectory.file("config/attribution/dependencies.txt")
 val generatedAttributionDir = layout.buildDirectory.dir("generated/attribution")
@@ -407,29 +404,15 @@ jvmTestTask.configure {
 }
 
 /**
- * The common tests alone, which is what CI runs.
- *
- * The platform half of `jvmTest` is 659 tests against 814 common ones, and 30 of
- * the 31 seconds - almost all of it the 40 Compose UI suites, which want a
- * display and are the ones most likely to fail on a CI runner for reasons that
- * have nothing to do with the change under test. They are run locally instead;
- * see TESTING.md.
- *
- * Classpath and class directories come from `jvmTest` rather than being rebuilt
- * here, so the two cannot drift into running the same code differently.
- */
-/**
  * The tests about what an update does to a library that already exists.
  *
  * A task of its own because CI runs `jvmCommonTest`, which is `commonTest` and
  * nothing else - and these cannot live there: they drive a real SQLite through
- * the JDBC driver, which is the JVM's. So the one suite in this project that
- * stands between a reader and losing their library to an update was the one
- * suite CI never ran, and would have gone on not running until somebody noticed
- * a migration had been broken for three releases.
+ * the JVM's JDBC driver. So the one suite standing between a reader and losing
+ * their library to an update was the one CI never ran.
  *
- * It wants no display and no emulator and it takes under a second, which is why
- * it goes to CI rather than joining the local-only half of `jvmTest`.
+ * It needs no display and no emulator and takes under a second, which is why it
+ * goes to CI rather than the local-only half of `jvmTest`.
  */
 tasks.register<Test>("jvmMigrationTest") {
     group = "verification"
@@ -446,6 +429,18 @@ tasks.register<Test>("jvmMigrationTest") {
     }
 }
 
+/**
+ * The common tests alone, which is what CI runs.
+ *
+ * The platform half of `jvmTest` is 659 tests against 814 common ones, and 30 of
+ * the 31 seconds - almost all of it the 40 Compose UI suites, which want a
+ * display and are the ones most likely to fail on a CI runner for reasons that
+ * have nothing to do with the change under test. They are run locally instead;
+ * see TESTING.md.
+ *
+ * Classpath and class directories come from `jvmTest` rather than being rebuilt
+ * here, so the two cannot drift into running the same code differently.
+ */
 tasks.register<Test>("jvmCommonTest") {
     group = "verification"
     description = "Runs the common tests on the JVM, leaving the platform ones out."

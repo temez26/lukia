@@ -81,19 +81,15 @@ private class IOSDocumentPages(private val document: PDFDocument) : DocumentPage
     }
 
     /**
-     * Read as the document is opened, which is the contract [DocumentPages]
-     * states - and here it is also the only way it can be safe.
-     *
-     * The walk reaches into the same [PDFDocument] [renderPage] draws from, for
-     * its root and for the index of every page an entry points at. Everything
-     * else touching the open document takes [renderLock]; a plain `val` cannot,
-     * so its only protection is finishing before anybody else has the document.
-     * Left until something asked, this ran on its own dispatcher beside a page
-     * being drawn - and PDFKit does not promise a document is thread-safe.
+     * Read as the document is opened, which is [DocumentPages]'s contract and
+     * here the only way it can be safe: the walk reaches into the same
+     * [PDFDocument] [renderPage] draws from, and PDFKit does not promise a
+     * document is thread-safe. A plain `val` cannot take [renderLock], so its
+     * only protection is finishing before anybody else has the document -
+     * `PdfDocumentPages.jvm.kt` is in the same position for its own reason.
      *
      * Nobody waits longer for it: opening already runs off the main thread, and
-     * the outline is read on both ways out of here anyway - the text path asks
-     * for it, and the reader reads it beside the open book.
+     * both ways out of here read the outline anyway.
      */
     override val outline: List<OutlineEntry>? = readOutline()
 

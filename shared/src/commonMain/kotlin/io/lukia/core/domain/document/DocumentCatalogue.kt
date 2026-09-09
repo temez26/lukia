@@ -21,10 +21,10 @@ interface DocumentCatalogue {
      * [DocumentInfo.coverImage], which is null for every entry this returns.
      *
      * The artwork is left behind because of what it weighs: a cover is around a
-     * hundred kilobytes, and a shelf of a few thousand books is a few hundred
-     * megabytes of them, held for as long as the library is on screen. Whatever
-     * draws one asks for it by name instead - see [coverFor] - which bounds what
-     * is in memory by what the reader can see rather than by how much they own.
+     * hundred kilobytes, so a shelf of a few thousand books is a few hundred
+     * megabytes held for as long as the library is on screen. Whatever draws one
+     * asks by name instead - see [coverFor] - which bounds memory by what the
+     * reader can see rather than by how much they own.
      */
     suspend fun getDocuments(): List<DocumentInfo>
 

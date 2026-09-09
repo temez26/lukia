@@ -82,7 +82,6 @@ class AiGestureUnitsTest {
         )
     }
 
-    /** Both offer an off instead, and it is what each of them asks past from. */
     @Test
     fun bothRowsOfferAnOffInstead() = runComposeUiTest {
         setPage()

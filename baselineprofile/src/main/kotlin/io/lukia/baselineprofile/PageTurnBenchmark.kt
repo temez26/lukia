@@ -14,13 +14,13 @@ import java.util.regex.Pattern
 /**
  * What turning a page costs, in frames, on a real device.
  *
- * The app's most repeated action by a long way, and the one place where the
- * budget is "never late" rather than "fast enough": a dropped frame under a
- * finger dragging a page is the page catching on it.
+ * The app's most repeated action, and the one place where the budget is "never
+ * late" rather than "fast enough": a dropped frame under a dragging finger is
+ * the page catching on it.
  *
  * Frame timing rather than [ReaderOpenBenchmark]'s wall clock, because here the
- * frames *are* the question - the measured block scrolls and does nothing else,
- * so it reliably produces a run of them inside the traced window.
+ * frames *are* the question - the measured block only scrolls, so it reliably
+ * produces a run of them inside the traced window.
  *
  * Run it against a device that already holds the book below:
  *
@@ -30,25 +30,17 @@ import java.util.regex.Pattern
  *     -Pandroid.injected.androidTest.leaveApksInstalledAfterRun=true
  * ```
  *
- * That last flag is not optional on a device somebody reads on, for the reason
- * spelled out in [ReaderOpenBenchmark]: without it the build uninstalls the app
- * and Android takes the whole library with it. Back the database up first.
+ * That last flag is not optional on a device somebody reads on: without it the
+ * build uninstalls the app and Android takes the library with it. Back the
+ * database up first. A real book rather than a fixture, so this cannot run on an
+ * empty device and is not part of `connectedCheck` - see [ReaderOpenBenchmark]
+ * for both.
  *
- * A real book rather than a fixture, for [ReaderOpenBenchmark]'s reason - so
- * this cannot run on an empty device, and is not part of `connectedCheck`.
- *
- * Two books, because a page turn is two different pieces of work and one number
- * over both would hide whichever is worse:
- *
- *  - a PDF page is *drawn* from the file at the width the window is now - see
- *    `RenderedPageCache`, which draws the next page ahead, so only a reader who
- *    outruns it waits.
- *  - a reflowed page was measured when the book was laid out, and has its text,
- *    marks and translations composed as it arrives.
- *
- * The first turn after opening is deliberately excluded: it is the opening still
- * finishing, which is [ReaderOpenBenchmark]'s question. [WARM_UP_TURNS] puts it
- * out of the way.
+ * Two books, because a PDF page is *drawn* from the file at the current width
+ * (see `RenderedPageCache`, which draws ahead) while a reflowed one was measured
+ * at layout time, and one number over both would hide the worse. The first turn
+ * after opening is excluded by [WARM_UP_TURNS]: it is the opening still
+ * finishing, which is [ReaderOpenBenchmark]'s question.
  */
 class PageTurnBenchmark {
 
@@ -99,10 +91,9 @@ class PageTurnBenchmark {
     /**
      * Turns [times] pages, waiting for each to settle before asking for the next.
      *
-     * A fling would measure how well the list keeps up with a gesture nobody
-     * makes twice; what a reader does is move on one page and read it. So each
-     * turn is a full-page scroll followed by the list coming to rest, which is
-     * also what gives the frame timings a settled window to be collected over.
+     * A fling would measure a gesture nobody makes twice; a reader moves on one
+     * page and reads it. So each turn is a full-page scroll followed by the list
+     * coming to rest, which also gives the frame timings a settled window.
      *
      * The gesture margin keeps the swipe clear of the system's own edge
      * gestures, which would otherwise take it as a back or a Control Centre -

@@ -118,12 +118,6 @@ class TranslationSession(
     val passages: StateFlow<Map<TextAnchor, PassageTranslation>> = _passages.asStateFlow()
 
     /**
-     * [request] is built by the caller because only the reader knows which book
-     * the sentence came out of - and is passed by name so that a tap which
-     * merely flips an already-translated passage never builds one.
-     */
-
-    /**
      * Translates a passage nobody has asked about yet, and leaves every other
      * one exactly as it is.
      *
@@ -138,6 +132,11 @@ class TranslationSession(
         fetch(anchor, request(), waitsItsTurn = true)
     }
 
+    /**
+     * [request] is built by the caller because only the reader knows which book
+     * the sentence came out of - and is passed by name so that a tap which
+     * merely flips an already-translated passage never builds one.
+     */
     fun onPassageTapped(anchor: TextAnchor, request: () -> TranslationRequest) {
         when (val current = kept[anchor]) {
             // Tapping again while it is still coming back is not a second

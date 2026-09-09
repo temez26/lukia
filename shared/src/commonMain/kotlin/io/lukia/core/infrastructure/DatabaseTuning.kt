@@ -42,12 +42,11 @@ private fun String.namesACorruptDatabase(): Boolean = CorruptionPhrases.any { it
  * `SQLITE_NOTADB` for a file whose header is not a database's, and
  * `SQLITE_CORRUPT` for one whose header is but whose pages are not.
  *
- * The first is a fragment rather than a whole message on purpose: SQLite phrases
- * that one at least three ways depending on which binding is asking - "file is
- * not a database", "file is encrypted or is not a database", "File opened that
- * is not a database file" - and all three say the same thing around these three
- * words. Nothing SQLite says about a disk being full, a directory it may not
- * write to, or a statement this app got wrong contains them.
+ * The first is a fragment on purpose: SQLite phrases it at least three ways
+ * depending on the binding - "file is not a database", "file is encrypted or is
+ * not a database", "File opened that is not a database file" - all of them
+ * around these three words. Nothing it says about a full disk, an unwritable
+ * directory or a bad statement contains them.
  */
 private val CorruptionPhrases = listOf(
     "not a database",

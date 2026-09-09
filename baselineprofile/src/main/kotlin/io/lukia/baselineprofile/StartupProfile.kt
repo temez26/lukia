@@ -11,11 +11,10 @@ import org.junit.Test
  * Writes the list of methods worth compiling ahead of time, and the shorter list
  * of the ones a launch cannot start without.
  *
- * Walks the first few seconds of a cold start: the app opens, the shelf
- * arrives, and the reader moves along the tab bar. Every class loaded and method
- * run on that path goes into `baseline-prof.txt`, and the installer compiles
- * them at install time instead of leaving the JIT to catch up while somebody is
- * watching.
+ * Walks the first few seconds of a cold start: the app opens, the shelf arrives,
+ * the reader moves along the tab bar. Every class loaded and method run on that
+ * path goes into `baseline-prof.txt`, and the installer compiles them at install
+ * time rather than leaving the JIT to catch up while somebody is watching.
  *
  * It is generated rather than written:
  *
@@ -28,19 +27,17 @@ import org.junit.Test
  * one means uninstalling it, and taking somebody's library with it.
  *
  * A stale profile is not wrong, only less useful: it names methods that still
- * exist and misses ones that are new. Worth regenerating when the opening
- * changes shape.
+ * exist and misses new ones. Worth regenerating when the opening changes shape.
  *
  * The same walk also writes the *startup* profile - see [includeInStartupProfile]
- * below - which is put to a different use: the baseline profile tells the
- * installer what to compile, the startup profile tells R8 how to lay the dex
- * files out so the classes a launch touches sit together rather than scattered
- * and read a page at a time. It needs `dexLayoutOptimization` in :androidApp to
+ * - which tells R8 how to lay the dex files out so the classes a launch touches
+ * sit together rather than scattered, where the baseline profile tells the
+ * installer what to compile. It needs `dexLayoutOptimization` in :androidApp to
  * be used at all.
  *
- * Reading a book is not covered: the generator walks an empty library - a fresh
- * emulator has imported nothing - so nothing here reaches the reader. Covering
- * it would need a PDF shipped beside this and a provider to hand it over.
+ * Reading a book is not covered: the generator walks an empty library, so
+ * nothing here reaches the reader. Covering it would need a PDF shipped beside
+ * this and a provider to hand it over.
  */
 class StartupProfile {
 

@@ -64,25 +64,22 @@ private const val MaxScale = 8f
  * One illustration, on its own over the book.
  *
  * A plate in an EPUB is laid out to the measure of a page of prose, and a
- * diagram, map or page of music set at that width is a picture of something
- * unreadable. The image size setting acts on every figure at once, and nobody
- * turns the whole book's pictures up to read one table and back down again. So a
- * press lifts that one figure out to the size of the window.
+ * diagram, map or page of music at that width is a picture of something
+ * unreadable. The image size setting acts on every figure at once, so a press
+ * lifts this one out to the size of the window instead.
  *
  * Fit against the whole window rather than drawn at its own size, so the
  * sixteen-pixel ornament and the two-thousand-pixel plate both arrive as large
- * as they usefully can - which for the small one is the only way it is ever seen.
+ * as they usefully can.
  *
  * A [Popup] rather than something inside the page: the figure sits in a lazy
  * list inside the reader's chrome, where it would be clipped by the page it came
  * from. Focusable, unlike the app's menus, because it covers everything and
- * should take Escape and Back rather than leaving them to close the book
- * underneath.
+ * should take Escape and Back rather than leaving them to close the book.
  *
- * Arrives as every panel does - see [popoverTransition] - so a picture opening
- * reads as one of this app's surfaces rather than a viewer bolted on. The scrim
- * only fades: a full-window fill scaled from 0.92 would show a band of unfaded
- * page down each edge on the way in.
+ * Arrives as every panel does - see [popoverTransition]. The scrim only fades: a
+ * full-window fill scaled from 0.92 would show a band of unfaded page down each
+ * edge on the way in.
  *
  * Draws nothing once closed and settled, so [FigureBlock] can leave it in the
  * tree and let it animate itself out.

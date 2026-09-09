@@ -190,7 +190,6 @@ class ReaderWordPanelTest {
         onNodeWithText("valas").assertExists()
     }
 
-    /** With the word the senses actually belong to said where the senses are. */
     @Test
     fun theWordTheSensesBelongToIsNamedAboveThem() = runComposeUiTest {
         setReader(

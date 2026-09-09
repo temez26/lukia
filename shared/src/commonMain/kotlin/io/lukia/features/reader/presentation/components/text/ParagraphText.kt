@@ -35,10 +35,8 @@ internal class ParagraphText(
     val words: List<DrawnWord>,
 ) {
 
-    /** Which sentence is at [offset] in the drawn text, if any. */
     fun sentenceAt(offset: Int): Int? = sentences.firstOrNull { it.covers(offset) }?.index
 
-    /** Which word is at [offset] in the drawn text, if any. */
     fun wordAt(offset: Int): DrawnWord? = words.firstOrNull { it.span.covers(offset) }
 
     /** One passage, and the stretch of the drawn paragraph it occupies. */

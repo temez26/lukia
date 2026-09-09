@@ -142,9 +142,9 @@ fun main(args: Array<String>) {
  * the size continuously, and the store rewrites its whole file on each change.
  * Waiting for the drag to stop turns a few hundred writes into one.
  *
- * A maximised window records the size it would go back to rather than the size
- * it currently fills - restoring a *floating* window the size of the whole
- * screen is not what maximising it asked for.
+ * A maximised window records the size it would go back to, not the size it
+ * fills: restoring a *floating* window the size of the screen is not what
+ * maximising asked for.
  */
 @Composable
 private fun RememberWhereTheWindowWas(state: WindowState, bounds: DesktopWindowBounds) {
@@ -173,9 +173,8 @@ private fun WindowState.shape(): WindowShape = WindowShape(size, position, place
  * were using - so that shape is passed over and the last real one stands.
  *
  * A window still opening has [WindowPosition.PlatformDefault], whose coordinates
- * are unspecified rather than zero. Storing those would write a window into the
- * top-left corner of the primary display on behalf of a reader who never put it
- * there.
+ * are unspecified rather than zero - storing those would park the window in the
+ * top-left corner on behalf of a reader who never put it there.
  */
 private fun DesktopWindowBounds.remember(shape: WindowShape) {
     if (shape.placement == WindowPlacement.Fullscreen) return
@@ -193,15 +192,13 @@ private fun DesktopWindowBounds.remember(shape: WindowShape) {
 /**
  * Books dragged onto the window from a file manager.
  *
- * The one way of adding a book that a desktop reader will try before looking for
- * a menu, and the counterpart to the share sheet the two mobile shells already
- * answer - the file lands in the same inbox either way, so the library imports
- * it, reports it and reloads through the one path it already has.
+ * What a desktop reader tries before looking for a menu, and the counterpart to
+ * the mobile share sheet - the file lands in the same inbox either way.
  *
- * Set on the AWT window rather than through Compose's own drag-and-drop, because
+ * Set on the AWT window rather than through Compose's drag-and-drop, because
  * what is wanted is the whole window: a reader dropping a book on a reading app
- * is not aiming at a target inside it, and every part of the library that is not
- * a target would otherwise refuse the drop.
+ * is not aiming at a target inside it, and everything that is not a target would
+ * otherwise refuse the drop.
  */
 private fun ComposeWindow.acceptBooksDroppedOnIt() {
     dropTarget = object : DropTarget() {
@@ -278,8 +275,7 @@ private fun shortcut(key: Key, shift: Boolean = false): KeyShortcut =
  * The same three shortcuts the menu declares, read off the window instead.
  *
  * Windows and Linux have no menu bar to hang them on - see [LukiaMenuBar] - and
- * a reader who has learnt Ctrl+O in every other application should not find it
- * dead here because of where this app decided to put its chrome.
+ * a reader who learnt Ctrl+O everywhere else should not find it dead here.
  *
  * Control only: the Command half of [shortcut] is for the platform that still
  * has the menu. Read after the composition rather than before it, so a shortcut

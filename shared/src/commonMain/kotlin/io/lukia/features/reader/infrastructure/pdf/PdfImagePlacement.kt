@@ -88,6 +88,12 @@ private const val FULL_TURN = 360
  */
 private const val MIN_FIGURE_SIDE = 24f
 
-/** Whether a picture this size is worth carrying into the text. */
+/**
+ * Whether a picture this size is worth carrying into the text.
+ *
+ * Ask before decoding it: a page can carry hundreds of hairlines and gradient
+ * tiles, and decoding each one to find out it is two points tall is most of what
+ * reading a page would cost.
+ */
 internal fun TextQuad.isWorthShowing(): Boolean =
     width >= MIN_FIGURE_SIDE && height >= MIN_FIGURE_SIDE

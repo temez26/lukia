@@ -57,7 +57,6 @@ class PdfDocEncodingTest {
         assertEquals("˜", decoded(0x1F))
     }
 
-    /** Outside both stretches it is Latin-1, and has to stay Latin-1. */
     @Test
     fun everythingOutsideThoseTwoStretchesIsLatinOne() {
         assertEquals("é", decoded(0xE9))

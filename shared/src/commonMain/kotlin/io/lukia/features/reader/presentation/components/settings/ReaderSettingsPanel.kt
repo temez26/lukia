@@ -82,15 +82,13 @@ private val WidePanelMaxHeight: Dp = 520.dp
  * dismissing it after every change to see what it did. Nothing behind it is
  * dimmed for the same reason.
  *
- * [typographyEnabled] is false for a document that carries its own fixed layout.
- * A PDF's type was set when the file was made, so text size, spacing and face
- * have nothing to act on - they are shown, and disabled, rather than hidden, so
- * they are not mistaken for missing.
+ * [typographyEnabled] is false for a fixed-layout document: a PDF's type was set
+ * when the file was made, so size, spacing and face have nothing to act on. They
+ * are disabled rather than hidden, so they are not mistaken for missing.
  *
- * [layout] is null for every format except PDF, which is every document with no
- * choice to make about how it is read. The control is left out rather than
- * disabled: unlike the typography settings, which a PDF has and cannot use, this
- * is a question that was never asked of an EPUB.
+ * [layout] is null for every format except PDF. That control is left out rather
+ * than disabled: unlike the typography settings, which a PDF has and cannot use,
+ * this is a question that was never asked of an EPUB.
  *
  * [translationSection] sits at the top: the language and gestures on every
  * window, plus - on a phone, whose toolbar has no room - the controls a wider

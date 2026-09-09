@@ -83,16 +83,9 @@ class ReaderWordLookupTest {
     /**
      * Asking for what is on screen asks about the paragraphs on it, once each.
      *
-     * Paragraphs rather than the sentences in them, because that is nearly the
-     * whole cost of the feature. Measured against a model running on the
-     * reader's own machine, on one block of twelve sentences:
-     *
-     *     a request per sentence, four at once   44s, 7,500 tokens
-     *     the paragraph, in one request          12s, 1,000 tokens
-     *
-     * A request per sentence sends the standing instructions, the book and the
-     * surrounding paragraph again every time - so the page is read once per
-     * sentence printed on it.
+     * Paragraphs rather than the sentences in them, which is nearly the whole
+     * cost of the feature - see `ReaderPageActions.bulkPassages` for the
+     * measurements behind it.
      */
     @Test
     fun askingForWhatIsOnScreenAsksAboutTheParagraphsOnIt() = runComposeUiTest {
@@ -152,7 +145,6 @@ class ReaderWordLookupTest {
         assertEquals(TextAnchor.Section(0, 0, 0), assertNotNull(selected).anchor)
     }
 
-    /** A gesture set to the paragraph asks about all of it, as one passage. */
     @Test
     fun aGestureSetToTheParagraphAsksAboutTheWholeBlock() = runComposeUiTest {
         var selected: PassageSelection? = null

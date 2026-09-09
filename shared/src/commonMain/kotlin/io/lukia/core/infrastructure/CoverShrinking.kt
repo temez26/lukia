@@ -7,10 +7,10 @@ package io.lukia.core.infrastructure
  * within [maxEdge], or it is not one this platform can decode at all. Both leave
  * the caller holding what it started with.
  *
- * What comes back is JPEG. Cover art is photographic and a book cover has
- * nothing behind it to show through, so the format that halves the bytes is
- * worth the transparency it cannot keep - each platform paints white underneath
- * before encoding, rather than letting a see-through corner come out black.
+ * What comes back is JPEG: cover art is photographic and a cover has nothing
+ * behind it to show through, so halving the bytes is worth the transparency it
+ * cannot keep. Each platform paints white underneath first, rather than letting
+ * a see-through corner come out black.
  */
 internal expect fun shrinkCoverImage(coverBytes: ByteArray, maxEdge: Int): ByteArray?
 

@@ -97,7 +97,6 @@ class CoalescingTranslatorTest {
         assertEquals("no network", second.await().exceptionOrNull()?.message)
     }
 
-    /** A request that failed is not one that can never be asked about again. */
     @Test
     fun aFailedRequestCanBeAskedAgain() = runTest {
         var attempt = 0

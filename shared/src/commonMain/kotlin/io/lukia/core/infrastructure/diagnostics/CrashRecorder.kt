@@ -10,20 +10,16 @@ import kotlin.time.Instant
  * they open it.
  *
  * The rest of the record is an in-memory buffer, so the one failure that takes
- * the app down is the one it can never show anybody. Only a file survives the
- * process.
+ * the app down is the one it can never show anybody. Only a file survives.
  *
  * The consent split is deliberate: the stack trace is written whether or not
- * diagnostics are on - it is app-private, never sent, and the reader's to delete
- * - because a crash report is worth most from the reader who turned nothing on.
- * The run-up is not written unasked: [buffer] is empty unless diagnostics are
- * on, so the breadcrumbs follow the setting with no code deciding that they
- * should.
+ * diagnostics are on - app-private, never sent, the reader's to delete - because
+ * a crash report is worth most from the reader who turned nothing on. The run-up
+ * is not: [buffer] is empty unless diagnostics are on, so the breadcrumbs follow
+ * the setting with no code deciding that they should.
  *
  * No third-party crash reporting sits behind this and none is planned. Apple and
- * Play already collect crashes under consent given to the platform, and an SDK
- * phoning home from a device whose library never leaves it would be a larger
- * change than everything this file is for.
+ * Play already collect crashes under consent given to the platform.
  */
 class CrashRecorder(
     private val store: CrashStore,

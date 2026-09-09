@@ -49,15 +49,8 @@ internal class PagePassages(
      * paragraphs, one request each, rather than every sentence on it.
      *
      * A page is thirty or forty sentences and a handful of paragraphs, and the
-     * difference between the two is most of what translating a page costs.
-     * Measured on a local model, twelve sentences of one block:
-     *
-     *     a request per sentence, four at once   44s, 7,500 tokens
-     *     the paragraph, in one request          12s, 1,000 tokens
-     *
-     * Nearly all of that is repeated work: each request carried the standing
-     * instructions, the book and the rest of the page as context, so the page
-     * was read once per sentence on it.
+     * difference between the two is most of what translating a page costs - see
+     * `ReaderPageActions.bulkPassages` for the measurements.
      *
      * A block too long to send whole falls back to its own sentences, which is
      * what this used to do for all of them - see [MAX_TRANSLATABLE_CHARS].
@@ -184,7 +177,6 @@ internal class PagePassages(
             )
         }
 
-    /** One sentence of the page, or one word of that sentence. */
     private fun passage(sentence: PageSentence, word: PageWord?) = PassageSelection(
         anchor = TextAnchor.Page(
             pageIndex = pageIndex,

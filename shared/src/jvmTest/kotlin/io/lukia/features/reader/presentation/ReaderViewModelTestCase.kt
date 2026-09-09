@@ -95,15 +95,14 @@ abstract class ReaderViewModelTestCase {
         dispatcher = UnconfinedTestDispatcher(),
     )
 
+    /** How each book is read. Nothing has chosen, so every PDF opens as pages. */
+    protected val layouts = FakePdfLayoutRepository()
+
     /**
      * Every ViewModel a test opens, held in a store so they can all be cleared
      * afterwards - [ViewModelStore.clear] is the way to cancel a ViewModel's
      * scope from outside, since the ViewModel's own `clear` is internal.
      */
-
-    /** How each book is read. Nothing has chosen, so every PDF opens as pages. */
-    protected val layouts = FakePdfLayoutRepository()
-
     protected val viewModelStore = ViewModelStore()
     protected val openedViewModels = mutableListOf<ReaderViewModel>()
 

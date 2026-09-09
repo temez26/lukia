@@ -80,7 +80,6 @@ class ReaderWordInquiryTest : ReaderViewModelTestCase() {
         assertNull(viewModel.wordInquiry.value, "a word still arriving opened a panel")
     }
 
-    /** And one nobody has asked about at all is asked about, as the gesture says. */
     @Test
     fun aWordNobodyHasAskedAboutIsAskedAbout() = runTest {
         val viewModel = readerWith(AnsweringTranslator)

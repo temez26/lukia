@@ -79,11 +79,9 @@ val MinTouchTarget: Dp = 44.dp
  */
 @Immutable
 data class LukiaDimens(
-    /** Horizontal inset from the window edge to content. */
     val screenPadding: Dp,
     /** Minimum width of one book cell; the grid fits as many as will fit. */
     val bookCellMinWidth: Dp,
-    /** Gap between book cells across a row. */
     val gridSpacing: Dp,
     /**
      * Gap between grid rows. Separate from [gridSpacing] because a cell carries a
@@ -106,11 +104,8 @@ data class LukiaDimens(
      * across a monitor is both unreadable and expensive to render.
      */
     val maxReaderWidth: Dp,
-    /** Width of the cover art on the detail screen. */
     val detailCoverWidth: Dp,
-    /** Gap between one block of content and the next within a screen. */
     val sectionSpacing: Dp,
-    /** Inset from a floating panel's edge to its contents. */
     val panelPadding: Dp,
 )
 

@@ -71,11 +71,6 @@ internal fun SemanticsNodeInteraction.secondButtonOnFirstWords() =
     performMouseInput { rightClick(Offset(4f, 4f)) }
 
 /**
- * The translations are read inside the composition rather than captured, so
- * a test can change them and watch the paragraph follow - which is what
- * actually happens when an answer comes back.
- */
-/**
  * A reader who has turned translating on: a tap for the sentence, a hold for the
  * word, and a word able to say more when held again.
  *
@@ -91,6 +86,11 @@ internal val TranslatingReader = TranslationGestures.of(
 )
 
 internal fun ComposeUiTest.setReader(
+    /**
+     * Read inside the composition rather than captured, so a test can change
+     * them and watch the paragraph follow - which is what happens when an answer
+     * comes back.
+     */
     translations: () -> Map<TextAnchor, PassageTranslation> = { emptyMap() },
     onPassageSelected: (PassageSelection) -> Unit = {},
     onPassageHold: (PassageSelection) -> Unit = {},
