@@ -32,7 +32,8 @@ internal fun DesktopShell() {
     val navController = rememberNavController()
     val motion = LocalMotionStyle.current
 
-    var requested by rememberRequestedCommand(navController)
+    val commands: AppCommands = koinInject()
+    var requested by rememberRequestedCommand(commands, navController)
 
     NavHost(
         navController = navController,
@@ -88,8 +89,10 @@ internal fun DesktopShell() {
  * arrive. A no-op when it is already showing.
  */
 @Composable
-private fun rememberRequestedCommand(navController: NavController): MutableState<AppCommand?> {
-    val commands: AppCommands = koinInject()
+internal fun rememberRequestedCommand(
+    commands: AppCommands,
+    navController: NavController,
+): MutableState<AppCommand?> {
     val pending = remember { mutableStateOf<AppCommand?>(null) }
 
     LaunchedEffect(commands) {
