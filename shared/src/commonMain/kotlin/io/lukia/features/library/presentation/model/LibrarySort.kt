@@ -21,13 +21,13 @@ enum class LibrarySort {
 /**
  * This library in [sort] order.
  *
- * Every comparison falls back on the order it was handed, which is the shelf's
- * own: sorting is stable in Kotlin, so two books by the same author stay in the
- * order they were imported rather than swapping places between passes.
+ * Every comparison falls back on the order it was handed: Kotlin's sort is
+ * stable, so two books by the same author keep their import order rather than
+ * swapping between passes.
  *
- * Ordering is on the keys worked out in [asLibrary] rather than on the documents
- * themselves, so a sort is a comparison of strings that already exist rather
- * than a title being derived from a file name a thousand times over.
+ * Ordered on the keys worked out in [asLibrary] rather than the documents, so a
+ * sort compares strings that already exist rather than deriving a title from a
+ * file name a thousand times over.
  */
 fun List<LibraryBook>.sortedFor(sort: LibrarySort): List<LibraryBook> = when (sort) {
     LibrarySort.Added -> this

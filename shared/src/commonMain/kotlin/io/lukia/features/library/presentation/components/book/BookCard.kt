@@ -165,13 +165,12 @@ internal fun BookCard(
  * What the card is, said once for the whole of it.
  *
  * A cover, a heart, a tick and a progress bar are four drawn marks and no words.
- * What a shelf being picked from used to announce was the title and the file's
- * size - with nothing at all to say whether this book was one of the ones
- * ticked, and with the heart marking a favourite reachable only by opening the
- * menu on every cover in turn to read the row that toggles it.
+ * A shelf being picked from used to announce the title and the file size, with
+ * nothing to say whether this book was ticked, and the heart reachable only by
+ * opening the menu on every cover in turn.
  *
- * Merged, because a card is one thing: a title, a format, a size and a badge
- * read out as four stops is four swipes per book down a shelf of two hundred.
+ * Merged, because a card is one thing: title, format, size and badge as four
+ * stops is four swipes per book down a shelf of two hundred.
  */
 @Composable
 private fun Modifier.bookCardSemantics(

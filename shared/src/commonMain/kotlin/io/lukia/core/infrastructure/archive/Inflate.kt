@@ -21,8 +21,8 @@ internal expect fun inflateRaw(compressedData: ByteArray, uncompressedSize: Int)
  * checksum of RFC 1950, which is what PDF's FlateDecode filter produces.
  *
  * [maxOutputSize] is a ceiling rather than an expected size: PDF does not record
- * how large a stream decodes to, so the caller bounds the work instead and gets
- * back however much was really there.
+ * how large a stream decodes to, so the caller bounds the work and gets back
+ * however much was there.
  *
  * Returns null when the data is not a stream this can read.
  */

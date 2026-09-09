@@ -34,11 +34,10 @@ import org.jetbrains.compose.resources.stringResource
  * What the app's appearance settings are called, following the same pattern as
  * `AppErrorDisplay.kt`.
  *
- * Held apart from the enums themselves - see `ThemeChoices.kt` - because a
- * string resource is read from a composition, and a domain enum has none. Until
- * this file existed, [AppTheme] was shown by printing its constant's name, which
- * meant there was nothing to translate and that renaming a constant silently
- * changed the settings screen.
+ * Held apart from the enums - see `ThemeChoices.kt` - because a string resource
+ * is read from a composition and a domain enum has none. [AppTheme] used to be
+ * shown by printing its constant's name, so there was nothing to translate and
+ * renaming a constant silently changed the settings screen.
  */
 @Composable
 fun AppTheme.displayName(): String = when (this) {

@@ -88,11 +88,10 @@ class LibraryViewModel(
      * its covers. Keyed by location, and holding only the books that have
      * actually been opened.
      *
-     * Kept apart from [uiState] rather than folded into each [DocumentInfo]:
-     * this is read from a different store, changes for a different reason -
-     * every time a book is read - and a failure to read it must not be able to
-     * take the library off the screen. A grid with no bars is a small loss; a
-     * grid with no books is the whole app.
+     * Apart from [uiState] rather than folded into each [DocumentInfo]: read
+     * from a different store, changing for a different reason, and a failure to
+     * read it must not take the library off the screen. A grid with no bars is a
+     * small loss; a grid with no books is the whole app.
      */
     private val _readingProgress = MutableStateFlow<Map<String, ReadingProgress>>(emptyMap())
     val readingProgress: StateFlow<Map<String, ReadingProgress>> = _readingProgress.asStateFlow()

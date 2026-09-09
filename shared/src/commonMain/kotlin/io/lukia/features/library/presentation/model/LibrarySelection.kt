@@ -29,12 +29,12 @@ data class LibrarySelection(
  * The one thing a bulk action is doing, which is what both the bar running above
  * the shelf and the report afterwards are about.
  *
- * An enum rather than the word: the report used to choose its verb by matching
- * the English label the bar was showing, so translating the bar would have
- * changed what the report said, silently and in the other direction.
+ * An enum rather than the word: the report used to pick its verb by matching the
+ * English label the bar showed, so translating the bar would have silently
+ * changed what the report said.
  *
  * [Favourite] and [Unfavourite] are one action to the code and two to the
- * reader, which is why they are two entries with one use case behind them.
+ * reader, hence two entries with one use case behind them.
  */
 enum class BulkOperation {
     Refresh,

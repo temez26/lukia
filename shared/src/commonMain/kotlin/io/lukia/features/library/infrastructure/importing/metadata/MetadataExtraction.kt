@@ -12,13 +12,11 @@ import io.lukia.core.infrastructure.epub.EpubPackage
  * same bytes at the same moment: null rather than a throw whenever a document
  * cannot be read, so a book with unreadable metadata still imports.
  *
- * Plain text and Markdown have nowhere to keep any of this - there is no
- * container, only the words - so they have no branch here rather than a branch
- * that always fails.
+ * Plain text and Markdown have nowhere to keep any of this - no container, only
+ * the words - so they have no branch rather than one that always fails.
  *
- * What the reader sees when this returns null is a file name where a title
- * should be, which is the whole of the evidence unless [diagnostics] is given
- * something to write to.
+ * Null shows the reader a file name where a title should be, which is the whole
+ * of the evidence unless [diagnostics] is given somewhere to write.
  */
 internal fun extractMetadata(
     type: DocumentType,

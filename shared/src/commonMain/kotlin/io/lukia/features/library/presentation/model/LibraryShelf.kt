@@ -4,13 +4,13 @@ package io.lukia.features.library.presentation.model
  * The four states a book can be in with its reader, as the segments of the
  * control at the top of the library.
  *
- * Reading state earns the segmented control rather than format because it is the
- * division a reader actually browses by - what am I part way through, what have
- * I not started - while format is a property of the file, which belongs with the
- * other properties in the filter menu beside it.
+ * Reading state earns the segmented control rather than format, being the
+ * division a reader browses by - what am I part way through, what have I not
+ * started - where format is a property of the file and belongs in the filter
+ * menu beside it.
  *
- * Deliberately a closed set: these are the segments of a control the reader can
- * see, and a segmented control with an open-ended number of options is not one.
+ * Deliberately a closed set: a segmented control with an open-ended number of
+ * options is not one.
  */
 enum class LibraryShelf {
     All,

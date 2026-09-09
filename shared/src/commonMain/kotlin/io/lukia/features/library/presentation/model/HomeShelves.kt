@@ -24,14 +24,13 @@ private const val AlmostDoneFraction = 0.7f
 /**
  * The questions the home screen answers, in the order it asks them.
  *
- * Where a reader left off comes first, because opening the app to carry on is
- * the commonest reason to open it at all. What arrived most recently comes next -
- * a book just imported is a book about to be started - and the rest run down the
- * arc a book takes through a library: nearly finished, never started, kept, and
- * done.
+ * Where a reader left off comes first, opening the app to carry on being the
+ * commonest reason to open it. What arrived most recently comes next - a book
+ * just imported is about to be started - and the rest run down the arc a book
+ * takes: nearly finished, never started, kept, done.
  *
- * Every row is a sample. None of them is the whole of anything, which is why
- * each carries a way through to the library tab showing all of it.
+ * Every row is a sample, which is why each carries a way through to the library
+ * tab showing all of it.
  */
 enum class HomeShelf {
     Recent,
@@ -46,13 +45,13 @@ enum class HomeShelf {
      * The library tab showing all of what this row is a sample of, as the query
      * that narrows it there.
      *
-     * The rows and the shelves behind them are defined in one place this way:
-     * "See All" under Recent lands on the Reading shelf because that is what
-     * Recent is a sample of, and cannot drift away from it.
+     * Rows and the shelves behind them are defined in one place this way, so
+     * "See All" under Recent lands on Reading - what Recent samples - and cannot
+     * drift from it.
      *
-     * [AlmostDone] lands on Reading too. There is no shelf for "nearly done" and
-     * there should not be - it is a nudge rather than a category - and Reading
-     * is the smallest true shelf that contains all of it.
+     * [AlmostDone] lands on Reading too: there is no shelf for "nearly done" and
+     * should not be, it being a nudge rather than a category, and Reading is the
+     * smallest true shelf containing all of it.
      */
     fun seeAll(): LibraryQuery = when (this) {
         Recent -> LibraryQuery(shelf = LibraryShelf.Reading, sort = LibrarySort.LastRead)
@@ -74,13 +73,12 @@ data class HomeRow(
 /**
  * The home screen's rows, with any that would be empty left out entirely.
  *
- * An empty row is worse than a missing one. A reader with no favourites has
- * nothing to learn from a heading over a blank strip, and six of them on a fresh
- * library is a screen that looks broken rather than new.
+ * An empty row is worse than a missing one: a heading over a blank strip teaches
+ * nothing, and six of them on a fresh library looks broken rather than new.
  *
- * The whole library goes in rather than the shelf as it is currently narrowed:
- * these rows are about the library itself, and a filter left on the library tab
- * has nothing to say about where somebody left off reading.
+ * The whole library goes in rather than the narrowed shelf - these rows are
+ * about the library itself, and a filter left on the library tab says nothing
+ * about where somebody left off reading.
  */
 fun List<LibraryBook>.homeRows(limit: Int = ShelfLimit): List<HomeRow> =
     HomeShelf.entries.mapNotNull { shelf ->

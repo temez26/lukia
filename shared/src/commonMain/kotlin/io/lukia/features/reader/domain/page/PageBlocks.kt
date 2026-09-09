@@ -4,12 +4,11 @@ package io.lukia.features.reader.domain.page
  * The structure a laid-out page does not record, read back out of where its
  * marks landed.
  *
- * A PDF is a set of instructions for putting glyphs in places. Lines,
- * paragraphs and the spaces between words are not in the file at all - every one
- * of them has to be inferred from geometry, and the inference is the same
- * whether it is being made to translate a sentence somebody pointed at or to
- * re-set the whole book as text. So it lives here, once, in common code, and
- * what each platform provides is only the characters and their boxes.
+ * A PDF is instructions for putting glyphs in places. Lines, paragraphs and the
+ * spaces between words are not in the file at all, and the inference from
+ * geometry is the same whether it serves translating one sentence or re-setting
+ * the whole book. So it lives here once, and each platform provides only the
+ * characters and their boxes.
  *
  * Everything here works in the page's own units - see [TextQuad].
  */
@@ -26,12 +25,10 @@ internal typealias GlyphBlock = List<GlyphLine>
 /**
  * The glyphs gathered into the lines they were set on, in reading order.
  *
- * By vertical overlap rather than by an exact baseline: a line holding a
- * superscript, a larger initial or a different face has glyphs whose tops and
- * bottoms do not agree, and grouping on equality would break every such line
- * into several. Two glyphs share a line when each one's middle falls inside the
- * other's height, which is true of everything set on one baseline and false of
- * the line above it.
+ * By vertical overlap rather than exact baseline: a line holding a superscript,
+ * a larger initial or a different face has glyphs whose tops and bottoms
+ * disagree, and grouping on equality would break it into several. Two glyphs
+ * share a line when each one's middle falls inside the other's height.
  */
 internal fun List<PageGlyph>.intoLines(): List<GlyphLine> {
     val byPosition = sortedWith(DownThePage)
@@ -93,10 +90,10 @@ internal fun List<GlyphLine>.intoBlocks(): List<GlyphBlock> {
  * A block written out as text, with each character remembering the glyph it came
  * from.
  *
- * The two travel together because everything above this needs both and neither
- * can be recovered from the other: the text is what a sentence is split out of
- * and what a translator is sent, and the glyphs are the only thing that can say
- * which part of the page a stretch of that text covers.
+ * The two travel together because everything above needs both and neither can be
+ * recovered from the other: the text is what a sentence is split out of and sent
+ * to a translator, and the glyphs are the only thing that can say which part of
+ * the page a stretch of it covers.
  *
  * [owners] holds one entry per character of [text] - null for a space this code
  * inferred, which belongs to no glyph and so covers no part of the page.

@@ -3,15 +3,13 @@ package io.lukia.core.infrastructure
 /**
  * Names the app's own copy of a document handed to it.
  *
- * Named from the bytes rather than from where they came from, which is what
- * [WorkingCopyNaming] does. A shared document has no stable location to hash -
- * that is the whole reason it is being copied - and the sending app's file name
- * is not one either: two different books arrive as `document.pdf` often enough
- * that trusting it would have one quietly overwrite the other.
+ * Named from the bytes rather than the location, which is [WorkingCopyNaming]'s
+ * job: a shared document has no stable location to hash - that is why it is
+ * being copied - and the sender's file name is no better, since two different
+ * books arrive as `document.pdf` often enough that one would overwrite the other.
  *
- * Hashing the content also means sharing the same book twice lands on the same
- * name, so the second arrival replaces the first copy and updates the shelf's
- * existing entry instead of adding a duplicate beside it.
+ * Hashing the content also means the same book shared twice lands on the same
+ * name, replacing the first copy rather than shelving a duplicate.
  */
 internal object IncomingDocumentNaming {
 

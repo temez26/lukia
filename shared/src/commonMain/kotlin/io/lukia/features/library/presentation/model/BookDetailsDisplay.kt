@@ -41,11 +41,9 @@ fun BookDetails.lengthLabel(): String? {
  * has no position to report and saying "page 1" would suggest it had been
  * started; a book that has been finished is worth saying so about outright.
  *
- * A book in progress is named by its page rather than by a percentage, because
- * the percentage is already on the cover beside this - see
- * `ReadingProgressOverlay` - and because the page is what the reader will be
- * shown the moment they open the book. Two screens saying the same thing about
- * the same book should say it the same way.
+ * A book in progress is named by its page rather than a percentage: the
+ * percentage is already on the cover beside this - see `ReadingProgressOverlay` -
+ * and the page is what the reader sees the moment they open the book.
  */
 @Composable
 fun BookDetails.progressLabel(): String {

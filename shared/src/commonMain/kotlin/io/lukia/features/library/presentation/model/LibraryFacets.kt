@@ -6,11 +6,10 @@ import io.lukia.core.domain.document.DocumentType
 /**
  * What this particular library can usefully be narrowed by.
  *
- * A filter is only worth offering when it divides the library. One that matches
- * nothing is a dead end, and one that matches everything is the unfiltered
- * library under another name - so a shelf, a format or a category earns its
- * place only when some books have it and some do not. A facet left empty is one
- * the screen leaves off entirely rather than showing with nothing to choose.
+ * A filter is only worth offering when it divides the library: one matching
+ * nothing is a dead end, one matching everything is the unfiltered library under
+ * another name. So a facet earns its place only when some books have it and some
+ * do not, and an empty one is left off rather than shown with nothing to choose.
  *
  * The lists are also what a stale query is measured against: see
  * [LibraryQuery.limitedTo].
@@ -67,12 +66,11 @@ private inline fun List<LibraryBook>.divides(predicate: (LibraryBook) -> Boolean
  * that differ only in case - `Fiction` and `fiction` are one category filed
  * twice, and offering both is offering the same row twice.
  *
- * Counted in a single pass rather than by asking [divides] once per value. The
- * two arrive at the same answer; the difference is what they cost. A pass per
- * value is the whole library read once for every distinct author in it, which
- * on a shelf of a few thousand books is millions of comparisons - and this is
- * re-run whenever the library changes at all, down to one book being
- * favourited.
+ * Counted in a single pass rather than by asking [divides] once per value: same
+ * answer, different cost. A pass per value reads the whole library once for
+ * every distinct author in it - millions of comparisons on a shelf of a few
+ * thousand - and this re-runs whenever the library changes at all, down to one
+ * book being favourited.
  */
 private inline fun List<LibraryBook>.dividingValues(
     values: (LibraryBook) -> List<String>,

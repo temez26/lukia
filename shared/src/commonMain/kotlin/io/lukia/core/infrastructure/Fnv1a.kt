@@ -3,13 +3,12 @@ package io.lukia.core.infrastructure
 /**
  * FNV-1a, as a lowercase 16-digit hex string.
  *
- * A non-cryptographic hash is the right tool wherever this is used - these are
- * file names, not a security boundary - but [String.hashCode] is only 32 bits,
- * which is a coin flip away from a collision across a library of any size.
+ * A non-cryptographic hash is right here - these are file names, not a security
+ * boundary - but [String.hashCode] is only 32 bits, a coin flip away from a
+ * collision across a library of any size.
  *
- * Shared so that the two things naming files by hash - a document's working copy
- * and the app's own copy of one handed to it - cannot drift into hashing the
- * same bytes to different names.
+ * Shared so the two things naming files by hash - a working copy and the app's
+ * own copy of a handed-over document - cannot hash the same bytes differently.
  */
 internal fun fnv1aHex(bytes: ByteArray): String {
     var hash = FNV_OFFSET_BASIS

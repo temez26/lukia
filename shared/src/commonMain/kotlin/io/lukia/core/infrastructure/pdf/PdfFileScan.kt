@@ -24,9 +24,8 @@ internal class PdfFileScan(
  * held in memory at once.
  *
  * [windowBytes] is a parameter only so a test can set it small enough to put an
- * object header across a boundary on purpose. Reaching that case at the real
- * size needs a megabyte of fixture, and it is the one case the overlap below
- * exists for.
+ * object header across a boundary - the case the overlap below exists for, which
+ * at the real size would need a megabyte of fixture.
  */
 internal fun scanPdfObjects(source: PdfByteSource, windowBytes: Int = SCAN_WINDOW): PdfFileScan {
     require(windowBytes > SCAN_OVERLAP) { "a window has to be longer than the overlap it keeps" }
@@ -146,13 +145,12 @@ private class HeaderScan(private val bytes: ByteArray, from: Int) {
      * digits - and false too when those digits reach the front of the window,
      * because then there is no telling how many more of them there were.
      *
-     * The second case is the one that costs a book. A window boundary landing
-     * inside `11 0 obj` leaves the next window reading `1 0 obj`, which is a
-     * perfectly well-formed header for a different object at a later offset -
-     * and later wins, so the catalog of a file long enough to be read in two
-     * windows would be replaced by the tail of an unrelated one. Nothing is lost
-     * by refusing it: the window before this one overlaps by more than a header
-     * is long, and has already recorded the same object from where it begins.
+     * The second case costs a book. A boundary landing inside `11 0 obj` leaves
+     * the next window reading `1 0 obj` - a well-formed header for a different
+     * object at a later offset, and later wins, so the catalog of a file long
+     * enough for two windows would be replaced by the tail of an unrelated one.
+     * Nothing is lost by refusing: the previous window overlaps by more than a
+     * header's length and has already recorded the object from its start.
      */
     fun skipNumberBefore(): Boolean {
         if (index < 0 || !isWhitespace(bytes[index])) return false

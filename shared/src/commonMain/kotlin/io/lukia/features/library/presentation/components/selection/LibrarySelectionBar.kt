@@ -32,11 +32,10 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * The bar that takes the shelf's place while books are being picked.
  *
- * It replaces the search bar rather than sitting beside it, because the two are
- * answers to different questions and a shelf can only be being asked one of them
- * at a time - and because leaving search in place would invite a reader to
- * narrow the shelf while holding a selection that is about to disagree with what
- * they can see.
+ * Replaces the search bar rather than sitting beside it: a shelf is only being
+ * asked one of those questions at a time, and leaving search in place would
+ * invite narrowing the shelf while holding a selection about to disagree with
+ * what is on it.
  *
  * What it says is the count, and never a list: forty books cannot be named in a
  * bar, and a reader who wants to know which forty can see the ticks on them.

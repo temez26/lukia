@@ -57,9 +57,9 @@ fun DocumentInfo.formattedSize(): String = formatFileSize(sizeBytes)
  * A file's size, in the largest unit that leaves a figure worth reading.
  *
  * The figure is formatted by the platform and the unit is a resource around it.
- * It used to be `"$rounded ${units[unitIndex]}"`, which wrote the decimal point
- * as a full stop wherever the app ran - "1.5 MB" is "1,5 MB" to most of Europe -
- * and hung the unit off the number in English word order.
+ * It used to be `"$rounded ${units[unitIndex]}"`, which wrote a full stop
+ * wherever the app ran - "1.5 MB" is "1,5 MB" to most of Europe - and hung the
+ * unit off the number in English word order.
  *
  * Kibibytes rather than kilobytes, which is what every file manager the reader
  * has already looked at this file in will have said.
@@ -110,10 +110,9 @@ fun DocumentInfo.bookTitle(): String =
  * reads aloud and how a cover sets it. Beyond two, commas take over and the last
  * still gets its "and" - the alternative reads as a list of unrelated names.
  *
- * Both halves are resources: the separator between all but the last two, and the
- * phrase that joins the final pair. Split that way because that is how a list
- * differs between languages - the joining word is not always a word, and the
- * separator is not always a comma.
+ * Both halves are resources - the separator between all but the last two, and
+ * the phrase joining the final pair - because that is how lists differ between
+ * languages: the joining word is not always a word, nor the separator a comma.
  */
 @Composable
 fun BookMetadata.authorLine(): String? {

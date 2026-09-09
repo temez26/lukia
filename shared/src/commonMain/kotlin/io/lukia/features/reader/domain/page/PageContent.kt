@@ -19,11 +19,10 @@ interface PageContent : AutoCloseable {
      * The characters on page [index] and where they sit on it, or null when
      * there is no text to be had.
      *
-     * Null covers two different things that the reader treats the same way: a
-     * page with no text layer at all - a scan, a page that is one photograph -
-     * and a platform that cannot read one. Neither is a failure worth reporting;
-     * both mean the same thing to somebody looking at the page, which is that
-     * tapping the words on it does nothing.
+     * Null covers two things the reader treats alike: a page with no text layer
+     * - a scan, a page that is one photograph - and a platform that cannot read
+     * one. Neither is a failure worth reporting, and both mean the same to
+     * somebody looking at the page: tapping the words does nothing.
      */
     suspend fun pageText(index: Int): List<PageGlyph>?
 

@@ -9,11 +9,10 @@ import kotlinx.coroutines.flow.update
 /**
  * How many entries are kept before the oldest is dropped.
  *
- * The way these get read is: turn diagnostics on, do the thing that went wrong,
- * hand over what was recorded. One reproduction is a handful of entries, so this
- * is not a working size - it is a ceiling for the pathological document, and the
- * rule that boundaries record once per document rather than once per page is
- * what keeps an ordinary session nowhere near it.
+ * These are read by turning diagnostics on, doing the thing that went wrong, and
+ * handing over what was recorded - a handful of entries. So this is a ceiling
+ * for the pathological document rather than a working size, and the rule that
+ * boundaries record once per document keeps an ordinary session nowhere near it.
  *
  * Two hundred short entries is tens of kilobytes.
  */
@@ -39,11 +38,10 @@ class DiagnosticBuffer(private val capacity: Int = DefaultCapacity) {
      * Appended from wherever the failure happened - a parser thread, an HTTP
      * response, a migration - and read from a screen.
      *
-     * [MutableStateFlow.update] is a compare-and-set loop, which is what makes
-     * that safe without a lock, without an `expect`/`actual` for one, and
-     * without a dependency: the coroutines library is already here. Copying the
-     * list on every append costs nothing at the rate these arrive, and is what
-     * lets a reader collect the flow without the list changing underneath it.
+     * [MutableStateFlow.update] is a compare-and-set loop, which makes that safe
+     * without a lock, an `expect`/`actual` for one, or a dependency. Copying the
+     * list per append costs nothing at the rate these arrive, and lets a reader
+     * collect the flow without it changing underneath them.
      */
     fun add(entry: DiagnosticEntry) = _entries.update { held ->
         (if (held.size >= capacity) held.drop(held.size - capacity + 1) else held) + entry

@@ -49,10 +49,9 @@ fun DiagnosticEntry.asReportLine(): String = buildString {
  * this are read it down the page and search it - and because there is nowhere
  * for it to go but an issue or a message the reader writes themselves.
  *
- * [appVersion] and [platformName] are the only things here that are not entries,
- * and between them they are half of what makes a report actionable: which build
- * of the app produced it, on which of the three platforms. Without the version a
- * maintainer cannot tell a bug that is still there from one already fixed.
+ * [appVersion] and [platformName] are the only non-entries here, and are half of
+ * what makes a report actionable: without the version a maintainer cannot tell a
+ * bug that is still there from one already fixed.
  */
 fun diagnosticReport(
     entries: List<DiagnosticEntry>,

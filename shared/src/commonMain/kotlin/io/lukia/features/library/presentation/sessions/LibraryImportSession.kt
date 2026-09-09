@@ -77,14 +77,14 @@ class LibraryImportSession(
      * A book handed to the app by another one.
      *
      * Kept before it is imported, and that order is the whole of it: what
-     * arrives is readable only while the grant that delivered it lasts, so the
-     * copy has to be taken before anything is written to the shelf. Keeping is
-     * inside the import rather than before it so that a document that cannot be
-     * read reports itself the same way a book that cannot be analysed does,
-     * instead of throwing out of the collector and stopping the inbox for good.
+     * arrives is readable only while the delivering grant lasts, so the copy is
+     * taken before anything is written to the shelf. Keeping happens inside the
+     * import so an unreadable document reports itself the way an unanalysable
+     * book does, rather than throwing out of the collector and stopping the
+     * inbox for good.
      *
-     * Awaited rather than launched, so two books shared at once are imported one
-     * after the other and the progress count means something.
+     * Awaited rather than launched, so two books shared at once import one after
+     * the other and the progress count means something.
      */
     private suspend fun importIncoming(document: IncomingDocument) {
         runImport {
@@ -114,12 +114,11 @@ class LibraryImportSession(
      * Stops the import that is running, keeping every book that has already
      * arrived.
      *
-     * A folder of five thousand books is minutes of work that the reader can
-     * otherwise only get out of by killing the app - which stops it at the same
-     * book, having told them nothing, and leaves them wondering how much of
-     * their library made it. Stopping is safe because a batch is a book at a
-     * time: whatever was imported is committed, and running the same import
-     * again picks up where this left off rather than adding second copies.
+     * A folder of five thousand books is minutes of work the reader can
+     * otherwise only escape by killing the app, which stops at the same book and
+     * says nothing about how much arrived. Stopping is safe because a batch is a
+     * book at a time: whatever imported is committed, and running the same
+     * import again picks up rather than adding second copies.
      */
     fun cancel() {
         started?.cancel()
@@ -161,11 +160,10 @@ class LibraryImportSession(
      *
      * Last in the class, and that placement is load-bearing rather than tidy.
      * The collector runs eagerly on a main dispatcher the moment it is launched,
-     * and a document already waiting in the inbox is taken on that first pass -
-     * inside this object's own construction. Launched from an `init` at the top,
-     * where it reads more naturally, that pass reaches [_isImporting] before the
-     * property exists and dies on it, taking the inbox down with it for the rest
-     * of the session and saying nothing.
+     * so a document already waiting is taken on that first pass - inside this
+     * object's own construction. From an `init` at the top, where it reads more
+     * naturally, that pass reaches [_isImporting] before the property exists and
+     * dies on it, taking the inbox down for the session and saying nothing.
      */
     init {
         // Collected for as long as the library lives, which on mobile is the

@@ -48,15 +48,13 @@ private val NoticeTopPadding: Dp = 64.dp
 /**
  * Searching the library, as its own screen.
  *
- * A tab rather than a field on the shelf. Searching and browsing are different
- * things done at different moments - browsing is "show me what I have",
- * searching is "I know what I want" - and a phone has room to do one of them
- * well at a time. Everything the library tab is narrowed to is ignored here on
- * purpose: somebody looking for a book is looking among all of them.
+ * A tab rather than a field on the shelf: browsing is "show me what I have" and
+ * searching is "I know what I want", and a phone has room to do one well at a
+ * time. What the library tab is narrowed to is ignored on purpose - somebody
+ * looking for a book looks among all of them.
  *
- * Results are rows rather than covers. A search is answered by reading, and a
- * row carries the author, the format and how far through it its reader is, none
- * of which a thumbnail has room for.
+ * Results are rows rather than covers: a search is answered by reading, and a
+ * row carries the author, format and position a thumbnail has no room for.
  */
 @Composable
 internal fun SearchScreen(
@@ -149,10 +147,9 @@ internal fun SearchContent(
  * anything has been typed - the searches already made.
  *
  * The history earns the empty screen over a sentence explaining what searching
- * is. A reader looking at an empty search field has either just arrived or just
- * cleared it, and in both cases the words they have already found books with are
- * worth more than the explanation. The sentence is kept for the reader who has
- * no history yet, who is the only one it tells anything.
+ * is: a reader looking at an empty field has just arrived or just cleared it,
+ * and either way their own past terms are worth more. The sentence is kept for
+ * the reader with no history, the only one it tells anything.
  */
 @Composable
 private fun SearchBody(

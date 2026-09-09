@@ -21,14 +21,13 @@ internal data class EpubManifestItem(
  * An EPUB opened far enough to find things in it.
  *
  * An EPUB is a ZIP with a level of indirection at the front: `container.xml`
- * names a package document, and the package document is what actually lists the
- * book's resources and the order they are read in. Both the library's cover
- * extraction and the reader need to walk that same path, which is why it is
- * here in core rather than in either of them.
+ * names a package document, which lists the book's resources and their reading
+ * order. Both the library's cover extraction and the reader walk that path,
+ * which is why it is in core rather than in either.
  *
- * Every accessor returns null rather than throwing for a book that does not have
- * what was asked for. A malformed EPUB is ordinary input: these files are
- * produced by a long tail of tools, and refusing one outright helps nobody.
+ * Every accessor returns null rather than throwing. A malformed EPUB is ordinary
+ * input - these files come from a long tail of tools - and refusing one outright
+ * helps nobody.
  */
 internal class EpubPackage private constructor(
     private val zip: ZipArchiveReader,

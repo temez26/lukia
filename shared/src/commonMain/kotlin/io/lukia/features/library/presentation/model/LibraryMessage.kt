@@ -7,13 +7,12 @@ import io.lukia.core.domain.AppError
  * the words for it.
  *
  * A view model that builds its own sentence has decided what language the app
- * speaks, and a `StateFlow<String>` is the shape that decision hides in: by the
- * time the screen collects it the counts are gone and only English is left. So
- * the counts travel, and the screen - which has a composition, and therefore a
- * locale - turns them into a sentence. See `LibraryMessageDisplay.kt`.
+ * speaks, and a `StateFlow<String>` is where that decision hides: by the time
+ * the screen collects it the counts are gone and only English is left. So the
+ * counts travel, and the screen - which has a composition and therefore a locale
+ * - turns them into a sentence. See `LibraryMessageDisplay.kt`.
  *
- * Every case here is one whole sentence at the other end, never a fragment
- * something else finishes.
+ * Every case is one whole sentence at the other end, never a fragment.
  */
 sealed interface LibraryMessage {
 

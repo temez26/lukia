@@ -5,12 +5,11 @@ import io.lukia.core.infrastructure.archive.inflateZlib
 /**
  * Finds the objects in a PDF and hands them back on request.
  *
- * Works by scanning the file for object headers rather than by following the
- * cross-reference table. That is the same thing a repair tool does, and it is
- * the right trade here: it costs one pass over the bytes and in exchange skips
- * cross-reference streams, their column predictors, and the chains of
- * incremental updates - three substantial pieces of the format whose only
- * purpose would be finding offsets this reads directly.
+ * Scans the file for object headers rather than following the cross-reference
+ * table - what a repair tool does. It costs one pass over the bytes and skips
+ * cross-reference streams, their column predictors and the chains of incremental
+ * updates: three substantial pieces of the format whose only purpose would be
+ * finding offsets this reads directly.
  *
  * It is also what makes a damaged file still give up its chapter list.
  */
@@ -62,10 +61,10 @@ internal class PdfObjectIndex(private val source: PdfByteSource) {
      * The document information dictionary, where a PDF keeps its title, author
      * and the application that produced it.
      *
-     * Taken from the newest trailer that names one rather than from the first
-     * `/Info` found anywhere: an incrementally updated file keeps its earlier
-     * trailers, and the properties dialog of whatever last saved the file is
-     * what the reader would recognise.
+     * Taken from the newest trailer that names one rather than the first
+     * `/Info` anywhere: an incrementally updated file keeps its earlier
+     * trailers, and what the reader would recognise is the properties dialog of
+     * whatever last saved it.
      *
      * Null for an encrypted file, whose strings would come back as ciphertext -
      * the same reason the outline is not read from one.

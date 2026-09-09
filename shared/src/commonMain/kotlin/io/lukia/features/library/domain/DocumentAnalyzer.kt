@@ -9,12 +9,11 @@ interface DocumentAnalyzer {
     /**
      * Whether the file [document] names is still where the library filed it.
      *
-     * The cheap half of [analyze], and apart from it because the answer is
-     * needed where the expensive half must not run: [analyze] opens the file,
-     * reads all of it and renders a cover, and it throws for a book that has
-     * gone exactly as it throws for one it cannot make sense of. Those two are
-     * different things to a shelf - one is a book to re-read, the other is a
-     * book to tell the reader about - and this is what tells them apart.
+     * The cheap half of [analyze], apart from it because the answer is needed
+     * where the expensive half must not run: [analyze] opens the file, reads all
+     * of it and renders a cover, and throws for a book that has gone exactly as
+     * for one it cannot make sense of. To a shelf those are different - one is a
+     * book to re-read, the other a book to tell the reader about.
      */
     suspend fun exists(document: PickedDocument): Boolean
 }

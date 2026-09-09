@@ -53,11 +53,10 @@ private const val OpenAngle = -34f
 /**
  * The slot at the end of the library where a new book goes.
  *
- * A blank cover rather than a button: it sits in the grid among real covers, and
- * the thing it stands for is a book that is not there yet. Tapping it hinges it
- * open on its left edge - where a spine would be - and asks where the book should
- * come from, because there is more than one answer and picking for the reader
- * would be guessing.
+ * A blank cover rather than a button: it sits among real covers and stands for a
+ * book that is not there yet. Tapping hinges it open on its left edge, where a
+ * spine would be, and asks where the book comes from - there is more than one
+ * answer, and picking for the reader would be guessing.
  *
  * Menu state is owned by the screen rather than the card, so opening this closes
  * any book's menu and the bar's, exactly as those close each other.

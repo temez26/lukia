@@ -30,12 +30,11 @@ class OpenDocumentUseCase(
     /**
      * Injectable so tests can open documents deterministically.
      *
-     * The pool for blocking work rather than the one for arithmetic, which is
-     * what everything under here is: a file copied, a file parsed, and - for a
-     * PDF being read as text - the same file read through as many handles at
-     * once as the device has cores. On the default pool those handles are the
-     * whole of it, so opening one book left nothing to lay out the last one
-     * with.
+     * The pool for blocking work rather than arithmetic, which is what all of
+     * this is: a file copied, a file parsed, and - for a PDF read as text - the
+     * same file read through one handle per core. On the default pool those
+     * handles are the whole of it, so opening one book left nothing to lay out
+     * the last one with.
      */
     private val dispatcher: CoroutineDispatcher = ioDispatcher(),
 ) {

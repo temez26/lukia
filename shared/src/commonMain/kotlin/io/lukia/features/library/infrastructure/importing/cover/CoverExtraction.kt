@@ -72,11 +72,10 @@ internal fun extractCover(
  * A cover as the library keeps it: shrunk to [MaxStoredCoverEdge], and given up
  * on entirely when even that leaves it over [MaxStoredCoverBytes].
  *
- * A publisher's artwork is routinely 1600x2400, and a PDF page rendered at its
- * own size larger again - several megabytes of PNG for something drawn at a
- * couple of hundred pixels. Shrinking here rather than at the point it is drawn
- * is what keeps that out of the database, out of every read of the library, and
- * out of the row-size limit above.
+ * A publisher's artwork is routinely 1600x2400 and a rendered PDF page larger
+ * again - megabytes of PNG for something drawn at a couple of hundred pixels.
+ * Shrinking here rather than where it is drawn keeps that out of the database,
+ * out of every read of the library, and under the row-size limit above.
  */
 private fun asStoredCover(cover: ByteArray, diagnostics: Diagnostics): ByteArray? {
     val stored = runCatching { shrinkCoverImage(cover, MaxStoredCoverEdge) }

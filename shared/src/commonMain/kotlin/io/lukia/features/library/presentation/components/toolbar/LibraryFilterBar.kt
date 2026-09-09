@@ -60,14 +60,12 @@ private val ChipMenuMaxHeight: Dp = 320.dp
  * The row of filters under the shelves: what the library is narrowed to, and
  * what order it is in.
  *
- * Only the filters this particular library can actually offer appear - see
- * [LibraryFacets] - so a shelf of PDFs with no metadata shows a row with nothing
- * on it but the sort, while one built from EPUBs offers their categories,
- * authors and languages too.
+ * Only the filters this library can offer appear - see [LibraryFacets] - so a
+ * shelf of bare PDFs shows nothing but the sort, while one of EPUBs offers their
+ * categories, authors and languages too.
  *
- * The row scrolls sideways rather than wrapping. Wrapping would change the
- * header's height as filters come and go, which moves the whole grid underneath
- * it; a row that keeps its height simply has more to the right of it.
+ * The row scrolls sideways rather than wrapping: wrapping changes the header's
+ * height as filters come and go, moving the whole grid underneath.
  */
 @Composable
 internal fun LibraryFilterBar(

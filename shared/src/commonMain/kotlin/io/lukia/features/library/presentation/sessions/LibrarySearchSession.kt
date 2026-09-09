@@ -21,14 +21,13 @@ private const val ResultsCacheMillis = 5_000L
  * Looking for a book: what has been typed, what the whole library has to answer
  * it with, and what has been looked for before.
  *
- * Held apart from [LibraryViewModel] rather than added to it - the same bargain
- * [LibraryImportSession] and [LibrarySelectionSession] make - so that searching
- * is a thing with its own state rather than four more fields on the shelf.
+ * Held apart from [LibraryViewModel], the bargain [LibraryImportSession] and
+ * [LibrarySelectionSession] make, so searching is a thing with its own state
+ * rather than four more fields on the shelf.
  *
- * Deliberately separate from [LibraryQuery]'s own search term. That one narrows
- * the shelf, alongside the filters beside it; this one asks about every book
- * there is, and answering it must not also narrow the shelf the reader left
- * behind on another tab.
+ * Deliberately separate from [LibraryQuery]'s search term: that one narrows the
+ * shelf alongside the filters, while this asks about every book there is and
+ * must not narrow the shelf left behind on another tab.
  */
 @Stable
 class LibrarySearchSession(
@@ -57,13 +56,12 @@ class LibrarySearchSession(
     /**
      * Files what is currently typed as a search that was actually made.
      *
-     * Called when the reader presses the keyboard's search key, and again when
-     * they open one of the results - the two moments a search is finished rather
-     * than half typed. Recording every keystroke instead would fill the history
-     * with every prefix of the word on the way to it.
+     * Called on the keyboard's search key and again when a result is opened -
+     * the two moments a search is finished rather than half typed. Recording
+     * every keystroke would fill the history with every prefix on the way.
      *
      * Doing it twice for one search costs nothing: the term is already at the
-     * top of the list, and putting it there again leaves it exactly where it is.
+     * top, and putting it there again leaves it where it is.
      */
     fun submit() = recentSearches.remember(_term.value)
 

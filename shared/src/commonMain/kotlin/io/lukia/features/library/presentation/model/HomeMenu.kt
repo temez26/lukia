@@ -4,10 +4,9 @@ package io.lukia.features.library.presentation.model
  * Which of the home screen's menus is open, if any.
  *
  * A closed set rather than a flag each, for the reason [OpenMenu] is one on the
- * shelf: the header carries a menu, the empty state carries another and every
- * cover on every row carries its own, at most one of which may be open, and a
- * single slot makes that structural rather than something every opener has to
- * remember to enforce.
+ * shelf: the header, the empty state and every cover on every row each carry
+ * one, at most one may be open, and a single slot makes that structural rather
+ * than something every opener must remember.
  *
  * Not [OpenMenu] itself, because a book is not identified the same way here.
  */

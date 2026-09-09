@@ -38,11 +38,10 @@ interface DocumentPages : PageContent {
      * The document's own chapter list, flattened and in reading order, read when
      * the document is opened.
      *
-     * Three states, and the difference matters to what the reader is told:
-     * a list of entries, empty when the document simply has no table of
-     * contents, and null when this platform cannot read one at all. Reporting
-     * "no chapters" for a book full of them would send someone looking for a bug
-     * in their file.
+     * Three states, and the difference matters: entries, empty when the document
+     * has no table of contents, and null when this platform cannot read one.
+     * Reporting "no chapters" for a book full of them would send somebody
+     * looking for a bug in their file.
      */
     val outline: List<OutlineEntry>?
 

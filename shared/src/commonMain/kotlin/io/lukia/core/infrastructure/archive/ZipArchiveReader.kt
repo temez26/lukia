@@ -16,10 +16,9 @@ internal class ZipArchiveReader(private val data: ByteArray) {
      *
      * Asked of the directory once rather than counted down as entries are read.
      * A running total would be shared mutable state, and the caller that most
-     * needs this cap is the one that reads a book's chapters concurrently -
-     * every one of them would race the others to spend it. The directory
-     * already states what each entry decodes to, so the whole question can be
-     * answered before a single byte is inflated.
+     * needs this cap reads a book's chapters concurrently - every one racing the
+     * others to spend it. The directory already states what each entry decodes
+     * to, so the question is answered before a byte is inflated.
      */
     private val isBomb: Boolean by lazy {
         entriesByName.values.sumOf { it.uncompressedSize.coerceAtLeast(0).toLong() } >

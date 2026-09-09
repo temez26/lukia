@@ -141,12 +141,12 @@ private val PdfDate = Regex("""^D?:?\s*(\d{4})""")
 /**
  * The ways a `/Title` turns out to be something other than a title.
  *
- * A list rather than a run of guard clauses, so that what counts as a false
- * title reads as one thing and a fourth of them is one line.
+ * A list rather than a run of guard clauses, so what counts as a false title
+ * reads as one thing and a fourth is one line.
  *
- * Two are matched anywhere in the value because their own patterns are anchored;
- * the third has to match the whole of it, since a title may legitimately mention
- * a hash without being one.
+ * Two are matched anywhere in the value, their own patterns being anchored; the
+ * third must match the whole of it, since a title may mention a hash without
+ * being one.
  */
 private val NotATitle: List<(String) -> Boolean> = listOf(
     ProducerPrefix::containsMatchIn,

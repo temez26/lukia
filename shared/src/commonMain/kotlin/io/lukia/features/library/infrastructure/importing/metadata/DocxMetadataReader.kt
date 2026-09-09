@@ -9,15 +9,15 @@ import io.lukia.core.infrastructure.xml.xmlEvents
 /**
  * The core properties Word writes into every document it saves.
  *
- * A far shorter list than an EPUB's: a word processor knows who typed the file
- * and what they called it, and nothing about publishers or ISBNs. `dc:creator`
- * is the person who created the document rather than an author in the
- * publishing sense, but for a manuscript read in this app they are the same
- * person, and it is the only credit the format offers.
+ * Far shorter than an EPUB's: a word processor knows who typed the file and what
+ * they called it, and nothing about publishers or ISBNs. `dc:creator` is whoever
+ * created the document rather than an author in the publishing sense, but for a
+ * manuscript read here they are the same person and it is the only credit the
+ * format offers.
  *
- * `cp:keywords` is a single string of comma- or semicolon-separated words, unlike
- * an EPUB's repeated `dc:subject` elements - so it is split here rather than
- * shown to the reader as one long run-on subject.
+ * `cp:keywords` is one string of comma- or semicolon-separated words, unlike an
+ * EPUB's repeated `dc:subject` elements, so it is split here rather than shown
+ * as one run-on subject.
  */
 internal fun extractDocxMetadata(docxBytes: ByteArray): BookMetadata? {
     val xml = ZipArchiveReader(docxBytes)

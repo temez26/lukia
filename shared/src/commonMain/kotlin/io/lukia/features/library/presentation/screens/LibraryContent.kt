@@ -57,14 +57,10 @@ import org.jetbrains.compose.resources.stringResource
 private val HeaderCollapseDistance: Dp = 56.dp
 
 /**
- * Stateless half of the screen, so the layout can be composed in a test or a
- * preview without a ViewModel or a dependency graph behind it. Every screen in
- * the app splits this way.
- *
  * [books] arrives already narrowed and ordered. Deciding what the grid shows is
- * the ViewModel's work, done off the main thread - a library of several hundred
- * books searched on every keystroke is not something to do on the thread that
- * draws them - so this screen only ever draws what it is handed.
+ * the ViewModel's work, done off the main thread - several hundred books
+ * searched on every keystroke is not for the thread that draws them - so this
+ * screen only draws what it is handed.
  */
 @Composable
 fun LibraryContent(

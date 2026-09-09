@@ -6,15 +6,14 @@ import io.lukia.features.library.presentation.model.LibraryBook
 /**
  * Everything the home screen can do to one of the books it is showing.
  *
- * Gathered rather than passed one lambda at a time, for the reason
- * [LibraryShelfUi] gathers the shelf's: these six always travel together, down
- * three composables that only hand them on, and six parameters repeated at every
- * step is a signature about plumbing rather than about the screen.
+ * Gathered rather than passed one lambda at a time, as [LibraryShelfUi] gathers
+ * the shelf's: these six travel together down three composables that only hand
+ * them on, and repeating six parameters at every step makes a signature about
+ * plumbing rather than about the screen.
  *
- * [onSelectBooks] takes no book because it is the odd one out - it turns the
- * shelf into something to pick from rather than doing anything to the book the
- * menu was opened from, and on this screen that means going to the shelf first;
- * see [LibraryShelfUi.selectingOn].
+ * [onSelectBooks] takes no book, being the odd one out: it turns the shelf into
+ * something to pick from rather than acting on the book the menu was opened
+ * from - see [LibraryShelfUi.selectingOn].
  */
 @Stable
 class HomeBookActions(

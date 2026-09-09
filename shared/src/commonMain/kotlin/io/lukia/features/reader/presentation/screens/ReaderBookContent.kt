@@ -59,9 +59,6 @@ import io.lukia.shared.presentation.theme.isWideWindow
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * Stateless half of the screen. Split out so the layout can be rendered without
- * a ViewModel or dependency graph, matching the other screens.
- *
  * The feature's public surface is [ReaderScreen]; this is reached only from
  * there and from the tests that render a reader without a graph behind it.
  */

@@ -26,15 +26,13 @@ data class LibraryUpkeep(
 /**
  * What is worth tidying on this shelf.
  *
- * Duplicates are books that agree on both title and size. Neither alone is
- * enough: a library holds several books called Poems, and a great many files
- * happen to be the same number of bytes. Together they are wrong rarely enough
- * to be worth offering, and the reader confirms every one before anything
- * happens to it.
+ * Duplicates agree on both title and size. Neither alone is enough - a library
+ * holds several books called Poems, and many files share a byte count - but
+ * together they are wrong rarely enough to be worth offering, and the reader
+ * confirms every one.
  *
- * The order the shelf is already in decides which copy is the original, so this
- * is stable: the same shelf answers the same way twice, and the book the reader
- * has read is the one they are most likely to have opened first.
+ * The shelf's existing order decides which copy is the original, so the same
+ * shelf answers the same way twice.
  */
 fun List<LibraryBook>.upkeep(): LibraryUpkeep {
     val seen = mutableSetOf<String>()

@@ -34,14 +34,13 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * What has been searched for before, offered while the field is empty.
  *
- * This is the whole of what an empty search screen has to say. A reader looking
- * at one has either just arrived or just cleared the field, and in both cases
- * the useful thing is not a sentence explaining what searching is - it is the
- * words they have already found books with.
+ * The whole of what an empty search screen has to say: a reader looking at one
+ * has just arrived or just cleared the field, and what helps is the words they
+ * have already found books with rather than a sentence explaining searching.
  *
  * Rows rather than chips. A search term is a phrase of unpredictable length, and
- * a wrapping row of chips of wildly different widths reads as clutter where a
- * column of left-aligned lines reads as a list.
+ * chips of wildly different widths wrap into clutter where a column of
+ * left-aligned lines reads as a list.
  */
 @Composable
 internal fun RecentSearches(

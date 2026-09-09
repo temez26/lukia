@@ -38,15 +38,13 @@ private val PanelCoverWidth: Dp = 136.dp
 /**
  * A book's details, over the library rather than instead of it.
  *
- * Draws nothing at all when [document] is null, so the caller can simply hand it
- * whatever book is currently being looked at. That also means a book deleted from
- * inside the panel takes the panel with it: the library no longer holds it, so
- * the caller's lookup comes back null on the next frame.
+ * Draws nothing when [document] is null, so the caller hands it whatever book is
+ * being looked at - which also means a book deleted from inside the panel takes
+ * the panel with it, the lookup coming back null on the next frame.
  *
- * The book itself comes from the library rather than being loaded again here,
- * which is what keeps favouriting it inside the panel visible on the card behind
- * it. [progress] arrives separately because where the reader got to is kept in a
- * store the library never reads.
+ * The book comes from the library rather than being loaded again, which keeps
+ * favouriting it inside the panel visible on the card behind. [progress] arrives
+ * separately, being kept in a store the library never reads.
  */
 @Composable
 fun BookDetailOverlay(

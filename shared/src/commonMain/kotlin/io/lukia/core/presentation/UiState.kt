@@ -6,13 +6,12 @@ import io.lukia.core.domain.AppError
  * What a screen is showing: still working, showing [data], or unable to show
  * anything because of [AppError].
  *
- * Every ViewModel that loads something exposes one of these, so every screen
- * gets the same three states and renders them through the same
- * `UiStateContent` composable rather than inventing its own spinner and its own
- * empty-looking failure.
+ * Every ViewModel that loads something exposes one, so every screen renders the
+ * same three states through `UiStateContent` rather than inventing its own
+ * spinner and its own empty-looking failure.
  *
- * Not every failure belongs here. This is for a screen that has nothing left to
- * show; a failure the user can carry on past - one file of a folder import
+ * Not every failure belongs here: this is for a screen with nothing left to
+ * show. One the reader can carry on past - a single file of a folder import
  * failing - is a transient message instead.
  */
 sealed interface UiState<out T> {

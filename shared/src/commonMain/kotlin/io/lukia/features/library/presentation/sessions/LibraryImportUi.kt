@@ -12,12 +12,10 @@ import io.lukia.features.library.presentation.model.ImportProgress
  * An import as a screen deals with it: whether one is running, how far through
  * it is, and the way to stop it.
  *
- * Three values that always arrive together and are only ever read together,
- * gathered for the reason [LibraryShelfUi] gathers a dozen - a screen's
- * signature should stay about the screen. The third of them is why this exists
- * now rather than earlier: two of these were already threaded through four
- * composables, and a third travelling beside them is the point at which they
- * stop being parameters and start being a thing.
+ * Three values that always arrive and are read together, gathered for the reason
+ * [LibraryShelfUi] gathers a dozen: a screen's signature should stay about the
+ * screen. Two were already threaded through four composables, and a third
+ * beside them is where parameters become a thing.
  */
 @Stable
 class LibraryImportUi(

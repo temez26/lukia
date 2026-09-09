@@ -25,10 +25,9 @@ import org.jetbrains.compose.resources.stringResource
  * makes the same failure read the same way in a snackbar and in a full error
  * state.
  *
- * Composable, because that is what reading a string resource takes. Nothing
- * below a composition may call these - a view model that resolved a failure to
- * a sentence would be choosing the language for a screen it cannot see. Where
- * one used to, it now carries the [AppError] instead.
+ * Composable, because reading a string resource takes one. Nothing below a
+ * composition may call these: a view model resolving a failure to a sentence
+ * would be choosing the language for a screen it cannot see.
  */
 @Composable
 fun AppError.displayTitle(): String = when (this) {

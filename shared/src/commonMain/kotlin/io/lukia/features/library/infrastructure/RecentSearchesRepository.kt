@@ -24,13 +24,13 @@ private const val KeyRecentSearches = "library.recentSearches"
  * The searches somebody has actually made, newest first and remembered between
  * sessions.
  *
- * Apart from the shelf's own settings - see [LibrarySettingsRepository] - because
- * this is a history rather than a choice: nobody set it, it grows on its own, and
- * it is the one thing here a reader may want to delete.
+ * Apart from the shelf's settings - see [LibrarySettingsRepository] - because
+ * this is a history rather than a choice: nobody set it, it grows on its own,
+ * and it is the one thing here a reader may want to delete.
  *
- * Held in the settings store rather than the database. It is eight short strings
- * that have to be on screen the instant the search tab opens, and a query for
- * them would arrive after the screen it belongs to.
+ * In the settings store rather than the database: eight short strings that have
+ * to be on screen the instant the search tab opens, where a query would arrive
+ * after the screen it belongs to.
  */
 class RecentSearchesRepository(
     private val store: SettingsStore,

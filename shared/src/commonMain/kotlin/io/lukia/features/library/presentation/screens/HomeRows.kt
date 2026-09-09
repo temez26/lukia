@@ -113,10 +113,10 @@ internal fun HomeRows(
 /**
  * The screen's name, and the library's own actions menu.
  *
- * The same menu the library tab carries, rather than a shorter one of its own.
- * Importing a book, tidying the shelf and opening the settings are things a
- * reader does to their library and not to a screen, and offering three of them
- * here and five there would make the reader learn which corner holds which.
+ * The same menu the library tab carries rather than a shorter one: importing,
+ * tidying and the settings are done to a library rather than to a screen, and
+ * three here against five there would make the reader learn which corner holds
+ * which.
  *
  * That the rows underneath cannot show a selection is the menu's problem rather
  * than this screen's - see [LibraryShelfUi.selectingOn].

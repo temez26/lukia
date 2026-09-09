@@ -28,15 +28,14 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * What can be done to the books that have been picked.
  *
- * At the foot of the screen rather than in the bar at the top, which is where a
- * thumb is and where every phone puts the actions of a selection mode. The bar
- * at the top says what is selected; this says what can happen to it, and the
- * two are far enough apart that neither is pressed by accident.
+ * At the foot of the screen, where a thumb is and where every phone puts a
+ * selection mode's actions. The bar at the top says what is selected, this says
+ * what can happen to it, and the two are far enough apart that neither is
+ * pressed by accident.
  *
- * Every action is greyed until something is selected, rather than hidden. A row
- * of buttons that appears once the first book is ticked is a row that moves the
- * ground under a reader mid-press, and hiding what a mode is for is a poor way
- * to explain it.
+ * Greyed until something is selected rather than hidden: a row that appears once
+ * the first book is ticked moves the ground under a reader mid-press, and hiding
+ * what a mode is for explains it poorly.
  */
 @Composable
 internal fun LibrarySelectionActions(

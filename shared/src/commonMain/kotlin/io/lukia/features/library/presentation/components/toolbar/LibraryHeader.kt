@@ -125,14 +125,13 @@ internal fun LibraryHeader(
 /**
  * That an import is running, for a library that already has books in it.
  *
- * It reports itself here rather than replacing the grid, so the books already on
- * screen stay readable while the rest arrive. Present only while it is true -
- * there is nothing to say about an import that is not happening - and expanded
- * into place rather than appearing, so the grid is nudged down rather than jumping.
+ * Reported here rather than replacing the grid, so books already on screen stay
+ * readable while the rest arrive. Present only while true, and expanded into
+ * place rather than appearing, so the grid is nudged down rather than jumping.
  *
- * It also carries the way out. A folder can hold thousands of books, each one
- * opened and its cover rendered, and without this the only way to stop is to kill
- * the app - which stops at the same book and says nothing about how far it got.
+ * It also carries the way out. A folder can hold thousands of books, each opened
+ * and its cover rendered, and without this the only way to stop is to kill the
+ * app - which stops at the same book and says nothing about how far it got.
  */
 @Composable
 private fun ImportingNotice(

@@ -20,15 +20,13 @@ import kotlinx.coroutines.launch
 /**
  * Selecting several books at once, and doing one thing to all of them.
  *
- * Held apart from [LibraryViewModel] rather than added to it, the same way the
- * reader keeps its translations apart: this is a mode with its own state, its
- * own actions and its own idea of when it is busy, and threading all of that
- * through the view model would leave neither readable.
+ * Held apart from [LibraryViewModel], as the reader keeps its translations
+ * apart: a mode with its own state, actions and idea of being busy, all of which
+ * threaded through the view model would leave neither readable.
  *
- * Every action here is a loop over the use case that already does it to one
- * book. That is deliberate - a bulk delete is not a different kind of delete,
- * and the moment it becomes one is the moment the two can disagree about what
- * removing a book means.
+ * Every action is a loop over the use case that already does it to one book. A
+ * bulk delete is not a different kind of delete, and the moment it becomes one
+ * is the moment the two can disagree about what removing a book means.
  */
 class LibrarySelectionSession(
     private val setFavoriteUseCase: SetFavoriteUseCase,

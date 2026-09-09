@@ -3,10 +3,10 @@ package io.lukia.core.infrastructure.pdf
 /**
  * Reads PDF objects out of a window of bytes.
  *
- * Deliberately forgiving: every parse returns null rather than throwing when the
- * bytes do not say what was expected. A reader that fails to find a chapter list
- * should show a book without chapters, never fail to open the book - and the
- * files this meets are produced by decades of tools of varying quality.
+ * Deliberately forgiving: every parse returns null rather than throwing. A
+ * reader that cannot find a chapter list should show a book without chapters,
+ * never fail to open it - and these files come from decades of tools of varying
+ * quality.
  *
  * Returning null also covers the window ending mid-object, which is how the
  * caller knows to read more of the file and try again.

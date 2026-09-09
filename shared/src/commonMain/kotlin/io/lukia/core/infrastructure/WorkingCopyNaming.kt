@@ -4,12 +4,12 @@ package io.lukia.core.infrastructure
  * Names the on-disk working copy of a document.
  *
  * A library location is an absolute path, a content:// URI or a file:// URL,
- * none of which survive being used as a file name. The name is derived from a
- * hash of the location instead, which also keeps it stable: reopening a book
- * finds the copy made last time rather than writing a second one.
+ * none of which survive as a file name. A hash of the location is used instead,
+ * which also keeps it stable: reopening a book finds last time's copy rather
+ * than writing a second.
  *
- * Shared by every platform workspace so that a copy written by one lookup is
- * always found by the next.
+ * Shared by every platform workspace, so a copy written by one lookup is found
+ * by the next.
  */
 internal object WorkingCopyNaming {
 

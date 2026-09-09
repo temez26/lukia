@@ -55,10 +55,8 @@ internal fun libraryNavBarHeight(): Dp = searchFieldHeight() + NavBarVerticalPad
 /**
  * What the search field says before anything is typed into it.
  *
- * The size of the library rides in here rather than in a line of its own. It is a
- * number worth knowing exactly once - when you are about to look for something in
- * it - and this is the only place it answers a question instead of just occupying
- * a row.
+ * The size of the library rides in here rather than taking a line of its own: it
+ * is worth knowing exactly once, when you are about to look for something in it.
  *
  * It counts what is actually searchable, so a filter narrows it too.
  */

@@ -22,11 +22,10 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * The subjects the library's own books declare, as a way into each of them.
  *
- * Chips rather than covers, because a category is a word and not a thing to
- * look at - and because the row is a list of doors rather than a sample of what
- * is behind them. Nothing is selected here: pressing one leaves for the library
- * tab, so a chip marked as set would be describing a screen the reader is on
- * their way off.
+ * Chips rather than covers, because a category is a word rather than a thing to
+ * look at, and the row is a list of doors rather than a sample of what is behind
+ * them. Nothing is selected: pressing one leaves for the library tab, so a chip
+ * marked as set would describe a screen the reader is on their way off.
  *
  * The categories arrive already reduced to the ones that divide the library -
  * see `LibraryFacets` - so a row of them is never every book under one heading.
