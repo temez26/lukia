@@ -1,8 +1,8 @@
 package io.lukia.features.library.infrastructure.importing.metadata
 
 import io.lukia.core.domain.document.BookMetadata
+import io.lukia.core.infrastructure.ByteSource
 import io.lukia.core.infrastructure.epub.collapseWhitespace
-import io.lukia.core.infrastructure.pdf.ByteArrayPdfSource
 import io.lukia.core.infrastructure.pdf.PdfObjectIndex
 import io.lukia.core.infrastructure.pdf.asText
 
@@ -24,8 +24,8 @@ import io.lukia.core.infrastructure.pdf.asText
  * second PDF parser in the import feature would be the same work done twice and
  * wrong in different places.
  */
-internal fun extractPdfMetadata(pdfBytes: ByteArray): BookMetadata? {
-    val index = runCatching { PdfObjectIndex(ByteArrayPdfSource(pdfBytes)) }.getOrNull()
+internal fun extractPdfMetadata(pdf: ByteSource): BookMetadata? {
+    val index = runCatching { PdfObjectIndex(pdf) }.getOrNull()
         ?: return null
 
     // Not a reason to give up on the file: plenty of PDFs carry no information

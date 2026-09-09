@@ -1,5 +1,6 @@
 package io.lukia.core.infrastructure.pdf
 
+import io.lukia.core.infrastructure.ByteArraySource
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -19,7 +20,7 @@ import kotlin.test.assertTrue
  */
 class PdfObjectIndexTest {
 
-    private fun index(bytes: ByteArray) = PdfObjectIndex(ByteArrayPdfSource(bytes))
+    private fun index(bytes: ByteArray) = PdfObjectIndex(ByteArraySource(bytes))
 
     @Test
     fun findsTheCatalogAFileWritesDirectly() {

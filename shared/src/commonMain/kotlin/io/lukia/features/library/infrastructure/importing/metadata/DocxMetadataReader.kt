@@ -1,6 +1,7 @@
 package io.lukia.features.library.infrastructure.importing.metadata
 
 import io.lukia.core.domain.document.BookMetadata
+import io.lukia.core.infrastructure.ByteSource
 import io.lukia.core.infrastructure.archive.ZipArchiveReader
 import io.lukia.core.infrastructure.epub.collapseWhitespace
 import io.lukia.core.infrastructure.xml.XmlEvent
@@ -19,8 +20,8 @@ import io.lukia.core.infrastructure.xml.xmlEvents
  * EPUB's repeated `dc:subject` elements, so it is split here rather than shown
  * as one run-on subject.
  */
-internal fun extractDocxMetadata(docxBytes: ByteArray): BookMetadata? {
-    val xml = ZipArchiveReader(docxBytes)
+internal fun extractDocxMetadata(docx: ByteSource): BookMetadata? {
+    val xml = ZipArchiveReader(docx)
         .readEntry(CorePropertiesPath)
         ?.decodeToString()
         ?: return null

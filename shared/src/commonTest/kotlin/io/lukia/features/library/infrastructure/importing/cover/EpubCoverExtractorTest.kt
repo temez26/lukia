@@ -1,5 +1,6 @@
 package io.lukia.features.library.infrastructure.importing.cover
 
+import io.lukia.core.infrastructure.ByteArraySource
 import io.lukia.core.infrastructure.epub.MinimalEpub
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -20,26 +21,26 @@ class EpubCoverExtractorTest {
 
     @Test
     fun findsACoverDeclaredTheWayEpubThreeDeclaresOne() {
-        assertContentEquals(MinimalEpub.coverBytes, extractEpubCover(MinimalEpub.book()))
+        assertContentEquals(MinimalEpub.coverBytes, extractEpubCover(ByteArraySource(MinimalEpub.book())))
     }
 
     @Test
     fun findsACoverDeclaredTheWayEpubTwoDeclaresOne() {
-        assertContentEquals(MinimalEpub.coverBytes, extractEpubCover(MinimalEpub.olderBook()))
+        assertContentEquals(MinimalEpub.coverBytes, extractEpubCover(ByteArraySource(MinimalEpub.olderBook())))
     }
 
     @Test
     fun aBookThatDeclaresNoCoverHasNone() {
-        assertNull(extractEpubCover(MinimalEpub.bookWithNoCover()))
+        assertNull(extractEpubCover(ByteArraySource(MinimalEpub.bookWithNoCover())))
     }
 
     @Test
     fun somethingThatIsNotAnEpubHasNoCover() {
-        assertNull(extractEpubCover("not a book, just some words".encodeToByteArray()))
+        assertNull(extractEpubCover(ByteArraySource("not a book, just some words".encodeToByteArray())))
     }
 
     @Test
     fun aFileWithNothingInItHasNoCover() {
-        assertNull(extractEpubCover(ByteArray(0)))
+        assertNull(extractEpubCover(ByteArraySource(ByteArray(0))))
     }
 }

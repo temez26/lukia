@@ -2,6 +2,7 @@ package io.lukia.features.library.infrastructure.importing.cover
 
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.infrastructure.shrinkCoverImage
+import io.lukia.features.library.infrastructure.importing.openedDocument
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -56,7 +57,7 @@ class CoverShrinkingTest {
 
     @Test
     fun aRenderedPdfPageIsStoredAtTheSizeTheLibraryKeeps() {
-        val cover = extractCover(DocumentType.PDF, singlePagePdf())
+        val cover = openedDocument(singlePagePdf()) { extractCover(DocumentType.PDF, it) }
 
         assertNotNull(cover)
         assertTrue(longestEdgeOf(cover) <= MaxStoredCoverEdge)

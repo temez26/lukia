@@ -36,12 +36,12 @@ internal class DocumentContents(
  */
 internal fun extractContents(
     type: DocumentType,
-    documentBytes: ByteArray,
+    document: DocumentSource,
     diagnostics: Diagnostics = Diagnostics.None,
 ): DocumentContents {
     val contents = DocumentContents(
-        coverImage = extractCover(type, documentBytes, diagnostics)?.let(::CoverImage),
-        metadata = extractMetadata(type, documentBytes, diagnostics),
+        coverImage = extractCover(type, document, diagnostics)?.let(::CoverImage),
+        metadata = extractMetadata(type, document, diagnostics),
     )
 
     // Recorded here rather than beside either extraction, because a file that

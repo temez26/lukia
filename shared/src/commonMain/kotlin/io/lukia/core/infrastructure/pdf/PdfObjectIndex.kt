@@ -1,5 +1,6 @@
 package io.lukia.core.infrastructure.pdf
 
+import io.lukia.core.infrastructure.ByteSource
 import io.lukia.core.infrastructure.archive.inflateZlib
 
 /**
@@ -13,7 +14,7 @@ import io.lukia.core.infrastructure.archive.inflateZlib
  *
  * It is also what makes a damaged file still give up its chapter list.
  */
-internal class PdfObjectIndex(private val source: PdfByteSource) {
+internal class PdfObjectIndex(private val source: ByteSource) {
 
     private val scan = scanPdfObjects(source)
 

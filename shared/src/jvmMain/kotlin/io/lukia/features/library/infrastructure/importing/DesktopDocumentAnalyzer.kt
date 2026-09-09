@@ -27,9 +27,12 @@ class DesktopDocumentAnalyzer(
         val contents = if (type == DocumentType.UNKNOWN) {
             DocumentContents.Empty
         } else {
-            runCatching { file.readBytes() }
-                .getOrNull()
-                ?.let { extractContents(type, it, diagnostics) }
+            // Opened rather than read - see [DocumentSource]. The handle is
+            // opened on the dispatcher that waits on disks and the extraction
+            // runs on the one sized to the cores, which is where the import
+            // already is: what the extraction does is inflate and render, and
+            // the reads it makes through the handle are kilobytes.
+            openedSource(file)?.use { extractContents(type, it, diagnostics) }
                 ?: DocumentContents.Empty
         }
 
@@ -41,5 +44,9 @@ class DesktopDocumentAnalyzer(
             coverImage = contents.coverImage,
             metadata = contents.metadata,
         )
+    }
+
+    private suspend fun openedSource(file: File): JvmDocumentSource? = withContext(Dispatchers.IO) {
+        runCatching { JvmDocumentSource(file) }.getOrNull()
     }
 }

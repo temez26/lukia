@@ -5,6 +5,7 @@ import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.core.domain.diagnostics.warn
 import io.lukia.core.domain.document.BookMetadata
 import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.infrastructure.ByteSource
 import io.lukia.core.infrastructure.epub.EpubPackage
 
 /**
@@ -20,13 +21,13 @@ import io.lukia.core.infrastructure.epub.EpubPackage
  */
 internal fun extractMetadata(
     type: DocumentType,
-    documentBytes: ByteArray,
+    document: ByteSource,
     diagnostics: Diagnostics = Diagnostics.None,
 ): BookMetadata? {
     val read = when (type) {
-        DocumentType.EPUB -> runCatching { extractEpubMetadata(documentBytes) }
-        DocumentType.DOCX -> runCatching { extractDocxMetadata(documentBytes) }
-        DocumentType.PDF -> runCatching { extractPdfMetadata(documentBytes) }
+        DocumentType.EPUB -> runCatching { extractEpubMetadata(document) }
+        DocumentType.DOCX -> runCatching { extractDocxMetadata(document) }
+        DocumentType.PDF -> runCatching { extractPdfMetadata(document) }
         DocumentType.TEXT, DocumentType.MARKDOWN, DocumentType.UNKNOWN -> return null
     }
 
@@ -49,5 +50,5 @@ internal fun extractMetadata(
     return metadata?.takeIf { !it.isEmpty }
 }
 
-private fun extractEpubMetadata(epubBytes: ByteArray): BookMetadata? =
-    EpubPackage.open(epubBytes)?.metadata()
+private fun extractEpubMetadata(epub: ByteSource): BookMetadata? =
+    EpubPackage.open(epub)?.metadata()

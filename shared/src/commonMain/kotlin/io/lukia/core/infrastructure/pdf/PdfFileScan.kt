@@ -1,5 +1,7 @@
 package io.lukia.core.infrastructure.pdf
 
+import io.lukia.core.infrastructure.ByteSource
+
 /**
  * Where everything sits in a PDF, as found by one pass over its bytes.
  *
@@ -27,7 +29,7 @@ internal class PdfFileScan(
  * object header across a boundary - the case the overlap below exists for, which
  * at the real size would need a megabyte of fixture.
  */
-internal fun scanPdfObjects(source: PdfByteSource, windowBytes: Int = SCAN_WINDOW): PdfFileScan {
+internal fun scanPdfObjects(source: ByteSource, windowBytes: Int = SCAN_WINDOW): PdfFileScan {
     require(windowBytes > SCAN_OVERLAP) { "a window has to be longer than the overlap it keeps" }
 
     val objectMarker = "obj".encodeToByteArray()

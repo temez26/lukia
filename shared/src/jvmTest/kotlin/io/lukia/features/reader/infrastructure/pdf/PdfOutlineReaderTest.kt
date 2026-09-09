@@ -1,6 +1,6 @@
 package io.lukia.features.reader.infrastructure.pdf
 
-import io.lukia.core.infrastructure.pdf.ByteArrayPdfSource
+import io.lukia.core.infrastructure.ByteArraySource
 import io.lukia.core.infrastructure.pdf.MinimalPdf
 import io.lukia.features.reader.domain.outline.OutlineEntry
 import io.lukia.features.reader.infrastructure.openTestPdf
@@ -217,7 +217,7 @@ class PdfOutlineReaderTest {
      */
     @Test
     fun readsTheHandWrittenFixtureTheDeviceTestUses() {
-        val outline = PdfOutlineReader(ByteArrayPdfSource(MinimalPdf.withOutline())).read()
+        val outline = PdfOutlineReader(ByteArraySource(MinimalPdf.withOutline())).read()
 
         assertEquals(
             listOf(MinimalPdf.FIRST_CHAPTER_TITLE to 0, MinimalPdf.SECOND_CHAPTER_TITLE to 2),
@@ -294,7 +294,7 @@ class PdfOutlineReaderTest {
     }
 
     private fun File.outline(): List<OutlineEntry>? =
-        PdfOutlineReader(ByteArrayPdfSource(readBytes())).read()
+        PdfOutlineReader(ByteArraySource(readBytes())).read()
 
     private fun PDDocument.flatOutline(vararg entries: Pair<String, Int>) {
         val outline = PDDocumentOutline()

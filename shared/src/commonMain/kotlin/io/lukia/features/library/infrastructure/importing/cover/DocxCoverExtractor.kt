@@ -1,5 +1,6 @@
 package io.lukia.features.library.infrastructure.importing.cover
 
+import io.lukia.core.infrastructure.ByteSource
 import io.lukia.core.infrastructure.archive.ZipArchiveReader
 
 /**
@@ -11,8 +12,8 @@ import io.lukia.core.infrastructure.archive.ZipArchiveReader
  * were one is worse than the placeholder the library draws for a document with
  * no cover at all.
  */
-internal fun extractDocxCover(docxBytes: ByteArray): ByteArray? {
-    val zip = ZipArchiveReader(docxBytes)
+internal fun extractDocxCover(docx: ByteSource): ByteArray? {
+    val zip = ZipArchiveReader(docx)
 
     // The extension follows whatever the saving application produced. EMF and
     // WMF are Windows metafiles rather than images anything here can decode, so

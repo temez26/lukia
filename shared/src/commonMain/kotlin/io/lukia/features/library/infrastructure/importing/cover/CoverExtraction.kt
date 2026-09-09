@@ -5,6 +5,7 @@ import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.core.domain.diagnostics.warn
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.infrastructure.shrinkCoverImage
+import io.lukia.features.library.infrastructure.importing.DocumentSource
 
 /**
  * How large a stored cover may be along its longer edge.
@@ -43,13 +44,15 @@ internal const val MaxStoredCoverBytes = 1_000_000
  */
 internal fun extractCover(
     type: DocumentType,
-    documentBytes: ByteArray,
+    document: DocumentSource,
     diagnostics: Diagnostics = Diagnostics.None,
 ): ByteArray? {
     val rendered = when (type) {
-        DocumentType.PDF -> runCatching { renderPdfCover(documentBytes) }
-        DocumentType.EPUB -> runCatching { extractEpubCover(documentBytes) }
-        DocumentType.DOCX -> runCatching { extractDocxCover(documentBytes) }
+        // Drawn rather than read: a PDF stores no cover, only a first page - see
+        // [DocumentSource.renderFirstPage].
+        DocumentType.PDF -> runCatching { document.renderFirstPage() }
+        DocumentType.EPUB -> runCatching { extractEpubCover(document) }
+        DocumentType.DOCX -> runCatching { extractDocxCover(document) }
         DocumentType.TEXT, DocumentType.MARKDOWN, DocumentType.UNKNOWN -> return null
     }
 

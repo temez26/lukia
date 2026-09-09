@@ -1,5 +1,6 @@
 package io.lukia.core.infrastructure.pdf
 
+import io.lukia.core.infrastructure.ByteArraySource
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -18,7 +19,7 @@ import kotlin.test.assertTrue
 class PdfFileScanTest {
 
     private fun scan(bytes: ByteArray, windowBytes: Int = 1 shl 20) =
-        scanPdfObjects(ByteArrayPdfSource(bytes), windowBytes)
+        scanPdfObjects(ByteArraySource(bytes), windowBytes)
 
     @Test
     fun findsEveryObjectAFileDeclares() {
@@ -76,7 +77,7 @@ class PdfFileScanTest {
     @Test
     fun anObjectFoundAcrossABoundaryIsStillReadableWhereItWasFound() {
         val document = MinimalPdf.withOutline()
-        val index = PdfObjectIndex(ByteArrayPdfSource(document))
+        val index = PdfObjectIndex(ByteArraySource(document))
 
         assertEquals("Catalog", assertNotNull(index.catalog())["Type"].asName)
 
