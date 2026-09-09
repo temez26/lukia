@@ -5,13 +5,15 @@ import io.lukia.core.domain.document.PickedFolder
 import io.lukia.features.library.domain.FolderScanner
 import io.lukia.features.library.domain.MaxFolderScanDepth
 import io.lukia.features.library.domain.isSupportedDocument
+import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.autoreleasepool
 import platform.Foundation.NSDirectoryEnumerationSkipsHiddenFiles
 import platform.Foundation.NSDirectoryEnumerationSkipsPackageDescendants
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSURL
 
-@OptIn(ExperimentalForeignApi::class)
+@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 class IOSFolderScanner : FolderScanner {
 
     override suspend fun scan(folder: PickedFolder): List<PickedDocument> {
@@ -34,18 +36,30 @@ class IOSFolderScanner : FolderScanner {
 
         val documents = mutableListOf<PickedDocument>()
 
+        // A pool per entry rather than one round the walk. Every step of the
+        // enumeration hands back an autoreleased URL and reads three autoreleased
+        // strings off it, and a coroutine's worker thread has no run loop to
+        // drain what they are added to - so a folder of ten thousand files was
+        // forty thousand objects held until the thread went away. Draining each
+        // time round keeps the walk's cost the size of what it is keeping.
         while (true) {
-            val fileUrl = enumerator.nextObject() as? NSURL ?: break
+            val more = autoreleasepool {
+                val fileUrl = enumerator.nextObject() as? NSURL ?: return@autoreleasepool false
 
-            // `level` is 1 for the folder's own contents, so this prunes the
-            // first directory that would take the walk past the cap - and
-            // pruning rather than filtering is what stops a deep tree being
-            // walked in full only to have most of it thrown away.
-            if (enumerator.level.toInt() > MaxFolderScanDepth) {
-                enumerator.skipDescendants()
-            } else {
-                fileUrl.asPickedDocument()?.let { documents += it }
+                // `level` is 1 for the folder's own contents, so this prunes the
+                // first directory that would take the walk past the cap - and
+                // pruning rather than filtering is what stops a deep tree being
+                // walked in full only to have most of it thrown away.
+                if (enumerator.level.toInt() > MaxFolderScanDepth) {
+                    enumerator.skipDescendants()
+                } else {
+                    fileUrl.asPickedDocument()?.let { documents += it }
+                }
+
+                true
             }
+
+            if (!more) break
         }
 
         return documents

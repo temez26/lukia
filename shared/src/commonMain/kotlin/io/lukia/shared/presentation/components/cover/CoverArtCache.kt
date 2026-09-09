@@ -144,7 +144,15 @@ internal object CoverArtCache {
         decoded = entries.toMap()
     }
 
-    /** For tests, which must not see what an earlier one left behind. */
+    /**
+     * Lets go of every decoded cover.
+     *
+     * For the platform asking the app to give memory back - see Android's
+     * `onTrimMemory` - and for tests, which must not see what an earlier one
+     * left behind. Nothing is lost either way: a cover dropped here is read and
+     * decoded again the next time a card asks for it, which is the trade this
+     * whole cache exists to make in the other direction.
+     */
     internal suspend fun clear() = mutex.withLock {
         entries.clear()
         pixels = 0
