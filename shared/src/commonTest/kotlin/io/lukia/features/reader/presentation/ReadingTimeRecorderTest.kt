@@ -174,4 +174,95 @@ class ReadingTimeRecorderTest {
     }
 
     private fun Int.hoursWorth() = (this * 60).minutes
+
+    /**
+     * The book going behind something else ends the sitting rather than leaving
+     * it running.
+     *
+     * What this is really pinning is the write on the way out: the clock is
+     * stopped by cancelling the recording coroutine, and a write that gave up on
+     * cancellation would lose everything since the last tick - which for a
+     * reader who backgrounds the app mid-page is most of what they just read.
+     */
+    @Test
+    fun leavingTheAppWritesDownWhatWasReadUpToThatMoment() = runTest {
+        val recorder = recorder()
+
+        recorder.begin()
+        runCurrent()
+        time += 45.seconds
+        recorder.pause()
+        runCurrent()
+
+        assertEquals(45.seconds.inWholeMilliseconds, sessions.all().single().durationMs)
+    }
+
+    /**
+     * And then stops. This is the whole of the finding: a book left open behind
+     * another app went on waking every [WriteEvery] and storing the same number
+     * again for the ten minutes it took [IdleAfter] to notice.
+     */
+    @Test
+    fun leavingTheAppStopsTheClockRatherThanWaitingOutTheIdleTimeout() = runTest {
+        val recorder = recorder()
+
+        recorder.begin()
+        runCurrent()
+        time += 30.seconds
+        recorder.pause()
+        runCurrent()
+
+        val writtenOnTheWayOut = sessions.lengthsWritten
+
+        // Far past the idle timeout, which is when the clock used to give up.
+        repeat(40) {
+            time += WriteEvery
+            advanceTimeBy(WriteEvery)
+            runCurrent()
+        }
+
+        assertEquals(writtenOnTheWayOut, sessions.lengthsWritten, "no writes after leaving")
+        assertEquals(30.seconds.inWholeMilliseconds, sessions.all().single().durationMs)
+    }
+
+    /**
+     * Coming back is a new sitting, so the stretch spent elsewhere is credited to
+     * nobody. Resuming the old one would have counted it.
+     */
+    @Test
+    fun timeSpentAwayFromTheAppIsNotReadingTime() = runTest {
+        val recorder = recorder()
+
+        recorder.begin()
+        runCurrent()
+        time += 1.minutes
+        recorder.pause()
+        runCurrent()
+
+        // Away for an hour.
+        time += 60.minutes
+
+        recorder.begin()
+        runCurrent()
+        time += 2.minutes
+        recorder.onActivity()
+        runCurrent()
+
+        val sittings = sessions.all()
+
+        assertEquals(2, sittings.size, "one sitting each side of the trip away")
+        assertEquals(1.minutes.inWholeMilliseconds, sittings.first().durationMs)
+        assertEquals(2.minutes.inWholeMilliseconds, sittings.last().durationMs)
+    }
+
+    /** A book that was never opened has no sitting for leaving to write down. */
+    @Test
+    fun leavingABookThatNeverStartedWritesNothing() = runTest {
+        val recorder = recorder()
+
+        recorder.pause()
+        runCurrent()
+
+        assertEquals(emptyList(), sessions.all())
+    }
 }

@@ -39,14 +39,50 @@ internal class BookReading(
     /** Null until the stored position has been read, which the page list waits for. */
     val initialPosition: StateFlow<ReadingProgress?> = _initialPosition.asStateFlow()
 
+    /** Whether a book actually opened. */
+    private var opened = false
+
     /**
-     * The book is on screen, and its clock starts.
+     * Whether the reader is in front of somebody.
+     *
+     * Starts true because a screen is composed to be looked at; what moves it is
+     * the app going behind something else - see [onScreen].
+     */
+    private var onScreen = true
+
+    /**
+     * The book is open, and its clock starts.
      *
      * Called once the document has actually opened, so a file that could not be
      * opened is not recorded as an evening's reading.
      */
     fun begin() {
-        time.begin()
+        opened = true
+
+        startIfBeingRead()
+    }
+
+    /**
+     * The reader has come to the front of the app, or gone from it.
+     *
+     * Both halves matter. Going tells the clock to stop, which is the whole
+     * point: a book left open behind another app was counted as read for ten
+     * minutes and written to the database thirty times on the way. Coming back
+     * starts a fresh sitting, so the stretch in between is credited to nobody.
+     *
+     * Held here beside [opened] rather than passed straight to the recorder,
+     * because the two questions have to be asked together. A book that opens
+     * while the app is already behind something would otherwise start a sitting
+     * nobody is watching, with nothing left to come and stop it.
+     */
+    fun onScreen(visible: Boolean) {
+        onScreen = visible
+
+        if (visible) startIfBeingRead() else time.pause()
+    }
+
+    private fun startIfBeingRead() {
+        if (opened && onScreen) time.begin()
     }
 
     /**

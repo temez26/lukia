@@ -170,8 +170,6 @@ class ReaderViewModel(
                 record.restore(state.data)
                 loadOutline(state.data)
 
-                // Only once there is a book on screen: a file that could not be
-                // opened is not an evening's reading.
                 record.begin()
             }
         }
@@ -273,9 +271,10 @@ class ReaderViewModel(
         }
     }
 
-    fun retry() {
-        reopen()
-    }
+    /** The reader has come to the front of the app, or gone from it. */
+    fun onScreenChanged(visible: Boolean) = record.onScreen(visible)
+
+    fun retry() = reopen()
 
     /**
      * Puts the book back to before it was opened, and opens it again.
