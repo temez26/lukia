@@ -159,26 +159,46 @@ private class PageBuilder(
         var consumed = 0
 
         while (true) {
+            // Measured once, and carried through every question asked of it
+            // below.
+            //
+            // How tall a block is does not depend on where it lands; how much
+            // room is left on the page does. So the height is read once and the
+            // room re-read each time, rather than the block being measured
+            // again for each question - which is what this did, four times over
+            // for a block that fits and five for one that has to be cut.
+            //
+            // The measuring itself was cached, so what those four bought was not
+            // four layouts. It was four AnnotatedStrings rebuilt from the
+            // block's runs and four probes of the measurer's cache, each
+            // comparing a whole paragraph character by character, to learn one
+            // number that had not moved - and on iOS all of it on the thread
+            // drawing the reader, which is the only thread that platform allows
+            // text to be laid out on. See [measuringContext].
+            val height = sizes.height(remaining)
+
             // A block that would fit a page of its own, but not what is left of
             // this one, ends the page here - which is what keeps a paragraph in
             // one piece wherever one can be.
-            if (!fits(remaining) && sizes.height(remaining) <= pageHeightPx) flush()
+            if (height > availablePx() && height <= pageHeightPx) flush()
 
-            val cut = cutToFill(remaining)
+            val cut = cutToFill(remaining, height)
 
             if (cut == null) {
                 // Either it fits, or there is nothing in it to divide - a plate,
                 // or a line of code longer than the screen. The second kind gets
                 // a page to itself and is drawn scaled down to it.
-                if (!fits(remaining)) flush()
+                if (height > availablePx()) flush()
 
-                place(blockIndex, remaining, Slice(text, consumed, cut = false))
+                place(blockIndex, remaining, height, Slice(text, consumed, cut = false))
                 return
             }
 
             val (head, tail, length) = cut
 
-            place(blockIndex, head, Slice(text, consumed, cut = true))
+            // The head is a block that did not exist a moment ago, so it is the
+            // one thing here that has to be measured rather than remembered.
+            place(blockIndex, head, sizes.height(head), Slice(text, consumed, cut = true))
             flush()
 
             remaining = tail
@@ -192,29 +212,28 @@ private class PageBuilder(
         return PaginatedChunk(pages = pages.toList(), sectionPages = sectionPages.toList())
     }
 
-    /** Whether what is left of the page can hold [block] whole. */
-    private fun fits(block: TextBlock): Boolean = sizes.height(block) <= availablePx()
-
     /**
-     * [block] cut to fill what is left of the page - the head that fits, the
-     * tail that does not, and how many characters the head took.
+     * [block], already measured as [heightPx], cut to fill what is left of the
+     * page - the head that fits, the tail that does not, and how many characters
+     * the head took.
      *
      * Null when the block should go on as it is - it fits, or there is nothing
      * inside it to cut between. The room left is filled rather than wasted: a
      * block this size is a run of text with no end in sight, and a fresh page
      * would not make it fit either.
      */
-    private fun cutToFill(block: TextBlock): Triple<TextBlock, TextBlock, Int>? {
+    private fun cutToFill(block: TextBlock, heightPx: Int): Triple<TextBlock, TextBlock, Int>? {
         val available = availablePx()
 
-        if (available <= 0 || sizes.height(block) <= available) return null
+        if (available <= 0 || heightPx <= available) return null
 
         val (head, tail) = block.cutAt(sizes.fittingLength(block, available)) ?: return null
 
         return Triple(head, tail, blockText(head).length)
     }
 
-    private fun place(blockIndex: Int, block: TextBlock, slice: Slice) {
+    /** [heightPx] is [block]'s own height, measured once by the caller. */
+    private fun place(blockIndex: Int, block: TextBlock, heightPx: Int, slice: Slice) {
         if (current.isNotEmpty()) usedPx += sizes.spacingPx
 
         current += PageBlock(
@@ -226,7 +245,7 @@ private class PageBuilder(
             whole = slice.whole,
         )
 
-        usedPx += sizes.height(block)
+        usedPx += heightPx
     }
 
     /**
