@@ -27,6 +27,21 @@ class ImportDocumentUseCase(
      * rendering, which is CPU-bound.
      */
     suspend operator fun invoke(pickedDocument: PickedDocument): Result<DocumentInfo> =
+        analyse(pickedDocument).onSuccess { libraryRepository.addDocument(it) }
+
+    /**
+     * What the file turns out to be, without storing it.
+     *
+     * The expensive half on its own, for a caller bringing in a whole folder:
+     * reading a book and rendering its cover is what an import spends its time
+     * on, while writing the row is a moment - so a batch analyses one book at a
+     * time and stores them in groups, rather than paying for a separate commit
+     * per book. See [ImportDocumentsUseCase].
+     *
+     * A caller that takes this route owes the storing. Nothing here has written
+     * anything down.
+     */
+    suspend fun analyse(pickedDocument: PickedDocument): Result<DocumentInfo> =
         withContext(dispatcher) {
             val documentInfo = documentAnalyzer.analyze(pickedDocument)
 
@@ -34,7 +49,6 @@ class ImportDocumentUseCase(
                 return@withContext AppError.UnsupportedFileType.asFailure()
             }
 
-            libraryRepository.addDocument(documentInfo)
             Result.success(documentInfo)
         }
 }

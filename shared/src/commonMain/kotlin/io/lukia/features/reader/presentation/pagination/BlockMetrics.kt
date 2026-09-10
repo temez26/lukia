@@ -1,6 +1,7 @@
 package io.lukia.features.reader.presentation.pagination
 
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -119,7 +120,45 @@ internal class BlockMetrics(
         else -> 0
     }
 
-    private fun layout(block: TextBlock) = when (block) {
+    /**
+     * The last block laid out, and what came of laying it out.
+     *
+     * `PageBuilder` measures each block once and carries the number through the
+     * questions it asks - so what is left for this to catch is the one block
+     * that is laid out twice for two different answers: a block too tall for the
+     * page, whose height says it must be cut and whose [fittingLength] then
+     * needs the same layout again to find the line to cut at.
+     *
+     * What that saves is not the measuring - [TextMeasurer] keeps a cache of its
+     * own and the repeat hits it. It is the cost of asking: an
+     * [AnnotatedString] rebuilt from the block's runs, and a probe that compares
+     * a whole paragraph character by character to find the entry already sitting
+     * there.
+     *
+     * Held by identity rather than by value, because comparing two blocks means
+     * comparing their text, which is the comparison this exists to avoid. A
+     * block is one object handed down from the parse, so identity is what the
+     * two calls actually share - and the halves a cut produces are new objects,
+     * which miss and are measured as they should be.
+     *
+     * Plain `var`s because one of these belongs to one worker and is asked only
+     * from it: the runs are dispatched under a lock per measurer, so no two
+     * coroutines are ever inside the same [BlockMetrics]. See
+     * `paginateProgressively`.
+     */
+    private var lastBlock: TextBlock? = null
+    private var lastLayout: TextLayoutResult? = null
+
+    private fun layout(block: TextBlock): TextLayoutResult {
+        lastLayout?.takeIf { lastBlock === block }?.let { return it }
+
+        return laidOut(block).also {
+            lastBlock = block
+            lastLayout = it
+        }
+    }
+
+    private fun laidOut(block: TextBlock): TextLayoutResult = when (block) {
         is TextBlock.Heading -> measure(
             block.text.annotated(),
             headingStyle(style, block.level),

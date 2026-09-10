@@ -35,54 +35,72 @@ class SqlLibraryRepository(
 
     private val documents = database.documentQueries
 
-    /**
-     * Two statements in one transaction: add the book if the library has never
-     * seen it, then bring what the analyser knows up to date. Together they say
-     * "store this", while leaving the shelf position and the favourite - which
-     * belong to the reader, not to the file - exactly as they were.
-     */
     override suspend fun addDocument(document: DocumentInfo) = withContext(dispatcher) {
+        documents.transaction { store(document) }
+    }
+
+    /**
+     * The whole batch in one transaction, which is the point of it: a folder
+     * import is thousands of books, and one commit apiece is thousands of round
+     * trips the store has to make durable one after another. Written together
+     * they cost one.
+     *
+     * The caller decides how large a batch is, and keeps it small enough that
+     * stopping an import loses only the last of them - see
+     * `ImportDocumentsUseCase`.
+     */
+    override suspend fun addDocuments(batch: List<DocumentInfo>) = withContext(dispatcher) {
+        documents.transaction { batch.forEach { store(it) } }
+    }
+
+    /**
+     * Two statements: add the book if the library has never seen it, then bring
+     * what the analyser knows up to date. Together they say "store this", while
+     * leaving the shelf position and the favourite - which belong to the reader,
+     * not to the file - exactly as they were.
+     *
+     * Called from inside a transaction, which is what makes the pair atomic.
+     */
+    private fun store(document: DocumentInfo) {
         val picked = document.document
         val metadata = document.metadata
 
-        documents.transaction {
-            documents.insertIfAbsent(
-                location = picked.location,
-                fileName = picked.fileName,
-                extension = picked.extension,
-                type = document.type.name,
-                fileExists = document.exists,
-                sizeBytes = document.sizeBytes,
-                coverImage = document.coverImage?.bytes,
-                metaTitle = metadata?.title,
-                metaAuthors = metadata?.authors.toStoredList(),
-                metaPublisher = metadata?.publisher,
-                metaPublished = metadata?.published,
-                metaLanguage = metadata?.language,
-                metaDescription = metadata?.description,
-                metaSubjects = metadata?.subjects.toStoredList(),
-                metaIdentifier = metadata?.identifier,
-            )
+        documents.insertIfAbsent(
+            location = picked.location,
+            fileName = picked.fileName,
+            extension = picked.extension,
+            type = document.type.name,
+            fileExists = document.exists,
+            sizeBytes = document.sizeBytes,
+            coverImage = document.coverImage?.bytes,
+            metaTitle = metadata?.title,
+            metaAuthors = metadata?.authors.toStoredList(),
+            metaPublisher = metadata?.publisher,
+            metaPublished = metadata?.published,
+            metaLanguage = metadata?.language,
+            metaDescription = metadata?.description,
+            metaSubjects = metadata?.subjects.toStoredList(),
+            metaIdentifier = metadata?.identifier,
+        )
 
-            documents.refresh(
-                fileName = picked.fileName,
-                extension = picked.extension,
-                type = document.type.name,
-                fileExists = document.exists,
-                sizeBytes = document.sizeBytes,
-                coverImage = document.coverImage?.bytes,
-                hasMetadata = metadata != null,
-                metaTitle = metadata?.title,
-                metaAuthors = metadata?.authors.toStoredList(),
-                metaPublisher = metadata?.publisher,
-                metaPublished = metadata?.published,
-                metaLanguage = metadata?.language,
-                metaDescription = metadata?.description,
-                metaSubjects = metadata?.subjects.toStoredList(),
-                metaIdentifier = metadata?.identifier,
-                location = picked.location,
-            )
-        }
+        documents.refresh(
+            fileName = picked.fileName,
+            extension = picked.extension,
+            type = document.type.name,
+            fileExists = document.exists,
+            sizeBytes = document.sizeBytes,
+            coverImage = document.coverImage?.bytes,
+            hasMetadata = metadata != null,
+            metaTitle = metadata?.title,
+            metaAuthors = metadata?.authors.toStoredList(),
+            metaPublisher = metadata?.publisher,
+            metaPublished = metadata?.published,
+            metaLanguage = metadata?.language,
+            metaDescription = metadata?.description,
+            metaSubjects = metadata?.subjects.toStoredList(),
+            metaIdentifier = metadata?.identifier,
+            location = picked.location,
+        )
     }
 
     override suspend fun getDocuments(): List<DocumentInfo> = withContext(dispatcher) {

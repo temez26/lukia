@@ -156,6 +156,42 @@ class ImportDocumentsUseCaseTest {
         assertEquals(listOf(1 to 2, 2 to 2), seen)
     }
 
+    /**
+     * A folder of any size is written in groups rather than a book at a time.
+     *
+     * The saving is the commits: a store makes each one durable before the next
+     * may begin, so five thousand books used to mean five thousand of them. The
+     * groups stay small on purpose - see `DocumentsPerTransaction` - because a
+     * group is held in memory with every cover in it, and because a stopped
+     * import keeps what has already arrived.
+     */
+    @Test
+    fun aLargeImportIsWrittenInGroupsRatherThanABookAtATime() = runTest {
+        val documents = List(60) { TestDocuments.pdf(location = "/test/book$it.pdf") }
+        val repository = FakeImportLibraryRepository()
+
+        val summary = createUseCase(repository)(documents).getOrThrow()
+
+        assertEquals(ImportSummary(imported = 60, alreadyInLibrary = 0, failed = 0), summary)
+        assertEquals(60, repository.documents.size)
+        assertEquals(listOf(25, 25, 10), repository.batches, "written in groups of 25")
+    }
+
+    /**
+     * Including the tail: the books left over when the last group is short still
+     * reach the shelf rather than waiting for a group that never fills.
+     */
+    @Test
+    fun anImportSmallerThanAGroupStillArrives() = runTest {
+        val documents = List(3) { TestDocuments.pdf(location = "/test/book$it.pdf") }
+        val repository = FakeImportLibraryRepository()
+
+        createUseCase(repository)(documents).getOrThrow()
+
+        assertEquals(3, repository.documents.size)
+        assertEquals(listOf(3), repository.batches)
+    }
+
     @Test
     fun reportsProgressAfterEachFile() = runTest {
         val seen = mutableListOf<Pair<Int, Int>>()

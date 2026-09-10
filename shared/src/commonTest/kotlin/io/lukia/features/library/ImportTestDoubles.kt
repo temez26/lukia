@@ -42,6 +42,21 @@ class FakeImportLibraryRepository(
     val documents = initialDocuments.toMutableList()
 
     /**
+     * The size of each group the import handed over, in order.
+     *
+     * Recorded because how a batch is written is part of what the import is for:
+     * a folder of thousands stored a book at a time is a commit apiece, and the
+     * grouping is the only thing standing between the reader and that.
+     */
+    val batches = mutableListOf<Int>()
+
+    override suspend fun addDocuments(batch: List<DocumentInfo>) {
+        batches += batch.size
+
+        batch.forEach { addDocument(it) }
+    }
+
+    /**
      * Keeps the favourite through a replacement, as the real store does: the
      * flag belongs to the reader and the analyser has no idea it was ever set.
      */

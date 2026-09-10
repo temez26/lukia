@@ -3,8 +3,10 @@ package io.lukia.features.reader.presentation.screens
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleStartEffect
 import io.lukia.features.reader.presentation.ReaderViewModel
 import io.lukia.features.reader.presentation.components.chrome.readerToolbarHeight
 import io.lukia.features.reader.presentation.translation.bulkTranslation
@@ -66,6 +68,8 @@ fun ReaderScreen(
     val wordInquiry by viewModel.wordInquiry.collectAsState()
     val translationNotes by viewModel.translationNotes.collectAsState()
 
+    ReportReaderVisibility(viewModel::onScreenChanged)
+
     ReaderContent(
         uiState = uiState,
         settings = settings,
@@ -100,6 +104,32 @@ fun ReaderScreen(
         sentencesOnPage = viewModel::sentencesOn,
         renderPage = viewModel::page,
     )
+}
+
+/**
+ * Tells [onVisibleChange] whether the book is actually in front of somebody,
+ * which is what the reading clock counts - see `ReadingTimeRecorder.pause`.
+ *
+ * Started and stopped rather than resumed and paused. A reader who pulls the
+ * notification shade over the book, or puts a dialog in front of it, has not
+ * stopped reading, and a clock that stopped for either would undercount exactly
+ * the careful reader this app is for. Going behind another app is the line worth
+ * drawing, and that is what stopping means.
+ *
+ * The lambda is read through [rememberUpdatedState] rather than keyed into the
+ * effect, so a caller handing down a fresh one each composition does not
+ * re-register the observer - which would report the book as arriving again every
+ * time anything on the screen changed.
+ */
+@Composable
+private fun ReportReaderVisibility(onVisibleChange: (Boolean) -> Unit) {
+    val report by rememberUpdatedState(onVisibleChange)
+
+    LifecycleStartEffect(Unit) {
+        report(true)
+
+        onStopOrDispose { report(false) }
+    }
 }
 
 /**

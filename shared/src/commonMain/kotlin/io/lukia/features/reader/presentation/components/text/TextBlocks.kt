@@ -40,6 +40,7 @@ import io.lukia.core.presentation.decodeToImageBitmapOrNull
 import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.domain.text.TextBlock
 import io.lukia.features.reader.presentation.components.passages.BlockActions
+import io.lukia.features.reader.presentation.rendering.FigureImageCache
 import io.lukia.features.reader.presentation.theme.CodePaddingHorizontal
 import io.lukia.features.reader.presentation.theme.CodePaddingVertical
 import io.lukia.features.reader.presentation.theme.HeadingTopPadding
@@ -189,8 +190,11 @@ internal fun CodeBlock(block: TextBlock.Code, style: TextStyle) {
  * An illustration, decoded only once it is on screen.
  *
  * A book can carry hundreds of these, and decoding them all when it opens would
- * cost more memory than every word in it. Held as bytes until here, and dropped
- * again by Compose when the page scrolls far enough away to be discarded.
+ * cost more memory than every word in it. Held as bytes until here, and kept
+ * once decoded - see [FigureImageCache], which is bounded, so a book of plates
+ * costs the same as a book with two. Decoding on every appearance instead, as
+ * this once did, meant a reader moving back and forth over a spread paying
+ * megabytes and a pause for the same picture each time it came into view.
  *
  * A figure that cannot be decoded draws nothing rather than a broken-image mark:
  * the book is still perfectly readable without it, and a row of error icons down
@@ -218,9 +222,29 @@ internal fun FigureBlock(
     maxHeight: Dp = Dp.Unspecified,
     size: FigureSize = FigureSize.Normal,
 ) {
-    val image by produceState<ImageBitmap?>(initialValue = null, block) {
+    // Asked here rather than left to the producer below, which suspends and so
+    // cannot answer before the frame this block is composed on. A plate already
+    // decoded - every plate on a spread being scrolled back over - would
+    // otherwise start as nothing and arrive a frame later, leaving a gap where
+    // the picture goes and shifting the text under it as it lands.
+    val known = remember(block) { FigureImageCache.peek(block) }
+
+    val image by produceState(initialValue = known, block) {
+        // Reset explicitly: produceState keeps the previous value across a key
+        // change, which would otherwise leave one plate standing under another's
+        // caption for as long as the new one takes to decode.
+        value = known
+
+        // Run even when the plate was already decoded, so that asking the cache
+        // for it is what marks it as recently used. What comes back is the image
+        // already on screen, so nothing recomposes.
         value = withContext(Dispatchers.Default) {
-            block.bytes.decodeToImageBitmapOrNull()
+            // A plate that will not decode is not stored, so a broken one is
+            // tried again each time it comes back into view. That is the right
+            // way round: remembering an absence would mean holding on to the
+            // block that failed, and a book carries one or two of these where
+            // it carries hundreds that work.
+            FigureImageCache.imageFor(block) { block.bytes.decodeToImageBitmapOrNull() }
         }
     }
 

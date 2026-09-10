@@ -5,8 +5,10 @@ import io.lukia.core.infrastructure.ioDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.time.Clock
 import kotlin.time.Duration
@@ -29,10 +31,11 @@ internal val IdleAfter: Duration = 10.minutes
 /**
  * How often the sitting's length is written down when nothing else prompts it.
  *
- * Often, because there is no reliable moment to write it at the end: a ViewModel
- * being cleared cannot start work, and an app being killed does not ask. Writing
- * as it goes means what is lost is the last few seconds rather than the whole
- * sitting, and the write is one `UPDATE` of one integer.
+ * Often, because an app being killed does not ask. A sitting that ends in any of
+ * the ordinary ways writes itself down as it goes - see `ReadingTimeRecorder.record`
+ * - but a process that is taken away has no way to, so writing as it goes means
+ * what is lost there is the last few seconds rather than the whole sitting. The
+ * write is one `UPDATE` of one integer.
  */
 internal val WriteEvery: Duration = 20.seconds
 
@@ -63,10 +66,13 @@ private class Sitting(val start: TimeMark) {
 /**
  * Records how long one book is read for.
  *
- * A sitting begins when the book opens and runs until the reader has left it
- * alone for [IdleAfter]; a page turn after that begins a new one. Deliberately
- * simple - the app cannot see whether anybody is looking at the screen, so it
- * counts the time a book was open and being turned, and says so.
+ * A sitting begins when the book opens and ends when the book is put away, when
+ * the app goes behind something else - see [pause] - or when the reader has left
+ * it alone for [IdleAfter]. A page turn after that last one begins a new sitting.
+ *
+ * Deliberately simple past that: the app cannot see whether anybody is looking at
+ * a screen it is on the front of, so within a sitting it counts the time the book
+ * was open and being turned, and says so.
  *
  * All inside one coroutine, woken by a page turn or by its own clock, which is
  * what keeps the sitting's state free of locks. It runs on [dispatcher] rather
@@ -105,13 +111,40 @@ internal class ReadingTimeRecorder(
      * open is not recorded as having been read.
      */
     fun begin() {
-        if (running != null) return
+        // A sitting that has ended leaves its job behind, so this asks whether
+        // one is still running rather than whether one was ever started - which
+        // is what lets a reader coming back to the book begin a new sitting.
+        if (running?.isActive == true) return
 
         // Marked here rather than inside the coroutine: the sitting started when
         // the book opened, not when a dispatcher got round to the recording.
         val opened = timeSource.markNow()
 
         running = scope.launch(dispatcher) { record(opened) }
+    }
+
+    /**
+     * The book is no longer in front of anybody - the app has gone behind
+     * something else, or the reader has left the screen.
+     *
+     * The sitting ends here rather than running on. Without it the clock went on
+     * counting an app nobody was looking at, and went on writing its length to
+     * the database every [WriteEvery] until the idle timeout caught up ten
+     * minutes later - some thirty wakeups and thirty writes to record time
+     * nobody spent reading.
+     *
+     * What was read is written down on the way out, so ending a sitting costs
+     * none of it - see [record]. Coming back begins a new sitting rather than
+     * resuming this one, which is the point: the stretch in between was not
+     * reading, and a resumed sitting would count it.
+     *
+     * The idle timeout stays for what this cannot see. A reader who leaves the
+     * book open in front of them and walks away has not backgrounded anything,
+     * and [IdleAfter] is still the only thing that notices.
+     */
+    fun pause() {
+        running?.cancel()
+        running = null
     }
 
     /**
@@ -126,6 +159,31 @@ internal class ReadingTimeRecorder(
 
     private suspend fun record(opened: TimeMark) {
         var sitting = Sitting(opened)
+
+        try {
+            loop(sitting) { sitting = it }
+        } finally {
+            // However this coroutine came to an end - the book put away, the app
+            // gone behind something, the reader leaving the screen - the sitting
+            // ends with it and its length is written down.
+            //
+            // Uncancellable because being cancelled is the ordinary way in: a
+            // write that gave up on cancellation would lose exactly the seconds
+            // this exists to keep, which is what leaving the book used to cost.
+            withContext(NonCancellable) { write(sitting) }
+        }
+    }
+
+    /**
+     * The sitting, until something ends it.
+     *
+     * Never returns: it is left by cancellation, which is what [record]'s
+     * `finally` is there to catch. [restarted] hands back the sitting that
+     * replaces one gone idle, so the write on the way out is about the sitting
+     * actually in progress rather than the one this started with.
+     */
+    private suspend fun loop(first: Sitting, restarted: (Sitting) -> Unit) {
+        var sitting = first
 
         // Whether what has been written down is all there is to write: the
         // sitting has gone idle, so its counted length has stopped growing.
@@ -150,7 +208,7 @@ internal class ReadingTimeRecorder(
                 // The old sitting ended when the reader stopped, hours ago; the
                 // page just turned is the first of a new one.
                 write(sitting)
-                sitting = Sitting(timeSource.markNow())
+                sitting = Sitting(timeSource.markNow()).also(restarted)
                 settled = false
                 continue
             }

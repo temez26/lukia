@@ -20,6 +20,25 @@ interface LibraryRepository : DocumentCatalogue {
     suspend fun addDocument(document: DocumentInfo)
 
     /**
+     * Adds [batch] as one piece of work, with the same meaning per document as
+     * [addDocument].
+     *
+     * Here because a folder import is thousands of books, and storing them one
+     * at a time is thousands of separate commits - each one a round trip the
+     * store has to make durable before the next may begin. A store that can do
+     * better does; one that cannot is no worse off than before, which is what
+     * the default below is.
+     *
+     * All or nothing is deliberately *not* promised. The caller hands these over
+     * in chunks precisely so that stopping an import keeps what has already
+     * arrived, and a store free to commit the batch in pieces is free to honour
+     * that.
+     */
+    suspend fun addDocuments(batch: List<DocumentInfo>) {
+        batch.forEach { addDocument(it) }
+    }
+
+    /**
      * The locations of every document in the library, and nothing else about
      * them. What an import needs to know which files it may leave alone, without
      * reading back the cover art of the whole library to find out.
