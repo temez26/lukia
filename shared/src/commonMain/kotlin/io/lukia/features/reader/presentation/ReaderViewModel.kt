@@ -20,6 +20,7 @@ import io.lukia.features.reader.domain.page.PageSentence
 import io.lukia.features.reader.domain.page.pageSentences
 import io.lukia.features.reader.domain.text.TextExtraction
 import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
+import io.lukia.features.reader.presentation.rendering.FigureImageCache
 import io.lukia.features.reader.presentation.rendering.PageSentenceCache
 import io.lukia.features.reader.presentation.rendering.ReaderLayoutChoice
 import io.lukia.features.reader.presentation.rendering.RenderedPageCache
@@ -344,5 +345,6 @@ class ReaderViewModel(
     private fun closeDocument() {
         _uiState.value.dataOrNull?.close()
         renderedPages.clear()
+        FigureImageCache.clear()
     }
 }

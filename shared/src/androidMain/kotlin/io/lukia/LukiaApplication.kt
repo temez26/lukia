@@ -5,6 +5,7 @@ import android.content.ComponentCallbacks2
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import io.lukia.di.commonModule
 import io.lukia.di.platformModule
+import io.lukia.features.reader.presentation.rendering.FigureImageCache
 import io.lukia.shared.presentation.components.cover.CoverArtCache
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -63,6 +64,11 @@ class LukiaApplication : Application() {
         super.onTrimMemory(level)
 
         if (level < ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN) return
+
+        // The plates of whatever book is open go the same way and for the same
+        // reason: bounded, re-readable from the book, and worth far less than
+        // the process staying alive.
+        FigureImageCache.clear()
 
         scope.launch { CoverArtCache.clear() }
     }
