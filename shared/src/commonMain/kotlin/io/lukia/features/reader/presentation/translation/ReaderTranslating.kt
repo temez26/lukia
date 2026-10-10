@@ -138,17 +138,16 @@ fun ReaderViewModel.onWordInquiryDismissed() {
 /**
  * Does whatever the panel offered to do about the word on the page, and closes.
  *
- * One entry point for all three, because they are one gesture underneath: a tap
- * on a passage puts it back, brings it forward, or asks again, decided by what
+ * One entry point for all three, because they are one gesture underneath: the
+ * passage is put back, brought forward, or asked about again, decided by what
  * has become of it - see
- * [io.lukia.features.reader.presentation.translation.TranslationSession.onPassageTapped].
- * The panel's button is that tap, reached from a panel instead of from the page.
+ * [io.lukia.features.reader.presentation.translation.TranslationSession.onPassageActioned].
  */
 fun ReaderViewModel.onInquiredWordActioned() {
     val selection = translation.inquiredWord ?: return
     val document = uiState.value.dataOrNull ?: return
 
-    translation.onPassageTapped(selection.anchor) { requestFor(document, selection) }
+    translation.onPassageActioned(selection.anchor) { requestFor(document, selection) }
     translation.dismissWordInquiry()
 }
 

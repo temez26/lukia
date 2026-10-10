@@ -123,7 +123,8 @@ class TranslationSessionVisibilityTest {
      * again. A service that refused a passage once refuses it as firmly the
      * fortieth time, and each refusal is a request somebody pays for.
      *
-     * Tapping it is still how the reader retries: that is a gesture, this is not.
+     * Tapping it away and tapping again is still how the reader retries: that
+     * is a gesture, this is not.
      */
     @Test
     fun aPassageThatFailedIsNotAskedAboutAgainWhenThePageIsSweptAgain() = runTest {
@@ -157,6 +158,8 @@ class TranslationSessionVisibilityTest {
         runCurrent()
         session.onPassageRequested(anchor) { request("Call me Ishmael.") }
         runCurrent()
+        // Once to put the failure away, once to ask.
+        session.tap(anchor)
         session.tap(anchor)
         runCurrent()
 

@@ -201,6 +201,11 @@ internal class ReaderTranslations(
         session.onPassageTapped(anchor, request)
     }
 
+    /** The word panel's button, pressed about the passage it is open on. */
+    fun onPassageActioned(anchor: TextAnchor, request: () -> TranslationRequest) {
+        session.onPassageActioned(anchor, request)
+    }
+
     /**
      * A word the reader held rather than tapped, having already looked it up.
      *

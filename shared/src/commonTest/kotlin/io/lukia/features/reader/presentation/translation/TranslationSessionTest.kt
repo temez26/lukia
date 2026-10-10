@@ -8,6 +8,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 
 /**
  * A passage the reader points at: what it says while it waits, what it says
@@ -122,9 +123,32 @@ class TranslationSessionTest {
         )
     }
 
-    /** Tapping a failed passage is how somebody retries it. */
+    /**
+     * Tapping a failed passage takes the error off the page, without asking a
+     * service that may only fail again and put it straight back.
+     */
     @Test
-    fun tappingAFailedPassageTriesAgain() = runTest {
+    fun tappingAFailedPassagePutsTheFailureAway() = runTest {
+        var attempt = 0
+        val session = session {
+            attempt++
+            throw RuntimeException("no network")
+        }
+
+        session.tap(anchor)
+        runCurrent()
+        assertIs<PassageTranslation.Failed>(session.passages.value[anchor])
+
+        session.tap(anchor)
+        runCurrent()
+
+        assertNull(session.passages.value[anchor], "the failure was left on the page")
+        assertEquals(1, attempt)
+    }
+
+    /** And the tap after that finds an untouched passage, which is the retry. */
+    @Test
+    fun tappingAPassageWhoseFailureWasPutAwayTriesAgain() = runTest {
         var attempt = 0
         val session = session {
             attempt++
@@ -133,9 +157,27 @@ class TranslationSessionTest {
 
         session.tap(anchor)
         runCurrent()
-        assertIs<PassageTranslation.Failed>(session.passages.value[anchor])
+        session.tap(anchor)
+        session.tap(anchor)
+        runCurrent()
+
+        assertEquals("Second time.", session.ready(anchor).translation.text)
+        assertEquals(2, attempt)
+    }
+
+    /** The word panel's button says "Try again" over a failure, and does. */
+    @Test
+    fun actioningAFailedPassageTriesAgain() = runTest {
+        var attempt = 0
+        val session = session {
+            attempt++
+            if (attempt == 1) throw RuntimeException("no network") else Translation("Second time.")
+        }
 
         session.tap(anchor)
+        runCurrent()
+
+        session.onPassageActioned(anchor) { request("Call me Ishmael.") }
         runCurrent()
 
         assertEquals("Second time.", session.ready(anchor).translation.text)

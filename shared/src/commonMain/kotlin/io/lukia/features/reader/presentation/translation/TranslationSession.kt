@@ -61,9 +61,10 @@ private val SHOW_ARRIVING_EVERY = 80.milliseconds
  * Every passage translated while one book is open, and what a tap on each of
  * them now means.
  *
- * A tap is one gesture with three meanings, decided by what the passage is
+ * A tap is one gesture with four meanings, decided by what the passage is
  * already showing: an untouched sentence is translated, a translated one flips
- * back to the original, and one showing the original flips forward again.
+ * back to the original, one showing the original flips forward again, and one
+ * that failed is put back to untouched.
  * Holding that here rather than in the screen is what makes it testable without
  * composing anything.
  *
@@ -138,16 +139,34 @@ class TranslationSession(
      * merely flips an already-translated passage never builds one.
      */
     fun onPassageTapped(anchor: TextAnchor, request: () -> TranslationRequest) {
-        when (val current = kept[anchor]) {
+        when (kept[anchor]) {
             // Tapping again while it is still coming back is not a second
             // request. It is somebody wondering whether the first one landed.
             is PassageTranslation.Loading -> Unit
 
             is PassageTranslation.Ready -> flip(anchor)
 
-            // A failure is not a state worth keeping. Tapping it is how the
-            // reader retries, so it behaves exactly as the first tap did.
-            null, is PassageTranslation.Failed -> fetch(anchor, request(), waitsItsTurn = false)
+            // Put away rather than asked again. Retrying here left a reader
+            // whose service was down with no way to get the error off the
+            // page: every tap brought the same one back. The next tap finds
+            // the passage untouched, and that is the retry.
+            is PassageTranslation.Failed -> forget(anchor)
+
+            null -> fetch(anchor, request(), waitsItsTurn = false)
+        }
+    }
+
+    /**
+     * What the word panel's one button does about a passage.
+     *
+     * A tap in every case but a failure, which that button offers to try again
+     * rather than to put away - closing the panel already leaves it be.
+     */
+    fun onPassageActioned(anchor: TextAnchor, request: () -> TranslationRequest) {
+        if (kept[anchor] is PassageTranslation.Failed) {
+            fetch(anchor, request(), waitsItsTurn = false)
+        } else {
+            onPassageTapped(anchor, request)
         }
     }
 
@@ -282,6 +301,11 @@ class TranslationSession(
     /** Drops the ones that have already finished, so the list is the ones in flight. */
     private fun prune() {
         asking.removeAll { it.isCompleted }
+    }
+
+    private fun forget(anchor: TextAnchor) {
+        kept.remove(anchor)
+        _passages.value = kept.toMap()
     }
 
     private fun put(anchor: TextAnchor, state: PassageTranslation) {
