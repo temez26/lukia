@@ -103,14 +103,13 @@ internal class BookReading(
         _initialPosition.value = when {
             stored == null -> ReadingProgress(pageIndex = 0, pageCount = 0)
 
-            // A fixed-layout document's pages are its own, so a stored page past
-            // the end of one is a file that has been replaced by a shorter one
-            // under the same name - and no place to open at. A reflowable book
-            // has no pages until it has been laid out for a window, so there is
-            // nothing here to clamp it against; the page list does that, against
-            // the layout it just made.
+            // A fixed-layout document's pages are its own, so the stored place
+            // is found among them here - see [pageAmong]. A reflowable book has
+            // no pages until it has been laid out for a window, so there is
+            // nothing here to place it against; the page list does that,
+            // against the layout it just made.
             content is PagedContent -> ReadingProgress(
-                pageIndex = stored.pageIndex.coerceIn(0, (content.partCount - 1).coerceAtLeast(0)),
+                pageIndex = stored.pageAmong(content.partCount),
                 pageCount = content.partCount,
             )
 
@@ -157,6 +156,24 @@ internal class BookReading(
  * Public only because it names a ViewModel's dependency, and that ViewModel is
  * reached from outside this feature.
  */
+/**
+ * The page of a document [pageCount] long that this position is on.
+ *
+ * As far through as it was stored, when it was stored against another length:
+ * a PDF read as text is as many pages as the window made of it, so page 353 of
+ * 745 there is page 223 of the file's own 472, not its page 353. Never past the
+ * end either way, which is also what a file replaced by a shorter one under the
+ * same name needs.
+ */
+private fun ReadingProgress.pageAmong(pageCount: Int): Int {
+    val last = (pageCount - 1).coerceAtLeast(0)
+    val stored = this.pageCount
+
+    if (stored <= 0 || stored == pageCount) return pageIndex.coerceIn(0, last)
+
+    return (pageIndex.toLong() * pageCount / stored).toInt().coerceIn(0, last)
+}
+
 class BookReadingFactory(
     private val positions: ReadingProgressRepository,
     private val sessions: ReadingSessionRepository,

@@ -6,12 +6,13 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -140,7 +141,14 @@ internal fun ReaderContent(
 
         // Created here rather than in the page list so that it survives the list
         // being replaced, and so the toolbar can read the page number from it.
-        val listState = rememberLazyListState()
+        //
+        // A new one when the book stops being pages and becomes text, or the
+        // other way round. The two are different lengths, and a list still
+        // sitting on page 702 of the text was a list past the end of the file's
+        // own 472 pages - which opened it at the last one and stored that.
+        val listState = rememberSaveable(document?.content is PagedContent, saver = LazyListState.Saver) {
+            LazyListState()
+        }
 
         HideChromeWhileScrolling(listState = listState, compact = compact, chrome = chrome)
 

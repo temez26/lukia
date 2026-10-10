@@ -56,6 +56,25 @@ class ReaderPositionTest : ReaderViewModelTestCase() {
     }
 
     /**
+     * A PDF read as text is as many pages as the window made of it, so a place
+     * kept there is a place that far through the file's own pages - not the
+     * page of the same number.
+     */
+    @Test
+    fun aPlaceKeptAgainstAnotherLengthOpensAsFarThroughTheBook() = runTest {
+        val document = pdfInLibrary(pageCount = 472)
+        progress.save(
+            location = document.document.location,
+            progress = ReadingProgress(pageIndex = 353, pageCount = 745),
+        )
+
+        val viewModel = createViewModel(document)
+        viewModel.settled()
+
+        assertEquals(223, viewModel.initialPosition.first { it != null }?.pageIndex)
+    }
+
+    /**
      * A file can be replaced by a shorter one under the same name, and a page
      * that no longer exists is not a place to open at.
      */
