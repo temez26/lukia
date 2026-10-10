@@ -52,7 +52,7 @@ pdfbox = "3.0.7"
 # which is the reason the reader for PDF text is written against a byte source
 # here rather than handing whole files to a library that will not be patched.
 pdfbox-android = "2.0.27.0"
-sqldelight = "2.3.2"
+sqldelight = "2.4.1"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
