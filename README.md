@@ -1,3 +1,23 @@
+# Lukia
+
+A reader for the books you already have, on Android, iOS and the desktop, built
+for reading in a language you are still learning.
+
+- **Reads** PDF, EPUB, Word (`.docx`), Markdown and plain text. A PDF can be
+  read as its own pages or re-set as text, like an EPUB.
+- **Translates as you read.** Tap a word for a dictionary answer from
+  Wiktionary or Google, or a sentence or paragraph for a translation from a
+  service you set up yourself - Anthropic, OpenAI, or a model running on your
+  own machine.
+- **Keeps a library** on the device: covers, search, filters, favourites, and
+  where you left off in each book.
+- **Counts your reading** - time, sittings and runs - on the device and nowhere
+  else.
+
+Nothing leaves the device except the words and passages you ask about, and
+those go only to the dictionary or service you chose. See
+[SECURITY.md](SECURITY.md).
+
 ## Architecture
 
 Lukia follows a feature-first architecture based on Clean Architecture and Domain-Driven Design (DDD).
