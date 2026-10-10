@@ -25,12 +25,11 @@ import io.lukia.features.library.application.BookDetails
 import io.lukia.features.library.presentation.BookDetailViewModel
 import io.lukia.features.library.presentation.model.displayText
 import io.lukia.resources.Res
-import io.lukia.resources.action_go_back
 import io.lukia.resources.action_try_again
 import io.lukia.resources.book_actions
+import io.lukia.shared.presentation.components.controls.FloatingBackButton
 import io.lukia.shared.presentation.components.controls.IconButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
-import io.lukia.shared.presentation.components.icons.BackChevron
 import io.lukia.shared.presentation.components.icons.EllipsisGlyph
 import io.lukia.shared.presentation.components.menu.ActionMenuScrim
 import io.lukia.shared.presentation.components.menu.BookActionsMenu
@@ -144,16 +143,7 @@ fun BookDetailContent(
 
             // Floats above the scrolling content: this is the piece that most
             // wants the glass treatment, since content passes underneath it.
-            LukiaIconButton(
-                label = stringResource(Res.string.action_go_back),
-                onClick = onBack,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(start = dimens.screenPadding, top = Space.lg),
-                variant = IconButtonVariant.Glass,
-            ) { tint, glyph ->
-                BackChevron(tint = tint, modifier = glyph)
-            }
+            FloatingBackButton(onBack = onBack)
 
             // Mirrors the back control across the top of the screen. Always
             // visible rather than hover-revealed as on a card: there is one book
