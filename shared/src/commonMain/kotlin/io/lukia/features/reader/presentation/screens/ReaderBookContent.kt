@@ -25,7 +25,6 @@ import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReflowableContent
 import io.lukia.features.reader.domain.outline.ReaderOutline
 import io.lukia.features.reader.domain.page.PageSentence
-import io.lukia.features.reader.domain.text.TextAnchor
 import io.lukia.features.reader.presentation.KeepScreenAwake
 import io.lukia.features.reader.presentation.components.chrome.ReaderNotice
 import io.lukia.features.reader.presentation.components.translation.WordLookupPanel
@@ -36,20 +35,14 @@ import io.lukia.features.reader.presentation.screens.input.readerKeys
 import io.lukia.features.reader.presentation.screens.pages.PageList
 import io.lukia.features.reader.presentation.screens.pages.TextPageList
 import io.lukia.features.reader.presentation.screens.translation.DismissLayer
+import io.lukia.features.reader.presentation.screens.translation.ReaderTranslating
+import io.lukia.features.reader.presentation.screens.translation.ReaderTranslatingActions
 import io.lukia.features.reader.presentation.screens.translation.ReaderTranslationPreferences
 import io.lukia.features.reader.presentation.screens.translation.ReaderTranslationSettings
 import io.lukia.features.reader.presentation.screens.translation.ReaderTranslationUi
 import io.lukia.features.reader.presentation.theme.ReaderTheming
 import io.lukia.features.reader.presentation.theme.readerPageStyle
 import io.lukia.features.reader.presentation.translation.BookTranslations
-import io.lukia.features.reader.presentation.translation.PassageSelection
-import io.lukia.features.reader.presentation.translation.PassageTranslation
-import io.lukia.features.reader.presentation.translation.ShownTranslations
-import io.lukia.features.reader.presentation.translation.TranslateOnScreen
-import io.lukia.features.reader.presentation.translation.WordInquiry
-import io.lukia.features.translate.domain.BulkTranslation
-import io.lukia.features.translate.domain.settings.TargetLanguage
-import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.resources.Res
 import io.lukia.resources.action_try_again
 import io.lukia.resources.reader_pdf_no_text
@@ -77,47 +70,15 @@ internal fun ReaderContent(
      * count it was one of.
      */
     initialPosition: ReadingProgress? = null,
-    /** What has become of each sentence somebody has asked about, by where it is. */
-    translations: Map<TextAnchor, PassageTranslation> = emptyMap(),
-    /** Whether what the reader can see should be translated without being tapped. */
-    translateOnScreen: TranslateOnScreen = TranslateOnScreen.Idle,
-    /**
-     * Whether the translation service is set up, which is what the controls that
-     * need a model read - see `ReaderTranslationPreferences.serviceConfigured`.
-     */
-    translationServiceConfigured: Boolean = false,
-    /** What the reader's own translations are doing, for the control that puts them away. */
-    shownTranslations: ShownTranslations = ShownTranslations.None,
-    /** What a tap and a long press on the book ask for. */
-    gestures: TranslationGestures = TranslationGestures.Default,
-    /** The language a passage comes back in, which the panel can also change. */
-    targetLanguage: TargetLanguage = TargetLanguage.Default,
-    /** Which of the two ways of translating more than one passage are offered at all. */
-    bulkTranslation: BulkTranslation = BulkTranslation.Default,
-    /** The one word the reader has held to ask about properly, if any. */
-    wordInquiry: WordInquiry? = null,
-    /** Whether the translator's asides are set under the paragraphs they belong to. */
-    translationNotes: Boolean = true,
+    /** What translating has come to in this book, and how it is set up. */
+    translating: ReaderTranslating = ReaderTranslating(),
+    translatingActions: ReaderTranslatingActions = ReaderTranslatingActions(),
     /** How this book is being read, and what became of asking for it as text. */
     layout: ReaderLayoutUi = ReaderLayoutUi(),
     onBack: () -> Unit,
     onRetry: () -> Unit,
     onSettingsChange: (ReaderSettings) -> Unit,
     onPageSettled: (pageIndex: Int, pageCount: Int) -> Unit = { _, _ -> },
-    onPassageSelected: (PassageSelection) -> Unit = {},
-    /** A hold on a word already answered, which opens what else it means. */
-    onPassageHold: (PassageSelection) -> Unit = {},
-    /** The second mouse button on a word, which opens what it means either way. */
-    onPassageInquiry: (PassageSelection) -> Unit = {},
-    onPassagesRequested: (List<PassageSelection>) -> Unit = {},
-    onWordInquiryDismiss: () -> Unit = {},
-    onInquiredWordAction: () -> Unit = {},
-    onTranslateOnScreen: () -> Unit = {},
-    onContinuousTranslationChange: (Boolean) -> Unit = {},
-    onTranslationsVisibleChange: (Boolean) -> Unit = {},
-    onTargetLanguageChange: (TargetLanguage) -> Unit = {},
-    onTranslationGesturesChange: (TranslationGestures) -> Unit = {},
-    onTranslationNotesChange: (Boolean) -> Unit = {},
     /** What is written on a page of a fixed-layout document, read when one is looked at. */
     sentencesOnPage: suspend (index: Int) -> List<PageSentence> = { emptyList() },
     renderPage: suspend (index: Int, widthPx: Int) -> ImageBitmap?,
@@ -127,12 +88,12 @@ internal fun ReaderContent(
     val compact = !isWideWindow
 
     val translationUi = ReaderTranslationUi(
-        onScreen = translateOnScreen,
-        shown = shownTranslations,
-        offered = bulkTranslation,
-        onTranslateOnScreen = onTranslateOnScreen,
-        onContinuousChange = onContinuousTranslationChange,
-        onVisibleChange = onTranslationsVisibleChange,
+        onScreen = translating.onScreen,
+        shown = translating.shown,
+        offered = translating.offered,
+        onTranslateOnScreen = translatingActions.onTranslateOnScreen,
+        onContinuousChange = translatingActions.onContinuousChange,
+        onVisibleChange = translatingActions.onVisibleChange,
     )
 
     // What a gesture actually asks for, which is not always what it is set to.
@@ -143,25 +104,27 @@ internal fun ReaderContent(
     // The page gets this and the panel below gets the setting itself, because
     // the panel is where the reader changes it: shown the clamped value, its
     // switch would write the clamp back and quietly lose the unit they chose.
-    val gesturesInForce = remember(gestures, translationServiceConfigured) {
-        if (translationServiceConfigured) gestures else gestures.withoutAModel()
+    val gesturesInForce = remember(translating.gestures, translating.serviceConfigured) {
+        val gestures = translating.gestures
+
+        if (translating.serviceConfigured) gestures else gestures.withoutAModel()
     }
 
     val translationPreferences = ReaderTranslationPreferences(
-        targetLanguage = targetLanguage,
-        gestures = gestures,
-        notes = translationNotes,
-        onTargetLanguageChange = onTargetLanguageChange,
-        onGesturesChange = onTranslationGesturesChange,
-        onNotesChange = onTranslationNotesChange,
+        targetLanguage = translating.targetLanguage,
+        gestures = translating.gestures,
+        notes = translating.notes,
+        onTargetLanguageChange = translatingActions.onTargetLanguageChange,
+        onGesturesChange = translatingActions.onGesturesChange,
+        onNotesChange = translatingActions.onNotesChange,
     )
 
     // Filed by where each translation belongs, once per change, so that a
     // sentence changing state reaches the block or the page it is on and no
     // further. See BookTranslations, which is also where the translator's asides
     // are dropped for a reader who has turned them off.
-    val translated = remember(translations, translationNotes) {
-        BookTranslations.of(translations, translationNotes)
+    val translated = remember(translating.passages, translating.notes) {
+        BookTranslations.of(translating.passages, translating.notes)
     }
 
     // The reader wears its own theme; the rest of the app keeps following the
@@ -226,14 +189,18 @@ internal fun ReaderContent(
             // A shortcut for something the reader has not asked to be offered
             // does nothing, exactly as its button does not appear. Off is off
             // wherever it is reached from.
-            onTranslateOnScreen = { if (bulkTranslation.onScreen) onTranslateOnScreen() },
+            onTranslateOnScreen = {
+                if (translating.offered.onScreen) translatingActions.onTranslateOnScreen()
+            },
             onToggleContinuousTranslation = {
-                if (bulkTranslation.asYouRead) {
-                    onContinuousTranslationChange(!translateOnScreen.continuous)
+                if (translating.offered.asYouRead) {
+                    translatingActions.onContinuousChange(!translating.onScreen.continuous)
                 }
             },
             onToggleTranslationsShown = {
-                if (shownTranslations.any) onTranslationsVisibleChange(!shownTranslations.visible)
+                if (translating.shown.any) {
+                    translatingActions.onVisibleChange(!translating.shown.visible)
+                }
             },
         )
 
@@ -260,7 +227,7 @@ internal fun ReaderContent(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .behindOverlay(wordInquiry != null),
+                        .behindOverlay(translating.wordInquiry != null),
                 ) {
                     UiStateContent(
                         state = uiState,
@@ -285,11 +252,11 @@ internal fun ReaderContent(
                                 translations = translated,
                                 onToggleChrome = chrome::toggleChrome,
                                 onPageScaleChange = { onSettingsChange(settings.withPageScale(it)) },
-                                onPassageSelected = onPassageSelected,
-                                onPassageHold = onPassageHold,
-                                onPassageInquiry = onPassageInquiry,
-                                onPassagesRequested = onPassagesRequested,
-                                translateOnScreen = translateOnScreen,
+                                onPassageSelected = translatingActions.onPassageSelected,
+                                onPassageHold = translatingActions.onPassageHold,
+                                onPassageInquiry = translatingActions.onPassageInquiry,
+                                onPassagesRequested = translatingActions.onPassagesRequested,
+                                translateOnScreen = translating.onScreen,
                                 gestures = gesturesInForce,
                                 sentencesOnPage = sentencesOnPage,
                                 renderPage = renderPage,
@@ -303,12 +270,12 @@ internal fun ReaderContent(
                                 translations = translated,
                                 onToggleChrome = chrome::toggleChrome,
                                 onSettingsChange = onSettingsChange,
-                                onPassageSelected = onPassageSelected,
-                                onPassageHold = onPassageHold,
-                                onPassageInquiry = onPassageInquiry,
-                                onPassagesRequested = onPassagesRequested,
+                                onPassageSelected = translatingActions.onPassageSelected,
+                                onPassageHold = translatingActions.onPassageHold,
+                                onPassageInquiry = translatingActions.onPassageInquiry,
+                                onPassagesRequested = translatingActions.onPassagesRequested,
                                 onPagesChange = { paginated = it },
-                                translateOnScreen = translateOnScreen,
+                                translateOnScreen = translating.onScreen,
                                 gestures = gesturesInForce,
                                 openedAt = initialPosition,
                             )
@@ -360,7 +327,7 @@ internal fun ReaderContent(
                             ReaderTranslationSettings(
                                 translation = translationUi,
                                 preferences = translationPreferences,
-                                serviceConfigured = translationServiceConfigured,
+                                serviceConfigured = translating.serviceConfigured,
                             )
                         },
                     )
@@ -370,9 +337,9 @@ internal fun ReaderContent(
                 // page, it dims what is behind it, and nothing in the chrome is
                 // reachable while the reader is reading about one word.
                 WordLookupPanel(
-                    inquiry = wordInquiry,
-                    onDismiss = onWordInquiryDismiss,
-                    onAction = onInquiredWordAction,
+                    inquiry = translating.wordInquiry,
+                    onDismiss = translatingActions.onWordInquiryDismiss,
+                    onAction = translatingActions.onInquiredWordAction,
                 )
 
                 // Over everything, because it is about the book somebody is

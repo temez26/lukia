@@ -29,6 +29,8 @@ import io.lukia.features.reader.domain.page.PageWord
 import io.lukia.features.reader.domain.page.TextQuad
 import io.lukia.features.reader.domain.text.TextAnchor
 import io.lukia.features.reader.presentation.screens.ReaderContent
+import io.lukia.features.reader.presentation.screens.translation.ReaderTranslating
+import io.lukia.features.reader.presentation.screens.translation.ReaderTranslatingActions
 import io.lukia.features.reader.presentation.screens.translation.TranslatingReader
 import io.lukia.features.reader.presentation.screens.translation.opening
 import io.lukia.features.reader.presentation.translation.PassageSelection
@@ -149,18 +151,22 @@ internal fun ComposeUiTest.setPageReader(
                 uiState = UiState.Success(pageBook()),
                 settings = ReaderSettings(),
                 outline = ReaderOutline.Chapters(emptyList()),
-                translations = translations(),
+                translating = ReaderTranslating(
+                    passages = translations(),
+                    gestures = gestures,
+                    // A reader with somewhere for a sentence to go, which is what
+                    // [TranslatingReader] describes. Without it a gesture set past
+                    // the word is taken back to the word before the page sees it -
+                    // see `ReaderBookContent`.
+                    serviceConfigured = true,
+                ),
+                translatingActions = ReaderTranslatingActions(
+                    onPassageSelected = onPassageSelected,
+                    onPassageHold = onPassageHold,
+                ),
                 onBack = {},
                 onRetry = {},
                 onSettingsChange = {},
-                onPassageSelected = onPassageSelected,
-                onPassageHold = onPassageHold,
-                gestures = gestures,
-                // A reader with somewhere for a sentence to go, which is what
-                // [TranslatingReader] describes. Without it a gesture set past
-                // the word is taken back to the word before the page sees it -
-                // see `ReaderBookContent`.
-                translationServiceConfigured = true,
                 sentencesOnPage = { sentences },
                 renderPage = { _, _ -> null },
             )

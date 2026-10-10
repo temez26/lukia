@@ -3,12 +3,15 @@ package io.lukia.features.reader.presentation.screens
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleStartEffect
 import io.lukia.features.reader.presentation.ReaderViewModel
 import io.lukia.features.reader.presentation.components.chrome.readerToolbarHeight
+import io.lukia.features.reader.presentation.screens.translation.ReaderTranslating
+import io.lukia.features.reader.presentation.screens.translation.ReaderTranslatingActions
 import io.lukia.features.reader.presentation.translation.bulkTranslation
 import io.lukia.features.reader.presentation.translation.onInquiredWordActioned
 import io.lukia.features.reader.presentation.translation.onPassageHold
@@ -58,15 +61,6 @@ fun ReaderScreen(
     val settings by viewModel.settings.collectAsState()
     val outline by viewModel.outline.collectAsState()
     val initialPosition by viewModel.initialPosition.collectAsState()
-    val translations by viewModel.translations.collectAsState()
-    val translateOnScreen by viewModel.translateOnScreen.collectAsState()
-    val translationServiceConfigured by viewModel.translationServiceConfigured.collectAsState()
-    val shownTranslations by viewModel.shownTranslations.collectAsState()
-    val gestures by viewModel.translationGestures.collectAsState()
-    val targetLanguage by viewModel.targetLanguage.collectAsState()
-    val bulkTranslation by viewModel.bulkTranslation.collectAsState()
-    val wordInquiry by viewModel.wordInquiry.collectAsState()
-    val translationNotes by viewModel.translationNotes.collectAsState()
 
     ReportReaderVisibility(viewModel::onScreenChanged)
 
@@ -75,32 +69,13 @@ fun ReaderScreen(
         settings = settings,
         outline = outline,
         initialPosition = initialPosition,
-        translations = translations,
-        translateOnScreen = translateOnScreen,
-        translationServiceConfigured = translationServiceConfigured,
-        shownTranslations = shownTranslations,
-        gestures = gestures,
-        targetLanguage = targetLanguage,
-        bulkTranslation = bulkTranslation,
-        wordInquiry = wordInquiry,
-        translationNotes = translationNotes,
+        translating = readerTranslating(viewModel),
+        translatingActions = remember(viewModel) { viewModel.translatingActions() },
         layout = readerLayout(viewModel),
         onBack = onBack,
         onRetry = viewModel::retry,
         onSettingsChange = viewModel::updateSettings,
         onPageSettled = viewModel::onPageSettled,
-        onPassageSelected = viewModel::onPassageSelected,
-        onPassageHold = viewModel::onPassageHold,
-        onPassageInquiry = viewModel::onPassageInquiry,
-        onPassagesRequested = viewModel::onPassagesRequested,
-        onWordInquiryDismiss = viewModel::onWordInquiryDismissed,
-        onInquiredWordAction = viewModel::onInquiredWordActioned,
-        onTranslateOnScreen = viewModel::onTranslateOnScreen,
-        onContinuousTranslationChange = viewModel::setContinuousTranslation,
-        onTranslationsVisibleChange = viewModel::setTranslationsVisible,
-        onTargetLanguageChange = viewModel::setTargetLanguage,
-        onTranslationGesturesChange = viewModel::setTranslationGestures,
-        onTranslationNotesChange = viewModel::setTranslationNotes,
         sentencesOnPage = viewModel::sentencesOn,
         renderPage = viewModel::page,
     )
@@ -156,3 +131,43 @@ private fun readerLayout(viewModel: ReaderViewModel): ReaderLayoutUi {
         onNoticeDismiss = viewModel::dismissNoTextLayerNotice,
     )
 }
+
+@Composable
+private fun readerTranslating(viewModel: ReaderViewModel): ReaderTranslating {
+    val passages by viewModel.translations.collectAsState()
+    val onScreen by viewModel.translateOnScreen.collectAsState()
+    val serviceConfigured by viewModel.translationServiceConfigured.collectAsState()
+    val shown by viewModel.shownTranslations.collectAsState()
+    val gestures by viewModel.translationGestures.collectAsState()
+    val targetLanguage by viewModel.targetLanguage.collectAsState()
+    val offered by viewModel.bulkTranslation.collectAsState()
+    val wordInquiry by viewModel.wordInquiry.collectAsState()
+    val notes by viewModel.translationNotes.collectAsState()
+
+    return ReaderTranslating(
+        passages = passages,
+        onScreen = onScreen,
+        serviceConfigured = serviceConfigured,
+        shown = shown,
+        gestures = gestures,
+        targetLanguage = targetLanguage,
+        offered = offered,
+        wordInquiry = wordInquiry,
+        notes = notes,
+    )
+}
+
+private fun ReaderViewModel.translatingActions() = ReaderTranslatingActions(
+    onPassageSelected = this::onPassageSelected,
+    onPassageHold = this::onPassageHold,
+    onPassageInquiry = this::onPassageInquiry,
+    onPassagesRequested = this::onPassagesRequested,
+    onWordInquiryDismiss = this::onWordInquiryDismissed,
+    onInquiredWordAction = this::onInquiredWordActioned,
+    onTranslateOnScreen = this::onTranslateOnScreen,
+    onContinuousChange = this::setContinuousTranslation,
+    onVisibleChange = this::setTranslationsVisible,
+    onTargetLanguageChange = this::setTargetLanguage,
+    onGesturesChange = this::setTranslationGestures,
+    onNotesChange = this::setTranslationNotes,
+)
