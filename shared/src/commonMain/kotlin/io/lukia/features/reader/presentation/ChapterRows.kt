@@ -69,9 +69,23 @@ internal fun collapsibleIndices(entries: List<OutlineEntry>): Set<Int> =
         .toSet()
 
 /**
- * The entry the reader is inside: the last one that starts at or before
- * [pageIndex]. `-1` when the reader is ahead of the first entry, which a book
- * with a cover before its first chapter does.
+ * The entry the reader is inside: the one that starts nearest before
+ * [pageIndex], and the last of them where several start on that page. `-1` when
+ * the reader is ahead of the first entry, which a book with a cover before its
+ * first chapter does.
+ *
+ * By page rather than by place in the list, because a file's contents are not
+ * always in page order: a manual whose closing "Index" pointed back at its
+ * first page had every page of the book filed under "Index".
  */
-internal fun currentEntryIndex(entries: List<OutlineEntry>, pageIndex: Int): Int =
-    entries.indexOfLast { it.pageIndex <= pageIndex }
+internal fun currentEntryIndex(entries: List<OutlineEntry>, pageIndex: Int): Int {
+    var current = -1
+
+    entries.forEachIndexed { index, entry ->
+        if (entry.pageIndex > pageIndex) return@forEachIndexed
+
+        if (current == -1 || entry.pageIndex >= entries[current].pageIndex) current = index
+    }
+
+    return current
+}

@@ -88,6 +88,18 @@ class ChapterRowsTest {
         assertEquals(5, currentEntryIndex(outline, pageIndex = 400))
     }
 
+    /**
+     * A file's contents are not always in page order, and an entry at the end
+     * of the list pointing back at the front is not where every page is.
+     */
+    @Test
+    fun anEntryOutOfPageOrderDoesNotClaimThePagesAfterIt() {
+        val trailing = outline + entry("Index", page = 0, level = 0)
+
+        assertEquals(3, currentEntryIndex(trailing, pageIndex = 135))
+        assertEquals(trailing.lastIndex, currentEntryIndex(trailing, pageIndex = 0))
+    }
+
     /** A cover or a title page sits before the first entry, and belongs to none. */
     @Test
     fun aPageBeforeTheFirstEntryIsInsideNothing() {
