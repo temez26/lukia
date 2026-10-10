@@ -64,13 +64,6 @@ val PassageTranslation?.replacesTheOriginal: Boolean
     get() = shownText != null || this is PassageTranslation.Failed
 
 /**
- * Whether this passage should be marked on the page at all. A passage nobody
- * has touched is left exactly as the book set it.
- */
-val PassageTranslation?.isMarked: Boolean
-    get() = this != null
-
-/**
  * A sentence the reader has just pointed at, with everything the book can say
  * about where it came from.
  *
