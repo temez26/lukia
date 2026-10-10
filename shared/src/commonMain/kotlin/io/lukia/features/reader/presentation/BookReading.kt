@@ -156,6 +156,15 @@ internal class BookReading(
  * Public only because it names a ViewModel's dependency, and that ViewModel is
  * reached from outside this feature.
  */
+class BookReadingFactory(
+    private val positions: ReadingProgressRepository,
+    private val sessions: ReadingSessionRepository,
+) {
+
+    internal fun create(location: String, scope: CoroutineScope): BookReading =
+        BookReading(location, positions, sessions, scope)
+}
+
 /**
  * The page of a document [pageCount] long that this position is on.
  *
@@ -172,13 +181,4 @@ private fun ReadingProgress.pageAmong(pageCount: Int): Int {
     if (stored <= 0 || stored == pageCount) return pageIndex.coerceIn(0, last)
 
     return (pageIndex.toLong() * pageCount / stored).toInt().coerceIn(0, last)
-}
-
-class BookReadingFactory(
-    private val positions: ReadingProgressRepository,
-    private val sessions: ReadingSessionRepository,
-) {
-
-    internal fun create(location: String, scope: CoroutineScope): BookReading =
-        BookReading(location, positions, sessions, scope)
 }
