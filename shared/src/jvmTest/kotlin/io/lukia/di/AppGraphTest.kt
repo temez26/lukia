@@ -13,13 +13,13 @@ import io.lukia.core.infrastructure.lukiaSqlDriver
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.reader.application.OpenDocumentUseCase
-import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
-import io.lukia.features.settings.infrastructure.AppSettingsRepository
+import io.lukia.features.reader.domain.ReaderSettingsRepository
+import io.lukia.features.settings.domain.AppSettingsRepository
 import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.TranslationCache
 import io.lukia.features.translate.domain.Translator
 import io.lukia.features.translate.domain.provider.ModelCatalogue
-import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
+import io.lukia.features.translate.domain.settings.TranslationSettingsRepository
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import java.io.File

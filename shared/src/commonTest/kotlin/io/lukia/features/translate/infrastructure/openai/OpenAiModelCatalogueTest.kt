@@ -14,7 +14,7 @@ import io.lukia.core.domain.storage.FakeSettingsStore
 import io.lukia.core.domain.toAppError
 import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.settings.TranslationSettings
-import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
+import io.lukia.features.translate.infrastructure.PersistedTranslationSettingsRepository
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
@@ -161,7 +161,7 @@ class OpenAiModelCatalogueTest {
         baseUrl: String = "http://localhost:1234/v1",
         apiKey: String? = null,
     ): OpenAiModelCatalogue {
-        val settings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()).apply {
+        val settings = PersistedTranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()).apply {
             update(
                 TranslationSettings(provider = TranslationProvider.Local)
                     .withBaseUrl(baseUrl)

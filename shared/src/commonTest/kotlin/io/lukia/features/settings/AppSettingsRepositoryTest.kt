@@ -5,7 +5,7 @@ import io.lukia.core.domain.AppPalette
 import io.lukia.core.domain.AppTheme
 import io.lukia.core.domain.storage.FakeSettingsStore
 import io.lukia.features.settings.domain.AppSettings
-import io.lukia.features.settings.infrastructure.AppSettingsRepository
+import io.lukia.features.settings.infrastructure.PersistedAppSettingsRepository
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -13,7 +13,7 @@ class AppSettingsRepositoryTest {
 
     @Test
     fun defaultsToFollowingTheSystem() {
-        val repository = AppSettingsRepository(FakeSettingsStore())
+        val repository = PersistedAppSettingsRepository(FakeSettingsStore())
 
         assertEquals(AppTheme.System, repository.settings.value.theme)
     }
@@ -22,13 +22,13 @@ class AppSettingsRepositoryTest {
     fun readsAStoredTheme() {
         val store = FakeSettingsStore(mapOf("app.theme" to "Dark"))
 
-        assertEquals(AppTheme.Dark, AppSettingsRepository(store).settings.value.theme)
+        assertEquals(AppTheme.Dark, PersistedAppSettingsRepository(store).settings.value.theme)
     }
 
     @Test
     fun updatingPublishesAndPersists() {
         val store = FakeSettingsStore()
-        val repository = AppSettingsRepository(store)
+        val repository = PersistedAppSettingsRepository(store)
 
         repository.update(AppSettings(theme = AppTheme.Light))
 
@@ -40,7 +40,7 @@ class AppSettingsRepositoryTest {
     @Test
     fun updatingWithTheSameValueWritesNothing() {
         val store = FakeSettingsStore()
-        val repository = AppSettingsRepository(store)
+        val repository = PersistedAppSettingsRepository(store)
 
         repository.update(AppSettings(theme = AppTheme.Dark))
         val afterFirst = store.writeCount
@@ -53,7 +53,7 @@ class AppSettingsRepositoryTest {
     /** The app opens in its own colours until somebody says otherwise. */
     @Test
     fun defaultsToTheAppsOwnPaletteAndItsPalettesOwnAccent() {
-        val settings = AppSettingsRepository(FakeSettingsStore()).settings.value
+        val settings = PersistedAppSettingsRepository(FakeSettingsStore()).settings.value
 
         assertEquals(AppPalette.Crisp, settings.palette)
         assertEquals(AppAccent.Themed, settings.accent)
@@ -65,7 +65,7 @@ class AppSettingsRepositoryTest {
             mapOf("app.palette" to "Slate", "app.accent" to "Rose"),
         )
 
-        val settings = AppSettingsRepository(store).settings.value
+        val settings = PersistedAppSettingsRepository(store).settings.value
 
         assertEquals(AppPalette.Slate, settings.palette)
         assertEquals(AppAccent.Rose, settings.accent)
@@ -75,14 +75,14 @@ class AppSettingsRepositoryTest {
     fun aChosenPaletteAndAccentAreStillThereNextTime() {
         val store = FakeSettingsStore()
 
-        AppSettingsRepository(store).update(
+        PersistedAppSettingsRepository(store).update(
             AppSettings(palette = AppPalette.Paper, accent = AppAccent.Green),
         )
 
         assertEquals("Paper", store.values["app.palette"])
         assertEquals("Green", store.values["app.accent"])
         // ...and read back by the next run, which is the point of writing them.
-        val reopened = AppSettingsRepository(store).settings.value
+        val reopened = PersistedAppSettingsRepository(store).settings.value
         assertEquals(AppPalette.Paper, reopened.palette)
         assertEquals(AppAccent.Green, reopened.accent)
     }
@@ -96,11 +96,11 @@ class AppSettingsRepositoryTest {
     fun theDeveloperSettingsAreOffUntilAskedForAndStayOnOnceTheyAre() {
         val store = FakeSettingsStore()
 
-        assertEquals(false, AppSettingsRepository(store).settings.value.developerMode)
+        assertEquals(false, PersistedAppSettingsRepository(store).settings.value.developerMode)
 
-        AppSettingsRepository(store).update(AppSettings(developerMode = true))
+        PersistedAppSettingsRepository(store).update(AppSettings(developerMode = true))
 
-        assertEquals(true, AppSettingsRepository(store).settings.value.developerMode)
+        assertEquals(true, PersistedAppSettingsRepository(store).settings.value.developerMode)
     }
 
     /**
@@ -111,7 +111,7 @@ class AppSettingsRepositoryTest {
     fun anUnreadableStoredThemeFallsBackToTheDefault() {
         val store = FakeSettingsStore(mapOf("app.theme" to "Solarized"))
 
-        assertEquals(AppTheme.System, AppSettingsRepository(store).settings.value.theme)
+        assertEquals(AppTheme.System, PersistedAppSettingsRepository(store).settings.value.theme)
     }
 
     @Test
@@ -120,7 +120,7 @@ class AppSettingsRepositoryTest {
             mapOf("app.palette" to "Kindle", "app.accent" to "Chartreuse"),
         )
 
-        val settings = AppSettingsRepository(store).settings.value
+        val settings = PersistedAppSettingsRepository(store).settings.value
 
         assertEquals(AppPalette.Crisp, settings.palette)
         assertEquals(AppAccent.Themed, settings.accent)

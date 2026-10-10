@@ -6,7 +6,7 @@ import io.lukia.core.infrastructure.diagnostics.CrashRecorder
 import io.lukia.core.infrastructure.diagnostics.DiagnosticBuffer
 import io.lukia.core.infrastructure.diagnostics.diagnosticReport
 import io.lukia.features.settings.domain.AppSettings
-import io.lukia.features.settings.infrastructure.AppSettingsRepository
+import io.lukia.features.settings.domain.AppSettingsRepository
 import io.lukia.getPlatform
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

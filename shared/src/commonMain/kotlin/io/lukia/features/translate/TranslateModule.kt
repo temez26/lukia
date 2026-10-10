@@ -10,13 +10,14 @@ import io.lukia.features.translate.domain.lookup.WordDictionary
 import io.lukia.features.translate.domain.provider.ModelCatalogue
 import io.lukia.features.translate.domain.provider.ModelWarmUp
 import io.lukia.features.translate.domain.settings.TranslationSettings
+import io.lukia.features.translate.domain.settings.TranslationSettingsRepository
 import io.lukia.features.translate.infrastructure.CachingTranslator
 import io.lukia.features.translate.infrastructure.CoalescingTranslator
 import io.lukia.features.translate.infrastructure.ConfiguredTranslator
+import io.lukia.features.translate.infrastructure.PersistedTranslationSettingsRepository
 import io.lukia.features.translate.infrastructure.RetryingTranslator
 import io.lukia.features.translate.infrastructure.SqlTranslationCache
 import io.lukia.features.translate.infrastructure.TRANSLATION_PROMPT_VERSION
-import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import io.lukia.features.translate.infrastructure.WordLookupTranslator
 import io.lukia.features.translate.infrastructure.anthropic.AnthropicTranslator
 import io.lukia.features.translate.infrastructure.google.GoogleTranslator
@@ -154,8 +155,8 @@ val translateModule = module {
 
     // A single, like the other settings: the language chosen on the settings
     // screen has to be the language the open book uses on the very next tap.
-    single {
-        TranslationSettingsRepository(get(), get())
+    single<TranslationSettingsRepository> {
+        PersistedTranslationSettingsRepository(get(), get())
     }
 }
 

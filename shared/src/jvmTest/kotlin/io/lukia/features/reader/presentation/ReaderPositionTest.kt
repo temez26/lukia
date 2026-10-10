@@ -4,7 +4,7 @@ import io.lukia.core.domain.reading.FakeReadingSessionRepository
 import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.core.domain.storage.FakeSettingsStore
 import io.lukia.features.reader.application.OpenDocumentUseCase
-import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
+import io.lukia.features.reader.infrastructure.PersistedReaderSettingsRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -83,7 +83,7 @@ class ReaderPositionTest : ReaderViewModelTestCase() {
                 documentWorkspace = workspace,
                 dispatcher = openDispatcher,
             ),
-            settingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
+            settingsRepository = PersistedReaderSettingsRepository(FakeSettingsStore()),
             reading = BookReadingFactory(progress, FakeReadingSessionRepository()),
             layoutRepository = layouts,
             translations = testTranslations(),

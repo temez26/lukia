@@ -10,7 +10,7 @@ import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.domain.outline.ReaderOutline
-import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
+import io.lukia.features.reader.infrastructure.PersistedReaderSettingsRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import java.io.File
@@ -58,7 +58,7 @@ class ReaderViewModelTest : ReaderViewModelTestCase() {
                 documentWorkspace = workspace,
                 dispatcher = openDispatcher,
             ),
-            settingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
+            settingsRepository = PersistedReaderSettingsRepository(FakeSettingsStore()),
             reading = BookReadingFactory(progress, FakeReadingSessionRepository()),
             layoutRepository = layouts,
             translations = testTranslations(),
@@ -120,7 +120,7 @@ class ReaderViewModelTest : ReaderViewModelTestCase() {
                 documentWorkspace = workspace,
                 dispatcher = openDispatcher,
             ),
-            settingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
+            settingsRepository = PersistedReaderSettingsRepository(FakeSettingsStore()),
             reading = BookReadingFactory(progress, FakeReadingSessionRepository()),
             layoutRepository = layouts,
             translations = testTranslations(),
@@ -191,7 +191,7 @@ class ReaderViewModelTest : ReaderViewModelTestCase() {
                 documentWorkspace = workspace,
                 dispatcher = openDispatcher,
             ),
-            settingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
+            settingsRepository = PersistedReaderSettingsRepository(FakeSettingsStore()),
             reading = BookReadingFactory(progress, FakeReadingSessionRepository()),
             layoutRepository = layouts,
             translations = testTranslations(),

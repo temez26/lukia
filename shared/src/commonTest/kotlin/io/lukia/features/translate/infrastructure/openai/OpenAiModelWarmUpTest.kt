@@ -17,7 +17,7 @@ import io.lukia.core.domain.toAppError
 import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationSettings
-import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
+import io.lukia.features.translate.infrastructure.PersistedTranslationSettingsRepository
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -107,7 +107,7 @@ class OpenAiModelWarmUpTest {
         engine: MockEngine,
         model: String = "local-model",
     ): OpenAiModelWarmUp {
-        val settings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()).apply {
+        val settings = PersistedTranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()).apply {
             update(
                 TranslationSettings(
                     targetLanguage = TargetLanguage.Finnish,

@@ -15,10 +15,10 @@ import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.Translator
 import io.lukia.features.translate.domain.provider.TranslationProvider
+import io.lukia.features.translate.domain.settings.TranslationSettingsRepository
 import io.lukia.features.translate.infrastructure.StreamedAnswer
 import io.lukia.features.translate.infrastructure.TranslationFailureException
 import io.lukia.features.translate.infrastructure.TranslationFailureKind
-import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import io.lukia.features.translate.infrastructure.buildTranslationPrompt
 import io.lukia.features.translate.infrastructure.forEachEventPayload
 import io.lukia.features.translate.infrastructure.readStreamedPassage

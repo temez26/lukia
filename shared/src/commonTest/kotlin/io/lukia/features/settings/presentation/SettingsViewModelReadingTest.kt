@@ -5,14 +5,15 @@ import io.lukia.core.domain.storage.FakeSecretStore
 import io.lukia.core.domain.storage.FakeSettingsStore
 import io.lukia.core.domain.storage.SettingsStore
 import io.lukia.features.reader.domain.ReaderSettings
+import io.lukia.features.reader.domain.ReaderSettingsRepository
 import io.lukia.features.reader.domain.ReaderTheme
-import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
-import io.lukia.features.settings.infrastructure.AppSettingsRepository
+import io.lukia.features.reader.infrastructure.PersistedReaderSettingsRepository
+import io.lukia.features.settings.infrastructure.PersistedAppSettingsRepository
 import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.provider.FakeTranslator
 import io.lukia.features.translate.domain.provider.ModelCatalogue
 import io.lukia.features.translate.domain.provider.ModelWarmUp
-import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
+import io.lukia.features.translate.infrastructure.PersistedTranslationSettingsRepository
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -30,7 +31,7 @@ class SettingsViewModelReadingTest {
     @Test
     fun howABookIsSetGoesWhereTheReaderWillReadIt() {
         val store = FakeSettingsStore()
-        val reader = ReaderSettingsRepository(store)
+        val reader = PersistedReaderSettingsRepository(store)
 
         viewModel(store, reader).setReaderSettings(ReaderSettings(theme = ReaderTheme.Sepia))
 
@@ -42,12 +43,12 @@ class SettingsViewModelReadingTest {
     fun whatNewPdfsOpenAsSurvivesTheAppClosing() {
         val store = FakeSettingsStore()
 
-        viewModel(store, ReaderSettingsRepository(store))
+        viewModel(store, PersistedReaderSettingsRepository(store))
             .setReaderSettings(ReaderSettings(defaultPdfLayout = PdfLayout.Text))
 
         assertEquals(
             PdfLayout.Text,
-            ReaderSettingsRepository(store).settings.value.defaultPdfLayout,
+            PersistedReaderSettingsRepository(store).settings.value.defaultPdfLayout,
         )
     }
 
@@ -58,7 +59,7 @@ class SettingsViewModelReadingTest {
     @Test
     fun changingOneSettingLeavesTheOthersAlone() {
         val store = FakeSettingsStore()
-        val reader = ReaderSettingsRepository(store)
+        val reader = PersistedReaderSettingsRepository(store)
         val settings = viewModel(store, reader)
 
         settings.setReaderSettings(reader.settings.value.copy(theme = ReaderTheme.Dark))
@@ -74,9 +75,9 @@ class SettingsViewModelReadingTest {
         store: SettingsStore,
         reader: ReaderSettingsRepository,
     ) = SettingsViewModel(
-        repository = AppSettingsRepository(store),
+        repository = PersistedAppSettingsRepository(store),
         reader = reader,
-        translation = TranslationSettingsRepository(store, FakeSecretStore()),
+        translation = PersistedTranslationSettingsRepository(store, FakeSecretStore()),
         translatePassage = TranslatePassageUseCase(FakeTranslator()),
         catalogue = ModelCatalogue { emptyList() },
         warmUp = ModelWarmUp { },

@@ -10,7 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import io.lukia.core.domain.AppTheme
 import io.lukia.features.library.presentation.pickers.PlatformPickerHost
-import io.lukia.features.settings.infrastructure.AppSettingsRepository
+import io.lukia.features.settings.domain.AppSettingsRepository
 import io.lukia.navigation.DesktopShell
 import io.lukia.navigation.MobileShell
 import io.lukia.shared.presentation.components.launch.LaunchSplash

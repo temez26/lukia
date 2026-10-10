@@ -7,6 +7,7 @@ import io.lukia.core.infrastructure.readEnum
 import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.domain.LineSpacing
 import io.lukia.features.reader.domain.ReaderSettings
+import io.lukia.features.reader.domain.ReaderSettingsRepository
 import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.domain.ReaderTypeface
 import io.lukia.features.reader.domain.ReadingWidth
@@ -24,14 +25,14 @@ import kotlinx.coroutines.flow.StateFlow
  * its own default rather than discarding the rest, so a single bad key cannot
  * reset somebody's whole reader.
  */
-class ReaderSettingsRepository(
+class PersistedReaderSettingsRepository(
     private val store: SettingsStore,
-) {
+) : ReaderSettingsRepository {
 
     private val persisted = PersistedSettings(load(), ::save)
-    val settings: StateFlow<ReaderSettings> = persisted.state
+    override val settings: StateFlow<ReaderSettings> = persisted.state
 
-    fun update(settings: ReaderSettings) = persisted.set(settings)
+    override fun update(settings: ReaderSettings) = persisted.set(settings)
 
     private fun load(): ReaderSettings {
         val defaults = ReaderSettings()

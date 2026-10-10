@@ -19,8 +19,9 @@ import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.domain.ReaderDocument
+import io.lukia.features.reader.domain.ReaderSettingsRepository
 import io.lukia.features.reader.domain.outline.ReaderOutline
-import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
+import io.lukia.features.reader.infrastructure.PersistedReaderSettingsRepository
 import io.lukia.features.reader.infrastructure.SqlReadingProgressRepository
 import io.lukia.features.reader.presentation.translation.ReaderTranslationsFactory
 import io.lukia.features.translate.application.LookUpWordUseCase
@@ -31,7 +32,7 @@ import io.lukia.features.translate.domain.lookup.WordEntry
 import io.lukia.features.translate.domain.lookup.WordMeaning
 import io.lukia.features.translate.domain.provider.FakeTranslator
 import io.lukia.features.translate.domain.settings.TranslationGestures
-import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
+import io.lukia.features.translate.infrastructure.PersistedTranslationSettingsRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -194,7 +195,7 @@ abstract class ReaderViewModelTestCase {
     protected fun createViewModel(
         document: DocumentInfo,
         /** Supplied where a test cares what new books are set to open as. */
-        settings: ReaderSettingsRepository = ReaderSettingsRepository(FakeSettingsStore()),
+        settings: ReaderSettingsRepository = PersistedReaderSettingsRepository(FakeSettingsStore()),
         /** Supplied where a test cares what becomes of a passage it asks about. */
         translations: ReaderTranslationsFactory = testTranslations(),
     ) = ReaderViewModel(
@@ -246,7 +247,7 @@ abstract class ReaderViewModelTestCase {
     ) = ReaderTranslationsFactory(
         TranslatePassageUseCase(translator),
         LookUpWordUseCase(WordDictionary { word, _ -> WordEntry(word, listOf(WordMeaning(null, listOf("a sense")))) }),
-        TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()).apply {
+        PersistedTranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()).apply {
             update(settings.value.withGestures(gestures))
         },
     )

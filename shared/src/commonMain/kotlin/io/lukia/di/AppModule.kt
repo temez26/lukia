@@ -10,7 +10,7 @@ import io.lukia.core.infrastructure.diagnostics.DiagnosticBuffer
 import io.lukia.core.infrastructure.diagnostics.RecordingDiagnostics
 import io.lukia.features.library.libraryModule
 import io.lukia.features.reader.readerModule
-import io.lukia.features.settings.infrastructure.AppSettingsRepository
+import io.lukia.features.settings.domain.AppSettingsRepository
 import io.lukia.features.settings.settingsModule
 import io.lukia.features.stats.statsModule
 import io.lukia.features.translate.translateModule

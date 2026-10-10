@@ -4,16 +4,17 @@ import io.lukia.core.domain.storage.FakeSecretStore
 import io.lukia.core.domain.storage.FakeSettingsStore
 import io.lukia.core.domain.storage.SettingsStore
 import io.lukia.core.domain.text.PassageUnit
-import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
-import io.lukia.features.settings.infrastructure.AppSettingsRepository
+import io.lukia.features.reader.infrastructure.PersistedReaderSettingsRepository
+import io.lukia.features.settings.infrastructure.PersistedAppSettingsRepository
 import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.provider.FakeTranslator
 import io.lukia.features.translate.domain.provider.ModelCatalogue
 import io.lukia.features.translate.domain.provider.ModelWarmUp
 import io.lukia.features.translate.domain.settings.TranslationGestures
+import io.lukia.features.translate.domain.settings.TranslationSettingsRepository
 import io.lukia.features.translate.domain.settings.WordLookup
-import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
+import io.lukia.features.translate.infrastructure.PersistedTranslationSettingsRepository
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -34,7 +35,7 @@ class SettingsViewModelGesturesTest {
     @Test
     fun choosingWhatATapDoesPutsItWhereTheReaderWillReadIt() {
         val store = FakeSettingsStore()
-        val translation = TranslationSettingsRepository(store, FakeSecretStore())
+        val translation = PersistedTranslationSettingsRepository(store, FakeSecretStore())
 
         viewModel(store, translation).setGestures(
             TranslationGestures.of(tap = PassageUnit.Paragraph, longPress = PassageUnit.Word),
@@ -48,7 +49,7 @@ class SettingsViewModelGesturesTest {
     @Test
     fun choosingWhatAPressAndHoldDoesLeavesTheTapAlone() {
         val store = FakeSettingsStore()
-        val translation = TranslationSettingsRepository(store, FakeSecretStore())
+        val translation = PersistedTranslationSettingsRepository(store, FakeSecretStore())
 
         viewModel(store, translation).setGestures(
             TranslationGestures.of(tap = PassageUnit.Sentence, longPress = PassageUnit.Sentence),
@@ -61,7 +62,7 @@ class SettingsViewModelGesturesTest {
     @Test
     fun turningAGestureOffTurnsItOff() {
         val store = FakeSettingsStore()
-        val translation = TranslationSettingsRepository(store, FakeSecretStore())
+        val translation = PersistedTranslationSettingsRepository(store, FakeSecretStore())
 
         viewModel(store, translation).setGestures(TranslationGestures.of(tap = null))
 
@@ -72,7 +73,7 @@ class SettingsViewModelGesturesTest {
     @Test
     fun bothGesturesCanBeSetOneAfterTheOther() {
         val store = FakeSettingsStore()
-        val translation = TranslationSettingsRepository(store, FakeSecretStore())
+        val translation = PersistedTranslationSettingsRepository(store, FakeSecretStore())
         val settings = viewModel(store, translation)
 
         settings.setGestures(TranslationGestures.of(tap = PassageUnit.Word))
@@ -91,7 +92,7 @@ class SettingsViewModelGesturesTest {
     @Test
     fun theExpensiveWaysOfTranslatingAreOffUntilAskedFor() {
         val store = FakeSettingsStore()
-        val translation = TranslationSettingsRepository(store, FakeSecretStore())
+        val translation = PersistedTranslationSettingsRepository(store, FakeSecretStore())
 
         assertFalse(translation.settings.value.bulkTranslation.any)
 
@@ -106,10 +107,10 @@ class SettingsViewModelGesturesTest {
         val store = FakeSettingsStore()
         val secrets = FakeSecretStore()
 
-        viewModel(store, TranslationSettingsRepository(store, secrets))
+        viewModel(store, PersistedTranslationSettingsRepository(store, secrets))
             .setBulkTranslation(BulkTranslation(asYouRead = true))
 
-        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+        val reopened = PersistedTranslationSettingsRepository(store, secrets).settings.value
 
         assertTrue(reopened.bulkTranslation.asYouRead)
         assertFalse(reopened.bulkTranslation.onScreen)
@@ -118,7 +119,7 @@ class SettingsViewModelGesturesTest {
     @Test
     fun choosingWhereWordsAreLookedUpPutsItWhereTheBookWillReadIt() {
         val store = FakeSettingsStore()
-        val translation = TranslationSettingsRepository(store, FakeSecretStore())
+        val translation = PersistedTranslationSettingsRepository(store, FakeSecretStore())
 
         viewModel(store, translation).setWordLookup(WordLookup.Wiktionary)
 
@@ -129,8 +130,8 @@ class SettingsViewModelGesturesTest {
         store: SettingsStore,
         translation: TranslationSettingsRepository,
     ) = SettingsViewModel(
-        repository = AppSettingsRepository(store),
-        reader = ReaderSettingsRepository(store),
+        repository = PersistedAppSettingsRepository(store),
+        reader = PersistedReaderSettingsRepository(store),
         translation = translation,
         translatePassage = TranslatePassageUseCase(FakeTranslator()),
         catalogue = ModelCatalogue { emptyList() },

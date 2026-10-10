@@ -16,14 +16,14 @@ class ReaderSettingsRepositoryTest {
 
     @Test
     fun aFirstRunGetsTheDefaults() {
-        val repository = ReaderSettingsRepository(FakeSettingsStore())
+        val repository = PersistedReaderSettingsRepository(FakeSettingsStore())
 
         assertEquals(ReaderSettings(), repository.settings.value)
     }
 
     @Test
     fun aChangeIsVisibleImmediately() {
-        val repository = ReaderSettingsRepository(FakeSettingsStore())
+        val repository = PersistedReaderSettingsRepository(FakeSettingsStore())
 
         repository.update(ReaderSettings(theme = ReaderTheme.Sepia))
 
@@ -43,16 +43,16 @@ class ReaderSettingsRepositoryTest {
             keepScreenAwake = false,
         )
 
-        ReaderSettingsRepository(store).update(settings)
+        PersistedReaderSettingsRepository(store).update(settings)
 
-        assertEquals(settings, ReaderSettingsRepository(store).settings.value)
+        assertEquals(settings, PersistedReaderSettingsRepository(store).settings.value)
     }
 
     @Test
     fun everySettingIsStoredSeparately() {
         val store = FakeSettingsStore()
 
-        ReaderSettingsRepository(store).update(
+        PersistedReaderSettingsRepository(store).update(
             ReaderSettings(theme = ReaderTheme.Sepia, pageScale = ReadingWidth.Medium.fraction),
         )
 
@@ -69,7 +69,7 @@ class ReaderSettingsRepositoryTest {
     fun anUnreadableScreenSettingFallsBackToKeepingItAwake() {
         val store = FakeSettingsStore(mapOf("reader.keepScreenAwake" to "sometimes"))
 
-        assertEquals(true, ReaderSettingsRepository(store).settings.value.keepScreenAwake)
+        assertEquals(true, PersistedReaderSettingsRepository(store).settings.value.keepScreenAwake)
     }
 
     /**
@@ -85,7 +85,7 @@ class ReaderSettingsRepositoryTest {
             ),
         )
 
-        val settings = ReaderSettingsRepository(store).settings.value
+        val settings = PersistedReaderSettingsRepository(store).settings.value
 
         assertEquals(ReaderSettings().theme, settings.theme)
         assertEquals(ReadingWidth.Narrow, settings.matchingWidth)
@@ -97,7 +97,7 @@ class ReaderSettingsRepositoryTest {
 
         assertEquals(
             ReaderSettings().textScale,
-            ReaderSettingsRepository(store).settings.value.textScale,
+            PersistedReaderSettingsRepository(store).settings.value.textScale,
         )
     }
 
@@ -108,7 +108,7 @@ class ReaderSettingsRepositoryTest {
 
         assertEquals(
             ReaderSettings.MAX_TEXT_SCALE,
-            ReaderSettingsRepository(store).settings.value.textScale,
+            PersistedReaderSettingsRepository(store).settings.value.textScale,
         )
     }
 
@@ -119,7 +119,7 @@ class ReaderSettingsRepositoryTest {
     @Test
     fun settingTheSameValueDoesNotWrite() {
         val store = FakeSettingsStore()
-        val repository = ReaderSettingsRepository(store)
+        val repository = PersistedReaderSettingsRepository(store)
 
         repository.update(ReaderSettings(theme = ReaderTheme.Dark))
         val writesAfterFirstChange = store.writeCount
@@ -132,19 +132,19 @@ class ReaderSettingsRepositoryTest {
     fun theChosenImageSizeIsReadBack() {
         val store = FakeSettingsStore()
 
-        ReaderSettingsRepository(store).update(ReaderSettings(figureSize = FigureSize.Fill))
+        PersistedReaderSettingsRepository(store).update(ReaderSettings(figureSize = FigureSize.Fill))
 
-        assertEquals(FigureSize.Fill, ReaderSettingsRepository(store).settings.value.figureSize)
+        assertEquals(FigureSize.Fill, PersistedReaderSettingsRepository(store).settings.value.figureSize)
     }
 
     /** One key that cannot be read back must not reset the rest of the reader. */
     @Test
     fun anImageSizeThatCannotBeReadBackFallsBackToItsDefault() {
         val store = FakeSettingsStore()
-        ReaderSettingsRepository(store).update(ReaderSettings(typeface = ReaderTypeface.Serif))
+        PersistedReaderSettingsRepository(store).update(ReaderSettings(typeface = ReaderTypeface.Serif))
         store.putString("reader.figureSize", "Enormous")
 
-        val settings = ReaderSettingsRepository(store).settings.value
+        val settings = PersistedReaderSettingsRepository(store).settings.value
 
         assertEquals(FigureSize.Normal, settings.figureSize)
         assertEquals(ReaderTypeface.Serif, settings.typeface)
@@ -154,13 +154,13 @@ class ReaderSettingsRepositoryTest {
     fun theChosenAlignmentIsReadBack() {
         val store = FakeSettingsStore()
 
-        ReaderSettingsRepository(store).update(
+        PersistedReaderSettingsRepository(store).update(
             ReaderSettings(alignment = TextAlignment.Justified),
         )
 
         assertEquals(
             TextAlignment.Justified,
-            ReaderSettingsRepository(store).settings.value.alignment,
+            PersistedReaderSettingsRepository(store).settings.value.alignment,
         )
     }
 
@@ -169,7 +169,7 @@ class ReaderSettingsRepositoryTest {
     fun aBookOpensRagged() {
         assertEquals(
             TextAlignment.Ragged,
-            ReaderSettingsRepository(FakeSettingsStore()).settings.value.alignment,
+            PersistedReaderSettingsRepository(FakeSettingsStore()).settings.value.alignment,
         )
     }
 
@@ -177,13 +177,13 @@ class ReaderSettingsRepositoryTest {
     fun whatNewPdfsOpenAsIsReadBack() {
         val store = FakeSettingsStore()
 
-        ReaderSettingsRepository(store).update(
+        PersistedReaderSettingsRepository(store).update(
             ReaderSettings(defaultPdfLayout = PdfLayout.Text),
         )
 
         assertEquals(
             PdfLayout.Text,
-            ReaderSettingsRepository(store).settings.value.defaultPdfLayout,
+            PersistedReaderSettingsRepository(store).settings.value.defaultPdfLayout,
         )
     }
 
@@ -192,7 +192,7 @@ class ReaderSettingsRepositoryTest {
     fun aPdfOpensAsItsOwnPages() {
         assertEquals(
             PdfLayout.Original,
-            ReaderSettingsRepository(FakeSettingsStore()).settings.value.defaultPdfLayout,
+            PersistedReaderSettingsRepository(FakeSettingsStore()).settings.value.defaultPdfLayout,
         )
     }
 }

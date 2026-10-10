@@ -7,7 +7,7 @@ import io.lukia.features.library.presentation.createViewModel
 import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReflowableContent
-import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
+import io.lukia.features.reader.infrastructure.PersistedReaderSettingsRepository
 import io.lukia.features.reader.presentation.ReaderViewModelTestCase
 import io.lukia.features.translate.infrastructure.openai.content
 import kotlinx.coroutines.flow.first
@@ -65,7 +65,7 @@ class ReaderLayoutTest : ReaderViewModelTestCase() {
     }
 
     private fun openingPdfsAsText() =
-        ReaderSettingsRepository(FakeSettingsStore()).also {
+        PersistedReaderSettingsRepository(FakeSettingsStore()).also {
             it.update(ReaderSettings(defaultPdfLayout = PdfLayout.Text))
         }
 

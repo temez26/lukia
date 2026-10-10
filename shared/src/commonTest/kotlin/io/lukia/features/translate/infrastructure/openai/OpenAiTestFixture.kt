@@ -23,7 +23,7 @@ import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.features.translate.domain.translate
-import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
+import io.lukia.features.translate.infrastructure.PersistedTranslationSettingsRepository
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.add
@@ -103,7 +103,7 @@ internal fun translator(
     baseUrl: String? = null,
     model: String = "gpt-4o",
 ): OpenAiTranslator {
-    val settings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()).apply {
+    val settings = PersistedTranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()).apply {
         update(
             TranslationSettings(
                 targetLanguage = TargetLanguage.Finnish,

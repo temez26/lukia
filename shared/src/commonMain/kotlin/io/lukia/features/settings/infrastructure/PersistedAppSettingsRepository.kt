@@ -8,6 +8,7 @@ import io.lukia.core.domain.storage.SettingsStore
 import io.lukia.core.infrastructure.PersistedSettings
 import io.lukia.core.infrastructure.readEnum
 import io.lukia.features.settings.domain.AppSettings
+import io.lukia.features.settings.domain.AppSettingsRepository
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -18,14 +19,14 @@ import kotlinx.coroutines.flow.StateFlow
  * in place the next time the app opens, before anything is drawn. Shared, hence
  * a `single` in the dependency graph.
  */
-class AppSettingsRepository(
+class PersistedAppSettingsRepository(
     private val store: SettingsStore,
-) {
+) : AppSettingsRepository {
 
     private val persisted = PersistedSettings(load(), ::save)
-    val settings: StateFlow<AppSettings> = persisted.state
+    override val settings: StateFlow<AppSettings> = persisted.state
 
-    fun update(settings: AppSettings) = persisted.set(settings)
+    override fun update(settings: AppSettings) = persisted.set(settings)
 
     private fun load(): AppSettings {
         val defaults = AppSettings()

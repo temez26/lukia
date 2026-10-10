@@ -30,13 +30,13 @@ class TranslationGesturePersistenceTest {
     fun whatTheGesturesDoIsThereTheNextTimeTheAppOpens() {
         val store = FakeSettingsStore()
 
-        TranslationSettingsRepository(store, secrets).update(
+        PersistedTranslationSettingsRepository(store, secrets).update(
             TranslationSettings().withGestures(
                 TranslationGestures.of(tap = PassageUnit.Paragraph, longPress = PassageUnit.Sentence),
             ),
         )
 
-        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+        val reopened = PersistedTranslationSettingsRepository(store, secrets).settings.value
 
         assertEquals(PassageUnit.Paragraph, reopened.gestures.tap)
         assertEquals(PassageUnit.Sentence, reopened.gestures.longPress)
@@ -51,14 +51,14 @@ class TranslationGesturePersistenceTest {
         val store = FakeSettingsStore()
 
         assertFalse(
-            TranslationSettingsRepository(store, secrets).settings.value.gestures.wordDetails,
+            PersistedTranslationSettingsRepository(store, secrets).settings.value.gestures.wordDetails,
         )
 
-        TranslationSettingsRepository(store, secrets).update(
+        PersistedTranslationSettingsRepository(store, secrets).update(
             TranslationSettings().withGestures(TranslationGestures.of(wordDetails = true)),
         )
 
-        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+        val reopened = PersistedTranslationSettingsRepository(store, secrets).settings.value
 
         assertTrue(reopened.gestures.wordDetails)
     }
@@ -67,13 +67,13 @@ class TranslationGesturePersistenceTest {
     fun notesUnderTheParagraphAreOffUntilTheyAreTurnedOn() {
         val store = FakeSettingsStore()
 
-        assertFalse(TranslationSettingsRepository(store, secrets).settings.value.notes)
+        assertFalse(PersistedTranslationSettingsRepository(store, secrets).settings.value.notes)
 
-        TranslationSettingsRepository(store, secrets).update(
+        PersistedTranslationSettingsRepository(store, secrets).update(
             TranslationSettings().withNotes(true),
         )
 
-        assertTrue(TranslationSettingsRepository(store, secrets).settings.value.notes)
+        assertTrue(PersistedTranslationSettingsRepository(store, secrets).settings.value.notes)
     }
 
     /**
@@ -87,13 +87,13 @@ class TranslationGesturePersistenceTest {
     fun whatATapWouldAskForSurvivesTheTapBeingTurnedOff() {
         val store = FakeSettingsStore()
 
-        TranslationSettingsRepository(store, secrets).update(
+        PersistedTranslationSettingsRepository(store, secrets).update(
             TranslationSettings().withGestures(
                 TranslationGestures(tapTranslates = false, tapUnit = PassageUnit.Paragraph),
             ),
         )
 
-        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+        val reopened = PersistedTranslationSettingsRepository(store, secrets).settings.value
 
         assertNull(reopened.gestures.tap, "a tap nobody turned on translated something")
         assertEquals(PassageUnit.Paragraph, reopened.gestures.tapUnit)
@@ -108,7 +108,7 @@ class TranslationGesturePersistenceTest {
         val store = FakeSettingsStore()
         store.putString("translation.gesture.tap", PassageUnit.Sentence.name)
 
-        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+        val reopened = PersistedTranslationSettingsRepository(store, secrets).settings.value
 
         assertEquals(PassageUnit.Sentence, reopened.gestures.tap)
         assertEquals(PassageUnit.Sentence, reopened.gestures.tapUnit)
@@ -119,11 +119,11 @@ class TranslationGesturePersistenceTest {
     fun aGestureTurnedOffStaysOff() {
         val store = FakeSettingsStore()
 
-        TranslationSettingsRepository(store, secrets).update(
+        PersistedTranslationSettingsRepository(store, secrets).update(
             TranslationSettings().withGestures(TranslationGestures.of(tap = null, longPress = null)),
         )
 
-        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+        val reopened = PersistedTranslationSettingsRepository(store, secrets).settings.value
 
         assertNull(reopened.gestures.tap)
         assertNull(reopened.gestures.longPress)
@@ -140,7 +140,7 @@ class TranslationGesturePersistenceTest {
      */
     @Test
     fun anUntouchedInstallDoesNotTranslateAnything() {
-        val settings = TranslationSettingsRepository(FakeSettingsStore(), secrets).settings.value
+        val settings = PersistedTranslationSettingsRepository(FakeSettingsStore(), secrets).settings.value
 
         assertNull(settings.gestures.tap)
         assertNull(settings.gestures.longPress)

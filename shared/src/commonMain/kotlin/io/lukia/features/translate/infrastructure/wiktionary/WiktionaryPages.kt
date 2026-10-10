@@ -9,7 +9,7 @@ import io.ktor.http.isSuccess
 import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.features.translate.domain.lookup.WordEntry
 import io.lukia.features.translate.domain.settings.TargetLanguage
-import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
+import io.lukia.features.translate.domain.settings.TranslationSettingsRepository
 import io.lukia.features.translate.infrastructure.translating
 import io.lukia.features.translate.infrastructure.translationTimeouts
 import kotlinx.serialization.json.Json

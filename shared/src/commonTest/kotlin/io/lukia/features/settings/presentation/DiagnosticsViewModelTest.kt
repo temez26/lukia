@@ -7,7 +7,7 @@ import io.lukia.core.domain.storage.FakeSettingsStore
 import io.lukia.core.infrastructure.diagnostics.CrashRecorder
 import io.lukia.core.infrastructure.diagnostics.DiagnosticBuffer
 import io.lukia.core.infrastructure.diagnostics.RecordingDiagnostics
-import io.lukia.features.settings.infrastructure.AppSettingsRepository
+import io.lukia.features.settings.infrastructure.PersistedAppSettingsRepository
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -24,7 +24,7 @@ import kotlin.test.assertTrue
 private class Diagnostics {
     val store = FakeSettingsStore()
     val buffer = DiagnosticBuffer()
-    val settings = AppSettingsRepository(store)
+    val settings = PersistedAppSettingsRepository(store)
     val crashes = CrashRecorder(store = FakeCrashStore(), buffer = buffer, platformName = "Java 21")
     val viewModel = DiagnosticsViewModel(
         buffer = buffer,
@@ -79,7 +79,7 @@ class DiagnosticsViewModelTest {
 
         app.viewModel.setEnabled(true)
 
-        assertTrue(AppSettingsRepository(app.store).settings.value.diagnostics)
+        assertTrue(PersistedAppSettingsRepository(app.store).settings.value.diagnostics)
     }
 
     @Test

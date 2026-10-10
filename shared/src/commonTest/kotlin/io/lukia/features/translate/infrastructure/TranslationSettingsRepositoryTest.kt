@@ -24,7 +24,7 @@ class TranslationSettingsRepositoryTest {
 
     @Test
     fun anUntouchedInstallStartsAtTheDefaults() {
-        val settings = TranslationSettingsRepository(FakeSettingsStore(), secrets).settings.value
+        val settings = PersistedTranslationSettingsRepository(FakeSettingsStore(), secrets).settings.value
 
         assertEquals(TargetLanguage.Default, settings.targetLanguage)
         assertEquals(TranslationProvider.Default, settings.provider)
@@ -38,7 +38,7 @@ class TranslationSettingsRepositoryTest {
     fun whatIsChosenIsThereTheNextTimeTheAppOpens() {
         val store = FakeSettingsStore()
 
-        TranslationSettingsRepository(store, secrets).update(
+        PersistedTranslationSettingsRepository(store, secrets).update(
             TranslationSettings(
                 targetLanguage = TargetLanguage.Finnish,
                 aiTranslation = true,
@@ -46,7 +46,7 @@ class TranslationSettingsRepositoryTest {
             ).withModel("gpt-4o-mini").withApiKey("sk-test"),
         )
 
-        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+        val reopened = PersistedTranslationSettingsRepository(store, secrets).settings.value
 
         assertEquals(TargetLanguage.Finnish, reopened.targetLanguage)
         assertEquals(TranslationProvider.OpenAi, reopened.provider)
@@ -64,13 +64,13 @@ class TranslationSettingsRepositoryTest {
     fun howWordsAreLookedUpIsThereTheNextTimeTheAppOpens() {
         val store = FakeSettingsStore()
 
-        TranslationSettingsRepository(store, secrets).update(
+        PersistedTranslationSettingsRepository(store, secrets).update(
             TranslationSettings()
                 .withWordLookup(WordLookup.Wiktionary)
                 .withGoogleApiKey("google-key"),
         )
 
-        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+        val reopened = PersistedTranslationSettingsRepository(store, secrets).settings.value
 
         assertEquals(WordLookup.Wiktionary, reopened.wordLookup)
         assertEquals("google-key", reopened.googleApiKey)
@@ -84,11 +84,11 @@ class TranslationSettingsRepositoryTest {
     fun whereAWordIsReadAboutIsThereTheNextTimeTheAppOpens() {
         val store = FakeSettingsStore()
 
-        TranslationSettingsRepository(store, secrets).update(
+        PersistedTranslationSettingsRepository(store, secrets).update(
             TranslationSettings().withWordSite(WordSite.Sanakirja),
         )
 
-        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+        val reopened = PersistedTranslationSettingsRepository(store, secrets).settings.value
 
         assertEquals(WordSite.Sanakirja, reopened.wordSite)
         assertEquals(WordSite.Sanakirja.urlTemplate, reopened.wordSiteUrlTemplate)
@@ -99,13 +99,13 @@ class TranslationSettingsRepositoryTest {
     fun aCustomSitesAddressIsThereTheNextTimeTheAppOpens() {
         val store = FakeSettingsStore()
 
-        TranslationSettingsRepository(store, secrets).update(
+        PersistedTranslationSettingsRepository(store, secrets).update(
             TranslationSettings()
                 .withWordSite(WordSite.Custom)
                 .withCustomWordSiteUrl("https://example.org/{word}"),
         )
 
-        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+        val reopened = PersistedTranslationSettingsRepository(store, secrets).settings.value
 
         assertEquals("https://example.org/{word}", reopened.wordSiteUrlTemplate)
     }
@@ -128,7 +128,7 @@ class TranslationSettingsRepositoryTest {
      */
     @Test
     fun eachProviderStartsAtItsOwnWait() {
-        val settings = TranslationSettingsRepository(FakeSettingsStore(), secrets).settings.value
+        val settings = PersistedTranslationSettingsRepository(FakeSettingsStore(), secrets).settings.value
 
         assertEquals(TranslationProvider.Anthropic.defaultTimeoutSeconds, settings.timeoutSeconds)
         assertEquals(
@@ -146,11 +146,11 @@ class TranslationSettingsRepositoryTest {
     fun aWaitTheReaderSetIsThereTheNextTimeTheAppOpens() {
         val store = FakeSettingsStore()
 
-        TranslationSettingsRepository(store, secrets).update(
+        PersistedTranslationSettingsRepository(store, secrets).update(
             TranslationSettings(provider = TranslationProvider.Local).withTimeoutSeconds(600),
         )
 
-        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+        val reopened = PersistedTranslationSettingsRepository(store, secrets).settings.value
 
         assertEquals(600, reopened.timeoutSeconds)
     }
@@ -189,8 +189,8 @@ class TranslationSettingsRepositoryTest {
             .withBaseUrl("http://192.168.1.50:1234/v1")
             .withModel("qwen2.5-7b-instruct")
 
-        TranslationSettingsRepository(store, secrets).update(configured)
-        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+        PersistedTranslationSettingsRepository(store, secrets).update(configured)
+        val reopened = PersistedTranslationSettingsRepository(store, secrets).settings.value
 
         assertEquals("qwen2.5-7b-instruct", reopened.model)
         assertEquals("http://192.168.1.50:1234/v1", reopened.baseUrl)
@@ -206,12 +206,12 @@ class TranslationSettingsRepositoryTest {
     @Test
     fun aClearedValueDoesNotComeBack() {
         val store = FakeSettingsStore()
-        val repository = TranslationSettingsRepository(store, secrets)
+        val repository = PersistedTranslationSettingsRepository(store, secrets)
 
         repository.update(TranslationSettings().withApiKey("sk-ant-test"))
         repository.update(repository.settings.value.withApiKey(""))
 
-        assertNull(TranslationSettingsRepository(store, secrets).settings.value.apiKey)
+        assertNull(PersistedTranslationSettingsRepository(store, secrets).settings.value.apiKey)
     }
 
     @Test
@@ -233,7 +233,7 @@ class TranslationSettingsRepositoryTest {
             putString("translation.apiKey.Anthropic", "sk-ant-old")
         }
 
-        val settings = TranslationSettingsRepository(store, secrets).settings.value
+        val settings = PersistedTranslationSettingsRepository(store, secrets).settings.value
 
         assertEquals("sk-ant-old", settings.apiKey)
         assertEquals("sk-ant-old", secrets.getSecret("translation.apiKey.Anthropic"))
@@ -245,7 +245,7 @@ class TranslationSettingsRepositoryTest {
     fun aKeyIsNotWrittenToTheSettingsFile() {
         val store = FakeSettingsStore()
 
-        TranslationSettingsRepository(store, secrets)
+        PersistedTranslationSettingsRepository(store, secrets)
             .update(TranslationSettings().withApiKey("sk-ant-test"))
 
         assertEquals("", store.getString("translation.apiKey.Anthropic").orEmpty())
@@ -264,7 +264,7 @@ class TranslationSettingsRepositoryTest {
             putString("translation.apiKey.Anthropic", "sk-ant-test")
         }
 
-        val settings = TranslationSettingsRepository(store, secrets).settings.value
+        val settings = PersistedTranslationSettingsRepository(store, secrets).settings.value
 
         assertEquals(TargetLanguage.Default, settings.targetLanguage)
         assertEquals(TranslationProvider.Default, settings.provider)
@@ -294,7 +294,7 @@ class TranslationSettingsRepositoryTest {
         val secrets = FakeSecretStore()
         secrets.putSecret("translation.apiKey.Anthropic", "sk-test")
 
-        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+        val reopened = PersistedTranslationSettingsRepository(store, secrets).settings.value
 
         assertTrue(reopened.aiTranslation)
         assertTrue(reopened.isConfigured)
@@ -303,7 +303,7 @@ class TranslationSettingsRepositoryTest {
     /** And one with nothing set up starts where every other setting starts. */
     @Test
     fun andOneWithNothingSetUpStartsOff() {
-        val settings = TranslationSettingsRepository(FakeSettingsStore(), secrets).settings.value
+        val settings = PersistedTranslationSettingsRepository(FakeSettingsStore(), secrets).settings.value
 
         assertFalse(settings.aiTranslation)
     }
@@ -320,7 +320,7 @@ class TranslationSettingsRepositoryTest {
 
     @Test
     fun theLiveValueIsWhatWasJustChosen() {
-        val repository = TranslationSettingsRepository(FakeSettingsStore(), secrets)
+        val repository = PersistedTranslationSettingsRepository(FakeSettingsStore(), secrets)
 
         repository.update(TranslationSettings(targetLanguage = TargetLanguage.Japanese))
 

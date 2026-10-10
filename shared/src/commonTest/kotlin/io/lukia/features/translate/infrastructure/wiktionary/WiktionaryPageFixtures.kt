@@ -13,7 +13,7 @@ import io.lukia.core.domain.storage.FakeSecretStore
 import io.lukia.core.domain.storage.FakeSettingsStore
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationSettings
-import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
+import io.lukia.features.translate.infrastructure.PersistedTranslationSettingsRepository
 import kotlinx.serialization.json.Json
 
 /**
@@ -32,7 +32,7 @@ internal fun wiktionaryDictionary(
 ): WiktionaryDictionary {
     val json = Json { ignoreUnknownKeys = true }
 
-    val settings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()).apply {
+    val settings = PersistedTranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()).apply {
         update(TranslationSettings(targetLanguage = language))
     }
 

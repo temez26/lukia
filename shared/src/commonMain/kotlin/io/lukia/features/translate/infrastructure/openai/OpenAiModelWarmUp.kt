@@ -12,7 +12,7 @@ import io.lukia.core.domain.AppError
 import io.lukia.core.domain.AppErrorException
 import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.features.translate.domain.provider.ModelWarmUp
-import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
+import io.lukia.features.translate.domain.settings.TranslationSettingsRepository
 import io.lukia.features.translate.infrastructure.refuseCleartextToThePublicInternet
 import io.lukia.features.translate.infrastructure.translating
 import io.lukia.features.translate.infrastructure.translationTimeouts

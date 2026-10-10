@@ -16,7 +16,7 @@ import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.Translator
-import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
+import io.lukia.features.translate.domain.settings.TranslationSettingsRepository
 import io.lukia.features.translate.infrastructure.translating
 import io.lukia.features.translate.infrastructure.translationTimeouts
 import kotlinx.serialization.SerialName

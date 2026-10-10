@@ -4,7 +4,8 @@ import io.lukia.core.domain.reading.PdfLayoutRepository
 import io.lukia.core.domain.reading.ReadingProgressRepository
 import io.lukia.core.domain.reading.ReadingSessionRepository
 import io.lukia.features.reader.application.OpenDocumentUseCase
-import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
+import io.lukia.features.reader.domain.ReaderSettingsRepository
+import io.lukia.features.reader.infrastructure.PersistedReaderSettingsRepository
 import io.lukia.features.reader.infrastructure.SqlPdfLayoutRepository
 import io.lukia.features.reader.infrastructure.SqlReadingProgressRepository
 import io.lukia.features.reader.infrastructure.SqlReadingSessionRepository
@@ -39,8 +40,8 @@ val readerModule = module {
 
     // A single instance: reader settings are one shared, live value, so a change
     // made while reading is already in place the next time a book is opened.
-    single {
-        ReaderSettingsRepository(get())
+    single<ReaderSettingsRepository> {
+        PersistedReaderSettingsRepository(get())
     }
 
     // Where each book was left off and how long it has been read for, minus the

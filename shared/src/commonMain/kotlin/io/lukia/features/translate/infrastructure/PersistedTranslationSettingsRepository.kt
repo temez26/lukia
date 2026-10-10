@@ -11,6 +11,7 @@ import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.domain.settings.TranslationSettings
+import io.lukia.features.translate.domain.settings.TranslationSettingsRepository
 import io.lukia.features.translate.domain.settings.WordLookup
 import kotlinx.coroutines.flow.StateFlow
 
@@ -25,7 +26,7 @@ import kotlinx.coroutines.flow.StateFlow
  * back - written by an older build, or edited by hand into nonsense - falls back
  * to that setting's default rather than discarding the rest.
  */
-class TranslationSettingsRepository(
+class PersistedTranslationSettingsRepository(
     private val store: SettingsStore,
     /**
      * Keys are kept apart from every other setting, in whatever the platform
@@ -33,12 +34,12 @@ class TranslationSettingsRepository(
      * the same store wearing different names.
      */
     private val secrets: SecretStore,
-) {
+) : TranslationSettingsRepository {
 
     private val persisted = PersistedSettings(load(), ::save)
-    val settings: StateFlow<TranslationSettings> = persisted.state
+    override val settings: StateFlow<TranslationSettings> = persisted.state
 
-    fun update(settings: TranslationSettings) = persisted.set(settings)
+    override fun update(settings: TranslationSettings) = persisted.set(settings)
 
     private fun load(): TranslationSettings {
         val defaults = TranslationSettings()

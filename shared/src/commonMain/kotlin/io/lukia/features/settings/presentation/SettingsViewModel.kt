@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.lukia.core.domain.AppError
 import io.lukia.features.reader.domain.ReaderSettings
-import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
+import io.lukia.features.reader.domain.ReaderSettingsRepository
 import io.lukia.features.settings.domain.AppSettings
-import io.lukia.features.settings.infrastructure.AppSettingsRepository
+import io.lukia.features.settings.domain.AppSettingsRepository
 import io.lukia.features.translate.application.TranslatePassageUseCase
 import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.lookup.WordSite
@@ -16,8 +16,8 @@ import io.lukia.features.translate.domain.provider.TranslationProvider
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationGestures
 import io.lukia.features.translate.domain.settings.TranslationSettings
+import io.lukia.features.translate.domain.settings.TranslationSettingsRepository
 import io.lukia.features.translate.domain.settings.WordLookup
-import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import kotlinx.coroutines.flow.StateFlow
 
 /**

@@ -21,7 +21,7 @@ import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.features.translate.domain.translate
-import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
+import io.lukia.features.translate.infrastructure.PersistedTranslationSettingsRepository
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
@@ -306,7 +306,7 @@ sauna
         engine: MockEngine,
         language: TargetLanguage = TargetLanguage.Finnish,
     ): WiktionaryTranslator {
-        val settings = TranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()).apply {
+        val settings = PersistedTranslationSettingsRepository(FakeSettingsStore(), FakeSecretStore()).apply {
             update(TranslationSettings(targetLanguage = language))
         }
 

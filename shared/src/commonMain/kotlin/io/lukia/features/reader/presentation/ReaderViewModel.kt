@@ -14,12 +14,12 @@ import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderSettings
+import io.lukia.features.reader.domain.ReaderSettingsRepository
 import io.lukia.features.reader.domain.outline.ReaderOutline
 import io.lukia.features.reader.domain.outline.asTableOfContents
 import io.lukia.features.reader.domain.page.PageSentence
 import io.lukia.features.reader.domain.page.pageSentences
 import io.lukia.features.reader.domain.text.TextExtraction
-import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
 import io.lukia.features.reader.presentation.rendering.FigureImageCache
 import io.lukia.features.reader.presentation.rendering.PageSentenceCache
 import io.lukia.features.reader.presentation.rendering.ReaderLayoutChoice
