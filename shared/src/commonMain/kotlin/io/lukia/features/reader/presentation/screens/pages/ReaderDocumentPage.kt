@@ -245,6 +245,14 @@ private fun Modifier.passageTaps(
     val currentOnChrome by rememberUpdatedState(onChrome)
 
     return pointerInput(pageIndex) {
+        fun answer(selection: PassageSelection?, gesture: WordGesture): Boolean = answer(
+            selection = selection,
+            gesture = gesture,
+            onSelected = currentOnSelected,
+            onHold = currentOnHold,
+            onQuestion = currentOnQuestion,
+        )
+
         fun select(position: Offset, unit: PassageUnit?, gesture: WordGesture): Boolean =
             // Back out of the drawn page into the file's own space, which is
             // where the sentences know they are.
@@ -256,9 +264,6 @@ private fun Modifier.passageTaps(
                     translations = currentTranslations,
                 ),
                 gesture = gesture,
-                onSelected = currentOnSelected,
-                onHold = currentOnHold,
-                onQuestion = currentOnQuestion,
             )
 
         detectReaderTaps(
@@ -267,7 +272,15 @@ private fun Modifier.passageTaps(
             // of the two taps that bring the chrome back.
             onTap = { position -> select(position, currentGestures.tap, WordGesture.Tapped) },
             onHold = { position ->
-                select(position, currentGestures.longPress, WordGesture.Held)
+                answer(
+                    selection = currentPassages.heldAt(
+                        x = position.x / currentScale,
+                        y = position.y / currentScale,
+                        translations = currentTranslations,
+                        gestures = currentGestures,
+                    ),
+                    gesture = WordGesture.Held,
+                )
             },
             // Always the word, whatever the hold is set to - the question this
             // gesture asks is about the word rather than about the passage.

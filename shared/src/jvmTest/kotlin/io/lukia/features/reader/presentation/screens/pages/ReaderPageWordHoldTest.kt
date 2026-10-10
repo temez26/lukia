@@ -69,6 +69,41 @@ class ReaderPageWordHoldTest {
         assertEquals(PassageUnit.Sentence, assertNotNull(selected).unit)
     }
 
+    /**
+     * A word already asked about opens what else it means however the hold is
+     * set, and whether or not its translation is what the page is showing - one
+     * put back to the page's own word is covered by nothing, so only the page
+     * underneath can answer for it.
+     */
+    @Test
+    fun holdingAWordPutBackToThePagesOwnIsRaisedAsAHold() = runComposeUiTest {
+        var held: PassageSelection? = null
+        var selected: PassageSelection? = null
+
+        setPageReader(
+            sentences = listOf(pageOfWords),
+            translations = {
+                mapOf(
+                    TextAnchor.Page(1, sentenceIndex = 0, wordIndex = 1) to
+                        PassageTranslation.Ready(Translation("Ismael"), showingOriginal = true),
+                )
+            },
+            onPassageSelected = { selected = it },
+            onPassageHold = { held = it },
+            gestures = TranslationGestures.of(
+                tap = PassageUnit.Word,
+                longPress = PassageUnit.Sentence,
+                wordDetails = true,
+            ),
+        )
+
+        onNodeWithContentDescription("Page 2 of 2").performTouchInput { longClick() }
+
+        val selection = assertNotNull(held, "holding an answered word raised nothing")
+        assertEquals(TextAnchor.Page(1, sentenceIndex = 0, wordIndex = 1), selection.anchor)
+        assertNull(selected, "the sentence around an answered word was asked about instead")
+    }
+
     /** The case the whole panel exists for: the word is under its own translation. */
     @Test
     fun holdingAWordsTranslationOnAPageIsRaisedAsAHold() = runComposeUiTest {

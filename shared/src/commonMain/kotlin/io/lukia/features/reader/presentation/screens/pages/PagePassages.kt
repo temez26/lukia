@@ -9,6 +9,7 @@ import io.lukia.features.reader.presentation.translation.PassageSelection
 import io.lukia.features.reader.presentation.translation.SentenceTranslations
 import io.lukia.features.reader.presentation.translation.replacesTheOriginal
 import io.lukia.features.translate.domain.MAX_TRANSLATABLE_CHARS
+import io.lukia.features.translate.domain.settings.TranslationGestures
 
 /**
  * What one page of a fixed-layout document can be asked about, and how a point
@@ -92,6 +93,52 @@ internal class PagePassages(
         return wholeParagraph(sentence, unit, translations)
             ?: covered(sentence, x, y, translations)
             ?: chosen(sentence, x, y, unit)
+    }
+
+    /**
+     * What a press and hold at a point on the page asks about.
+     *
+     * The word the reader has already asked about comes first, so that what else
+     * it means is reachable however they have set their hold - see
+     * [TranslationGestures.wordDetails], and `ProsePassages.held`, which answers
+     * the same question for set text. Everything else is the gesture they set.
+     */
+    fun heldAt(
+        x: Float,
+        y: Float,
+        translations: SentenceTranslations,
+        gestures: TranslationGestures,
+    ): PassageSelection? {
+        if (gestures.wordDetails) answeredWordAt(x, y, translations)?.let { return it }
+
+        return at(x, y, gestures.longPress, translations)
+    }
+
+    /**
+     * The word at this point that something has already become of, whether or
+     * not its translation is what the page is showing.
+     *
+     * A word put back to the page's own is the case this is for: nothing covers
+     * it, so [covered] does not find it, and a hold set to the sentence used to
+     * translate the sentence around a word the reader was asking more about.
+     *
+     * Nothing inside a paragraph or a sentence that has been asked about whole,
+     * which is one passage now - see [at].
+     */
+    private fun answeredWordAt(
+        x: Float,
+        y: Float,
+        translations: SentenceTranslations,
+    ): PassageSelection? {
+        val sentence = sentences.sentenceAt(x, y) ?: return null
+
+        if (translations.paragraph(sentence.blockIndex) != null) return null
+        if (translations[sentence.index] != null) return null
+
+        val word = sentence.wordAt(x, y) ?: return null
+
+        return passage(sentence, word)
+            .takeIf { translations.words(sentence.index)[word.index] != null }
     }
 
     /**
