@@ -113,8 +113,8 @@ internal class PdfFigures {
         return bytes
     }
 
-    private companion object {
-        const val MIN_REPEATS = 3
+    companion object {
+        private const val MIN_REPEATS = 3
 
         /**
          * How much of a book's pictures are carried into the text.

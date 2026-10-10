@@ -3,6 +3,7 @@ package io.lukia.features.reader.infrastructure
 import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.infrastructure.availableProcessors
+import io.lukia.core.infrastructure.heapCeilingBytes
 import io.lukia.core.infrastructure.readFileBytes
 import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderContent
@@ -109,6 +110,9 @@ private fun readersFor(pageCount: Int): Int {
     return minOf(
         MAX_READERS,
         availableProcessors().coerceAtLeast(1),
+        // Each handle parses the file for itself and keeps what it parsed -
+        // see [HEAP_PER_READER].
+        (heapCeilingBytes() / HEAP_PER_READER).coerceAtMost(MAX_READERS.toLong()).toInt(),
         pageCount / MIN_PAGES_EACH,
     ).coerceAtLeast(1)
 }
@@ -136,3 +140,14 @@ private const val MIN_PAGES_EACH = 12
 
 /** Past this the file, not the processor, is what the conversion is waiting on. */
 private const val MAX_READERS = 4
+
+/**
+ * How much heap there has to be for each handle.
+ *
+ * Measured on a 472-page manual, where one handle held some sixty megabytes for
+ * as long as it was open: four of them filled a 192 MB heap before the last
+ * page was read, and the book never opened. Twice what one was seen to hold,
+ * so a phone that small reads through one handle - which cost that book six
+ * seconds in forty, the file being what it was waiting on.
+ */
+private const val HEAP_PER_READER = 128L * 1024 * 1024

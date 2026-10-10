@@ -114,6 +114,26 @@ class PdfTextReaderTest {
     }
 
     /**
+     * A manual of screenshots is hundreds of megabytes of pictures, and all of
+     * them used to be read before any were turned away. Once the book has what
+     * it will carry, the pages after are read for their words alone.
+     */
+    @Test
+    fun picturesStopBeingReadOnceTheBookHasAllItWillCarry() = runTest {
+        val plate = PdfFigures.MAX_KEPT_BYTES / 2
+        val pages = FakePdfPages(
+            pages = List(5) { page("Page $it of the manual.") },
+            pictures = List(5) { listOf(picture(ByteArray(plate) { _ -> it.toByte() })) },
+        )
+
+        val content = assertNotNullContent(readPdfAsText(pages))
+
+        assertEquals(listOf(0, 1), pages.askedForPictures, "pages were read for pictures past the budget")
+        assertEquals(5, content.sections.size)
+        assertEquals(2, content.sections.sumOf { section -> section.blocks.count { it is TextBlock.Figure } })
+    }
+
+    /**
      * The publisher's logo, the journal's banner, the watermark: drawn on every
      * page, and a picture between every two paragraphs if it is believed.
      */
@@ -289,8 +309,13 @@ class PdfTextReaderTest {
         override suspend fun pageText(index: Int): List<PageGlyph>? =
             pages.getOrNull(index)?.takeIf { it.isNotEmpty() }
 
-        override suspend fun pageImages(index: Int): List<PageImage> =
-            pictures.getOrElse(index) { emptyList() }
+        val askedForPictures = mutableListOf<Int>()
+
+        override suspend fun pageImages(index: Int): List<PageImage> {
+            askedForPictures += index
+
+            return pictures.getOrElse(index) { emptyList() }
+        }
 
         override fun close() = Unit
     }

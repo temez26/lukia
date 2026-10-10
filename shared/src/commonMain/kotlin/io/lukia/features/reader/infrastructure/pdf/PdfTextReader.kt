@@ -52,6 +52,12 @@ internal suspend fun readPdfAsText(
 ): ReflowableContent? {
     val pageCount = pages.pageCount
 
+    // Read before the pages rather than after them. Finding it can mean
+    // scanning the whole file, which is tens of megabytes held for a moment -
+    // and at the end of a conversion that moment lands on top of every handle
+    // still open and everything they have read.
+    val outline = pages.outline
+
     // Counted and recorded once for the book rather than once per page. A file
     // that fails on one page usually fails on all of them, and an entry each
     // would push everything else out of the record while saying no more than
@@ -100,7 +106,7 @@ internal suspend fun readPdfAsText(
         // at pages, the reader resolves them as sections, and the two only line
         // up while the count and the order match.
         sections = sections.map { TextSection(title = null, blocks = it.toList()) },
-        outline = pages.outline,
+        outline = outline,
     )
 }
 
@@ -129,11 +135,22 @@ private suspend fun readPages(
 
     val run = (pageCount + readers.size - 1) / readers.size
 
+    // What the finished book will carry, shared out between the readers. The
+    // pictures used to be turned away only once every page had been read, so a
+    // manual of screenshots was held whole in the meantime - hundreds of
+    // megabytes on a phone that allows an app two hundred.
+    val pictureRoom = PdfFigures.MAX_KEPT_BYTES / readers.size
+
     readers.mapIndexed { index, reader ->
         val from = (index * run).coerceAtMost(pageCount)
         val until = (from + run).coerceAtMost(pageCount)
 
         async {
+            // By the array rather than by its bytes: a mark on every page is
+            // handed out as one array, and is one picture's worth of room.
+            val pictures = mutableSetOf<ByteArray>()
+            var pictureBytes = 0
+
             (from until until).map { page ->
                 // Both of these are held under the same lock, and for the same
                 // reason: several readers are somewhere in the book at once and
@@ -141,8 +158,15 @@ private suspend fun readPages(
                 reader.blocksOn(
                     index = page,
                     pageSizes = pageSizes,
+                    withPictures = pictureBytes < pictureRoom,
                     onUnreadable = { counted.withLock(action = onUnreadable) },
-                ).also {
+                ).also { blocks ->
+                    blocks.forEach { block ->
+                        val bytes = (block as? TextBlock.Figure)?.bytes ?: return@forEach
+
+                        if (pictures.add(bytes)) pictureBytes += bytes.size
+                    }
+
                     counted.withLock { onProgress(TextExtraction(++read, pageCount)) }
                 }
             }
@@ -154,12 +178,14 @@ private suspend fun readPages(
 private suspend fun PageContent.blocksOn(
     index: Int,
     pageSizes: List<PageSize>,
+    /** False once this reader's share of the book's pictures is spent. */
+    withPictures: Boolean,
     onUnreadable: suspend () -> Unit,
 ): List<TextBlock> {
     // A page that cannot be read costs the reader that page rather than the
     // book, exactly as a page that cannot be drawn does.
     val glyphs = runCatchingApp { pageText(index) }.getOrNull()
-    val drawn = runCatchingApp { pageImages(index) }.getOrNull()
+    val drawn = if (withPictures) runCatchingApp { pageImages(index) }.getOrNull() else emptyList()
 
     if (glyphs == null || drawn == null) onUnreadable()
 
