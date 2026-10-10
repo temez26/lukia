@@ -138,6 +138,33 @@ class LibraryViewModelTest : MainDispatcherTest() {
         )
     }
 
+    /** A library that cannot be written says so and keeps what is on screen. */
+    @Test
+    fun aDeleteThatFailsReportsItselfAndLeavesTheBookOnTheShelf() = runTest {
+        val documentInfo = pdfDocumentInfo()
+        val viewModel = createViewModel(
+            UnwritableLibraryRepository(FakeLibraryRepository(listOf(documentInfo))),
+        )
+
+        viewModel.deleteDocument(documentInfo)
+
+        assertEquals(LibraryMessage.Failed(AppError.Unexpected()), viewModel.message.value)
+        assertEquals(listOf(documentInfo), viewModel.documents())
+    }
+
+    @Test
+    fun aFavouriteThatFailsReportsItselfAndLeavesTheBookAsItWas() = runTest {
+        val documentInfo = pdfDocumentInfo()
+        val viewModel = createViewModel(
+            UnwritableLibraryRepository(FakeLibraryRepository(listOf(documentInfo))),
+        )
+
+        viewModel.toggleFavorite(documentInfo)
+
+        assertEquals(LibraryMessage.Failed(AppError.Unexpected()), viewModel.message.value)
+        assertEquals(listOf(false), viewModel.documents().map { it.isFavorite })
+    }
+
     @Test
     fun deleteDocumentRemovesItFromTheLibrary() = runTest {
         val documentInfo = pdfDocumentInfo()

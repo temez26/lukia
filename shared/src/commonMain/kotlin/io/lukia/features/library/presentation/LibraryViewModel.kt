@@ -255,7 +255,7 @@ class LibraryViewModel(
         val isFavorite = !document.isFavorite
 
         viewModelScope.launch {
-            setFavoriteUseCase(location, isFavorite)
+            if (!reported { setFavoriteUseCase(location, isFavorite) }) return@launch
 
             // Patched in place rather than re-read. A reload would pull the
             // whole library back out of the database, and every row carries its
@@ -317,7 +317,7 @@ class LibraryViewModel(
         val location = document.document.location
 
         viewModelScope.launch {
-            removeDocumentUseCase(location)
+            if (!reported { removeDocumentUseCase(location) }) return@launch
 
             // Dropped from the list for the same reason favouriting patches it:
             // one row leaving is not a reason to re-read the rest.
@@ -330,6 +330,16 @@ class LibraryViewModel(
             _readingProgress.update { it - location }
         }
     }
+
+    /**
+     * Runs a write to the library and says whether it happened, telling the
+     * reader when it did not - a store that cannot be written is not a reason
+     * to take the app down, which an uncaught throw in this scope does.
+     */
+    private suspend fun reported(write: suspend () -> Unit): Boolean =
+        runCatchingApp { write() }
+            .onFailure { _message.value = LibraryMessage.Failed(it.toAppError()) }
+            .isSuccess
 
     /**
      * Edits the library already on screen, when there is one.

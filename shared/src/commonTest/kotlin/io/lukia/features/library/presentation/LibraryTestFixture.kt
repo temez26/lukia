@@ -242,3 +242,15 @@ internal class ThrowingLibraryRepository : LibraryRepository {
 
     override suspend fun removeDocument(location: String) = Unit
 }
+
+/** A library that can be read and not changed, as one on a full or failing disk is. */
+internal class UnwritableLibraryRepository(
+    private val library: FakeLibraryRepository,
+) : LibraryRepository by library {
+
+    override suspend fun setFavorite(location: String, isFavorite: Boolean) =
+        error("the library could not be written")
+
+    override suspend fun removeDocument(location: String) =
+        error("the library could not be written")
+}
