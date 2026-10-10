@@ -7,9 +7,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.luminance
 import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.shared.presentation.theme.LukiaDarkColorScheme
 import io.lukia.shared.presentation.theme.LukiaLightColorScheme
+import io.lukia.shared.presentation.theme.SystemBarIcons
 
 /**
  * How a page is painted under the current reader theme.
@@ -114,10 +116,17 @@ internal fun ReaderTheming(
     theme: ReaderTheme,
     content: @Composable () -> Unit,
 ) {
+    val colors = readerColorScheme(theme)
+
+    SystemBarIcons(dark = colors.background.luminance() > LIGHT_PAGE_LUMINANCE)
+
     MaterialTheme(
-        colorScheme = readerColorScheme(theme),
+        colorScheme = colors,
         typography = MaterialTheme.typography,
         shapes = MaterialTheme.shapes,
         content = content,
     )
 }
+
+/** Above this a page is pale enough that only dark icons show up against it. */
+private const val LIGHT_PAGE_LUMINANCE = 0.5f
