@@ -1,7 +1,7 @@
 package io.lukia.features.reader.infrastructure.text
 
-import io.lukia.features.reader.domain.TextBlock
-import io.lukia.features.reader.domain.TextRun
+import io.lukia.features.reader.domain.text.TextBlock
+import io.lukia.features.reader.domain.text.TextRun
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -16,8 +16,8 @@ class SectioningTest {
                 heading("Chapter One", level = 1),
                 paragraph("Words."),
                 heading("Chapter Two", level = 1),
-                paragraph("More words.")
-            )
+                paragraph("More words."),
+            ),
         )
 
         assertEquals(listOf("Chapter One", "Chapter Two"), sectioned.sections.map { it.title })
@@ -34,14 +34,14 @@ class SectioningTest {
             listOf(
                 heading("Chapter One", level = 2),
                 heading("A section", level = 3),
-                heading("Chapter Two", level = 2)
-            )
+                heading("Chapter Two", level = 2),
+            ),
         )
 
         assertEquals(listOf("Chapter One", "Chapter Two"), sectioned.sections.map { it.title })
         assertEquals(
             listOf("Chapter One" to 0, "A section" to 1, "Chapter Two" to 0),
-            sectioned.outline.map { it.title to it.level }
+            sectioned.outline.map { it.title to it.level },
         )
     }
 
@@ -52,8 +52,8 @@ class SectioningTest {
             listOf(
                 heading("Chapter One", level = 1),
                 heading("A section", level = 2),
-                heading("Chapter Two", level = 1)
-            )
+                heading("Chapter Two", level = 1),
+            ),
         )
 
         assertEquals(listOf(0, 0, 1), sectioned.outline.map { it.pageIndex })
@@ -66,8 +66,8 @@ class SectioningTest {
             listOf(
                 heading("Chapter", level = 1),
                 heading("Section", level = 2),
-                heading("Sub-section", level = 3)
-            )
+                heading("Sub-section", level = 3),
+            ),
         )
 
         assertEquals(listOf("Chapter", "Section"), sectioned.outline.map { it.title })
@@ -79,8 +79,8 @@ class SectioningTest {
             listOf(
                 paragraph("Front matter."),
                 heading("Chapter One", level = 1),
-                paragraph("Words.")
-            )
+                paragraph("Words."),
+            ),
         )
 
         assertEquals(2, sectioned.sections.size)

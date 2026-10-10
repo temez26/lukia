@@ -1,11 +1,14 @@
 package io.lukia.features.reader.infrastructure
 
-import io.lukia.core.domain.FakeSettingsStore
+import io.lukia.core.domain.reading.PdfLayout
+import io.lukia.core.domain.storage.FakeSettingsStore
+import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.domain.LineSpacing
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.features.reader.domain.ReaderTypeface
 import io.lukia.features.reader.domain.ReadingWidth
+import io.lukia.features.reader.domain.TextAlignment
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -13,14 +16,14 @@ class ReaderSettingsRepositoryTest {
 
     @Test
     fun aFirstRunGetsTheDefaults() {
-        val repository = ReaderSettingsRepository(FakeSettingsStore())
+        val repository = PersistedReaderSettingsRepository(FakeSettingsStore())
 
         assertEquals(ReaderSettings(), repository.settings.value)
     }
 
     @Test
     fun aChangeIsVisibleImmediately() {
-        val repository = ReaderSettingsRepository(FakeSettingsStore())
+        val repository = PersistedReaderSettingsRepository(FakeSettingsStore())
 
         repository.update(ReaderSettings(theme = ReaderTheme.Sepia))
 
@@ -36,24 +39,37 @@ class ReaderSettingsRepositoryTest {
             textScale = 1.4f,
             lineSpacing = LineSpacing.Relaxed,
             pageScale = ReadingWidth.Narrow.fraction,
-            typeface = ReaderTypeface.Serif
+            typeface = ReaderTypeface.Serif,
+            keepScreenAwake = false,
         )
 
-        ReaderSettingsRepository(store).update(settings)
+        PersistedReaderSettingsRepository(store).update(settings)
 
-        assertEquals(settings, ReaderSettingsRepository(store).settings.value)
+        assertEquals(settings, PersistedReaderSettingsRepository(store).settings.value)
     }
 
     @Test
     fun everySettingIsStoredSeparately() {
         val store = FakeSettingsStore()
 
-        ReaderSettingsRepository(store).update(
-            ReaderSettings(theme = ReaderTheme.Sepia, pageScale = ReadingWidth.Medium.fraction)
+        PersistedReaderSettingsRepository(store).update(
+            ReaderSettings(theme = ReaderTheme.Sepia, pageScale = ReadingWidth.Medium.fraction),
         )
 
         assertEquals(ReaderTheme.Sepia.name, store.values["reader.theme"])
         assertEquals(ReadingWidth.Medium.fraction.toString(), store.values["reader.pageScale"])
+    }
+
+    /**
+     * A reader who turned the screen setting off gets it back off. Stored as a
+     * word rather than as an enum, so it is the one setting whose nonsense value
+     * is a `null` from parsing rather than a name that matched nothing.
+     */
+    @Test
+    fun anUnreadableScreenSettingFallsBackToKeepingItAwake() {
+        val store = FakeSettingsStore(mapOf("reader.keepScreenAwake" to "sometimes"))
+
+        assertEquals(true, PersistedReaderSettingsRepository(store).settings.value.keepScreenAwake)
     }
 
     /**
@@ -65,11 +81,11 @@ class ReaderSettingsRepositoryTest {
         val store = FakeSettingsStore(
             mapOf(
                 "reader.theme" to "Neon",
-                "reader.readingWidth" to ReadingWidth.Narrow.name
-            )
+                "reader.readingWidth" to ReadingWidth.Narrow.name,
+            ),
         )
 
-        val settings = ReaderSettingsRepository(store).settings.value
+        val settings = PersistedReaderSettingsRepository(store).settings.value
 
         assertEquals(ReaderSettings().theme, settings.theme)
         assertEquals(ReadingWidth.Narrow, settings.matchingWidth)
@@ -81,7 +97,7 @@ class ReaderSettingsRepositoryTest {
 
         assertEquals(
             ReaderSettings().textScale,
-            ReaderSettingsRepository(store).settings.value.textScale
+            PersistedReaderSettingsRepository(store).settings.value.textScale,
         )
     }
 
@@ -92,7 +108,7 @@ class ReaderSettingsRepositoryTest {
 
         assertEquals(
             ReaderSettings.MAX_TEXT_SCALE,
-            ReaderSettingsRepository(store).settings.value.textScale
+            PersistedReaderSettingsRepository(store).settings.value.textScale,
         )
     }
 
@@ -103,12 +119,80 @@ class ReaderSettingsRepositoryTest {
     @Test
     fun settingTheSameValueDoesNotWrite() {
         val store = FakeSettingsStore()
-        val repository = ReaderSettingsRepository(store)
+        val repository = PersistedReaderSettingsRepository(store)
 
         repository.update(ReaderSettings(theme = ReaderTheme.Dark))
         val writesAfterFirstChange = store.writeCount
         repository.update(ReaderSettings(theme = ReaderTheme.Dark))
 
         assertEquals(writesAfterFirstChange, store.writeCount)
+    }
+
+    @Test
+    fun theChosenImageSizeIsReadBack() {
+        val store = FakeSettingsStore()
+
+        PersistedReaderSettingsRepository(store).update(ReaderSettings(figureSize = FigureSize.Fill))
+
+        assertEquals(FigureSize.Fill, PersistedReaderSettingsRepository(store).settings.value.figureSize)
+    }
+
+    /** One key that cannot be read back must not reset the rest of the reader. */
+    @Test
+    fun anImageSizeThatCannotBeReadBackFallsBackToItsDefault() {
+        val store = FakeSettingsStore()
+        PersistedReaderSettingsRepository(store).update(ReaderSettings(typeface = ReaderTypeface.Serif))
+        store.putString("reader.figureSize", "Enormous")
+
+        val settings = PersistedReaderSettingsRepository(store).settings.value
+
+        assertEquals(FigureSize.Normal, settings.figureSize)
+        assertEquals(ReaderTypeface.Serif, settings.typeface)
+    }
+
+    @Test
+    fun theChosenAlignmentIsReadBack() {
+        val store = FakeSettingsStore()
+
+        PersistedReaderSettingsRepository(store).update(
+            ReaderSettings(alignment = TextAlignment.Justified),
+        )
+
+        assertEquals(
+            TextAlignment.Justified,
+            PersistedReaderSettingsRepository(store).settings.value.alignment,
+        )
+    }
+
+    /** A ragged right edge is easier to read on a narrow column, so it leads. */
+    @Test
+    fun aBookOpensRagged() {
+        assertEquals(
+            TextAlignment.Ragged,
+            PersistedReaderSettingsRepository(FakeSettingsStore()).settings.value.alignment,
+        )
+    }
+
+    @Test
+    fun whatNewPdfsOpenAsIsReadBack() {
+        val store = FakeSettingsStore()
+
+        PersistedReaderSettingsRepository(store).update(
+            ReaderSettings(defaultPdfLayout = PdfLayout.Text),
+        )
+
+        assertEquals(
+            PdfLayout.Text,
+            PersistedReaderSettingsRepository(store).settings.value.defaultPdfLayout,
+        )
+    }
+
+    /** A PDF is what its maker made until somebody asks for otherwise. */
+    @Test
+    fun aPdfOpensAsItsOwnPages() {
+        assertEquals(
+            PdfLayout.Original,
+            PersistedReaderSettingsRepository(FakeSettingsStore()).settings.value.defaultPdfLayout,
+        )
     }
 }

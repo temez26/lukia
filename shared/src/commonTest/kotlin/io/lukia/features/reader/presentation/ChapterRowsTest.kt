@@ -1,6 +1,6 @@
 package io.lukia.features.reader.presentation
 
-import io.lukia.features.reader.domain.OutlineEntry
+import io.lukia.features.reader.domain.outline.OutlineEntry
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -14,7 +14,7 @@ class ChapterRowsTest {
         entry("A Section", page = 129, level = 1),
         entry("A Sub-section", page = 133, level = 2),
         entry("Another Section", page = 140, level = 1),
-        entry("The End", page = 300, level = 0)
+        entry("The End", page = 300, level = 0),
     )
 
     /** A chapter is a chapter because of what follows it, not because of itself. */
@@ -42,7 +42,7 @@ class ChapterRowsTest {
 
         assertEquals(
             listOf("Introduction", "The Middle", "The End"),
-            rows.map { it.entry.title }
+            rows.map { it.entry.title },
         )
         assertTrue(rows.first { it.entry.title == "The Middle" }.isCollapsed)
     }
@@ -54,7 +54,7 @@ class ChapterRowsTest {
 
         assertEquals(
             listOf("Introduction", "The Middle", "A Section", "Another Section", "The End"),
-            rows.map { it.entry.title }
+            rows.map { it.entry.title },
         )
     }
 
@@ -86,6 +86,18 @@ class ChapterRowsTest {
         assertEquals(1, currentEntryIndex(outline, pageIndex = 119))
         assertEquals(3, currentEntryIndex(outline, pageIndex = 135))
         assertEquals(5, currentEntryIndex(outline, pageIndex = 400))
+    }
+
+    /**
+     * A file's contents are not always in page order, and an entry at the end
+     * of the list pointing back at the front is not where every page is.
+     */
+    @Test
+    fun anEntryOutOfPageOrderDoesNotClaimThePagesAfterIt() {
+        val trailing = outline + entry("Index", page = 0, level = 0)
+
+        assertEquals(3, currentEntryIndex(trailing, pageIndex = 135))
+        assertEquals(trailing.lastIndex, currentEntryIndex(trailing, pageIndex = 0))
     }
 
     /** A cover or a title page sits before the first entry, and belongs to none. */

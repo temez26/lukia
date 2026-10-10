@@ -1,0 +1,9 @@
+-- Adds somewhere to keep the reader's own picture. See `ProfilePicture.sq`.
+--
+-- Empty on arrival and for most readers for ever: a profile that has never been
+-- given a picture has no row here, and the disc draws the reader's initials or
+-- whichever mark they picked instead.
+CREATE TABLE profile_picture (
+    id INTEGER NOT NULL PRIMARY KEY,
+    image BLOB NOT NULL
+);

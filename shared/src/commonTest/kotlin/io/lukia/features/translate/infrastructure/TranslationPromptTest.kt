@@ -1,8 +1,8 @@
 package io.lukia.features.translate.infrastructure
 
-import io.lukia.features.translate.domain.TargetLanguage
 import io.lukia.features.translate.domain.TranslationContext
 import io.lukia.features.translate.domain.TranslationRequest
+import io.lukia.features.translate.domain.settings.TargetLanguage
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -39,9 +39,9 @@ class TranslationPromptTest {
                     authors = listOf("Herman Melville"),
                     genres = listOf("Adventure fiction", "Whaling"),
                     sourceLanguage = "en",
-                    chapterTitle = "Loomings"
-                )
-            )
+                    chapterTitle = "Loomings",
+                ),
+            ),
         )
 
         assertTrue(prompt.user.contains("Book: Moby-Dick"), prompt.user)
@@ -54,14 +54,14 @@ class TranslationPromptTest {
     @Test
     fun labelsAgreeWithHowManyThereAre() {
         val one = buildTranslationPrompt(
-            request(context = TranslationContext(authors = listOf("Melville"), genres = listOf("Sea")))
+            request(context = TranslationContext(authors = listOf("Melville"), genres = listOf("Sea"))),
         )
 
         assertTrue(one.user.contains("Author: Melville"), one.user)
         assertTrue(one.user.contains("Genre: Sea"), one.user)
 
         val several = buildTranslationPrompt(
-            request(context = TranslationContext(authors = listOf("A", "B"), genres = listOf("X", "Y")))
+            request(context = TranslationContext(authors = listOf("A", "B"), genres = listOf("X", "Y"))),
         )
 
         assertTrue(several.user.contains("Authors: A, B"), several.user)
@@ -89,9 +89,9 @@ class TranslationPromptTest {
             request(
                 text = "Call me Ishmael.",
                 context = TranslationContext(
-                    surroundingText = "Call me Ishmael. Some years ago I went to sea."
-                )
-            )
+                    surroundingText = "Call me Ishmael. Some years ago I went to sea.",
+                ),
+            ),
         )
 
         assertTrue(prompt.user.contains("The passage appears in this text:"), prompt.user)
@@ -105,8 +105,8 @@ class TranslationPromptTest {
         val prompt = buildTranslationPrompt(
             request(
                 text = "Call me Ishmael.",
-                context = TranslationContext(surroundingText = "Call me Ishmael.")
-            )
+                context = TranslationContext(surroundingText = "Call me Ishmael."),
+            ),
         )
 
         assertFalse(prompt.user.contains("The passage appears in"), prompt.user)
@@ -124,9 +124,9 @@ class TranslationPromptTest {
             request(
                 text = passage,
                 context = TranslationContext(
-                    surroundingText = "filler. ".repeat(400) + passage + " tail words."
-                )
-            )
+                    surroundingText = "filler. ".repeat(400) + passage + " tail words.",
+                ),
+            ),
         )
 
         assertTrue(prompt.user.contains(passage), prompt.user)
@@ -147,7 +147,7 @@ class TranslationPromptTest {
     fun theSystemPromptDependsOnlyOnTheLanguage() {
         val one = buildTranslationPrompt(request(context = TranslationContext(bookTitle = "A")))
         val other = buildTranslationPrompt(
-            request(text = "Different words.", context = TranslationContext(bookTitle = "B"))
+            request(text = "Different words.", context = TranslationContext(bookTitle = "B")),
         )
 
         assertEquals(one.system, other.system)
@@ -165,6 +165,6 @@ class TranslationPromptTest {
     private fun request(
         text: String = "Call me Ishmael.",
         targetLanguage: TargetLanguage = TargetLanguage.Finnish,
-        context: TranslationContext = TranslationContext.None
+        context: TranslationContext = TranslationContext.None,
     ) = TranslationRequest(text = text, targetLanguage = targetLanguage, context = context)
 }

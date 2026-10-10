@@ -3,6 +3,9 @@ package io.lukia.features.reader.presentation
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.lukia.core.domain.reading.PdfLayout
+import io.lukia.core.domain.reading.PdfLayoutRepository
+import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.core.domain.toAppError
 import io.lukia.core.presentation.UiState
@@ -10,79 +13,98 @@ import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.reader.application.OpenDocumentUseCase
 import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderDocument
-import io.lukia.features.reader.domain.ReaderOutline
 import io.lukia.features.reader.domain.ReaderSettings
-import io.lukia.features.reader.domain.ReadingProgress
-import io.lukia.features.reader.domain.ReadingProgressRepository
-import io.lukia.features.reader.domain.asTableOfContents
-import io.lukia.features.reader.domain.chapterCovering
-import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
-import io.lukia.core.presentation.displayTitle
-import io.lukia.features.translate.application.TranslatePassageUseCase
-import io.lukia.features.translate.domain.PageSentence
-import io.lukia.features.translate.domain.TextAnchor
-import io.lukia.features.translate.domain.pageSentences
-import io.lukia.features.translate.domain.TranslationRequest
-import io.lukia.features.translate.domain.asTranslationContext
-import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
-import io.lukia.features.translate.presentation.PassageSelection
-import io.lukia.features.translate.presentation.PassageTranslation
-import io.lukia.features.translate.presentation.TranslationSession
+import io.lukia.features.reader.domain.ReaderSettingsRepository
+import io.lukia.features.reader.domain.outline.ReaderOutline
+import io.lukia.features.reader.domain.outline.asTableOfContents
+import io.lukia.features.reader.domain.page.PageSentence
+import io.lukia.features.reader.domain.page.pageSentences
+import io.lukia.features.reader.domain.text.TextExtraction
+import io.lukia.features.reader.presentation.rendering.FigureImageCache
+import io.lukia.features.reader.presentation.rendering.PageSentenceCache
+import io.lukia.features.reader.presentation.rendering.ReaderLayoutChoice
+import io.lukia.features.reader.presentation.rendering.RenderedPageCache
+import io.lukia.features.reader.presentation.rendering.renderWidthFor
+import io.lukia.features.reader.presentation.translation.ReaderTranslationsFactory
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-
-/**
- * How much drawn page is kept in memory, counted in pixels rather than pages.
- *
- * A page is four bytes per pixel, and a page's size varies enormously - a phone
- * page is a few megabytes where a zoomed desktop page is twenty. Counting pages
- * would mean choosing a number safe for the largest, which then holds far too
- * little on the smallest. This budget adapts: roughly a dozen pages on a phone,
- * three on a zoomed-in desktop, and about 64 MB either way.
- */
-private const val MAX_CACHED_PIXELS = 16_000_000
-
-/** Kept regardless of the budget, so the page being read is never evicted. */
-private const val MIN_CACHED_PAGES = 3
 
 class ReaderViewModel(
     private val location: String,
     private val openDocumentUseCase: OpenDocumentUseCase,
     private val settingsRepository: ReaderSettingsRepository,
-    private val progressRepository: ReadingProgressRepository,
-    translatePassage: TranslatePassageUseCase,
-    private val translationSettings: TranslationSettingsRepository
+    reading: BookReadingFactory,
+    layoutRepository: PdfLayoutRepository,
+    translations: ReaderTranslationsFactory,
+    /**
+     * Where the outline is read off the file.
+     *
+     * Injected rather than reached for, because this is the one piece of work
+     * here that a caller cannot wait for: it is started beside the open book
+     * rather than as part of it, so nothing the reader holds finishes when it
+     * does. A test that has to take its dispatchers away at the end otherwise
+     * races it, and a scan of a long PDF is long enough to lose.
+     */
+    private val outlineDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    /**
+     * Where a page's words are gathered out of its glyphs. Injectable for the
+     * same reason [outlineDispatcher] is: a test that takes its dispatchers away
+     * should not race work nobody is waiting for.
+     */
+    private val sentenceDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ViewModel() {
 
     /**
-     * Every sentence translated while this book is open. Tied to the ViewModel
-     * rather than to the screen so that flipping between a translation and the
-     * original survives the reader turning the device round.
+     * Everything about translating what is on the page. Held here so the reader
+     * screen sees one object, but implemented apart - see [ReaderTranslations].
      */
-    private val translationSession = TranslationSession(translatePassage, viewModelScope)
+    internal val translation = translations.create(viewModelScope)
 
-    val translations: StateFlow<Map<TextAnchor, PassageTranslation>> = translationSession.passages
+    /**
+     * Where this book was left off and how long it has been read for - see
+     * [BookReading]. It writes as it goes, so leaving the reader needs nothing
+     * from here.
+     */
+    private val record = reading.create(location, viewModelScope)
+
+    /**
+     * Whether this book is read as its own pages or as text, and what came of
+     * asking for the second - see [ReaderLayoutChoice].
+     */
+    private val layoutChoice = ReaderLayoutChoice(location, layoutRepository) {
+        settingsRepository.settings.value.defaultPdfLayout
+    }
+
+    val pdfLayout: StateFlow<PdfLayout> = layoutChoice.layout
+    val layoutOffered: StateFlow<Boolean> = layoutChoice.offered
+    val textExtraction: StateFlow<TextExtraction?> = layoutChoice.extraction
+    val noTextLayer: StateFlow<Boolean> = layoutChoice.noTextLayer
 
     private val _uiState = MutableStateFlow<UiState<ReaderDocument>>(UiState.Loading)
     val uiState: StateFlow<UiState<ReaderDocument>> = _uiState.asStateFlow()
 
     /**
-     * The page to open at, once it is known - null while the book is still
-     * being opened and the stored position still being read.
+     * Where to open, once it is known - null while the book is still being
+     * opened and the stored position still being read.
      *
-     * Settled once per opening and never changed afterwards, so the screen can
-     * treat it as an instruction to carry out rather than a position to keep
-     * following. A value that tracked the reader would send them back to where
-     * they started every time it arrived.
+     * The length it was stored against travels with it, because a reflowable
+     * book's pages are the reader's own: the same book is a different number of
+     * pages in a different window, so a page number only means something
+     * alongside the count it was one of.
+     *
+     * Settled once per opening and never changed, so the screen can treat it as
+     * an instruction to carry out rather than a position to follow - a value
+     * that tracked the reader would send them back to the start every time it
+     * arrived.
      */
-    private val _initialPage = MutableStateFlow<Int?>(null)
-    val initialPage: StateFlow<Int?> = _initialPage.asStateFlow()
+    val initialPosition: StateFlow<ReadingProgress?> = record.initialPosition
 
     /**
      * Exposed straight from the repository rather than copied into this
@@ -98,90 +120,100 @@ class ReaderViewModel(
         settingsRepository.update(settings)
     }
 
-    /**
-     * Least-recently-used, keyed by page index. Every entry is drawn at
-     * [cachedWidthPx]; when the window changes width the whole cache is stale at
-     * once, so it is dropped rather than tracked per page.
-     */
-    private val renderedPages = LinkedHashMap<Int, ImageBitmap>()
-    private val cacheLock = Mutex()
-    private var cachedWidthPx = 0
+    private val renderedPages = RenderedPageCache()
 
     init {
         open()
     }
 
+    /**
+     * The opening in progress, so that a second one can stop the first.
+     *
+     * It matters now that a book can take a while to open: reading a long PDF's
+     * text is seconds of work, and somebody who changes their mind halfway
+     * through would otherwise have the book they abandoned arrive over the book
+     * they asked for.
+     */
+    private var opening: Job? = null
+
     private fun open() {
-        viewModelScope.launch {
+        // Belt and braces: [reopen] has already cancelled by the time it calls
+        // this, and the first opening of all has nothing to cancel. It stays so
+        // that "only one opening at a time" holds for this function on its own
+        // rather than only for the one route into it that remembers.
+        opening?.cancel()
+
+        opening = viewModelScope.launch {
+            val layout = layoutChoice.restore()
+
             // getOrThrow re-raises the use case's own failure so that it and an
             // unanticipated throw are both narrowed in the same place.
-            val state = runCatchingApp { openDocumentUseCase(location).getOrThrow() }
-                .fold(
-                    onSuccess = { UiState.Success(it) },
-                    onFailure = { UiState.Failure(it.toAppError()) }
-                )
+            val state = runCatchingApp {
+                openDocumentUseCase(location, layout, layoutChoice::onProgress).getOrThrow()
+            }.fold(
+                onSuccess = { UiState.Success(it) },
+                onFailure = { UiState.Failure(it.toAppError()) },
+            )
+
+            // Cancelled between the file being opened and this line, which is
+            // the one window the suspension points cannot cover. What was
+            // opened is handed straight back rather than left holding the file.
+            if (!isActive) {
+                state.dataOrNull?.close()
+                return@launch
+            }
 
             _uiState.value = state
 
             if (state is UiState.Success) {
-                restorePosition(state.data)
+                layoutChoice.settle(state.data, openedAs = layout)
+                record.restore(state.data)
                 loadOutline(state.data)
+
+                record.begin()
             }
         }
     }
 
     /**
-     * Where this book was left off, or its first page if it has never been
-     * opened - which is the same instruction, so an unread book is not a case
-     * of its own.
+     * Reads this book the other way.
      *
-     * Clamped to the book: a document can be replaced by a shorter one under
-     * the same name, and a stored page past the end would otherwise open at
-     * nothing.
+     * The book is opened again rather than converted where it sits: what a PDF
+     * is as text and what it is as pages are two different documents made from
+     * one file, and one of them holds a handle on that file. Where the reader
+     * was is not lost with it - the position is stored as they read, and both
+     * ways of reading restore it as a fraction of the book.
      */
-    private suspend fun restorePosition(document: ReaderDocument) {
-        val lastPage = document.content.unitCount - 1
-        val stored = runCatchingApp { progressRepository.progressFor(location) }.getOrNull()
+    fun setPdfLayout(layout: PdfLayout) {
+        if (layoutChoice.layout.value == layout) return
 
-        _initialPage.value = (stored?.pageIndex ?: 0).coerceIn(0, lastPage.coerceAtLeast(0))
+        viewModelScope.launch {
+            layoutChoice.choose(layout)
+            reopen()
+        }
+    }
+
+    /** The reader has seen that this PDF has no text in it to re-set. */
+    fun dismissNoTextLayerNotice() {
+        layoutChoice.dismissNotice()
     }
 
     /**
-     * Records where the reader has come to rest.
+     * Records where the reader has come to rest, and that they are still there.
      *
      * Called when a scroll settles rather than as it moves: a fling through a
      * long book passes hundreds of pages the reader never saw, and storing each
      * of them would be hundreds of writes to arrive at the one page that
      * mattered.
      */
-    fun onPageSettled(pageIndex: Int) {
-        val document = _uiState.value.dataOrNull ?: return
+    fun onPageSettled(pageIndex: Int, pageCount: Int) {
+        // Nothing to remember about a book that never opened.
+        if (_uiState.value.dataOrNull == null) return
 
-        viewModelScope.launch {
-            runCatchingApp {
-                progressRepository.save(
-                    location = location,
-                    progress = ReadingProgress(
-                        pageIndex = pageIndex,
-                        pageCount = document.content.unitCount
-                    )
-                )
-            }
-        }
+        record.onPageSettled(pageIndex, pageCount)
     }
 
-    /**
-     * The sentences of each page that has been looked at, kept for as long as
-     * the book is open.
-     *
-     * Reading a page's text means parsing it out of the file, which is far too
-     * much to do again every time somebody taps the same page twice - and a
-     * reader working through a page taps it several times. Unlike the drawn
-     * pages this is small: a page of sentences is a few kilobytes, and a whole
-     * book of them is less than one rendered page.
-     */
-    private val pageSentences = mutableMapOf<Int, List<PageSentence>>()
-    private val sentenceLock = Mutex()
+    private val pageSentences = PageSentenceCache()
 
     /**
      * What is written on page [index], or an empty list when nothing is - a
@@ -193,66 +225,43 @@ class ReaderViewModel(
     suspend fun sentencesOn(index: Int): List<PageSentence> {
         val pages = (_uiState.value.dataOrNull?.content as? PagedContent)?.pages ?: return emptyList()
 
-        sentenceLock.withLock { pageSentences[index] }?.let { return it }
-
-        val glyphs = runCatchingApp { pages.pageText(index) }.getOrNull()
-        val sentences = glyphs?.let { pageSentences(it) }.orEmpty()
-
-        return sentenceLock.withLock { pageSentences.getOrPut(index) { sentences } }
-    }
-
-    /**
-     * A sentence the reader pointed at.
-     *
-     * The book is read here rather than at the tap because this is where it is
-     * known: the screen has the words and where they sit, and only the open
-     * document can say which book they came out of and what it is about. That
-     * is the whole of how a title and a genre reach a translator.
-     */
-    fun onPassageSelected(selection: PassageSelection) {
-        val document = _uiState.value.dataOrNull ?: return
-
-        translationSession.onPassageTapped(selection.anchor) {
-            TranslationRequest(
-                text = selection.passage,
-                targetLanguage = translationSettings.settings.value.targetLanguage,
-                context = document.info.metadata.asTranslationContext(
-                    bookTitle = document.info.displayTitle(),
-                    chapterTitle = selection.chapterTitle ?: chapterOf(selection.anchor),
-                    surroundingText = selection.surroundingText
-                )
-            )
+        return pageSentences.sentencesOn(index) {
+            // Off the main thread for the grouping as well as the reading. The
+            // document switches for itself before it touches the file, but what
+            // comes back is every glyph on the page, and gathering those into
+            // words and sentences is a pass over all of them - which would
+            // otherwise run wherever this was asked from. The reader asks from
+            // composition, as each page arrives.
+            withContext(sentenceDispatcher) {
+                val glyphs = runCatchingApp { pages.pageText(index) }.getOrNull()
+                glyphs?.let { pageSentences(it) }.orEmpty()
+            }
         }
     }
 
     /**
-     * What a page sits under, for a document whose sentences carry no chapter of
-     * their own.
+     * The chapter list being read, so that a book put away can stop it.
      *
-     * A reflowable book's section names itself, so the screen already knows. A
-     * page of a PDF does not - but the book's own table of contents does, and it
-     * has been read and is sitting here already.
+     * Its own job rather than part of [opening], which deliberately does not
+     * wait for it - see [loadOutline]. That is also what made it outlive a
+     * reopening: cancelling the opening left this running, to publish the
+     * abandoned book's chapters over the ones being read, having gone to a
+     * closed document to get them.
      */
-    private fun chapterOf(anchor: TextAnchor): String? {
-        if (anchor !is TextAnchor.Page) return null
-
-        val chapters = (_outline.value as? ReaderOutline.Chapters)?.entries ?: return null
-
-        return chapters.chapterCovering(anchor.pageIndex)
-    }
+    private var outlining: Job? = null
 
     /**
      * Read in the background as soon as the book is open, rather than when the
      * contents panel asks for it.
      *
-     * On platforms whose PDF renderer has no outline of its own, this means
+     * On platforms whose PDF renderer has no outline of its own this means
      * scanning the file - far too much to do while the reader waits with a panel
-     * open, and far too much to do on the thread drawing the pages. Starting it
-     * here means it is almost always ready before anyone looks.
+     * open, and far too much for the thread drawing the pages. Starting it here
+     * means it is almost always ready before anyone looks.
      */
     private fun loadOutline(document: ReaderDocument) {
-        viewModelScope.launch {
-            val entries = withContext(Dispatchers.Default) {
+        outlining = viewModelScope.launch {
+            val entries = withContext(outlineDispatcher) {
                 runCatchingApp { document.content.outline?.asTableOfContents() }.getOrNull()
             }
 
@@ -262,15 +271,44 @@ class ReaderViewModel(
         }
     }
 
-    fun retry() {
+    /** The reader has come to the front of the app, or gone from it. */
+    fun onScreenChanged(visible: Boolean) = record.onScreen(visible)
+
+    fun retry() = reopen()
+
+    /**
+     * Puts the book back to before it was opened, and opens it again.
+     *
+     * Everything held about the open book goes with it: the document's own
+     * handle, the translations anchored into it, and the text read off its
+     * pages. All three are about the document that is being replaced - anchors
+     * point at sections a re-set book numbers differently, and a page's
+     * sentences are a fact about a page that may no longer exist.
+     */
+    private fun reopen() {
+        // Stopped first, before any of the putting back.
+        //
+        // Everything below is about a book no longer being opened, and an
+        // opening still in flight can still publish - putting the abandoned book
+        // back over the top of the reset, and leaving its file handle where
+        // nothing will close it. The app never sees that, since its main
+        // dispatcher is one thread and none of this suspends; cancelling here
+        // rather than on the way into [open] makes that a property of this code
+        // rather than of the dispatcher.
+        //
+        // The chapter list goes with it. It is not part of the opening - see
+        // [outlining] - so cancelling that alone left it running against a
+        // document about to be closed, to publish its chapters over the book
+        // that replaced it.
+        opening?.cancel()
+        outlining?.cancel()
+
         closeDocument()
-        // The anchors point into the document being thrown away, and the one
-        // opened in its place may not have a sentence where each of them says.
-        translationSession.clear()
+        translation.clear()
         pageSentences.clear()
         _uiState.value = UiState.Loading
         _outline.value = ReaderOutline.Loading
-        _initialPage.value = null
+        record.forgetOpeningPosition()
         open()
     }
 
@@ -290,42 +328,10 @@ class ReaderViewModel(
 
         val targetWidthPx = renderWidthFor(widthPx)
 
-        cached(index, targetWidthPx)?.let { return it }
-
-        val rendered = pages.renderPage(index, targetWidthPx) ?: return null
-        store(index, targetWidthPx, rendered)
-
-        return rendered
-    }
-
-    private suspend fun cached(index: Int, widthPx: Int): ImageBitmap? = cacheLock.withLock {
-        if (cachedWidthPx != widthPx) {
-            renderedPages.clear()
-            cachedWidthPx = widthPx
-            return@withLock null
-        }
-
-        // Removing and re-inserting moves the entry to the end of the map, which
-        // is what makes eviction least-recently-used rather than oldest-first.
-        renderedPages.remove(index)?.also { renderedPages[index] = it }
-    }
-
-    private suspend fun store(index: Int, widthPx: Int, page: ImageBitmap) = cacheLock.withLock {
-        // The window resized while this page was rendering, so it is already the
-        // wrong size for the cache it would land in.
-        if (cachedWidthPx != widthPx) return@withLock
-
-        renderedPages[index] = page
-
-        // Least-recently-used out first, until the budget is met - but never
-        // below the handful around the page being read.
-        while (renderedPages.size > MIN_CACHED_PAGES && cachedPixels() > MAX_CACHED_PIXELS) {
-            renderedPages.remove(renderedPages.keys.first())
+        return renderedPages.page(index, targetWidthPx) {
+            pages.renderPage(index, targetWidthPx)
         }
     }
-
-    private fun cachedPixels(): Long =
-        renderedPages.values.sumOf { it.width.toLong() * it.height.toLong() }
 
     /**
      * The open document holds a file handle on the working copy, so leaving the
@@ -338,6 +344,6 @@ class ReaderViewModel(
     private fun closeDocument() {
         _uiState.value.dataOrNull?.close()
         renderedPages.clear()
-        cachedWidthPx = 0
+        FigureImageCache.clear()
     }
 }

@@ -1,7 +1,7 @@
 package io.lukia.core.infrastructure
 
 import android.content.Context
-import io.lukia.core.domain.SettingsStore
+import io.lukia.core.domain.storage.SettingsStore
 
 /**
  * Shared preferences: already in memory after the first read, and written back
@@ -15,6 +15,12 @@ class AndroidSettingsStore(context: Context) : SettingsStore {
     override fun getString(key: String): String? = preferences.getString(key, null)
 
     override fun putString(key: String, value: String) {
+        // Already-stored values are left alone - see [SettingsStore.putString].
+        // `apply` is off-thread but not free: each one is a commit queued behind
+        // the last, and the queue is drained synchronously when the activity
+        // pauses.
+        if (preferences.getString(key, null) == value) return
+
         preferences.edit().putString(key, value).apply()
     }
 

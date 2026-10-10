@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    What the window is painted before Compose has drawn anything.
+
+    These are the Crisp palette's background colours, duplicated here out of
+    necessity rather than choice: the system draws the starting window before a
+    line of app code runs, so it cannot be asked what the reader's palette is.
+    Crisp is what the app ships with, and the other two palettes' backgrounds sit
+    within a couple of percent of these - close enough that the handover to the
+    real background is not a step anyone sees.
+-->
+<resources>
+    <color name="lukia_launch_background">#F2F2F7</color>
+</resources>

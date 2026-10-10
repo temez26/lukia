@@ -1,0 +1,47 @@
+# Everything Lukia ships that somebody else wrote, and the terms it comes under.
+#
+# Apache-2.0 section 4 asks a distribution to carry the licence and the copyright
+# notices of the work it redistributes. Nothing did, so this is that list - and
+# the source of both halves of it: `generateAttribution` writes it into common
+# code for the About screen to show, and `checkAttribution` holds it against
+# gradle/libs.versions.toml and against NOTICE. See both in the build files.
+#
+# Hand-maintained, like androidApp/src/main/res/xml/locales_config.xml, and for
+# the same reason: what a generator would buy is accuracy over a list of
+# seventeen names that changes twice a year, and what it would cost is a licence
+# plugin whose multiplatform source-set handling is guesswork, plus the
+# machinery to get its output back into a Compose resource. The drift a
+# hand-written list invites is answered by the check rather than by the plugin.
+#
+# A line is:  name | licence | copyright | maven groups, comma-separated
+#
+# The groups are what ties an entry to the version catalogue. A catalogue module
+# whose group no entry claims fails the build, which is what makes a new
+# dependency arrive with its licence rather than without one; an entry whose
+# groups match nothing fails too, so removing a dependency takes its line.
+#
+# The last field is empty for the things the catalogue cannot see: a runtime
+# that arrives underneath something the catalogue does name, and that the app
+# would not run without. Those are the entries nothing cross-checks, which is
+# the honest limit of this file - see `CheckAttribution` in build.gradle.kts.
+#
+# Years appear only where the dependency's own NOTICE states one. A copyright
+# line invented here would be worse than a copyright line without a year.
+
+Apache PDFBox | Apache License 2.0 | Copyright 2002-2026 The Apache Software Foundation | org.apache.pdfbox
+Apache FontBox | Apache License 2.0 | Copyright 2008-2026 The Apache Software Foundation | org.apache.pdfbox
+PdfBox-Android | Apache License 2.0 | Copyright Tom Roush and the PdfBox-Android developers | com.tom-roush
+Ktor | Apache License 2.0 | Copyright JetBrains s.r.o. and contributors | io.ktor
+Compose Multiplatform | Apache License 2.0 | Copyright JetBrains s.r.o. and respective authors and developers | org.jetbrains.compose
+AndroidX | Apache License 2.0 | Copyright The Android Open Source Project | androidx, org.jetbrains.androidx
+Koin | Apache License 2.0 | Copyright the Koin authors | io.insert-koin
+SQLDelight | Apache License 2.0 | Copyright Square, Inc. | app.cash.sqldelight
+kotlinx.coroutines | Apache License 2.0 | Copyright JetBrains s.r.o. | org.jetbrains.kotlinx
+kotlinx.serialization | Apache License 2.0 | Copyright JetBrains s.r.o. | org.jetbrains.kotlinx
+kotlinx-datetime | Apache License 2.0 | Copyright JetBrains s.r.o. | org.jetbrains.kotlinx
+Android core library desugaring | GNU General Public License v2 with the Classpath Exception | Copyright Google LLC, and Oracle and/or its affiliates | com.android.tools
+Kotlin standard library | Apache License 2.0 | Copyright JetBrains s.r.o. and Kotlin Programming Language contributors |
+OkHttp and Okio | Apache License 2.0 | Copyright Square, Inc. |
+SQLite JDBC | Apache License 2.0 | Copyright Taro L. Saito and the SQLite JDBC contributors |
+Bouncy Castle | Bouncy Castle Licence | Copyright the Legion of the Bouncy Castle Inc. |
+Skia, through Skiko | BSD 3-Clause License | Copyright Google LLC |

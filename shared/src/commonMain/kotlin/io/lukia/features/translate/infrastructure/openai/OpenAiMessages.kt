@@ -20,19 +20,41 @@ import kotlinx.serialization.json.putJsonObject
 internal data class ChatRequest(
     val model: String,
     val messages: List<ChatMessage>,
-    @SerialName("max_tokens") val maxTokens: Int,
+    /**
+     * What a server that has never heard of anything newer is told, and what
+     * every locally hosted one still understands. Null when [maxCompletionTokens]
+     * is sent instead - unset fields are not encoded, and sending both is how a
+     * request gets refused for contradicting itself.
+     */
+    @SerialName("max_tokens") val maxTokens: Int? = null,
+    /**
+     * The same ceiling under the name the hosted service now insists on.
+     *
+     * `max_tokens` is deprecated there and outright rejected by every model that
+     * thinks before it answers, which is most of what anybody would now choose.
+     * "Unsupported parameter" for a current model's name is this app failing the
+     * reader rather than their key - so the hosted service is sent the new name,
+     * and servers on people's own machines the one they implement.
+     */
+    @SerialName("max_completion_tokens") val maxCompletionTokens: Int? = null,
     /**
      * Null for a server that does not understand it, which is most of the
      * locally hosted ones. Unset fields are not encoded, so leaving this out is
      * how the request stops asking.
      */
-    @SerialName("response_format") val responseFormat: JsonObject? = null
+    @SerialName("response_format") val responseFormat: JsonObject? = null,
+    /**
+     * Always true in practice: a translation is asked for a piece at a time so
+     * the reader watches it appear, and so that a model taking its time keeps
+     * saying so rather than going silent and being given up on.
+     */
+    val stream: Boolean = false,
 )
 
 @Serializable
 internal data class ChatMessage(
     val role: String,
-    val content: String
+    val content: String,
 ) {
     companion object {
         fun system(content: String) = ChatMessage(role = "system", content = content)
@@ -40,21 +62,44 @@ internal data class ChatMessage(
     }
 }
 
+/**
+ * One piece of an answer.
+ *
+ * There is no shape here for an answer that arrives all at once, because none
+ * is ever asked for: every request streams, so the text arrives on `delta` a
+ * chunk at a time and the reason the model stopped comes on the last of them.
+ * Everything else in a chunk - the id, the model, the usage some servers append
+ * - says nothing this needs.
+ */
 @Serializable
-internal data class ChatResponse(
-    val choices: List<Choice> = emptyList()
+internal data class ChatChunk(
+    val choices: List<StreamChoice> = emptyList(),
+    /**
+     * What a server sends when it accepted the request and then could not
+     * finish it - a model unloaded mid-answer, a context window overrun that
+     * only became apparent once generation started, a proxy losing its upstream.
+     *
+     * It arrives as an ordinary chunk on a stream that already answered 200, so
+     * reading `choices` alone sees a chunk with no text and then a stream that
+     * ends. That is how these used to reach the reader as "that was not a
+     * translation" - true, and silent about the server having explained itself
+     * perfectly clearly.
+     */
+    val error: ChatErrorBody? = null,
 ) {
-    val text: String? get() = choices.firstOrNull()?.message?.content
+    val text: String? get() = choices.firstOrNull()?.delta?.content
 
-    /** Why the model stopped, when the server bothered to say. */
     val finishReason: String? get() = choices.firstOrNull()?.finishReason
 }
 
 @Serializable
-internal data class Choice(
-    val message: ChatMessage? = null,
-    @SerialName("finish_reason") val finishReason: String? = null
+internal data class StreamChoice(
+    val delta: ChatDelta? = null,
+    @SerialName("finish_reason") val finishReason: String? = null,
 )
+
+@Serializable
+internal data class ChatDelta(val content: String? = null)
 
 /** What comes back when the request itself was not accepted. */
 @Serializable
@@ -64,7 +109,7 @@ internal data class ChatError(val error: ChatErrorBody? = null)
 internal data class ChatErrorBody(
     val message: String? = null,
     val type: String? = null,
-    val code: String? = null
+    val code: String? = null,
 ) {
 
     /**
@@ -75,8 +120,39 @@ internal data class ChatErrorBody(
     val isOutOfCredit: Boolean
         get() = type == OUT_OF_CREDIT || code == OUT_OF_CREDIT
 
+    /**
+     * Whether the name in Settings is not a model this server has.
+     *
+     * The commonest mistake with a local server and with a hosted one alike, and
+     * the one that arrives looking most like something else: it is a 404 on the
+     * same path a wrong address would be a 404 on. What tells them apart is that
+     * the server answered and said which thing it could not find.
+     */
+    val isUnknownModel: Boolean
+        get() = code == UNKNOWN_MODEL ||
+            type == UNKNOWN_MODEL ||
+            // Servers people run at home have no code for this and say it in
+            // prose. Both halves are required, because a rate limit names the
+            // model too and is not this.
+            message.orEmpty().let { said ->
+                said.contains(MODEL, ignoreCase = true) &&
+                    MISSING.any { said.contains(it, ignoreCase = true) }
+            }
+
+    /**
+     * Whether more was sent than the model can hold. Not a passage this app
+     * would ever send on its own, but a reader's own server may be running a
+     * model with a very short window.
+     */
+    val isTooLong: Boolean
+        get() = code == TOO_LONG || type == TOO_LONG
+
     private companion object {
         const val OUT_OF_CREDIT = "insufficient_quota"
+        const val UNKNOWN_MODEL = "model_not_found"
+        const val TOO_LONG = "context_length_exceeded"
+        const val MODEL = "model"
+        val MISSING = listOf("not found", "does not exist", "unknown", "no such")
     }
 }
 
@@ -101,7 +177,7 @@ internal val TranslationResponseFormat: JsonObject = buildJsonObject {
             }
             put(
                 "required",
-                JsonArray(listOf(JsonPrimitive("translation"), JsonPrimitive("note")))
+                JsonArray(listOf(JsonPrimitive("translation"), JsonPrimitive("note"))),
             )
             put("additionalProperties", false)
         }
@@ -119,7 +195,7 @@ internal val TranslationResponseFormat: JsonObject = buildJsonObject {
  */
 @Serializable
 internal data class ModelCatalogueResponse(
-    val data: List<ModelEntry> = emptyList()
+    val data: List<ModelEntry> = emptyList(),
 )
 
 @Serializable

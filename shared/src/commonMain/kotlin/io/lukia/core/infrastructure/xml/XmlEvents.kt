@@ -16,7 +16,7 @@ internal sealed interface XmlEvent {
         val name: String,
         val attributes: Map<String, String>,
         /** True for `<br/>`, which has no [Close] of its own. */
-        val selfClosing: Boolean
+        val selfClosing: Boolean,
     ) : XmlEvent
 
     data class Close(val name: String) : XmlEvent
@@ -28,15 +28,14 @@ internal sealed interface XmlEvent {
  * Walks [source] as a stream of [XmlEvent]s.
  *
  * A hand-written scanner rather than a parser dependency, for the same reason
- * the PDF outline is read by hand: the shapes actually needed here are small and
- * well understood, and every platform this app runs on would otherwise need its
- * own XML library bound behind an expect/actual.
+ * the PDF outline is read by hand: the shapes needed are small and well
+ * understood, and every platform would otherwise need its own XML library bound
+ * behind an expect/actual.
  *
- * Forgiving by design. It is fed XHTML from EPUBs produced by every tool that
- * has ever written one, so an unclosed `<img>`, a stray `<`, a DOCTYPE or a
- * comment are all things it skips over rather than fails on - a chapter that
- * renders imperfectly is worth far more to a reader than one that refuses to
- * open.
+ * Forgiving by design, because it is fed XHTML from EPUBs produced by every tool
+ * that has ever written one: an unclosed `<img>`, a stray `<`, a DOCTYPE or a
+ * comment are skipped rather than failed on - a chapter that renders imperfectly
+ * beats one that refuses to open.
  *
  * Lazy: callers stop as soon as they have what they came for, and a nav document
  * is read for its first list.
@@ -160,7 +159,7 @@ private fun parseTag(body: String): XmlEvent? {
 }
 
 private val AttributePattern = Regex(
-    """([\w:.\-]+)\s*(?:=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?"""
+    """([\w:.\-]+)\s*(?:=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?""",
 )
 
 /**
@@ -222,7 +221,7 @@ private val NamedEntities = mapOf(
     "uuml" to "ü",
     "ouml" to "ö",
     "auml" to "ä",
-    "szlig" to "ß"
+    "szlig" to "ß",
 )
 
 private val EntityPattern = Regex("""&(#[Xx]?[0-9A-Fa-f]+|\w+);""")
@@ -258,7 +257,7 @@ private fun codePointOrNull(digits: String, radix: Int): String? {
         val offset = code - 0x10000
         charArrayOf(
             (0xD800 + (offset shr 10)).toChar(),
-            (0xDC00 + (offset and 0x3FF)).toChar()
+            (0xDC00 + (offset and 0x3FF)).toChar(),
         ).concatToString()
     }
 }

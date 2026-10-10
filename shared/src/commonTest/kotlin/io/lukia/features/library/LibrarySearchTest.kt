@@ -1,55 +1,41 @@
 package io.lukia.features.library
 
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.DocumentType
-import io.lukia.core.domain.PickedDocument
-import io.lukia.features.library.presentation.matchingQuery
+import io.lukia.features.library.presentation.model.LibraryQuery
+import io.lukia.features.library.presentation.model.matching
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class LibrarySearchTest {
 
-    private fun document(title: String) = DocumentInfo(
-        document = PickedDocument(
-            fileName = "$title.pdf",
-            extension = "pdf",
-            location = "/library/$title.pdf"
-        ),
-        type = DocumentType.PDF,
-        exists = true,
-        sizeBytes = 1024L
+    private val shelf = library(
+        book("Moby Dick"),
+        book("The Hobbit"),
+        book("dune", authors = listOf("Frank Herbert"), declaredTitle = "Dune: A Novel"),
     )
 
-    private val library = listOf(
-        document("Moby Dick"),
-        document("The Hobbit"),
-        document("dune")
-    )
+    private fun found(query: String) = shelf.matching(LibraryQuery(search = query)).titles()
 
     @Test
     fun blankQueryMatchesEverything() {
-        assertEquals(library, library.matchingQuery(""))
-        assertEquals(library, library.matchingQuery("   "))
+        assertEquals(listOf("Moby Dick", "The Hobbit", "dune"), found(""))
+        assertEquals(listOf("Moby Dick", "The Hobbit", "dune"), found("   "))
     }
 
     @Test
     fun matchesOnAnyPartOfTheTitle() {
-        assertEquals(
-            listOf("The Hobbit"),
-            library.matchingQuery("hobb").map { it.document.fileName.removeSuffix(".pdf") }
-        )
+        assertEquals(listOf("The Hobbit"), found("hobb"))
     }
 
     @Test
     fun matchingIgnoresCase() {
-        assertEquals(1, library.matchingQuery("DUNE").size)
-        assertEquals(1, library.matchingQuery("moby").size)
+        assertEquals(listOf("dune"), found("DUNE"))
+        assertEquals(listOf("Moby Dick"), found("moby"))
     }
 
     /** Trailing spaces come free with typing, and should not empty the library. */
     @Test
     fun surroundingWhitespaceIsIgnored() {
-        assertEquals(1, library.matchingQuery("  dune  ").size)
+        assertEquals(listOf("dune"), found("  dune  "))
     }
 
     /**
@@ -58,13 +44,22 @@ class LibrarySearchTest {
      */
     @Test
     fun extensionIsNotSearchable() {
-        assertEquals(emptyList(), library.matchingQuery("pdf"))
+        assertEquals(emptyList(), found("pdf"))
+    }
+
+    /**
+     * A reader looking for a book by its author is looking for the book. The
+     * title the document declares is searchable for the same reason: it is what
+     * the book calls itself, even where the file was saved under something else.
+     */
+    @Test
+    fun authorsAndTheDeclaredTitleAreSearchableToo() {
+        assertEquals(listOf("dune"), found("herbert"))
+        assertEquals(listOf("dune"), found("a novel"))
     }
 
     @Test
-    fun matchesKeepTheirOriginalOrder() {
-        val titles = library.matchingQuery("").map { it.document.fileName }
-
-        assertEquals(listOf("Moby Dick.pdf", "The Hobbit.pdf", "dune.pdf"), titles)
+    fun matchesKeepTheShelfsOrder() {
+        assertEquals(listOf("Moby Dick", "The Hobbit", "dune"), found(""))
     }
 }

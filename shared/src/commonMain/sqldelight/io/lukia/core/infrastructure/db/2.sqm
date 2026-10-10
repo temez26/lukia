@@ -1,0 +1,13 @@
+-- Adds the store of passages already translated. See `TranslationCache.sq`.
+--
+-- Nothing is backfilled and nothing can be: what this holds is answers that
+-- were paid for, and a library that predates the table simply has none yet. It
+-- fills in as its owner reads.
+CREATE TABLE translation_cache (
+    cacheKey TEXT NOT NULL PRIMARY KEY,
+    translation TEXT NOT NULL,
+    note TEXT,
+    usedAt INTEGER NOT NULL
+);
+
+CREATE INDEX translation_cache_usedAt ON translation_cache(usedAt);

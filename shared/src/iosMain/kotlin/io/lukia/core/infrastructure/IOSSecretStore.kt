@@ -1,6 +1,6 @@
 package io.lukia.core.infrastructure
 
-import io.lukia.core.domain.SecretStore
+import io.lukia.core.domain.storage.SecretStore
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -46,16 +46,14 @@ import platform.Security.kSecValueData
  * anything else - which is the whole reason for keeping a key somewhere other
  * than user defaults, where it would sit in a plist beside the reading theme.
  *
- * Accessible after the first unlock and marked as belonging to this device
- * only: a book is read on a train with the screen already on, so demanding the
- * device be unlocked at the moment of each request would fail translations for
- * no gain - but a key restored onto somebody else's phone from a backup is a
- * key that has left its owner, so it does not travel.
+ * Accessible after the first unlock and marked as this device only: a book is
+ * read on a train with the screen already on, so demanding an unlock per request
+ * would fail translations for no gain - but a key restored onto somebody else's
+ * phone from a backup has left its owner, so it does not travel.
  *
- * The queries are built as Core Foundation dictionaries rather than as Kotlin
- * maps bridged across. The keys here are `CFStringRef` constants, and handing
- * those to a bridged map relies on a conversion that is not the one it looks
- * like - this way what goes to the keychain is exactly what was assembled.
+ * The queries are built as Core Foundation dictionaries rather than bridged
+ * Kotlin maps: the keys are `CFStringRef` constants, and handing those to a
+ * bridged map relies on a conversion that is not the one it looks like.
  */
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 class IOSSecretStore : SecretStore {
@@ -75,7 +73,7 @@ class IOSSecretStore : SecretStore {
         // data is freed with the Kotlin object rather than leaked.
         val data = CFBridgingRelease(found.value) as? NSData ?: return@memScoped null
 
-        NSString.create(data = data, encoding = NSUTF8StringEncoding) as String?
+        NSString.create(data = data, encoding = NSUTF8StringEncoding) as? String
     }
 
     /**
@@ -97,7 +95,7 @@ class IOSSecretStore : SecretStore {
         CFDictionaryAddValue(
             entry,
             kSecAttrAccessible,
-            kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+            kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
         )
 
         SecItemAdd(entry, null)
@@ -121,7 +119,7 @@ class IOSSecretStore : SecretStore {
             null,
             0,
             kCFTypeDictionaryKeyCallBacks.ptr,
-            kCFTypeDictionaryValueCallBacks.ptr
+            kCFTypeDictionaryValueCallBacks.ptr,
         )
 
         CFDictionaryAddValue(query, kSecClass, kSecClassGenericPassword)

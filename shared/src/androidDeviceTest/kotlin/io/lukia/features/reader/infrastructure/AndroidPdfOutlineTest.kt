@@ -1,7 +1,7 @@
 package io.lukia.features.reader.infrastructure
 
 import androidx.test.platform.app.InstrumentationRegistry
-import io.lukia.features.reader.infrastructure.pdf.MinimalPdf
+import io.lukia.core.infrastructure.pdf.MinimalPdf
 import io.lukia.features.reader.infrastructure.pdf.PdfOutlineReader
 import java.io.File
 import kotlin.test.AfterTest
@@ -34,16 +34,16 @@ class AndroidPdfOutlineTest {
 
     @Test
     fun readsTheChaptersOutOfTheFile() {
-        openPdfPages(file.absolutePath).use { pages ->
+        openTestPdf(file.absolutePath).use { pages ->
             val outline = assertNotNull(pages.outline, "Android should read an outline")
 
             assertEquals(
                 listOf(MinimalPdf.FIRST_CHAPTER_TITLE, MinimalPdf.SECOND_CHAPTER_TITLE),
-                outline.map { it.title }
+                outline.map { it.title },
             )
             assertEquals(
                 MinimalPdf.SECOND_CHAPTER_PAGE_INDEX,
-                outline.last().pageIndex
+                outline.last().pageIndex,
             )
         }
     }
@@ -51,7 +51,7 @@ class AndroidPdfOutlineTest {
     /** The pages still come from the platform renderer, as they always did. */
     @Test
     fun stillOpensThePagesThemselves() {
-        openPdfPages(file.absolutePath).use { pages ->
+        openTestPdf(file.absolutePath).use { pages ->
             assertEquals(MinimalPdf.PAGE_COUNT, pages.pageCount)
         }
     }

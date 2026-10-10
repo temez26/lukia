@@ -1,0 +1,20 @@
+# Version catalogue entries that reach no distribution, and so appear in no
+# attribution.
+#
+# Read by `checkAttribution` - see build.gradle.kts. Every module the catalogue
+# declares is either attributed in dependencies.txt beside this or listed here
+# with the reason, so adding a dependency is a decision about which of the two
+# it is rather than something that can be forgotten.
+#
+# A line is:  group:artifact  # why it ships in nothing
+
+org.jetbrains.kotlin:kotlin-test                    # test framework
+org.jetbrains.kotlinx:kotlinx-coroutines-test       # test framework
+io.ktor:ktor-client-mock                            # a stand-in for the network, in tests
+org.robolectric:robolectric                         # answers Android on the host, in tests
+androidx.test:runner                                # instrumentation, on a device
+androidx.test.ext:junit                             # instrumentation, on a device
+androidx.test.uiautomator:uiautomator               # drives the app while a profile is recorded
+androidx.benchmark:benchmark-macro-junit4           # records the baseline profile; :baselineprofile only
+org.jetbrains.compose.ui:ui-tooling                 # debugImplementation - the layout inspector, never in a release
+io.nlopez.compose.rules:detekt                      # a detekt plugin, loaded by the build

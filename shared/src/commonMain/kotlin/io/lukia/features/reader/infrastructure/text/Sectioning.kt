@@ -1,119 +1,148 @@
 package io.lukia.features.reader.infrastructure.text
 
-import io.lukia.features.reader.domain.OutlineEntry
-import io.lukia.features.reader.domain.TextBlock
-import io.lukia.features.reader.domain.TextSection
-import io.lukia.features.reader.domain.plainText
+import io.lukia.features.reader.domain.ReflowableContent
+import io.lukia.features.reader.domain.outline.OutlineEntry
+import io.lukia.features.reader.domain.text.TextBlock
+import io.lukia.features.reader.domain.text.TextSection
+import io.lukia.features.reader.domain.text.plainText
 
 /**
  * How many blocks one section may hold before it is broken up.
  *
- * A section is one item in the reader's list, and an item is laid out in full
- * whenever it is drawn. A chapter of a few hundred paragraphs is nothing; a
- * document that is one unbroken run of ten thousand is a reader that stutters on
- * every scroll and a scrollbar that means nothing, because there is only one
- * thing to be anywhere within.
+ * A section is one item in the reader's list, laid out in full whenever drawn. A
+ * chapter of a few hundred paragraphs is nothing; one unbroken run of ten
+ * thousand stutters on every scroll and leaves a scrollbar that means nothing.
  *
- * Generously above any real chapter, so that a book which is properly divided is
- * divided exactly where its author divided it, and this only ever acts on the
- * documents that are not.
+ * Generously above any real chapter, so a properly divided book is divided where
+ * its author divided it and this only acts on documents that are not.
  */
-private const val MAX_BLOCKS_PER_SECTION = 400
+internal const val MAX_BLOCKS_PER_SECTION = 400
 
 /** A document divided into what the reader lists, and the way into it. */
 internal data class SectionedText(
     val sections: List<TextSection>,
-    val outline: List<OutlineEntry>
+    val outline: List<OutlineEntry>,
 )
 
 /**
- * Divides a flat run of blocks into sections at the document's own top-level
- * headings, and reads a table of contents off the same headings.
+ * The block each section begins at, dividing a flat run at the document's own
+ * top-level headings and, wherever those run out, at [MAX_BLOCKS_PER_SECTION].
  *
- * Which level counts as top is whatever the document actually uses rather than a
- * fixed `<h1>`: plenty of documents start at level two, or number their headings
- * from wherever the template left off, and a book whose every heading is an
- * `<h2>` should still be divided at its chapters.
+ * Which level counts as top is whatever the document uses rather than a fixed
+ * `<h1>`: plenty start at level two, or number from wherever the template left
+ * off, and a book whose every heading is an `<h2>` should still be divided at
+ * its chapters.
  *
- * Shared by every format whose text arrives as one continuous run - DOCX,
- * Markdown and plain text. EPUB does not come through here: that format states
- * its own divisions in the spine, and second-guessing them from the headings
- * would be overruling the person who made the book.
+ * Empty for an empty document, otherwise always starting at zero, so the result
+ * addresses every block exactly once.
  */
-internal fun sectionText(blocks: List<TextBlock>): SectionedText {
-    val topLevel = blocks.filterIsInstance<TextBlock.Heading>().minOfOrNull { it.level }
+internal fun sectionStarts(blocks: List<TextBlock>): List<Int> {
+    val topLevel = topHeadingLevel(blocks)
 
-    val sections = mutableListOf<TextSection>()
-    var current = mutableListOf<TextBlock>()
-    var title: String? = null
+    val starts = mutableListOf<Int>()
+    var blocksInSection = 0
 
-    fun flush() {
-        if (current.isEmpty()) return
-
-        sections += TextSection(title = title, blocks = current.toList())
-        current = mutableListOf()
-    }
-
-    blocks.forEach { block ->
+    blocks.forEachIndexed { index, block ->
         val startsSection = block is TextBlock.Heading && block.level == topLevel
 
-        if (startsSection || current.size >= MAX_BLOCKS_PER_SECTION) {
-            flush()
+        if (starts.isEmpty() || startsSection || blocksInSection >= MAX_BLOCKS_PER_SECTION) {
+            starts += index
+            blocksInSection = 0
+        }
 
+        blocksInSection++
+    }
+
+    return starts
+}
+
+/**
+ * A flat run of blocks as a book the reader can show.
+ *
+ * The last stage of every format whose text arrives in one piece - DOCX,
+ * Markdown, plain text - each of which spelled it out for itself. How the blocks
+ * come out of the file is what those readers are for; what happens afterwards is
+ * one question asked three times.
+ *
+ * A book with nothing in it comes back empty rather than as no book: "there is
+ * nothing to read in this" and "this is not a file I can read" are different
+ * things to tell a reader.
+ */
+internal fun reflowableFrom(blocks: List<TextBlock>): ReflowableContent {
+    val sectioned = sectionText(blocks)
+
+    return ReflowableContent(sections = sectioned.sections, outline = sectioned.outline)
+}
+
+/**
+ * Divides a flat run of blocks into sections, and reads a table of contents off
+ * the same headings that divided it.
+ *
+ * Shared by every format whose text arrives as one continuous run - DOCX,
+ * Markdown and plain text. An EPUB does not come through here whole: that format
+ * states its own divisions in the spine, and second-guessing them from the
+ * headings would be overruling the person who made the book.
+ */
+internal fun sectionText(blocks: List<TextBlock>): SectionedText {
+    val topLevel = topHeadingLevel(blocks)
+    val starts = sectionStarts(blocks)
+
+    val sections = starts.mapIndexed { index, start ->
+        TextSection(
             // A section broken up for length is a continuation of the one before
             // it and has no name of its own, which is more honest than repeating
             // the chapter title over every piece of it.
-            title = (block as? TextBlock.Heading)
-                ?.takeIf { startsSection }
+            title = (blocks[start] as? TextBlock.Heading)
+                ?.takeIf { it.level == topLevel }
                 ?.text
                 ?.plainText()
                 ?.trim()
-                ?.ifEmpty { null }
-        }
-
-        current += block
+                ?.ifEmpty { null },
+            blocks = blocks.subList(start, starts.getOrElse(index + 1) { blocks.size }).toList(),
+        )
     }
-
-    flush()
 
     return SectionedText(
         sections = sections,
-        outline = outlineOf(sections, topLevel)
+        outline = outlineOf(sections, topLevel),
     )
 }
+
+private fun topHeadingLevel(blocks: List<TextBlock>): Int? =
+    blocks.filterIsInstance<TextBlock.Heading>().minOfOrNull { it.level }
 
 /**
  * The table of contents these sections offer.
  *
- * Two levels deep: the headings that divide the document, and the headings one
- * step under them. Deeper than that is a document's own numbering scheme rather
- * than a way to get around it, and a contents panel listing every sub-sub-heading
- * is one nobody can find a chapter in.
+ * Two levels deep: the headings that divide the document, and those one step
+ * under. Deeper is a numbering scheme rather than a way to get around, and a
+ * panel listing every sub-sub-heading is one nobody can find a chapter in.
  *
- * Sub-headings point at the section that contains them rather than at themselves,
- * because a section is the smallest thing the reader can scroll to. Landing on
- * the chapter and reading a few paragraphs to the heading you wanted is a far
- * better outcome than not offering it at all.
+ * Sub-headings carry where in the section they sit as well as which section, so
+ * the layout can send the reader to the heading's own page rather than the top
+ * of the chapter.
  */
 private fun outlineOf(sections: List<TextSection>, topLevel: Int?): List<OutlineEntry> {
     if (topLevel == null) return emptyList()
 
     return sections.flatMapIndexed { index, section ->
-        section.blocks
-            .filterIsInstance<TextBlock.Heading>()
-            .filter { it.level in topLevel..topLevel + 1 }
-            .mapNotNull { heading ->
-                val title = heading.text.plainText().trim()
+        section.blocks.mapIndexedNotNull { blockIndex, block ->
+            val heading = block as? TextBlock.Heading
 
-                if (title.isEmpty()) {
-                    null
-                } else {
-                    OutlineEntry(
-                        title = title,
-                        pageIndex = index,
-                        level = heading.level - topLevel
-                    )
-                }
+            if (heading == null || heading.level !in topLevel..topLevel + 1) return@mapIndexedNotNull null
+
+            val title = heading.text.plainText().trim()
+
+            if (title.isEmpty()) {
+                null
+            } else {
+                OutlineEntry(
+                    title = title,
+                    pageIndex = index,
+                    level = heading.level - topLevel,
+                    blockIndex = blockIndex,
+                )
             }
+        }
     }
 }

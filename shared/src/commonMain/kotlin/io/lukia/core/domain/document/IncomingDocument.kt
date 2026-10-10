@@ -1,0 +1,70 @@
+package io.lukia.core.domain.document
+
+/**
+ * A document another app handed to Lukia - a PDF opened from Files, a book
+ * shared out of a mail message, an EPUB tapped in a browser's downloads.
+ *
+ * Distinct from [PickedDocument], which is a document the reader went and
+ * fetched through the system picker. The difference is not where it came from
+ * but how long it can be read: a picked document is addressed by a location the
+ * app asked permission to keep, where this one arrives with a grant that lasts
+ * as long as the screen that delivered it. Nothing here may be stored against
+ * the library, because by the time the library is next opened none of it will
+ * resolve.
+ *
+ * [read] is therefore the whole point of this type. It is called once, while the
+ * grant is still good, and what it returns is copied into storage the app owns -
+ * see [IncomingDocumentStore].
+ */
+class IncomingDocument(
+    /** What the sending app calls it, extension included. */
+    val fileName: String,
+    val read: suspend () -> ByteArray?,
+) {
+
+    /**
+     * Taken from the name rather than from the sender's declared type. A type is
+     * what an app believes it is sending and is wrong often enough to matter -
+     * see the mime list in `PlatformFilePicker.android.kt` - while the extension
+     * is what the reader themselves would call it.
+     */
+    val extension: String get() = fileName.substringAfterLast('.', "")
+}
+
+/**
+ * Where a document handed to the app is kept so that it survives the grant it
+ * arrived under.
+ *
+ * Copying rather than referencing is not a preference: an Android `ACTION_VIEW`
+ * grant cannot be made persistable, and an opened iOS URL is security-scoped, so
+ * a library entry pointing at either would open once and then fail for good.
+ * That is also why [DocumentWorkspace]'s copy-on-first-open rule does not reach
+ * these - there is nothing to copy from later.
+ */
+interface IncomingDocumentStore {
+
+    /**
+     * Keeps [document] as the app's own, and answers it as something the import
+     * can take from here exactly like a picked one.
+     *
+     * Throws if it cannot be read or cannot be written, both of which leave the
+     * library untouched rather than half-added-to.
+     */
+    suspend fun keep(document: IncomingDocument): PickedDocument
+
+    /**
+     * Deletes the copy kept at [location], if that copy is one of these.
+     *
+     * A no-op for every other location, and that limit is the whole of it: most
+     * of a library is files the reader keeps themselves, and removing a book
+     * from the shelf must never delete one of those - see [DocumentWorkspace],
+     * which draws the same line around its own directory.
+     *
+     * What this is for is the other kind. A book handed to the app has no
+     * original left to point at, so the copy [keep] made *is* the book, and it
+     * is filed under a name nothing but the removed row could ever have named.
+     * Without this, sharing a book in and later dropping it from the library
+     * leaves the whole of it on the device with no way left to reach it.
+     */
+    suspend fun discard(location: String)
+}

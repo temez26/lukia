@@ -1,7 +1,8 @@
 package io.lukia.features.reader.infrastructure
 
-import io.lukia.features.translate.domain.pageSentences
-import io.lukia.features.translate.domain.sentenceAt
+import io.lukia.core.infrastructure.pdf.MinimalPdf
+import io.lukia.features.reader.domain.page.pageSentences
+import io.lukia.features.reader.domain.page.sentenceAt
 import kotlinx.coroutines.test.runTest
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
@@ -30,7 +31,7 @@ class PdfPageTextTest {
 
     private val root = File(
         System.getProperty("java.io.tmpdir"),
-        "lukia-pagetext-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}"
+        "lukia-pagetext-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}",
     ).apply { mkdirs() }
 
     @AfterTest
@@ -89,8 +90,8 @@ class PdfPageTextTest {
             "Call me Ishmael.",
             sentences.sentenceAt(
                 x = bounds.left + bounds.width / 2,
-                y = bounds.top + bounds.height / 2
-            )?.text
+                y = bounds.top + bounds.height / 2,
+            )?.text,
         )
         assertNull(sentences.sentenceAt(x = bounds.left, y = bounds.bottom + 100f))
         pages.close()
@@ -113,7 +114,7 @@ class PdfPageTextTest {
         pages.close()
     }
 
-    private fun openPdf(vararg lines: Pair<String, Float>) = openPdfPages(
+    private fun openPdf(vararg lines: Pair<String, Float>) = openTestPdf(
         File(root, "book-${lines.hashCode()}.pdf").also { file ->
             PDDocument().use { document ->
                 val page = PDPage(PDRectangle.A4)
@@ -135,6 +136,31 @@ class PdfPageTextTest {
 
                 document.save(file)
             }
-        }.absolutePath
+        }.absolutePath,
     )
+
+    /**
+     * The hand-written fixture the device tests read, checked here where it can
+     * actually be run.
+     *
+     * `AndroidPdfPageTextTest` reads the same bytes through pdfbox-android and
+     * `PdfKitPageTextTest` through PDFKit, and neither runs on CI. A fixture
+     * that quietly stopped drawing anything would leave both asserting about an
+     * empty page until somebody plugged in a phone. This fails first.
+     */
+    @Test
+    fun theHandWrittenFixtureHasWordsOnIt() = runTest {
+        val file = File(root, "hand-written.pdf").apply {
+            writeBytes(MinimalPdf.withText("Near the top." to 740, "Near the bottom." to 60))
+        }
+
+        openTestPdf(file.absolutePath).use { pages ->
+            val sentences = pageSentences(assertNotNull(pages.pageText(0), "no text layer"))
+
+            // The same two assertions AndroidPdfPageTextTest makes, so that a
+            // fixture which stopped drawing fails here first.
+            assertEquals(listOf("Near the top.", "Near the bottom."), sentences.map { it.text })
+            assertTrue(sentences.first().bounds.top < 120f, "the top line was not near the top")
+        }
+    }
 }

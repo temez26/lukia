@@ -1,0 +1,552 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Suomi. Sisarhakemisto `values/`:lle, jossa on sovelluksen oma kieli.
+
+    Kolme asiaa, jotka eivät ole suoria käännöksiä ja joilla on syynsä:
+
+    Lainausmerkit ovat ”näin” molemmin puolin, eivät englannin “näin”.
+
+    Luvun ja sen yksikön välissä on sitova väli \u00A0 - "50 %", ei "50%" -
+    mikä on juuri se syy, miksi luvun ja yksikön yhdistävä teksti on täällä
+    eikä koodissa. Sitova siksi, ettei luku jää rivin loppuun yksiköttä.
+    Kirjoitettu koodina, koska sitä ei erota tavallisesta välilyönnistä.
+
+    Tavut ovat kt, Mt ja Gt. Sanakirja.org erottuu Sanakirja-valinnasta
+    päätteellään, koska suomeksi molemmat lukisivat muuten samalla tavalla -
+    englanniksi ne ovat "Sanakirja" ja "Dictionary" eivätkä törmää.
+-->
+<resources>
+
+    <string name="nav_home">Koti</string>
+    <string name="nav_search">Haku</string>
+    <string name="nav_library">Kirjasto</string>
+
+    <string name="action_cancel">Peruuta</string>
+    <string name="action_close">Sulje</string>
+    <string name="action_delete">Poista</string>
+    <string name="action_done">Valmis</string>
+    <string name="action_go_back">Takaisin</string>
+    <string name="action_try_again">Yritä uudelleen</string>
+    <string name="action_close_panel">Sulje tämä paneeli</string>
+    <string name="action_explain">Lisätietoja: %1$s</string>
+    <string name="state_loading">Ladataan</string>
+
+    <string name="menu_book_details">Kirjan tiedot</string>
+    <string name="menu_favourite">Lisää suosikkeihin</string>
+    <string name="menu_unfavourite">Poista suosikeista</string>
+    <string name="menu_select_books">Valitse kirjoja</string>
+    <string name="menu_refresh_details">Päivitä tiedot</string>
+    <string name="menu_delete_from_library">Poista kirjastosta</string>
+
+    <string name="library_details_refreshed">Tiedot päivitetty</string>
+
+    <plurals name="library_already_in_library">
+        <item quantity="one">Jo kirjastossasi</item>
+        <item quantity="other">Kaikki %1$d jo kirjastossasi</item>
+    </plurals>
+
+    <string name="library_imported_with_existing">Tuotu %1$d, %2$d oli jo lisätty</string>
+    <string name="library_imported_with_failures">Tuotu %1$d, %2$d ohitettu</string>
+    <string name="library_imported_mixed">Tuotu %1$d, %2$d oli jo lisätty, %3$d ohitettu</string>
+
+    <!--
+        Monikkomuoto on partitiivi, koska suomessa lukusanan jälkeen tulee
+        yksikön partitiivi: 1 kirja, mutta 2 kirjaa.
+    -->
+    <plurals name="library_bulk_refreshed">
+        <item quantity="one">1 kirjan tiedot päivitetty</item>
+        <item quantity="other">%1$d kirjan tiedot päivitetty</item>
+    </plurals>
+    <plurals name="library_bulk_updated">
+        <item quantity="one">1 kirja päivitetty</item>
+        <item quantity="other">%1$d kirjaa päivitetty</item>
+    </plurals>
+    <plurals name="library_bulk_reset">
+        <item quantity="one">1 kirja merkitty lukemattomaksi</item>
+        <item quantity="other">%1$d kirjaa merkitty lukemattomaksi</item>
+    </plurals>
+    <plurals name="library_bulk_deleted">
+        <item quantity="one">1 kirja poistettu kirjastosta</item>
+        <item quantity="other">%1$d kirjaa poistettu kirjastosta</item>
+    </plurals>
+
+    <plurals name="library_bulk_skipped">
+        <item quantity="one">%1$s, 1 ohitettu</item>
+        <item quantity="other">%1$s, %2$d ohitettu</item>
+    </plurals>
+
+    <string name="library_select_books">Valitse kirjoja</string>
+    <string name="library_select_all">Valitse kaikki</string>
+    <string name="library_deselect_all">Poista valinnat</string>
+    <string name="library_selected_count">%1$d valittu</string>
+    <string name="library_bulk_running_refresh">Päivitetään %1$d/%2$d…</string>
+    <string name="library_bulk_running_favourite">Lisätään suosikkeihin %1$d/%2$d…</string>
+    <string name="library_bulk_running_unfavourite">Poistetaan suosikeista %1$d/%2$d…</string>
+    <string name="library_bulk_running_reset">Merkitään lukemattomaksi %1$d/%2$d…</string>
+    <string name="library_bulk_running_delete">Poistetaan %1$d/%2$d…</string>
+
+    <string name="library_delete_confirm_message">Tiedostot jäävät levylle paikoilleen.</string>
+    <plurals name="library_delete_confirm_title">
+        <item quantity="one">Poistetaanko 1 kirja kirjastostasi?</item>
+        <item quantity="other">Poistetaanko %1$d kirjaa kirjastostasi?</item>
+    </plurals>
+
+    <string name="error_document_not_found_title">Tiedostoa ei löydy</string>
+    <string name="error_document_not_found_message">Se on ehkä siirretty tai poistettu kirjastostasi.</string>
+    <string name="error_unsupported_file_title">Tiedostomuotoa ei tueta</string>
+    <string name="error_unsupported_file_message">Lukia avaa PDF- ja EPUB-tiedostoja.</string>
+    <string name="error_format_not_readable_title">Ei vielä luettavissa</string>
+    <string name="error_format_not_readable_message">EPUB-tiedostojen lukeminen ei ole vielä valmista – PDF-tiedostot aukeavat jo.</string>
+    <string name="error_empty_folder_title">Ei tuotavaa</string>
+    <string name="error_empty_folder_message">Tästä kansiosta tai sen alikansioista ei löytynyt kirjoja.</string>
+    <string name="error_translation_unavailable_title">Kääntämistä ei ole määritetty</string>
+    <string name="error_translation_unavailable_message">Valitse asetuksista kieli, jolle käännetään, ja lisää käännöspalvelu.</string>
+    <string name="error_translation_failed_title">Kääntäminen ei onnistunut</string>
+    <string name="error_translation_failed_message">Käännöspalvelu ei vastannut. Yritä uudelleen.</string>
+    <string name="error_unexpected_title">Jokin meni vikaan</string>
+    <string name="error_unexpected_message">Tapahtui odottamaton virhe.</string>
+
+    <string name="theme_system">Järjestelmä</string>
+    <string name="theme_light">Vaalea</string>
+    <string name="theme_dark">Tumma</string>
+
+    <string name="palette_crisp">Raikas</string>
+    <string name="palette_crisp_detail">Valkoisia kortteja harmaalla, öisin aito musta.</string>
+    <string name="palette_paper">Paperi</string>
+    <string name="palette_paper_detail">Lämmintä paperia ja mustetta, helppo silmille pitkinä lukuhetkinä.</string>
+    <string name="palette_slate">Liuske</string>
+    <string name="palette_slate_detail">Viileän neutraaleja harmaita ja tasaista, hillittyä pintaa.</string>
+
+    <string name="accent_themed">Teema</string>
+    <string name="accent_blue">Sininen</string>
+    <string name="accent_violet">Violetti</string>
+    <string name="accent_green">Vihreä</string>
+    <string name="accent_amber">Meripihka</string>
+    <string name="accent_rose">Roosa</string>
+    <string name="accent_graphite">Grafiitti</string>
+
+    <string name="motion_calm">Rauhallinen</string>
+    <string name="motion_calm_detail">Nopeat ristihäivytykset. Mikään ei ponnahda, liu’u tai kimmellä.</string>
+    <string name="motion_standard">Tavallinen</string>
+    <string name="motion_standard_detail">Lyhyt avaus, ja näkymät liikkuvat siihen suuntaan johon ne lähetit.</string>
+    <string name="motion_playful">Leikkisä</string>
+    <string name="motion_playful_detail">Pidempi avaus, joustavampi asettuminen ja pidempi matka.</string>
+
+    <string name="pdf_layout_original">Alkuperäinen</string>
+    <string name="pdf_layout_text">Teksti</string>
+
+    <string name="reader_theme_light">Vaalea</string>
+    <string name="reader_theme_sepia">Seepia</string>
+    <string name="reader_theme_dark">Tumma</string>
+    <string name="reader_typeface_serif">Antiikva</string>
+    <string name="reader_typeface_sans">Groteski</string>
+    <string name="reader_alignment_ragged">Liehureuna</string>
+    <string name="reader_alignment_justified">Tasattu</string>
+    <string name="reader_spacing_tight">Tiivis</string>
+    <string name="reader_spacing_normal">Tavallinen</string>
+    <string name="reader_spacing_relaxed">Väljä</string>
+    <string name="reader_figure_small">Pieni</string>
+    <string name="reader_figure_normal">Tavallinen</string>
+    <string name="reader_figure_large">Suuri</string>
+    <string name="reader_figure_fill">Täysi</string>
+    <!-- Väli ennen prosenttimerkkiä, toisin kuin englannissa. -->
+    <string name="reader_width_percent">%1$d\u00A0%</string>
+
+    <string name="library_layout_grid">Ruudukko</string>
+    <string name="library_layout_list">Luettelo</string>
+
+    <string name="gesture_off">Ei käytössä</string>
+    <string name="passage_unit_word">Sana</string>
+    <string name="passage_unit_sentence">Lause</string>
+    <string name="passage_unit_paragraph">Kappale</string>
+
+    <string name="provider_anthropic">Anthropic</string>
+    <string name="provider_openai">OpenAI</string>
+    <string name="provider_local">Paikallinen</string>
+
+    <string name="word_lookup_google">Google</string>
+    <string name="word_lookup_google_footnote">Nopea ja ilmainen, eikä se näe kirjaa – vain sanan. Lisää alle Cloud Translation -avain, niin käytössä on Googlen tuettu rajapinta julkisen päätepisteen sijaan.</string>
+    <string name="word_lookup_dictionary">Sanakirja</string>
+    <string name="word_lookup_dictionary_footnote">Wikisanakirjan oma artikkeli sanasta: kaikki sen merkitykset sen sijaan, että jokin arvaisi yhden. Ilmainen, eikä vaadi mitään määrittelyä.</string>
+
+    <string name="reader_open_in_site">Avaa palvelussa %1$s</string>
+    <string name="word_site_google">Google</string>
+    <string name="word_site_google_footnote">Google Kääntäjä, sana valmiiksi kentässä – vaihtoehdot ja käänteinen haku ovat napautuksen päässä.</string>
+    <string name="word_site_wiktionary">Wikisanakirja</string>
+    <string name="word_site_wiktionary_footnote">Koko artikkeli sellaisena kuin Wikisanakirja sen esittää: kaikki kielet, joissa sana kirjoitetaan näin, sen taivutukset ja esimerkit.</string>
+    <string name="word_site_sanakirja">Sanakirja.org</string>
+    <string name="word_site_sanakirja_footnote">sanakirja.org, joka on erityisen hyödyllinen pohjoismaisissa kielissä. Avautuu suoraan lukemallasi kieliparilla.</string>
+    <string name="word_site_custom">Oma</string>
+    <string name="word_site_custom_footnote">Mikä tahansa sivusto, jolla on haettava osoite. Kirjoita {word} sanan paikalle ja {to} tai {from} kielille, jos sivusto ottaa ne vastaan.</string>
+
+    <string name="shelf_all">Kaikki</string>
+    <string name="shelf_reading">Kesken</string>
+    <string name="shelf_unread">Lukematta</string>
+    <string name="shelf_finished">Luetut</string>
+
+    <!-- Suomen aakkoset päättyvät Ö:hön, joten A–Ö vastaa englannin A–Z:aa. -->
+    <string name="sort_added">Lisäysjärjestys</string>
+    <string name="sort_recently_added">Viimeksi lisätty</string>
+    <string name="sort_title">Nimi A–Ö</string>
+    <string name="sort_title_reversed">Nimi Ö–A</string>
+    <string name="sort_author">Tekijä A–Ö</string>
+    <string name="sort_last_read">Viimeksi luettu</string>
+    <string name="sort_largest">Suurin ensin</string>
+
+    <string name="home_title">Koti</string>
+    <string name="home_shelf_recent">Viimeisimmät</string>
+    <string name="home_shelf_recently_added">Äskettäin lisätyt</string>
+    <string name="home_shelf_almost_done">Melkein valmiit</string>
+    <string name="home_shelf_unread">Lukematta</string>
+    <string name="home_shelf_favorites">Suosikit</string>
+    <string name="home_shelf_finished">Luetut</string>
+    <string name="home_browse_by_category">Selaa aiheittain</string>
+    <string name="home_see_all">Näytä kaikki</string>
+
+    <string name="library_title">Kirjasto</string>
+    <string name="library_actions">Kirjaston toiminnot</string>
+    <string name="library_close_menu">Sulje valikko</string>
+    <string name="library_import_books">Tuo kirjoja</string>
+    <string name="library_add_folder">Lisää kansio</string>
+    <string name="library_importing">Tuodaan…</string>
+    <string name="library_importing_count">Tuodaan %1$d/%2$d…</string>
+    <string name="library_import_stop">Lopeta</string>
+    <string name="library_settings">Asetukset</string>
+    <string name="library_missing_files">Puuttuvat tiedostot (%1$d)</string>
+    <string name="library_duplicates">Kaksoiskappaleet (%1$d)</string>
+
+    <string name="filter_favourites">Suosikit</string>
+    <string name="filter_clear">Tyhjennä</string>
+    <string name="filter_format">Muoto</string>
+    <string name="filter_all_formats">Kaikki muodot</string>
+    <string name="filter_category">Aihe</string>
+    <string name="filter_all_categories">Kaikki aiheet</string>
+    <string name="filter_author">Tekijä</string>
+    <string name="filter_all_authors">Kaikki tekijät</string>
+    <string name="filter_language">Kieli</string>
+    <string name="filter_all_languages">Kaikki kielet</string>
+
+    <string name="search_title">Haku</string>
+    <plurals name="search_n_books">
+        <item quantity="one">Hae 1 kirjasta</item>
+        <item quantity="other">Hae %1$d kirjasta</item>
+    </plurals>
+    <string name="search_your_library">Hae kirjastostasi</string>
+    <string name="search_clear">Tyhjennä haku</string>
+    <string name="search_placeholder">Hae nimellä tai tekijällä</string>
+    <string name="search_recent">Viimeisimmät haut</string>
+    <string name="search_forget">Unohda %1$s</string>
+    <string name="search_empty_title">Hae kirjastostasi</string>
+    <string name="search_empty_message">Kirjoita nimi tai tekijä löytääksesi kirjan.</string>
+
+    <string name="library_no_results_title">Ei tuloksia</string>
+    <string name="library_no_matches_filtered">Mikään kirjastossasi ei vastaa kaikkia asettamiasi suodattimia.</string>
+    <string name="library_no_matches_term">Haku ”%1$s” ei löytänyt kirjoja.</string>
+    <string name="library_no_matches_filtered_term">Haulle ”%1$s” ei jää tuloksia, kun suodattimesi otetaan huomioon.</string>
+    <string name="library_empty_title">Kirjastosi on tyhjä</string>
+    <string name="library_empty_message">Valitse kansi lisätäksesi PDF-, EPUB-, Word- tai tekstitiedoston.</string>
+
+    <string name="book_actions">Kirjan toiminnot</string>
+    <string name="book_unavailable">Ei saatavilla</string>
+    <string name="book_missing_file">Tämä tiedosto ei ole enää saatavilla</string>
+    <string name="book_format_and_size">%1$s · %2$s</string>
+    <string name="book_progress_percent">· %1$d\u00A0%</string>
+
+    <string name="format_pdf">PDF</string>
+    <string name="format_epub">EPUB</string>
+    <string name="format_docx">Word</string>
+    <string name="format_text">Teksti</string>
+    <string name="format_markdown">Markdown</string>
+    <string name="format_unknown">Tuntematon</string>
+
+    <string name="author_list_separator">, </string>
+    <string name="author_list_last">%1$s ja %2$s</string>
+
+    <string name="book_about">Kuvaus</string>
+    <string name="book_more">Lisää</string>
+    <string name="book_less">Vähemmän</string>
+    <string name="book_information">Tiedot</string>
+    <string name="book_subjects">Aiheet</string>
+    <string name="book_publisher">Kustantaja</string>
+    <string name="book_published">Julkaistu</string>
+    <string name="book_language">Kieli</string>
+    <string name="book_length">Pituus</string>
+    <string name="book_format">Muoto</string>
+    <string name="book_size">Koko</string>
+    <string name="book_isbn">ISBN</string>
+
+    <plurals name="book_length_pages">
+        <item quantity="one">1 sivu</item>
+        <item quantity="other">%1$d sivua</item>
+    </plurals>
+    <string name="book_progress_finished">Luettu</string>
+    <string name="book_progress_not_started">Aloittamatta</string>
+    <string name="book_progress_page_of">Sivu %1$d / %2$d</string>
+    <string name="book_read_continue">Jatka lukemista</string>
+    <string name="book_read_again">Lue uudelleen</string>
+    <string name="book_read_start">Aloita lukeminen</string>
+
+    <string name="selection_refresh">Päivitä tiedot</string>
+    <string name="selection_favourite">Lisää suosikkeihin</string>
+    <string name="selection_unfavourite">Poista suosikeista</string>
+    <string name="selection_mark_unread">Merkitse lukemattomaksi</string>
+    <string name="selection_delete">Poista kirjastosta</string>
+
+    <string name="reader_close_book">Sulje kirja</string>
+    <string name="reader_close_the_book">Sulje kirja</string>
+    <string name="reader_contents">Sisällys</string>
+    <string name="reader_reading_settings">Lukuasetukset</string>
+    <string name="reader_page_of_count">%1$d / %2$d</string>
+    <string name="reader_page_x_of_y">Sivu %1$d / %2$d</string>
+    <string name="reader_page_x_of_y_percent">Sivu %1$d / %2$d, %3$d prosenttia luettu</string>
+    <string name="reader_percent_read">%1$d prosenttia luettu</string>
+    <string name="reader_percent">%1$d\u00A0%</string>
+    <string name="reader_percent_start">0</string>
+
+    <string name="reader_chapters">Luvut</string>
+    <string name="reader_collapse_all">Kutista kaikki</string>
+    <string name="reader_expand_all">Laajenna kaikki</string>
+    <string name="reader_show_sections_of">Näytä luvun %1$s osiot</string>
+    <string name="reader_hide_sections_of">Piilota luvun %1$s osiot</string>
+
+    <string name="reader_section_page">Sivu</string>
+    <string name="reader_section_text_and_images">Teksti ja kuvat</string>
+    <string name="reader_section_keyboard">Näppäimistö</string>
+    <string name="reader_setting_layout">Asettelu</string>
+    <string name="reader_setting_theme">Teema</string>
+    <string name="reader_setting_page_width">Sivun leveys</string>
+    <string name="reader_setting_text_size">Tekstin koko</string>
+    <string name="reader_setting_line_spacing">Riviväli</string>
+    <string name="reader_setting_alignment">Tasaus</string>
+    <string name="reader_setting_typeface">Kirjasin</string>
+    <string name="reader_setting_image_size">Kuvien koko</string>
+    <string name="reader_keep_screen_awake">Estä näytön sammuminen</string>
+    <string name="reader_note_pdf_as_text">PDF:n sanat ja kuvat tämän sovelluksen uudelleen asettelemina. Tiedoston omaa sivuasettelua ei säilytetä.</string>
+    <string name="reader_note_fixed_layout">Nämä koskevat juoksevatekstisiä kirjoja – tällä on oma kiinteä asettelunsa.</string>
+    <string name="reader_note_fixed_layout_switchable">Nämä koskevat juoksevatekstisiä kirjoja – tällä on oma kiinteä asettelunsa. Lue se tekstinä, niin voit käyttää näitä.</string>
+    <string name="reader_decrease_text_size">Pienennä tekstiä</string>
+    <string name="reader_increase_text_size">Suurenna tekstiä</string>
+    <string name="reader_text_size_percent">Tekstin koko %1$d prosenttia</string>
+    <string name="reader_setting_and_value">%1$s. %2$s</string>
+    <string name="reader_close_the_list">Sulje luettelo</string>
+    <string name="reader_choose">Valitse</string>
+
+    <string name="shortcut_turn_page">Käännä sivua</string>
+    <string name="shortcut_turn_page_keys">Välilyönti  PgDn  PgUp</string>
+    <string name="shortcut_scroll">Vieritä</string>
+    <string name="shortcut_scroll_keys">↑  ↓</string>
+    <string name="shortcut_start_end">Alku, loppu</string>
+    <string name="shortcut_start_end_keys">Home  End</string>
+    <string name="shortcut_resize_reflowable">Suurempi, pienempi</string>
+    <string name="shortcut_resize_fixed">Leveämpi, kapeampi</string>
+    <string name="shortcut_resize_keys">+  −  0</string>
+    <string name="shortcut_panels">Sisällys, asetukset</string>
+    <string name="shortcut_panels_keys">C  T</string>
+    <string name="shortcut_close_book">Sulje kirja</string>
+    <string name="shortcut_close_book_keys">Esc</string>
+    <string name="shortcut_word_details">Lisää sanasta</string>
+    <string name="shortcut_word_details_keys">Kahden sormen painallus</string>
+    <string name="shortcut_tooltip">%1$s  %2$s</string>
+
+    <string name="word_looked_up_under">Haettu muodolla ”%1$s”</string>
+    <string name="word_looking_it_up">Haetaan…</string>
+    <string name="word_no_meaning">Siinä on kaikki mitä sanakirjassa on – merkitystä ei ole lueteltu.</string>
+    <string name="word_sense_number">%1$d.</string>
+    <string name="word_related">Liittyvät sanat</string>
+    <string name="word_translate_it">Käännä se</string>
+    <string name="word_show_original">Näytä alkuperäinen</string>
+    <string name="word_show_translation">Näytä käännös</string>
+
+    <string name="reader_translation">Käännös</string>
+    <string name="reader_gesture_tap">Napautus</string>
+    <string name="reader_gesture_long_press">Painallus ja pito</string>
+    <string name="reader_hold_again">Pidä uudelleen nähdäksesi sanasta lisää</string>
+    <string name="reader_notes_under_paragraph">Huomautukset kappaleen alla</string>
+    <string name="reader_translate_this_page">Käännä tämä sivu</string>
+    <string name="reader_translate_as_you_read">Käännä lukemisen tahdissa</string>
+    <string name="reader_keep_translating">Jatka kääntämistä lukemisen tahdissa</string>
+    <string name="reader_stop_translating">Lopeta kääntäminen lukemisen tahdissa</string>
+    <string name="reader_show_translations">Näytä käännökset</string>
+    <string name="reader_hide_translations">Piilota käännökset</string>
+    <string name="reader_translate_on_screen">Käännä näkyvillä oleva</string>
+    <string name="reader_translate_into">Käännä kielelle</string>
+
+    <string name="reader_pdf_no_text">Tässä PDF:ssä ei ole tekstiä uudelleen aseteltavaksi – sen sivut ovat kuvia. Näytetään sivuina.</string>
+
+    <string name="settings_title">Asetukset</string>
+    <string name="settings_area_appearance">Ulkoasu</string>
+    <string name="settings_area_reading">Lukeminen</string>
+    <string name="settings_area_translating">Kääntäminen</string>
+    <string name="settings_area_ai_translation">Beta</string>
+    <string name="settings_beta">BEETA</string>
+    <string name="settings_show">Näytä</string>
+    <string name="settings_hide">Piilota</string>
+
+    <string name="settings_appearance">Ulkoasu</string>
+    <string name="settings_appearance_footnote">Järjestelmä seuraa laitteesi vaalean ja tumman asetusta.</string>
+    <string name="settings_palette">Väripaletti</string>
+    <string name="settings_palette_footnote">Mistä sovelluksen pinnat on tehty. Sekä vaalea että tumma seuraavat sitä.</string>
+    <string name="settings_accent">Korostusväri</string>
+    <string name="settings_accent_footnote">Käytetään lukemisen edistymiseen, valittuihin riveihin ja kaikkeen mikä toimii. Teema seuraa palettia.</string>
+    <string name="settings_motion">Liike</string>
+    <string name="settings_motion_footnote">Miten sovellus liikkuu avautuessaan ja näkymien vaihtuessa. Painikkeet ja säätimet vastaavat samalla tavalla valinnasta riippumatta.</string>
+
+    <string name="settings_the_page">Sivu</string>
+    <string name="settings_the_page_footnote">Millaisena jokainen kirja avautuu. Lukunäkymän oma paneeli muuttaa samoja asetuksia kirja edessäsi.</string>
+    <string name="settings_text_and_images">Teksti ja kuvat</string>
+    <string name="settings_text_and_images_footnote">Nämä koskevat juoksevatekstisiä kirjoja. Omina sivuinaan luetun PDF:n kirjasin on määritetty tiedostoa tehtäessä, eikä mikään näistä ulotu siihen.</string>
+    <string name="settings_opening_a_pdf">PDF:n avaaminen</string>
+    <string name="settings_opening_a_pdf_as_text">Uudet PDF:t asettelee tämä sovellus – sen kirjasin pyytämässäsi koossa, ja käännökset kappaleen sisällä sivun päällä olemisen sijaan. Skannaus, jossa ei ole tekstiä, avautuu joka tapauksessa omina sivuinaan.</string>
+    <string name="settings_opening_a_pdf_as_pages">Uudet PDF:t avautuvat sellaisina kuin tiedoston tekijä ne asetteli. Minkä tahansa niistä voi silti lukea tekstinä lukunäkymän omasta paneelista.</string>
+
+    <string name="settings_translate_into_footnote">Napauta lausetta lukiessasi kääntääksesi sen, ja napauta uudelleen nähdäksesi alkuperäisen.</string>
+    <string name="settings_pointing_at_the_book">Kirjaan osoittaminen</string>
+    <string name="settings_pointing_footnote">Kumpikin tekee aina yhden asian. Sama ele samaan kohtaan palauttaa kirjan omat sanat – paitsi sanassa, jonka olet hakenut, jossa pito avaa siitä lisää.</string>
+    <string name="settings_tap_to_translate">Käännä sana napauttamalla</string>
+    <string name="settings_asking_for_more">Sanaa suuremman pyytäminen</string>
+    <string name="settings_asking_for_more_footnote">Sanakirja vastaa sanaan eikä mihinkään suurempaan, joten nämä eivät tee mitään ennen kuin käännöspalvelu on otettu käyttöön yllä. Pois on tässä sama pois kuin Kääntäminen-sivun kytkimissä.</string>
+    <string name="settings_hold_again">Pidä sanaa uudelleen nähdäksesi siitä lisää</string>
+    <string name="settings_translating_ahead">Kääntäminen etukäteen</string>
+    <string name="settings_translating_ahead_footnote">Molemmat ovat uusia, ja molemmat ovat hitaita ja kalliita: ne kääntävät ruudullisen kerrallaan sen kohdan sijaan, johon osoitit. Pois käytöstä kunnes pyydät niitä, ja lukunäkymästä kokonaan piilossa siihen asti.</string>
+    <string name="settings_on_screen_detail">Lisää painikkeen, joka kääntää kerran kaikki näkyvissä olevat lauseet.</string>
+    <string name="settings_as_you_read_detail">Lisää painikkeen, joka jatkaa kääntämistä sitä mukaa kuin tekstiä vierii näkyviin, kunnes otat sen pois käytöstä. Tämä on se kallis.</string>
+
+    <string name="settings_ai_translation">Tekoälykäännös</string>
+    <string name="settings_use_ai">Käytä käännöspalvelua</string>
+    <string name="settings_use_ai_detail">Pois päältä Lukia hakee yksittäisen sanan ilmaisesta sanakirjasta eikä tee muuta – ei avainta syötettäväksi eikä säätimiä lukunäkymässä. Päällä se voi kääntää kokonaisia lauseita ja kappaleita palvelun kautta, jonka otat käyttöön ja josta maksat kappaleelta. Pois kytkeminen säilyttää kaiken määrittämäsi.</string>
+    <string name="settings_translation_service">Käännöspalvelu</string>
+    <string name="settings_translation_service_footnote">Mikään tällä sivulla ei tee mitään ennen kuin tämä on otettu käyttöön. Sanan hakeminen Kääntäminen-sivulta toimii ilman sitä; kokonainen lause ei toimi — se menee mallille, josta maksat kappaleelta.</string>
+    <string name="settings_address">Osoite</string>
+    <string name="settings_model">Malli</string>
+    <string name="settings_api_key">API-avain</string>
+    <string name="settings_api_key_optional">API-avain (valinnainen)</string>
+    <string name="settings_required">Pakollinen</string>
+    <string name="settings_none">Ei mitään</string>
+    <string name="settings_looking_up_a_word">Sanan hakeminen</string>
+    <string name="settings_cloud_key">Cloud Translation -avain (valinnainen)</string>
+    <string name="settings_public_endpoint">Julkinen päätepiste</string>
+    <string name="settings_reading_more">Sanasta lukeminen</string>
+    <string name="settings_reading_more_footnote">Jo haetun sanan pitäminen avaa mitä muuta se tarkoittaa, ja reitin tälle sivustolle sana valmiiksi kentässä.</string>
+    <string name="settings_site_address_example">https://example.org/search?q={word}</string>
+    <string name="settings_key_footnote_hosted">Avaimesi säilytetään tällä laitteella ja lähetetään vain palveluun %1$s, napauttamasi lauseen ja kirjan omien tietojen kanssa.</string>
+    <string name="settings_key_footnote_local">Mikään ei lähde verkostasi. Puhelimella tai tabletilla ”localhost” tarkoittaa laitetta itseään – käytä sen sijaan tietokoneen osoitetta verkossasi.</string>
+
+    <string name="settings_asking_the_server">Kysytään palvelimelta…</string>
+    <string name="settings_reload_models">Lataa mallit uudelleen</string>
+    <string name="settings_load_models">Lataa mallit palvelimelta</string>
+    <string name="settings_loading">Ladataan…</string>
+    <string name="settings_load_this_model">Lataa tämä malli nyt</string>
+    <string name="settings_loading_model">Pyydetään palvelinta lataamaan %1$s. Suurella mallilla se voi kestää ensimmäisellä kerralla muutaman minuutin.</string>
+    <string name="settings_model_ready">%1$s on ladattu ja vastaa.</string>
+    <string name="settings_give_up_after">Luovuta ajan jälkeen</string>
+    <string name="settings_seconds">%1$d sekuntia</string>
+    <string name="settings_testing">Testataan…</string>
+    <string name="settings_test_translation">Testaa kääntämistä</string>
+    <string name="settings_test_result">”%1$s” muuttui muotoon ”%2$s”</string>
+
+    <string name="settings_last_crash">Viimeisin kaatuminen</string>
+    <string name="settings_last_crash_footnote">Säilytetään tällä laitteella kunnes poistat sen, eikä lähetetä minnekään.</string>
+    <string name="settings_crashed">Lukia sulkeutui odottamatta viime kerralla kun se oli auki.</string>
+    <string name="settings_copy_whole_report">Kopiointi ottaa koko raportin.</string>
+    <string name="settings_copy_report">Kopioi raportti</string>
+    <string name="settings_diagnostics">Vianmääritys</string>
+    <string name="settings_diagnostics_footnote">Säilytetään tällä laitteella kunnes kopioit sen, eikä lähetetä minnekään. Ei sisällä kirjojen tekstiä, nimiä, tiedostonimiä eikä avaimia.</string>
+    <string name="settings_developer">Kehittäjäasetukset</string>
+    <string name="settings_record_problems">Tallenna mikä menee vikaan</string>
+    <string name="settings_record_problems_detail">Merkitsee muistiin kun kantta, sivua tai käännöstä ei voitu lukea, jotta kuvailemasi ongelman takana on jotain. Tämän ottaminen pois käytöstä tyhjentää tallennetun.</string>
+    <string name="settings_nothing_recorded">Ei vielä tallennettua. Käytä sovellusta kuten silloin kun se meni vikaan, ja palaa sitten tänne.</string>
+    <string name="settings_showing_last">Näytetään viimeiset %1$d / %2$d. Kopiointi ottaa ne kaikki.</string>
+
+    <string name="settings_about">Tietoja</string>
+    <string name="settings_version">Versio %1$s</string>
+    <string name="settings_licensed_under">Lisensoitu Apache License 2.0 -lisenssillä.</string>
+    <string name="settings_open_source">Avoimen lähdekoodin lisenssit</string>
+    <string name="settings_open_source_footnote">Mistä Lukia on rakennettu, ja millä ehdoilla kukin osa on käytössä.</string>
+
+    <string name="stats_entry">Lukemisesi</string>
+    <string name="stats_title">Lukeminen</string>
+    <string name="stats_footnote">Lasketaan tällä laitteella, ja säilytetään täällä.</string>
+
+    <string name="stats_time_none">Ei vielä</string>
+    <string name="stats_time_under_a_minute">Alle minuutti</string>
+    <string name="stats_time_minutes">%1$d\u00A0min</string>
+    <string name="stats_time_hours">%1$d\u00A0h</string>
+    <string name="stats_time_hours_minutes">%1$d\u00A0h %2$d\u00A0min</string>
+    <string name="stats_time_dash">—</string>
+
+    <string name="stats_tile_reading">Kesken</string>
+    <string name="stats_tile_finished">Luettu</string>
+    <string name="stats_tile_not_started">Aloittamatta</string>
+    <string name="stats_tile_favourites">Suosikit</string>
+    <plurals name="stats_tile_pages_read">
+        <item quantity="one">Sivu luettu</item>
+        <item quantity="other">Sivua luettu</item>
+    </plurals>
+    <plurals name="stats_tile_books">
+        <item quantity="one">Kirja</item>
+        <item quantity="other">Kirjaa</item>
+    </plurals>
+    <string name="stats_figure_and_label">%1$s %2$s</string>
+
+    <string name="stats_this_week">Tällä viikolla</string>
+    <string name="stats_this_week_footnote">Lasketaan kun kirja on auki ja sivuja käännetään, ja vain siitä päivästä alkaen jona tämä sovellus alkoi pitää kirjaa.</string>
+    <string name="stats_today">Tänään</string>
+    <string name="stats_daily_average">Päiväkeskiarvo</string>
+    <string name="stats_all_time">Kaikkiaan</string>
+    <string name="stats_time_read">Luettu aika</string>
+    <string name="stats_best_day">Paras päivä</string>
+    <string name="stats_longest_run">Pisin putki</string>
+    <plurals name="stats_sittings">
+        <item quantity="one">Lukuhetki</item>
+        <item quantity="other">Lukuhetkeä</item>
+    </plurals>
+    <string name="stats_no_run">Ei putkea menossa</string>
+    <plurals name="stats_days_in_a_row">
+        <item quantity="one">1 päivä putkeen</item>
+        <item quantity="other">%1$d päivää putkeen</item>
+    </plurals>
+    <string name="stats_today_spoken">Tänään: %1$s</string>
+    <string name="stats_longest_run_spoken">Pisin putki: %1$s</string>
+    <string name="stats_day_spoken">%1$s: %2$s</string>
+    <string name="stats_still_to_come">vielä tulossa</string>
+
+    <string name="stats_your_library">Kirjastosi</string>
+    <string name="stats_nothing_to_count">Ei vielä laskettavaa. Tuo kirja, niin tämä täyttyy lukiessasi.</string>
+    <string name="stats_share_read">%1$d\u00A0% kirjastostasi luettu</string>
+    <string name="stats_recently_read">Viimeksi luettu</string>
+    <string name="stats_opened">Avattu</string>
+    <plurals name="stats_finished_pages">
+        <item quantity="one">Luettu · 1 sivu</item>
+        <item quantity="other">Luettu · %1$d sivua</item>
+    </plurals>
+    <string name="stats_page_of_percent">Sivu %1$d / %2$d · %3$d\u00A0%</string>
+
+    <!-- Tavu on suomeksi t, joten kt, Mt ja Gt. -->
+    <string name="size_bytes">%1$s\u00A0t</string>
+    <string name="size_kilobytes">%1$s\u00A0kt</string>
+    <string name="size_megabytes">%1$s\u00A0Mt</string>
+    <string name="size_gigabytes">%1$s\u00A0Gt</string>
+    <string name="size_terabytes">%1$s\u00A0Tt</string>
+
+    <string name="state_on">Päällä</string>
+    <string name="state_off">Pois</string>
+    <string name="state_selected">Valittu</string>
+    <string name="state_not_selected">Ei valittu</string>
+    <string name="action_dismiss">Sulje</string>
+    <string name="reader_open_contents">Avaa sisällys</string>
+    <string name="reader_go_to_page">Siirry sivulle</string>
+    <string name="reader_go_to_chapter">Siirry: %1$s</string>
+    <string name="reader_chapter_at_page">%1$s, sivu %2$d</string>
+    <string name="reader_translate_this_paragraph">Käännä tämä kappale</string>
+    <string name="reader_restore_this_paragraph">Näytä kirjan omat sanat</string>
+    <string name="figure_look_closer">Katso tarkemmin</string>
+    <string name="figure_close">Sulje kuva</string>
+    <string name="figure_illustration">Kuva</string>
+    <string name="home_see_all_shelf">Näytä kaikki: %1$s</string>
+    <string name="search_for_term">Hae: %1$s</string>
+    <string name="search_clear_recent">Tyhjennä viimeisimmät haut</string>
+    <string name="book_open_title">Avaa %1$s</string>
+    <string name="book_read_title">Lue %1$s</string>
+    <string name="book_favourited">Suosikki</string>
+
+</resources>

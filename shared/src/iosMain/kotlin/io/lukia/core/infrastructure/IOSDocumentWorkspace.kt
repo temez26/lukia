@@ -1,8 +1,8 @@
 package io.lukia.core.infrastructure
 
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.DocumentWorkspace
-import io.lukia.core.domain.WorkingCopy
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.storage.DocumentWorkspace
+import io.lukia.core.domain.storage.WorkingCopy
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -29,7 +29,7 @@ class IOSDocumentWorkspace : DocumentWorkspace {
         val base = NSSearchPathForDirectoriesInDomains(
             directory = NSApplicationSupportDirectory,
             domainMask = NSUserDomainMask,
-            expandTilde = true
+            expandTilde = true,
         ).firstOrNull() as? String ?: FALLBACK_DIRECTORY
 
         "$base/$WORKSPACE_DIRECTORY"
@@ -54,7 +54,7 @@ class IOSDocumentWorkspace : DocumentWorkspace {
                     path = directory,
                     withIntermediateDirectories = true,
                     attributes = null,
-                    error = null
+                    error = null,
                 )
 
                 copyInto(source, target)

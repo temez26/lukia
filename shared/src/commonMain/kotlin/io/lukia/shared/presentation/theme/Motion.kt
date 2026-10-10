@@ -8,23 +8,25 @@ import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.ui.Alignment
 
 /**
  * The app's motion vocabulary.
  *
- * Every animation in Lukia is built from what is here rather than from a
- * hand-picked duration at the call site. The point is not the individual
- * numbers - it is that a menu opening, a screen arriving and a card being
- * pressed all move at rates that are recognisably related, which is most of what
- * makes motion read as one piece of software rather than several.
+ * Every animation is built from what is here rather than from a duration picked
+ * at the call site. The point is not the numbers but that a menu opening, a
+ * screen arriving and a card being pressed move at related rates, which is most
+ * of what makes motion read as one piece of software.
  *
  * The timings follow Apple's convention that things leave faster than they
- * arrive: an entrance is being watched, an exit is already being scrolled past.
+ * arrive: an entrance is watched, an exit is already being scrolled past.
  */
 object LukiaMotion {
 
@@ -47,19 +49,31 @@ object LukiaMotion {
     /** Screen-sized moves, where the distance travelled needs the extra time. */
     const val LargeMillis = 340
 
+    /**
+     * A list unfolding to a height greater than the surface holding it - see
+     * [disclosureIn].
+     *
+     * Longer than [LargeMillis], which is neither a mistake nor a flourish: a
+     * screen pushing over another travels its whole distance in front of the
+     * reader, while a list opening inside a capped, scrolling panel spends much
+     * of its travel below the panel's edge. Timed like a screen push, what the
+     * reader sees is over in half of it.
+     */
+    const val UnfoldMillis = 520
+
     /** What an exit gets when its entrance took [StandardMillis]. */
     const val ExitMillis = 160
 
     /** Settling with a trace of overshoot: a badge popping, a cover springing back. */
     fun <T> bouncy(): FiniteAnimationSpec<T> = spring(
         dampingRatio = Spring.DampingRatioMediumBouncy,
-        stiffness = Spring.StiffnessLow
+        stiffness = Spring.StiffnessLow,
     )
 
     /** Settling with no overshoot, for anything tracking a pointer or a press. */
     fun <T> gentle(): FiniteAnimationSpec<T> = spring(
         dampingRatio = 0.85f,
-        stiffness = Spring.StiffnessMediumLow
+        stiffness = Spring.StiffnessMediumLow,
     )
 
     fun <T> quick(): FiniteAnimationSpec<T> = tween(QuickMillis, easing = Standard)
@@ -71,25 +85,7 @@ object LukiaMotion {
     fun <T> exit(): FiniteAnimationSpec<T> = tween(ExitMillis, easing = Exit)
 }
 
-/**
- * The app's one "content arrives" entrance: a short fade with the faintest lift.
- *
- * The rise is deliberately small. A large one reads as a slide - a claim that the
- * content came from somewhere - where this only needs to say that it was not
- * there a moment ago.
- */
-fun softRiseIn(
-    durationMillis: Int = LukiaMotion.StandardMillis,
-    delayMillis: Int = 0,
-    riseFraction: Float = 0.06f
-): EnterTransition = fadeIn(
-    animationSpec = tween(durationMillis, delayMillis, LukiaMotion.Standard)
-) + slideInVertically(
-    animationSpec = tween(durationMillis, delayMillis, LukiaMotion.Standard),
-    initialOffsetY = { height -> (height * riseFraction).toInt() }
-)
-
-/** The counterpart to [softRiseIn]: leaves in place rather than sinking back. */
+/** What anything the app is finished with does: leaves in place, quickly. */
 fun softFadeOut(durationMillis: Int = LukiaMotion.ExitMillis): ExitTransition =
     fadeOut(animationSpec = tween(durationMillis, easing = LukiaMotion.Exit))
 
@@ -105,8 +101,46 @@ fun stateSwapIn(durationMillis: Int = LukiaMotion.StandardMillis): EnterTransiti
     fadeIn(animationSpec = tween(durationMillis, easing = LukiaMotion.Standard)) +
         scaleIn(
             animationSpec = tween(durationMillis, easing = LukiaMotion.Standard),
-            initialScale = 0.97f
+            initialScale = 0.97f,
         )
+
+/**
+ * A list opening underneath the row that disclosed it - see `PanelDisclosureRow`.
+ *
+ * Height only, and downwards. Left to itself `AnimatedVisibility` grows a child
+ * from its bottom end, uncovering the list from its top left corner as though it
+ * were being dragged diagonally out of the row above. Nothing moves sideways
+ * when a panel gets taller.
+ *
+ * [LukiaMotion.UnfoldMillis] rather than a menu's or a screen's duration,
+ * because this is neither: seventeen languages are some seven hundred points of
+ * rows opening inside a panel capped at five hundred and sixty, so half the
+ * growth happens below the panel's edge where nobody sees it - and a clock set
+ * by the whole distance spends only half of itself on the visible part.
+ *
+ * The fade is shorter than the growth on purpose: it keeps a half-height row
+ * from being briefly readable in a space too short to hold it, and finishing
+ * first leaves the rows solid while the space around them settles - one movement
+ * to watch rather than two ending together.
+ */
+fun disclosureIn(): EnterTransition = expandVertically(
+    animationSpec = tween(LukiaMotion.UnfoldMillis, easing = LukiaMotion.Standard),
+    expandFrom = Alignment.Top,
+) + fadeIn(animationSpec = tween(LukiaMotion.LargeMillis, easing = LukiaMotion.Standard))
+
+/**
+ * Closing again, quicker than it opened but in proportion to it.
+ *
+ * [LukiaMotion.ExitMillis] is what an entrance of [LukiaMotion.StandardMillis]
+ * leaves at - two thirds of it - and the same two thirds of an unfold is
+ * [LukiaMotion.LargeMillis]. Held to the ratio rather than to the constant,
+ * because a list that takes half a second to open and is gone in a sixth reads
+ * as having been snatched away rather than closed.
+ */
+fun disclosureOut(): ExitTransition = shrinkVertically(
+    animationSpec = tween(LukiaMotion.LargeMillis, easing = LukiaMotion.Exit),
+    shrinkTowards = Alignment.Top,
+) + softFadeOut(LukiaMotion.StandardMillis)
 
 /**
  * A sheet or bar entering from the top edge of its container, used by the
@@ -114,10 +148,28 @@ fun stateSwapIn(durationMillis: Int = LukiaMotion.StandardMillis): EnterTransiti
  */
 fun topChromeIn(): EnterTransition = slideInVertically(
     animationSpec = tween(LukiaMotion.StandardMillis, easing = LukiaMotion.Standard),
-    initialOffsetY = { -it }
+    initialOffsetY = { -it },
 ) + fadeIn(animationSpec = tween(LukiaMotion.StandardMillis, easing = LukiaMotion.Standard))
 
 fun topChromeOut(): ExitTransition = slideOutVertically(
     animationSpec = tween(LukiaMotion.ExitMillis, easing = LukiaMotion.Exit),
-    targetOffsetY = { -it }
+    targetOffsetY = { -it },
+) + fadeOut(animationSpec = tween(LukiaMotion.ExitMillis, easing = LukiaMotion.Exit))
+
+/**
+ * The same, from the bottom edge, for the chrome that sits along it.
+ *
+ * A pair rather than [topChromeIn] with a flag: the two are used at opposite
+ * ends of the same screen and arrive together, and reading `topChromeIn()`
+ * beside `bottomChromeIn()` says that at the call site in a way `topChromeIn(up
+ * = false)` does not.
+ */
+fun bottomChromeIn(): EnterTransition = slideInVertically(
+    animationSpec = tween(LukiaMotion.StandardMillis, easing = LukiaMotion.Standard),
+    initialOffsetY = { it },
+) + fadeIn(animationSpec = tween(LukiaMotion.StandardMillis, easing = LukiaMotion.Standard))
+
+fun bottomChromeOut(): ExitTransition = slideOutVertically(
+    animationSpec = tween(LukiaMotion.ExitMillis, easing = LukiaMotion.Exit),
+    targetOffsetY = { it },
 ) + fadeOut(animationSpec = tween(LukiaMotion.ExitMillis, easing = LukiaMotion.Exit))

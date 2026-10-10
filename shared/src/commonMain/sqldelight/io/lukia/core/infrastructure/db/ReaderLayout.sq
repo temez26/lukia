@@ -1,0 +1,34 @@
+-- How a book was last read: as the pages its maker set, or as text the reader
+-- re-sets for itself.
+--
+-- Only PDFs ever have a row here. Every other format the app reads is text
+-- already and has no second way of being read, so a row for one would be a
+-- choice that was never offered.
+--
+-- A table of its own for `reading_position`'s reason: it belongs to the handful
+-- of books somebody has opened and chosen for, and a column on `document` would
+-- have the reader writing into a row the import owns.
+--
+-- Stored under its own name rather than as a flag, so a third way of reading a
+-- document would be a value here and not a migration. `PdfLayout` decides what
+-- an unreadable name means, as the key-value settings do.
+--
+-- Keyed to `document` and cascading, for `reading_position`'s reason - see the
+-- note there. A choice about a book no longer in the library is unreachable.
+CREATE TABLE reader_layout (
+    location TEXT NOT NULL PRIMARY KEY REFERENCES document(location) ON DELETE CASCADE,
+    layout TEXT NOT NULL
+);
+
+selectByLocation:
+SELECT layout FROM reader_layout WHERE location = ?;
+
+-- Replace rather than update: the row holds nothing that is not being written.
+-- `INSERT OR REPLACE` is as old as SQLite, unlike the upsert this would
+-- otherwise be - see `Document.sq`.
+put:
+INSERT OR REPLACE INTO reader_layout(location, layout)
+VALUES (?, ?);
+
+deleteByLocation:
+DELETE FROM reader_layout WHERE location = ?;

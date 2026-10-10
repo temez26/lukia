@@ -2,8 +2,78 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!--
+	    Which languages the app is offered in. Declared because iOS decides an
+	    app's language by intersecting the reader's preferred languages with
+	    this list, and there is nothing else here for it to read: Compose
+	    Multiplatform keeps its translations inside the shared framework rather
+	    than in `.lproj` folders, so without this the bundle looks like an
+	    English-only app and a Finnish device is answered in English - while the
+	    same build on Android reads Finnish.
+
+	    Kept in step with `shared/src/commonMain/composeResources`, which is
+	    where the translations themselves are. English is the language the app
+	    was written in and so the one it falls back to.
+	-->
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>da</string>
+		<string>de</string>
+		<string>es</string>
+		<string>fi</string>
+		<string>fr</string>
+		<string>it</string>
+		<string>nb</string>
+		<string>nl</string>
+		<string>pl</string>
+		<string>sv</string>
+	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<!--
+	    Together these put a Lukia folder in the Files app and let the reader
+	    fill it: books can be dropped in there from another app, from a download
+	    or over AirDrop, and then picked from inside Lukia like any other folder.
+	    Without them the app's own storage is invisible.
+
+	    They do not, on their own, offer Lukia as somewhere to send a book -
+	    that is CFBundleDocumentTypes below, and the two are worth reading
+	    together.
+	-->
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<!--
+	    What Lukia will accept from another app, which is what puts it in the
+	    Share Sheet and behind "Open in" for a book. Without this the two keys
+	    above only publish a folder to put books in - the app itself is never
+	    offered as somewhere to send one.
+
+	    Declared as `Alternate` rather than `Owner`: these are formats Lukia
+	    reads, not formats it defines, and an app claiming ownership of PDF is
+	    an app fighting every other reader on the device for the file's icon.
+	-->
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Book</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.adobe.pdf</string>
+				<string>org.idpf.epub-container</string>
+				<string>org.openxmlformats.wordprocessingml.document</string>
+				<string>public.plain-text</string>
+				<string>net.daringfireball.markdown</string>
+			</array>
+		</dict>
+	</array>
 	<!--
 	    Asked for only when the reader points translation at a model running on
 	    their own machine. Reading a book needs nothing from the network at all.
@@ -11,16 +81,50 @@
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Lukia needs this to reach a translation model running on your own computer.</string>
 	<!--
-	    Permits plain HTTP to this device, to .local names and to link-local
-	    addresses, without weakening transport security anywhere else. A server
-	    on the same network is reached by its Bonjour name - my-mac.local - which
-	    macOS publishes by default; a bare 192.168.x address over http is still
-	    refused by the system, and https works everywhere.
+	    Permits plain HTTP to unqualified host names and to .local ones, which is
+	    how a server on the same network is usually reached - my-mac.local, which
+	    macOS publishes by default.
+
+	    It says nothing about numeric addresses, and neither does anything else
+	    here: since iOS 10 transport security does not apply to a request made to
+	    an IP address at all, so http://192.168.1.50 and http://8.8.8.8 are both
+	    requests the system will happily make. What tells those two apart is
+	    `isAllowedTranslationEndpoint` in shared code, which is the only thing
+	    that does - on this platform and on Android both.
 	-->
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<!--
+	    Markdown is the one format the importer accepts that the system has no
+	    identifier for: PDF, EPUB, DOCX and plain text are all Apple's own, and
+	    `net.daringfireball.markdown` is a convention between apps. Declaring it
+	    as imported is what tells iOS that a `.md` file is that type, and so
+	    what puts Lukia behind "Open in" for one - without it the entry above
+	    names a type the device may never have heard of.
+	-->
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>net.daringfireball.markdown</string>
+			<key>UTTypeDescription</key>
+			<string>Markdown Text</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>md</string>
+					<string>markdown</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
 </dict>
 </plist>

@@ -1,20 +1,35 @@
 -- Where a book was left off.
 --
 -- A table of its own rather than columns on `document`, because it has its own
--- lifetime: most books in a library have never been opened, and the ones that
--- have are written to as they are read while the rest are not touched at all.
+-- lifetime: most books have never been opened, and the ones that have are
+-- written to as they are read.
 --
--- `pageCount` is stored beside the page so that how far through a book someone
--- is can be answered without opening it.
+-- `pageCount` sits beside the page so how far through a book somebody is can be
+-- answered without opening it. The pair means something together and neither
+-- half alone: for a PDF they are pages the file has, for a reflowable book pages
+-- the reader set in the window and type size it was last read at - so they are
+-- written and replaced together, and the same place stores a different count at
+-- a different size.
 --
--- Not a foreign key on `document`, which would tie this to a table it has no
--- reason to be locked to - a position can be stored for a book the library was
--- never told about. Removing a book clears its position all the same; that is
--- `RemoveDocumentUseCase`'s doing rather than the schema's.
+-- A foreign key on `document`, cascading. Every route in goes through a book the
+-- library already holds, so the row has no life of its own to protect - and
+-- leaving the rule to `RemoveDocumentUseCase` meant a process dying between two
+-- of its four writes left a position for a book on no shelf, which nothing
+-- lists, sweeps or can reach again. The schema owns the rule now.
+--
+-- Nothing may `INSERT OR REPLACE` into `document`: a replace is a delete and an
+-- insert, and with this key that delete takes the reader's place in the book
+-- with it - which is why the import is `INSERT OR IGNORE` plus an `UPDATE`.
+--
+-- `readAt` orders the shelf by what was read last, counting writes rather than
+-- telling the time - one past the highest in the table - for
+-- `translation_cache.usedAt`'s reason: a device clock can go backwards, and all
+-- this must answer is which of two came later.
 CREATE TABLE reading_position (
-    location TEXT NOT NULL PRIMARY KEY,
+    location TEXT NOT NULL PRIMARY KEY REFERENCES document(location) ON DELETE CASCADE,
     pageIndex INTEGER NOT NULL,
-    pageCount INTEGER NOT NULL
+    pageCount INTEGER NOT NULL,
+    readAt INTEGER NOT NULL DEFAULT 0
 );
 
 selectByLocation:
@@ -23,18 +38,21 @@ SELECT * FROM reading_position WHERE location = ?;
 -- Every stored position at once, for the library grid.
 --
 -- One statement rather than one per book: the grid shows how far through each
--- book its reader is, and asking that book by book would be a query per cell on
--- a shelf that may hold hundreds. The whole table is three columns of numbers,
--- so reading all of it costs less than reading one cover.
+-- book its reader is, and asking book by book is a query per cell on a shelf of
+-- hundreds. The whole table is a handful of numbers per book - less than one
+-- cover.
 selectAll:
 SELECT * FROM reading_position;
 
--- Replace rather than update: the row holds nothing that is not being written,
--- so there is nothing to preserve. `INSERT OR REPLACE` is as old as SQLite,
--- unlike the upsert this would otherwise be - see `Document.sq`.
+-- Replace rather than update: the row holds nothing that is not being written.
+-- `INSERT OR REPLACE` is as old as SQLite, unlike the upsert this would
+-- otherwise be - see `Document.sq`.
+--
+-- The subselect runs before the conflicting row is replaced, so a book written
+-- again comes out above every other rather than keeping the place it had.
 put:
-INSERT OR REPLACE INTO reading_position(location, pageIndex, pageCount)
-VALUES (?, ?, ?);
+INSERT OR REPLACE INTO reading_position(location, pageIndex, pageCount, readAt)
+VALUES (?, ?, ?, (SELECT COALESCE(MAX(readAt), 0) + 1 FROM reading_position));
 
 deleteByLocation:
 DELETE FROM reading_position WHERE location = ?;

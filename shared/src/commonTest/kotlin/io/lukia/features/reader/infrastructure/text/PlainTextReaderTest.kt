@@ -1,8 +1,8 @@
 package io.lukia.features.reader.infrastructure.text
 
-import io.lukia.features.reader.domain.TextBlock
-import io.lukia.features.reader.domain.TextSection
-import io.lukia.features.reader.domain.plainText
+import io.lukia.features.reader.domain.text.TextBlock
+import io.lukia.features.reader.domain.text.TextSection
+import io.lukia.features.reader.domain.text.plainText
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -22,16 +22,16 @@ class PlainTextReaderTest {
             in possession of a good fortune, must be in want of a wife.
 
             However little known the feelings of such a man may be.
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         assertEquals(
             listOf(
                 "It is a truth universally acknowledged, that a single man " +
                     "in possession of a good fortune, must be in want of a wife.",
-                "However little known the feelings of such a man may be."
+                "However little known the feelings of such a man may be.",
             ),
-            content.paragraphs()
+            content.paragraphs(),
         )
     }
 
@@ -43,7 +43,7 @@ class PlainTextReaderTest {
             A list follows:
             - first
             - second
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         assertEquals("A list follows:\n- first\n- second", content.paragraphs().single())
@@ -74,6 +74,47 @@ class PlainTextReaderTest {
 
         assertTrue(content.sections.size > 1, "expected more than one section")
         assertEquals(1200, content.sections.sumOf { it.blocks.size })
+    }
+
+    /**
+     * A word the writer's editor broke across the wrap is one word.
+     *
+     * The same rule the PDF reader follows, which had it written down and this
+     * one did not - so the format most likely to be hard-wrapped was the one
+     * that handed the reader, and a translator, "exam- ple".
+     */
+    @Test
+    fun aWordBrokenAcrossTheWrapIsJoinedBackUp() {
+        val content = read("There is nothing extra-\nordinary about this sentence.")
+
+        assertEquals(
+            listOf("There is nothing extra-ordinary about this sentence."),
+            content.paragraphs(),
+        )
+    }
+
+    /**
+     * Except a soft hyphen, which is only ever a note about where a word may be
+     * broken. Once the break has gone there is nothing left for it to say, and
+     * leaving it in puts an invisible character in the middle of a word - which
+     * is a word a search will not find and a translator will not know.
+     */
+    @Test
+    fun aSoftHyphenAtTheWrapGoesWithTheBreak() {
+        val content = read("There is nothing extra\u00AD\nordinary about this sentence.")
+
+        assertEquals(
+            listOf("There is nothing extraordinary about this sentence."),
+            content.paragraphs(),
+        )
+    }
+
+    /** Written on a Windows machine is not a different book. */
+    @Test
+    fun carriageReturnsAreNotPartOfTheText() {
+        val content = read("First paragraph.\r\n\r\nSecond paragraph.\r\n")
+
+        assertEquals(listOf("First paragraph.", "Second paragraph."), content.paragraphs())
     }
 
     private fun read(source: String) = readPlainText(source.encodeToByteArray())

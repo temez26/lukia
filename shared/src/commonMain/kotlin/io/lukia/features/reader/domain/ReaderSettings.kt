@@ -1,5 +1,6 @@
 package io.lukia.features.reader.domain
 
+import io.lukia.core.domain.reading.PdfLayout
 import kotlin.math.abs
 import kotlin.math.round
 import kotlin.math.roundToInt
@@ -8,20 +9,37 @@ import kotlin.math.roundToInt
 enum class ReaderTheme {
     Light,
     Sepia,
-    Dark
+    Dark,
 }
 
 /** Body face for reflowable text. Both resolve to the platform's own faces. */
 enum class ReaderTypeface {
     SansSerif,
-    Serif
+    Serif,
+}
+
+/**
+ * How the lines of a paragraph meet its edges.
+ *
+ * [Justified] stretches the spaces in every line but the last so both edges are
+ * straight, as a printed book is set. [Ragged] leaves the spaces even and the
+ * far edge uneven, which is easier on a narrow column - justifying forty
+ * characters opens rivers of white space, and there is no hyphenation here to
+ * close them.
+ *
+ * Both follow the direction the text is written in rather than picking a side,
+ * so a book set right-to-left is ragged on its left.
+ */
+enum class TextAlignment {
+    Ragged,
+    Justified,
 }
 
 /** Leading presets, as a multiple of the text size. */
 enum class LineSpacing(val multiplier: Float) {
     Tight(1.2f),
     Normal(1.45f),
-    Relaxed(1.75f)
+    Relaxed(1.75f),
 }
 
 /**
@@ -36,11 +54,38 @@ enum class ReadingWidth(val fraction: Float) {
     Medium(0.9f),
     Wide(1f),
     Larger(1.25f),
-    Largest(1.5f);
+    Largest(1.5f),
+    ;
 
     /** True once the page no longer fits the space it is drawn in. */
     val overflowsColumn: Boolean
         get() = fraction > 1f
+}
+
+private const val HALF_ITS_SIZE = 0.5f
+private const val ITS_OWN_SIZE = 1f
+private const val HALF_AS_LARGE_AGAIN = 1.5f
+
+/**
+ * How large an illustration may be drawn, against its own size.
+ *
+ * A reflowable book states no size for its pictures, so each is drawn at the
+ * size it is and shrunk where there is no room - the browser's rule, and what
+ * the books were laid out against. Right for most, wrong for two kinds: diagrams
+ * saved small, and plates meant to fill the page.
+ *
+ * [Fill] is the second - every illustration drawn to the measure whatever its
+ * own size. Not a scale at all, hence a preset rather than a number to type.
+ */
+enum class FigureSize(val scale: Float) {
+    Small(HALF_ITS_SIZE),
+    Normal(ITS_OWN_SIZE),
+    Large(HALF_AS_LARGE_AGAIN),
+    Fill(Float.POSITIVE_INFINITY),
+    ;
+
+    /** Whether an illustration is drawn to the measure however small it is. */
+    val fillsMeasure: Boolean get() = scale.isInfinite()
 }
 
 /**
@@ -57,17 +102,46 @@ data class ReaderSettings(
     val textScale: Float = DEFAULT_TEXT_SCALE,
     val lineSpacing: LineSpacing = LineSpacing.Normal,
     /**
-     * How wide the page is drawn, against the column the window allows. Above
-     * 1 the page is deliberately wider than the space available, which is how a
-     * reader gets closer to small print - the page is panned sideways rather
-     * than shrunk to fit. A PDF's type is a fixed size, so this is the only way
-     * to make it bigger.
+     * How wide the page is drawn against the column the window allows. Above 1
+     * it is deliberately wider than the space available and panned sideways
+     * rather than shrunk - a PDF's type is a fixed size, so this is the only way
+     * to get closer to small print.
      *
      * Continuous rather than one of [ReadingWidth]'s presets, because pinching
-     * has to be able to settle anywhere.
+     * has to settle anywhere.
      */
     val pageScale: Float = DEFAULT_PAGE_SCALE,
-    val typeface: ReaderTypeface = ReaderTypeface.SansSerif
+    val typeface: ReaderTypeface = ReaderTypeface.SansSerif,
+    /**
+     * How paragraphs meet the edge of the column. Reflowable books only: a PDF's
+     * lines were broken and spaced when the file was made.
+     */
+    val alignment: TextAlignment = TextAlignment.Ragged,
+    /**
+     * How large illustrations are drawn. Reflowable books only: a PDF's pictures
+     * were placed on its pages when the file was made, and the reader has no
+     * more say over one of them than over where a line breaks.
+     */
+    val figureSize: FigureSize = FigureSize.Normal,
+    /**
+     * Whether the device is asked not to dim and lock while a book is open.
+     *
+     * On by default, and mobile only: a page being read is a page nobody is
+     * touching, and a phone that locks mid-paragraph is the oldest complaint
+     * about reading on one. It costs battery, which is why it is a switch and
+     * why it stops when the book closes rather than when the app does.
+     */
+    val keepScreenAwake: Boolean = true,
+    /**
+     * What a PDF nobody has chosen for opens as.
+     *
+     * A starting point rather than a rule: how a book is read stays that book's
+     * own choice, and one that has been opened either way keeps what it was
+     * given whatever this says afterwards. It is here for the reader whose shelf
+     * is all PDFs and who re-sets every one of them - choosing that once is
+     * better than choosing it once a book.
+     */
+    val defaultPdfLayout: PdfLayout = PdfLayout.Original,
 ) {
 
     /** The preset this scale sits on, if it sits on one. */

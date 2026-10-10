@@ -1,18 +1,18 @@
 package io.lukia.core.infrastructure
 
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.DocumentType
-import io.lukia.core.domain.PickedDocument
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.domain.document.PickedDocument
 import kotlinx.coroutines.test.runTest
 import java.io.File
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
-import kotlin.test.assertFailsWith
 
 class JvmDocumentWorkspaceTest {
 
@@ -166,11 +166,11 @@ class JvmDocumentWorkspaceTest {
         document = PickedDocument(
             fileName = file.name,
             extension = file.extension,
-            location = file.absolutePath
+            location = file.absolutePath,
         ),
         type = DocumentType.PDF,
         exists = file.exists(),
-        sizeBytes = file.length()
+        sizeBytes = file.length(),
     )
 
     private companion object {

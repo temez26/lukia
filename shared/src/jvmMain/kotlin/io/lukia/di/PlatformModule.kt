@@ -1,23 +1,38 @@
 package io.lukia.di
 
-import io.lukia.core.domain.DocumentWorkspace
-import io.lukia.core.domain.SecretStore
-import io.lukia.core.domain.SettingsStore
 import app.cash.sqldelight.db.SqlDriver
+import io.lukia.core.domain.diagnostics.CrashStore
+import io.lukia.core.domain.document.IncomingDocumentStore
+import io.lukia.core.domain.storage.DocumentWorkspace
+import io.lukia.core.domain.storage.SecretStore
+import io.lukia.core.domain.storage.SettingsStore
+import io.lukia.core.infrastructure.DesktopWindowBounds
 import io.lukia.core.infrastructure.JvmDocumentWorkspace
+import io.lukia.core.infrastructure.JvmIncomingDocumentStore
 import io.lukia.core.infrastructure.JvmSecretStore
 import io.lukia.core.infrastructure.JvmSettingsStore
+import io.lukia.core.infrastructure.diagnostics.JvmCrashStore
 import io.lukia.core.infrastructure.lukiaSqlDriver
-import io.lukia.features.import.domain.DocumentAnalyzer
-import io.lukia.features.import.domain.FolderScanner
-import io.lukia.features.import.infrastructure.DesktopDocumentAnalyzer
-import io.lukia.features.import.infrastructure.JvmFolderScanner
+import io.lukia.features.library.domain.DocumentAnalyzer
+import io.lukia.features.library.domain.FolderScanner
+import io.lukia.features.library.infrastructure.importing.DesktopDocumentAnalyzer
+import io.lukia.features.library.infrastructure.importing.JvmFolderScanner
 import org.koin.dsl.module
 
 val platformModule = module {
 
+    // Desktop-only: no other platform has a window whose size is the app's to
+    // remember.
+    single {
+        DesktopWindowBounds(get())
+    }
+
     single<DocumentAnalyzer> {
-        DesktopDocumentAnalyzer()
+        DesktopDocumentAnalyzer(get())
+    }
+
+    single<IncomingDocumentStore> {
+        JvmIncomingDocumentStore()
     }
 
     single<DocumentWorkspace> {
@@ -32,8 +47,12 @@ val platformModule = module {
         JvmSecretStore()
     }
 
+    single<CrashStore> {
+        JvmCrashStore()
+    }
+
     single<SqlDriver> {
-        lukiaSqlDriver()
+        lukiaSqlDriver(diagnostics = get())
     }
 
     single<FolderScanner> {

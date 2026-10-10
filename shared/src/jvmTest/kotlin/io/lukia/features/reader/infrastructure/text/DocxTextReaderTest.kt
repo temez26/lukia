@@ -1,9 +1,9 @@
 package io.lukia.features.reader.infrastructure.text
 
-import io.lukia.features.reader.domain.Emphasis
-import io.lukia.features.reader.domain.TextBlock
-import io.lukia.features.reader.domain.TextSection
-import io.lukia.features.reader.domain.plainText
+import io.lukia.features.reader.domain.text.Emphasis
+import io.lukia.features.reader.domain.text.TextBlock
+import io.lukia.features.reader.domain.text.TextSection
+import io.lukia.features.reader.domain.text.plainText
 import java.io.ByteArrayOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
@@ -21,14 +21,14 @@ class DocxTextReaderTest {
             paragraph("Chapter One", style = "Heading1") +
                 paragraph("Opening words.") +
                 paragraph("Chapter Two", style = "Heading1") +
-                paragraph("More words.")
+                paragraph("More words."),
         )
 
         assertNotNull(content)
         assertEquals(listOf("Chapter One", "Chapter Two"), content.sections.map { it.title })
         assertEquals(
             listOf("Chapter One" to 0, "Chapter Two" to 1),
-            content.outline.orEmpty().map { it.title to it.pageIndex }
+            content.outline.orEmpty().map { it.title to it.pageIndex },
         )
     }
 
@@ -37,7 +37,7 @@ class DocxTextReaderTest {
     fun headingStylesAreMatchedHoweverTheyAreWritten() {
         val content = read(
             paragraph("One", style = "Heading 1") +
-                paragraph("Two", style = "heading1")
+                paragraph("Two", style = "heading1"),
         )
 
         assertNotNull(content)
@@ -60,7 +60,7 @@ class DocxTextReaderTest {
         assertEquals("the Pequod sailed at dawn", runs.plainText())
         assertEquals(
             listOf(emptySet(), setOf(Emphasis.Italic), emptySet(), setOf(Emphasis.Bold)),
-            runs.map { it.emphasis }
+            runs.map { it.emphasis },
         )
     }
 
@@ -143,7 +143,7 @@ class DocxTextReaderTest {
 
         assertEquals(
             "See page 7",
-            (read(body)!!.blocks().single() as TextBlock.Paragraph).text.plainText()
+            (read(body)!!.blocks().single() as TextBlock.Paragraph).text.plainText(),
         )
     }
 
@@ -158,12 +158,74 @@ class DocxTextReaderTest {
         val content = read(
             body = body,
             relationships = """<Relationship Id="rId7" Target="media/image1.png"/>""",
-            extra = mapOf("word/media/image1.png" to plate)
+            extra = mapOf("word/media/image1.png" to plate),
         )
 
         val figure = content!!.blocks().filterIsInstance<TextBlock.Figure>().single()
 
         assertEquals(plate.toList(), figure.bytes.toList())
+    }
+
+    /**
+     * Word puts what the author wrote about a picture on the drawing's own
+     * properties rather than on the picture, and it arrives first. Without it a
+     * picture here was announced to a screen reader as "Illustration" even
+     * where its author had said what it was - while the same picture in an EPUB
+     * kept its words.
+     */
+    @Test
+    fun aPictureKeepsWhatItsAuthorSaidItWas() {
+        val body = """
+            <w:p><w:r><w:drawing>
+                <wp:docPr id="1" name="Picture 1" descr="A map of the estuary"/>
+                <a:blip r:embed="rId7"/>
+            </w:drawing></w:r></w:p>
+        """.trimIndent()
+
+        val content = read(
+            body = body,
+            relationships = """<Relationship Id="rId7" Target="media/image1.png"/>""",
+            extra = mapOf("word/media/image1.png" to byteArrayOf(9, 9, 9)),
+        )
+
+        val figure = content!!.blocks().filterIsInstance<TextBlock.Figure>().single()
+
+        assertEquals("A map of the estuary", figure.description)
+    }
+
+    /** And a picture whose author said nothing about it does not borrow the last one's. */
+    @Test
+    fun aDescriptionBelongsToItsOwnDrawing() {
+        val body = """
+            <w:p><w:r><w:drawing>
+                <wp:docPr id="1" descr="A map of the estuary"/>
+                <a:blip r:embed="rId7"/>
+            </w:drawing></w:r></w:p>
+            <w:p><w:r><w:drawing><a:blip r:embed="rId7"/></w:drawing></w:r></w:p>
+        """.trimIndent()
+
+        val content = read(
+            body = body,
+            relationships = """<Relationship Id="rId7" Target="media/image1.png"/>""",
+            extra = mapOf("word/media/image1.png" to byteArrayOf(9, 9, 9)),
+        )
+
+        val figures = content!!.blocks().filterIsInstance<TextBlock.Figure>()
+
+        assertEquals(listOf("A map of the estuary", null), figures.map { it.description })
+    }
+
+    /**
+     * A document with nothing written in it is an empty book, not a file of a
+     * kind this app cannot read - which is what null here used to say, and what
+     * the reader was then told.
+     */
+    @Test
+    fun anEmptyDocumentIsAnEmptyBookRatherThanAnUnreadableFile() {
+        val content = read(body = "")
+
+        assertNotNull(content)
+        assertEquals(0, content.partCount)
     }
 
     @Test
@@ -181,16 +243,16 @@ class DocxTextReaderTest {
     private fun read(
         body: String,
         relationships: String = "",
-        extra: Map<String, Any> = emptyMap()
+        extra: Map<String, Any> = emptyMap(),
     ) = readDocx(
         zip(
             mapOf(
                 "word/document.xml" to
                     """<?xml version="1.0"?><w:document><w:body>$body</w:body></w:document>""",
                 "word/_rels/document.xml.rels" to
-                    """<?xml version="1.0"?><Relationships>$relationships</Relationships>"""
-            ) + extra
-        )
+                    """<?xml version="1.0"?><Relationships>$relationships</Relationships>""",
+            ) + extra,
+        ),
     )
 
     private fun io.lukia.features.reader.domain.ReflowableContent.blocks(): List<TextBlock> =
@@ -206,7 +268,7 @@ class DocxTextReaderTest {
                     when (content) {
                         is ByteArray -> content
                         else -> content.toString().encodeToByteArray()
-                    }
+                    },
                 )
                 stream.closeEntry()
             }

@@ -1,7 +1,9 @@
 package io.lukia.features.reader.infrastructure.pdf
 
-import io.lukia.features.reader.domain.OutlineEntry
-import io.lukia.features.reader.infrastructure.openPdfPages
+import io.lukia.core.infrastructure.ByteArraySource
+import io.lukia.core.infrastructure.pdf.MinimalPdf
+import io.lukia.features.reader.domain.outline.OutlineEntry
+import io.lukia.features.reader.infrastructure.openTestPdf
 import org.apache.pdfbox.pdfwriter.compress.CompressParameters
 import org.apache.pdfbox.pdmodel.PDDestinationNameTreeNode
 import org.apache.pdfbox.pdmodel.PDDocument
@@ -32,7 +34,7 @@ class PdfOutlineReaderTest {
 
     private val directory = File(
         System.getProperty("java.io.tmpdir"),
-        "lukia-outline-test-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}"
+        "lukia-outline-test-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}",
     ).apply { mkdirs() }
 
     @AfterTest
@@ -48,7 +50,7 @@ class PdfOutlineReaderTest {
 
         assertEquals(
             listOf("Introduction" to 0, "The Middle" to 2, "The End" to 5),
-            file.outline()?.map { it.title to it.pageIndex }
+            file.outline()?.map { it.title to it.pageIndex },
         )
     }
 
@@ -66,7 +68,7 @@ class PdfOutlineReaderTest {
 
         assertEquals(
             listOf("Introduction" to 0, "The Middle" to 2, "The End" to 5),
-            file.outline()?.map { it.title to it.pageIndex }
+            file.outline()?.map { it.title to it.pageIndex },
         )
     }
 
@@ -85,7 +87,7 @@ class PdfOutlineReaderTest {
 
         assertEquals(
             listOf("Chapter One" to 0, "A Section" to 1, "Another Section" to 1, "Chapter Two" to 0),
-            file.outline()?.map { it.title to it.level }
+            file.outline()?.map { it.title to it.level },
         )
     }
 
@@ -103,7 +105,7 @@ class PdfOutlineReaderTest {
                 PDOutlineItem().apply {
                     title = "By Name"
                     action = PDActionGoTo().apply { this.destination = PDNamedDestination("section.1") }
-                }
+                },
             )
         }
 
@@ -118,7 +120,7 @@ class PdfOutlineReaderTest {
 
         assertEquals(
             listOf("Kapitel Ä — Einführung", "Глава 2"),
-            file.outline()?.map { it.title }
+            file.outline()?.map { it.title },
         )
     }
 
@@ -140,7 +142,7 @@ class PdfOutlineReaderTest {
         assertTrue(file.length() > 1 shl 20, "expected a file larger than one scan window")
         assertEquals(
             listOf("Beginning" to 0, "Far In" to 59),
-            file.outline()?.map { it.title to it.pageIndex }
+            file.outline()?.map { it.title to it.pageIndex },
         )
     }
 
@@ -184,7 +186,7 @@ class PdfOutlineReaderTest {
 
         assertEquals(
             listOf("On /Encrypt and other trailers"),
-            file.outline()?.map { it.title }
+            file.outline()?.map { it.title },
         )
     }
 
@@ -215,11 +217,11 @@ class PdfOutlineReaderTest {
      */
     @Test
     fun readsTheHandWrittenFixtureTheDeviceTestUses() {
-        val outline = PdfOutlineReader(ByteArrayPdfSource(MinimalPdf.withOutline())).read()
+        val outline = PdfOutlineReader(ByteArraySource(MinimalPdf.withOutline())).read()
 
         assertEquals(
             listOf(MinimalPdf.FIRST_CHAPTER_TITLE to 0, MinimalPdf.SECOND_CHAPTER_TITLE to 2),
-            outline?.map { it.title to it.pageIndex }
+            outline?.map { it.title to it.pageIndex },
         )
     }
 
@@ -228,11 +230,11 @@ class PdfOutlineReaderTest {
     fun theHandWrittenFixtureIsAValidPdf() {
         val file = File(directory, "fixture.pdf").apply { writeBytes(MinimalPdf.withOutline()) }
 
-        openPdfPages(file.absolutePath).use { pages ->
+        openTestPdf(file.absolutePath).use { pages ->
             assertEquals(MinimalPdf.PAGE_COUNT, pages.pageCount)
             assertEquals(
                 listOf(MinimalPdf.FIRST_CHAPTER_TITLE, MinimalPdf.SECOND_CHAPTER_TITLE),
-                pages.outline?.map { it.title }
+                pages.outline?.map { it.title },
             )
         }
     }
@@ -283,7 +285,7 @@ class PdfOutlineReaderTest {
                 outline.addLast(document.outlineItem("Index", 7))
             }
 
-            val fromPdfBox = openPdfPages(file.absolutePath).use { it.outline }
+            val fromPdfBox = openTestPdf(file.absolutePath).use { it.outline }
             val fromParser = file.outline()
 
             assertEquals(fromPdfBox, fromParser, "compressed=$compressed")
@@ -292,7 +294,7 @@ class PdfOutlineReaderTest {
     }
 
     private fun File.outline(): List<OutlineEntry>? =
-        PdfOutlineReader(ByteArrayPdfSource(readBytes())).read()
+        PdfOutlineReader(ByteArraySource(readBytes())).read()
 
     private fun PDDocument.flatOutline(vararg entries: Pair<String, Int>) {
         val outline = PDDocumentOutline()
@@ -308,7 +310,7 @@ class PdfOutlineReaderTest {
 
     private fun PDDocument.nameDestination(
         name: String,
-        destination: PDPageFitWidthDestination
+        destination: PDPageFitWidthDestination,
     ) {
         val tree = PDDestinationNameTreeNode().apply { names = mapOf(name to destination) }
 
@@ -323,7 +325,7 @@ class PdfOutlineReaderTest {
         pageCount: Int,
         compress: Boolean = false,
         bulky: Boolean = false,
-        configure: (PDDocument) -> Unit = {}
+        configure: (PDDocument) -> Unit = {},
     ): File {
         val file = File(directory, "book-${kotlin.random.Random.nextInt()}.pdf")
 

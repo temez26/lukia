@@ -1,0 +1,13 @@
+-- Adds the record of time spent reading. See `ReadingSession.sq`.
+--
+-- Nothing is backfilled and nothing can be: how long somebody read before the
+-- app started counting cannot be recovered from where they left off, and a
+-- figure invented from page counts is a guess presented as a measurement.
+CREATE TABLE reading_session (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    location TEXT NOT NULL,
+    startedAt INTEGER NOT NULL,
+    durationMs INTEGER NOT NULL
+);
+
+CREATE INDEX reading_session_startedAt ON reading_session(startedAt);

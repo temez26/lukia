@@ -1,33 +1,73 @@
 [versions]
 agp = "9.1.1"
 android-compileSdk = "36"
-android-minSdk = "24"
+# API 23 is the floor the code itself sets: `AndroidSecretStore` generates its
+# key with `KeyGenParameterSpec`, which Android gained in Marshmallow. Anything
+# lower would need a second, weaker way to hold the reader's translation key.
+android-minSdk = "23"
 android-targetSdk = "36"
 androidx-activity = "1.13.0"
+androidx-splashscreen = "1.0.1"
+androidx-core = "1.13.1"
 androidx-documentfile = "1.1.0"
 androidx-lifecycle = "2.10.0"
 androidx-testRunner = "1.7.0"
+androidx-benchmark = "1.5.0-rc02"
+androidx-uiautomator = "2.3.0"
+androidx-testExtJunit = "1.3.0"
+# Runs the Android tests that only need a Context on the host, off a device.
+robolectric = "4.16.1"
+androidx-profileinstaller = "1.4.1"
 desugarJdkLibs = "2.1.5"
 composeMultiplatform = "1.11.1"
+composeRules = "0.4.22"
+detekt = "1.23.8"
+ktlint = "14.2.0"
+kover = "0.9.9"
 kotlin = "2.4.10"
 kotlinx-coroutines = "1.11.0"
+kotlinx-datetime = "0.7.1"
 koin = "4.2.2"
 # 3.2.0 is held back deliberately: it ships a field whose name contains
 # spaces, which Android's dexer rejects for any minimum below API 30.
 ktor = "3.1.3"
 kotlinx-serialization = "1.9.0"
+# An alpha, and the only pre-release dependency the app ships. Nothing in the
+# app needs what the alpha adds - the one experimental Material 3 API used is
+# the tooltip, which every recent release has - but going back is not a version
+# bump either: `TooltipDefaults.rememberTooltipPositionProvider` is the name
+# this line of releases gave it, and an earlier one has it under the old name.
+# So the choice is deliberate rather than free, and the risk is that an alpha
+# may change API between builds. Revisit whenever the stable material3 aligned
+# with `composeMultiplatform` above catches up.
 material3 = "1.11.0-alpha07"
 navigation = "2.9.2"
-pdfbox = "3.0.3"
+# Both of these parse files the app did not write, so both are kept as current
+# as they can be. 3.0.7 is the newest release; the CVEs open against the 3.0.x
+# range are in PDFBox's `examples` artifact, which is not a dependency here.
+pdfbox = "3.0.7"
+# The Android port, and the last release its author made - it tracks PDFBox
+# 2.0.27 and nothing newer is coming. No published CVE affects that version, but
+# it does mean Android sits behind the hardening upstream 2.0.x has had since,
+# which is the reason the reader for PDF text is written against a byte source
+# here rather than handing whole files to a library that will not be patched.
 pdfbox-android = "2.0.27.0"
 sqldelight = "2.3.2"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidx-testRunner" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+androidx-test-ext-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-testExtJunit" }
+androidx-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version.ref = "androidx-uiautomator" }
+androidx-benchmark-macro-junit4 = { module = "androidx.benchmark:benchmark-macro-junit4", version.ref = "androidx-benchmark" }
+androidx-profileinstaller = { module = "androidx.profileinstaller:profileinstaller", version.ref = "androidx-profileinstaller" }
 desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugarJdkLibs" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
+androidx-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "androidx-splashscreen" }
+androidx-core = { module = "androidx.core:core", version.ref = "androidx-core" }
 androidx-documentfile = { module = "androidx.documentfile:documentfile", version.ref = "androidx-documentfile" }
 compose-uiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "composeMultiplatform" }
 androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
@@ -57,9 +97,13 @@ sqldelight-runtime = { module = "app.cash.sqldelight:runtime", version.ref = "sq
 sqldelight-androidDriver = { module = "app.cash.sqldelight:android-driver", version.ref = "sqldelight" }
 sqldelight-nativeDriver = { module = "app.cash.sqldelight:native-driver", version.ref = "sqldelight" }
 sqldelight-jvmDriver = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqldelight" }
+# Compose-specific static analysis rules, loaded into detekt as a plugin.
+detekt-composeRules = { module = "io.nlopez.compose.rules:detekt", version.ref = "composeRules" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
+androidTest = { id = "com.android.test", version.ref = "agp" }
+baselineProfile = { id = "androidx.baselineprofile", version.ref = "androidx-benchmark" }
 androidMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
@@ -67,3 +111,6 @@ kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }

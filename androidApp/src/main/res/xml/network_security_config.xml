@@ -5,14 +5,27 @@
     somebody to obtain one before they can translate a sentence is not a real
     answer.
 
-    This is broader than the app actually allows. Android's configuration cannot
-    express "private address ranges only" - it matches on domains, and a home
-    network's addresses are not knowable in advance - so the real restriction
-    lives in code, in `isAllowedTranslationEndpoint`: plain HTTP is refused to
-    anything that is not loopback or a private range, before a request is made.
+    The base rule is broader than the app actually allows. Android's
+    configuration matches on domains, and it cannot say "private address ranges
+    only" - a home network's addresses are not knowable in advance - so the real
+    restriction lives in code, in `isAllowedTranslationEndpoint`: plain HTTP is
+    refused to anything that is not loopback or a private range, before a
+    request is made.
 
-    HTTPS is unaffected and is what every hosted service uses.
+    What the configuration can do, and does below, is take the hosted services
+    out of the base rule's reach. Those are the addresses that carry the
+    reader's API key and whole passages of their book, they are the ones an
+    attacker on the network would want to see downgraded, and none of them has
+    any business being reached over plain HTTP. Naming them here means the
+    platform refuses it whatever the app asks for.
 -->
 <network-security-config>
     <base-config cleartextTrafficPermitted="true" />
+
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">api.anthropic.com</domain>
+        <domain includeSubdomains="true">api.openai.com</domain>
+        <domain includeSubdomains="true">googleapis.com</domain>
+        <domain includeSubdomains="true">wiktionary.org</domain>
+    </domain-config>
 </network-security-config>

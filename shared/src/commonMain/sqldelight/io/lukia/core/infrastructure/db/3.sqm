@@ -1,0 +1,11 @@
+-- Records which book was read most recently, so the library can be ordered by it.
+--
+-- A counter rather than a clock, exactly as `translation_cache.usedAt` is: it is
+-- one past the highest in the table, stamped whenever a position is written.
+-- That answers "which book did I read last" without trusting a device clock that
+-- can be changed or can go backwards.
+--
+-- Every position stored before this version takes 0, putting those books behind
+-- everything read since, in no order among themselves. Nothing more honest is
+-- available, and the order corrects itself as books are opened again.
+ALTER TABLE reading_position ADD COLUMN readAt INTEGER NOT NULL DEFAULT 0;

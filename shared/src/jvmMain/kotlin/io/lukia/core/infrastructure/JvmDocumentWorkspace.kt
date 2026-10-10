@@ -1,8 +1,8 @@
 package io.lukia.core.infrastructure
 
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.DocumentWorkspace
-import io.lukia.core.domain.WorkingCopy
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.storage.DocumentWorkspace
+import io.lukia.core.domain.storage.WorkingCopy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -11,7 +11,7 @@ import java.nio.file.StandardCopyOption
 
 class JvmDocumentWorkspace(
     /** Injectable so tests can work in a temporary directory. */
-    private val directory: File = defaultWorkspaceDirectory()
+    private val directory: File = defaultWorkspaceDirectory(),
 ) : DocumentWorkspace {
 
     override suspend fun workingCopy(document: DocumentInfo): WorkingCopy =
@@ -19,7 +19,7 @@ class JvmDocumentWorkspace(
             val location = document.document.location
             val target = File(
                 directory,
-                WorkingCopyNaming.fileName(location, document.document.extension)
+                WorkingCopyNaming.fileName(location, document.document.extension),
             )
 
             // A zero-length copy is treated as absent rather than reused: it is

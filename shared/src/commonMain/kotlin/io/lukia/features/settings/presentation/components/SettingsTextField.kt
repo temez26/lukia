@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -31,29 +32,32 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.lukia.shared.presentation.components.ClearGlyph
-import io.lukia.shared.presentation.components.IconButtonVariant
-import io.lukia.shared.presentation.components.LukiaIconButton
-import io.lukia.shared.presentation.components.focusRing
+import io.lukia.resources.Res
+import io.lukia.resources.filter_clear
+import io.lukia.resources.settings_hide
+import io.lukia.resources.settings_show
+import io.lukia.shared.presentation.components.controls.IconButtonVariant
+import io.lukia.shared.presentation.components.controls.LukiaIconButton
+import io.lukia.shared.presentation.components.controls.focusRing
+import io.lukia.shared.presentation.components.icons.ClearGlyph
 import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 private val FieldPadding: Dp = 12.dp
 
 /**
  * A single line of settings the reader types or pastes into.
  *
- * [secret] masks what is typed and offers to reveal it. That is for the API
- * key: a settings screen is opened in places where somebody is looking over
- * your shoulder, and it is the one value here worth reading off a screen - but
- * a key that can never be checked is one nobody can tell has a character
- * missing. An address or a model name is neither secret nor memorable, and is
- * shown plainly.
+ * [secret] masks what is typed and offers to reveal it, for the API key: a
+ * settings screen gets opened where somebody can look over your shoulder, and it
+ * is the one value here worth reading off a screen - but a key that can never be
+ * checked is one nobody can tell has a character missing. An address or a model
+ * name is neither secret nor memorable, and is shown plainly.
  *
- * The value is reported as it is typed rather than on a save button. Storing
- * per keystroke is cheap - these are short strings in the same store as every
- * other preference - and it means a key pasted in works on the very next tap in
- * the reader.
+ * Reported as it is typed rather than on a save button. Storing per keystroke is
+ * cheap - short strings in the same store as every other preference - and a key
+ * pasted in works on the very next tap in the reader.
  */
 @Composable
 internal fun SettingsTextField(
@@ -61,7 +65,7 @@ internal fun SettingsTextField(
     onValueChange: (String) -> Unit,
     placeholder: String,
     modifier: Modifier = Modifier,
-    secret: Boolean = false
+    secret: Boolean = false,
 ) {
     var revealed by remember { mutableStateOf(false) }
     val masked = secret && !revealed
@@ -75,16 +79,23 @@ internal fun SettingsTextField(
             .clip(MaterialTheme.shapes.small)
             .background(colors.surfaceVariant.copy(alpha = LukiaAlpha.Fill))
             .focusRing(interactionSource, MaterialTheme.shapes.small)
-            .padding(horizontal = FieldPadding, vertical = 4.dp)
+            .padding(horizontal = FieldPadding, vertical = Space.xs),
     ) {
-        Box(modifier = Modifier.weight(1f)) {
+        // Centred, because the two children of this box are not the same height:
+        // the field carries vertical padding and the placeholder does not, so
+        // left to align at the top the placeholder sat above the line the typed
+        // text appears on - "Public endpoint" riding high in its own field.
+        Box(
+            contentAlignment = Alignment.CenterStart,
+            modifier = Modifier.weight(1f),
+        ) {
             if (value.isEmpty()) {
                 Text(
                     text = placeholder,
                     style = MaterialTheme.typography.bodyLarge,
                     color = colors.onSurfaceVariant,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
 
@@ -106,9 +117,9 @@ internal fun SettingsTextField(
                 // is silently rejected.
                 keyboardOptions = KeyboardOptions(
                     keyboardType = if (secret) KeyboardType.Password else KeyboardType.Uri,
-                    imeAction = ImeAction.Done
+                    imeAction = ImeAction.Done,
                 ),
-                modifier = Modifier.fillMaxWidth().padding(vertical = Space.sm)
+                modifier = Modifier.fillMaxWidth().padding(vertical = Space.sm),
             )
         }
 
@@ -118,14 +129,14 @@ internal fun SettingsTextField(
             if (secret) RevealToggle(revealed = revealed, onToggle = { revealed = !revealed })
 
             LukiaIconButton(
-                label = "Clear",
+                label = stringResource(Res.string.filter_clear),
                 onClick = { onValueChange("") },
-                variant = IconButtonVariant.Plain
+                variant = IconButtonVariant.Plain,
             ) { tint, glyph ->
                 ClearGlyph(
                     tint = tint,
                     knockout = MaterialTheme.colorScheme.surface,
-                    modifier = glyph
+                    modifier = glyph,
                 )
             }
         }
@@ -141,7 +152,9 @@ private fun RevealToggle(revealed: Boolean, onToggle: () -> Unit) {
     val interactionSource = remember { MutableInteractionSource() }
 
     Text(
-        text = if (revealed) "Hide" else "Show",
+        text = stringResource(
+            if (revealed) Res.string.settings_hide else Res.string.settings_show,
+        ),
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.primary,
         modifier = Modifier
@@ -149,10 +162,11 @@ private fun RevealToggle(revealed: Boolean, onToggle: () -> Unit) {
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
-                onClick = onToggle
+                role = Role.Button,
+                onClick = onToggle,
             )
             .focusRing(interactionSource, MaterialTheme.shapes.extraSmall)
             .pointerHoverIcon(PointerIcon.Hand)
-            .padding(horizontal = Space.sm, vertical = Space.xs)
+            .padding(horizontal = Space.sm, vertical = Space.xs),
     )
 }

@@ -1,0 +1,14 @@
+-- Adds somewhere to keep the wiki pages behind the dictionary, so that one word
+-- is fetched once however often it is asked about. See `WiktionaryPageCache.sq`.
+--
+-- Empty on arrival. It fills as the reader looks words up and is trimmed back to
+-- its budget by use, so a book read once does not keep its vocabulary for ever.
+CREATE TABLE wiktionary_page (
+    wiki TEXT NOT NULL,
+    title TEXT NOT NULL,
+    extract TEXT,
+    usedAt INTEGER NOT NULL,
+    PRIMARY KEY (wiki, title)
+);
+
+CREATE INDEX wiktionary_page_usedAt ON wiktionary_page(usedAt);

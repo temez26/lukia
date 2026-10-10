@@ -14,7 +14,7 @@ Follow these core software engineering principles in all code changes and archit
     - **D**ependency Inversion Principle: Depend on abstractions, not on concretions.
 
 ## Coding Standards
-- **Commenting**: Avoid "useless" comments that simply restate what the code is doing (e.g., `// increment x`). Only include comments that explain the *why* behind complex logic, provide necessary context for non-obvious decisions, or document public APIs.
+- **Comments**: Avoid comments that merely restate the code. Only comment when explaining **why**, non-obvious logic, important context, or public APIs. Keep comments short and focused; never write mini-essays.
 - **Readability**: Write clean, expressive code. Use meaningful variable and function names to make the code self-documenting.
 - **Consistency**: Maintain a consistent style throughout the project, following established patterns and naming conventions.
 

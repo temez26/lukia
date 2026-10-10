@@ -6,22 +6,22 @@ import kotlin.Boolean;
 -- else too: importing the same file twice refreshes the entry rather than
 -- adding a second one.
 --
--- `sortKey` is what keeps the library in the order books were added to it. A
--- plain rowid would not: replacing a row is a delete and an insert, so a
--- refreshed book would jump to the end of a shelf it has been on for months.
+-- `sortKey` keeps the library in the order books were added. A plain rowid would
+-- not: replacing a row is a delete and an insert, so a refreshed book would jump
+-- to the end of a shelf it has been on for months.
 --
 -- `fileExists` is the last thing known about the file, from the analysis that
--- put it here. A file can go missing between runs, so this is history rather
--- than fact, and the next import or rescan is what corrects it.
--- The `meta*` columns are what the document says about itself, read out of the
--- file when it was imported. All nullable: most of them are absent from most
--- files, and a format like plain text carries none of them at all.
+-- put it here - history rather than fact, corrected by the next import or
+-- rescan.
 --
--- `metaAuthors` and `metaSubjects` hold a list newline-separated rather than in
+-- The `meta*` columns are what the document says about itself, read at import.
+-- All nullable: most are absent from most files, and plain text carries none.
+--
+-- `metaAuthors` and `metaSubjects` hold newline-separated lists rather than
 -- tables of their own. Nothing queries them - they are read back whole, for one
--- book, to be shown on one screen - and a join table for a value that is only
--- ever displayed would be schema nobody benefits from. A newline is safe as the
--- separator because neither an author's name nor a genre may contain one.
+-- book, for one screen - and a join table for a value only ever displayed is
+-- schema nobody benefits from. A newline is safe because neither an author's
+-- name nor a genre may contain one.
 CREATE TABLE document (
     location TEXT NOT NULL PRIMARY KEY,
     fileName TEXT NOT NULL,
@@ -42,16 +42,56 @@ CREATE TABLE document (
     metaIdentifier TEXT
 );
 
-selectAll:
-SELECT * FROM document ORDER BY sortKey;
+-- What `insertIfAbsent` reads to give a new book its place on the shelf.
+--
+-- `MAX(sortKey)` over an unindexed column scans the whole library, once per book
+-- imported - so a folder of five thousand cost five thousand scans of a table
+-- growing under it, the last book the most expensive. With this SQLite answers
+-- from the end of the index without reading a row, a documented special case
+-- rather than a hope.
+--
+-- It also happens to be `selectAll`'s order, which is not what it is for:
+-- reading every column of every book is a scan whatever the planner does, and a
+-- library's worth of rows sorts in no time.
+CREATE INDEX document_sortKey ON document(sortKey);
 
+-- The shelf, without the artwork on it.
+--
+-- Every column but `coverImage`, spelled out rather than `*`, because the one
+-- left out is the point: a cover is around a hundred kilobytes, so two thousand
+-- books is a couple of hundred megabytes sitting in memory for as long as the
+-- shelf is on screen - many times what the decoded artwork is held to.
+--
+-- What draws a cover asks by location instead, one at a time, as the card that
+-- needs it is drawn - see `selectCover`.
+selectAll:
+SELECT location, fileName, extension, type, fileExists, sizeBytes, isFavorite,
+       sortKey, metaTitle, metaAuthors, metaPublisher, metaPublished,
+       metaLanguage, metaDescription, metaSubjects, metaIdentifier
+FROM document ORDER BY sortKey;
+
+-- One book's artwork, for the card about to draw it. Bounded by what the reader
+-- can see rather than by how many books they own, which is what makes reading it
+-- per cover cheaper than reading it per library.
+selectCover:
+SELECT coverImage FROM document WHERE location = ?;
+
+-- One book, whole. Unlike the shelf above this keeps `SELECT *`: one row's
+-- artwork is a hundred kilobytes read once, and narrowing it would buy a second
+-- mapper rather than any memory.
 selectByLocation:
 SELECT * FROM document WHERE location = ?;
 
--- Adding and refreshing are two statements rather than one upsert on purpose.
--- `ON CONFLICT DO UPDATE` needs SQLite 3.24, and this app's minimum Android
--- ships 3.9 - a book stored on a phone from 2016 would fail at the point of
--- being stored, which is the last place to find out about a dialect.
+-- Just the keys, for deciding what an import may leave alone. `selectAll` would
+-- answer the same question, but it reads every other column of every book to
+-- compare a few hundred strings.
+selectLocations:
+SELECT location FROM document;
+
+-- Adding and refreshing are two statements rather than one upsert on purpose:
+-- `ON CONFLICT DO UPDATE` needs SQLite 3.24 and this app's minimum Android ships
+-- 3.9, so a book on a phone from 2016 would fail at the point of being stored -
+-- the last place to find out about a dialect.
 --
 -- Ignored when the book is already there, so the shelf position it was given
 -- when it was first imported is the one it keeps.
@@ -59,16 +99,15 @@ insertIfAbsent:
 INSERT OR IGNORE INTO document(location, fileName, extension, type, fileExists, sizeBytes, coverImage, sortKey, metaTitle, metaAuthors, metaPublisher, metaPublished, metaLanguage, metaDescription, metaSubjects, metaIdentifier)
 VALUES (?, ?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(sortKey), 0) + 1 FROM document), ?, ?, ?, ?, ?, ?, ?, ?);
 
--- Everything the analyser knows, and nothing only the reader knows. A rescan
--- that re-analysed every book would otherwise un-favourite the lot of them, and
--- re-importing a file whose cover could not be read this time would take away
--- the one already stored.
+-- Everything the analyser knows, and nothing only the reader knows: a rescan
+-- that re-analysed every book would otherwise un-favourite the lot, and
+-- re-importing a file whose cover would not read this time would take away the
+-- one already stored.
 --
--- The metadata is coalesced for the same reason as the cover, and as one block
--- rather than field by field: what a document says about itself is one reading
--- of one file, so a re-analysis that came back with nothing should leave the
--- whole of the previous reading in place rather than blanking six fields and
--- keeping two.
+-- The metadata is coalesced as one block rather than field by field: what a
+-- document says about itself is one reading of one file, so a re-analysis that
+-- came back with nothing leaves the whole previous reading in place rather than
+-- blanking six fields and keeping two.
 refresh:
 UPDATE document
 SET fileName = :fileName,

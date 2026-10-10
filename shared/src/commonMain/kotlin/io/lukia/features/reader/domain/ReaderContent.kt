@@ -1,22 +1,33 @@
 package io.lukia.features.reader.domain
 
+import io.lukia.features.reader.domain.outline.OutlineEntry
+import io.lukia.features.reader.domain.page.DocumentPages
+import io.lukia.features.reader.domain.text.TextSection
+
 /**
  * What the reader is showing, in the two shapes a document can take.
  *
- * The reader treats a book as a list of numbered things it can scroll through
- * and come back to. For a PDF those are pages the platform draws; for an EPUB
- * they are sections the reader sets itself. Everything above this - the
- * scrubber, the remembered position, the table of contents, the keyboard - only
- * needs [unitCount] and an index, so all of it is written once and works for
- * both.
+ * The reader treats a book as numbered pages it scrolls through and comes back
+ * to. For a PDF those are pages the platform draws and the file counts; for an
+ * EPUB they are pages this app sets out of re-typeset text, so the count is
+ * settled by the layout rather than the file and is not asked of anything here.
+ *
+ * Everything above - the scrubber, the remembered position, the contents, the
+ * keyboard - needs only a count and an index, so it is written once for both.
  */
 sealed interface ReaderContent : AutoCloseable {
 
     /**
-     * How many items the book has. Every position in the reader is an index into
-     * this, whatever the items happen to be.
+     * How many parts the document is made of, in its own terms.
+     *
+     * Pages for a fixed-layout document, which are also the pages the reader
+     * turns. Divisions for a reflowable one, which the reader's pages are cut
+     * from - so this is deliberately not called a page count, and [PagedContent]
+     * is the only thing outside the layout that may read it as one.
+     *
+     * Zero always means there is nothing in the document to show.
      */
-    val unitCount: Int
+    val partCount: Int
 
     /**
      * The document's own table of contents, or null when this document cannot be
@@ -24,31 +35,14 @@ sealed interface ReaderContent : AutoCloseable {
      * and for the same reason.
      */
     val outline: List<OutlineEntry>?
-
-    /** What one item is called, for the places that say so out loud. */
-    val unit: ReadingUnit
-}
-
-/**
- * The noun the reader uses for where someone is.
- *
- * "Page 4 of 300" is right for a PDF and wrong for an EPUB, whose sections are
- * chapters of no fixed length - calling them pages would promise a
- * correspondence to a printed book that reflowed text does not have.
- */
-enum class ReadingUnit(val singular: String, val plural: String) {
-    Page("Page", "pages"),
-    Section("Section", "sections")
 }
 
 /** A document that carries its own layout, drawn page by page. */
 class PagedContent(val pages: DocumentPages) : ReaderContent {
 
-    override val unitCount: Int get() = pages.pageCount
+    override val partCount: Int get() = pages.pageCount
 
     override val outline: List<OutlineEntry>? get() = pages.outline
-
-    override val unit: ReadingUnit = ReadingUnit.Page
 
     override fun close() {
         pages.close()
@@ -56,21 +50,22 @@ class PagedContent(val pages: DocumentPages) : ReaderContent {
 }
 
 /**
- * A document the reader sets itself, section by section.
+ * A document the reader sets itself, out of the divisions the file states.
+ *
+ * What the pages are made from rather than the pages themselves: a section is a
+ * chapter of whatever length its author wrote, and the reader cuts a run of them
+ * into screenfuls - see `Paginator`. Hence [partCount] is not a page count.
  *
  * Held whole in memory, unlike [PagedContent] which keeps a file handle open.
- * Text is small - a long novel is a couple of megabytes of it - and having it
- * all present is what lets the reader re-set the entire book the instant someone
- * changes the type size.
+ * Text is small - a long novel is a couple of megabytes - and having it all
+ * present is what lets the book be re-set the instant the type size changes.
  */
 class ReflowableContent(
     val sections: List<TextSection>,
-    override val outline: List<OutlineEntry>?
+    override val outline: List<OutlineEntry>?,
 ) : ReaderContent {
 
-    override val unitCount: Int get() = sections.size
-
-    override val unit: ReadingUnit = ReadingUnit.Section
+    override val partCount: Int get() = sections.size
 
     /** Nothing to give back: there is no open handle behind this one. */
     override fun close() = Unit

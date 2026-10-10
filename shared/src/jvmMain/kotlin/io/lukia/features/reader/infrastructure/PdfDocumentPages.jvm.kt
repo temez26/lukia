@@ -2,11 +2,11 @@ package io.lukia.features.reader.infrastructure
 
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
-import io.lukia.features.reader.domain.DocumentPages
-import io.lukia.features.reader.domain.OutlineEntry
-import io.lukia.features.reader.domain.PageGlyph
-import io.lukia.features.reader.domain.PageSize
-import io.lukia.features.reader.domain.TextQuad
+import io.lukia.features.reader.domain.outline.OutlineEntry
+import io.lukia.features.reader.domain.page.DocumentPages
+import io.lukia.features.reader.domain.page.PageGlyph
+import io.lukia.features.reader.domain.page.PageImage
+import io.lukia.features.reader.domain.page.PageSize
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -17,19 +17,27 @@ import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineNode
 import org.apache.pdfbox.rendering.ImageType
 import org.apache.pdfbox.rendering.PDFRenderer
-import org.apache.pdfbox.text.PDFTextStripper
-import org.apache.pdfbox.text.TextPosition
 import java.io.File
 
 /** Guards against an outline that is malformed into a cycle or absurdly deep. */
 private const val MAX_OUTLINE_DEPTH = 8
 private const val MAX_OUTLINE_ENTRIES = 5000
 
-internal actual fun openPdfPages(path: String): DocumentPages = PdfBoxDocumentPages(path)
+/**
+ * The document is loaded here rather than inside the pages, so that one the rest
+ * of the construction goes on to refuse is closed rather than leaked - see the
+ * expect.
+ */
+internal actual fun openPdfPages(path: String): DocumentPages? {
+    val document = runCatching { Loader.loadPDF(File(path)) }.getOrNull() ?: return null
 
-private class PdfBoxDocumentPages(path: String) : DocumentPages {
+    return runCatching { PdfBoxDocumentPages(document) }.getOrElse {
+        runCatching { document.close() }
+        null
+    }
+}
 
-    private val document: PDDocument = Loader.loadPDF(File(path))
+private class PdfBoxDocumentPages(private val document: PDDocument) : DocumentPages {
     private val renderer = PDFRenderer(document)
 
     /**
@@ -61,11 +69,36 @@ private class PdfBoxDocumentPages(path: String) : DocumentPages {
     private val pageIndexByDictionary: Map<COSDictionary, Int> =
         document.pages.withIndex().associate { (index, page) -> page.cosObject to index }
 
-    override val outline: List<OutlineEntry> by lazy {
-        val root = runCatching { document.documentCatalog.documentOutline }.getOrNull()
-            ?: return@lazy emptyList()
+    /**
+     * Read as the document is opened, which is [DocumentPages]'s contract and
+     * here the only way it can be safe: the walk parses objects out of the same
+     * PDFBox document [renderPage] draws from, and PDFBox shares mutable state
+     * across the two. A plain `val` cannot take [renderLock], so its only
+     * protection is finishing before anybody else has the document. Left lazy,
+     * this ran on its own dispatcher beside a page being drawn - one document,
+     * two threads, and the corruption the lock exists to prevent.
+     *
+     * Nobody waits longer for it: opening already runs off the main thread, and
+     * what this walks is structure the open has already parsed rather than the
+     * file. The scan that would be too much up front belongs to Android, whose
+     * renderer has no outline of its own, and stays lazy there.
+     */
+    override val outline: List<OutlineEntry>? = readOutline()
 
-        buildList { appendOutline(root, level = 0) }
+    /**
+     * Null only for an outline that could not be walked at all, which is the
+     * "this platform cannot read one" of [DocumentPages.outline]. A file with
+     * no table of contents is an empty list, as it was before.
+     *
+     * Both have to be answers rather than throws now that this runs while the
+     * document is being opened: a malformed chapter list used to cost the
+     * reader the chapter list, and must not start costing them the book.
+     */
+    private fun readOutline(): List<OutlineEntry>? {
+        val root = runCatching { document.documentCatalog.documentOutline }.getOrNull()
+            ?: return emptyList()
+
+        return runCatching { buildList { appendOutline(root, level = 0) } }.getOrNull()
     }
 
     private fun MutableList<OutlineEntry>.appendOutline(node: PDOutlineNode, level: Int) {
@@ -90,7 +123,7 @@ private class PdfBoxDocumentPages(path: String) : DocumentPages {
     }
 
     override suspend fun renderPage(index: Int, targetWidthPx: Int): ImageBitmap? =
-        withContext(Dispatchers.Default) {
+        withContext(Dispatchers.IO) {
             renderLock.withLock {
                 runCatching {
                     val scale = targetWidthPx / pageSizes[index].width
@@ -99,64 +132,18 @@ private class PdfBoxDocumentPages(path: String) : DocumentPages {
             }
         }
 
-    override suspend fun pageText(index: Int): List<PageGlyph>? =
-        withContext(Dispatchers.Default) {
-            renderLock.withLock {
-                runCatching {
-                    val stripper = GlyphStripper().apply {
-                        // PDFBox counts pages from one, and reads the range
-                        // rather than the document when asked for text.
-                        startPage = index + 1
-                        endPage = index + 1
-                    }
+    /**
+     * The reading half of this document, over the same handle and behind the
+     * same lock - see [PdfBoxPageContent]. Not owned: closing the document is
+     * this class's job, and doing it twice would be one close too many.
+     */
+    private val content = PdfBoxPageContent(document, renderLock, owned = false)
 
-                    stripper.getText(document)
+    override suspend fun pageText(index: Int): List<PageGlyph>? = content.pageText(index)
 
-                    // Empty is not the same as unavailable, but it reaches the
-                    // reader the same way: a page with nothing on it has no
-                    // sentences to point at.
-                    stripper.glyphs.takeIf { it.isNotEmpty() }
-                }.getOrNull()
-            }
-        }
+    override suspend fun pageImages(index: Int): List<PageImage> = content.pageImages(index)
 
     override fun close() {
         document.close()
-    }
-}
-
-/**
- * Collects every positioned character on a page instead of writing the page out
- * as a string.
- *
- * [PDFTextStripper] exists to produce text, and its own idea of where the words
- * and lines are is thrown away by the time it hands one over. What is wanted
- * here is the layer underneath that: the glyphs, and the boxes the file put them
- * in, which is what the reader needs to draw a translation exactly over the
- * words it stands for.
- *
- * The `Dir` accessors are the ones already turned the right way up - origin at
- * the top left, rotated pages accounted for - which is the space
- * [io.lukia.features.reader.domain.TextQuad] is defined in.
- */
-private class GlyphStripper : PDFTextStripper() {
-
-    val glyphs = mutableListOf<PageGlyph>()
-
-    override fun writeString(text: String, textPositions: List<TextPosition>) {
-        textPositions.forEach { position ->
-            val character = position.unicode ?: return@forEach
-            if (character.isEmpty()) return@forEach
-
-            glyphs += PageGlyph(
-                text = character,
-                bounds = TextQuad(
-                    left = position.xDirAdj,
-                    top = position.yDirAdj - position.heightDir,
-                    right = position.xDirAdj + position.widthDirAdj,
-                    bottom = position.yDirAdj
-                )
-            )
-        }
     }
 }

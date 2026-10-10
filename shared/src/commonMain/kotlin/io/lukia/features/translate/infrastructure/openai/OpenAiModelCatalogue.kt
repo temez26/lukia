@@ -7,9 +7,12 @@ import io.ktor.client.request.headers
 import io.ktor.http.isSuccess
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.AppErrorException
-import io.lukia.features.translate.domain.ModelCatalogue
-import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
-import kotlinx.coroutines.CancellationException
+import io.lukia.core.domain.diagnostics.Diagnostics
+import io.lukia.features.translate.domain.provider.ModelCatalogue
+import io.lukia.features.translate.domain.settings.TranslationSettingsRepository
+import io.lukia.features.translate.infrastructure.refuseCleartextToThePublicInternet
+import io.lukia.features.translate.infrastructure.translating
+import io.lukia.features.translate.infrastructure.translationTimeouts
 
 /**
  * Asks an OpenAI-compatible server what it can run.
@@ -22,43 +25,31 @@ import kotlinx.coroutines.CancellationException
  */
 class OpenAiModelCatalogue(
     private val client: HttpClient,
-    private val settings: TranslationSettingsRepository
+    private val settings: TranslationSettingsRepository,
+    private val diagnostics: Diagnostics = Diagnostics.None,
 ) : ModelCatalogue {
 
     override suspend fun models(): List<String> {
         val configured = settings.settings.value
 
-        if (!configured.isEndpointAllowed) {
-            throw AppErrorException(
-                AppError.Unexpected(
-                    "Translating over plain HTTP is only allowed to your own network."
-                )
-            )
-        }
+        configured.refuseCleartextToThePublicInternet()
 
-        val response = try {
+        val response = translating(configured, diagnostics) {
             client.get("${configured.baseUrl.trimEnd('/')}/models") {
+                translationTimeouts(configured)
+
                 configured.apiKey?.takeIf { it.isNotBlank() }?.let { key ->
                     headers { append("Authorization", "Bearer $key") }
                 }
             }
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        } catch (failure: Throwable) {
-            throw AppErrorException(
-                AppError.Unexpected(
-                    "Could not reach ${configured.baseUrl}. Check the server is running and " +
-                        "that the address is reachable from this device."
-                )
-            )
         }
 
         if (!response.status.isSuccess()) {
             throw AppErrorException(
                 AppError.Unexpected(
                     "${configured.baseUrl} did not answer with a list of models. Check the " +
-                        "address - it should end in /v1."
-                )
+                        "address - it should end in /v1.",
+                ),
             )
         }
 
@@ -73,7 +64,7 @@ class OpenAiModelCatalogue(
         // looks like the request never happened.
         if (models.isEmpty()) {
             throw AppErrorException(
-                AppError.Unexpected("That server has no models loaded at the moment.")
+                AppError.Unexpected("That server has no models loaded at the moment."),
             )
         }
 

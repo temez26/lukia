@@ -1,0 +1,178 @@
+package io.lukia.features.library.presentation.sessions
+
+import io.lukia.core.domain.document.IncomingDocument
+import io.lukia.core.domain.document.PickedDocument
+import io.lukia.core.domain.document.PickedFolder
+import io.lukia.core.domain.runCatchingApp
+import io.lukia.core.domain.toAppError
+import io.lukia.core.infrastructure.IncomingDocuments
+import io.lukia.features.library.application.ImportDocumentsUseCase
+import io.lukia.features.library.application.ImportFolderUseCase
+import io.lukia.features.library.application.ImportSummary
+import io.lukia.features.library.presentation.model.ImportProgress
+import io.lukia.features.library.presentation.model.LibraryMessage
+import io.lukia.features.library.presentation.model.notice
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+
+/**
+ * Getting books into the library, and saying how it is going.
+ *
+ * Held apart from [LibraryViewModel] for the same reason [LibrarySelectionSession]
+ * is: importing has its own state, its own idea of being busy and its own way of
+ * reporting, and none of it is about the shelf the view model otherwise keeps.
+ *
+ * [onImported] is what the library does about a finished import - reload - which
+ * belongs to whoever owns the library rather than to this.
+ */
+class LibraryImportSession(
+    private val importDocumentsUseCase: ImportDocumentsUseCase,
+    private val importFolderUseCase: ImportFolderUseCase,
+    /** Books other apps have handed to Lukia - see [IncomingDocuments]. */
+    private val incoming: IncomingDocuments,
+    private val scope: CoroutineScope,
+    private val onImported: () -> Unit,
+    private val onMessage: (LibraryMessage?) -> Unit,
+) {
+
+    private val _isImporting = MutableStateFlow(false)
+    val isImporting: StateFlow<Boolean> = _isImporting.asStateFlow()
+
+    /**
+     * How far through the current import the library is, or null when there is
+     * no count to give - a single file, or an import that has not started.
+     *
+     * Separate from [isImporting] because a folder can hold hundreds of books
+     * and each one is opened and has its cover rendered: without a count, a scan
+     * of a large shelf is several minutes of a spinner that says nothing about
+     * whether it is working or stuck.
+     */
+    private val _progress = MutableStateFlow<ImportProgress?>(null)
+    val progress: StateFlow<ImportProgress?> = _progress.asStateFlow()
+
+    /**
+     * The import the reader started, while it is running, so that they can stop
+     * it. Only that one: a book handed to the app by another app is collected
+     * from an inbox that has to go on collecting, and cancelling the coroutine
+     * doing the collecting would close the inbox for the rest of the session.
+     */
+    private var started: Job? = null
+
+    fun importDocuments(pickedDocuments: List<PickedDocument>) {
+        if (pickedDocuments.isEmpty()) return
+
+        run { importDocumentsUseCase(pickedDocuments, ::report) }
+    }
+
+    fun importFolder(pickedFolder: PickedFolder) {
+        run { importFolderUseCase(pickedFolder, ::report) }
+    }
+
+    /**
+     * A book handed to the app by another one.
+     *
+     * Kept before it is imported, and that order is the whole of it: what
+     * arrives is readable only while the delivering grant lasts, so the copy is
+     * taken before anything is written to the shelf. Keeping happens inside the
+     * import so an unreadable document reports itself the way an unanalysable
+     * book does, rather than throwing out of the collector and stopping the
+     * inbox for good.
+     *
+     * Awaited rather than launched, so two books shared at once import one after
+     * the other and the progress count means something.
+     */
+    private suspend fun importIncoming(document: IncomingDocument) {
+        runImport {
+            importDocumentsUseCase(listOf(incoming.store.keep(document)), ::report)
+        }
+    }
+
+    /**
+     * Only counted for a batch worth counting. One file is done before a
+     * "1 of 1" could be read, and a number that appears and vanishes reads as a
+     * flicker rather than as progress.
+     */
+    private fun report(completed: Int, total: Int) {
+        _progress.value = if (total > 1) ImportProgress(completed, total) else null
+    }
+
+    /**
+     * The one place an import's outcome is handled: holds [isImporting] for the
+     * duration, reloads on success, and reports any failure - named or
+     * unforeseen - the same way.
+     */
+    private fun run(block: suspend () -> Result<ImportSummary>) {
+        started = scope.launch { runImport(block) }
+    }
+
+    /**
+     * Stops the import that is running, keeping every book that has already
+     * arrived.
+     *
+     * A folder of five thousand books is minutes of work the reader can
+     * otherwise only escape by killing the app, which stops at the same book and
+     * says nothing about how much arrived. Stopping is safe because a batch is a
+     * book at a time: whatever imported is committed, and running the same
+     * import again picks up rather than adding second copies.
+     */
+    fun cancel() {
+        started?.cancel()
+        started = null
+    }
+
+    /** [run] without the coroutine, for a caller that is already in one. */
+    private suspend fun runImport(block: suspend () -> Result<ImportSummary>) {
+        _isImporting.value = true
+        onMessage(null)
+
+        try {
+            // getOrThrow re-raises the use case's own failure so that it and
+            // an unanticipated throw are both narrowed in the same place.
+            runCatchingApp { block().getOrThrow() }
+                .onFailure { onMessage(LibraryMessage.Failed(it.toAppError())) }
+                .onSuccess { summary ->
+                    // A partly imported batch is not a failure - the books
+                    // that did come in are usable - so it reports itself as
+                    // a notice rather than taking the screen over.
+                    onMessage(summary.notice())
+                    onImported()
+                }
+        } catch (stopped: CancellationException) {
+            // Whatever arrived before the reader stopped it is on the shelf and
+            // has to be shown, or a stopped import looks like one that did
+            // nothing. Re-thrown so the coroutine still ends as cancelled.
+            onImported()
+            throw stopped
+        } finally {
+            // In a finally so nothing can leave the library spinning.
+            _isImporting.value = false
+            _progress.value = null
+        }
+    }
+
+    /**
+     * Starts taking books other apps have handed to Lukia.
+     *
+     * Last in the class, and that placement is load-bearing rather than tidy.
+     * The collector runs eagerly on a main dispatcher the moment it is launched,
+     * so a document already waiting is taken on that first pass - inside this
+     * object's own construction. From an `init` at the top, where it reads more
+     * naturally, that pass reaches [_isImporting] before the property exists and
+     * dies on it, taking the inbox down for the session and saying nothing.
+     */
+    init {
+        // Collected for as long as the library lives, which on mobile is the
+        // whole session: the three tabs share one of these - see `MobileShell` -
+        // so a book shared into the app has somewhere to arrive whichever tab is
+        // showing, and one queued during a cold start is taken as soon as there
+        // is something to take it.
+        scope.launch {
+            incoming.inbox.documents.collect { document -> importIncoming(document) }
+        }
+    }
+}

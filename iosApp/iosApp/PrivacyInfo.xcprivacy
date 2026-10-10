@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	    What Apple requires an app to declare about itself, and for this app it
+	    is mostly a list of nothings. Submission fails without the file even so,
+	    because of the one entry that is not nothing: user defaults.
+
+	    The folder here is synchronised into the Xcode target, so the file is
+	    part of the app by being in the directory.
+	-->
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<!--
+	    Nothing is collected. The library, the reading positions and the cached
+	    translations are on the device and stay there; what a reader sends to a
+	    translation provider goes to a service they configured with their own
+	    key, which is a relationship between them and that provider rather than
+	    a collection by this app.
+	-->
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<!--
+		    The reader's settings - theme, language, how long a model may
+		    think - which is exactly what this reason covers: read and written
+		    by this app, for this app, and never leaving it.
+
+		    The two other categories worth checking are absent on purpose. The
+		    app never asks how much disk space there is. It does ask the file
+		    system about its own working copies, but only for their size and
+		    kind, never a timestamp - so neither category applies and neither
+		    is claimed.
+		-->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

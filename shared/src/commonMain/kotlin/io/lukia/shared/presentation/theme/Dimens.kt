@@ -13,16 +13,17 @@ import androidx.compose.ui.unit.dp
  * tablets and small desktop windows are Medium, and a comfortably sized desktop
  * window is Expanded.
  *
- * [Large] exists because three buckets stop being enough on a desktop. Without
- * it a 900dp window and a maximised 2560dp monitor were handed identical
- * metrics, so the monitor spent most of its width on empty margin either side of
- * a grid sized for the smaller of the two.
+ * [Large] exists because three stop being enough on a desktop: without it a
+ * 900dp window and a maximised 2560dp monitor got identical metrics, and the
+ * monitor spent most of its width on margin either side of a grid sized for the
+ * smaller.
  */
 enum class WindowWidthClass {
     Compact,
     Medium,
     Expanded,
-    Large;
+    Large,
+    ;
 
     companion object {
         fun fromWidth(width: Dp): WindowWidthClass = when {
@@ -30,6 +31,33 @@ enum class WindowWidthClass {
             width < 840.dp -> Medium
             width < 1280.dp -> Expanded
             else -> Large
+        }
+    }
+}
+
+/**
+ * Window height buckets, on Material's own breakpoints.
+ *
+ * Width alone kept getting the phone on its side wrong: a 390x844 phone in
+ * landscape is 844dp wide - Medium, what a small tablet reports - and 390dp
+ * tall, which nothing else in the app is. Everything sized against the width
+ * grew, into vertical room that was not there.
+ *
+ * [Compact] is the bucket that matters - a phone in landscape, and the
+ * split-screen half of a tablet - where chrome costing a fixed number of points
+ * has to cost fewer, the points being what ran out.
+ */
+enum class WindowHeightClass {
+    Compact,
+    Medium,
+    Expanded,
+    ;
+
+    companion object {
+        fun fromHeight(height: Dp): WindowHeightClass = when {
+            height < 480.dp -> Compact
+            height < 900.dp -> Medium
+            else -> Expanded
         }
     }
 }
@@ -50,11 +78,9 @@ val MinTouchTarget: Dp = 44.dp
  */
 @Immutable
 data class LukiaDimens(
-    /** Horizontal inset from the window edge to content. */
     val screenPadding: Dp,
     /** Minimum width of one book cell; the grid fits as many as will fit. */
     val bookCellMinWidth: Dp,
-    /** Gap between book cells across a row. */
     val gridSpacing: Dp,
     /**
      * Gap between grid rows. Separate from [gridSpacing] because a cell carries a
@@ -77,12 +103,9 @@ data class LukiaDimens(
      * across a monitor is both unreadable and expensive to render.
      */
     val maxReaderWidth: Dp,
-    /** Width of the cover art on the detail screen. */
     val detailCoverWidth: Dp,
-    /** Gap between one block of content and the next within a screen. */
     val sectionSpacing: Dp,
-    /** Inset from a floating panel's edge to its contents. */
-    val panelPadding: Dp
+    val panelPadding: Dp,
 )
 
 private val CompactDimens = LukiaDimens(
@@ -97,7 +120,7 @@ private val CompactDimens = LukiaDimens(
     maxReaderWidth = Dp.Unspecified,
     detailCoverWidth = 200.dp,
     sectionSpacing = 22.dp,
-    panelPadding = 16.dp
+    panelPadding = 16.dp,
 )
 
 private val MediumDimens = LukiaDimens(
@@ -110,7 +133,7 @@ private val MediumDimens = LukiaDimens(
     maxReaderWidth = 720.dp,
     detailCoverWidth = 200.dp,
     sectionSpacing = 22.dp,
-    panelPadding = 14.dp
+    panelPadding = 14.dp,
 )
 
 private val ExpandedDimens = LukiaDimens(
@@ -123,7 +146,7 @@ private val ExpandedDimens = LukiaDimens(
     maxReaderWidth = 800.dp,
     detailCoverWidth = 208.dp,
     sectionSpacing = 24.dp,
-    panelPadding = 14.dp
+    panelPadding = 14.dp,
 )
 
 /**
@@ -145,7 +168,7 @@ private val LargeDimens = LukiaDimens(
     maxReaderWidth = 860.dp,
     detailCoverWidth = 220.dp,
     sectionSpacing = 26.dp,
-    panelPadding = 14.dp
+    panelPadding = 14.dp,
 )
 
 internal fun dimensFor(widthClass: WindowWidthClass): LukiaDimens = when (widthClass) {
@@ -158,6 +181,21 @@ internal fun dimensFor(widthClass: WindowWidthClass): LukiaDimens = when (widthC
 val LocalLukiaDimens = staticCompositionLocalOf { CompactDimens }
 
 val LocalWindowWidthClass = staticCompositionLocalOf { WindowWidthClass.Compact }
+
+val LocalWindowHeightClass = staticCompositionLocalOf { WindowHeightClass.Medium }
+
+/**
+ * Whether this window is short enough that vertical room is the scarce one -
+ * a phone in landscape, or a tablet sharing its screen with something else.
+ *
+ * The companion to [isWideWindow], and written for the same reason: the
+ * comparison was going to be spelled out at every call site that cared, and a
+ * comparison spelled out that many times is one that will eventually be spelled
+ * out wrongly.
+ */
+val isShortWindow: Boolean
+    @Composable
+    get() = LocalWindowHeightClass.current == WindowHeightClass.Compact
 
 /**
  * Whether this window is being pointed at rather than touched, which is the one

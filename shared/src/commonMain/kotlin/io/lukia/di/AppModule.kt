@@ -1,141 +1,92 @@
 package io.lukia.di
 
-import io.lukia.features.bookdetail.application.GetDocumentDetailsUseCase
-import io.lukia.features.bookdetail.presentation.BookDetailViewModel
-import io.lukia.features.library.application.ImportDocumentUseCase
-import io.lukia.features.library.application.ImportFolderUseCase
-import io.lukia.features.library.application.GetLibraryDocumentsUseCase
-import io.lukia.features.library.domain.LibraryRepository
+import io.lukia.core.domain.diagnostics.Diagnostics
+import io.lukia.core.infrastructure.AppCommands
+import io.lukia.core.infrastructure.DocumentInbox
+import io.lukia.core.infrastructure.IncomingDocuments
 import io.lukia.core.infrastructure.db.LukiaDatabase
-import io.lukia.features.library.infrastructure.SqlLibraryRepository
-import io.lukia.features.library.application.RemoveDocumentUseCase
-import io.lukia.features.library.application.SetFavoriteUseCase
-import io.lukia.features.library.presentation.LibraryViewModel
-import io.lukia.features.reader.application.OpenDocumentUseCase
-import io.lukia.features.reader.domain.ReadingProgressRepository
-import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
-import io.lukia.features.reader.infrastructure.SqlReadingProgressRepository
-import io.lukia.features.reader.presentation.ReaderViewModel
-import io.lukia.features.settings.infrastructure.AppSettingsRepository
-import io.lukia.features.translate.application.TranslatePassageUseCase
-import io.lukia.features.translate.domain.Translator
-import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
-import io.lukia.features.translate.infrastructure.ConfiguredTranslator
-import io.lukia.features.translate.infrastructure.anthropic.AnthropicTranslator
-import io.lukia.features.translate.domain.ModelCatalogue
-import io.lukia.features.translate.infrastructure.openai.OpenAiModelCatalogue
-import io.lukia.features.translate.infrastructure.openai.OpenAiTranslator
-import io.lukia.features.translate.infrastructure.translationHttpClient
-import io.lukia.features.settings.presentation.SettingsViewModel
-import org.koin.core.module.dsl.viewModel
+import io.lukia.core.infrastructure.diagnostics.CrashRecorder
+import io.lukia.core.infrastructure.diagnostics.DiagnosticBuffer
+import io.lukia.core.infrastructure.diagnostics.RecordingDiagnostics
+import io.lukia.features.library.libraryModule
+import io.lukia.features.reader.readerModule
+import io.lukia.features.settings.domain.AppSettingsRepository
+import io.lukia.features.settings.settingsModule
+import io.lukia.features.stats.statsModule
+import io.lukia.features.translate.translateModule
 import org.koin.dsl.module
 
+/**
+ * Everything the app is made of that is the same on every platform.
+ *
+ * Each feature registers its own half of the graph, so what a feature offers the
+ * rest of the app is decided beside the code that offers it rather than in one
+ * list that has to import every one of them. What is left here is the database,
+ * which belongs to no feature and is shared by most of them, and the inbox that
+ * the platform fills and the library empties.
+ */
 val commonModule = module {
 
     // One database for the whole app, opened once. Each platform's module says
-    // where the file lives; everything above this line is the same code.
+    // where the file lives; everything built on it is the same code.
     single {
         LukiaDatabase(get())
     }
 
-    single<LibraryRepository> {
-        SqlLibraryRepository(get())
-    }
-
-    single<ReadingProgressRepository> {
-        SqlReadingProgressRepository(get())
+    // One inbox for the process. The platform's own entry point puts documents
+    // in - see `MainActivity` and `iOSApp.swift` - and the library takes them
+    // out; neither can reach the other, and both can reach this.
+    single {
+        DocumentInbox()
     }
 
     single {
-        ImportDocumentUseCase(get(), get())
+        IncomingDocuments(inbox = get(), store = get())
     }
 
+    // What a desktop menu bar asks the app for. Empty on the platforms with no
+    // menu bar to ask from, which is every platform but one.
     single {
-        ImportFolderUseCase(get(), get())
+        AppCommands()
     }
 
-    viewModel {
-        LibraryViewModel(get(), get(), get(), get(), get(), get())
-    }
-
+    // Where the boundaries write down what they absorbed. One for the process,
+    // because a report is about a run of the app rather than about a screen.
+    //
+    // In memory and nowhere else: nothing reads this yet and nothing can send it
+    // anywhere, which is the point at which it is safe to have it collecting.
     single {
-        GetLibraryDocumentsUseCase(get())
+        DiagnosticBuffer()
     }
 
-    single {
-        SetFavoriteUseCase(get())
+    // Created eagerly, so the hook is in place from the moment the graph is
+    // built rather than from the first time something asks for one - and a
+    // crash before anything asks is exactly the crash worth catching.
+    //
+    // Here rather than in each platform's entry point, because there are three
+    // of those and a fourth would forget.
+    single(createdAtStart = true) {
+        CrashRecorder(store = get(), buffer = get()).also { it.install() }
     }
 
-    single {
-        RemoveDocumentUseCase(get(), get(), get())
-    }
+    // Gated on the reader's own setting, read per entry rather than bound once:
+    // the graph hands out one of these for the life of the process, so anything
+    // holding a reference would otherwise keep whichever answer was true when
+    // it was built.
+    single<Diagnostics> {
+        val settings: AppSettingsRepository = get()
 
-    single {
-        GetDocumentDetailsUseCase(get(), get())
-    }
-
-    single {
-        OpenDocumentUseCase(get(), get())
-    }
-
-    // A single instance: reader settings are one shared, live value, so a change
-    // made while reading is already in place the next time a book is opened.
-    single {
-        ReaderSettingsRepository(get())
-    }
-
-    // Likewise a single: the app's theme is read at the root, so every screen
-    // repaints from the same value the moment it changes.
-    single {
-        AppSettingsRepository(get())
-    }
-
-    viewModel {
-        SettingsViewModel(get(), get(), get(), get())
-    }
-
-    // One client for the app, so connections are kept and reused between
-    // taps rather than set up again for every sentence.
-    single {
-        translationHttpClient()
-    }
-
-    // Which of these speaks is a setting, read per request. Everything above
-    // this line is written against the port, so adding another - a model on the
-    // device, a plain dictionary lookup - is one more entry here and nothing
-    // else in the app.
-    single<Translator> {
-        val settings: TranslationSettingsRepository = get()
-
-        ConfiguredTranslator(
-            provider = { settings.settings.value.provider },
-            anthropic = AnthropicTranslator(get(), settings),
-            openAiCompatible = OpenAiTranslator(get(), settings)
+        RecordingDiagnostics(
+            buffer = get(),
+            enabled = { settings.settings.value.diagnostics },
         )
     }
 
-    single {
-        TranslatePassageUseCase(get())
-    }
-
-    // Only a server the reader points at themselves is worth asking what it can
-    // run - a hosted service publishes a catalogue that barely changes, while a
-    // local one runs whichever file they loaded this morning.
-    single<ModelCatalogue> {
-        OpenAiModelCatalogue(get(), get())
-    }
-
-    // A single, like the other settings: the language chosen on the settings
-    // screen has to be the language the open book uses on the very next tap.
-    single {
-        TranslationSettingsRepository(get(), get())
-    }
-
-    viewModel { (location: String) ->
-        BookDetailViewModel(location, get(), get(), get())
-    }
-
-    viewModel { (location: String) ->
-        ReaderViewModel(location, get(), get(), get(), get(), get())
-    }
+    includes(
+        libraryModule,
+        readerModule,
+        translateModule,
+        settingsModule,
+        statsModule,
+    )
 }

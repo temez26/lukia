@@ -1,32 +1,44 @@
 package io.lukia.features.reader.infrastructure
 
 import androidx.compose.ui.graphics.ImageBitmap
-import io.lukia.features.reader.domain.DocumentPages
-import io.lukia.features.reader.domain.OutlineEntry
-import io.lukia.features.reader.domain.PageGlyph
-import io.lukia.features.reader.domain.PageSize
-import io.lukia.features.reader.domain.TextQuad
+import io.lukia.core.infrastructure.toByteArray
+import io.lukia.features.reader.domain.outline.OutlineEntry
+import io.lukia.features.reader.domain.page.DocumentPages
+import io.lukia.features.reader.domain.page.PageGlyph
+import io.lukia.features.reader.domain.page.PageImage
+import io.lukia.features.reader.domain.page.PageSize
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.useContents
-import kotlinx.cinterop.usePinned
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import platform.CoreGraphics.CGSizeMake
-import platform.Foundation.NSData
 import platform.Foundation.NSURL
 import platform.PDFKit.PDFDocument
 import platform.PDFKit.PDFOutline
-import platform.PDFKit.PDFPage
 import platform.PDFKit.kPDFDisplayBoxCropBox
 import platform.UIKit.UIImagePNGRepresentation
 import platform.UIKit.UIScreen
-import platform.posix.memcpy
 
-internal actual fun openPdfPages(path: String): DocumentPages = IOSDocumentPages(path)
+/**
+ * The document is opened here rather than inside the pages, so that a file
+ * PDFKit will not read comes back as null instead of as a document with no
+ * pages in it - see the expect.
+ */
+internal actual fun openPdfPages(path: String): DocumentPages? {
+    // Caught rather than tested for: PDFKit answers nil for a file it will not
+    // read, and the initialiser is bound here as one that cannot, so nil
+    // arrives as a throw rather than as a null to check.
+    val document = runCatching { PDFDocument(uRL = NSURL.fileURLWithPath(path)) }.getOrNull()
+        ?: return null
+
+    // Nothing to give back by hand if this throws: a PDFKit document is
+    // reference counted, which is why closing these pages is also nothing.
+    return runCatching { IOSDocumentPages(document) }.getOrNull()
+}
 
 /** Guards against an outline that is malformed into a cycle or absurdly deep. */
 private const val MAX_OUTLINE_DEPTH = 8
@@ -38,12 +50,16 @@ private const val MAX_OUTLINE_ENTRIES = 5000
  * free of manual bitmap contexts.
  */
 @OptIn(ExperimentalForeignApi::class)
-private class IOSDocumentPages(path: String) : DocumentPages {
-
-    private val document: PDFDocument = PDFDocument(uRL = NSURL.fileURLWithPath(path))
+private class IOSDocumentPages(private val document: PDFDocument) : DocumentPages {
 
     /** PDFKit does not promise a document is safe to use from two threads. */
     private val renderLock = Mutex()
+
+    /**
+     * The reading half of this document, over the same handle and behind the
+     * same lock - see [IOSPageContent].
+     */
+    private val content = IOSPageContent(document, renderLock)
 
     override val pageSizes: List<PageSize> = List(document.pageCount.toInt()) { index ->
         val page = document.pageAtIndex(index.toULong())
@@ -64,10 +80,32 @@ private class IOSDocumentPages(path: String) : DocumentPages {
         }
     }
 
-    override val outline: List<OutlineEntry> by lazy {
-        val root = document.outlineRoot ?: return@lazy emptyList()
+    /**
+     * Read as the document is opened, which is [DocumentPages]'s contract and
+     * here the only safe way: the walk reaches into the same [PDFDocument]
+     * [renderPage] draws from, and PDFKit promises nothing about threads. A
+     * plain `val` cannot take [renderLock], so its only protection is finishing
+     * before anybody else has the document - `PdfDocumentPages.jvm.kt` is in the
+     * same position for its own reason.
+     *
+     * Nobody waits longer for it: opening already runs off the main thread, and
+     * both ways out of here read the outline anyway.
+     */
+    override val outline: List<OutlineEntry>? = readOutline()
 
-        buildList { appendOutline(root, level = 0) }
+    /**
+     * Null only for an outline that could not be walked at all, which is the
+     * "this platform cannot read one" of [DocumentPages.outline]. A file with
+     * no table of contents is an empty list, as it was before.
+     *
+     * Both have to be answers rather than throws now that this runs while the
+     * document is being opened: a malformed chapter list used to cost the
+     * reader the chapter list, and must not start costing them the book.
+     */
+    private fun readOutline(): List<OutlineEntry>? {
+        val root = document.outlineRoot ?: return emptyList()
+
+        return runCatching { buildList { appendOutline(root, level = 0) } }.getOrNull()
     }
 
     private fun MutableList<OutlineEntry>.appendOutline(node: PDFOutline, level: Int) {
@@ -92,7 +130,7 @@ private class IOSDocumentPages(path: String) : DocumentPages {
     }
 
     override suspend fun renderPage(index: Int, targetWidthPx: Int): ImageBitmap? =
-        withContext(Dispatchers.Default) {
+        withContext(Dispatchers.IO) {
             renderLock.withLock {
                 runCatching {
                     val page = document.pageAtIndex(index.toULong()) ?: return@runCatching null
@@ -107,7 +145,7 @@ private class IOSDocumentPages(path: String) : DocumentPages {
 
                     val thumbnail = page.thumbnailOfSize(
                         CGSizeMake(widthPoints, heightPoints),
-                        forBox = kPDFDisplayBoxCropBox
+                        forBox = kPDFDisplayBoxCropBox,
                     )
 
                     UIImagePNGRepresentation(thumbnail)
@@ -117,61 +155,9 @@ private class IOSDocumentPages(path: String) : DocumentPages {
             }
         }
 
-    override suspend fun pageText(index: Int): List<PageGlyph>? =
-        withContext(Dispatchers.Default) {
-            renderLock.withLock {
-                runCatching { document.pageAtIndex(index.toULong())?.glyphs() }.getOrNull()
-            }
-        }
+    override suspend fun pageImages(index: Int): List<PageImage> = content.pageImages(index)
 
-    /**
-     * Every positioned character of this page, the right way up.
-     *
-     * PDFKit measures upwards from the bottom left of the page's box, and every
-     * screen the app draws on measures downwards from the top left - so each
-     * box is flipped here, once, rather than at each place that draws one. The
-     * box's own origin is taken off as well: a page cropped to a margin does not
-     * start at zero, and text placed against an uncropped origin would sit that
-     * margin away from the words it belongs to.
-     *
-     * A quarter-turned page returns nothing. PDFKit reports its characters in
-     * the page's unrotated space while rendering it rotated, so the two do not
-     * line up - and an overlay drawn ninety degrees away from its sentence is
-     * worse than no overlay at all.
-     */
-    private fun PDFPage.glyphs(): List<PageGlyph>? {
-        if (rotation % 180 != 0L) return null
-
-        val text = string ?: return null
-        val box = boundsForBox(kPDFDisplayBoxCropBox)
-        val originX = box.useContents { origin.x }
-        val topEdge = box.useContents { origin.y + size.height }
-
-        val count = minOf(text.length, numberOfCharacters.toInt())
-
-        val glyphs = (0 until count).mapNotNull { position ->
-            characterBoundsAtIndex(position.toLong()).useContents {
-                // A line break is a character with no box. The reader infers
-                // where the lines are from where the glyphs sit anyway.
-                if (size.width <= 0.0 || size.height <= 0.0) return@useContents null
-
-                val left = origin.x - originX
-                val bottom = topEdge - origin.y
-
-                PageGlyph(
-                    text = text[position].toString(),
-                    bounds = TextQuad(
-                        left = left.toFloat(),
-                        top = (bottom - size.height).toFloat(),
-                        right = (left + size.width).toFloat(),
-                        bottom = bottom.toFloat()
-                    )
-                )
-            }
-        }
-
-        return glyphs.takeIf { it.isNotEmpty() }
-    }
+    override suspend fun pageText(index: Int): List<PageGlyph>? = content.pageText(index)
 
     /**
      * Nothing to release: PDFKit owns the file handle and lets it go with the
@@ -179,16 +165,4 @@ private class IOSDocumentPages(path: String) : DocumentPages {
      * that do hold one.
      */
     override fun close() = Unit
-
-    private fun NSData.toByteArray(): ByteArray {
-        val result = ByteArray(length.toInt())
-
-        if (result.isNotEmpty()) {
-            result.usePinned { pinned ->
-                memcpy(pinned.addressOf(0), bytes, length)
-            }
-        }
-
-        return result
-    }
 }

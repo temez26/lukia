@@ -1,36 +1,153 @@
 package io.lukia.features.reader.infrastructure
 
-import io.lukia.core.domain.DocumentType
+import io.lukia.core.domain.diagnostics.Diagnostics
+import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.infrastructure.availableProcessors
+import io.lukia.core.infrastructure.heapCeilingBytes
 import io.lukia.core.infrastructure.readFileBytes
 import io.lukia.features.reader.domain.PagedContent
 import io.lukia.features.reader.domain.ReaderContent
+import io.lukia.features.reader.domain.page.PageContent
+import io.lukia.features.reader.domain.text.TextExtraction
+import io.lukia.features.reader.infrastructure.pdf.readPdfAsText
+import io.lukia.features.reader.infrastructure.text.epub.readEpub
 import io.lukia.features.reader.infrastructure.text.readDocx
-import io.lukia.features.reader.infrastructure.text.readEpub
 import io.lukia.features.reader.infrastructure.text.readMarkdown
 import io.lukia.features.reader.infrastructure.text.readPlainText
+import io.lukia.features.reader.infrastructure.text.reflow.storeReflow
+import io.lukia.features.reader.infrastructure.text.reflow.storedReflow
 
 /**
  * Opens the document at [path] as something the reader can show, or returns null
  * when this app cannot read that format.
  *
  * The one place that decides which formats are readable, so adding another is a
- * branch here and a parser beside it rather than a change spread through the
- * reader. A format being importable and a format being readable are separate
- * questions - the library will hold a file this returns null for, and say so.
+ * branch here and a parser beside it. Importable and readable are separate
+ * questions: the library will hold a file this returns null for, and say so.
  *
  * [path] is always a working copy in app storage, never the file the user
  * imported.
  */
-internal fun openReaderContent(type: DocumentType, path: String): ReaderContent? = when (type) {
+internal suspend fun openReaderContent(
+    type: DocumentType,
+    path: String,
+    diagnostics: Diagnostics = Diagnostics.None,
+): ReaderContent? = when (type) {
     // Kept apart from the rest: a PDF is opened by the platform's own renderer
     // against the file on disk, and is the only format here never held whole in
-    // memory.
-    DocumentType.PDF -> PagedContent(openPdfPages(path))
+    // memory. A file the renderer will not have is null exactly as an unreadable
+    // EPUB is, rather than the exception PDF alone used to raise.
+    DocumentType.PDF -> openPdfPages(path)?.let(::PagedContent)
 
-    DocumentType.EPUB -> readEpub(readFileBytes(path))
-    DocumentType.DOCX -> readDocx(readFileBytes(path))
-    DocumentType.TEXT -> readPlainText(readFileBytes(path))
-    DocumentType.MARKDOWN -> readMarkdown(readFileBytes(path))
+    DocumentType.EPUB -> readEpub(readFileBytes(path), diagnostics)
+    DocumentType.DOCX -> readDocx(readFileBytes(path), diagnostics)
+    DocumentType.TEXT -> readPlainText(readFileBytes(path), diagnostics)
+    DocumentType.MARKDOWN -> readMarkdown(readFileBytes(path), diagnostics)
 
     DocumentType.UNKNOWN -> null
 }
+
+/**
+ * Opens the PDF at [path] as text the reader sets itself, or returns null when
+ * the file has no text layer to set - a scan, or pages that are each one
+ * photograph.
+ *
+ * The file is read once and given back: what comes out is the whole book's text,
+ * held in memory like any other reflowable book. That is why this cannot be part
+ * of the non-suspending [openReaderContent] - reading a page's text suspends,
+ * and there are hundreds of pages.
+ *
+ * Hundreds is also why the file is opened more than once - see [readersFor].
+ * Reading a page is the longest thing the app does and one handle does one page
+ * at a time, so the book is divided between as many handles as there are cores.
+ *
+ * The result is kept beside the file - see [storedReflow] - so looking at the
+ * same book as pages and then as text again does not wait through the conversion
+ * twice.
+ *
+ * A file with no text is not remembered as such: finding out again costs one
+ * scan, and only if somebody asks twice, where writing down an absence is a
+ * thing to get wrong.
+ */
+internal suspend fun openPdfAsText(
+    path: String,
+    diagnostics: Diagnostics = Diagnostics.None,
+    onProgress: (TextExtraction) -> Unit = {},
+): ReaderContent? {
+    storedReflow(path)?.let { return it }
+
+    // A file the renderer will not have is not one to read the words out of
+    // either. Null here is "not as text", and the caller then tries it as pages
+    // and gets the same answer - which is the honest one, and the same one
+    // every other format gives.
+    val pages = openPdfPages(path) ?: return null
+    val alongside = readersAlongside(path, readersFor(pages.pageCount) - 1)
+
+    val content = try {
+        readPdfAsText(pages, alongside, diagnostics, onProgress)
+    } finally {
+        alongside.forEach { runCatching { it.close() } }
+        pages.close()
+    }
+
+    return content?.also { storeReflow(path, it, diagnostics) }
+}
+
+/**
+ * How many handles on the file a conversion reads it through.
+ *
+ * One per core up to [MAX_READERS]: the reading is as much file and memory as
+ * arithmetic, so a machine stops going faster well before it runs out of cores -
+ * and each handle holds its own share of the book, which is memory a phone has
+ * less of than it has patience.
+ *
+ * One handle for a short document, whatever the machine: opening a file four
+ * times to read twelve pages costs more than reading them.
+ */
+private fun readersFor(pageCount: Int): Int {
+    if (pageCount < MIN_PAGES_TO_DIVIDE) return 1
+
+    return minOf(
+        MAX_READERS,
+        availableProcessors().coerceAtLeast(1),
+        // Each handle parses the file for itself and keeps what it parsed -
+        // see [HEAP_PER_READER].
+        (heapCeilingBytes() / HEAP_PER_READER).coerceAtMost(MAX_READERS.toLong()).toInt(),
+        pageCount / MIN_PAGES_EACH,
+    ).coerceAtLeast(1)
+}
+
+/**
+ * [count] more ways into the file, or as many as could be opened.
+ *
+ * A handle that cannot be opened costs the conversion some of its speed and
+ * nothing else, so it is not worth failing an open over: the book is divided
+ * between whatever came back, and one handle is the way this always worked.
+ */
+private fun readersAlongside(path: String, count: Int): List<PageContent> = buildList {
+    repeat(count) {
+        val reader = runCatching { openPdfPageContent(path) }.getOrNull() ?: return@buildList
+
+        add(reader)
+    }
+}
+
+/** Below this a conversion is over before a second handle has finished opening. */
+private const val MIN_PAGES_TO_DIVIDE = 24
+
+/** And below this a handle would spend more time being opened than reading. */
+private const val MIN_PAGES_EACH = 12
+
+/** Past this the file, not the processor, is what the conversion is waiting on. */
+private const val MAX_READERS = 4
+
+/**
+ * How much heap there has to be for each handle.
+ *
+ * Measured on a 472-page manual, where one handle held some sixty megabytes for
+ * as long as it was open: four of them filled a 192 MB heap before the last
+ * page was read, and the book never opened. Twice what one was seen to hold,
+ * so a phone that small reads through one handle - which cost that book six
+ * seconds in forty, the file being what it was waiting on.
+ */
+private const val HEAP_PER_READER = 128L * 1024 * 1024

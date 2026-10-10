@@ -1,9 +1,9 @@
 package io.lukia.features.library.infrastructure
 
-import io.lukia.core.domain.CoverImage
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.DocumentType
-import io.lukia.core.domain.PickedDocument
+import io.lukia.core.domain.document.CoverImage
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.domain.document.PickedDocument
 import io.lukia.core.infrastructure.db.LukiaDatabase
 import io.lukia.core.infrastructure.testDatabase
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -20,7 +20,7 @@ class SqlLibraryRepositoryTest {
 
     private val repository = SqlLibraryRepository(
         database = database,
-        dispatcher = UnconfinedTestDispatcher()
+        dispatcher = UnconfinedTestDispatcher(),
     )
 
     @Test
@@ -37,6 +37,34 @@ class SqlLibraryRepositoryTest {
         assertContentEquals(byteArrayOf(1, 2, 3), stored?.coverImage?.bytes)
     }
 
+    /**
+     * The shelf is read without the artwork on it, which is the whole reason it
+     * is read as its own statement: a cover is around a hundred kilobytes, and a
+     * few thousand of them is a few hundred megabytes held for as long as the
+     * library is on screen.
+     */
+    @Test
+    fun theShelfComesBackWithoutTheArtworkOnIt() = runTest {
+        repository.addDocument(document("/books/one.pdf", cover = byteArrayOf(1, 2, 3)))
+
+        val shelf = repository.getDocuments().single()
+
+        assertNull(shelf.coverImage)
+        assertEquals("one.pdf", shelf.document.fileName)
+        assertEquals(DocumentType.PDF, shelf.type)
+    }
+
+    /** What the card that is about to draw a cover asks for instead. */
+    @Test
+    fun oneBooksArtworkIsReadByItself() = runTest {
+        repository.addDocument(document("/books/one.pdf", cover = byteArrayOf(1, 2, 3)))
+        repository.addDocument(document("/books/two.pdf", cover = null))
+
+        assertContentEquals(byteArrayOf(1, 2, 3), repository.coverFor("/books/one.pdf")?.bytes)
+        assertNull(repository.coverFor("/books/two.pdf"))
+        assertNull(repository.coverFor("/books/never-imported.pdf"))
+    }
+
     /** The whole point of a second run: a library that is still there. */
     @Test
     fun booksSurviveTheRepositoryThatStoredThem() = runTest {
@@ -47,7 +75,7 @@ class SqlLibraryRepositoryTest {
 
         assertEquals(
             listOf("/books/one.pdf", "/books/two.pdf"),
-            reopened.getDocuments().map { it.document.location }
+            reopened.getDocuments().map { it.document.location },
         )
     }
 
@@ -92,7 +120,7 @@ class SqlLibraryRepositoryTest {
 
         assertEquals(
             listOf("/books/one.pdf", "/books/two.pdf", "/books/three.pdf"),
-            repository.getDocuments().map { it.document.location }
+            repository.getDocuments().map { it.document.location },
         )
     }
 
@@ -109,7 +137,7 @@ class SqlLibraryRepositoryTest {
 
         assertContentEquals(
             byteArrayOf(9, 9),
-            repository.getDocument("/books/one.pdf")?.coverImage?.bytes
+            repository.getDocument("/books/one.pdf")?.coverImage?.bytes,
         )
     }
 
@@ -169,7 +197,7 @@ class SqlLibraryRepositoryTest {
             metaDescription = null,
             metaSubjects = null,
             metaIdentifier = null,
-            location = "/books/one.pdf"
+            location = "/books/one.pdf",
         )
 
         assertEquals(DocumentType.UNKNOWN, repository.getDocument("/books/one.pdf")?.type)
@@ -178,16 +206,16 @@ class SqlLibraryRepositoryTest {
     private fun document(
         location: String,
         size: Long = 1024L,
-        cover: ByteArray? = null
+        cover: ByteArray? = null,
     ) = DocumentInfo(
         document = PickedDocument(
             fileName = location.substringAfterLast('/'),
             extension = "pdf",
-            location = location
+            location = location,
         ),
         type = DocumentType.PDF,
         exists = true,
         sizeBytes = size,
-        coverImage = cover?.let { CoverImage(it) }
+        coverImage = cover?.let { CoverImage(it) },
     )
 }

@@ -1,6 +1,6 @@
 package io.lukia.core.infrastructure
 
-import io.lukia.core.domain.SettingsStore
+import io.lukia.core.domain.storage.SettingsStore
 import java.io.File
 import java.util.Properties
 
@@ -16,7 +16,7 @@ import java.util.Properties
  */
 class JvmSettingsStore(
     /** Injectable so tests can work in a temporary directory. */
-    private val file: File = File(lukiaAppDirectory(), FILE_NAME)
+    private val file: File = File(lukiaAppDirectory(), FILE_NAME),
 ) : SettingsStore {
 
     private val properties: Properties by lazy {
@@ -30,6 +30,12 @@ class JvmSettingsStore(
     override fun getString(key: String): String? = properties.getProperty(key)
 
     override fun putString(key: String, value: String) {
+        // Already-stored values are left alone - see [SettingsStore.putString].
+        // This is the store the guard matters most to: the write below is the
+        // whole file, synchronously, on whichever thread asked - and the callers
+        // are ViewModels and composables on the one that draws.
+        if (properties.getProperty(key) == value) return
+
         properties.setProperty(key, value)
 
         // A preference is not worth failing a screen over: losing one between

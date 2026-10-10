@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Which languages Lukia is offered in.
+
+    Declared by hand rather than generated. AGP will build this file itself from
+    the `values-xx/` folders it can see, and it cannot see these: the app's
+    translations live in `shared/src/commonMain/composeResources`, which is
+    Compose Multiplatform's own resource set and not an Android one. So the list
+    is kept here, in step with that folder.
+
+    What it buys is the per-app language picker - Settings > Apps > Lukia >
+    Language, from Android 13. Without it the system has no list to show and a
+    reader who keeps their phone in English cannot have their reading app in
+    Finnish, which for an app about reading in a second language is the exact
+    reader it was written for. Below 13 there is nowhere to put the answer and
+    the app follows the device.
+-->
+<locale-config
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:defaultLocale="en">
+    <locale android:name="en" />
+    <locale android:name="da" />
+    <locale android:name="de" />
+    <locale android:name="es" />
+    <locale android:name="fi" />
+    <locale android:name="fr" />
+    <locale android:name="it" />
+    <locale android:name="nb" />
+    <locale android:name="nl" />
+    <locale android:name="pl" />
+    <locale android:name="sv" />
+</locale-config>

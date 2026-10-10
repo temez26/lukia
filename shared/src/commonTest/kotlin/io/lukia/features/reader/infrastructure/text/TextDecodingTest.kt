@@ -39,7 +39,7 @@ class TextDecodingTest {
         val bytes = byteArrayOf(
             'I'.code.toByte(), 't'.code.toByte(), 0x92.toByte(), 's'.code.toByte(),
             ' '.code.toByte(), 0x97.toByte(), ' '.code.toByte(),
-            'a'.code.toByte(), 0x85.toByte()
+            'a'.code.toByte(), 0x85.toByte(),
         )
 
         assertEquals("It’s — a…", decodeText(bytes))

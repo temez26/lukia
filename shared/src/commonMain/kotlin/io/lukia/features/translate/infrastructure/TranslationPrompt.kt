@@ -1,5 +1,6 @@
 package io.lukia.features.translate.infrastructure
 
+import io.lukia.features.translate.domain.CacheIdentity
 import io.lukia.features.translate.domain.TranslationContext
 import io.lukia.features.translate.domain.TranslationRequest
 
@@ -12,8 +13,21 @@ import io.lukia.features.translate.domain.TranslationRequest
  */
 data class TranslationPrompt(
     val system: String,
-    val user: String
+    val user: String,
 )
+
+/**
+ * Which wording of the instructions below produced an answer.
+ *
+ * Part of what a cached translation is filed under - see [CacheIdentity]. The
+ * prompt is half of the question a model was asked, so an answer given to an
+ * older one is an answer to a question this build no longer asks: leave this
+ * alone and a reader who updates the app keeps every sentence translated by
+ * whatever it used to say, for as long as the cache holds them.
+ *
+ * **Bump this whenever the text below changes in a way that changes answers.**
+ */
+const val TRANSLATION_PROMPT_VERSION = "1"
 
 /**
  * How much of the surrounding text is worth sending.

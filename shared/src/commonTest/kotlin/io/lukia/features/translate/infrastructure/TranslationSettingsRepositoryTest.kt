@@ -1,10 +1,12 @@
 package io.lukia.features.translate.infrastructure
 
-import io.lukia.core.domain.FakeSecretStore
-import io.lukia.core.domain.FakeSettingsStore
-import io.lukia.features.translate.domain.TargetLanguage
-import io.lukia.features.translate.domain.TranslationProvider
-import io.lukia.features.translate.domain.TranslationSettings
+import io.lukia.core.domain.storage.FakeSecretStore
+import io.lukia.core.domain.storage.FakeSettingsStore
+import io.lukia.features.translate.domain.lookup.WordSite
+import io.lukia.features.translate.domain.provider.TranslationProvider
+import io.lukia.features.translate.domain.settings.TargetLanguage
+import io.lukia.features.translate.domain.settings.TranslationSettings
+import io.lukia.features.translate.domain.settings.WordLookup
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -22,7 +24,7 @@ class TranslationSettingsRepositoryTest {
 
     @Test
     fun anUntouchedInstallStartsAtTheDefaults() {
-        val settings = TranslationSettingsRepository(FakeSettingsStore(), secrets).settings.value
+        val settings = PersistedTranslationSettingsRepository(FakeSettingsStore(), secrets).settings.value
 
         assertEquals(TargetLanguage.Default, settings.targetLanguage)
         assertEquals(TranslationProvider.Default, settings.provider)
@@ -36,20 +38,139 @@ class TranslationSettingsRepositoryTest {
     fun whatIsChosenIsThereTheNextTimeTheAppOpens() {
         val store = FakeSettingsStore()
 
-        TranslationSettingsRepository(store, secrets).update(
+        PersistedTranslationSettingsRepository(store, secrets).update(
             TranslationSettings(
                 targetLanguage = TargetLanguage.Finnish,
-                provider = TranslationProvider.OpenAi
-            ).withModel("gpt-4o-mini").withApiKey("sk-test")
+                aiTranslation = true,
+                provider = TranslationProvider.OpenAi,
+            ).withModel("gpt-4o-mini").withApiKey("sk-test"),
         )
 
-        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+        val reopened = PersistedTranslationSettingsRepository(store, secrets).settings.value
 
         assertEquals(TargetLanguage.Finnish, reopened.targetLanguage)
         assertEquals(TranslationProvider.OpenAi, reopened.provider)
         assertEquals("gpt-4o-mini", reopened.model)
         assertEquals("sk-test", reopened.apiKey)
         assertTrue(reopened.isConfigured)
+    }
+
+    /**
+     * The word lookup, the Google key and what the two gestures do all survive
+     * closing the book - and the key goes to the secret store like every other
+     * key rather than into the settings file.
+     */
+    @Test
+    fun howWordsAreLookedUpIsThereTheNextTimeTheAppOpens() {
+        val store = FakeSettingsStore()
+
+        PersistedTranslationSettingsRepository(store, secrets).update(
+            TranslationSettings()
+                .withWordLookup(WordLookup.Wiktionary)
+                .withGoogleApiKey("google-key"),
+        )
+
+        val reopened = PersistedTranslationSettingsRepository(store, secrets).settings.value
+
+        assertEquals(WordLookup.Wiktionary, reopened.wordLookup)
+        assertEquals("google-key", reopened.googleApiKey)
+    }
+
+    /**
+     * Where the reader goes to read more about a word, which is a different
+     * setting from who answers about one inside the book.
+     */
+    @Test
+    fun whereAWordIsReadAboutIsThereTheNextTimeTheAppOpens() {
+        val store = FakeSettingsStore()
+
+        PersistedTranslationSettingsRepository(store, secrets).update(
+            TranslationSettings().withWordSite(WordSite.Sanakirja),
+        )
+
+        val reopened = PersistedTranslationSettingsRepository(store, secrets).settings.value
+
+        assertEquals(WordSite.Sanakirja, reopened.wordSite)
+        assertEquals(WordSite.Sanakirja.urlTemplate, reopened.wordSiteUrlTemplate)
+    }
+
+    /** A site of the reader's own is only ever theirs, so its address is stored too. */
+    @Test
+    fun aCustomSitesAddressIsThereTheNextTimeTheAppOpens() {
+        val store = FakeSettingsStore()
+
+        PersistedTranslationSettingsRepository(store, secrets).update(
+            TranslationSettings()
+                .withWordSite(WordSite.Custom)
+                .withCustomWordSiteUrl("https://example.org/{word}"),
+        )
+
+        val reopened = PersistedTranslationSettingsRepository(store, secrets).settings.value
+
+        assertEquals("https://example.org/{word}", reopened.wordSiteUrlTemplate)
+    }
+
+    /**
+     * A custom site nobody has given an address for has nowhere to open, which
+     * is what the reader's panel reads to decide whether to offer the button.
+     */
+    @Test
+    fun aCustomSiteWithNoAddressHasNowhereToOpen() {
+        val settings = TranslationSettings().withWordSite(WordSite.Custom)
+
+        assertNull(settings.wordSiteUrlTemplate)
+    }
+
+    /**
+     * How long a provider may go quiet is per provider like everything else,
+     * and its default is the provider's own: a hosted service and a machine
+     * loading a model off disk are not waits of the same size.
+     */
+    @Test
+    fun eachProviderStartsAtItsOwnWait() {
+        val settings = PersistedTranslationSettingsRepository(FakeSettingsStore(), secrets).settings.value
+
+        assertEquals(TranslationProvider.Anthropic.defaultTimeoutSeconds, settings.timeoutSeconds)
+        assertEquals(
+            TranslationProvider.Local.defaultTimeoutSeconds,
+            settings.timeoutSecondsFor(TranslationProvider.Local),
+        )
+        assertTrue(
+            TranslationProvider.Local.defaultTimeoutSeconds >
+                TranslationProvider.Anthropic.defaultTimeoutSeconds,
+            "a local model is given no longer to load than a hosted one takes to answer",
+        )
+    }
+
+    @Test
+    fun aWaitTheReaderSetIsThereTheNextTimeTheAppOpens() {
+        val store = FakeSettingsStore()
+
+        PersistedTranslationSettingsRepository(store, secrets).update(
+            TranslationSettings(provider = TranslationProvider.Local).withTimeoutSeconds(600),
+        )
+
+        val reopened = PersistedTranslationSettingsRepository(store, secrets).settings.value
+
+        assertEquals(600, reopened.timeoutSeconds)
+    }
+
+    /**
+     * The field this comes from is text, and a reader who typed a zero meant
+     * "quickly" rather than "give up before asking".
+     */
+    @Test
+    fun aWaitTooShortToBeMeantIsBroughtBackIntoRange() {
+        val settings = TranslationSettings(provider = TranslationProvider.Local)
+
+        assertEquals(
+            TranslationSettings.TimeoutSecondsRange.first,
+            settings.withTimeoutSeconds(0).timeoutSeconds,
+        )
+        assertEquals(
+            TranslationSettings.TimeoutSecondsRange.last,
+            settings.withTimeoutSeconds(999_999).timeoutSeconds,
+        )
     }
 
     /**
@@ -68,8 +189,8 @@ class TranslationSettingsRepositoryTest {
             .withBaseUrl("http://192.168.1.50:1234/v1")
             .withModel("qwen2.5-7b-instruct")
 
-        TranslationSettingsRepository(store, secrets).update(configured)
-        val reopened = TranslationSettingsRepository(store, secrets).settings.value
+        PersistedTranslationSettingsRepository(store, secrets).update(configured)
+        val reopened = PersistedTranslationSettingsRepository(store, secrets).settings.value
 
         assertEquals("qwen2.5-7b-instruct", reopened.model)
         assertEquals("http://192.168.1.50:1234/v1", reopened.baseUrl)
@@ -85,12 +206,12 @@ class TranslationSettingsRepositoryTest {
     @Test
     fun aClearedValueDoesNotComeBack() {
         val store = FakeSettingsStore()
-        val repository = TranslationSettingsRepository(store, secrets)
+        val repository = PersistedTranslationSettingsRepository(store, secrets)
 
         repository.update(TranslationSettings().withApiKey("sk-ant-test"))
         repository.update(repository.settings.value.withApiKey(""))
 
-        assertNull(TranslationSettingsRepository(store, secrets).settings.value.apiKey)
+        assertNull(PersistedTranslationSettingsRepository(store, secrets).settings.value.apiKey)
     }
 
     @Test
@@ -112,7 +233,7 @@ class TranslationSettingsRepositoryTest {
             putString("translation.apiKey.Anthropic", "sk-ant-old")
         }
 
-        val settings = TranslationSettingsRepository(store, secrets).settings.value
+        val settings = PersistedTranslationSettingsRepository(store, secrets).settings.value
 
         assertEquals("sk-ant-old", settings.apiKey)
         assertEquals("sk-ant-old", secrets.getSecret("translation.apiKey.Anthropic"))
@@ -124,7 +245,7 @@ class TranslationSettingsRepositoryTest {
     fun aKeyIsNotWrittenToTheSettingsFile() {
         val store = FakeSettingsStore()
 
-        TranslationSettingsRepository(store, secrets)
+        PersistedTranslationSettingsRepository(store, secrets)
             .update(TranslationSettings().withApiKey("sk-ant-test"))
 
         assertEquals("", store.getString("translation.apiKey.Anthropic").orEmpty())
@@ -143,7 +264,7 @@ class TranslationSettingsRepositoryTest {
             putString("translation.apiKey.Anthropic", "sk-ant-test")
         }
 
-        val settings = TranslationSettingsRepository(store, secrets).settings.value
+        val settings = PersistedTranslationSettingsRepository(store, secrets).settings.value
 
         assertEquals(TargetLanguage.Default, settings.targetLanguage)
         assertEquals(TranslationProvider.Default, settings.provider)
@@ -153,10 +274,38 @@ class TranslationSettingsRepositoryTest {
     /** A local server needs no key, so having none is not being unconfigured. */
     @Test
     fun aLocalServerIsReadyWithoutAKey() {
-        val settings = TranslationSettings(provider = TranslationProvider.Local)
+        val settings = TranslationSettings(
+            aiTranslation = true,
+            provider = TranslationProvider.Local,
+        )
 
         assertNull(settings.apiKey)
         assertTrue(settings.isConfigured)
+    }
+
+    /**
+     * A key in the file and no switch beside it is an install from before the
+     * switch existed, and is read as a reader who went and set a service up -
+     * not as one whose sentences quietly stopped being translated on an update.
+     */
+    @Test
+    fun anInstallFromBeforeTheSwitchKeepsItsService() {
+        val store = FakeSettingsStore()
+        val secrets = FakeSecretStore()
+        secrets.putSecret("translation.apiKey.Anthropic", "sk-test")
+
+        val reopened = PersistedTranslationSettingsRepository(store, secrets).settings.value
+
+        assertTrue(reopened.aiTranslation)
+        assertTrue(reopened.isConfigured)
+    }
+
+    /** And one with nothing set up starts where every other setting starts. */
+    @Test
+    fun andOneWithNothingSetUpStartsOff() {
+        val settings = PersistedTranslationSettingsRepository(FakeSettingsStore(), secrets).settings.value
+
+        assertFalse(settings.aiTranslation)
     }
 
     /** Pointing plain HTTP at the open internet is not a setup this will use. */
@@ -171,7 +320,7 @@ class TranslationSettingsRepositoryTest {
 
     @Test
     fun theLiveValueIsWhatWasJustChosen() {
-        val repository = TranslationSettingsRepository(FakeSettingsStore(), secrets)
+        val repository = PersistedTranslationSettingsRepository(FakeSettingsStore(), secrets)
 
         repository.update(TranslationSettings(targetLanguage = TargetLanguage.Japanese))
 

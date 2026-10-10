@@ -1,0 +1,60 @@
+-- A stretch of time somebody spent in a book.
+--
+-- Rows are written while the book is open rather than when it closes: a reader
+-- interrupted mid-chapter has still read, and only recording finished sittings
+-- would credit them with nothing. The row opens as reading starts and its length
+-- is rewritten as it goes, so a killed process costs the last few seconds rather
+-- than the whole evening.
+--
+-- `startedAt` is a wall clock in milliseconds, the one place in this schema that
+-- trusts one. Everything else counts writes - see `ReadingPosition.sq` - because
+-- all it must answer is which of two came later. This has to answer which day it
+-- was, and no counter knows what a day is. A wrong device clock files a sitting
+-- under the wrong date; that is the cost of "five days in a row" at all.
+--
+-- The one table with no foreign key on `document`, and the only one that should
+-- not have one. It outlives the book on purpose: removing a book forgets where
+-- the reader was, but the hours they spent happened, and a cascade would rewrite
+-- a history the reader remembers better than the app does.
+--
+-- `deleteByLocation` is how a caller that means it takes those hours back.
+-- Nothing calls it, which is why `location` carries no index: an index is a
+-- write per sitting, to buy a scan nobody runs.
+CREATE TABLE reading_session (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    location TEXT NOT NULL,
+    startedAt INTEGER NOT NULL,
+    durationMs INTEGER NOT NULL
+);
+
+-- Every reading of this table is "what did the last N days look like", which is
+-- a scan from a date onwards.
+CREATE INDEX reading_session_startedAt ON reading_session(startedAt);
+
+-- Opens a sitting. Its length is zero until the first time it is extended,
+-- which is what makes a book merely glanced at cost nothing.
+start:
+INSERT INTO reading_session(location, startedAt, durationMs)
+VALUES (?, ?, 0);
+
+lastId:
+SELECT last_insert_rowid();
+
+-- The length so far, rewritten rather than added to: the recorder knows how
+-- long its own sitting has run, and adding deltas would drift by whatever was
+-- written twice after a retry.
+extend:
+UPDATE reading_session SET durationMs = :durationMs WHERE id = :id;
+
+-- The whole table, which is what the statistics are worked out from.
+--
+-- A row is three numbers and a path, and five years of daily reading is a few
+-- thousand - less than one book's cover art. Cheaper to read whole than the
+-- several grouped queries that would answer "today", "this week" and "the
+-- longest run of days" separately, and it keeps the arithmetic in one tested
+-- place rather than in SQL that has to agree with itself.
+selectAll:
+SELECT * FROM reading_session ORDER BY startedAt;
+
+deleteByLocation:
+DELETE FROM reading_session WHERE location = ?;

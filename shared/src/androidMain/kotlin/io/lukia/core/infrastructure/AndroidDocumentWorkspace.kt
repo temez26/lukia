@@ -2,9 +2,9 @@ package io.lukia.core.infrastructure
 
 import android.content.Context
 import android.net.Uri
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.DocumentWorkspace
-import io.lukia.core.domain.WorkingCopy
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.storage.DocumentWorkspace
+import io.lukia.core.domain.storage.WorkingCopy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -18,7 +18,7 @@ import java.io.File
  * platform PDF renderer wants a real file descriptor rather than a stream.
  */
 class AndroidDocumentWorkspace(
-    private val context: Context
+    private val context: Context,
 ) : DocumentWorkspace {
 
     private val directory: File
@@ -29,7 +29,7 @@ class AndroidDocumentWorkspace(
             val location = document.document.location
             val target = File(
                 directory,
-                WorkingCopyNaming.fileName(location, document.document.extension)
+                WorkingCopyNaming.fileName(location, document.document.extension),
             )
 
             // A zero-length copy is treated as absent rather than reused: it is
@@ -67,9 +67,7 @@ class AndroidDocumentWorkspace(
                 partial.outputStream().use { output -> input.copyTo(output) }
             }
 
-            if (!partial.renameTo(target)) {
-                throw IllegalStateException("Could not store a copy of $source")
-            }
+            check(partial.renameTo(target)) { "Could not store a copy of $source" }
         } finally {
             partial.delete()
         }

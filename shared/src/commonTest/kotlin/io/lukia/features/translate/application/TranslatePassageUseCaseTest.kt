@@ -2,10 +2,10 @@ package io.lukia.features.translate.application
 
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.toAppError
-import io.lukia.features.translate.domain.TargetLanguage
 import io.lukia.features.translate.domain.Translation
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.Translator
+import io.lukia.features.translate.domain.settings.TargetLanguage
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -56,7 +56,7 @@ class TranslatePassageUseCaseTest {
 
         assertEquals(
             "\"piece\" reads as a weapon here.",
-            useCase(request()).getOrThrow().note
+            useCase(request()).getOrThrow().note,
         )
     }
 
@@ -90,7 +90,7 @@ class TranslatePassageUseCaseTest {
         val result = useCase(request(text = "word ".repeat(1000)))
 
         assertTrue(result.isFailure)
-        assertTrue((result.errorOrNull() as AppError.Unexpected).cause!!.contains("too long"))
+        assertTrue((result.errorOrNull() as AppError.Unexpected).explanation!!.contains("too long"))
     }
 
     /** A translator that throws is narrowed here rather than escaping upwards. */
@@ -98,12 +98,12 @@ class TranslatePassageUseCaseTest {
     fun aFailingTranslatorBecomesAnAppError() = runTest {
         val useCase = TranslatePassageUseCase { throw RuntimeException("no network") }
 
-        assertEquals(AppError.Unexpected("no network"), useCase(request()).errorOrNull())
+        assertEquals(AppError.Unexpected(), useCase(request()).errorOrNull())
     }
 
     private fun request(text: String = "Call me Ishmael.") = TranslationRequest(
         text = text,
-        targetLanguage = TargetLanguage.Finnish
+        targetLanguage = TargetLanguage.Finnish,
     )
 
     private fun Result<*>.errorOrNull(): AppError? = exceptionOrNull()?.toAppError()
@@ -111,5 +111,5 @@ class TranslatePassageUseCaseTest {
 
 /** Reads better than an object at every call site, and the port is one function. */
 private fun TranslatePassageUseCase(
-    translate: suspend (TranslationRequest) -> Translation
-) = TranslatePassageUseCase(Translator { translate(it) })
+    translate: suspend (TranslationRequest) -> Translation,
+) = TranslatePassageUseCase(Translator { request, _ -> translate(request) })

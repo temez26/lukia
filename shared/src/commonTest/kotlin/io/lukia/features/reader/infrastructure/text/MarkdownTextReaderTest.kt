@@ -1,9 +1,9 @@
 package io.lukia.features.reader.infrastructure.text
 
-import io.lukia.features.reader.domain.Emphasis
-import io.lukia.features.reader.domain.TextBlock
-import io.lukia.features.reader.domain.TextSection
-import io.lukia.features.reader.domain.plainText
+import io.lukia.features.reader.domain.text.Emphasis
+import io.lukia.features.reader.domain.text.TextBlock
+import io.lukia.features.reader.domain.text.TextSection
+import io.lukia.features.reader.domain.text.plainText
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -21,13 +21,13 @@ class MarkdownTextReaderTest {
             # Chapter Two
 
             More words.
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         assertEquals(listOf("The Book", "Chapter Two"), content.sections.map { it.title })
         assertEquals(
             listOf("The Book" to 0, "Chapter Two" to 1),
-            content.outline.orEmpty().map { it.title to it.pageIndex }
+            content.outline.orEmpty().map { it.title to it.pageIndex },
         )
     }
 
@@ -39,12 +39,12 @@ class MarkdownTextReaderTest {
             and its continuation.
 
             A second paragraph.
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         assertEquals(
             listOf("One line and its continuation.", "A second paragraph."),
-            content.blocks().filterIsInstance<TextBlock.Paragraph>().map { it.text.plainText() }
+            content.blocks().filterIsInstance<TextBlock.Paragraph>().map { it.text.plainText() },
         )
     }
 
@@ -57,7 +57,7 @@ class MarkdownTextReaderTest {
         assertEquals("Some bold, some italic and some code.", runs.plainText())
         assertEquals(
             listOf(setOf(Emphasis.Bold), setOf(Emphasis.Italic), setOf(Emphasis.Monospace)),
-            runs.map { it.emphasis }.filter { it.isNotEmpty() }
+            runs.map { it.emphasis }.filter { it.isNotEmpty() },
         )
     }
 
@@ -78,7 +78,7 @@ class MarkdownTextReaderTest {
 
         assertEquals(
             "See the guide and a diagram.",
-            (content.blocks().single() as TextBlock.Paragraph).text.plainText()
+            (content.blocks().single() as TextBlock.Paragraph).text.plainText(),
         )
     }
 
@@ -91,7 +91,7 @@ class MarkdownTextReaderTest {
 
             4. fourth
             5. fifth
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         val items = content.blocks().filterIsInstance<TextBlock.ListItem>()
@@ -113,12 +113,12 @@ class MarkdownTextReaderTest {
             ```
 
             After.
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         assertEquals(
             "fun main() {\n    println(\"*not italic*\")\n}",
-            content.blocks().filterIsInstance<TextBlock.Code>().single().text
+            content.blocks().filterIsInstance<TextBlock.Code>().single().text,
         )
     }
 
@@ -128,7 +128,7 @@ class MarkdownTextReaderTest {
 
         assertEquals(
             "Call me Ishmael.",
-            (content.blocks().single() as TextBlock.Quote).text.plainText()
+            (content.blocks().single() as TextBlock.Quote).text.plainText(),
         )
     }
 
@@ -149,7 +149,7 @@ class MarkdownTextReaderTest {
             ---
 
             More words.
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         val blocks = content.blocks()
@@ -165,7 +165,7 @@ class MarkdownTextReaderTest {
 
         assertEquals(
             "A literal *star* here.",
-            (content.blocks().single() as TextBlock.Paragraph).text.plainText()
+            (content.blocks().single() as TextBlock.Paragraph).text.plainText(),
         )
     }
 

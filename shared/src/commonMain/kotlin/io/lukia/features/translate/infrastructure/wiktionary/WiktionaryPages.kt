@@ -1,0 +1,230 @@
+package io.lukia.features.translate.infrastructure.wiktionary
+
+import io.ktor.client.HttpClient
+import io.ktor.client.request.get
+import io.ktor.client.request.parameter
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.isSuccess
+import io.lukia.core.domain.diagnostics.Diagnostics
+import io.lukia.features.translate.domain.lookup.WordEntry
+import io.lukia.features.translate.domain.settings.TargetLanguage
+import io.lukia.features.translate.domain.settings.TranslationSettingsRepository
+import io.lukia.features.translate.infrastructure.translating
+import io.lukia.features.translate.infrastructure.translationTimeouts
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+
+/** What is read when the reader's own language has no entry for the word. */
+private const val FALLBACK_WIKI = "en"
+
+/**
+ * One word's page, off whichever Wiktionary is most likely to have it.
+ *
+ * Asked of the reader's own Wiktionary - a Finnish reader asks
+ * `fi.wiktionary.org`, whose entry for an English word is written in Finnish -
+ * and of the English one only when that has no page at all. That fallback fires
+ * often: the smaller Wiktionaries are far thinner, and an English definition is
+ * worse than the reader's language and better than nothing.
+ *
+ * Read through the query API rather than the REST one, which is why this ever
+ * answered in English. Wikimedia's `page/definition` endpoint returns senses
+ * already parsed and exists only on the English Wiktionary - every other wiki
+ * 404s it, so every lookup fell through to English however the reader had set
+ * their language. The query API is older, hands back page text rather than
+ * senses, and is on every wiki there is.
+ *
+ * Its own type rather than part of the translator that first needed it, because
+ * two things now ask the same wikis: a word translated in the line it sits on,
+ * and the whole entry the reader asked to see. They differ only in how much of
+ * the page they keep - see [reading] - which is no reason to fetch it twice.
+ *
+ * Nothing here is configured and nothing is charged. It also never sees the
+ * book: a dictionary cannot use a paragraph.
+ */
+internal class WiktionaryPages(
+    private val client: HttpClient,
+    private val settings: TranslationSettingsRepository,
+    private val cache: WiktionaryPageCache,
+    private val diagnostics: Diagnostics = Diagnostics.None,
+    private val json: Json = Json { ignoreUnknownKeys = true },
+) {
+
+    /**
+     * What a wiki has to say about one word, with a page that only says which
+     * word it is a form of followed to the word itself.
+     *
+     * That last part is most of what makes this useful on real prose: books are
+     * written in inflected words, and a wiki's page for one is often not a
+     * definition - `values` answers `monikkomuoto sanasta value` and nothing
+     * else. See [baseForm].
+     *
+     * Followed once and no further. Wikis do not write chains of pointers, and a
+     * lookup that could walk one could loop.
+     *
+     * What the word's own page said becomes [WordEntry.form] either way: the
+     * grammar is worth keeping whether or not the base form answered, and it is
+     * what explains why the reader is shown a word they did not hold. A base
+     * form with no entry of its own leaves a form and no senses, which is an
+     * answer rather than a failure - it has the panel to go to, and nowhere to
+     * go on the page.
+     *
+     * [WordEntry.word] is the word actually defined, which is not always the one
+     * that was asked about. Whoever shows it can say so.
+     */
+    suspend fun entryFor(
+        word: String,
+        targetLanguage: TargetLanguage,
+        limit: Int,
+    ): WordEntry? {
+        val term = word.trim()
+        val own = entry(term, targetLanguage)?.reading(term, limit) ?: return null
+        val base = own.senses.baseForm(term) ?: return own.asEntry(term)
+
+        val form = own.senses.first()
+        val defined = entry(base, targetLanguage)
+            ?.reading(base, limit)
+            ?.takeIf { it.senses.isNotEmpty() }
+
+        return if (defined == null) {
+            own.withoutTheForm().asEntry(term, form)
+        } else {
+            defined.asEntry(base, form)
+        }
+    }
+
+    /**
+     * The page for [word], as one run of text, or null where no wiki has one.
+     *
+     * Asked under the word as the book spelled it and then under its lower case,
+     * because a Wiktionary title is case sensitive in a way a Wikipedia title is
+     * not: `juoksi` has a page and `Juoksi` has none, so a word that happened to
+     * open a sentence was reported as a word no dictionary had ever heard of.
+     * The word as written is asked first even so - `Rooma` and `rooma` are
+     * different words, and the one the book capitalised is the one it meant.
+     *
+     * The reader's own wiki is exhausted before the English one is opened, since
+     * a Finnish reader would rather have the Finnish page for a word than the
+     * English page for the same word.
+     */
+    private suspend fun entry(word: String, targetLanguage: TargetLanguage): String? {
+        val reader = targetLanguage.tag.substringBefore('-')
+
+        // Short-circuited rather than looked up and discarded: a reader whose own
+        // language is the fallback has one wiki to ask, and asking it twice to
+        // throw the second answer away is a request nobody wanted.
+        val wikis = listOf(reader, FALLBACK_WIKI).distinct()
+        val titles = listOf(word, word.lowercase()).distinct()
+
+        return translating(settings.settings.value, diagnostics) {
+            wikis.firstNotNullOfOrNull { wiki ->
+                titles.firstNotNullOfOrNull { title -> page(title, wiki) }
+            }
+        }
+    }
+
+    /**
+     * The page for one word on one wiki, or null when that wiki has none for it -
+     * which is an answer rather than a failure, and is why there is a second wiki
+     * to try.
+     *
+     * Asked of the wiki only where nobody has asked before. One word can be four
+     * requests - the reader's wiki and the English one, each for the word and
+     * again for the form it turns out to be - and a reader who holds it, reads
+     * the panel, closes it and holds it again made all four twice. Both answers
+     * are kept, the page and the absence of one, because a word missing from the
+     * reader's own wiki is the case that costs two requests rather than one.
+     *
+     * What is asked of the wiki itself, and what becomes of the answer, is
+     * [fetch]'s.
+     */
+    private suspend fun page(word: String, wiki: String): String? =
+        when (val known = cache.get(wiki, word)) {
+            is CachedPage.Text -> known.extract
+            CachedPage.NoSuchPage -> null
+            null -> fetch(word, wiki)
+        }
+
+    /**
+     * The page as the wiki itself gives it, remembered on the way past.
+     *
+     * A request that fails outright is not remembered: what failed is a network
+     * or a wiki having a bad minute, and remembering it would be a word that
+     * could never be looked up again without clearing storage - the same
+     * reasoning as
+     * [io.lukia.features.translate.infrastructure.CachingTranslator]. A wiki
+     * answering "there is no such page" has not failed, and is kept.
+     */
+    private suspend fun fetch(word: String, wiki: String): String? {
+        val response = client.get("https://$wiki.wiktionary.org/w/api.php") {
+            translationTimeouts(settings.settings.value)
+
+            parameter("action", "query")
+            parameter("prop", "extracts")
+            parameter("titles", word)
+            // The page as text rather than as markup, with its headings still
+            // marked as headings - which is the only thing separating what a
+            // word means from what part of speech it is.
+            parameter("explaintext", "1")
+            parameter("exsectionformat", "wiki")
+            // A word written another way is the same word.
+            parameter("redirects", "1")
+            parameter("format", "json")
+            parameter("formatversion", "2")
+        }
+
+        if (!response.status.isSuccess()) return null
+
+        return response.extract().also { cache.put(wiki, word, it) }
+    }
+
+    /** The page's own text, or null where the wiki has no page under that title. */
+    private suspend fun HttpResponse.extract(): String? = runCatching {
+        val page = json.parseToJsonElement(bodyAsText())
+            .jsonObject["query"]
+            ?.jsonObject
+            ?.get("pages")
+            ?.jsonArray
+            ?.firstOrNull()
+            ?.jsonObject
+            ?: return@runCatching null
+
+        // A wiki says "there is no such page" rather than failing to answer.
+        if (page.isMissing()) return@runCatching null
+
+        page["extract"]?.jsonPrimitive?.content
+    }.getOrNull()
+}
+
+private fun JsonObject.isMissing(): Boolean =
+    this["missing"]?.jsonPrimitive?.content?.equals("true", ignoreCase = true) == true
+
+/**
+ * The reading of one page as the entry the rest of the app sees, said once
+ * rather than at each of the three places [WiktionaryPages.entryFor] can end.
+ */
+private fun WiktionaryReading.asEntry(word: String, form: String? = null): WordEntry = WordEntry(
+    word = word,
+    meanings = meanings,
+    form = form,
+    related = related,
+)
+
+/**
+ * The reading with the line that was only a pointer taken out of it.
+ *
+ * Reached when the base form it pointed at has no page of its own, and what is
+ * left has to be the entry without the grammar: the grammar has somewhere of its
+ * own to go - see [WordEntry.form] - and printed in both places it reads as a
+ * meaning of the word, which is the one thing it is not.
+ */
+private fun WiktionaryReading.withoutTheForm(): WiktionaryReading = copy(
+    meanings = meanings
+        .mapIndexed { index, meaning ->
+            if (index == 0) meaning.copy(senses = meaning.senses.drop(1)) else meaning
+        }
+        .filter { it.senses.isNotEmpty() },
+)

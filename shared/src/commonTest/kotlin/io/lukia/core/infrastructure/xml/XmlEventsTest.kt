@@ -12,15 +12,15 @@ class XmlEventsTest {
 
         assertEquals(
             listOf("p", "em"),
-            events.filterIsInstance<XmlEvent.Open>().map { it.name }
+            events.filterIsInstance<XmlEvent.Open>().map { it.name },
         )
         assertEquals(
             listOf("Call me ", "Ishmael", "."),
-            events.filterIsInstance<XmlEvent.Text>().map { it.text }
+            events.filterIsInstance<XmlEvent.Text>().map { it.text },
         )
         assertEquals(
             listOf("em", "p"),
-            events.filterIsInstance<XmlEvent.Close>().map { it.name }
+            events.filterIsInstance<XmlEvent.Close>().map { it.name },
         )
     }
 
@@ -87,7 +87,6 @@ class XmlEventsTest {
         assertEquals("kept", text)
     }
 
-    /** A `>` inside an attribute is part of its value, not the end of the tag. */
     @Test
     fun anAngleBracketInsideAnAttributeDoesNotEndTheTag() {
         val open = xmlEvents("""<img alt="a > b" src="x.png"/>""")

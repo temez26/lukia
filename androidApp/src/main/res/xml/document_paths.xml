@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    What the app's own FileProvider will hand out, which is the one directory
+    copies of shared-in books are written to - see AndroidIncomingDocumentStore.
+    Deliberately not the whole of files/: a provider is a door, and it should
+    open onto exactly the room it is for.
+-->
+<paths>
+    <files-path name="incoming" path="incoming/" />
+</paths>

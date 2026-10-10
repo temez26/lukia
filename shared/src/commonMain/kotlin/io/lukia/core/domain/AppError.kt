@@ -38,14 +38,31 @@ sealed interface AppError {
     /** Something is set up to translate, and it did not come back with words. */
     data object TranslationFailed : AppError
 
-    data class Unexpected(val cause: String? = null) : AppError
+    /**
+     * The catch-all, carrying words written for a reader or none at all.
+     *
+     * [explanation] is prose somebody wrote on purpose - "check the server is
+     * running", "that passage is too long" - and never a throwable's own
+     * message. `AppErrorDisplay` puts whatever is here on screen, and a
+     * decoder's message is addressed to whoever wrote the decoder; on the
+     * desktop it is routinely a file path with the reader's own name in it.
+     *
+     * So [toAppError] no longer fills this field. What is lost that way is
+     * recorded where the throwable still had a stack trace.
+     */
+    data class Unexpected(val explanation: String? = null) : AppError
 }
 
 /**
  * Carries an [AppError] through [Result], whose failure channel is typed to
  * [Throwable]. Not thrown across layers by hand - use [asFailure].
+ *
+ * Open so a feature can attach detail of its own without core learning what that
+ * detail is: everything here still reads it as an app error, and whoever has a
+ * decision to make catches the subclass - see
+ * `features/translate/infrastructure/TranslationFailure.kt`.
  */
-class AppErrorException(val error: AppError) : Exception(error.toString())
+open class AppErrorException(val error: AppError) : Exception(error.toString())
 
 fun AppError.asFailure(): Result<Nothing> = Result.failure(AppErrorException(this))
 
@@ -53,10 +70,20 @@ fun AppError.asFailure(): Result<Nothing> = Result.failure(AppErrorException(thi
  * Narrows any throwable to the app's own vocabulary. Everything the app raises
  * deliberately survives as itself; everything else lands in
  * [AppError.Unexpected] rather than escaping unhandled.
+ *
+ * Deliberately lossy for that second kind. A throwable's `message` is written
+ * for whoever wrote the code that threw it, and this is the one place it could
+ * reach a screen - `FileNotFoundException` says `/Users/someone/Documents/...`,
+ * and Ktor puts the whole request URL in one. Nothing here can tell those from
+ * the sentences the app writes for readers, so it keeps neither.
+ *
+ * Less is lost than it looks: by the time a throwable arrives here it has
+ * crossed a `withContext` and the coroutine machinery, and the frames worth
+ * having are gone. Whatever raised it is where it is worth writing down.
  */
 fun Throwable.toAppError(): AppError = when (this) {
     is AppErrorException -> error
-    else -> AppError.Unexpected(message)
+    else -> AppError.Unexpected()
 }
 
 /**
@@ -64,11 +91,15 @@ fun Throwable.toAppError(): AppError = when (this) {
  * swallowing it - a cancelled coroutine is how a scope shuts down, not a failure
  * to report, and catching it breaks structured concurrency.
  *
- * This is the boundary every ViewModel runs its work through: use cases wrap the
+ * The boundary every ViewModel runs its work through: use cases wrap the
  * failures they anticipate in a [Result] and let the rest throw, and this is
- * what makes sure the rest still reaches the user as an [AppError.Unexpected]
- * rather than dying inside the coroutine.
+ * what gets the rest to the user as an [AppError.Unexpected] rather than dying
+ * inside the coroutine.
  */
+// The one place a Throwable is caught on purpose. This is the boundary the rule
+// exists to protect - narrowing it to named types is exactly what it must not do,
+// because what it is for is the failure nobody named.
+@Suppress("TooGenericExceptionCaught")
 inline fun <T> runCatchingApp(block: () -> T): Result<T> = try {
     Result.success(block())
 } catch (cancellation: CancellationException) {

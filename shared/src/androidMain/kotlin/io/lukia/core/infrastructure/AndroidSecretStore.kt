@@ -4,7 +4,7 @@ import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
-import io.lukia.core.domain.SecretStore
+import io.lukia.core.domain.storage.SecretStore
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
@@ -14,11 +14,11 @@ import javax.crypto.spec.GCMParameterSpec
 /**
  * Secrets encrypted by a key that never leaves the Android keystore.
  *
- * The ciphertext lives in ordinary preferences, which is fine, because the key
- * that would decrypt it does not: it is generated inside the keystore and can
- * only be used through it. On a device with hardware backing it is held in the
- * secure element, and on one without it is still outside this app's own storage.
- * Copying the preferences file off the device yields bytes nobody can read.
+ * The ciphertext lives in ordinary preferences, which is fine because the key
+ * does not: it is generated inside the keystore and can only be used through it,
+ * held in the secure element where there is hardware backing and outside this
+ * app's storage where there is not. Copying the preferences file off the device
+ * yields bytes nobody can read.
  *
  * Written against the platform rather than through `EncryptedSharedPreferences`
  * so that this depends on nothing beyond Android itself - and so it keeps
@@ -32,10 +32,13 @@ class AndroidSecretStore(context: Context) : SecretStore {
     override fun getSecret(key: String): String? {
         val stored = preferences.getString(key, null) ?: return null
 
-        // A secret that cannot be decrypted is gone: the keystore key is
-        // dropped when the screen lock changes or the app is restored onto a
-        // different device, and there is nothing to recover. Reported as absent
-        // rather than as a failure, so the reader is asked for it again.
+        // A secret that cannot be decrypted is gone, with nothing to recover.
+        // That happens on a restore: the key is generated in this device's
+        // keystore and never leaves it, so preferences carried onto another
+        // phone arrive as ciphertext with nothing to open them. Changing the
+        // screen lock does not do it - that invalidates keys bound to the user's
+        // authentication, and this one deliberately is not, see below. Reported
+        // as absent rather than a failure, so the reader is asked again.
         return runCatching { decrypt(stored) }.getOrNull()
     }
 
@@ -84,15 +87,20 @@ class AndroidSecretStore(context: Context) : SecretStore {
         generator.init(
             KeyGenParameterSpec.Builder(
                 KEY_ALIAS,
-                KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+                KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
             )
                 .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                 .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                // Deliberately not requiring the device to be unlocked: a book
-                // is read on a train with the screen on, and a translation that
-                // failed until the reader authenticated again would be a worse
-                // trade than the one this is making.
-                .build()
+                // Deliberately requiring no authentication: a book is read on a
+                // train with the screen on, and a translation that failed until
+                // the reader authenticated again is the worse trade.
+                //
+                // What that gives up is worth naming. The key can be used
+                // whenever this app can run, so it defends the ciphertext
+                // against leaving the device - an extracted preferences file, an
+                // image of the storage, a backup - and not against code already
+                // running as this app on an unlocked phone.
+                .build(),
         )
 
         return generator.generateKey()

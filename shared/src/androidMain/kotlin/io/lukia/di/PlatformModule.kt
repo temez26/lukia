@@ -1,23 +1,31 @@
 package io.lukia.di
 
-import io.lukia.core.domain.DocumentWorkspace
-import io.lukia.core.domain.SecretStore
-import io.lukia.core.domain.SettingsStore
 import app.cash.sqldelight.db.SqlDriver
+import io.lukia.core.domain.diagnostics.CrashStore
+import io.lukia.core.domain.document.IncomingDocumentStore
+import io.lukia.core.domain.storage.DocumentWorkspace
+import io.lukia.core.domain.storage.SecretStore
+import io.lukia.core.domain.storage.SettingsStore
 import io.lukia.core.infrastructure.AndroidDocumentWorkspace
+import io.lukia.core.infrastructure.AndroidIncomingDocumentStore
 import io.lukia.core.infrastructure.AndroidSecretStore
 import io.lukia.core.infrastructure.AndroidSettingsStore
+import io.lukia.core.infrastructure.diagnostics.AndroidCrashStore
 import io.lukia.core.infrastructure.lukiaSqlDriver
-import io.lukia.features.import.infrastructure.AndroidDocumentAnalyzer
-import io.lukia.features.import.infrastructure.AndroidFolderScanner
-import io.lukia.features.import.domain.DocumentAnalyzer
-import io.lukia.features.import.domain.FolderScanner
+import io.lukia.features.library.domain.DocumentAnalyzer
+import io.lukia.features.library.domain.FolderScanner
+import io.lukia.features.library.infrastructure.importing.AndroidDocumentAnalyzer
+import io.lukia.features.library.infrastructure.importing.AndroidFolderScanner
 import org.koin.dsl.module
 
 val platformModule = module {
 
     single<DocumentAnalyzer> {
-        AndroidDocumentAnalyzer(get())
+        AndroidDocumentAnalyzer(get(), get())
+    }
+
+    single<IncomingDocumentStore> {
+        AndroidIncomingDocumentStore(get())
     }
 
     single<DocumentWorkspace> {
@@ -32,12 +40,15 @@ val platformModule = module {
         AndroidSecretStore(get())
     }
 
+    single<CrashStore> {
+        AndroidCrashStore(get())
+    }
+
     single<SqlDriver> {
-        lukiaSqlDriver(get())
+        lukiaSqlDriver(get(), get())
     }
 
     single<FolderScanner> {
         AndroidFolderScanner(get())
     }
-
 }

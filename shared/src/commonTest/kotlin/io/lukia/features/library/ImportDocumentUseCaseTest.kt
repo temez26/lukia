@@ -1,13 +1,14 @@
 package io.lukia.features.library
 
-import io.lukia.core.domain.DocumentInfo
 import io.lukia.core.domain.AppError
+import io.lukia.core.domain.document.CoverImage
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.domain.document.PickedDocument
+import io.lukia.core.domain.document.TestDocuments
 import io.lukia.core.domain.toAppError
-import io.lukia.core.domain.DocumentType
-import io.lukia.core.domain.PickedDocument
-import io.lukia.core.domain.TestDocuments
-import io.lukia.features.import.domain.DocumentAnalyzer
 import io.lukia.features.library.application.ImportDocumentUseCase
+import io.lukia.features.library.domain.DocumentAnalyzer
 import io.lukia.features.library.domain.LibraryRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -24,14 +25,14 @@ class ImportDocumentUseCaseTest {
     @Test
     fun importsPdfDocument() = runTest {
         val document = TestDocuments.pdf(
-            location = "/test/book.pdf"
+            location = "/test/book.pdf",
         )
 
         val documentInfo = DocumentInfo(
             document = document,
             type = DocumentType.PDF,
             exists = true,
-            sizeBytes = 1024L
+            sizeBytes = 1024L,
         )
 
         val analyzer = FakeDocumentAnalyzer(documentInfo)
@@ -40,7 +41,7 @@ class ImportDocumentUseCaseTest {
         val useCase = ImportDocumentUseCase(
             documentAnalyzer = analyzer,
             libraryRepository = repository,
-            dispatcher = UnconfinedTestDispatcher(testScheduler)
+            dispatcher = UnconfinedTestDispatcher(testScheduler),
         )
 
         val result = useCase(document)
@@ -53,14 +54,14 @@ class ImportDocumentUseCaseTest {
     @Test
     fun importsEpubDocument() = runTest {
         val document = TestDocuments.epub(
-            location = "/test/book.epub"
+            location = "/test/book.epub",
         )
 
         val documentInfo = DocumentInfo(
             document = document,
             type = DocumentType.EPUB,
             exists = true,
-            sizeBytes = 2048L
+            sizeBytes = 2048L,
         )
 
         val analyzer = FakeDocumentAnalyzer(documentInfo)
@@ -69,7 +70,7 @@ class ImportDocumentUseCaseTest {
         val useCase = ImportDocumentUseCase(
             documentAnalyzer = analyzer,
             libraryRepository = repository,
-            dispatcher = UnconfinedTestDispatcher(testScheduler)
+            dispatcher = UnconfinedTestDispatcher(testScheduler),
         )
 
         val result = useCase(document)
@@ -82,14 +83,14 @@ class ImportDocumentUseCaseTest {
     @Test
     fun rejectsUnknownDocumentType() = runTest {
         val document = TestDocuments.unsupported(
-            location = "/test/book.mobi"
+            location = "/test/book.mobi",
         )
 
         val documentInfo = DocumentInfo(
             document = document,
             type = DocumentType.UNKNOWN,
             exists = true,
-            sizeBytes = 512L
+            sizeBytes = 512L,
         )
 
         val analyzer = FakeDocumentAnalyzer(documentInfo)
@@ -98,7 +99,7 @@ class ImportDocumentUseCaseTest {
         val useCase = ImportDocumentUseCase(
             documentAnalyzer = analyzer,
             libraryRepository = repository,
-            dispatcher = UnconfinedTestDispatcher(testScheduler)
+            dispatcher = UnconfinedTestDispatcher(testScheduler),
         )
 
         val result = useCase(document)
@@ -106,7 +107,7 @@ class ImportDocumentUseCaseTest {
         assertFalse(result.isSuccess)
         assertEquals(
             AppError.UnsupportedFileType,
-            result.exceptionOrNull()?.toAppError()
+            result.exceptionOrNull()?.toAppError(),
         )
         assertTrue(repository.documents.isEmpty())
     }
@@ -114,11 +115,11 @@ class ImportDocumentUseCaseTest {
     @Test
     fun analyzerFailureIsPropagated() = runTest {
         val document = TestDocuments.pdf(
-            location = "/test/book.pdf"
+            location = "/test/book.pdf",
         )
 
         val expectedException = IllegalArgumentException(
-            "File does not exist"
+            "File does not exist",
         )
 
         val analyzer = FailingDocumentAnalyzer(expectedException)
@@ -127,7 +128,7 @@ class ImportDocumentUseCaseTest {
         val useCase = ImportDocumentUseCase(
             documentAnalyzer = analyzer,
             libraryRepository = repository,
-            dispatcher = UnconfinedTestDispatcher(testScheduler)
+            dispatcher = UnconfinedTestDispatcher(testScheduler),
         )
 
         val exception = try {
@@ -146,25 +147,25 @@ class ImportDocumentUseCaseTest {
     }
 
     private class FakeDocumentAnalyzer(
-        private val documentInfo: DocumentInfo
+        private val documentInfo: DocumentInfo,
     ) : DocumentAnalyzer {
 
+        override suspend fun exists(document: PickedDocument): Boolean = true
+
         override suspend fun analyze(
-            document: PickedDocument
-        ): DocumentInfo {
-            return documentInfo
-        }
+            document: PickedDocument,
+        ): DocumentInfo = documentInfo
     }
 
     private class FailingDocumentAnalyzer(
-        private val exception: Exception
+        private val exception: Exception,
     ) : DocumentAnalyzer {
 
+        override suspend fun exists(document: PickedDocument): Boolean = true
+
         override suspend fun analyze(
-            document: PickedDocument
-        ): DocumentInfo {
-            throw exception
-        }
+            document: PickedDocument,
+        ): DocumentInfo = throw exception
     }
 
     private class FakeLibraryRepository : LibraryRepository {
@@ -175,13 +176,20 @@ class ImportDocumentUseCaseTest {
             documents.add(document)
         }
 
-        override suspend fun getDocuments(): List<DocumentInfo> {
-            return documents.toList()
+        override suspend fun getDocuments(): List<DocumentInfo> =
+            documents.map { it.copy(coverImage = null) }
+
+        override suspend fun getDocument(location: String): DocumentInfo? = documents.firstOrNull {
+            it.document.location == location
         }
 
-        override suspend fun getDocument(location: String): DocumentInfo? {
-            return documents.firstOrNull { it.document.location == location }
-        }
+        /** Read by location, exactly as the real store reads it. */
+        override suspend fun coverFor(location: String): CoverImage? =
+            getDocument(location)?.coverImage
+
+        /** Answered the expensive way; nothing in a test cares what it costs. */
+        override suspend fun knownLocations(): Set<String> =
+            getDocuments().mapTo(mutableSetOf()) { it.document.location }
 
         override suspend fun setFavorite(location: String, isFavorite: Boolean) {
             val index = documents.indexOfFirst { it.document.location == location }

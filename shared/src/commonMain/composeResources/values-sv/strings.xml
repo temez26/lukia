@@ -1,0 +1,537 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Svenska.
+
+    Citattecken är ”så här” i båda ändar. Mellan ett tal och dess enhet står ett
+    hårt mellanslag \u00A0 - "50 %", inte "50%" - så att talet aldrig blir kvar
+    i slutet av en rad utan sin enhet. Skrivet som kod eftersom det annars inte
+    går att skilja från ett vanligt mellanslag.
+-->
+<resources>
+
+    <string name="nav_home">Hem</string>
+    <string name="nav_search">Sök</string>
+    <string name="nav_library">Bibliotek</string>
+
+    <string name="action_cancel">Avbryt</string>
+    <string name="action_close">Stäng</string>
+    <string name="action_delete">Ta bort</string>
+    <string name="action_done">Klar</string>
+    <string name="action_go_back">Tillbaka</string>
+    <string name="action_try_again">Försök igen</string>
+    <string name="action_close_panel">Stäng den här panelen</string>
+    <string name="action_explain">Mer om %1$s</string>
+    <string name="state_loading">Läser in</string>
+
+    <string name="menu_book_details">Bokens uppgifter</string>
+    <string name="menu_favourite">Lägg till i favoriter</string>
+    <string name="menu_unfavourite">Ta bort från favoriter</string>
+    <string name="menu_select_books">Välj böcker</string>
+    <string name="menu_refresh_details">Uppdatera uppgifter</string>
+    <string name="menu_delete_from_library">Ta bort från biblioteket</string>
+
+    <string name="library_details_refreshed">Uppgifterna uppdaterade</string>
+
+    <plurals name="library_already_in_library">
+        <item quantity="one">Redan i ditt bibliotek</item>
+        <item quantity="other">Alla %1$d finns redan i ditt bibliotek</item>
+    </plurals>
+
+    <string name="library_imported_with_existing">%1$d importerade, %2$d fanns redan</string>
+    <string name="library_imported_with_failures">%1$d importerade, %2$d överhoppade</string>
+    <string name="library_imported_mixed">%1$d importerade, %2$d fanns redan, %3$d överhoppade</string>
+
+    <plurals name="library_bulk_refreshed">
+        <item quantity="one">Uppgifterna för 1 bok uppdaterade</item>
+        <item quantity="other">Uppgifterna för %1$d böcker uppdaterade</item>
+    </plurals>
+    <plurals name="library_bulk_updated">
+        <item quantity="one">1 bok uppdaterad</item>
+        <item quantity="other">%1$d böcker uppdaterade</item>
+    </plurals>
+    <plurals name="library_bulk_reset">
+        <item quantity="one">1 bok markerad som oläst</item>
+        <item quantity="other">%1$d böcker markerade som olästa</item>
+    </plurals>
+    <plurals name="library_bulk_deleted">
+        <item quantity="one">1 bok borttagen från biblioteket</item>
+        <item quantity="other">%1$d böcker borttagna från biblioteket</item>
+    </plurals>
+
+    <plurals name="library_bulk_skipped">
+        <item quantity="one">%1$s, 1 överhoppad</item>
+        <item quantity="other">%1$s, %2$d överhoppade</item>
+    </plurals>
+
+    <string name="library_select_books">Välj böcker</string>
+    <string name="library_select_all">Välj alla</string>
+    <string name="library_deselect_all">Avmarkera alla</string>
+    <string name="library_selected_count">%1$d valda</string>
+    <string name="library_bulk_running_refresh">Uppdaterar %1$d/%2$d…</string>
+    <string name="library_bulk_running_favourite">Lägger till i favoriter %1$d/%2$d…</string>
+    <string name="library_bulk_running_unfavourite">Tar bort från favoriter %1$d/%2$d…</string>
+    <string name="library_bulk_running_reset">Markerar som oläst %1$d/%2$d…</string>
+    <string name="library_bulk_running_delete">Tar bort %1$d/%2$d…</string>
+
+    <string name="library_delete_confirm_message">Filerna ligger kvar där de är på disken.</string>
+    <plurals name="library_delete_confirm_title">
+        <item quantity="one">Ta bort 1 bok från ditt bibliotek?</item>
+        <item quantity="other">Ta bort %1$d böcker från ditt bibliotek?</item>
+    </plurals>
+
+    <string name="error_document_not_found_title">Filen hittades inte</string>
+    <string name="error_document_not_found_message">Den kan ha flyttats eller tagits bort från ditt bibliotek.</string>
+    <string name="error_unsupported_file_title">Filformatet stöds inte</string>
+    <string name="error_unsupported_file_message">Lukia öppnar PDF- och EPUB-filer.</string>
+    <string name="error_format_not_readable_title">Går inte att läsa än</string>
+    <string name="error_format_not_readable_message">Att läsa EPUB-filer är inte klart än – PDF-filer öppnas redan.</string>
+    <string name="error_empty_folder_title">Inget att importera</string>
+    <string name="error_empty_folder_message">Inga böcker hittades i den här mappen eller i mapparna inuti den.</string>
+    <string name="error_translation_unavailable_title">Översättning är inte inställd</string>
+    <string name="error_translation_unavailable_message">Välj ett språk att översätta till i inställningarna och lägg till en översättningstjänst.</string>
+    <string name="error_translation_failed_title">Kunde inte översätta det</string>
+    <string name="error_translation_failed_message">Översättningstjänsten svarade inte. Försök igen.</string>
+    <string name="error_unexpected_title">Något gick fel</string>
+    <string name="error_unexpected_message">Ett oväntat fel inträffade.</string>
+
+    <string name="theme_system">System</string>
+    <string name="theme_light">Ljust</string>
+    <string name="theme_dark">Mörkt</string>
+
+    <string name="palette_crisp">Skarp</string>
+    <string name="palette_crisp_detail">Vita kort på grått, äkta svart om natten.</string>
+    <string name="palette_paper">Papper</string>
+    <string name="palette_paper_detail">Varmt papper och bläck, skonsamt för ögonen under långa stunder.</string>
+    <string name="palette_slate">Skiffer</string>
+    <string name="palette_slate_detail">Svalt neutrala gråtoner och platt, stillsam yta.</string>
+
+    <string name="accent_themed">Tema</string>
+    <string name="accent_blue">Blå</string>
+    <string name="accent_violet">Violett</string>
+    <string name="accent_green">Grön</string>
+    <string name="accent_amber">Bärnsten</string>
+    <string name="accent_rose">Rosa</string>
+    <string name="accent_graphite">Grafit</string>
+
+    <string name="motion_calm">Lugn</string>
+    <string name="motion_calm_detail">Snabba övertoningar. Inget studsar, glider eller gnistrar.</string>
+    <string name="motion_standard">Vanlig</string>
+    <string name="motion_standard_detail">En kort öppning, och vyer som rör sig åt det håll du skickade dem.</string>
+    <string name="motion_playful">Lekfull</string>
+    <string name="motion_playful_detail">En längre öppning, fjädrande landning och längre väg att färdas.</string>
+
+    <string name="pdf_layout_original">Original</string>
+    <string name="pdf_layout_text">Text</string>
+
+    <string name="reader_theme_light">Ljust</string>
+    <string name="reader_theme_sepia">Sepia</string>
+    <string name="reader_theme_dark">Mörkt</string>
+    <string name="reader_typeface_serif">Antikva</string>
+    <string name="reader_typeface_sans">Grotesk</string>
+    <string name="reader_alignment_ragged">Ojämn kant</string>
+    <string name="reader_alignment_justified">Marginaljusterad</string>
+    <string name="reader_spacing_tight">Tät</string>
+    <string name="reader_spacing_normal">Normal</string>
+    <string name="reader_spacing_relaxed">Luftig</string>
+    <string name="reader_figure_small">Liten</string>
+    <string name="reader_figure_normal">Normal</string>
+    <string name="reader_figure_large">Stor</string>
+    <string name="reader_figure_fill">Fyll</string>
+    <string name="reader_width_percent">%1$d\u00A0%</string>
+
+    <string name="library_layout_grid">Rutnät</string>
+    <string name="library_layout_list">Lista</string>
+
+    <string name="gesture_off">Av</string>
+    <string name="passage_unit_word">Ord</string>
+    <string name="passage_unit_sentence">Mening</string>
+    <string name="passage_unit_paragraph">Stycke</string>
+
+    <string name="provider_anthropic">Anthropic</string>
+    <string name="provider_openai">OpenAI</string>
+    <string name="provider_local">Lokal</string>
+
+    <string name="word_lookup_google">Google</string>
+    <string name="word_lookup_google_footnote">Snabb och gratis, och den ser aldrig boken – bara ordet. Lägg till en Cloud Translation-nyckel nedan för att använda Googles stödda API i stället för den öppna slutpunkten.</string>
+    <string name="word_lookup_dictionary">Ordbok</string>
+    <string name="word_lookup_dictionary_footnote">Wiktionarys egen artikel om ordet: varje betydelse det har, i stället för den enda något gissade sig till. Gratis, och inget att ställa in.</string>
+
+    <string name="reader_open_in_site">Öppna i %1$s</string>
+    <string name="word_site_google">Google</string>
+    <string name="word_site_google_footnote">Google Översätt, med ordet redan i rutan – så att alternativen och den omvända sökningen är en tryckning bort.</string>
+    <string name="word_site_wiktionary">Wiktionary</string>
+    <string name="word_site_wiktionary_footnote">Hela artikeln som Wiktionary lägger upp den: varje språk som stavar ordet så här, dess böjningar och dess exempel.</string>
+    <string name="word_site_sanakirja">Sanakirja.org</string>
+    <string name="word_site_sanakirja_footnote">sanakirja.org, som är värd besöket särskilt för de nordiska språken. Öppnas på det språkpar du läser.</string>
+    <string name="word_site_custom">Egen</string>
+    <string name="word_site_custom_footnote">Vilken webbplats som helst med en sökbar adress. Skriv {word} där ordet ska stå, och {to} eller {from} för språken om webbplatsen tar emot dem.</string>
+
+    <string name="shelf_all">Alla</string>
+    <string name="shelf_reading">Pågående</string>
+    <string name="shelf_unread">Olästa</string>
+    <string name="shelf_finished">Lästa</string>
+
+    <string name="sort_added">Tillagd</string>
+    <string name="sort_recently_added">Nyligen tillagda</string>
+    <string name="sort_title">Titel A–Ö</string>
+    <string name="sort_title_reversed">Titel Ö–A</string>
+    <string name="sort_author">Författare A–Ö</string>
+    <string name="sort_last_read">Nyligen lästa</string>
+    <string name="sort_largest">Störst först</string>
+
+    <string name="home_title">Hem</string>
+    <string name="home_shelf_recent">Senaste</string>
+    <string name="home_shelf_recently_added">Nyligen tillagda</string>
+    <string name="home_shelf_almost_done">Nästan klara</string>
+    <string name="home_shelf_unread">Olästa</string>
+    <string name="home_shelf_favorites">Favoriter</string>
+    <string name="home_shelf_finished">Lästa</string>
+    <string name="home_browse_by_category">Bläddra efter ämne</string>
+    <string name="home_see_all">Visa alla</string>
+
+    <string name="library_title">Bibliotek</string>
+    <string name="library_actions">Bibliotekets åtgärder</string>
+    <string name="library_close_menu">Stäng menyn</string>
+    <string name="library_import_books">Importera böcker</string>
+    <string name="library_add_folder">Lägg till mapp</string>
+    <string name="library_importing">Importerar…</string>
+    <string name="library_importing_count">Importerar %1$d av %2$d…</string>
+    <string name="library_import_stop">Stoppa</string>
+    <string name="library_settings">Inställningar</string>
+    <string name="library_missing_files">Saknade filer (%1$d)</string>
+    <string name="library_duplicates">Dubbletter (%1$d)</string>
+
+    <string name="filter_favourites">Favoriter</string>
+    <string name="filter_clear">Rensa</string>
+    <string name="filter_format">Format</string>
+    <string name="filter_all_formats">Alla format</string>
+    <string name="filter_category">Ämne</string>
+    <string name="filter_all_categories">Alla ämnen</string>
+    <string name="filter_author">Författare</string>
+    <string name="filter_all_authors">Alla författare</string>
+    <string name="filter_language">Språk</string>
+    <string name="filter_all_languages">Alla språk</string>
+
+    <string name="search_title">Sök</string>
+    <plurals name="search_n_books">
+        <item quantity="one">Sök i 1 bok</item>
+        <item quantity="other">Sök i %1$d böcker</item>
+    </plurals>
+    <string name="search_your_library">Sök i ditt bibliotek</string>
+    <string name="search_clear">Rensa sökningen</string>
+    <string name="search_placeholder">Sök på titel eller författare</string>
+    <string name="search_recent">Senaste sökningarna</string>
+    <string name="search_forget">Glöm %1$s</string>
+    <string name="search_empty_title">Sök i ditt bibliotek</string>
+    <string name="search_empty_message">Skriv en titel eller en författare för att hitta en bok.</string>
+
+    <string name="library_no_results_title">Inga träffar</string>
+    <string name="library_no_matches_filtered">Inget i ditt bibliotek matchar alla filter du har satt.</string>
+    <string name="library_no_matches_term">Inga böcker matchar ”%1$s”.</string>
+    <string name="library_no_matches_filtered_term">Inget som matchar ”%1$s” blir kvar när dina filter tillämpas.</string>
+    <string name="library_empty_title">Ditt bibliotek är tomt</string>
+    <string name="library_empty_message">Välj omslaget för att lägga till en PDF-, EPUB-, Word- eller textfil.</string>
+
+    <string name="book_actions">Bokens åtgärder</string>
+    <string name="book_unavailable">Inte tillgänglig</string>
+    <string name="book_missing_file">Den här filen är inte tillgänglig längre</string>
+    <string name="book_format_and_size">%1$s · %2$s</string>
+    <string name="book_progress_percent">· %1$d\u00A0%</string>
+
+    <string name="format_pdf">PDF</string>
+    <string name="format_epub">EPUB</string>
+    <string name="format_docx">Word</string>
+    <string name="format_text">Text</string>
+    <string name="format_markdown">Markdown</string>
+    <string name="format_unknown">Okänt</string>
+
+    <string name="author_list_separator">, </string>
+    <string name="author_list_last">%1$s och %2$s</string>
+
+    <string name="book_about">Om boken</string>
+    <string name="book_more">Mer</string>
+    <string name="book_less">Mindre</string>
+    <string name="book_information">Uppgifter</string>
+    <string name="book_subjects">Ämnen</string>
+    <string name="book_publisher">Förlag</string>
+    <string name="book_published">Utgiven</string>
+    <string name="book_language">Språk</string>
+    <string name="book_length">Längd</string>
+    <string name="book_format">Format</string>
+    <string name="book_size">Storlek</string>
+    <string name="book_isbn">ISBN</string>
+
+    <plurals name="book_length_pages">
+        <item quantity="one">1 sida</item>
+        <item quantity="other">%1$d sidor</item>
+    </plurals>
+    <string name="book_progress_finished">Läst</string>
+    <string name="book_progress_not_started">Inte påbörjad</string>
+    <string name="book_progress_page_of">Sida %1$d av %2$d</string>
+    <string name="book_read_continue">Fortsätt läsa</string>
+    <string name="book_read_again">Läs igen</string>
+    <string name="book_read_start">Börja läsa</string>
+
+    <string name="selection_refresh">Uppdatera uppgifter</string>
+    <string name="selection_favourite">Lägg till i favoriter</string>
+    <string name="selection_unfavourite">Ta bort från favoriter</string>
+    <string name="selection_mark_unread">Markera som oläst</string>
+    <string name="selection_delete">Ta bort från biblioteket</string>
+
+    <string name="reader_close_book">Stäng boken</string>
+    <string name="reader_close_the_book">Stäng boken</string>
+    <string name="reader_contents">Innehåll</string>
+    <string name="reader_reading_settings">Läsinställningar</string>
+    <string name="reader_page_of_count">%1$d / %2$d</string>
+    <string name="reader_page_x_of_y">Sida %1$d av %2$d</string>
+    <string name="reader_page_x_of_y_percent">Sida %1$d av %2$d, %3$d procent igenom</string>
+    <string name="reader_percent_read">%1$d procent läst</string>
+    <string name="reader_percent">%1$d\u00A0%</string>
+    <string name="reader_percent_start">0</string>
+
+    <string name="reader_chapters">Kapitel</string>
+    <string name="reader_collapse_all">Fäll ihop alla</string>
+    <string name="reader_expand_all">Fäll ut alla</string>
+    <string name="reader_show_sections_of">Visa avsnitten i %1$s</string>
+    <string name="reader_hide_sections_of">Dölj avsnitten i %1$s</string>
+
+    <string name="reader_section_page">Sida</string>
+    <string name="reader_section_text_and_images">Text och bilder</string>
+    <string name="reader_section_keyboard">Tangentbord</string>
+    <string name="reader_setting_layout">Layout</string>
+    <string name="reader_setting_theme">Tema</string>
+    <string name="reader_setting_page_width">Sidbredd</string>
+    <string name="reader_setting_text_size">Textstorlek</string>
+    <string name="reader_setting_line_spacing">Radavstånd</string>
+    <string name="reader_setting_alignment">Justering</string>
+    <string name="reader_setting_typeface">Typsnitt</string>
+    <string name="reader_setting_image_size">Bildstorlek</string>
+    <string name="reader_keep_screen_awake">Håll skärmen tänd</string>
+    <string name="reader_note_pdf_as_text">PDF:ens ord och bilder, ombrutna av den här appen. Filens egen sidlayout behålls inte.</string>
+    <string name="reader_note_fixed_layout">De här gäller böcker med flytande text – den här har en egen fast layout.</string>
+    <string name="reader_note_fixed_layout_switchable">De här gäller böcker med flytande text – den här har en egen fast layout. Läs den som text för att kunna använda dem.</string>
+    <string name="reader_decrease_text_size">Minska textstorleken</string>
+    <string name="reader_increase_text_size">Öka textstorleken</string>
+    <string name="reader_text_size_percent">Textstorlek %1$d procent</string>
+    <string name="reader_setting_and_value">%1$s. %2$s</string>
+    <string name="reader_close_the_list">Stäng listan</string>
+    <string name="reader_choose">Välj</string>
+
+    <string name="shortcut_turn_page">Bläddra</string>
+    <string name="shortcut_turn_page_keys">Blanksteg  PgDn  PgUp</string>
+    <string name="shortcut_scroll">Rulla</string>
+    <string name="shortcut_scroll_keys">↑  ↓</string>
+    <string name="shortcut_start_end">Början, slutet</string>
+    <string name="shortcut_start_end_keys">Home  End</string>
+    <string name="shortcut_resize_reflowable">Större, mindre</string>
+    <string name="shortcut_resize_fixed">Bredare, smalare</string>
+    <string name="shortcut_resize_keys">+  −  0</string>
+    <string name="shortcut_panels">Innehåll, inställningar</string>
+    <string name="shortcut_panels_keys">C  T</string>
+    <string name="shortcut_close_book">Stäng boken</string>
+    <string name="shortcut_close_book_keys">Esc</string>
+    <string name="shortcut_word_details">Mer om ett ord</string>
+    <string name="shortcut_word_details_keys">Tryck med två fingrar</string>
+    <string name="shortcut_tooltip">%1$s  %2$s</string>
+
+    <string name="word_looked_up_under">Uppslaget under ”%1$s”</string>
+    <string name="word_looking_it_up">Slår upp det…</string>
+    <string name="word_no_meaning">Det är allt ordboken har – ingen betydelse finns angiven.</string>
+    <string name="word_sense_number">%1$d.</string>
+    <string name="word_related">Besläktade ord</string>
+    <string name="word_translate_it">Översätt det</string>
+    <string name="word_show_original">Visa originalet</string>
+    <string name="word_show_translation">Visa översättningen</string>
+
+    <string name="reader_translation">Översättning</string>
+    <string name="reader_gesture_tap">Tryck</string>
+    <string name="reader_gesture_long_press">Tryck och håll</string>
+    <string name="reader_hold_again">Håll igen för mer om ett ord</string>
+    <string name="reader_notes_under_paragraph">Noter under stycket</string>
+    <string name="reader_translate_this_page">Översätt den här sidan</string>
+    <string name="reader_translate_as_you_read">Översätt medan du läser</string>
+    <string name="reader_keep_translating">Fortsätt översätta medan du läser</string>
+    <string name="reader_stop_translating">Sluta översätta medan du läser</string>
+    <string name="reader_show_translations">Visa översättningar</string>
+    <string name="reader_hide_translations">Dölj översättningarna</string>
+    <string name="reader_translate_on_screen">Översätt det som syns</string>
+    <string name="reader_translate_into">Översätt till</string>
+
+    <string name="reader_pdf_no_text">Den här PDF:en har ingen text att bryta om – dess sidor är bilder. Visas som sidor.</string>
+
+    <string name="settings_title">Inställningar</string>
+    <string name="settings_area_appearance">Utseende</string>
+    <string name="settings_area_reading">Läsning</string>
+    <string name="settings_area_translating">Översättning</string>
+    <string name="settings_area_ai_translation">Beta</string>
+    <string name="settings_beta">BETA</string>
+    <string name="settings_show">Visa</string>
+    <string name="settings_hide">Dölj</string>
+
+    <string name="settings_appearance">Utseende</string>
+    <string name="settings_appearance_footnote">System följer enhetens inställning för ljust och mörkt.</string>
+    <string name="settings_palette">Palett</string>
+    <string name="settings_palette_footnote">Vad appens ytor är gjorda av. Både ljust och mörkt följer den.</string>
+    <string name="settings_accent">Accentfärg</string>
+    <string name="settings_accent_footnote">Används för läsförloppet, valda rader och allt som gör något. Tema följer paletten.</string>
+    <string name="settings_motion">Rörelse</string>
+    <string name="settings_motion_footnote">Hur appen rör sig när den öppnas och när vyer byts. Knappar och kontroller svarar likadant vilket du än väljer.</string>
+
+    <string name="settings_the_page">Sidan</string>
+    <string name="settings_the_page_footnote">Hur varje bok öppnas. Läsarens egen panel ändrar samma inställningar med en bok framför dig.</string>
+    <string name="settings_text_and_images">Text och bilder</string>
+    <string name="settings_text_and_images_footnote">De här gäller böcker med flytande text. En PDF som läses som sina egna sidor fick sin typografi satt när filen gjordes, och inget av det här når den.</string>
+    <string name="settings_opening_a_pdf">Att öppna en PDF</string>
+    <string name="settings_opening_a_pdf_as_text">Nya PDF-filer bryts om av den här appen – dess typsnitt i den storlek du bad om, och översättningar inne i stycket i stället för ovanpå sidan. En inskanning utan text öppnas ändå som sina egna sidor.</string>
+    <string name="settings_opening_a_pdf_as_pages">Nya PDF-filer öppnas så som filens skapare la ut dem. Vilken som helst av dem kan ändå läsas som text från läsarens egen panel.</string>
+
+    <string name="settings_translate_into_footnote">Tryck på en mening medan du läser för att översätta den, och tryck igen för originalet.</string>
+    <string name="settings_pointing_at_the_book">Att peka på boken</string>
+    <string name="settings_pointing_footnote">Var och en gör en sak, alltid. Att göra det igen på samma stycke lägger tillbaka bokens egna ord – utom på ett ord du har slagit upp, där ett håll i stället öppnar mer om det.</string>
+    <string name="settings_tap_to_translate">Tryck på ett ord för att översätta det</string>
+    <string name="settings_asking_for_more">Att be om mer än ett ord</string>
+    <string name="settings_asking_for_more_footnote">En ordbok svarar på ett ord och inget större, så dessa gör ingenting förrän en översättningstjänst är inställd ovanför. Av här är samma av som reglagen under Översättning.</string>
+    <string name="settings_hold_again">Håll ett ord igen för mer om det</string>
+    <string name="settings_translating_ahead">Att översätta i förväg</string>
+    <string name="settings_translating_ahead_footnote">Båda är nya, och båda är långsamma och dyra: de översätter en skärmfull i taget i stället för det stycke du pekade på. Avstängda tills du ber om dem, och helt dolda för läsaren så länge.</string>
+    <string name="settings_on_screen_detail">Lägger till en knapp som översätter varje mening du ser, en gång.</string>
+    <string name="settings_as_you_read_detail">Lägger till en knapp som fortsätter översätta allt som rullar in tills du stänger av den. Det är den dyra.</string>
+
+    <string name="settings_ai_translation">AI-översättning</string>
+    <string name="settings_use_ai">Använd en översättningstjänst</string>
+    <string name="settings_use_ai_detail">Av slår Lukia upp ett enskilt ord i en gratis ordbok och gör inget mer – ingen nyckel att ange, inga reglage i läsaren. På kan den översätta hela meningar och stycken via en tjänst du ställer in och betalar för per stycke. Att stänga av behåller allt du har ställt in.</string>
+    <string name="settings_translation_service">Översättningstjänst</string>
+    <string name="settings_translation_service_footnote">Ingenting på den här sidan gör något förrän detta är inställt. Att slå upp ett ord under Översättning fungerar utan den; en hel mening gör det inte: den går till en modell du betalar för per stycke.</string>
+    <string name="settings_address">Adress</string>
+    <string name="settings_model">Modell</string>
+    <string name="settings_api_key">API-nyckel</string>
+    <string name="settings_api_key_optional">API-nyckel (valfri)</string>
+    <string name="settings_required">Krävs</string>
+    <string name="settings_none">Ingen</string>
+    <string name="settings_looking_up_a_word">Att slå upp ett ord</string>
+    <string name="settings_cloud_key">Cloud Translation-nyckel (valfri)</string>
+    <string name="settings_public_endpoint">Öppen slutpunkt</string>
+    <string name="settings_reading_more">Att läsa mer om ett ord</string>
+    <string name="settings_reading_more_footnote">Att hålla ett ord du redan har slagit upp öppnar vad det mer betyder, och en väg vidare till den här webbplatsen med ordet redan ifyllt.</string>
+    <string name="settings_site_address_example">https://example.org/search?q={word}</string>
+    <string name="settings_key_footnote_hosted">Din nyckel sparas på den här enheten och skickas bara till %1$s, tillsammans med meningen du tryckte på och vad boken säger om sig själv.</string>
+    <string name="settings_key_footnote_local">Inget lämnar ditt nätverk. På en telefon eller surfplatta betyder ”localhost” enheten själv – använd datorns adress i ditt nätverk i stället.</string>
+
+    <string name="settings_asking_the_server">Frågar servern…</string>
+    <string name="settings_reload_models">Läs in modellerna igen</string>
+    <string name="settings_load_models">Läs in modeller från servern</string>
+    <string name="settings_loading">Läser in…</string>
+    <string name="settings_load_this_model">Läs in den här modellen nu</string>
+    <string name="settings_loading_model">Ber servern läsa in %1$s. En stor modell kan ta några minuter första gången.</string>
+    <string name="settings_model_ready">%1$s är inläst och svarar.</string>
+    <string name="settings_give_up_after">Ge upp efter</string>
+    <string name="settings_seconds">%1$d sekunder</string>
+    <string name="settings_testing">Testar…</string>
+    <string name="settings_test_translation">Testa översättningen</string>
+    <string name="settings_test_result">”%1$s” blev ”%2$s”</string>
+
+    <string name="settings_last_crash">Senaste kraschen</string>
+    <string name="settings_last_crash_footnote">Sparas på den här enheten tills du tar bort den, och skickas aldrig någonstans.</string>
+    <string name="settings_crashed">Lukia stängdes oväntat förra gången den var öppen.</string>
+    <string name="settings_copy_whole_report">Kopiera tar hela rapporten.</string>
+    <string name="settings_copy_report">Kopiera rapporten</string>
+    <string name="settings_diagnostics">Diagnostik</string>
+    <string name="settings_diagnostics_footnote">Sparas på den här enheten tills du kopierar den, och skickas aldrig någonstans. Innehåller ingen boktext, inga titlar, inga filnamn och inga nycklar.</string>
+    <string name="settings_developer">Utvecklaralternativ</string>
+    <string name="settings_record_problems">Anteckna vad som går fel</string>
+    <string name="settings_record_problems_detail">Antecknar när ett omslag, en sida eller en översättning inte kunde läsas, så att ett problem du kan beskriva har något bakom sig. Att stänga av det här rensar det som antecknats.</string>
+    <string name="settings_nothing_recorded">Inget antecknat än. Använd appen som du gjorde när det gick fel, och kom sedan tillbaka.</string>
+    <string name="settings_showing_last">Visar de senaste %1$d av %2$d. Kopiera tar alla.</string>
+
+    <string name="settings_about">Om</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_licensed_under">Licensierad under Apache License 2.0.</string>
+    <string name="settings_open_source">Licenser för öppen källkod</string>
+    <string name="settings_open_source_footnote">Vad Lukia är byggt av, och vilka villkor varje del kommer under.</string>
+
+    <string name="stats_entry">Din läsning</string>
+    <string name="stats_title">Läsning</string>
+    <string name="stats_footnote">Räknas på den här enheten, och stannar här.</string>
+
+    <string name="stats_time_none">Inget än</string>
+    <string name="stats_time_under_a_minute">Under en minut</string>
+    <string name="stats_time_minutes">%1$d\u00A0min</string>
+    <string name="stats_time_hours">%1$d\u00A0h</string>
+    <string name="stats_time_hours_minutes">%1$d\u00A0h %2$d\u00A0min</string>
+    <string name="stats_time_dash">—</string>
+
+    <string name="stats_tile_reading">Pågående</string>
+    <string name="stats_tile_finished">Lästa</string>
+    <string name="stats_tile_not_started">Inte påbörjade</string>
+    <string name="stats_tile_favourites">Favoriter</string>
+    <plurals name="stats_tile_pages_read">
+        <item quantity="one">Sida läst</item>
+        <item quantity="other">Sidor lästa</item>
+    </plurals>
+    <plurals name="stats_tile_books">
+        <item quantity="one">Bok</item>
+        <item quantity="other">Böcker</item>
+    </plurals>
+    <string name="stats_figure_and_label">%1$s %2$s</string>
+
+    <string name="stats_this_week">Den här veckan</string>
+    <string name="stats_this_week_footnote">Räknas medan en bok är öppen och bläddras i, och bara från den dag appen började hålla räkningen.</string>
+    <string name="stats_today">I dag</string>
+    <string name="stats_daily_average">Dagligt snitt</string>
+    <string name="stats_all_time">Totalt</string>
+    <string name="stats_time_read">Lästid</string>
+    <string name="stats_best_day">Bästa dagen</string>
+    <string name="stats_longest_run">Längsta svit</string>
+    <plurals name="stats_sittings">
+        <item quantity="one">Lässtund</item>
+        <item quantity="other">Lässtunder</item>
+    </plurals>
+    <string name="stats_no_run">Ingen svit på gång</string>
+    <plurals name="stats_days_in_a_row">
+        <item quantity="one">1 dag i rad</item>
+        <item quantity="other">%1$d dagar i rad</item>
+    </plurals>
+    <string name="stats_today_spoken">I dag: %1$s</string>
+    <string name="stats_longest_run_spoken">Längsta svit: %1$s</string>
+    <string name="stats_day_spoken">%1$s: %2$s</string>
+    <string name="stats_still_to_come">återstår</string>
+
+    <string name="stats_your_library">Ditt bibliotek</string>
+    <string name="stats_nothing_to_count">Inget att räkna än. Importera en bok, så fylls det här i medan du läser.</string>
+    <string name="stats_share_read">%1$d\u00A0% av ditt bibliotek läst</string>
+    <string name="stats_recently_read">Nyligen läst</string>
+    <string name="stats_opened">Öppnad</string>
+    <plurals name="stats_finished_pages">
+        <item quantity="one">Läst · 1 sida</item>
+        <item quantity="other">Läst · %1$d sidor</item>
+    </plurals>
+    <string name="stats_page_of_percent">Sida %1$d av %2$d · %3$d\u00A0%</string>
+
+    <string name="size_bytes">%1$s\u00A0B</string>
+    <string name="size_kilobytes">%1$s\u00A0kB</string>
+    <string name="size_megabytes">%1$s\u00A0MB</string>
+    <string name="size_gigabytes">%1$s\u00A0GB</string>
+    <string name="size_terabytes">%1$s\u00A0TB</string>
+
+    <string name="state_on">På</string>
+    <string name="state_off">Av</string>
+    <string name="state_selected">Markerad</string>
+    <string name="state_not_selected">Inte markerad</string>
+    <string name="action_dismiss">Stäng</string>
+    <string name="reader_open_contents">Öppna innehållsförteckningen</string>
+    <string name="reader_go_to_page">Gå till sida</string>
+    <string name="reader_go_to_chapter">Gå till %1$s</string>
+    <string name="reader_chapter_at_page">%1$s, sida %2$d</string>
+    <string name="reader_translate_this_paragraph">Översätt det här stycket</string>
+    <string name="reader_restore_this_paragraph">Visa bokens egna ord</string>
+    <string name="figure_look_closer">Se närmare</string>
+    <string name="figure_close">Stäng illustrationen</string>
+    <string name="figure_illustration">Illustration</string>
+    <string name="home_see_all_shelf">Visa alla %1$s</string>
+    <string name="search_for_term">Sök efter %1$s</string>
+    <string name="search_clear_recent">Rensa senaste sökningarna</string>
+    <string name="book_open_title">Öppna %1$s</string>
+    <string name="book_read_title">Läs %1$s</string>
+    <string name="book_favourited">Favorit</string>
+
+</resources>

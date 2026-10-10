@@ -7,9 +7,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.luminance
 import io.lukia.features.reader.domain.ReaderTheme
 import io.lukia.shared.presentation.theme.LukiaDarkColorScheme
 import io.lukia.shared.presentation.theme.LukiaLightColorScheme
+import io.lukia.shared.presentation.theme.SystemBarIcons
 
 /**
  * How a page is painted under the current reader theme.
@@ -22,7 +24,7 @@ import io.lukia.shared.presentation.theme.LukiaLightColorScheme
 data class ReaderPageStyle(
     /** The sheet colour, seen while a page is still rendering. */
     val pageColor: Color,
-    val pageFilter: ColorFilter?
+    val pageFilter: ColorFilter?,
 )
 
 private val SepiaPage = Color(0xFFF4ECD8)
@@ -59,7 +61,7 @@ internal fun readerColorScheme(theme: ReaderTheme): ColorScheme = remember(theme
             surfaceContainer = SepiaSurface,
             surfaceContainerHigh = SepiaSurface,
             outline = SepiaOutline,
-            outlineVariant = SepiaOutline.copy(alpha = 0.5f)
+            outlineVariant = SepiaOutline.copy(alpha = 0.5f),
         )
     }
 }
@@ -80,10 +82,10 @@ internal fun readerPageStyle(theme: ReaderTheme): ReaderPageStyle = remember(the
                         0.957f, 0f, 0f, 0f, 0f,
                         0f, 0.925f, 0f, 0f, 0f,
                         0f, 0f, 0.847f, 0f, 0f,
-                        0f, 0f, 0f, 1f, 0f
-                    )
-                )
-            )
+                        0f, 0f, 0f, 1f, 0f,
+                    ),
+                ),
+            ),
         )
 
         ReaderTheme.Dark -> ReaderPageStyle(
@@ -97,10 +99,10 @@ internal fun readerPageStyle(theme: ReaderTheme): ReaderPageStyle = remember(the
                         -0.85f, 0f, 0f, 0f, 222f,
                         0f, -0.85f, 0f, 0f, 222f,
                         0f, 0f, -0.85f, 0f, 222f,
-                        0f, 0f, 0f, 1f, 0f
-                    )
-                )
-            )
+                        0f, 0f, 0f, 1f, 0f,
+                    ),
+                ),
+            ),
         )
     }
 }
@@ -112,12 +114,19 @@ internal fun readerPageStyle(theme: ReaderTheme): ReaderPageStyle = remember(the
 @Composable
 internal fun ReaderTheming(
     theme: ReaderTheme,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
+    val colors = readerColorScheme(theme)
+
+    SystemBarIcons(dark = colors.background.luminance() > LIGHT_PAGE_LUMINANCE)
+
     MaterialTheme(
-        colorScheme = readerColorScheme(theme),
+        colorScheme = colors,
         typography = MaterialTheme.typography,
         shapes = MaterialTheme.shapes,
-        content = content
+        content = content,
     )
 }
+
+/** Above this a page is pale enough that only dark icons show up against it. */
+private const val LIGHT_PAGE_LUMINANCE = 0.5f

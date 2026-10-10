@@ -1,0 +1,180 @@
+package io.lukia.features.reader.presentation.pagination
+
+import io.lukia.core.infrastructure.availableProcessors
+import io.lukia.features.reader.domain.text.TextSection
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.TimeSource
+
+/**
+ * A book laid out for the window, a longer beginning of it at a time.
+ *
+ * This is about the wait somebody sits through to read a page. Measuring a long
+ * book is seconds of work - a few thousand paragraphs, each laid out against the
+ * font at the size asked for - and doing all of it before showing any means the
+ * reader watches a spinner for the last chapter of a book they opened to read
+ * the first line of.
+ *
+ * So the book is cut into runs that lay out independently - see [chunkStarts] -
+ * and what comes out is the beginning of the book, then more, then all of it.
+ * Each is a real book as far as anything above is concerned: its pages are the
+ * pages that book will have, and only how many is still moving.
+ *
+ * Where the runs are measured, and whether two go at once, is the platform's to
+ * say - see [measuringContext] - and is the smaller half of this. What somebody
+ * waiting notices is the first run arriving before the last has started, which
+ * is true on one thread as much as on four.
+ *
+ * The pages are exactly the pages a single pass would have produced. Nothing
+ * here changes where a page ends; it changes when the reader is told.
+ *
+ * [sizesPerWorker] is asked for one measurer per worker rather than handed one,
+ * because measuring text is not something two threads may do through the same
+ * one - see [BlockSizes] and `rememberPagination`. The same worker measures the
+ * same runs on every layout, so what a measurer has learned about a book is
+ * still worth something the next time the type size moves.
+ */
+internal fun paginateProgressively(
+    sections: List<TextSection>,
+    pageHeightPx: Int,
+    sizesPerWorker: List<BlockSizes>,
+    /**
+     * Where the measuring happens, which is the platform's to say - see
+     * [measuringContext]. Named rather than assumed so that a test can measure a
+     * book on the thread it is already running on, which the main one, held by a
+     * test that is waiting for the book, could not do.
+     */
+    context: CoroutineContext = measuringContext(),
+    /**
+     * How [emitInOrder]'s throttle tells the time. A parameter for the same
+     * reason [context] is: on the monotonic clock, whether a growing book is
+     * handed over once a run or once a [PUBLISH_INTERVAL] can only be told
+     * apart by waiting for real time to pass.
+     */
+    timeSource: TimeSource = TimeSource.Monotonic,
+): Flow<PaginatedBook> = flow {
+    if (sections.isEmpty() || pageHeightPx <= 0 || sizesPerWorker.isEmpty()) {
+        emit(PaginatedBook.Empty)
+        return@flow
+    }
+
+    coroutineScope {
+        // Handed over rather than shared. The one coroutine that decides what to
+        // measure and the one that hands the book over own nothing between them
+        // but this, which is what keeps a book that is growing at one end and
+        // being read at the other from needing a lock.
+        val runs = Channel<Deferred<PaginatedChunk>>(Channel.UNLIMITED)
+
+        launch { dispatchRuns(sections, pageHeightPx, sizesPerWorker, runs) }
+
+        emitInOrder(runs, timeSource)
+    }
+}.flowOn(context)
+
+/**
+ * Sets every run of the book going, to be measured as a measurer comes free.
+ *
+ * Which measurer a run gets is settled by where it sits in the book rather than
+ * by who is free, so a re-layout asks the same measurer about the same chapters
+ * and its cache is still worth something. A lock per measurer keeps two runs off
+ * one, and having only so many locks is what bounds how many run at once.
+ */
+private suspend fun dispatchRuns(
+    sections: List<TextSection>,
+    pageHeightPx: Int,
+    sizesPerWorker: List<BlockSizes>,
+    runs: SendChannel<Deferred<PaginatedChunk>>,
+) = coroutineScope {
+    val lanes = List(sizesPerWorker.size) { Mutex() }
+    val starts = chunkStarts(sections)
+
+    starts.forEachIndexed { index, start ->
+        val lane = index % lanes.size
+        val end = starts.getOrElse(index + 1) { sections.size }
+        val run = sections.subList(start, end)
+
+        runs.send(
+            async {
+                lanes[lane].withLock {
+                    paginateChunk(run, sizesPerWorker[lane], pageHeightPx, start)
+                }
+            },
+        )
+    }
+
+    runs.close()
+}
+
+/**
+ * Waits for the runs in the order they are read in, and hands over the book as
+ * far as it goes each time it has grown.
+ *
+ * In order, and never out of it: a page number is a position in the book, so a
+ * run that finished early cannot be shown until everything in front of it has -
+ * there would be no saying what number its first page was.
+ *
+ * Not once per run, though: a long book is a hundred of them, and a hundred
+ * books arriving means a hundred rebuilds of the reader's list, the contents put
+ * back on their pages and the position followed across a re-layout. Held to one
+ * every [PUBLISH_INTERVAL] instead - often enough that the page count climbs
+ * while somebody watches, rare enough to cost nothing. The first goes out at
+ * once, being the one somebody is waiting for, and the last always goes out,
+ * being the only one that can say the book is as long as it will get.
+ */
+private suspend fun FlowCollector<PaginatedBook>.emitInOrder(
+    runs: ReceiveChannel<Deferred<PaginatedChunk>>,
+    timeSource: TimeSource,
+) {
+    val pages = mutableListOf<TextPage>()
+    val sectionPages = mutableListOf<Int>()
+
+    var published = timeSource.markNow()
+    var handedOver = false
+
+    while (true) {
+        val run = runs.receiveCatching().getOrNull() ?: break
+
+        val chunk = run.await()
+        val firstPage = pages.size
+
+        pages += chunk.pages
+        // A run counts its pages from its own beginning, so where it landed in
+        // the book has to be added back before anything can look a section up.
+        sectionPages += chunk.sectionPages.map { it + firstPage }
+
+        if (!handedOver || published.elapsedNow() >= PUBLISH_INTERVAL) {
+            published = timeSource.markNow()
+            handedOver = true
+
+            emit(PaginatedBook(pages.toList(), sectionPages.toList(), complete = false))
+        }
+    }
+
+    emit(PaginatedBook(pages.toList(), sectionPages.toList(), complete = true))
+}
+
+/**
+ * How many runs are measured at once.
+ *
+ * One per core, up to what the platform's text stack allows two threads to do at
+ * the same time - which on everything Compose draws with Skia is one. See
+ * [maxParallelMeasurers].
+ */
+internal fun paginationWorkers(): Int =
+    availableProcessors().coerceIn(1, maxParallelMeasurers())
+
+/** How often a growing book is worth handing over while it grows. */
+private val PUBLISH_INTERVAL = 150.milliseconds

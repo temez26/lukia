@@ -1,0 +1,10 @@
+-- Drops the reader's own picture along with the profile it belonged to.
+--
+-- The app no longer has a reader to name or draw: the library, its positions and
+-- every setting are the device's rather than a person's. See `ReadingSummary`
+-- for what is kept.
+--
+-- Dropped rather than left in place: it is the one table here holding a
+-- photograph the reader chose from their own device, and keeping somebody's face
+-- in a database nothing reads any more would be quiet hoarding.
+DROP TABLE IF EXISTS profile_picture;

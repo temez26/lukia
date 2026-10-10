@@ -1,0 +1,664 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Every word the app says, in the language it was written in.
+
+    One file rather than one per feature: the resource generator is scoped to the
+    Gradle module and `shared` is one module, so a file per feature is not
+    something it can be told to produce. Ownership is carried by the key prefix
+    instead - `nav_`, `menu_`, `state_`, `action_`, and a prefix per feature as
+    each one moves across - which also makes a feature that has fallen behind a
+    translation visible in a diff.
+
+    Keys say what the string is for, not what it says. `action_close` survives
+    somebody deciding the button should read "Done"; `action_close_this_panel`
+    would not.
+
+    A translation is a sibling directory - `values-fi/strings.xml` - and nothing
+    else. Nothing here is looked up by its English text.
+-->
+<resources>
+
+    <!-- The bottom tab bar. -->
+    <string name="nav_home">Home</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_library">Library</string>
+
+    <!-- Controls that appear on more than one screen. -->
+    <string name="action_cancel">Cancel</string>
+    <string name="action_close">Close</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_done">Done</string>
+    <string name="action_go_back">Go back</string>
+    <string name="action_try_again">Try again</string>
+    <string name="action_close_panel">Close this panel</string>
+    <string name="action_explain">More about %1$s</string>
+    <string name="state_loading">Loading</string>
+
+    <!-- The actions one book offers, wherever it is shown. -->
+    <string name="menu_book_details">Book Details</string>
+    <string name="menu_favourite">Add to Favourites</string>
+    <string name="menu_unfavourite">Remove from Favourites</string>
+    <string name="menu_select_books">Select Books</string>
+    <string name="menu_refresh_details">Refresh Details</string>
+    <string name="menu_delete_from_library">Delete from Library</string>
+
+    <!--
+        The library's own notices. Every one is a whole sentence: the counts are
+        arguments, never something glued on at the call site, and the verb of a
+        bulk report belongs to its own string rather than being swapped into a
+        shared frame.
+    -->
+    <string name="library_details_refreshed">Details refreshed</string>
+
+    <plurals name="library_already_in_library">
+        <item quantity="one">Already in your library</item>
+        <item quantity="other">All %1$d already in your library</item>
+    </plurals>
+
+    <string name="library_imported_with_existing">Imported %1$d, %2$d already added</string>
+    <string name="library_imported_with_failures">Imported %1$d, %2$d skipped</string>
+    <string name="library_imported_mixed">Imported %1$d, %2$d already added, %3$d skipped</string>
+
+    <plurals name="library_bulk_refreshed">
+        <item quantity="one">1 book refreshed</item>
+        <item quantity="other">%1$d books refreshed</item>
+    </plurals>
+    <plurals name="library_bulk_updated">
+        <item quantity="one">1 book updated</item>
+        <item quantity="other">%1$d books updated</item>
+    </plurals>
+    <plurals name="library_bulk_reset">
+        <item quantity="one">1 book set back to unread</item>
+        <item quantity="other">%1$d books set back to unread</item>
+    </plurals>
+    <plurals name="library_bulk_deleted">
+        <item quantity="one">1 book removed from your library</item>
+        <item quantity="other">%1$d books removed from your library</item>
+    </plurals>
+
+    <!-- Wraps a bulk report where some books could not be reached. -->
+    <plurals name="library_bulk_skipped">
+        <item quantity="one">%1$s, 1 skipped</item>
+        <item quantity="other">%1$s, %2$d skipped</item>
+    </plurals>
+
+    <!-- The bar over the shelf while books are being picked, and while one runs. -->
+    <string name="library_select_books">Select books</string>
+    <string name="library_select_all">Select All</string>
+    <string name="library_deselect_all">Deselect All</string>
+    <string name="library_selected_count">%1$d selected</string>
+    <string name="library_bulk_running_refresh">Refreshing %1$d of %2$d\u2026</string>
+    <string name="library_bulk_running_favourite">Favouriting %1$d of %2$d\u2026</string>
+    <string name="library_bulk_running_unfavourite">Unfavouriting %1$d of %2$d\u2026</string>
+    <string name="library_bulk_running_reset">Resetting %1$d of %2$d\u2026</string>
+    <string name="library_bulk_running_delete">Deleting %1$d of %2$d\u2026</string>
+
+    <string name="library_delete_confirm_message">The files stay where they are on disk.</string>
+    <plurals name="library_delete_confirm_title">
+        <item quantity="one">Delete 1 book from your library?</item>
+        <item quantity="other">Delete %1$d books from your library?</item>
+    </plurals>
+
+    <!--
+        What each failure is called and what it says. Paired: a title alone is
+        too vague to act on, and the pair is too long for a snackbar - see
+        `AppErrorDisplay.kt`, which chooses between them.
+    -->
+    <string name="error_document_not_found_title">Document not found</string>
+    <string name="error_document_not_found_message">It may have been moved or removed from your library.</string>
+    <string name="error_unsupported_file_title">Unsupported file</string>
+    <string name="error_unsupported_file_message">Lukia can open PDF and EPUB files.</string>
+    <string name="error_format_not_readable_title">Not readable yet</string>
+    <string name="error_format_not_readable_message">Reading EPUB files is not ready yet - PDFs open today.</string>
+    <string name="error_empty_folder_title">Nothing to import</string>
+    <string name="error_empty_folder_message">No books found in this folder or the folders inside it.</string>
+    <string name="error_translation_unavailable_title">Translation is not set up</string>
+    <string name="error_translation_unavailable_message">Choose a language to translate into in Settings, and add a translation service.</string>
+    <string name="error_translation_failed_title">Could not translate that</string>
+    <string name="error_translation_failed_message">The translation service did not answer. Try again.</string>
+    <string name="error_unexpected_title">Something went wrong</string>
+    <string name="error_unexpected_message">An unexpected error occurred.</string>
+
+    <!--
+        The app's own choices, named. These used to be fields on the enums
+        themselves - and two of them were the enum constant's name, rendered
+        straight to the screen - which is why there was nothing here to translate
+        and why renaming a constant changed the UI.
+    -->
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+
+    <string name="palette_crisp">Crisp</string>
+    <string name="palette_crisp_detail">White cards on grey, true black at night.</string>
+    <string name="palette_paper">Paper</string>
+    <string name="palette_paper_detail">Warm paper and ink, easy on the eyes for long sittings.</string>
+    <string name="palette_slate">Slate</string>
+    <string name="palette_slate_detail">Cool neutral greys and flat, quiet chrome.</string>
+
+    <string name="accent_themed">Theme</string>
+    <string name="accent_blue">Blue</string>
+    <string name="accent_violet">Violet</string>
+    <string name="accent_green">Green</string>
+    <string name="accent_amber">Amber</string>
+    <string name="accent_rose">Rose</string>
+    <string name="accent_graphite">Graphite</string>
+
+    <string name="motion_calm">Calm</string>
+    <string name="motion_calm_detail">Quick cross-fades. Nothing springs, slides or sparkles.</string>
+    <string name="motion_standard">Standard</string>
+    <string name="motion_standard_detail">A short opening, and screens that move the way you sent them.</string>
+    <string name="motion_playful">Playful</string>
+    <string name="motion_playful_detail">A longer opening, springier settling, and further to travel.</string>
+
+    <!-- How a PDF is put on the screen. -->
+    <string name="pdf_layout_original">Original</string>
+    <string name="pdf_layout_text">Text</string>
+
+    <!-- The reading surface, as the settings panel and the settings screen name it. -->
+    <string name="reader_theme_light">Light</string>
+    <string name="reader_theme_sepia">Sepia</string>
+    <string name="reader_theme_dark">Dark</string>
+    <string name="reader_typeface_serif">Serif</string>
+    <string name="reader_typeface_sans">Sans</string>
+    <string name="reader_alignment_ragged">Ragged</string>
+    <string name="reader_alignment_justified">Justified</string>
+    <string name="reader_spacing_tight">Tight</string>
+    <string name="reader_spacing_normal">Normal</string>
+    <string name="reader_spacing_relaxed">Relaxed</string>
+    <string name="reader_figure_small">Small</string>
+    <string name="reader_figure_normal">Normal</string>
+    <string name="reader_figure_large">Large</string>
+    <string name="reader_figure_fill">Fill</string>
+    <!-- A page width, as the share of the window it takes. -->
+    <!--
+        A bare "%" rather than an escaped "%%": Compose Resources does not
+        read "%%" as an escape and would print both signs. Verified against
+        `ReaderChromeTest.theLargerPageWidthsAreOffered`.
+    -->
+    <string name="reader_width_percent">%1$d%</string>
+
+    <!-- How the shelf is laid out. -->
+    <string name="library_layout_grid">Grid</string>
+    <string name="library_layout_list">List</string>
+
+    <!--
+        Translation choices. Four of these name a company or a website rather
+        than a thing - Anthropic, OpenAI, Google, Wiktionary, Sanakirja - and are
+        here so the picker reads from one place, not because they want
+        translating. Leave them as they are.
+    -->
+    <string name="gesture_off">Off</string>
+    <string name="passage_unit_word">Word</string>
+    <string name="passage_unit_sentence">Sentence</string>
+    <string name="passage_unit_paragraph">Paragraph</string>
+
+    <string name="provider_anthropic">Anthropic</string>
+    <string name="provider_openai">OpenAI</string>
+    <string name="provider_local">Local</string>
+
+    <string name="word_lookup_google">Google</string>
+    <string name="word_lookup_google_footnote">Fast and free, and it never sees the book - only the word. Add a Cloud Translation key below to use Google's supported API rather than the public endpoint.</string>
+    <string name="word_lookup_dictionary">Dictionary</string>
+    <string name="word_lookup_dictionary_footnote">Wiktionary's own entry for the word: every sense it has, rather than the one sense something guessed at. Free, and nothing to set up.</string>
+
+    <!-- The button that leaves the app for the reader's chosen site. -->
+    <string name="reader_open_in_site">Open in %1$s</string>
+    <string name="word_site_google">Google</string>
+    <string name="word_site_google_footnote">Google Translate, with the word already in the box - so the alternatives and the reverse lookup are one tap away.</string>
+    <string name="word_site_wiktionary">Wiktionary</string>
+    <string name="word_site_wiktionary_footnote">The whole entry as Wiktionary lays it out: every language that spells the word this way, its inflections and its examples.</string>
+    <string name="word_site_sanakirja">Sanakirja</string>
+    <string name="word_site_sanakirja_footnote">sanakirja.org, which is worth the trip for the Nordic languages in particular. Opens on the pair you are reading.</string>
+    <string name="word_site_custom">Custom</string>
+    <string name="word_site_custom_footnote">Any site with a searchable address. Write {word} where the word goes, and {to} or {from} for the languages if the site takes them.</string>
+
+    <!-- The shelves, the orders and the rows of the home screen. -->
+    <string name="shelf_all">All</string>
+    <string name="shelf_reading">Reading</string>
+    <string name="shelf_unread">Unread</string>
+    <string name="shelf_finished">Finished</string>
+
+    <string name="sort_added">Date added</string>
+    <string name="sort_recently_added">Recently added</string>
+    <string name="sort_title">Title A\u2013Z</string>
+    <string name="sort_title_reversed">Title Z\u2013A</string>
+    <string name="sort_author">Author A\u2013Z</string>
+    <string name="sort_last_read">Recently read</string>
+    <string name="sort_largest">Largest first</string>
+
+    <string name="home_title">Home</string>
+    <string name="home_shelf_recent">Recent</string>
+    <string name="home_shelf_recently_added">Recently Added</string>
+    <string name="home_shelf_almost_done">Almost Done</string>
+    <string name="home_shelf_unread">Unread</string>
+    <string name="home_shelf_favorites">Favorites</string>
+    <string name="home_shelf_finished">Finished</string>
+    <string name="home_browse_by_category">Browse by Category</string>
+    <string name="home_see_all">See All</string>
+
+    <!-- The bar over the shelf. -->
+    <string name="library_title">Library</string>
+    <string name="library_actions">Library actions</string>
+    <string name="library_close_menu">Close menu</string>
+    <string name="library_import_books">Import Books</string>
+    <string name="library_add_folder">Add Folder</string>
+    <string name="library_importing">Importing…</string>
+    <string name="library_importing_count">Importing %1$d of %2$d…</string>
+    <string name="library_import_stop">Stop</string>
+    <string name="library_settings">Settings</string>
+    <string name="library_missing_files">Missing Files (%1$d)</string>
+    <string name="library_duplicates">Duplicates (%1$d)</string>
+
+    <!-- Narrowing the shelf. -->
+    <string name="filter_favourites">Favourites</string>
+    <string name="filter_clear">Clear</string>
+    <string name="filter_format">Format</string>
+    <string name="filter_all_formats">All formats</string>
+    <string name="filter_category">Category</string>
+    <string name="filter_all_categories">All categories</string>
+    <string name="filter_author">Author</string>
+    <string name="filter_all_authors">All authors</string>
+    <string name="filter_language">Language</string>
+    <string name="filter_all_languages">All languages</string>
+
+    <!-- Searching it. -->
+    <string name="search_title">Search</string>
+    <plurals name="search_n_books">
+        <item quantity="one">Search 1 book</item>
+        <item quantity="other">Search %1$d books</item>
+    </plurals>
+    <string name="search_your_library">Search your library</string>
+    <string name="search_clear">Clear search</string>
+    <string name="search_placeholder">Search by title or author</string>
+    <string name="search_recent">Recent Searches</string>
+    <string name="search_forget">Forget %1$s</string>
+    <string name="search_empty_title">Search Your Library</string>
+    <string name="search_empty_message">Type a title or an author to find a book.</string>
+
+    <!-- Nothing found, and nothing there. -->
+    <string name="library_no_results_title">No Results</string>
+    <string name="library_no_matches_filtered">Nothing in your library matches every filter you have set.</string>
+    <string name="library_no_matches_term">No books match \u201C%1$s\u201D.</string>
+    <string name="library_no_matches_filtered_term">Nothing matching \u201C%1$s\u201D is left once your filters are applied.</string>
+    <string name="library_empty_title">Your library is empty</string>
+    <string name="library_empty_message">Choose the cover to add a PDF, EPUB, Word or text file.</string>
+
+    <!-- One book, on a card or in a row. -->
+    <string name="book_actions">Book actions</string>
+    <string name="book_unavailable">Unavailable</string>
+    <string name="book_missing_file">This file is no longer available</string>
+    <!-- The format and the size, on one line under the title. -->
+    <string name="book_format_and_size">%1$s \u00B7 %2$s</string>
+    <!-- How far through, appended to the line above. -->
+    <string name="book_progress_percent">\u00B7 %1$d%</string>
+
+    <!-- The formats a library can hold. -->
+    <string name="format_pdf">PDF</string>
+    <string name="format_epub">EPUB</string>
+    <string name="format_docx">Word</string>
+    <string name="format_text">Text</string>
+    <string name="format_markdown">Markdown</string>
+    <string name="format_unknown">Unknown</string>
+
+    <!--
+        Everyone credited, as one line. Split the way a list is: a separator
+        between all but the last two, and a phrase joining the final pair - which
+        is what lets a language that joins them differently say so.
+    -->
+    <string name="author_list_separator">, </string>
+    <string name="author_list_last">%1$s and %2$s</string>
+
+    <!-- A book's own page. -->
+    <string name="book_about">About</string>
+    <string name="book_more">More</string>
+    <string name="book_less">Less</string>
+    <string name="book_information">Information</string>
+    <string name="book_subjects">Subjects</string>
+    <string name="book_publisher">Publisher</string>
+    <string name="book_published">Published</string>
+    <string name="book_language">Language</string>
+    <string name="book_length">Length</string>
+    <string name="book_format">Format</string>
+    <string name="book_size">Size</string>
+    <string name="book_isbn">ISBN</string>
+
+    <plurals name="book_length_pages">
+        <item quantity="one">1 page</item>
+        <item quantity="other">%1$d pages</item>
+    </plurals>
+    <string name="book_progress_finished">Finished</string>
+    <string name="book_progress_not_started">Not started</string>
+    <string name="book_progress_page_of">Page %1$d of %2$d</string>
+    <string name="book_read_continue">Continue reading</string>
+    <string name="book_read_again">Read again</string>
+    <string name="book_read_start">Start reading</string>
+
+    <!-- Doing one thing to several books at once. -->
+    <string name="selection_refresh">Refresh details</string>
+    <string name="selection_favourite">Add to favourites</string>
+    <string name="selection_unfavourite">Remove from favourites</string>
+    <string name="selection_mark_unread">Mark as unread</string>
+    <string name="selection_delete">Delete from library</string>
+
+    <!-- The bar over the book, and what it says about where the reader is. -->
+    <string name="reader_close_book">Close book</string>
+    <string name="reader_close_the_book">Close the book</string>
+    <string name="reader_contents">Contents</string>
+    <string name="reader_reading_settings">Reading settings</string>
+    <!-- The page indicator: the page in hand, and how many there are. -->
+    <string name="reader_page_of_count">%1$d / %2$d</string>
+    <string name="reader_page_x_of_y">Page %1$d of %2$d</string>
+    <string name="reader_page_x_of_y_percent">Page %1$d of %2$d, %3$d percent through</string>
+    <string name="reader_percent_read">%1$d percent read</string>
+    <string name="reader_percent">%1$d%</string>
+    <!-- The nought at the start of the progress track. -->
+    <string name="reader_percent_start">0</string>
+
+    <!-- The contents panel. -->
+    <string name="reader_chapters">Chapters</string>
+    <string name="reader_collapse_all">Collapse all</string>
+    <string name="reader_expand_all">Expand all</string>
+    <string name="reader_show_sections_of">Show sections of %1$s</string>
+    <string name="reader_hide_sections_of">Hide sections of %1$s</string>
+
+    <!-- The settings panel over the book. -->
+    <string name="reader_section_page">Page</string>
+    <string name="reader_section_text_and_images">Text and images</string>
+    <string name="reader_section_keyboard">Keyboard</string>
+    <string name="reader_setting_layout">Layout</string>
+    <string name="reader_setting_theme">Theme</string>
+    <string name="reader_setting_page_width">Page width</string>
+    <string name="reader_setting_text_size">Text size</string>
+    <string name="reader_setting_line_spacing">Line spacing</string>
+    <string name="reader_setting_alignment">Alignment</string>
+    <string name="reader_setting_typeface">Typeface</string>
+    <string name="reader_setting_image_size">Image size</string>
+    <string name="reader_keep_screen_awake">Keep the screen awake</string>
+    <string name="reader_note_pdf_as_text">The words and pictures of the PDF, re-set by this app. Its own page layout is not kept.</string>
+    <!--
+        Two sentences rather than one with an optional tail: the second is only
+        offered where there is a layout to switch, and a language that would put
+        it first has nowhere to do that if it arrives glued on.
+    -->
+    <string name="reader_note_fixed_layout">These apply to reflowable books - this one carries its own fixed layout.</string>
+    <string name="reader_note_fixed_layout_switchable">These apply to reflowable books - this one carries its own fixed layout. Read it as text to use them.</string>
+    <string name="reader_decrease_text_size">Decrease text size</string>
+    <string name="reader_increase_text_size">Increase text size</string>
+    <string name="reader_text_size_percent">Text size %1$d percent</string>
+    <!-- A setting and what it is set to, announced as one phrase. -->
+    <string name="reader_setting_and_value">%1$s. %2$s</string>
+    <string name="reader_close_the_list">Close the list</string>
+    <string name="reader_choose">Choose</string>
+
+    <!--
+        The keyboard shortcuts. The right-hand column names keys as they are
+        printed on them; a translator should change those only where the key
+        itself is named differently on that language's keyboards.
+    -->
+    <string name="shortcut_turn_page">Turn page</string>
+    <string name="shortcut_turn_page_keys">Space  PgDn  PgUp</string>
+    <string name="shortcut_scroll">Scroll</string>
+    <string name="shortcut_scroll_keys">\u2191  \u2193</string>
+    <string name="shortcut_start_end">Start, end</string>
+    <string name="shortcut_start_end_keys">Home  End</string>
+    <string name="shortcut_resize_reflowable">Larger, smaller</string>
+    <string name="shortcut_resize_fixed">Wider, narrower</string>
+    <string name="shortcut_resize_keys">+  \u2212  0</string>
+    <string name="shortcut_panels">Contents, settings</string>
+    <string name="shortcut_panels_keys">C  T</string>
+    <string name="shortcut_close_book">Close book</string>
+    <string name="shortcut_close_book_keys">Esc</string>
+    <string name="shortcut_word_details">More about a word</string>
+    <string name="shortcut_word_details_keys">Two-finger press</string>
+    <!-- A tooltip: what the control does, then the key that does it. -->
+    <string name="shortcut_tooltip">%1$s  %2$s</string>
+
+    <!-- Asking about a word. -->
+    <string name="word_looked_up_under">Looked up under \u201C%1$s\u201D</string>
+    <string name="word_looking_it_up">Looking it up\u2026</string>
+    <string name="word_no_meaning">That is all the dictionary has - no meaning is listed for it.</string>
+    <string name="word_sense_number">%1$d.</string>
+    <string name="word_related">Related words</string>
+    <string name="word_translate_it">Translate it</string>
+    <string name="word_show_original">Show the original</string>
+    <string name="word_show_translation">Show the translation</string>
+
+    <!-- Translating, from the panel over the book. -->
+    <string name="reader_translation">Translation</string>
+    <string name="reader_gesture_tap">Tap</string>
+    <string name="reader_gesture_long_press">Press and hold</string>
+    <string name="reader_hold_again">Hold again for more about a word</string>
+    <string name="reader_notes_under_paragraph">Notes under the paragraph</string>
+    <string name="reader_translate_this_page">Translate this page</string>
+    <string name="reader_translate_as_you_read">Translate as you read</string>
+    <string name="reader_keep_translating">Keep translating as you read</string>
+    <string name="reader_stop_translating">Stop translating as you read</string>
+    <string name="reader_show_translations">Show translations</string>
+    <string name="reader_hide_translations">Hide the translations</string>
+    <string name="reader_translate_on_screen">Translate what is on screen</string>
+    <string name="reader_translate_into">Translate into</string>
+
+    <!-- A PDF with nothing in it to re-set. -->
+    <string name="reader_pdf_no_text">This PDF has no text in it to re-set - its pages are pictures. Showing it as pages.</string>
+
+    <!-- The settings screen itself. -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_area_appearance">Appearance</string>
+    <string name="settings_area_reading">Reading</string>
+    <string name="settings_area_translating">Translating</string>
+    <!-- The AI translation segment. Named for the state everything behind it is
+         in rather than for what it holds: it is the shortest true thing that
+         fits in a segment beside four others. -->
+    <string name="settings_area_ai_translation">Beta</string>
+    <!-- Marks a setting that is new and known to be rough. -->
+    <string name="settings_beta">BETA</string>
+    <string name="settings_show">Show</string>
+    <string name="settings_hide">Hide</string>
+
+    <!-- What the app looks like. -->
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_appearance_footnote">System follows your device\u2019s light and dark setting.</string>
+    <string name="settings_palette">Palette</string>
+    <string name="settings_palette_footnote">What the app\u2019s surfaces are made of. Light and dark both follow it.</string>
+    <string name="settings_accent">Accent</string>
+    <string name="settings_accent_footnote">Used for reading progress, chosen rows and anything that acts. Theme follows the palette.</string>
+    <string name="settings_motion">Motion</string>
+    <string name="settings_motion_footnote">How the app moves when it opens and when screens change. Buttons and controls respond the same way whichever you choose.</string>
+
+    <!-- How books are set. -->
+    <string name="settings_the_page">The page</string>
+    <string name="settings_the_page_footnote">What every book opens as. The reader's own panel changes the same settings with a book in front of you.</string>
+    <string name="settings_text_and_images">Text and images</string>
+    <string name="settings_text_and_images_footnote">These apply to reflowable books. A PDF read as its own pages had its type set when the file was made, and none of this reaches it.</string>
+    <string name="settings_opening_a_pdf">Opening a PDF</string>
+    <string name="settings_opening_a_pdf_as_text">New PDFs are re-set by this app - its type at the size you asked for, and translations in the paragraph rather than over the page. A scan with no text in it opens as its own pages anyway.</string>
+    <string name="settings_opening_a_pdf_as_pages">New PDFs open as the file's maker laid them out. Any of them can still be read as text from the reader's own panel.</string>
+
+    <!-- What is translated, and when. -->
+    <string name="settings_translate_into_footnote">Tap a sentence while reading to translate it, and tap it again for the original.</string>
+    <string name="settings_pointing_at_the_book">Pointing at the book</string>
+    <string name="settings_pointing_footnote">Each does one thing, always. Doing it again on the same passage puts the book\u2019s own words back - except on a word you have looked up, where holding opens more about it instead.</string>
+    <string name="settings_tap_to_translate">Tap a word to translate it</string>
+    <string name="settings_asking_for_more">Asking for more than a word</string>
+    <string name="settings_asking_for_more_footnote">A dictionary answers a word and nothing larger, so these do nothing until a translation service is set up above. Off here is the same off as the switches under Translating.</string>
+    <string name="settings_hold_again">Hold a word again for more about it</string>
+    <string name="settings_translating_ahead">Translating ahead</string>
+    <string name="settings_translating_ahead_footnote">Both are new, and both are slow and expensive: they translate a screenful at a time rather than the passage you pointed at. Off until you ask for them, and hidden from the reader entirely while they are.</string>
+    <string name="settings_on_screen_detail">Adds a button that translates every sentence you can see, once.</string>
+    <string name="settings_as_you_read_detail">Adds a button that goes on translating whatever scrolls into view until you turn it off. This is the expensive one.</string>
+
+    <!-- Who answers. -->
+    <string name="settings_ai_translation">AI translation</string>
+    <string name="settings_use_ai">Use a translation service</string>
+    <string name="settings_use_ai_detail">Off, Lukia looks a single word up in a free dictionary and does nothing else — no key to enter, no controls in the reader. On, it can translate whole sentences and paragraphs through a service you set up and pay for by the passage. Turning it off keeps everything you have set up.</string>
+    <string name="settings_translation_service">Translation service</string>
+    <string name="settings_translation_service_footnote">Nothing under this page does anything until this is set up. Looking a word up under Translating works without it; a whole sentence does not — it goes to a model you pay for by the passage.</string>
+    <string name="settings_address">Address</string>
+    <string name="settings_model">Model</string>
+    <string name="settings_api_key">API key</string>
+    <string name="settings_api_key_optional">API key (optional)</string>
+    <string name="settings_required">Required</string>
+    <string name="settings_none">None</string>
+    <string name="settings_looking_up_a_word">Looking up a word</string>
+    <string name="settings_cloud_key">Cloud Translation key (optional)</string>
+    <string name="settings_public_endpoint">Public endpoint</string>
+    <string name="settings_reading_more">Reading more about a word</string>
+    <string name="settings_reading_more_footnote">Holding a word you have already looked up opens what else it means, and a way through to this site with the word already in it.</string>
+    <string name="settings_site_address_example">https://example.org/search?q={word}</string>
+    <string name="settings_key_footnote_hosted">Your key is stored on this device and sent only to %1$s, with the sentence you tapped and what the book says about itself.</string>
+    <string name="settings_key_footnote_local">Nothing leaves your network. On a phone or tablet, \u201Clocalhost\u201D means the device itself - use the computer\u2019s address on your network instead.</string>
+
+    <!-- Asking a local server what it can do. -->
+    <string name="settings_asking_the_server">Asking the server\u2026</string>
+    <string name="settings_reload_models">Reload models</string>
+    <string name="settings_load_models">Load models from server</string>
+    <string name="settings_loading">Loading\u2026</string>
+    <string name="settings_load_this_model">Load this model now</string>
+    <string name="settings_loading_model">Asking the server to load %1$s. A large model can take a few minutes the first time.</string>
+    <string name="settings_model_ready">%1$s is loaded and answering.</string>
+    <string name="settings_give_up_after">Give up after</string>
+    <string name="settings_seconds">%1$d seconds</string>
+    <string name="settings_testing">Testing\u2026</string>
+    <string name="settings_test_translation">Test translation</string>
+    <!-- The sentence that was sent, and what came back. -->
+    <string name="settings_test_result">\u201C%1$s\u201D became \u201C%2$s\u201D</string>
+
+    <!-- What the app records when something goes wrong. -->
+    <string name="settings_last_crash">Last crash</string>
+    <string name="settings_last_crash_footnote">Kept on this device until you delete it, and never sent anywhere.</string>
+    <string name="settings_crashed">Lukia closed unexpectedly the last time it was open.</string>
+    <string name="settings_copy_whole_report">Copy takes the whole report.</string>
+    <string name="settings_copy_report">Copy report</string>
+    <string name="settings_diagnostics">Diagnostics</string>
+    <string name="settings_diagnostics_footnote">Kept on this device until you copy it, and never sent anywhere. Holds no book text, titles, file names or keys.</string>
+    <string name="settings_developer">Developer options</string>
+    <string name="settings_record_problems">Record what goes wrong</string>
+    <string name="settings_record_problems_detail">Notes when a cover, a page or a translation could not be read, so a problem you can describe has something behind it. Turning this off clears what was recorded.</string>
+    <string name="settings_nothing_recorded">Nothing recorded yet. Use the app as you did when it went wrong, then come back.</string>
+    <string name="settings_showing_last">Showing the last %1$d of %2$d. Copy takes all of them.</string>
+
+    <!-- Which Lukia this is, and what it was built out of. -->
+    <string name="settings_about">About</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_licensed_under">Licensed under the Apache License 2.0.</string>
+    <string name="settings_open_source">Open-source licences</string>
+    <string name="settings_open_source_footnote">What Lukia is built from, and the terms each part comes under.</string>
+
+    <!-- The statistics page. -->
+    <string name="stats_entry">Your reading</string>
+    <string name="stats_title">Reading</string>
+    <string name="stats_footnote">Counted on this device, and kept here.</string>
+
+    <!--
+        A stretch of reading. Four whole forms rather than a number with a unit
+        stuck on: where the unit goes, and whether it takes a space, is not the
+        same in every language.
+    -->
+    <string name="stats_time_none">None yet</string>
+    <string name="stats_time_under_a_minute">Under a minute</string>
+    <string name="stats_time_minutes">%1$dm</string>
+    <string name="stats_time_hours">%1$dh</string>
+    <string name="stats_time_hours_minutes">%1$dh %2$dm</string>
+    <!-- The same figure where a dash reads better than a sentence. -->
+    <string name="stats_time_dash">\u2014</string>
+
+    <string name="stats_tile_reading">Reading</string>
+    <string name="stats_tile_finished">Finished</string>
+    <string name="stats_tile_not_started">Not started</string>
+    <string name="stats_tile_favourites">Favourites</string>
+    <plurals name="stats_tile_pages_read">
+        <item quantity="one">Page read</item>
+        <item quantity="other">Pages read</item>
+    </plurals>
+    <plurals name="stats_tile_books">
+        <item quantity="one">Book</item>
+        <item quantity="other">Books</item>
+    </plurals>
+    <!-- A figure and the word under it, announced as one phrase. -->
+    <string name="stats_figure_and_label">%1$s %2$s</string>
+
+    <string name="stats_this_week">This week</string>
+    <string name="stats_this_week_footnote">Counted while a book is open and being turned, and only from the day this app started keeping track.</string>
+    <string name="stats_today">Today</string>
+    <string name="stats_daily_average">Daily average</string>
+    <string name="stats_all_time">All time</string>
+    <string name="stats_time_read">Time read</string>
+    <string name="stats_best_day">Best day</string>
+    <string name="stats_longest_run">Longest run</string>
+    <plurals name="stats_sittings">
+        <item quantity="one">Sitting</item>
+        <item quantity="other">Sittings</item>
+    </plurals>
+    <!--
+        A run of days, said as a sentence. Nought is its own string rather than a
+        plural form: "No run going" is a different thing to say, not a different
+        way of counting, and somebody who has not opened a book today has not
+        failed at anything.
+    -->
+    <string name="stats_no_run">No run going</string>
+    <plurals name="stats_days_in_a_row">
+        <item quantity="one">1 day in a row</item>
+        <item quantity="other">%1$d days in a row</item>
+    </plurals>
+    <string name="stats_today_spoken">Today: %1$s</string>
+    <string name="stats_longest_run_spoken">Longest run: %1$s</string>
+    <!-- One bar of the week chart, for a screen reader. -->
+    <string name="stats_day_spoken">%1$s: %2$s</string>
+    <string name="stats_still_to_come">still to come</string>
+
+    <string name="stats_your_library">Your library</string>
+    <string name="stats_nothing_to_count">Nothing to count yet. Import a book and this fills in as you read.</string>
+    <string name="stats_share_read">%1$d% of your library read</string>
+    <string name="stats_recently_read">Recently read</string>
+    <string name="stats_opened">Opened</string>
+    <plurals name="stats_finished_pages">
+        <item quantity="one">Finished \u00B7 1 page</item>
+        <item quantity="other">Finished \u00B7 %1$d pages</item>
+    </plurals>
+    <string name="stats_page_of_percent">Page %1$d of %2$d \u00B7 %3$d%</string>
+
+    <!--
+        A file's size: the figure, and the unit after it. Split so a language
+        that puts a space before the unit, or names the unit differently, can
+        say so - French writes octets, so "Ko" and "Mo" rather than "KB" and
+        "MB". The figure itself is formatted by the platform, which is what puts
+        a comma where a decimal point goes.
+    -->
+    <string name="size_bytes">%1$s B</string>
+    <string name="size_kilobytes">%1$s KB</string>
+    <string name="size_megabytes">%1$s MB</string>
+    <string name="size_gigabytes">%1$s GB</string>
+    <string name="size_terabytes">%1$s TB</string>
+
+    <!--
+        What a screen reader says about a control the eye reads from its shape.
+
+        Everything here names something that is drawn rather than written: the
+        fill on a set filter, the tick on a picked book, the action a paragraph
+        of a book carries. None of it was translated before, because none of it
+        used to be a string - it was an English sentence spelled out at the call
+        site, which is a language the app does not otherwise speak.
+    -->
+    <string name="state_on">On</string>
+    <string name="state_off">Off</string>
+    <string name="state_selected">Selected</string>
+    <string name="state_not_selected">Not selected</string>
+    <string name="action_dismiss">Dismiss</string>
+    <string name="reader_open_contents">Open contents</string>
+    <string name="reader_go_to_page">Go to page</string>
+    <string name="reader_go_to_chapter">Go to %1$s</string>
+    <string name="reader_chapter_at_page">%1$s, page %2$d</string>
+    <string name="reader_translate_this_paragraph">Translate this paragraph</string>
+    <string name="reader_restore_this_paragraph">Show the book’s own words</string>
+    <string name="figure_look_closer">Look closer</string>
+    <string name="figure_close">Close the illustration</string>
+    <string name="figure_illustration">Illustration</string>
+    <string name="home_see_all_shelf">See all %1$s</string>
+    <string name="search_for_term">Search for %1$s</string>
+    <string name="search_clear_recent">Clear recent searches</string>
+    <string name="book_open_title">Open %1$s</string>
+    <string name="book_read_title">Read %1$s</string>
+    <string name="book_favourited">Favourite</string>
+
+</resources>

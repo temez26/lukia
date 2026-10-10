@@ -2,34 +2,83 @@ package io.lukia.features.library.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.lukia.core.domain.DocumentInfo
-import io.lukia.core.domain.PickedDocument
-import io.lukia.core.domain.PickedFolder
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.document.PickedDocument
+import io.lukia.core.domain.document.PickedFolder
+import io.lukia.core.domain.reading.ReadingProgress
+import io.lukia.core.domain.reading.ReadingProgressRepository
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.core.domain.toAppError
+import io.lukia.core.infrastructure.IncomingDocuments
 import io.lukia.core.presentation.UiState
-import io.lukia.core.presentation.displayShortMessage
+import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.library.application.GetLibraryDocumentsUseCase
-import io.lukia.features.library.application.ImportDocumentUseCase
+import io.lukia.features.library.application.ImportDocumentsUseCase
 import io.lukia.features.library.application.ImportFolderUseCase
+import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
-import io.lukia.features.reader.domain.ReadingProgress
-import io.lukia.features.reader.domain.ReadingProgressRepository
+import io.lukia.features.library.domain.LibraryLayout
+import io.lukia.features.library.infrastructure.LibrarySettingsRepository
+import io.lukia.features.library.infrastructure.RecentSearchesRepository
+import io.lukia.features.library.presentation.model.ImportProgress
+import io.lukia.features.library.presentation.model.LibraryBook
+import io.lukia.features.library.presentation.model.LibraryFacets
+import io.lukia.features.library.presentation.model.LibraryMessage
+import io.lukia.features.library.presentation.model.LibraryQuery
+import io.lukia.features.library.presentation.model.LibraryUpkeep
+import io.lukia.features.library.presentation.model.asLibrary
+import io.lukia.features.library.presentation.model.facets
+import io.lukia.features.library.presentation.model.matching
+import io.lukia.features.library.presentation.model.upkeep
+import io.lukia.features.library.presentation.sessions.LibraryImportSession
+import io.lukia.features.library.presentation.sessions.LibrarySearchSession
+import io.lukia.features.library.presentation.sessions.LibrarySelectionSession
+import io.lukia.shared.presentation.components.cover.CoverArtCache
+import io.lukia.shared.presentation.components.cover.CoverArtSource
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class LibraryViewModel(
     private val getLibraryDocumentsUseCase: GetLibraryDocumentsUseCase,
-    private val importDocumentUseCase: ImportDocumentUseCase,
-    private val importFolderUseCase: ImportFolderUseCase,
+    importDocumentsUseCase: ImportDocumentsUseCase,
+    importFolderUseCase: ImportFolderUseCase,
+    incoming: IncomingDocuments,
     private val setFavoriteUseCase: SetFavoriteUseCase,
+    private val refreshDocumentUseCase: RefreshDocumentUseCase,
     private val removeDocumentUseCase: RemoveDocumentUseCase,
-    private val readingProgressRepository: ReadingProgressRepository
+    private val readingProgressRepository: ReadingProgressRepository,
+    private val librarySettingsRepository: LibrarySettingsRepository,
+    recentSearchesRepository: RecentSearchesRepository,
+    /**
+     * Where the library is narrowed, ordered and measured. Off the main thread
+     * in production, and injectable so tests can run it deterministically.
+     */
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ViewModel() {
+
+    /**
+     * Selecting several books at once. Held apart rather than added to this -
+     * see [LibrarySelectionSession] - so that a mode with its own state and its
+     * own actions is a thing rather than a scattering of fields.
+     */
+    internal val selectionSession = LibrarySelectionSession(
+        setFavoriteUseCase = setFavoriteUseCase,
+        refreshDocumentUseCase = refreshDocumentUseCase,
+        removeDocumentUseCase = removeDocumentUseCase,
+        progressRepository = readingProgressRepository,
+        scope = viewModelScope,
+    )
 
     private val _uiState = MutableStateFlow<UiState<List<DocumentInfo>>>(UiState.Loading)
     val uiState: StateFlow<UiState<List<DocumentInfo>>> = _uiState.asStateFlow()
@@ -39,11 +88,10 @@ class LibraryViewModel(
      * its covers. Keyed by location, and holding only the books that have
      * actually been opened.
      *
-     * Kept apart from [uiState] rather than folded into each [DocumentInfo]:
-     * this is read from a different store, changes for a different reason -
-     * every time a book is read - and a failure to read it must not be able to
-     * take the library off the screen. A grid with no bars is a small loss; a
-     * grid with no books is the whole app.
+     * Apart from [uiState] rather than folded into each [DocumentInfo]: read
+     * from a different store, changing for a different reason, and a failure to
+     * read it must not take the library off the screen. A grid with no bars is a
+     * small loss; a grid with no books is the whole app.
      */
     private val _readingProgress = MutableStateFlow<Map<String, ReadingProgress>>(emptyMap())
     val readingProgress: StateFlow<Map<String, ReadingProgress>> = _readingProgress.asStateFlow()
@@ -53,19 +101,114 @@ class LibraryViewModel(
      * partly. Kept apart from [uiState] on purpose: none of these should blank
      * out a library the user can still read and use.
      */
-    private val _message = MutableStateFlow<String?>(null)
-    val message: StateFlow<String?> = _message.asStateFlow()
+    private val _message = MutableStateFlow<LibraryMessage?>(null)
+    val message: StateFlow<LibraryMessage?> = _message.asStateFlow()
 
     /**
-     * True while an import is running. Reading the library is covered by
-     * [uiState]; this is the slow work that happens on top of a library that is
-     * already on screen.
+     * Getting books in, and saying how it is going. Held apart - see
+     * [LibraryImportSession] - so that importing is a thing with its own state
+     * rather than four more fields on the shelf.
      */
-    private val _isImporting = MutableStateFlow(false)
-    val isImporting: StateFlow<Boolean> = _isImporting.asStateFlow()
+    private val importSession = LibraryImportSession(
+        importDocumentsUseCase = importDocumentsUseCase,
+        importFolderUseCase = importFolderUseCase,
+        incoming = incoming,
+        scope = viewModelScope,
+        onImported = ::loadDocuments,
+        onMessage = { _message.value = it },
+    )
+
+    val isImporting: StateFlow<Boolean> = importSession.isImporting
+    val importProgress: StateFlow<ImportProgress?> = importSession.progress
+
+    /**
+     * What the reader has asked of their library - the shelf, the filters, the
+     * search and the order.
+     *
+     * Held here rather than in the screen so that narrowing the library is not
+     * work done on the thread that draws it, and so that leaving for a book and
+     * coming back finds the shelf as it was left.
+     */
+    private val _query = MutableStateFlow(LibraryQuery())
+    val query: StateFlow<LibraryQuery> = _query.asStateFlow()
+
+    /**
+     * The whole library with its reading positions joined on and its search and
+     * sort keys worked out - see [LibraryBook].
+     *
+     * Off the main thread and computed once per load rather than once per
+     * keystroke, which is the whole point of it existing.
+     */
+    val library: StateFlow<List<LibraryBook>> =
+        combine(_uiState, _readingProgress) { state, progress ->
+            withContext(dispatcher) { state.dataOrNull.orEmpty().asLibrary(progress, ::coverOf) }
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    /**
+     * How a card gets the artwork the shelf deliberately did not read - see
+     * [LibraryBook.cover]. Nothing is read here; what comes back is the way to
+     * ask, and the asking happens as the card is drawn.
+     */
+    private fun coverOf(location: String): CoverArtSource =
+        CoverArtSource(location) { getLibraryDocumentsUseCase.coverFor(location)?.bytes }
+
+    /**
+     * Looking for a book, which is a different question from narrowing the
+     * shelf - see [LibrarySearchSession].
+     */
+    val search = LibrarySearchSession(
+        library = library,
+        scope = viewModelScope,
+        dispatcher = dispatcher,
+        recentSearches = recentSearchesRepository,
+    )
+
+    /** What this library can usefully be narrowed by, for the header's controls. */
+    val facets: StateFlow<LibraryFacets> = library
+        .map { books -> withContext(dispatcher) { books.facets() } }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, LibraryFacets.Empty)
+
+    /**
+     * The books the grid draws: everything [query] asks for, in the order it
+     * asks for.
+     *
+     * The filtering, the sorting and the pass that builds [library] all run on
+     * [dispatcher] and are handed back finished, so changing a filter costs the
+     * screen a recomposition rather than a search through the whole library on
+     * the frame the reader is watching.
+     *
+     * Moved with `withContext` inside each transform rather than with `flowOn`,
+     * which would put a channel between the ViewModel and the screen: the
+     * computing has to leave the main thread, not the handing over.
+     */
+    val books: StateFlow<List<LibraryBook>> = combine(library, _query) { books, query ->
+        withContext(dispatcher) { books.matching(query) }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     init {
         loadDocuments()
+
+        // A filter can lose its ground under the reader - the last favourite
+        // un-favourited, the last EPUB deleted - and a query still asking for it
+        // would empty the grid for a reason nothing on screen explains.
+        viewModelScope.launch {
+            facets.collect { facets -> _query.update { it.limitedTo(facets) } }
+        }
+    }
+
+    /**
+     * Exposed straight from the repository rather than copied here: it outlives
+     * the screen, and mirroring it would be one more thing that could disagree
+     * with what was stored.
+     */
+    val layout: StateFlow<LibraryLayout> = librarySettingsRepository.layout
+
+    fun setLayout(layout: LibraryLayout) {
+        librarySettingsRepository.setLayout(layout)
+    }
+
+    fun updateQuery(query: LibraryQuery) {
+        _query.value = query
     }
 
     /**
@@ -83,7 +226,7 @@ class LibraryViewModel(
             _uiState.value = runCatchingApp { getLibraryDocumentsUseCase() }
                 .fold(
                     onSuccess = { UiState.Success(it) },
-                    onFailure = { UiState.Failure(it.toAppError()) }
+                    onFailure = { UiState.Failure(it.toAppError()) },
                 )
 
             // After the library and never instead of it: the books are what the
@@ -95,45 +238,13 @@ class LibraryViewModel(
         }
     }
 
-    fun importDocument(pickedDocument: PickedDocument) {
-        runImport { importDocumentUseCase(pickedDocument).map { } }
-    }
+    fun importDocuments(pickedDocuments: List<PickedDocument>) =
+        importSession.importDocuments(pickedDocuments)
 
-    fun importFolder(pickedFolder: PickedFolder) {
-        runImport {
-            importFolderUseCase(pickedFolder).map { summary ->
-                // A partly imported folder is not a failure - the books that did
-                // come in are usable - so it reports itself as a notice rather
-                // than taking the screen over.
-                if (summary.failed > 0) {
-                    _message.value = "Imported ${summary.imported}, skipped ${summary.failed}"
-                }
-            }
-        }
-    }
+    fun importFolder(pickedFolder: PickedFolder) = importSession.importFolder(pickedFolder)
 
-    /**
-     * The one place an import's outcome is handled: holds [isImporting] for the
-     * duration, reloads on success, and reports any failure - named or
-     * unforeseen - through the snackbar.
-     */
-    private fun runImport(block: suspend () -> Result<Unit>) {
-        viewModelScope.launch {
-            _isImporting.value = true
-            _message.value = null
-
-            try {
-                // getOrThrow re-raises the use case's own failure so that it and
-                // an unanticipated throw are both narrowed in the same place.
-                runCatchingApp { block().getOrThrow() }
-                    .onFailure { _message.value = it.toAppError().displayShortMessage() }
-                    .onSuccess { loadDocuments() }
-            } finally {
-                // In a finally so nothing can leave the library spinning.
-                _isImporting.value = false
-            }
-        }
-    }
+    /** Stops the running import, keeping the books that already arrived. */
+    fun cancelImport() = importSession.cancel()
 
     /**
      * Deriving the new value from [document] keeps the toggle decision out of
@@ -144,7 +255,7 @@ class LibraryViewModel(
         val isFavorite = !document.isFavorite
 
         viewModelScope.launch {
-            setFavoriteUseCase(location, isFavorite)
+            if (!reported { setFavoriteUseCase(location, isFavorite) }) return@launch
 
             // Patched in place rather than re-read. A reload would pull the
             // whole library back out of the database, and every row carries its
@@ -159,12 +270,54 @@ class LibraryViewModel(
         }
     }
 
+    /**
+     * Reads one book's file again, for a cover or a title that came in wrong -
+     * or a file that has been replaced on disk since it was imported.
+     *
+     * It says so when it worked, unlike an import: a re-reading that finds
+     * exactly what was there before changes nothing on screen, and silence would
+     * be indistinguishable from the action having done nothing at all.
+     */
+    fun refreshDocument(document: DocumentInfo) {
+        val location = document.document.location
+
+        viewModelScope.launch {
+            runCatchingApp { refreshDocumentUseCase(location).getOrThrow() }
+                .onFailure {
+                    _message.value = LibraryMessage.Failed(it.toAppError())
+
+                    // Read again even though this failed: a re-reading that
+                    // finds the file gone writes that down on the row, and the
+                    // shelf would otherwise go on showing the book as present
+                    // until something else happened to reload it.
+                    loadDocuments()
+                }
+                .onSuccess { refreshed ->
+                    // Patched in place rather than re-read, for the reason
+                    // favouriting is: one row changing is not a reason to pull
+                    // every book in the library back out of the database.
+                    updateLoadedDocuments { documents ->
+                        documents.map {
+                            if (it.document.location == location) refreshed else it
+                        }
+                    }
+
+                    // The drawn artwork is filed under the book rather than
+                    // under the bytes, so new artwork read into an old name
+                    // would otherwise never reach the screen.
+                    CoverArtCache.forget(location)
+
+                    _message.value = LibraryMessage.DetailsRefreshed
+                }
+        }
+    }
+
     /** Removes the book from the library index only; the file is left on disk. */
     fun deleteDocument(document: DocumentInfo) {
         val location = document.document.location
 
         viewModelScope.launch {
-            removeDocumentUseCase(location)
+            if (!reported { removeDocumentUseCase(location) }) return@launch
 
             // Dropped from the list for the same reason favouriting patches it:
             // one row leaving is not a reason to re-read the rest.
@@ -179,6 +332,16 @@ class LibraryViewModel(
     }
 
     /**
+     * Runs a write to the library and says whether it happened, telling the
+     * reader when it did not - a store that cannot be written is not a reason
+     * to take the app down, which an uncaught throw in this scope does.
+     */
+    private suspend fun reported(write: suspend () -> Unit): Boolean =
+        runCatchingApp { write() }
+            .onFailure { _message.value = LibraryMessage.Failed(it.toAppError()) }
+            .isSuccess
+
+    /**
      * Edits the library already on screen, when there is one.
      *
      * A library that failed to load or is still loading has nothing to edit, and
@@ -189,6 +352,29 @@ class LibraryViewModel(
         _uiState.update { state ->
             if (state is UiState.Success) UiState.Success(transform(state.data)) else state
         }
+    }
+
+    /**
+     * What is worth tidying on the shelf as it is currently narrowed, so that
+     * the menu can say how much there is before anyone presses anything.
+     */
+    val upkeep: StateFlow<LibraryUpkeep> = books
+        .map { it.upkeep() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LibraryUpkeep.None)
+
+    /**
+     * The library is read again rather than patched after a bulk action.
+     *
+     * The single-book actions patch the loaded list, because one row changing is
+     * not a reason to re-read the rest. A bulk action is the opposite case: it
+     * may have touched every book on the shelf, and working out which of forty
+     * patches to apply is more work - and more ways to be wrong - than reading
+     * the shelf once.
+     */
+    internal fun onBulkDone(message: LibraryMessage) {
+        _message.value = message
+
+        loadDocuments()
     }
 
     fun clearMessage() {

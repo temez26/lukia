@@ -1,0 +1,229 @@
+package io.lukia.features.reader.presentation.components.contents
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import io.lukia.features.reader.domain.outline.ReaderOutline
+import io.lukia.features.reader.presentation.percentThrough
+import io.lukia.features.reader.presentation.theme.ReaderPanelWidth
+import io.lukia.resources.Res
+import io.lukia.resources.reader_go_to_page
+import io.lukia.resources.reader_page_x_of_y
+import io.lukia.resources.reader_page_x_of_y_percent
+import io.lukia.resources.reader_percent
+import io.lukia.shared.presentation.components.menu.DismissOnBack
+import io.lukia.shared.presentation.components.menu.popoverTransition
+import io.lukia.shared.presentation.components.menu.rememberPopoverProgress
+import io.lukia.shared.presentation.components.surface.GlassSurface
+import io.lukia.shared.presentation.components.surface.GlassTone
+import io.lukia.shared.presentation.components.surface.LukiaDivider
+import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import io.lukia.shared.presentation.theme.Space
+import io.lukia.shared.presentation.theme.isWideWindow
+import org.jetbrains.compose.resources.stringResource
+import kotlin.math.roundToInt
+
+/** Grows out of the control it hangs from, matching the other reader panels. */
+private val PanelTransformOrigin = TransformOrigin(0.5f, 0f)
+
+/** Enough for roughly seven chapters before the list takes over the scrolling. */
+private val CompactListMaxHeight: Dp = 280.dp
+
+/**
+ * A desktop window is tall enough to show a chapter and its sections at once,
+ * and its rows are shorter, so this is more chapters than the number suggests.
+ */
+private val WideListMaxHeight: Dp = 440.dp
+
+/** Tall enough to drag, short enough not to be the loudest thing in the panel. */
+private val ScrubberHeight: Dp = 28.dp
+
+/**
+ * Getting somewhere else in the book: a scrubber for the whole document and the
+ * document's own table of contents underneath it.
+ *
+ * Hangs from the page indicator, which is both where the reader looks to find
+ * out where they are and the natural place to reach for going somewhere else.
+ */
+@Composable
+internal fun ReaderContentsPanel(
+    expanded: Boolean,
+    listState: LazyListState,
+    pageCount: Int,
+    outline: ReaderOutline,
+    onGoToPage: (pageIndex: Int) -> Unit,
+    onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val progress = rememberPopoverProgress(expanded, label = "readerContentsPanel")
+
+    if (!expanded && progress == 0f) return
+
+    // Read here rather than passed in: the page changes on every scroll, and
+    // taking it any higher would recompose the reader around the panel each
+    // time. Inside the panel it costs nothing while the panel is closed.
+    val currentPage by remember(listState) {
+        derivedStateOf { listState.firstVisibleItemIndex + 1 }
+    }
+
+    DismissOnBack(enabled = expanded, onDismiss = onDismissRequest)
+
+    val wide = isWideWindow
+    val inset = LocalLukiaDimens.current.panelPadding
+
+    GlassSurface(
+        shape = MaterialTheme.shapes.large,
+        tone = GlassTone.Panel,
+        modifier = modifier.popoverTransition(progress, PanelTransformOrigin),
+    ) {
+        Column(
+            modifier = Modifier
+                // A phone gets the width of its window. The scrubber is the
+                // control here that a wider one makes better - dragging through
+                // a four-hundred-page book across 300dp is fourteen pages a
+                // millimetre - and a chapter title has that much more room
+                // before it is cut.
+                .then(if (wide) Modifier.width(ReaderPanelWidth) else Modifier.fillMaxWidth())
+                .padding(vertical = Space.md),
+        ) {
+            PositionScrubber(
+                current = currentPage,
+                pageCount = pageCount,
+                inset = inset,
+                onGoTo = onGoToPage,
+            )
+
+            LukiaDivider(
+                inset = inset,
+                endInset = inset,
+                modifier = Modifier.padding(vertical = Space.md),
+            )
+
+            Chapters(
+                outline = outline,
+                currentPage = currentPage,
+                inset = inset,
+                listMaxHeight = if (wide) WideListMaxHeight else CompactListMaxHeight,
+                onGoToPage = {
+                    onGoToPage(it)
+                    onDismissRequest()
+                },
+            )
+        }
+    }
+}
+
+/**
+ * Drag anywhere in the book.
+ *
+ * The page only changes when the drag ends. Following the scrubber live would
+ * mean rendering every page it passed over, which is exactly the work that makes
+ * a scrubber feel heavy in a long document - so the label tracks the thumb and
+ * the book waits until it is let go.
+ */
+@Composable
+private fun PositionScrubber(
+    current: Int,
+    pageCount: Int,
+    inset: Dp,
+    onGoTo: (index: Int) -> Unit,
+) {
+    var dragged by remember { mutableStateOf<Int?>(null) }
+
+    // Lets go of the drag position once the book has caught up, so the scrubber
+    // follows the reader again when they scroll by hand.
+    LaunchedEffect(current) { dragged = null }
+
+    val shown = dragged ?: current
+
+    val percent = percentThrough(shown, pageCount)
+
+    // Read before the modifier chain: `semantics` is not a composable scope.
+    val spoken = stringResource(
+        Res.string.reader_page_x_of_y_percent,
+        shown,
+        pageCount,
+        percent,
+    )
+
+    val goToPage = stringResource(Res.string.reader_go_to_page)
+
+    // The page without the percentage beside it. The row above says how far in;
+    // the scrubber's own label says where it would land, and a slider that reads
+    // out a percentage every time it moves is announcing two numbers where the
+    // reader is only moving one of them.
+    val place = stringResource(Res.string.reader_page_x_of_y, shown, pageCount)
+
+    Column(modifier = Modifier.padding(horizontal = inset)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxWidth()
+                // One statement rather than two loose fragments. Read out
+                // separately, "1%" follows "Page 1 of 100" as a label with no
+                // subject and means nothing at all.
+                .semantics(mergeDescendants = true) {
+                    contentDescription = spoken
+                },
+        ) {
+            Text(
+                text = stringResource(Res.string.reader_page_x_of_y, shown, pageCount),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            // How far in, which the page number alone does not say: page 120 is
+            // a different place in a pamphlet than in a doorstop.
+            Text(
+                text = stringResource(Res.string.reader_percent, percent),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+
+        if (pageCount > 1) {
+            Slider(
+                value = shown.toFloat(),
+                valueRange = 1f..pageCount.toFloat(),
+                onValueChange = { dragged = it.roundToInt() },
+                onValueChangeFinished = { dragged?.let { position -> onGoTo(position - 1) } },
+                // Material's own track is a thick expressive bar in its default
+                // colours, which is the one control in the app that looked like it
+                // came from a different application. Dressed in the panel's own
+                // palette and given the height of a scrubber rather than a slider.
+                colors = SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colorScheme.primary,
+                    activeTrackColor = MaterialTheme.colorScheme.primary,
+                    inactiveTrackColor = MaterialTheme.colorScheme.outlineVariant,
+                ),
+                modifier = Modifier
+                    .height(ScrubberHeight)
+                    .semantics { contentDescription = "$goToPage. $place" },
+            )
+        }
+    }
+}

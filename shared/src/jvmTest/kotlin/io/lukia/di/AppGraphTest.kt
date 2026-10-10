@@ -1,20 +1,25 @@
 package io.lukia.di
 
-import io.lukia.core.domain.DocumentWorkspace
-import io.lukia.core.domain.SecretStore
-import io.lukia.core.domain.SettingsStore
-import io.lukia.features.reader.application.OpenDocumentUseCase
-import io.lukia.features.reader.infrastructure.ReaderSettingsRepository
-import io.lukia.features.library.application.RemoveDocumentUseCase
-import io.lukia.features.settings.infrastructure.AppSettingsRepository
-import io.lukia.features.translate.application.TranslatePassageUseCase
-import io.lukia.features.translate.domain.ModelCatalogue
-import io.lukia.features.translate.domain.Translator
-import io.lukia.features.translate.infrastructure.TranslationSettingsRepository
 import app.cash.sqldelight.db.SqlDriver
 import io.ktor.client.HttpClient
+import io.lukia.core.domain.diagnostics.CrashStore
+import io.lukia.core.domain.diagnostics.FakeCrashStore
+import io.lukia.core.domain.document.DocumentCatalogue
+import io.lukia.core.domain.reading.ReadingProgressRepository
+import io.lukia.core.domain.storage.DocumentWorkspace
+import io.lukia.core.domain.storage.SecretStore
+import io.lukia.core.domain.storage.SettingsStore
 import io.lukia.core.infrastructure.lukiaSqlDriver
-import io.lukia.features.reader.domain.ReadingProgressRepository
+import io.lukia.features.library.application.RemoveDocumentUseCase
+import io.lukia.features.library.domain.LibraryRepository
+import io.lukia.features.reader.application.OpenDocumentUseCase
+import io.lukia.features.reader.domain.ReaderSettingsRepository
+import io.lukia.features.settings.domain.AppSettingsRepository
+import io.lukia.features.translate.application.TranslatePassageUseCase
+import io.lukia.features.translate.domain.TranslationCache
+import io.lukia.features.translate.domain.Translator
+import io.lukia.features.translate.domain.provider.ModelCatalogue
+import io.lukia.features.translate.domain.settings.TranslationSettingsRepository
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import java.io.File
@@ -38,20 +43,34 @@ class AppGraphTest {
      */
     private val databaseFile = File(
         System.getProperty("java.io.tmpdir"),
-        "lukia-graph-test-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}.db"
+        "lukia-graph-test-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}.db",
     )
 
     private val koin = koinApplication {
         modules(
             commonModule,
             platformModule,
-            module { single<SqlDriver> { lukiaSqlDriver(databaseFile) } }
+            module {
+                single<SqlDriver> { lukiaSqlDriver(databaseFile) }
+                // Resolving the graph creates what is marked created-at-start,
+                // and the real one installs an uncaught-exception handler in
+                // this JVM and writes into the developer's own Lukia directory.
+                single<CrashStore> { FakeCrashStore() }
+            },
         )
     }.koin
 
     @AfterTest
     fun tearDown() {
         koin.get<SqlDriver>().close()
+
+        // Closing matters beyond tidiness. The modules are top-level values, so
+        // their instance holders are shared by every graph built in this JVM -
+        // and one left holding an instance is one the next graph reuses without
+        // running the definition again, which is a test that passes or fails on
+        // what ran before it.
+        koin.close()
+
         databaseFile.delete()
     }
 
@@ -103,6 +122,17 @@ class AppGraphTest {
     }
 
     /**
+     * The shelf is reachable by two names - the library holds all of it, the reader
+     * and the statistics screen are handed the reading half. Two instances would be
+     * two shelves, and the failure would be a book imported on one screen that never
+     * appeared on another rather than anything that looked like a wiring mistake.
+     */
+    @Test
+    fun theShelfIsOneInstanceUnderBothOfItsNames() {
+        assertSame(koin.get<LibraryRepository>(), koin.get<DocumentCatalogue>())
+    }
+
+    /**
      * The app's theme is resolved at the root of the composition, before any
      * screen exists - so a missing registration here would not fail on some
      * screen nobody opened, it would fail on launch.
@@ -145,6 +175,25 @@ class AppGraphTest {
     }
 
     /**
+     * Where passages already paid for are kept. A missing registration would not
+     * fail loudly - translating would carry on working, and quietly charge for
+     * every sentence a second time.
+     */
+    @Test
+    fun theStoreOfAlreadyTranslatedPassagesResolves() {
+        assertNotNull(koin.get<TranslationCache>())
+    }
+
+    /**
+     * One cache for the app, over the one database. A second instance would be a
+     * second store nothing else could see into.
+     */
+    @Test
+    fun theTranslationCacheIsOneSharedInstance() {
+        assertSame(koin.get<TranslationCache>(), koin.get<TranslationCache>())
+    }
+
+    /**
      * Shared state again: the language is chosen on the settings screen and read
      * by the open reader, and two instances would mean choosing one changed
      * nothing about the book in front of you.
@@ -153,7 +202,7 @@ class AppGraphTest {
     fun translationSettingsAreOneSharedInstance() {
         assertSame(
             koin.get<TranslationSettingsRepository>(),
-            koin.get<TranslationSettingsRepository>()
+            koin.get<TranslationSettingsRepository>(),
         )
     }
 }

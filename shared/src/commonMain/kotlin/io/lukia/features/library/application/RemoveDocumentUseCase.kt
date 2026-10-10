@@ -1,25 +1,44 @@
 package io.lukia.features.library.application
 
-import io.lukia.core.domain.DocumentWorkspace
+import io.lukia.core.domain.document.IncomingDocumentStore
+import io.lukia.core.domain.reading.PdfLayoutRepository
+import io.lukia.core.domain.reading.ReadingProgressRepository
+import io.lukia.core.domain.storage.DocumentWorkspace
 import io.lukia.features.library.domain.LibraryRepository
-import io.lukia.features.reader.domain.ReadingProgressRepository
 
 /**
- * Drops a document from the library index. The file on disk is left alone -
+ * Drops a document from the library index. The reader's own file is left alone -
  * removing a book here means "stop listing it", not "delete it".
  *
- * What the app kept for itself does go: the working copy, and where the reader
- * had got to. Both exist only to serve a book that is in the library, and a
- * position kept for a book nobody can see is state with no way to reach it.
+ * What the app kept for itself does go: the working copy, the copy of a book
+ * handed to the app rather than fetched by it, where the reader had got to, and
+ * how they chose to read it. All exist only to serve a shelved book.
+ *
+ * Two of the five stores are files on disk, so this can never be one atomic act.
+ * The schema makes the part that matters survive interruption - position and
+ * layout cascade off the book, see `ReadingPosition.sq`.
+ *
+ * The order does the rest: files first, the row that names them last. A row is
+ * the only thing that remembers where a book's copies were filed - both are
+ * named after a hash of the location - so dying between dropping the row and
+ * deleting the copies would strand books nothing could name again. The other way
+ * round costs nothing: the next open makes the copy again.
+ *
+ * All five are still asked for by name, so reading this says what removing a
+ * book means without knowing which store enforces what.
  */
 class RemoveDocumentUseCase(
     private val repository: LibraryRepository,
     private val workspace: DocumentWorkspace,
-    private val progressRepository: ReadingProgressRepository
+    private val incoming: IncomingDocumentStore,
+    private val progressRepository: ReadingProgressRepository,
+    private val layoutRepository: PdfLayoutRepository,
 ) {
     suspend operator fun invoke(location: String) {
-        repository.removeDocument(location)
         workspace.discard(location)
+        incoming.discard(location)
         progressRepository.forget(location)
+        layoutRepository.forget(location)
+        repository.removeDocument(location)
     }
 }

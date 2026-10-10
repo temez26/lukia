@@ -1,0 +1,168 @@
+package io.lukia.features.library.presentation.components.search
+
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
+import io.lukia.resources.Res
+import io.lukia.resources.filter_clear
+import io.lukia.resources.search_clear_recent
+import io.lukia.resources.search_for_term
+import io.lukia.resources.search_forget
+import io.lukia.resources.search_recent
+import io.lukia.shared.presentation.components.controls.LukiaIconButton
+import io.lukia.shared.presentation.components.controls.pressable
+import io.lukia.shared.presentation.components.icons.ClearGlyph
+import io.lukia.shared.presentation.components.icons.SearchGlyph
+import io.lukia.shared.presentation.components.surface.SectionLabel
+import io.lukia.shared.presentation.theme.LocalLukiaMetrics
+import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
+
+/**
+ * What has been searched for before, offered while the field is empty.
+ *
+ * The whole of what an empty search screen has to say: a reader looking at one
+ * has just arrived or just cleared the field, and what helps is the words they
+ * have already found books with rather than a sentence explaining searching.
+ *
+ * Rows rather than chips. A search term is a phrase of unpredictable length, and
+ * chips of wildly different widths wrap into clutter where a column of
+ * left-aligned lines reads as a list.
+ */
+@Composable
+internal fun RecentSearches(
+    terms: List<String>,
+    onSearch: (String) -> Unit,
+    onForget: (String) -> Unit,
+    onClear: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = Space.sm),
+        ) {
+            SectionLabel(
+                text = stringResource(Res.string.search_recent),
+                modifier = Modifier.weight(1f),
+            )
+
+            ClearAll(onClick = onClear)
+        }
+
+        terms.forEach { term ->
+            RecentSearchRow(
+                term = term,
+                onClick = { onSearch(term) },
+                onForget = { onForget(term) },
+            )
+        }
+    }
+}
+
+/**
+ * One remembered search: the word, and a way to drop it.
+ *
+ * The cross is its own control rather than a swipe. A swipe to delete is the
+ * gesture a list of a reader's own content uses, and this is a list the app
+ * wrote about them - it should be no harder to tidy than it was to fill.
+ */
+@Composable
+private fun RecentSearchRow(
+    term: String,
+    onClick: () -> Unit,
+    onForget: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val metrics = LocalLukiaMetrics.current
+    val interactionSource = remember { MutableInteractionSource() }
+    val shape = MaterialTheme.shapes.small
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.lg),
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = metrics.rowHeight)
+            .clip(shape)
+            .pressable(
+                interactionSource = interactionSource,
+                shape = shape,
+                onClickLabel = stringResource(Res.string.search_for_term, term),
+                onClick = onClick,
+            )
+            .padding(vertical = Space.xs),
+    ) {
+        SearchGlyph(
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(metrics.iconSmall),
+        )
+
+        Text(
+            text = term,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
+
+        LukiaIconButton(
+            label = stringResource(Res.string.search_forget, term),
+            onClick = onForget,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            size = metrics.iconButtonSmall,
+            glyphSize = metrics.iconSmall,
+        ) { tint, glyph ->
+            ClearGlyph(
+                tint = tint,
+                knockout = MaterialTheme.colorScheme.background,
+                modifier = glyph,
+            )
+        }
+    }
+}
+
+/**
+ * A word rather than a button. Emptying the history is not something a reader
+ * came here to do, and a filled control saying so would compete with the list it
+ * would delete.
+ */
+@Composable
+private fun ClearAll(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val shape = MaterialTheme.shapes.extraSmall
+
+    Text(
+        text = stringResource(Res.string.filter_clear),
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = modifier
+            .clip(shape)
+            .pressable(
+                interactionSource = interactionSource,
+                shape = shape,
+                onClickLabel = stringResource(Res.string.search_clear_recent),
+                onClick = onClick,
+            )
+            .padding(horizontal = Space.xs, vertical = Space.xxs),
+    )
+}

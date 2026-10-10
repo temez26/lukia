@@ -1,10 +1,11 @@
 package io.lukia.features.translate.infrastructure
 
-import io.lukia.features.translate.domain.TargetLanguage
 import io.lukia.features.translate.domain.Translation
-import io.lukia.features.translate.domain.TranslationProvider
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.Translator
+import io.lukia.features.translate.domain.provider.TranslationProvider
+import io.lukia.features.translate.domain.settings.TargetLanguage
+import io.lukia.features.translate.domain.translate
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -33,7 +34,7 @@ class ConfiguredTranslatorTest {
         val translator = ConfiguredTranslator(
             provider = { provider },
             anthropic = naming("anthropic"),
-            openAiCompatible = naming("openai")
+            openAiCompatible = naming("openai"),
         )
 
         assertEquals("anthropic", translator.translate(request()).text)
@@ -47,13 +48,13 @@ class ConfiguredTranslatorTest {
         ConfiguredTranslator(
             provider = { provider },
             anthropic = naming("anthropic"),
-            openAiCompatible = naming("openai")
+            openAiCompatible = naming("openai"),
         ).translate(request()).text
 
-    private fun naming(name: String) = Translator { Translation(name) }
+    private fun naming(name: String) = Translator { _, _ -> Translation(name) }
 
     private fun request() = TranslationRequest(
         text = "Call me Ishmael.",
-        targetLanguage = TargetLanguage.Finnish
+        targetLanguage = TargetLanguage.Finnish,
     )
 }

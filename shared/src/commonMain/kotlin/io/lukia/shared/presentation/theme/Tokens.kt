@@ -9,11 +9,10 @@ import androidx.compose.ui.unit.dp
  * The spacing scale, on a 4dp grid with two half-steps for the gaps that sit
  * between a label and the thing it labels.
  *
- * Small gaps used to be written as literals at every call site, which is how two
- * rows that should have matched came to sit 6dp and 8dp apart. Structural
- * measurements - the inset from the window edge, the gap between sections, a
- * panel's own padding - are not here: those change with the window and live in
- * [LukiaDimens].
+ * Small gaps used to be literals at every call site, which is how two rows that
+ * should have matched came to sit 6dp and 8dp apart. Structural measurements -
+ * the window inset, the gap between sections, a panel's padding - change with
+ * the window and live in [LukiaDimens].
  */
 object Space {
     val xxs: Dp = 2.dp
@@ -58,6 +57,17 @@ object LukiaAlpha {
 
     /** A chip of chrome laid straight over artwork, which has to stay legible. */
     const val OverArtwork = 0.88f
+
+    /**
+     * The edge of a control that has no fill to mark where it is - the secondary
+     * button, and nothing else so far.
+     *
+     * In the content colour at this strength rather than in `outlineVariant`,
+     * which separates two rows of one surface and is deliberately invisible next
+     * to a boundary. A control's edge is held to 3:1 against the surface behind
+     * it, and this is the lowest opacity reaching that in every palette.
+     */
+    const val Border = 0.5f
 }
 
 /** Shadow depths. Deliberately shallow: depth here is for ordering, not for drama. */
@@ -78,6 +88,42 @@ object LukiaElevation {
     val panel: Dp = 16.dp
 }
 
+/**
+ * Room a scrolling page leaves around itself for the chrome that floats over it.
+ *
+ * Not spacing, and so not in [Space]: these are the height of something else -
+ * the back control a screen scrolls under, the edge a column must not end hard
+ * against - rather than the gap between two things on the page.
+ *
+ * Here because each was written out once per screen: the settings, book detail
+ * and statistics bodies each carried a private `TopChromeClearance` of 68dp
+ * under identical documentation, and the library grid, search results and home
+ * rows each carried their own 24dp tail. Three copies of a number is three
+ * chances for two screens under the same control to stop agreeing about where it
+ * ends.
+ */
+object Clearance {
+
+    /** Under the floating back control, before a screen's first content. */
+    val topChrome: Dp = 68.dp
+
+    /** Past the last group of a scrolling column. */
+    val pageBottom: Dp = 32.dp
+
+    /** ...and past the last row of a scrolling list. */
+    val listBottom: Dp = 24.dp
+}
+
+/**
+ * How wide the app sets a sentence that is standing in for a screen.
+ *
+ * One measure for both of the states that occupy an empty screen, since they
+ * take the same slot and are read the same way. `EmptyState` capped at 360dp and
+ * `ErrorState` at 340dp, which is a difference nobody chose and nobody can see
+ * except when a screen shows one after the other.
+ */
+val StateMeasure: Dp = 360.dp
+
 /** How thick a hairline border is, and the ring around a keyboard-focused control. */
 val HairlineWidth: Dp = 1.dp
 val FocusRingWidth: Dp = 2.dp
@@ -85,17 +131,21 @@ val FocusRingWidth: Dp = 2.dp
 /**
  * The size of the things a user points at.
  *
- * Split from [LukiaDimens] because these answer a different question. Layout
- * metrics ask how much room there is; these ask what is doing the pointing. A
- * finger needs [MinTouchTarget] whatever the window; a mouse cursor is a few
- * pixels across and a 44dp button under one is mostly padding - which is most of
- * what makes a desktop window look like a scaled-up phone.
+ * Split from [LukiaDimens] because these answer a different question: layout
+ * metrics ask how much room there is, these ask what is doing the pointing. A
+ * finger needs [MinTouchTarget] whatever the window; a 44dp button under a mouse
+ * cursor is mostly padding, which is most of what makes a desktop window look
+ * like a scaled-up phone.
  *
- * Window width stands in for the input device, as it already does elsewhere in
- * the app for tooltips and for the search field's proportions. The trade-off is
- * that a large tablet is given pointer metrics; that is the same bet the rest of
- * the app already makes, and taking it once here is better than each control
- * making its own guess.
+ * Window width used to stand in for the input device, as it still does for
+ * tooltips and the search field's proportions. It cannot here: a 1024dp iPad is
+ * pointed at with a finger and was handed 32dp controls and 24dp icon buttons -
+ * under Apple's 44pt floor and Material's 48dp one - and so was an ordinary
+ * phone turned to landscape at 844dp.
+ *
+ * So this asks the platform instead, as `App` already does to decide which
+ * navigation the app has: a build somebody holds is touched at every window size
+ * it can be turned to, and a desktop is pointed at however small its window.
  */
 @Immutable
 data class LukiaMetrics(
@@ -112,7 +162,7 @@ data class LukiaMetrics(
     /** The glyph on a menu row, or beside a label. */
     val iconSmall: Dp,
     /** Minimum height of a menu row, a chapter row, a settings row. */
-    val rowHeight: Dp
+    val rowHeight: Dp,
 )
 
 private val TouchMetrics = LukiaMetrics(
@@ -122,7 +172,7 @@ private val TouchMetrics = LukiaMetrics(
     iconButtonSmall = 32.dp,
     icon = 20.dp,
     iconSmall = 18.dp,
-    rowHeight = MinTouchTarget
+    rowHeight = MinTouchTarget,
 )
 
 private val PointerMetrics = LukiaMetrics(
@@ -132,10 +182,10 @@ private val PointerMetrics = LukiaMetrics(
     iconButtonSmall = 24.dp,
     icon = 17.dp,
     iconSmall = 15.dp,
-    rowHeight = 30.dp
+    rowHeight = 30.dp,
 )
 
-internal fun metricsFor(widthClass: WindowWidthClass): LukiaMetrics =
-    if (widthClass == WindowWidthClass.Compact) TouchMetrics else PointerMetrics
+internal fun metricsFor(touch: Boolean): LukiaMetrics =
+    if (touch) TouchMetrics else PointerMetrics
 
 val LocalLukiaMetrics = staticCompositionLocalOf { TouchMetrics }

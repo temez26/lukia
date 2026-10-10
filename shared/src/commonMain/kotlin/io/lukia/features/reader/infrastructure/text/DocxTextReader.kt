@@ -1,14 +1,15 @@
 package io.lukia.features.reader.infrastructure.text
 
+import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.core.infrastructure.archive.ZipArchiveReader
 import io.lukia.core.infrastructure.archive.resolveArchivePath
 import io.lukia.core.infrastructure.xml.XmlEvent
 import io.lukia.core.infrastructure.xml.xmlEvents
-import io.lukia.features.reader.domain.Emphasis
 import io.lukia.features.reader.domain.ReflowableContent
-import io.lukia.features.reader.domain.TextBlock
-import io.lukia.features.reader.domain.TextRun
-import io.lukia.features.reader.domain.isBlank
+import io.lukia.features.reader.domain.text.Emphasis
+import io.lukia.features.reader.domain.text.TextBlock
+import io.lukia.features.reader.domain.text.TextRun
+import io.lukia.features.reader.domain.text.isBlank
 
 private const val DOCUMENT_ENTRY = "word/document.xml"
 private const val RELATIONSHIPS_ENTRY = "word/_rels/document.xml.rels"
@@ -20,36 +21,41 @@ private const val DOCUMENT_DIRECTORY = "word"
  * Reads a Word document into the reader's blocks.
  *
  * A `.docx` is a ZIP whose `word/document.xml` is the document: a flat run of
- * paragraphs, each carrying its style by name and its text split into runs that
- * change whenever the formatting does. That flatness is the whole difficulty -
- * unlike an EPUB, the file states no divisions at all, so where one section ends
- * and the next begins has to be read off the headings, which is what
- * [sectionText] does.
+ * paragraphs, each naming its style, with text split into runs that change with
+ * the formatting. That flatness is the difficulty - unlike an EPUB the file
+ * states no divisions, so section boundaries have to be read off the headings,
+ * which is what [sectionText] does.
  *
- * What is deliberately not read: page geometry, columns, headers and footers,
- * fields, and the numbering definitions that would give an ordered list its real
- * numbers. Those describe a document as printed, and this reader is re-setting
- * it to be read on a screen at whatever size the reader asked for - a page
- * break from a file that was laid out for A4 means nothing here.
+ * Deliberately not read: page geometry, columns, headers and footers, fields,
+ * and the numbering definitions that would give an ordered list its real
+ * numbers. Those describe a document as printed, and this re-sets it for a
+ * screen at whatever size the reader asked for - a page break laid out for A4
+ * means nothing here.
  *
  * Returns null when the archive holds no document part, which is the one thing
  * that makes a file not a `.docx` at all.
  */
-internal fun readDocx(docxBytes: ByteArray): ReflowableContent? {
+internal fun readDocx(
+    docxBytes: ByteArray,
+    diagnostics: Diagnostics = Diagnostics.None,
+): ReflowableContent? {
     val zip = ZipArchiveReader(docxBytes)
-    val documentXml = zip.readEntry(DOCUMENT_ENTRY)?.let(::decodeText) ?: return null
 
-    val media = zip.relationshipTargets()
+    val documentXml = zip.readEntry(DOCUMENT_ENTRY)
+        ?.let { decodeText(it, diagnostics) }
+        ?: return null
+
+    val media = zip.relationshipTargets(diagnostics)
 
     val blocks = docxBlocks(documentXml) { relationshipId ->
         media[relationshipId]?.let(zip::readEntry)
     }
 
-    if (blocks.isEmpty()) return null
-
-    val sectioned = sectionText(blocks)
-
-    return ReflowableContent(sections = sectioned.sections, outline = sectioned.outline)
+    // A document with nothing written in it is an empty book rather than a file
+    // this cannot read - see [reflowableFrom]. Null here said the second, and a
+    // reader who opened an empty Word document was told their file was of a
+    // kind the app does not support.
+    return reflowableFrom(blocks)
 }
 
 /**
@@ -60,8 +66,10 @@ internal fun readDocx(docxBytes: ByteArray): ReflowableContent? {
  * picture - and an illustrated document would otherwise re-parse it a hundred
  * times over.
  */
-private fun ZipArchiveReader.relationshipTargets(): Map<String, String> {
-    val rels = readEntry(RELATIONSHIPS_ENTRY)?.let(::decodeText) ?: return emptyMap()
+private fun ZipArchiveReader.relationshipTargets(diagnostics: Diagnostics): Map<String, String> {
+    val rels = readEntry(RELATIONSHIPS_ENTRY)
+        ?.let { decodeText(it, diagnostics) }
+        ?: return emptyMap()
 
     return xmlEvents(rels)
         .filterIsInstance<XmlEvent.Open>()
@@ -103,90 +111,127 @@ private class DocxParagraph {
  * what a paragraph is at the point it ends rather than having to look ahead.
  */
 private fun docxBlocks(xml: String, image: (relationshipId: String) -> ByteArray?): List<TextBlock> {
+    val walk = DocxWalk(image)
+    xmlEvents(xml).forEach(walk::on)
+    return walk.blocks
+}
+
+/**
+ * Everything the walk has to remember between two events.
+ *
+ * A class rather than seven locals around a `forEach`, because that is what this
+ * reading is: which paragraph is open, what its runs are formatted as, and
+ * whether the text arriving is text the author can see. As one function the
+ * opening and closing halves of each of those questions were a hundred lines
+ * apart.
+ */
+private class DocxWalk(private val image: (relationshipId: String) -> ByteArray?) {
+
     val blocks = mutableListOf<TextBlock>()
 
-    var paragraph: DocxParagraph? = null
-    var emphasis = emptySet<Emphasis>()
-    var inRunProperties = false
-    var inText = false
+    private var paragraph: DocxParagraph? = null
+    private var emphasis = emptySet<Emphasis>()
+    private var inRunProperties = false
+    private var inText = false
 
-    // Field instructions and deleted text are both stored as ordinary text and
-    // are both invisible in Word - a `PAGEREF` instruction read aloud in the
-    // middle of a sentence is not something the author wrote.
-    var hiddenDepth = 0
+    /**
+     * What the author wrote about the picture, which Word puts on the drawing's
+     * own properties rather than on the picture - and which arrives before it.
+     * Without this a picture in a Word document was announced to a screen reader
+     * as "Illustration" even where its author had said what it was, while the
+     * same picture in an EPUB kept its words.
+     */
+    private var described: String? = null
 
-    xmlEvents(xml).forEach { event ->
+    /**
+     * Field instructions and deleted text are both stored as ordinary text and
+     * are both invisible in Word - a `PAGEREF` instruction read aloud in the
+     * middle of a sentence is not something the author wrote.
+     */
+    private var hiddenDepth = 0
+
+    fun on(event: XmlEvent) {
         when (event) {
-            is XmlEvent.Open -> when (event.name) {
-                "p" -> paragraph = DocxParagraph()
-
-                "instrtext", "del" -> if (!event.selfClosing) hiddenDepth++
-
-                "pstyle" -> paragraph?.style =
-                    event.attributes["w:val"].orEmpty().lowercase().replace(" ", "")
-
-                "numpr" -> paragraph?.isListItem = true
-
-                // A run's formatting comes only from its own properties, so both
-                // the run and its property block start from nothing. Without the
-                // reset on `w:r`, a run with no properties of its own would
-                // inherit whatever the paragraph mark was formatted as.
-                "r" -> emphasis = emptySet()
-
-                "rpr" -> {
-                    inRunProperties = !event.selfClosing
-                    emphasis = emptySet()
-                }
-
-                "b" -> if (inRunProperties && event.attributes.isOn()) {
-                    emphasis = emphasis + Emphasis.Bold
-                }
-
-                "i" -> if (inRunProperties && event.attributes.isOn()) {
-                    emphasis = emphasis + Emphasis.Italic
-                }
-
-                // `<w:t/>` with nothing in it has no closing tag to switch this
-                // back off again.
-                "t" -> inText = !event.selfClosing && hiddenDepth == 0
-
-                // Word's own line and tab characters, which are elements rather
-                // than characters in the text.
-                "br" -> paragraph?.runs?.append("\n", emphasis)
-                "tab" -> paragraph?.runs?.append("\t", emphasis)
-
-                "blip" -> {
-                    val bytes = event.attributes["r:embed"]?.let(image)
-
-                    if (bytes != null) {
-                        blocks += TextBlock.Figure(bytes = bytes, description = null)
-                    }
-                }
-            }
-
-            is XmlEvent.Close -> when (event.name) {
-                "p" -> {
-                    paragraph?.let { blocks.addParagraph(it) }
-                    paragraph = null
-
-                    // A run's formatting does not survive the paragraph it was
-                    // in, and neither does a paragraph left open by a malformed
-                    // file.
-                    emphasis = emptySet()
-                }
-
-                "instrtext", "del" -> if (hiddenDepth > 0) hiddenDepth--
-
-                "rpr" -> inRunProperties = false
-
-                "t" -> inText = false
-            }
-
+            is XmlEvent.Open -> opened(event)
+            is XmlEvent.Close -> closed(event)
             is XmlEvent.Text -> if (inText) paragraph?.runs?.append(event.text, emphasis)
         }
     }
 
-    return blocks
+    private fun opened(event: XmlEvent.Open) {
+        when (event.name) {
+            "p" -> paragraph = DocxParagraph()
+
+            "instrtext", "del" -> if (!event.selfClosing) hiddenDepth++
+
+            "pstyle" ->
+                paragraph?.style =
+                    event.attributes["w:val"].orEmpty().lowercase().replace(" ", "")
+
+            "numpr" -> paragraph?.isListItem = true
+
+            // A run's formatting comes only from its own properties, so both
+            // the run and its property block start from nothing. Without the
+            // reset on `w:r`, a run with no properties of its own would
+            // inherit whatever the paragraph mark was formatted as.
+            "r" -> emphasis = emptySet()
+
+            "rpr" -> {
+                inRunProperties = !event.selfClosing
+                emphasis = emptySet()
+            }
+
+            "b" -> if (inRunProperties && event.attributes.isOn()) {
+                emphasis = emphasis + Emphasis.Bold
+            }
+
+            "i" -> if (inRunProperties && event.attributes.isOn()) {
+                emphasis = emphasis + Emphasis.Italic
+            }
+
+            // `<w:t/>` with nothing in it has no closing tag to switch this
+            // back off again.
+            "t" -> inText = !event.selfClosing && hiddenDepth == 0
+
+            // Word's own line and tab characters, which are elements rather
+            // than characters in the text.
+            "br" -> paragraph?.runs?.append("\n", emphasis)
+            "tab" -> paragraph?.runs?.append("\t", emphasis)
+
+            "docpr" -> described = event.attributes["descr"]?.trim()?.ifEmpty { null }
+
+            "blip" -> figure(event)
+        }
+    }
+
+    private fun figure(event: XmlEvent.Open) {
+        event.attributes["r:embed"]
+            ?.let(image)
+            ?.let { blocks += TextBlock.Figure(bytes = it, description = described) }
+
+        // Spent, whether or not there was a picture to put it on: it belongs to
+        // this drawing and not to the next one.
+        described = null
+    }
+
+    private fun closed(event: XmlEvent.Close) {
+        when (event.name) {
+            "p" -> {
+                paragraph?.let { blocks.addParagraph(it) }
+                paragraph = null
+
+                // A run's formatting does not survive the paragraph it was in,
+                // and neither does a paragraph left open by a malformed file.
+                emphasis = emptySet()
+            }
+
+            "instrtext", "del" -> if (hiddenDepth > 0) hiddenDepth--
+
+            "rpr" -> inRunProperties = false
+
+            "t" -> inText = false
+        }
+    }
 }
 
 /**
@@ -220,18 +265,17 @@ private fun MutableList<TextBlock>.addParagraph(paragraph: DocxParagraph) {
             isQuoteStyle(paragraph.style) -> TextBlock.Quote(runs)
 
             else -> TextBlock.Paragraph(runs)
-        }
+        },
     )
 }
 
 /**
  * Every list item gets a bullet, including the ones in a numbered list.
  *
- * A list's real numbers live in a separate numbering part, as a definition that
- * has to be resolved through an abstract definition, a level, an override chain
- * and a restart rule before the first item can be called "1." - and getting any
- * step of that wrong produces a list that is confidently misnumbered, which is
- * worse than a list of bullets. The items and their order, which is what the
- * text depends on, are both kept.
+ * A list's real numbers live in a separate numbering part, resolved through an
+ * abstract definition, a level, an override chain and a restart rule before the
+ * first item can be called "1." - and any step wrong produces a confidently
+ * misnumbered list, which is worse than bullets. The items and their order are
+ * both kept.
  */
 private const val LIST_MARKER = "•"

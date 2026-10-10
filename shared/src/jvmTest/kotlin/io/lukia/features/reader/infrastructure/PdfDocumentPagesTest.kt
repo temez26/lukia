@@ -11,7 +11,6 @@ import java.io.File
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFails
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -20,7 +19,7 @@ class PdfDocumentPagesTest {
 
     private val directory = File(
         System.getProperty("java.io.tmpdir"),
-        "lukia-pages-test-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}"
+        "lukia-pages-test-${kotlin.random.Random.nextInt(until = Int.MAX_VALUE)}",
     ).apply { mkdirs() }
 
     @AfterTest
@@ -30,7 +29,7 @@ class PdfDocumentPagesTest {
 
     @Test
     fun readsEveryPage() {
-        openPdfPages(pdfFile(pageCount = 3).absolutePath).use { pages ->
+        openTestPdf(pdfFile(pageCount = 3).absolutePath).use { pages ->
             assertEquals(3, pages.pageCount)
             assertEquals(3, pages.pageSizes.size)
         }
@@ -38,7 +37,7 @@ class PdfDocumentPagesTest {
 
     @Test
     fun reportsThePageShape() {
-        openPdfPages(pdfFile(pageCount = 1).absolutePath).use { pages ->
+        openTestPdf(pdfFile(pageCount = 1).absolutePath).use { pages ->
             val page = pages.pageSizes.first()
 
             assertEquals(PDRectangle.A4.width, page.width)
@@ -58,7 +57,7 @@ class PdfDocumentPagesTest {
             document.getPage(0).rotation = 90
         }
 
-        openPdfPages(file.absolutePath).use { pages ->
+        openTestPdf(file.absolutePath).use { pages ->
             val page = pages.pageSizes.first()
 
             assertEquals(PDRectangle.A4.height, page.width)
@@ -69,7 +68,7 @@ class PdfDocumentPagesTest {
 
     @Test
     fun rendersAPageAtTheRequestedWidth() = runTest {
-        openPdfPages(pdfFile(pageCount = 1).absolutePath).use { pages ->
+        openTestPdf(pdfFile(pageCount = 1).absolutePath).use { pages ->
             val rendered = pages.renderPage(index = 0, targetWidthPx = 600)
 
             assertNotNull(rendered)
@@ -82,7 +81,7 @@ class PdfDocumentPagesTest {
 
     @Test
     fun aPageThatIsNotThereRendersAsNothing() = runTest {
-        openPdfPages(pdfFile(pageCount = 1).absolutePath).use { pages ->
+        openTestPdf(pdfFile(pageCount = 1).absolutePath).use { pages ->
             assertNull(pages.renderPage(index = 7, targetWidthPx = 600))
         }
     }
@@ -93,14 +92,14 @@ class PdfDocumentPagesTest {
             document.outline(
                 "Introduction" to 0,
                 "The Middle" to 2,
-                "The End" to 5
+                "The End" to 5,
             )
         }
 
-        openPdfPages(file.absolutePath).use { pages ->
+        openTestPdf(file.absolutePath).use { pages ->
             assertEquals(
                 listOf("Introduction", "The Middle", "The End"),
-                pages.outline?.map { it.title }
+                pages.outline?.map { it.title },
             )
             assertEquals(listOf(0, 2, 5), pages.outline?.map { it.pageIndex })
         }
@@ -119,31 +118,55 @@ class PdfDocumentPagesTest {
             chapter.addLast(document.outlineItem("Another Section", pageIndex = 2))
         }
 
-        openPdfPages(file.absolutePath).use { pages ->
+        openTestPdf(file.absolutePath).use { pages ->
             assertEquals(
                 listOf(0, 1, 1),
-                pages.outline?.map { it.level }
+                pages.outline?.map { it.level },
             )
             assertEquals(
                 listOf("Chapter One", "A Section", "Another Section"),
-                pages.outline?.map { it.title }
+                pages.outline?.map { it.title },
             )
         }
+    }
+
+    /**
+     * The chapter list is read as the book is opened, not the first time
+     * somebody asks for it.
+     *
+     * Asserted by asking after the file has been given back, the one way from
+     * outside to tell the two apart. Everything else that reads this document is
+     * serialised against everything that draws from it, and a plain `val` cannot
+     * join that - so the list finishing before the document is shared is what
+     * keeps a chapter list off a page being drawn, and what lets an opening the
+     * reader has abandoned ask for one without reaching into a closed document.
+     */
+    @Test
+    fun theChaptersAreReadAsTheBookOpensRatherThanWhenAskedFor() {
+        val file = pdfFile(pageCount = 6) { document ->
+            document.outline("Introduction" to 0, "The End" to 5)
+        }
+
+        val pages = openTestPdf(file.absolutePath)
+        pages.close()
+
+        assertEquals(listOf("Introduction", "The End"), pages.outline?.map { it.title })
     }
 
     /** Empty, not null: the document genuinely has no table of contents. */
     @Test
     fun aDocumentWithoutAnOutlineHasNoChapters() {
-        openPdfPages(pdfFile(pageCount = 2).absolutePath).use { pages ->
+        openTestPdf(pdfFile(pageCount = 2).absolutePath).use { pages ->
             assertEquals(emptyList(), pages.outline)
         }
     }
 
+    /** Null rather than a throw, which is how every other format says the same. */
     @Test
     fun aFileThatIsNotAPdfDoesNotOpen() {
         val file = File(directory, "not-a.pdf").apply { writeText("not a pdf") }
 
-        assertFails { openPdfPages(file.absolutePath) }
+        assertNull(openPdfPages(file.absolutePath))
     }
 
     /** Adds a flat outline, one entry per title, pointing at the given pages. */
@@ -164,7 +187,7 @@ class PdfDocumentPagesTest {
 
     private fun pdfFile(
         pageCount: Int,
-        configure: (PDDocument) -> Unit = {}
+        configure: (PDDocument) -> Unit = {},
     ): File {
         val file = File(directory, "book-$pageCount-${kotlin.random.Random.nextInt()}.pdf")
 
