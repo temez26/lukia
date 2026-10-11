@@ -11,7 +11,7 @@
 ## Pull requests
 
 The description is pre-filled from
-[`.github/pull_request_template.md`](.github/pull_request_template.md).
+[`.github/pull_request_template.md`](../.github/pull_request_template.md).
 
 - Keep every heading, in order. Write `None` where a section does not apply.
 - Say what changed for the user, what changed in the code, and how it was tested.
@@ -27,6 +27,6 @@ See [TESTING.md](TESTING.md) and [CODING_STYLE.md](CODING_STYLE.md).
 
 ## Licence
 
-Lukia is under the [Apache License 2.0](LICENSE). Contributions are accepted
+Lukia is under the [Apache License 2.0](../LICENSE). Contributions are accepted
 under the same terms (section 5 of the licence); opening a pull request is all
 it takes.

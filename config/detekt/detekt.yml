@@ -65,7 +65,7 @@ complexity:
     # A composable's parameters are its API: a screen section legitimately takes
     # more than a plain function does, and detekt cannot hold the two to
     # different numbers. Composables are held to eight in review instead - see
-    # CODING_STYLE.md - so that splitting a long screen does not have to trade a
+    # docs/CODING_STYLE.md - so that splitting a long screen does not have to trade a
     # long file for several long signatures.
     ignoreAnnotated: ['Composable']
   NestedBlockDepth:

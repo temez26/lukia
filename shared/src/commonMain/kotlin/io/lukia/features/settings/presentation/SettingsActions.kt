@@ -34,7 +34,7 @@ data class ProviderState(
  *
  * Gathered rather than passed one by one because they travel through four
  * composables that do nothing with them, and a screen whose signature is twenty
- * callbacks cannot be split - see the parameter limits in `CODING_STYLE.md`.
+ * callbacks cannot be split - see the parameter limits in `docs/CODING_STYLE.md`.
  *
  * Every one defaults to doing nothing, so a caller rendering the page to look at
  * it - a preview, a test - supplies only what it means to exercise.

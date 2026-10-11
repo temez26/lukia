@@ -38,7 +38,7 @@ jobs:
           cache-read-only: ${{ github.event_name == 'pull_request' }}
 
       # jvmCommonTest runs the common tests and not the platform ones - see
-      # TESTING.md. It still depends on jvmTestClasses, so the platform tests
+      # docs/TESTING.md. It still depends on jvmTestClasses, so the platform tests
       # must go on compiling here; only running them moves to a local machine.
       #
       # testAndroidHostTest runs the same common tests again against the Android
@@ -170,7 +170,7 @@ jobs:
         with:
           cache-read-only: ${{ github.event_name == 'pull_request' }}
 
-      # See CODING_STYLE.md. ktlint checks formatting, detekt checks structure and
+      # See docs/CODING_STYLE.md. ktlint checks formatting, detekt checks structure and
       # Compose usage, checkFileLength enforces the 400-line limit.
       #
       # checkComposeStability is here rather than with the tests because what it

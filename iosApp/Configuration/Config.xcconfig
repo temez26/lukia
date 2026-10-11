@@ -2,7 +2,7 @@
 // personal to whoever is building, so it belongs in Local.xcconfig - which git
 // ignores - rather than in a file everyone shares. Without it Xcode refuses to
 // build for a device with "Signing for "iosApp" requires a development team".
-// See BUILD.md.
+// See docs/BUILD.md.
 TEAM_ID=
 #include? "Local.xcconfig"
 

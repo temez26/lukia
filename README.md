@@ -12,8 +12,7 @@ reading in a language you are still learning.
   your place in each book.
 - **Counts your reading** (time, sittings, streaks) on the device only.
 
-Nothing leaves the device except the words and passages you ask about. See
-[SECURITY.md](SECURITY.md).
+Nothing leaves the device except the words and passages you ask about.
 
 ## Platforms
 
@@ -21,7 +20,7 @@ Nothing leaves the device except the words and passages you ask about. See
 | --- | --- | --- |
 | Android | 6.0 (API 23) | yes |
 | Desktop | Windows, macOS, Linux (bundled runtime) | yes |
-| iOS | 15.0 | no: built and tested in CI, build it yourself ([BUILD.md](BUILD.md#ios)) |
+| iOS | 15.0 | no: built and tested in CI, build it yourself ([BUILD.md](docs/BUILD.md#ios)) |
 
 ## Built with
 
@@ -64,12 +63,12 @@ Rules, enforced by `ArchitectureTest`:
 
 | | |
 | --- | --- |
-| [BUILD.md](BUILD.md) | Building and signing each platform, release checks |
-| [TESTING.md](TESTING.md) | What runs where, and how to run it |
-| [CODING_STYLE.md](CODING_STYLE.md) | Style rules and the tools that enforce them |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Branches and pull requests |
-| [DIAGNOSTICS.md](DIAGNOSTICS.md) | What the app records, and what it never does |
-| [SECURITY.md](SECURITY.md) | Reporting a vulnerability |
+| [BUILD.md](docs/BUILD.md) | Building and signing each platform, release checks |
+| [TESTING.md](docs/TESTING.md) | What runs where, and how to run it |
+| [CODING_STYLE.md](docs/CODING_STYLE.md) | Style rules and the tools that enforce them |
+| [CONTRIBUTING.md](docs/CONTRIBUTING.md) | Branches and pull requests |
+| [DIAGNOSTICS.md](docs/DIAGNOSTICS.md) | What the app records, and what it never does |
+| [SECURITY.md](docs/SECURITY.md) | Reporting a vulnerability |
 
 ## Licence
 
