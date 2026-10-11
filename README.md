@@ -12,8 +12,7 @@ reading in a language you are still learning.
   your place in each book.
 - **Counts your reading** (time, sittings, streaks) on the device only.
 
-Nothing leaves the device except the words and passages you ask about. See
-[SECURITY.md](SECURITY.md).
+Nothing leaves the device except the words and passages you ask about.
 
 ## Platforms
 
