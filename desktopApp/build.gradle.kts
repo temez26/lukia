@@ -24,7 +24,7 @@ dependencies {
  * Absent for everyone but the release workflow, and the build stays usable
  * without it - exactly as `ANDROID_KEYSTORE_PATH` leaves a local
  * `assembleRelease` unsigned rather than failing on a secret the person running
- * it was never meant to have. See BUILD.md for what each variable holds, and for
+ * it was never meant to have. See docs/BUILD.md for what each variable holds, and for
  * what an unsigned DMG can and cannot do.
  */
 val macSigningIdentity = providers.environmentVariable("MACOS_SIGNING_IDENTITY")

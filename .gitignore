@@ -43,7 +43,7 @@ DerivedData/
 xcuserdata/
 *.xcuserstate
 *.xcscmblueprint
-# Holds the signing team of whoever is building; see BUILD.md
+# Holds the signing team of whoever is building; see docs/BUILD.md
 iosApp/Configuration/Local.xcconfig
 
 ############################
