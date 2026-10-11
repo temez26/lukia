@@ -2,9 +2,11 @@
 
 ## Branches
 
-- Branch from `dev` for new work. Do not commit directly to `main` or `dev`.
-- `main` receives changes from `dev`.
+- Branch from `main` for new work, and merge back into `main` through a pull
+  request. Do not commit directly to `main`.
 - Name the branch for what it does: `fix/reader-position`, `feat/word-lookup`.
+- Merging to `main` does not release anything. A release is cut by pushing a
+  version tag: see [BUILD.md](BUILD.md#releasing).
 
 ## Pull requests
 
