@@ -55,11 +55,6 @@ enum class ReadingWidth(val fraction: Float) {
     Wide(1f),
     Larger(1.25f),
     Largest(1.5f),
-    ;
-
-    /** True once the page no longer fits the space it is drawn in. */
-    val overflowsColumn: Boolean
-        get() = fraction > 1f
 }
 
 private const val HALF_ITS_SIZE = 0.5f

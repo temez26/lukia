@@ -111,20 +111,15 @@ class ReaderSettingsTest {
     @Test
     fun oneStepFitsTheColumnExactly() {
         assertEquals(1f, ReadingWidth.Wide.fraction)
-        assertFalse(ReadingWidth.Wide.overflowsColumn)
     }
 
     /**
-     * Only the steps past fitting overflow, and there has to be at least one -
-     * they are what makes zooming into fixed-size type possible at all.
+     * There has to be at least one step past fitting - they are what makes
+     * zooming into fixed-size type possible at all.
      */
     @Test
-    fun theStepsPastFittingOverflowTheColumn() {
-        val overflowing = ReadingWidth.entries.filter { it.overflowsColumn }
-
-        assertTrue(overflowing.isNotEmpty())
-        assertTrue(overflowing.all { it.fraction > ReadingWidth.Wide.fraction })
-        assertTrue(ReadingWidth.entries.none { it.fraction < 1f && it.overflowsColumn })
+    fun someStepsAreWiderThanTheColumn() {
+        assertTrue(ReadingWidth.entries.any { it.fraction > ReadingWidth.Wide.fraction })
     }
 
     @Test
