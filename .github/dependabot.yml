@@ -50,6 +50,11 @@ updates:
       # quietly switches every Compose rule off. Lift this with the detekt move.
       - dependency-name: "io.nlopez.compose.rules:*"
         versions: [">=0.5.0"]
+      # material3 is on alphas, and each alpha line belongs to one Compose line:
+      # 1.13 pulls in the Compose after the one in use. Raise this when
+      # `composeMultiplatform` moves to 1.13.
+      - dependency-name: "org.jetbrains.compose.material3:*"
+        versions: [">=1.13.0-alpha01"]
 
   - package-ecosystem: github-actions
     directory: /
