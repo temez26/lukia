@@ -455,3 +455,17 @@ tasks.register<Test>("jvmCommonTest") {
         commonTestClasses.get().forEach { includeTestsMatching(it) }
     }
 }
+
+/**
+ * Lets Robolectric reach the JDK's own way into `java.io.FileDescriptor`.
+ *
+ * From 4.17 it sets a descriptor's number through `jdk.internal.access` when it
+ * stands in for Android's shared memory, and a JDK since 17 does not export
+ * that package - every host test then fails before its first line, on "Failed
+ * to interact with raw FileDescriptor internals".
+ */
+tasks.withType<Test>().configureEach {
+    if (name == "testAndroidHostTest") {
+        jvmArgs("--add-exports=java.base/jdk.internal.access=ALL-UNNAMED")
+    }
+}
