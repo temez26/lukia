@@ -4,7 +4,6 @@ Four page leaves fanning open from a shared spine, on a near-black squircle.
 
 - `lukia-icon.svg`: master artwork (flat; shadows exist only in the PNGs)
 - `lukia-icon-1024.png`: rendered tile
-- `Lukia-icon-3.png`, `Lukia-icon-4.png`: earlier explorations, kept for reference
 
 ## Where the assets live
 
