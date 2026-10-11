@@ -87,7 +87,8 @@ ANDROID_SERIAL=<emulator-id> ./gradlew :androidApp:generateBaselineProfile
    `iosApp/Configuration/Config.xcconfig` (`MARKETING_VERSION`).
 2. Run the check below.
 3. Tag `vX.Y.Z` on `main` and push the tag. The release workflow builds the
-   signed Android bundle and the desktop packages and drafts a GitHub release.
+   signed Android bundle and APK and the desktop packages and drafts a GitHub
+   release.
 
 ### Before a release
 
