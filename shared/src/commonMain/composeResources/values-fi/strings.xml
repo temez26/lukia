@@ -94,9 +94,9 @@
     <string name="error_document_not_found_title">Tiedostoa ei löydy</string>
     <string name="error_document_not_found_message">Se on ehkä siirretty tai poistettu kirjastostasi.</string>
     <string name="error_unsupported_file_title">Tiedostomuotoa ei tueta</string>
-    <string name="error_unsupported_file_message">Lukia avaa PDF- ja EPUB-tiedostoja.</string>
-    <string name="error_format_not_readable_title">Ei vielä luettavissa</string>
-    <string name="error_format_not_readable_message">EPUB-tiedostojen lukeminen ei ole vielä valmista – PDF-tiedostot aukeavat jo.</string>
+    <string name="error_unsupported_file_message">Lukia avaa PDF-, EPUB-, Word-, teksti- ja Markdown-tiedostoja.</string>
+    <string name="error_format_not_readable_title">Tiedostoa ei voitu avata</string>
+    <string name="error_format_not_readable_message">Se voi olla vioittunut tai suojattu salasanalla.</string>
     <string name="error_empty_folder_title">Ei tuotavaa</string>
     <string name="error_empty_folder_message">Tästä kansiosta tai sen alikansioista ei löytynyt kirjoja.</string>
     <string name="error_translation_unavailable_title">Kääntämistä ei ole määritetty</string>
