@@ -97,7 +97,7 @@ abstract class CheckKotlinFileLength : DefaultTask() {
                     prefix = "Kotlin files over the $max line limit:\n  ",
                     separator = "\n  ",
                     postfix = "\n\nSplit them, or - only for pre-existing files - add the path to " +
-                        "config/file-length/baseline.txt. See CODING_STYLE.md."
+                        "config/file-length/baseline.txt. See docs/CODING_STYLE.md."
                 )
             )
         }

@@ -100,7 +100,7 @@ jobs:
 
       # Kept as a build artifact rather than attached to the release: it is what
       # turns an obfuscated crash note back into a readable one, and it is nobody
-      # else's business. See DIAGNOSTICS.md.
+      # else's business. See docs/DIAGNOSTICS.md.
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: android-mapping

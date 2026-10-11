@@ -1,7 +1,7 @@
 # What R8 has to be told, and why. Everything here is a lookup R8 cannot see:
 # a class named in a string, a service file, or a member reached reflectively.
 
-# A crash note names the class and line it came from - see DIAGNOSTICS.md - so
+# A crash note names the class and line it came from - see docs/DIAGNOSTICS.md - so
 # the trace has to survive obfuscation. mapping.txt is kept per release.
 -keepattributes SourceFile,LineNumberTable
 -renamesourcefileattribute SourceFile
@@ -22,7 +22,7 @@
 # a real device out of a build R8 has actually been through.
 #
 # That run exists - `:baselineprofile:connectedBenchmarkReleaseAndroidTest` drives
-# the shrunk app, and BUILD.md sets out the whole check. Narrow these when
+# the shrunk app, and docs/BUILD.md sets out the whole check. Narrow these when
 # somebody has run it against the narrowing, and not before: a keep rule that is
 # one class too tight fails as a blank page in somebody's book, months later,
 # with nothing in the build to have caught it.

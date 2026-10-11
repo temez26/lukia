@@ -34,7 +34,7 @@ plugins {
  * A finding rather than noise, which is why it is left aggregated.
  *
  * `koverVerify` joins `check`, which already runs both suites. Not in the CI
- * jobs: CI runs `jvmCommonTest` rather than `jvmTest` (see TESTING.md), and a
+ * jobs: CI runs `jvmCommonTest` rather than `jvmTest` (see docs/TESTING.md), and a
  * coverage number over part of the suite is worse than none.
  */
 kover {
@@ -95,7 +95,7 @@ composeCompiler {
  * The generated `Res` class the app reads its words out of.
  *
  * Internal, because a feature's public surface is its screen and its navigation
- * entry - see CODING_STYLE.md. Nothing outside `shared` asks for a string, and a
+ * entry - see docs/CODING_STYLE.md. Nothing outside `shared` asks for a string, and a
  * `Res` on the compile classpath of every app module is an invitation to.
  */
 compose.resources {
@@ -323,7 +323,7 @@ kotlin {
          * The Android tests that want nothing of a device but a `Context`.
          *
          * A device test costs a booted emulator, so CI has never run one - see
-         * TESTING.md. Robolectric answers the Android framework on the host
+         * docs/TESTING.md. Robolectric answers the Android framework on the host
          * instead, which is enough for a ContentProvider or a file under a cache
          * directory, and is not enough for a CursorWindow's size limit or
          * `BitmapFactory`'s idea of what is not a picture. Those stay next door
@@ -436,7 +436,7 @@ tasks.register<Test>("jvmMigrationTest") {
  * the 31 seconds - almost all of it the 40 Compose UI suites, which want a
  * display and are the ones most likely to fail on a CI runner for reasons that
  * have nothing to do with the change under test. They are run locally instead;
- * see TESTING.md.
+ * see docs/TESTING.md.
  *
  * Classpath and class directories come from `jvmTest` rather than being rebuilt
  * here, so the two cannot drift into running the same code differently.

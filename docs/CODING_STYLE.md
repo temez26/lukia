@@ -29,7 +29,7 @@ detekt's report is at `<module>/build/reports/detekt/detekt.html`.
 ## Size
 
 **A Kotlin file stays under 400 lines.** `checkFileLength` warns from 350 and
-fails at 400. [`config/file-length/baseline.txt`](config/file-length/baseline.txt)
+fails at 400. [`config/file-length/baseline.txt`](../config/file-length/baseline.txt)
 lists exceptions and is empty; keep it that way.
 
 | Limit | Value |
@@ -61,7 +61,7 @@ If the only split available is arbitrary, the design is wrong somewhere above.
 
 ## Formatting
 
-Set by [`.editorconfig`](.editorconfig).
+Set by [`.editorconfig`](../.editorconfig).
 
 - Four-space indent, lines wrap at 120.
 - Trailing commas everywhere.
@@ -87,7 +87,7 @@ detekt plugin.
 - Do not pass a view model down the tree.
 - `@Preview` functions are `private` and named `<Something>Preview`.
 - A new `CompositionLocal` must be added to the allowlist in
-  [`config/detekt/detekt.yml`](config/detekt/detekt.yml).
+  [`config/detekt/detekt.yml`](../config/detekt/detekt.yml).
 
 ## Correctness
 
@@ -100,7 +100,7 @@ detekt plugin.
 
 ## Architecture
 
-[`ArchitectureTest`](shared/src/jvmTest/kotlin/io/lukia/ArchitectureTest.kt)
+[`ArchitectureTest`](../shared/src/jvmTest/kotlin/io/lukia/ArchitectureTest.kt)
 reads every main source file's imports and fails when:
 
 - two features depend on each other in a circle,
@@ -109,9 +109,9 @@ reads every main source file's imports and fails when:
 - an `infrastructure` package imports `presentation`,
 - `core` imports `shared`.
 
-[`PlatformModuleParityTest`](shared/src/jvmTest/kotlin/io/lukia/di/PlatformModuleParityTest.kt)
+[`PlatformModuleParityTest`](../shared/src/jvmTest/kotlin/io/lukia/di/PlatformModuleParityTest.kt)
 holds the three platform DI modules to the same bindings, and
-[`AppGraphTest`](shared/src/jvmTest/kotlin/io/lukia/di/AppGraphTest.kt) resolves
+[`AppGraphTest`](../shared/src/jvmTest/kotlin/io/lukia/di/AppGraphTest.kt) resolves
 the desktop graph.
 
 Their allow-lists are empty. Adding an entry is a design decision, not a way
@@ -141,7 +141,7 @@ fun MainViewController() = ...
 
 ## Baselines
 
-[`config/detekt/baseline-shared.xml`](config/detekt/baseline-shared.xml) holds
+[`config/detekt/baseline-shared.xml`](../config/detekt/baseline-shared.xml) holds
 findings that predate the rules. It shrinks and does not grow.
 
 - When a change fixes a baselined finding, remove its entry in the same pull
@@ -149,5 +149,5 @@ findings that predate the rules. It shrinks and does not grow.
 - A rule that is right about the code: fix the code, or suppress it in place
   with a reason.
 - A rule that is wrong for this codebase: configure it in
-  [`config/detekt/detekt.yml`](config/detekt/detekt.yml) with a comment.
+  [`config/detekt/detekt.yml`](../config/detekt/detekt.yml) with a comment.
 - A new test source set is added to `testSources` at the top of that file.
