@@ -44,7 +44,7 @@ kotlinx-serialization = "1.11.0"
 # So the choice is deliberate rather than free, and the risk is that an alpha
 # may change API between builds. Revisit whenever the stable material3 aligned
 # with `composeMultiplatform` above catches up.
-material3 = "1.12.0-alpha03"
+material3 = "1.13.0-alpha02"
 navigation = "2.9.2"
 # Both of these parse files the app did not write, so both are kept as current
 # as they can be. 3.0.7 is the newest release; the CVEs open against the 3.0.x
