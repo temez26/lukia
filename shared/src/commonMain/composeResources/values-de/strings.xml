@@ -73,9 +73,9 @@
     <string name="error_document_not_found_title">Datei nicht gefunden</string>
     <string name="error_document_not_found_message">Sie wurde vielleicht verschoben oder aus Ihrer Bibliothek entfernt.</string>
     <string name="error_unsupported_file_title">Dateiformat nicht unterstützt</string>
-    <string name="error_unsupported_file_message">Lukia öffnet PDF- und EPUB-Dateien.</string>
-    <string name="error_format_not_readable_title">Noch nicht lesbar</string>
-    <string name="error_format_not_readable_message">EPUB-Dateien zu lesen ist noch nicht fertig – PDF-Dateien öffnen sich schon.</string>
+    <string name="error_unsupported_file_message">Lukia öffnet PDF-, EPUB-, Word-, Text- und Markdown-Dateien.</string>
+    <string name="error_format_not_readable_title">Die Datei ließ sich nicht öffnen</string>
+    <string name="error_format_not_readable_message">Sie ist möglicherweise beschädigt oder passwortgeschützt.</string>
     <string name="error_empty_folder_title">Nichts zu importieren</string>
     <string name="error_empty_folder_message">In diesem Ordner und den Ordnern darin wurden keine Bücher gefunden.</string>
     <string name="error_translation_unavailable_title">Übersetzung ist nicht eingerichtet</string>

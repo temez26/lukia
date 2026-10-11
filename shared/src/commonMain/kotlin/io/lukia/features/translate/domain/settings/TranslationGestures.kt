@@ -71,9 +71,6 @@ data class TranslationGestures(
     /** What a tap actually asks for, or null when it asks for nothing. */
     val tap: PassageUnit? get() = tapUnit.takeIf { tapTranslates }
 
-    /** Whether anything at all happens when the reader points at the book. */
-    val translatesAnything: Boolean get() = tap != null || longPress != null
-
     /**
      * The tap set to one unit or turned off, as a single control would set it -
      * the reader's own panel offers exactly that where a translation service is

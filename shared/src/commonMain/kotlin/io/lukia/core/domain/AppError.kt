@@ -19,10 +19,9 @@ sealed interface AppError {
     data object UnsupportedFileType : AppError
 
     /**
-     * The library can hold this format, but the reader cannot open it yet.
-     * Distinct from [UnsupportedFileType], which is about what may be imported
-     * at all - telling someone their EPUB is unsupported right after the app
-     * accepted it would read as a bug.
+     * The library holds this file, but the reader could not open it: damaged,
+     * locked with a password, or not the format its name claims. Distinct from
+     * [UnsupportedFileType], which is about what may be imported at all.
      */
     data object FormatNotReadable : AppError
 

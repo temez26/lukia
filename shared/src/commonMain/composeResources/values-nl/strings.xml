@@ -72,9 +72,9 @@
     <string name="error_document_not_found_title">Bestand niet gevonden</string>
     <string name="error_document_not_found_message">Het is misschien verplaatst of uit uw bibliotheek verwijderd.</string>
     <string name="error_unsupported_file_title">Bestandsindeling wordt niet ondersteund</string>
-    <string name="error_unsupported_file_message">Lukia opent PDF- en EPUB-bestanden.</string>
-    <string name="error_format_not_readable_title">Nog niet leesbaar</string>
-    <string name="error_format_not_readable_message">EPUB-bestanden lezen is nog niet klaar – PDF-bestanden gaan al open.</string>
+    <string name="error_unsupported_file_message">Lukia opent PDF-, EPUB-, Word-, tekst- en Markdown-bestanden.</string>
+    <string name="error_format_not_readable_title">Het bestand kon niet worden geopend</string>
+    <string name="error_format_not_readable_message">Het is mogelijk beschadigd of beveiligd met een wachtwoord.</string>
     <string name="error_empty_folder_title">Niets te importeren</string>
     <string name="error_empty_folder_message">Geen boeken gevonden in deze map of in de mappen erin.</string>
     <string name="error_translation_unavailable_title">Vertaling is niet ingesteld</string>

@@ -127,7 +127,6 @@ class TranslationGesturePersistenceTest {
 
         assertNull(reopened.gestures.tap)
         assertNull(reopened.gestures.longPress)
-        assertFalse(reopened.gestures.translatesAnything)
     }
 
     /**
@@ -144,7 +143,6 @@ class TranslationGesturePersistenceTest {
 
         assertNull(settings.gestures.tap)
         assertNull(settings.gestures.longPress)
-        assertFalse(settings.gestures.translatesAnything)
         assertFalse(settings.gestures.wordDetails)
         assertFalse(settings.notes)
         assertEquals(WordLookup.Wiktionary, settings.wordLookup)

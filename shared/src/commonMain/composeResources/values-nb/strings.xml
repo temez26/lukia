@@ -72,9 +72,9 @@
     <string name="error_document_not_found_title">Fant ikke filen</string>
     <string name="error_document_not_found_message">Den kan ha blitt flyttet eller fjernet fra biblioteket ditt.</string>
     <string name="error_unsupported_file_title">Filformatet støttes ikke</string>
-    <string name="error_unsupported_file_message">Lukia åpner PDF- og EPUB-filer.</string>
-    <string name="error_format_not_readable_title">Kan ikke leses ennå</string>
-    <string name="error_format_not_readable_message">Å lese EPUB-filer er ikke klart ennå – PDF-filer åpnes allerede.</string>
+    <string name="error_unsupported_file_message">Lukia åpner PDF-, EPUB-, Word-, tekst- og Markdown-filer.</string>
+    <string name="error_format_not_readable_title">Filen kunne ikke åpnes</string>
+    <string name="error_format_not_readable_message">Den kan være skadet eller beskyttet med passord.</string>
     <string name="error_empty_folder_title">Ingenting å importere</string>
     <string name="error_empty_folder_message">Fant ingen bøker i denne mappen eller i mappene inni den.</string>
     <string name="error_translation_unavailable_title">Oversettelse er ikke satt opp</string>
