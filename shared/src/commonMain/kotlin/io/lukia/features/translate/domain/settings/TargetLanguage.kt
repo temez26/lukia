@@ -47,12 +47,5 @@ enum class TargetLanguage(
          * it is the setting somebody changes once.
          */
         val Default = English
-
-        /** The language written as [tag], or null when it is not one of these. */
-        fun ofTag(tag: String?): TargetLanguage? {
-            if (tag.isNullOrBlank()) return null
-
-            return entries.firstOrNull { it.tag.equals(tag, ignoreCase = true) }
-        }
     }
 }

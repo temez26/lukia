@@ -78,13 +78,6 @@ enum class TranslationProvider(
     ),
     ;
 
-    /**
-     * Whether this speaks OpenAI's chat endpoint, which is the thing [OpenAi]
-     * and [Local] have in common and the reason there are two providers behind
-     * one implementation.
-     */
-    val isOpenAiCompatible: Boolean get() = this != Anthropic
-
     companion object {
         val Default = Anthropic
     }

@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
@@ -12,7 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.settings.domain.AppSettings
@@ -24,14 +22,7 @@ import io.lukia.features.settings.presentation.TranslatingActions
 import io.lukia.features.settings.presentation.rememberProviderActions
 import io.lukia.features.settings.presentation.rememberTranslatingActions
 import io.lukia.features.translate.domain.settings.TranslationSettings
-import io.lukia.resources.Res
-import io.lukia.resources.action_go_back
-import io.lukia.shared.presentation.components.controls.IconButtonVariant
-import io.lukia.shared.presentation.components.controls.LukiaIconButton
-import io.lukia.shared.presentation.components.icons.BackChevron
-import io.lukia.shared.presentation.theme.LocalLukiaDimens
-import io.lukia.shared.presentation.theme.Space
-import org.jetbrains.compose.resources.stringResource
+import io.lukia.shared.presentation.components.controls.FloatingBackButton
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -82,8 +73,6 @@ fun SettingsContent(
     /** The diagnostics group - see `SettingsBody`. Absent leaves it off the page. */
     diagnostics: (@Composable () -> Unit)? = null,
 ) {
-    val dimens = LocalLukiaDimens.current
-
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -111,16 +100,7 @@ fun SettingsContent(
                 diagnostics = diagnostics,
             )
 
-            LukiaIconButton(
-                label = stringResource(Res.string.action_go_back),
-                onClick = onBack,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(start = dimens.screenPadding, top = Space.lg),
-                variant = IconButtonVariant.Glass,
-            ) { tint, glyph ->
-                BackChevron(tint = tint, modifier = glyph)
-            }
+            FloatingBackButton(onBack = onBack)
         }
     }
 }
