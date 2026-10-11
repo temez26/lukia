@@ -2,12 +2,12 @@ name: CI
 
 on:
   pull_request:
-    branches: [dev, main]
+    branches: [main]
   # Also on push, so the base branch's Gradle cache is ever actually written.
   # A pull request run may only read that cache; its own writes are scoped to
   # its branch and no other run can see them.
   push:
-    branches: [dev, main]
+    branches: [main]
 
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}
