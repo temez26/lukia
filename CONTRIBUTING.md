@@ -1,63 +1,30 @@
 # Contributing
 
-## Git Branching
+## Branches
 
-- Always create a new branch from `dev` when starting new work.
-- Never make changes directly on `main` or `dev`.
-- The `main` branch should only receive changes merged from `dev`.
-- Use descriptive branch names that clearly indicate the purpose of the work.
+- Branch from `dev` for new work. Do not commit directly to `main` or `dev`.
+- `main` receives changes from `dev`.
+- Name the branch for what it does: `fix/reader-position`, `feat/word-lookup`.
 
-# Pull Request Guidelines
+## Pull requests
 
-Use the following structure for every pull request:
+The description is pre-filled from
+[`.github/pull_request_template.md`](.github/pull_request_template.md).
 
-```md
-# Pull-request: `<branch-name>`
+- Keep every heading, in order. Write `None` where a section does not apply.
+- Say what changed for the user, what changed in the code, and how it was tested.
+- Keep it short. The diff has the details.
 
-- **Business logic**
-  - ...
+Before opening one, run what CI does not:
 
-- **Core logic** 
-  - ...
-
-- **UI** 
-  - ...
-
-- **Platform support** 
-  - ...
-
-- **Dependency injection** 
-  - ...
-
-- **Testing** 
-  - ...
-
-- **Documentation** 
-  - ...
-
-- **Libraries** 
-  - ...
-
-- **Other**  
-  - ...
+```bash
+./gradlew :shared:jvmTest
 ```
 
-### Rules
+See [TESTING.md](TESTING.md) and [CODING_STYLE.md](CODING_STYLE.md).
 
-* Keep the same headings and order in every PR.
-* Keep descriptions concise and focused on the changes in the PR.
-* Mention important user-facing behavior, implementation changes, platform changes, and tests.
-* If a section is not relevant, write `None`.
-* Avoid unnecessary implementation details or long explanations.
+## Licence
 
-### Licensing
-
-Lukia is under the [Apache License 2.0](LICENSE), which is what makes the
-invitation above mean anything: before it, there was no licence at all, and a
-repository with no licence grants nobody the right to copy it, change it, or send
-a change back.
-
-Anything you send is offered under those same terms. That is section 5 of the
-licence rather than a rule of this project, and it needs no separate agreement -
-opening a pull request is the whole of it. Keep the copyright line in `LICENSE`
-as it is; if you want to be named, the commit history is where that is recorded.
+Lukia is under the [Apache License 2.0](LICENSE). Contributions are accepted
+under the same terms (section 5 of the licence); opening a pull request is all
+it takes.
