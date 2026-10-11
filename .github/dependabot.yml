@@ -45,6 +45,11 @@ updates:
       # cannot read comments - without this it reopens the pull request weekly.
       - dependency-name: "io.ktor:*"
         versions: [">=3.2.0"]
+      # Built against detekt 2 from 0.5.0, which is an alpha this project is not
+      # on. Beside detekt 1.x the rules do not load, so the bump compiles and
+      # quietly switches every Compose rule off. Lift this with the detekt move.
+      - dependency-name: "io.nlopez.compose.rules:*"
+        versions: [">=0.5.0"]
 
   - package-ecosystem: github-actions
     directory: /
