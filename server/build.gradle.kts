@@ -20,6 +20,7 @@ dependencies {
     implementation(libs.ktor.serialization.json)
     implementation(libs.sqldelight.jvmDriver)
     implementation(libs.logback.classic)
+    implementation(libs.bouncycastle.bcprov)
 
     testImplementation(libs.kotlin.test)
     testImplementation(libs.ktor.server.testHost)

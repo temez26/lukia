@@ -39,6 +39,9 @@ kotlinx-serialization = "1.11.0"
 # The server's log output. Only `:server` ships it; the app logs through
 # `Diagnostics` and nothing else.
 logback = "1.5.18"
+# Argon2id for the server's password hashes, in plain Java so the image needs no
+# native library.
+bouncycastle = "1.81"
 # An alpha, and the only pre-release dependency the app ships. Nothing in the
 # app needs what the alpha adds - the one experimental Material 3 API used is
 # the tooltip, which every recent release has - but going back is not a version
@@ -102,6 +105,7 @@ ktor-server-statusPages = { module = "io.ktor:ktor-server-status-pages", version
 ktor-server-callLogging = { module = "io.ktor:ktor-server-call-logging", version.ref = "ktor" }
 ktor-server-testHost = { module = "io.ktor:ktor-server-test-host", version.ref = "ktor" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+bouncycastle-bcprov = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
 koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }

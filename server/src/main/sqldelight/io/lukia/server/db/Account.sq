@@ -20,6 +20,37 @@ CREATE TABLE account (
 hasAny:
 SELECT EXISTS(SELECT 1 FROM account);
 
+-- The first account, made admin - and only if it is the first. One statement,
+-- so two setups racing each other cannot both see an empty table.
+insertFirst:
+INSERT INTO account(username, passwordHash, isAdmin, createdAt)
+SELECT :username, :passwordHash, 1, :createdAt
+WHERE NOT EXISTS (SELECT 1 FROM account);
+
 insert:
 INSERT INTO account(username, passwordHash, isAdmin, createdAt)
 VALUES (?, ?, ?, ?);
+
+selectByUsername:
+SELECT * FROM account WHERE username = ?;
+
+selectById:
+SELECT * FROM account WHERE id = ?;
+
+countAdmins:
+SELECT COUNT(*) FROM account WHERE isAdmin = 1;
+
+setPasswordHash:
+UPDATE account SET passwordHash = ? WHERE id = ?;
+
+-- Takes the account's tokens and invites with it, through their cascades.
+deleteById:
+DELETE FROM account WHERE id = ?;
+
+lastInsertId:
+SELECT last_insert_rowid();
+
+-- How many rows the last statement on this connection touched. Only meaningful
+-- inside the same transaction, which is what keeps it on the same connection.
+changes:
+SELECT changes();

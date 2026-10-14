@@ -126,6 +126,7 @@ both sides so the contract is written once.
 | POST | `/books` | streamed upload |
 | GET | `/books/{id}/file`, `/books/{id}/cover` | download, supports `Range` |
 | DELETE | `/books/{id}` (admin) | |
+| PUT | `/accounts/{username}/password` (admin) | reset a password; signs that account out everywhere |
 | GET/PUT | `/me/books?since=` / `/me/books/{id}` | progress, layout, favourite |
 | GET/PUT | `/me/sessions?since=` / `/me/sessions/{uuid}` | reading sessions |
 | DELETE | `/me` | delete the account |
@@ -174,9 +175,9 @@ When two writes reach the same `book_state`, the one with the larger
 `changedAt` wins and the other is dropped, in a single conditional `UPDATE`.
 For a session, the server keeps whichever `durationMs` is larger.
 
-**Security.** Passwords are hashed with Argon2id. An access token is a JWT that
-lasts 15 minutes. A refresh token is 256 random bits, stored hashed, and lasts
-30 days. Each refresh rotates it, and reusing an old one revokes the whole
+**Security.** Passwords are hashed with Argon2id. Both tokens are 256 random
+bits, stored only as hashes. An access token lasts 15 minutes, and a refresh
+token lasts 30 days. Each refresh rotates it, and reusing an old one revokes the whole
 family. The client keeps its tokens in the existing `SecretStore`. Sign-in
 attempts are throttled per username and per IP. The admin web page is the only
 HTML the server serves, and it uses the same tokens. Uploaded files are
@@ -235,16 +236,17 @@ Recorded in `docs/decisions/`:
    device, synced through an outbox and pulls by cursor. Book state uses
    last-writer-wins on `changedAt`, and sessions are append-only.
 4. The wire DTOs live in a shared KMP module, `:api`.
-5. Accounts sign in with a username and password, using JWT access tokens and
-   rotating refresh tokens. The first account is the admin, and accounts after
+5. Accounts sign in with a username and password, using opaque access tokens
+   and rotating refresh tokens. The first account is the admin, and accounts after
    that need an invite.
 
 ## Slices
 
 - [x] 1. `:api` and `:server` modules, `/health`, the server's SQLite schema,
       a Dockerfile, and a CI job that builds and tests the server.
-- [ ] 2. Accounts: setup, sign-in, refresh, sign-out, invites, delete account,
-      and a test that one account can't reach another's state.
+- [x] 2. Accounts: setup, sign-in, refresh, sign-out, invites, delete account,
+      admin password reset. The test that one account can't reach another's
+      book state comes with slice 4, where that state first exists.
 - [ ] 3. Library: upload with hash check, listing by cursor, download with
       `Range`, cover, admin delete.
 - [ ] 4. Per-account book state: endpoints, last-writer-wins.

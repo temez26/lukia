@@ -43,7 +43,7 @@ Android core library desugaring | GNU General Public License v2 with the Classpa
 Kotlin standard library | Apache License 2.0 | Copyright JetBrains s.r.o. and Kotlin Programming Language contributors |
 OkHttp and Okio | Apache License 2.0 | Copyright Square, Inc. |
 SQLite JDBC | Apache License 2.0 | Copyright Taro L. Saito and the SQLite JDBC contributors |
-Bouncy Castle | Bouncy Castle Licence | Copyright the Legion of the Bouncy Castle Inc. |
+Bouncy Castle | Bouncy Castle Licence | Copyright the Legion of the Bouncy Castle Inc. | org.bouncycastle
 Skia, through Skiko | BSD 3-Clause License | Copyright Google LLC |
 Logback | Eclipse Public License 1.0 | Copyright QOS.ch | ch.qos.logback
 SLF4J | MIT License | Copyright QOS.ch |

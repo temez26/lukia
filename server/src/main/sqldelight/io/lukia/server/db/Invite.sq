@@ -1,0 +1,20 @@
+-- A code the admin hands to somebody so they can make an account.
+--
+-- Stored hashed for the reason tokens are, and deleted when redeemed: a used
+-- code has nothing left to say. Goes with the admin who made it.
+CREATE TABLE invite (
+    codeHash TEXT NOT NULL PRIMARY KEY,
+    createdBy INTEGER NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    expiresAt INTEGER NOT NULL
+);
+
+insert:
+INSERT INTO invite(codeHash, createdBy, expiresAt) VALUES (?, ?, ?);
+
+-- Takes the invite if it is still good. Read with `changes()` in the same
+-- transaction to learn whether it was.
+consume:
+DELETE FROM invite WHERE codeHash = :codeHash AND expiresAt > :now;
+
+deleteExpired:
+DELETE FROM invite WHERE expiresAt <= :now;
