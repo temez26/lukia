@@ -263,8 +263,9 @@ Recorded in `docs/decisions/`:
       (progress, layout, favourite), with a change dated in the future counted
       as now. Includes the test that one account cannot reach another's state.
 - [x] 5. Reading sessions: endpoints, idempotent by UUID, unique per account.
-- [ ] 5b. Admin page: the one HTML page the server serves - sign in, upload a
-      book, make an invite. Until it exists, books are uploaded with `curl`.
+- [x] 5b. Admin page at the server's root: set up the admin, sign in, upload
+      and remove books, make invites. Plain HTML and script served by the
+      server, a strict Content-Security-Policy, tokens in memory only.
 - [ ] 6. Client: migration 11 (content hash, outbox, session uuid), hashing at
       import and backfill.
 - [ ] 7. Client: Account section, sign-in and sign-out, tokens in

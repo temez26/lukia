@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lukia server</title>
+    <link rel="stylesheet" href="/admin.css">
+    <script src="/admin.js" defer></script>
+</head>
+<body>
+<main>
+    <header>
+        <h1 id="server-name">Lukia server</h1>
+        <p id="who" hidden><span id="who-name"></span> <button id="sign-out" type="button" class="quiet">Sign out</button></p>
+    </header>
+
+    <p id="message" role="status" hidden></p>
+
+    <section id="setup" hidden>
+        <h2>Create the admin account</h2>
+        <p>This server has no accounts yet. The first one you make is its admin.</p>
+        <form id="setup-form">
+            <label>Username <input name="username" autocomplete="username" required pattern="[a-z0-9_.\-]{3,32}"></label>
+            <label>Password <input name="password" type="password" autocomplete="new-password" required minlength="10"></label>
+            <button type="submit">Create admin</button>
+        </form>
+    </section>
+
+    <section id="sign-in" hidden>
+        <h2>Sign in</h2>
+        <form id="sign-in-form">
+            <label>Username <input name="username" autocomplete="username" required></label>
+            <label>Password <input name="password" type="password" autocomplete="current-password" required></label>
+            <button type="submit">Sign in</button>
+        </form>
+    </section>
+
+    <section id="library" hidden>
+        <h2>Library</h2>
+        <form id="upload-form">
+            <label>Add books <input name="files" type="file" multiple required
+                accept=".pdf,.epub,.docx,.txt,.text,.md,.markdown"></label>
+            <button type="submit">Upload</button>
+        </form>
+        <p id="empty" hidden>No books yet.</p>
+        <ul id="books"></ul>
+    </section>
+
+    <section id="invites" hidden>
+        <h2>Invite someone</h2>
+        <p>An invite code lets one person create an account. It works for seven days.</p>
+        <button id="invite" type="button">Make an invite code</button>
+        <p id="invite-code" hidden><code></code></p>
+    </section>
+</main>
+</body>
+</html>

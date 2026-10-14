@@ -1,0 +1,143 @@
+:root {
+    color-scheme: light dark;
+    --text: #1c1b1f;
+    --muted: #5f5d66;
+    --surface: #ffffff;
+    --line: #dedce4;
+    --accent: #3b5bdb;
+    --danger: #c92a2a;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text: #e6e1e9;
+        --muted: #a9a5b0;
+        --surface: #141317;
+        --line: #36343b;
+        --accent: #91a7ff;
+        --danger: #ff8787;
+    }
+}
+
+body {
+    margin: 0;
+    background: var(--surface);
+    color: var(--text);
+    font: 16px/1.5 system-ui, sans-serif;
+}
+
+main {
+    max-width: 44rem;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 4rem;
+}
+
+header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+h1 { font-size: 1.5rem; margin: 0; }
+h2 { font-size: 1.125rem; margin: 2rem 0 0.5rem; }
+
+form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 0.75rem;
+}
+
+label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    color: var(--muted);
+    font-size: 0.875rem;
+}
+
+input {
+    font: inherit;
+    padding: 0.4rem 0.5rem;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text);
+    min-width: 0;
+}
+
+button {
+    font: inherit;
+    padding: 0.4rem 0.9rem;
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    background: var(--accent);
+    color: var(--surface);
+    cursor: pointer;
+}
+
+button.quiet {
+    background: transparent;
+    color: var(--accent);
+}
+
+button.danger {
+    background: transparent;
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+button:disabled { opacity: 0.6; cursor: progress; }
+
+button:focus-visible, input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+#message {
+    padding: 0.5rem 0.75rem;
+    border-left: 3px solid var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+#message.error {
+    border-color: var(--danger);
+    background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
+
+#books {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+}
+
+#books li {
+    display: grid;
+    grid-template-columns: 3rem 1fr auto;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    border-top: 1px solid var(--line);
+}
+
+#books img, #books .no-cover {
+    width: 3rem;
+    height: 4rem;
+    object-fit: cover;
+    border-radius: 3px;
+    background: var(--line);
+}
+
+#books .title { overflow-wrap: anywhere; }
+#books .detail { color: var(--muted); font-size: 0.875rem; overflow-wrap: anywhere; }
+
+#invite-code code {
+    display: inline-block;
+    padding: 0.4rem 0.6rem;
+    border: 1px dashed var(--line);
+    border-radius: 6px;
+    overflow-wrap: anywhere;
+    user-select: all;
+}

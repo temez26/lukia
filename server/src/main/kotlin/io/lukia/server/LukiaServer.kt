@@ -4,6 +4,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
+import io.ktor.server.http.content.staticResources
 import io.ktor.server.plugins.BadRequestException
 import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
@@ -23,6 +24,7 @@ import io.lukia.server.accounts.accountRoutes
 import io.lukia.server.db.ServerDatabase
 import io.lukia.server.health.healthRoutes
 import io.lukia.server.http.ApiException
+import io.lukia.server.http.SecurityHeaders
 import io.lukia.server.library.BookFiles
 import io.lukia.server.library.LibraryService
 import io.lukia.server.library.libraryRoutes
@@ -52,6 +54,7 @@ fun Application.lukiaServer(
     val sessions = SessionService(database)
 
     install(ContentNegotiation) { json() }
+    install(SecurityHeaders)
 
     // Lets a download that broke off resume where it stopped, rather than
     // starting a hundred-megabyte PDF again.
@@ -86,5 +89,8 @@ fun Application.lukiaServer(
         accountRoutes(accounts, tokens)
         libraryRoutes(library, files, tokens, config.maxUploadBytes)
         readingRoutes(bookStates, sessions, tokens)
+
+        // The admin page: the only HTML the server serves. See resources/admin.
+        staticResources("/", "admin")
     }
 }
