@@ -21,6 +21,8 @@ testSources: &testSources
   - '**/iosTest/**'
   - '**/androidDeviceTest/**'
   - '**/androidHostTest/**'
+  # `:server` is a plain JVM module, whose tests sit in Gradle's default layout.
+  - '**/src/test/**'
   - '**/*.kts'
 
 build:
@@ -198,6 +200,7 @@ style:
       - '**/jvmTest/**'
       - '**/iosTest/**'
       - '**/androidDeviceTest/**'
+      - '**/src/test/**'
       - '**/*.kts'
       # The layer that decodes published formats and speaks protocols. A ZIP
       # central-directory record puts the name length at offset 28, a surrogate

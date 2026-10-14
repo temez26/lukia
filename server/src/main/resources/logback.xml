@@ -1,0 +1,15 @@
+<configuration>
+    <!-- One line per event on standard output, which is where a container's logs are read from. -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{ISO8601} %-5level %logger{20} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+    <!-- Netty-style connection chatter from the engine, which says nothing about requests. -->
+    <logger name="io.ktor.server.engine" level="WARN"/>
+</configuration>

@@ -15,6 +15,12 @@ What CI runs, to reproduce a CI failure:
 ./gradlew :shared:jvmCommonTest :shared:testAndroidHostTest
 ```
 
+The sync server, which CI runs along with building and starting its image:
+
+```bash
+./gradlew :server:test
+```
+
 On a connected Android device or emulator:
 
 ```bash
@@ -36,6 +42,7 @@ On macOS with an iOS Simulator:
 | `iosTest` | yes | iOS implementations and cinterop code |
 | `jvmTest` | compiled only | Compose UI suites, PDFBox, the JDBC driver, `java.io` |
 | `androidDeviceTest` | no | What only a device can answer: keystore, `BitmapFactory`, pdfbox-android |
+| `server/src/test` | yes | The sync server's endpoints, through Ktor's test host and in-memory SQLite |
 
 A test in `jvmTest` that imports nothing platform-specific belongs in
 `commonTest`, where it runs on all three platforms.

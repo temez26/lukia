@@ -69,6 +69,8 @@ Rules, enforced by `ArchitectureTest`:
 | [CONTRIBUTING.md](docs/CONTRIBUTING.md) | Branches and pull requests |
 | [DIAGNOSTICS.md](docs/DIAGNOSTICS.md) | What the app records, and what it never does |
 | [SECURITY.md](docs/SECURITY.md) | Reporting a vulnerability |
+| [specs/](docs/specs) | Specifications for changes in progress |
+| [decisions/](docs/decisions) | Architecture decision records |
 
 ## Licence
 

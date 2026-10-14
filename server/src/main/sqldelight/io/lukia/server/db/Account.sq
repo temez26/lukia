@@ -1,0 +1,25 @@
+import kotlin.Boolean;
+
+-- Somebody who can sign in.
+--
+-- `username` is stored as typed after validation, which allows only lower-case
+-- characters, so a plain UNIQUE is already case-insensitive in practice.
+--
+-- `passwordHash` is an Argon2id string carrying its own salt and parameters, so
+-- raising the cost later needs no column of its own.
+CREATE TABLE account (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE,
+    passwordHash TEXT NOT NULL,
+    isAdmin INTEGER AS Boolean NOT NULL DEFAULT 0,
+    createdAt INTEGER NOT NULL
+);
+
+-- Whether the server still needs its first account, which is what `/health`
+-- tells an app about to connect.
+hasAny:
+SELECT EXISTS(SELECT 1 FROM account);
+
+insert:
+INSERT INTO account(username, passwordHash, isAdmin, createdAt)
+VALUES (?, ?, ?, ?);

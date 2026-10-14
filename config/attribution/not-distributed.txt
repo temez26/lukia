@@ -11,6 +11,7 @@
 org.jetbrains.kotlin:kotlin-test                    # test framework
 org.jetbrains.kotlinx:kotlinx-coroutines-test       # test framework
 io.ktor:ktor-client-mock                            # a stand-in for the network, in tests
+io.ktor:ktor-server-test-host                       # runs the server in memory, in tests
 org.robolectric:robolectric                         # answers Android on the host, in tests
 androidx.test:runner                                # instrumentation, on a device
 androidx.test.ext:junit                             # instrumentation, on a device
