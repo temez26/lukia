@@ -1,6 +1,9 @@
 package io.lukia.features.library.infrastructure.importing.cover
 
 import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.infrastructure.importing.cover.MaxStoredCoverBytes
+import io.lukia.core.infrastructure.importing.cover.MaxStoredCoverEdge
+import io.lukia.core.infrastructure.importing.cover.extractCover
 import io.lukia.core.infrastructure.shrinkCoverImage
 import io.lukia.features.library.infrastructure.importing.openedDocument
 import kotlin.test.Test

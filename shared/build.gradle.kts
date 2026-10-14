@@ -269,6 +269,9 @@ kotlin {
         }
 
         commonMain.dependencies {
+            // The format readers and the document types they produce, shared
+            // with the sync server - and so part of this module's own API.
+            api(project(":formats"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
@@ -297,6 +300,7 @@ kotlin {
             implementation(libs.kotlinx.datetime)
         }
         commonTest.dependencies {
+            implementation(project(":formats-testing"))
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             // Lets the provider be tested against the wire format it actually

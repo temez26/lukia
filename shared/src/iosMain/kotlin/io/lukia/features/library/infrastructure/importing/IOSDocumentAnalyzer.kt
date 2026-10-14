@@ -4,6 +4,8 @@ import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.domain.document.PickedDocument
+import io.lukia.core.infrastructure.importing.DocumentContents
+import io.lukia.core.infrastructure.importing.extractContents
 import io.lukia.features.library.domain.DocumentAnalyzer
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi

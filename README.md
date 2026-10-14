@@ -31,6 +31,14 @@ coroutines.
 
 Feature-first, with Clean Architecture layers inside each feature.
 
+| Module | Holds |
+| --- | --- |
+| `shared` | The app: every feature, its UI and its storage |
+| `formats` | Reading book files - ZIP, EPUB, PDF, DOCX - for the app and the server alike |
+| `api` | The types the app and the sync server send each other |
+| `server` | The self-hosted sync server ([spec](docs/specs/sync-server.md)) |
+| `androidApp`, `desktopApp`, `iosApp` | Each platform's entry point |
+
 ```
 shared/src/commonMain/kotlin/io/lukia
 ├── App.kt          application entry point

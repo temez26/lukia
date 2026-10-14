@@ -1,7 +1,7 @@
 package io.lukia.features.library.infrastructure.importing
 
-import io.lukia.features.library.infrastructure.importing.cover.longestEdgeOf
-import io.lukia.features.library.infrastructure.importing.cover.singlePagePdf
+import io.lukia.core.infrastructure.importing.cover.longestEdgeOf
+import io.lukia.core.infrastructure.importing.cover.singlePagePdf
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals

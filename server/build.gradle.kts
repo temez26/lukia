@@ -11,6 +11,7 @@ application {
 
 dependencies {
     implementation(project(":api"))
+    implementation(project(":formats"))
 
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.cio)

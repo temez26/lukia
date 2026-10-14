@@ -6,8 +6,12 @@ Everything the JVM can run, including the Compose UI suites. Run this before
 opening a pull request, since CI does not:
 
 ```bash
-./gradlew :shared:jvmTest
+./gradlew :shared:jvmTest :formats:jvmTest
 ```
+
+The file-format readers live in `:formats`, with their tests. Fixtures that
+build minimal ZIP, EPUB and PDF files live in `:formats-testing`, so the tests
+of every module that reads those formats can use them.
 
 What CI runs, to reproduce a CI failure:
 

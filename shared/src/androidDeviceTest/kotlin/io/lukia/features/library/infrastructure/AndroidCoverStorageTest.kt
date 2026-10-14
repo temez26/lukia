@@ -10,9 +10,9 @@ import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.domain.document.PickedDocument
 import io.lukia.core.infrastructure.db.LukiaDatabase
+import io.lukia.core.infrastructure.importing.cover.MaxStoredCoverBytes
+import io.lukia.core.infrastructure.importing.cover.MaxStoredCoverEdge
 import io.lukia.core.infrastructure.shrinkCoverImage
-import io.lukia.features.library.infrastructure.importing.cover.MaxStoredCoverBytes
-import io.lukia.features.library.infrastructure.importing.cover.MaxStoredCoverEdge
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import java.io.ByteArrayOutputStream

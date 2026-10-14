@@ -60,6 +60,8 @@ jobs:
           :shared:jvmCommonTest
           :shared:jvmMigrationTest
           :shared:testAndroidHostTest
+          :formats:jvmTest
+          :formats:testAndroidHostTest
           :androidApp:assembleDebug
           :desktopApp:compileKotlin
 
@@ -182,6 +184,7 @@ jobs:
         run: >
           ./gradlew --continue
           :shared:iosSimulatorArm64Test
+          :formats:iosSimulatorArm64Test
           :shared:linkDebugFrameworkIosSimulatorArm64
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -191,6 +194,8 @@ jobs:
           path: |
             shared/build/reports/tests/**
             shared/build/test-results/**/*.xml
+            formats/build/reports/tests/**
+            formats/build/test-results/**/*.xml
           if-no-files-found: ignore
 
   lint:

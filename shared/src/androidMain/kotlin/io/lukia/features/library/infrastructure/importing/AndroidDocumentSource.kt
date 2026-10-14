@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import android.os.ParcelFileDescriptor
+import io.lukia.core.infrastructure.importing.DocumentSource
 import java.io.ByteArrayOutputStream
 import java.io.FileInputStream
 import java.io.IOException
