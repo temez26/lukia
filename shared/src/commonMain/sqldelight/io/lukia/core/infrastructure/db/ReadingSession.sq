@@ -24,18 +24,35 @@ CREATE TABLE reading_session (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     location TEXT NOT NULL,
     startedAt INTEGER NOT NULL,
-    durationMs INTEGER NOT NULL
+    durationMs INTEGER NOT NULL,
+    uuid TEXT,
+    contentHash TEXT,
+    title TEXT
 );
 
 -- Every reading of this table is "what did the last N days look like", which is
 -- a scan from a date onwards.
 CREATE INDEX reading_session_startedAt ON reading_session(startedAt);
 
+-- `uuid` names a sitting to a sync server, which is told about it again each
+-- time it grows: the id is what makes the second telling the same sitting.
+-- Nullable only because `ALTER TABLE` could not add it otherwise; every row has
+-- one, given by `start` or by the migration that added the column.
+--
+-- `contentHash` and `title` are the book's, taken when the sitting starts, so
+-- the sitting can still be named after the book has left the shelf. The hash is
+-- null for a book not yet hashed, and filled in by `nameBook` once it is.
+CREATE UNIQUE INDEX reading_session_uuid ON reading_session(uuid);
+
 -- Opens a sitting. Its length is zero until the first time it is extended,
 -- which is what makes a book merely glanced at cost nothing.
 start:
-INSERT INTO reading_session(location, startedAt, durationMs)
-VALUES (?, ?, 0);
+INSERT INTO reading_session(location, startedAt, durationMs, uuid, contentHash, title)
+VALUES (
+    :location, :startedAt, 0, :uuid,
+    (SELECT contentHash FROM document WHERE location = :location),
+    (SELECT COALESCE(metaTitle, fileName) FROM document WHERE location = :location)
+);
 
 lastId:
 SELECT last_insert_rowid();
@@ -55,6 +72,11 @@ UPDATE reading_session SET durationMs = :durationMs WHERE id = :id;
 -- place rather than in SQL that has to agree with itself.
 selectAll:
 SELECT * FROM reading_session ORDER BY startedAt;
+
+-- The sittings in a book recorded before its hash was known.
+nameBook:
+UPDATE reading_session SET contentHash = :contentHash
+WHERE location = :location AND contentHash IS NULL;
 
 deleteByLocation:
 DELETE FROM reading_session WHERE location = ?;

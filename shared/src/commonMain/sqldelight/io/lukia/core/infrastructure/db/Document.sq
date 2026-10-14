@@ -39,7 +39,8 @@ CREATE TABLE document (
     metaLanguage TEXT,
     metaDescription TEXT,
     metaSubjects TEXT,
-    metaIdentifier TEXT
+    metaIdentifier TEXT,
+    contentHash TEXT
 );
 
 -- What `insertIfAbsent` reads to give a new book its place on the shelf.
@@ -54,6 +55,13 @@ CREATE TABLE document (
 -- reading every column of every book is a scan whatever the planner does, and a
 -- library's worth of rows sorts in no time.
 CREATE INDEX document_sortKey ON document(sortKey);
+
+-- The SHA-256 of the file, which is what names the book to a sync server and to
+-- every other device - see docs/decisions/0002-content-hash-book-identity.md.
+-- Null until a pass after signing in works it out: reading every byte of every
+-- book costs a second per large PDF, and a reader who never syncs should never
+-- pay it. Indexed for the other direction, a server's book to this shelf's.
+CREATE INDEX document_contentHash ON document(contentHash);
 
 -- The shelf, without the artwork on it.
 --
@@ -123,8 +131,22 @@ SET fileName = :fileName,
     metaLanguage = CASE WHEN :hasMetadata THEN :metaLanguage ELSE metaLanguage END,
     metaDescription = CASE WHEN :hasMetadata THEN :metaDescription ELSE metaDescription END,
     metaSubjects = CASE WHEN :hasMetadata THEN :metaSubjects ELSE metaSubjects END,
-    metaIdentifier = CASE WHEN :hasMetadata THEN :metaIdentifier ELSE metaIdentifier END
+    metaIdentifier = CASE WHEN :hasMetadata THEN :metaIdentifier ELSE metaIdentifier END,
+    -- A file that changed size is different bytes, so its hash is forgotten and
+    -- worked out again. One edited without changing size keeps a stale hash
+    -- until it is next re-imported; rehashing every file on every rescan to
+    -- catch that would cost a library's worth of reading each time.
+    contentHash = CASE WHEN sizeBytes = :sizeBytes THEN contentHash ELSE NULL END
 WHERE location = :location;
+
+-- The books still to be hashed, oldest on the shelf first.
+selectUnhashed:
+SELECT location, fileName, extension FROM document
+WHERE contentHash IS NULL AND fileExists
+ORDER BY sortKey;
+
+setContentHash:
+UPDATE document SET contentHash = ? WHERE location = ?;
 
 setFavorite:
 UPDATE document SET isFavorite = ? WHERE location = ?;

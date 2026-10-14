@@ -13,6 +13,7 @@ import io.lukia.core.infrastructure.JvmSecretStore
 import io.lukia.core.infrastructure.JvmSettingsStore
 import io.lukia.core.infrastructure.diagnostics.JvmCrashStore
 import io.lukia.core.infrastructure.lukiaSqlDriver
+import io.lukia.features.library.domain.ContentHasher
 import io.lukia.features.library.domain.DocumentAnalyzer
 import io.lukia.features.library.domain.FolderScanner
 import io.lukia.features.library.infrastructure.importing.DesktopDocumentAnalyzer
@@ -28,6 +29,12 @@ val platformModule = module {
     }
 
     single<DocumentAnalyzer> {
+        DesktopDocumentAnalyzer(get())
+    }
+
+    // The analyser also hashes, from the same file handles - see `ContentHasher`.
+    // A second instance rather than a cast: it holds nothing but its context.
+    single<ContentHasher> {
         DesktopDocumentAnalyzer(get())
     }
 

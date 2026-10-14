@@ -1,0 +1,17 @@
+-- Changes made on this device that the sync server has not accepted yet.
+--
+-- One row per thing changed rather than per change: `kind` says what it is -
+-- a book's progress, layout or favourite, or a reading session - and `key`
+-- which one, a book's content hash or a session's uuid. Writing the same thing
+-- again replaces its row, so turning a hundred pages offline leaves one
+-- position to send rather than a hundred.
+--
+-- `payload` is the request body, as the server's API types encode it. Rows are
+-- removed once the server has the change; until then a failed send costs
+-- nothing but another attempt. See docs/decisions/0003-offline-first-sync.md.
+CREATE TABLE sync_outbox (
+    kind TEXT NOT NULL,
+    key TEXT NOT NULL,
+    payload TEXT NOT NULL,
+    PRIMARY KEY (kind, key)
+);

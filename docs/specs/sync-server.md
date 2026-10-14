@@ -134,24 +134,34 @@ both sides so the contract is written once.
 Errors are sent as `{ "code": "...", "message": "..." }`. The client turns the
 code into its own `AppError`, so it stays in the existing error model.
 
-**Data, client.** Migration `11.sqm`:
+**Data, client.** Migration `11.sqm` (schema version 12):
 
-- `document.contentHash TEXT` (nullable) and `document.remoteId`. A book's hash
-  is worked out when it is imported, and for books already in the library the
-  first time a sync needs it. That links a device's copy of a file to the same
-  book on the server.
-- `sync_outbox(id, kind, bookHash, payload, changedAt)`. It holds pending
-  changes and is cleared once the server accepts them.
-- `reading_session` gains `uuid TEXT UNIQUE` and `contentHash`, so a session can
-  be sent more than once without being counted twice, and refers to the book
-  the same way on every device.
+- `document.contentHash TEXT`, nullable and indexed. The hash is the book's id
+  on the server (ADR 0002), so no separate remote id is stored. It is worked out
+  only after someone signs in, by `HashLibraryUseCase` in the background, never
+  during an import. A reader who never syncs never pays for reading every byte.
+  Re-importing a file that changed size clears its hash so it is worked out
+  again. An edit that keeps the size exactly keeps a stale hash until the next
+  re-import.
+- `reading_session` gains `uuid` (unique, generated in the migration for
+  sittings already recorded and by `start` from then on), `contentHash` and
+  `title`, both taken from the book when the sitting starts. A sitting started
+  before its book was hashed gets the hash when the book is.
+- `sync_outbox(kind, key, payload)`, primary key `(kind, key)`. `kind` is
+  progress, layout, favourite or session; `key` is the book's hash or the
+  session's uuid. Writing the same thing again replaces the row, so a hundred
+  page turns offline leave one position to send. The `changedAt` the server
+  compares travels in `payload`. Rows go once the server accepts them.
 - Sessions pulled from the account are stored with `location` set to the local
   location when this device has the book, or to `remote:<hash>` when it
   doesn't.
 
 `readAt` stays a counter for ordering on one device. Comparing changes across
-devices needs a wall clock, so outbox rows carry `changedAt` in milliseconds.
-That has the same clock-skew trade-off `ReadingSession.sq` already accepts.
+devices needs a wall clock, so each queued change carries `changedAt` in
+milliseconds. That has the same clock-skew trade-off `ReadingSession.sq`
+already accepts. A pulled change is applied unless a change to the same part is
+still waiting in the outbox. The device pushes before it pulls, so the server
+has already chosen between them.
 
 **Data, server.** SQLite through SQLDelight's JVM driver, the same tool the
 app uses. Tables:
@@ -266,8 +276,9 @@ Recorded in `docs/decisions/`:
 - [x] 5b. Admin page at the server's root: set up the admin, sign in, upload
       and remove books, make invites. Plain HTML and script served by the
       server, a strict Content-Security-Policy, tokens in memory only.
-- [ ] 6. Client: migration 11 (content hash, outbox, session uuid), hashing at
-      import and backfill.
+- [x] 6. Client: migration 11 (content hash, outbox, session uuid) and the
+      background hashing pass, with SHA-256 in common code checked against
+      the JDK's.
 - [ ] 7. Client: Account section, sign-in and sign-out, tokens in
       `SecretStore`, health check.
 - [ ] 8. Client: server books in the library, download on open, offline after.

@@ -1,0 +1,49 @@
+-- What syncing with a server needs the library to know - see
+-- docs/specs/sync-server.md. Nothing here is used until somebody signs in, and a
+-- reader who never does carries three empty columns and an empty table.
+--
+-- A book's content hash: what names it on the server and on every other
+-- device, where its location means nothing. Empty on arrival, and worked out
+-- only once somebody signs in, because reading every byte of a library is the
+-- one cost here that is not free - see `Document.sq`.
+ALTER TABLE document ADD COLUMN contentHash TEXT;
+
+CREATE INDEX document_contentHash ON document(contentHash);
+
+-- Each sitting gets an id of its own, so sending it to a server again as it
+-- grows - or again after a retry - updates the one sitting rather than counting
+-- it twice. Its book's hash and title travel with it, because a sitting
+-- outlives its book (see `ReadingSession.sq`) and another device has to name
+-- the book without having it.
+ALTER TABLE reading_session ADD COLUMN uuid TEXT;
+ALTER TABLE reading_session ADD COLUMN contentHash TEXT;
+ALTER TABLE reading_session ADD COLUMN title TEXT;
+
+-- The sittings already recorded get ids now rather than when they are first
+-- sent, so that every row has one and nothing has to remember to give it.
+-- A version 4 UUID out of `randomblob`, which SQLite has had for longer than
+-- this app's oldest Android: random hex, the version nibble, and a variant
+-- digit from 8 to b.
+UPDATE reading_session SET uuid =
+    lower(hex(randomblob(4))) || '-' ||
+    lower(hex(randomblob(2))) || '-4' ||
+    substr(lower(hex(randomblob(2))), 2) || '-' ||
+    substr('89ab', 1 + (abs(random()) % 4), 1) ||
+    substr(lower(hex(randomblob(2))), 2) || '-' ||
+    lower(hex(randomblob(6)));
+
+-- What the book was called, from the shelf, while the shelf still has it.
+UPDATE reading_session SET title = (
+    SELECT COALESCE(metaTitle, fileName) FROM document WHERE document.location = reading_session.location
+);
+
+CREATE UNIQUE INDEX reading_session_uuid ON reading_session(uuid);
+
+-- Changes made on this device that the server has not been told about yet.
+-- See `SyncOutbox.sq`.
+CREATE TABLE sync_outbox (
+    kind TEXT NOT NULL,
+    key TEXT NOT NULL,
+    payload TEXT NOT NULL,
+    PRIMARY KEY (kind, key)
+);
