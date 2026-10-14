@@ -18,11 +18,15 @@ dependencies {
     implementation(libs.ktor.server.contentNegotiation)
     implementation(libs.ktor.server.statusPages)
     implementation(libs.ktor.server.callLogging)
+    implementation(libs.ktor.server.partialContent)
     implementation(libs.ktor.serialization.json)
     implementation(libs.sqldelight.jvmDriver)
     implementation(libs.logback.classic)
     implementation(libs.bouncycastle.bcprov)
 
+    testImplementation(project(":formats-testing"))
+    // Writes a real PDF for the server to draw a cover from.
+    testImplementation(libs.pdfbox)
     testImplementation(libs.kotlin.test)
     testImplementation(libs.ktor.server.testHost)
     testImplementation(libs.ktor.client.contentNegotiation)

@@ -7,6 +7,7 @@ import io.ktor.server.application.install
 import io.ktor.server.plugins.BadRequestException
 import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.partialcontent.PartialContent
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import io.ktor.server.routing.routing
@@ -22,6 +23,9 @@ import io.lukia.server.accounts.accountRoutes
 import io.lukia.server.db.ServerDatabase
 import io.lukia.server.health.healthRoutes
 import io.lukia.server.http.ApiException
+import io.lukia.server.library.BookFiles
+import io.lukia.server.library.LibraryService
+import io.lukia.server.library.libraryRoutes
 import org.slf4j.event.Level
 import java.time.Clock
 
@@ -39,8 +43,14 @@ fun Application.lukiaServer(
     val secrets = SecretTokens()
     val tokens = TokenService(database, secrets, clock)
     val accounts = AccountService(database, hasher, tokens, secrets, SignInThrottle(clock), clock)
+    val files = BookFiles(config.dataDirectory)
+    val library = LibraryService(database, files, clock)
 
     install(ContentNegotiation) { json() }
+
+    // Lets a download that broke off resume where it stopped, rather than
+    // starting a hundred-megabyte PDF again.
+    install(PartialContent)
 
     // Method, path, status and time only. Bodies and headers carry passwords
     // and tokens, and a log is the last place either should be copied to.
@@ -69,5 +79,6 @@ fun Application.lukiaServer(
     routing {
         healthRoutes(config, database)
         accountRoutes(accounts, tokens)
+        libraryRoutes(library, files, tokens, config.maxUploadBytes)
     }
 }

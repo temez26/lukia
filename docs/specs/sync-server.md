@@ -247,10 +247,14 @@ Recorded in `docs/decisions/`:
 - [x] 2. Accounts: setup, sign-in, refresh, sign-out, invites, delete account,
       admin password reset. The test that one account can't reach another's
       book state comes with slice 4, where that state first exists.
-- [ ] 3. Library: upload with hash check, listing by cursor, download with
-      `Range`, cover, admin delete.
+- [x] 3. Library: upload with hash check, listing by cursor, download with
+      `Range`, cover, admin delete. Preceded by moving the format readers out
+      of `:shared` into `:formats` (with fixtures in `:formats-testing`), with
+      no behaviour change.
 - [ ] 4. Per-account book state: endpoints, last-writer-wins.
 - [ ] 5. Reading sessions: endpoints, idempotent by UUID.
+- [ ] 5b. Admin page: the one HTML page the server serves - sign in, upload a
+      book, make an invite. Until it exists, books are uploaded with `curl`.
 - [ ] 6. Client: migration 11 (content hash, outbox, session uuid), hashing at
       import and backfill.
 - [ ] 7. Client: Account section, sign-in and sign-out, tokens in

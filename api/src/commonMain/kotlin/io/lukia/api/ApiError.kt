@@ -44,4 +44,10 @@ object ApiErrorCodes {
 
     /** The last admin may not delete their account: nobody could invite anyone again. */
     const val LastAdmin = "last_admin"
+
+    /** The upload is larger than the server accepts. */
+    const val TooLarge = "too_large"
+
+    /** The upload's file name is not a format the app reads. */
+    const val UnsupportedFormat = "unsupported_format"
 }

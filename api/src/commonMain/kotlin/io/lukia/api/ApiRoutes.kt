@@ -31,4 +31,24 @@ object ApiRoutes {
     const val AccountPassword = "$Prefix/accounts/{username}/password"
 
     fun accountPassword(username: String) = AccountPassword.replace("{username}", username)
+
+    /**
+     * GET: the library's changes since `?since=` (0 for everything). POST: upload
+     * a book as the raw request body, named by `?fileName=`.
+     */
+    const val Books = "$Prefix/books"
+
+    /** DELETE, admin only: takes the book out of the shared library. */
+    const val Book = "$Prefix/books/{id}"
+
+    /** The book's file. Answers `Range` requests, so a broken download can resume. */
+    const val BookFile = "$Prefix/books/{id}/file"
+
+    const val BookCover = "$Prefix/books/{id}/cover"
+
+    fun book(id: String) = Book.replace("{id}", id)
+
+    fun bookFile(id: String) = BookFile.replace("{id}", id)
+
+    fun bookCover(id: String) = BookCover.replace("{id}", id)
 }

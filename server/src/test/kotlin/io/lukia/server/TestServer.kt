@@ -20,7 +20,7 @@ import io.lukia.api.RedeemInviteRequest
 import io.lukia.api.TokenResponse
 import io.lukia.server.accounts.Argon2PasswordHasher
 import io.lukia.server.db.ServerDatabase
-import java.io.File
+import java.nio.file.Files
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -36,7 +36,13 @@ fun inMemoryDatabase(): ServerDatabase = ServerDatabase(
     ),
 )
 
-val TestConfig = ServerConfig(name = "Test shelf", port = 0, dataDirectory = File("unused"))
+/** A configuration whose data directory is a new temporary one, which [serverTest] removes afterwards. */
+fun testConfig(maxUploadBytes: Long = ServerConfig.DefaultMaxUploadBytes) = ServerConfig(
+    name = "Test shelf",
+    port = 0,
+    dataDirectory = Files.createTempDirectory("lukia-server-test").toFile(),
+    maxUploadBytes = maxUploadBytes,
+)
 
 /** Real Argon2id at the smallest cost it accepts, so a test hashes in microseconds rather than tens of milliseconds. */
 val CheapHasher = Argon2PasswordHasher(memoryKiB = 8, iterations = 1)
@@ -58,15 +64,20 @@ class TestClock(private var now: Instant = Instant.parse("2026-10-14T12:00:00Z")
 fun serverTest(
     database: ServerDatabase = inMemoryDatabase(),
     clock: Clock = TestClock(),
+    config: ServerConfig = testConfig(),
     block: suspend ApplicationTestBuilder.(client: HttpClient) -> Unit,
-) = testApplication {
-    application { lukiaServer(TestConfig, database, clock, CheapHasher) }
+) = try {
+    testApplication {
+        application { lukiaServer(config, database, clock, CheapHasher) }
 
-    val client = createClient {
-        install(ContentNegotiation) { json() }
+        val client = createClient {
+            install(ContentNegotiation) { json() }
+        }
+
+        block(client)
     }
-
-    block(client)
+} finally {
+    config.dataDirectory.deleteRecursively()
 }
 
 suspend inline fun <reified T : Any> HttpClient.postJson(

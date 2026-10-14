@@ -21,7 +21,7 @@ import io.lukia.server.http.blocking
  * from the request, which is what keeps one account out of another's state.
  */
 fun Route.signedIn(tokens: TokenService, build: Route.() -> Unit): Route {
-    val route = createChild(SignedInSelector)
+    val route = createChild(SignedInSelector())
     route.install(RequireSignIn) { this.tokens = tokens }
     route.build()
     return route
@@ -53,8 +53,13 @@ private val RequireSignIn = createRouteScopedPlugin("RequireSignIn", ::RequireSi
     }
 }
 
-/** Adds nothing to the path; it exists so the plugin above has a route of its own to sit on. */
-private object SignedInSelector : RouteSelector() {
+/**
+ * Adds nothing to the path; it exists so the plugin above has a route of its
+ * own to sit on. A class rather than an object because Ktor merges children
+ * whose selectors are equal, and two `signedIn` blocks merged onto one route
+ * would install the plugin twice.
+ */
+private class SignedInSelector : RouteSelector() {
     override suspend fun evaluate(context: RoutingResolveContext, segmentIndex: Int) =
         RouteSelectorEvaluation.Transparent
 

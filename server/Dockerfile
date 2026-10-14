@@ -16,8 +16,10 @@ COPY build/install/server /app
 
 USER lukia
 
+# Headless because a PDF's cover is drawn with AWT, and the image has no display.
 ENV LUKIA_DATA_DIR=/data \
-    LUKIA_PORT=8080
+    LUKIA_PORT=8080 \
+    JAVA_OPTS=-Djava.awt.headless=true
 
 # Everything the server writes. Back this up and you have backed up the server.
 VOLUME /data

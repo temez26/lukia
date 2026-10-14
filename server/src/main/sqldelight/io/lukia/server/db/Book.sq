@@ -1,0 +1,88 @@
+import kotlin.Boolean;
+
+-- A book in the shared library, which every account sees.
+--
+-- `id` is the SHA-256 of the file, hex - see
+-- docs/decisions/0002-content-hash-book-identity.md. The file itself is on disk
+-- under that name; see `BookFiles`.
+--
+-- The `meta*` columns are what the file says about itself, read once on upload,
+-- with lists newline-separated for the reason `Document.sq` in the app gives.
+--
+-- A removed book stays as a row with `deleted` set and its file gone, so a
+-- device pulling changes since before the removal learns of it. Uploading the
+-- same file again brings the row back.
+--
+-- `seq` orders changes for those pulls: one past the highest in the table on
+-- every write, so it only grows, and one indexed range answers "what changed
+-- since". SQLite's single writer is what makes reading MAX and writing it safe.
+CREATE TABLE book (
+    id TEXT NOT NULL PRIMARY KEY,
+    fileName TEXT NOT NULL,
+    type TEXT NOT NULL,
+    sizeBytes INTEGER NOT NULL,
+    hasCover INTEGER AS Boolean NOT NULL,
+    metaTitle TEXT,
+    metaAuthors TEXT,
+    metaPublisher TEXT,
+    metaPublished TEXT,
+    metaLanguage TEXT,
+    metaDescription TEXT,
+    metaSubjects TEXT,
+    metaIdentifier TEXT,
+    addedBy INTEGER REFERENCES account(id) ON DELETE SET NULL,
+    addedAt INTEGER NOT NULL,
+    deleted INTEGER AS Boolean NOT NULL DEFAULT 0,
+    seq INTEGER NOT NULL
+);
+
+CREATE INDEX book_seq ON book(seq);
+
+-- A cover is at most a megabyte (`MaxStoredCoverBytes`), so it lives in the
+-- database beside its book rather than as another file: one backup, and gone in
+-- the same transaction as the book.
+CREATE TABLE book_cover (
+    bookId TEXT NOT NULL PRIMARY KEY REFERENCES book(id) ON DELETE CASCADE,
+    bytes BLOB NOT NULL
+);
+
+selectById:
+SELECT * FROM book WHERE id = ?;
+
+-- A page of changes after `since`, for a device catching up.
+selectSince:
+SELECT * FROM book WHERE seq > :since ORDER BY seq LIMIT :limit;
+
+-- Separate statements rather than an upsert, for the app's reason (SQLite 3.9 on
+-- old Androids) - which does not apply here, but one dialect across the project
+-- is worth more than the one statement it saves.
+insert:
+INSERT INTO book(id, fileName, type, sizeBytes, hasCover, metaTitle, metaAuthors, metaPublisher, metaPublished, metaLanguage, metaDescription, metaSubjects, metaIdentifier, addedBy, addedAt, seq)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(seq), 0) + 1 FROM book));
+
+-- A removed book uploaded again: back on the shelf as a new change, read
+-- afresh. An update rather than a delete and an insert, which could hand the
+-- row a `seq` devices have already passed and so never hear about.
+restore:
+UPDATE book
+SET deleted = 0, fileName = :fileName, type = :type, sizeBytes = :sizeBytes, hasCover = :hasCover,
+    metaTitle = :metaTitle, metaAuthors = :metaAuthors, metaPublisher = :metaPublisher,
+    metaPublished = :metaPublished, metaLanguage = :metaLanguage, metaDescription = :metaDescription,
+    metaSubjects = :metaSubjects, metaIdentifier = :metaIdentifier,
+    addedBy = :addedBy, addedAt = :addedAt,
+    seq = (SELECT COALESCE(MAX(seq), 0) + 1 FROM book)
+WHERE id = :id AND deleted = 1;
+
+markDeleted:
+UPDATE book
+SET deleted = 1, seq = (SELECT COALESCE(MAX(seq), 0) + 1 FROM book)
+WHERE id = ? AND deleted = 0;
+
+insertCover:
+INSERT OR REPLACE INTO book_cover(bookId, bytes) VALUES (?, ?);
+
+selectCover:
+SELECT bytes FROM book_cover WHERE bookId = ?;
+
+deleteCover:
+DELETE FROM book_cover WHERE bookId = ?;
