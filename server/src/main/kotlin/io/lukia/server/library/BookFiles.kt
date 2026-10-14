@@ -23,7 +23,7 @@ class BookFiles(dataDirectory: File) {
     }
 
     /** Null for anything that is not a book id - which keeps a request's id from naming any other path. */
-    fun fileOf(id: String): File? = File(books, id).takeIf { BookId.matches(id) }
+    fun fileOf(id: String): File? = File(books, id).takeIf { isBookId(id) }
 
     fun newIncoming(): File = File.createTempFile("upload-", ".part", incoming)
 
@@ -41,8 +41,9 @@ class BookFiles(dataDirectory: File) {
     fun remove(id: String) {
         fileOf(id)?.delete()
     }
-
-    private companion object {
-        val BookId = Regex("^[0-9a-f]{64}$")
-    }
 }
+
+/** Whether [id] has the shape of a book id: a SHA-256 in lower-case hex. */
+fun isBookId(id: String): Boolean = BookIdPattern.matches(id)
+
+private val BookIdPattern = Regex("^[0-9a-f]{64}$")

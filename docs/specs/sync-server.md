@@ -157,22 +157,30 @@ That has the same clock-skew trade-off `ReadingSession.sq` already accepts.
 app uses. Tables:
 
 - `account(id, username UNIQUE, passwordHash, isAdmin, createdAt)`
-- `refresh_token(hash, accountId, expiresAt)`
-- `invite(codeHash, expiresAt, usedBy)`
-- `book(id = sha256, fileName, type, sizeBytes, metadata…, addedBy, addedAt, seq)`
-- `book_state(accountId, bookId, pageIndex, pageCount, layout, isFavorite, changedAt, seq)`, primary key `(accountId, bookId)`
-- `reading_session(uuid, accountId, bookId, startedAt, durationMs, seq)`
+- `auth_family(id, accountId, createdAt)`: one sign-in. `access_token` and
+  `refresh_token` hang off it, stored as hashes.
+- `invite(codeHash, createdBy, expiresAt)`
+- `book(id = sha256, fileName, type, sizeBytes, hasCover, metadata…, addedBy,
+  addedAt, deleted, seq)` and `book_cover(bookId, bytes)`
+- `book_state(accountId, bookId, pageIndex, pageCount, progressChangedAt,
+  layout, layoutChangedAt, isFavorite, favoriteChangedAt, seq)`, primary key
+  `(accountId, bookId)`
+- `reading_session(accountId, id = uuid, bookId, title, startedAt, durationMs,
+  seq)`, primary key `(accountId, id)`
 
 Files live at `/data/books/<sha256>`. An upload is written to a temporary file,
 its hash is checked, and it is renamed into place.
 
-`seq` is a counter shared across the server that every write increases. Each
+Each table has its own `seq`, one past the table's highest on every write. Each
 `?since=` cursor is a `seq`, which makes pulling changes one indexed range
 scan. Every query under `/me` filters on `accountId` taken from the token,
 never from the request.
 
-When two writes reach the same `book_state`, the one with the larger
-`changedAt` wins and the other is dropped, in a single conditional `UPDATE`.
+Progress, layout and favourite each carry their own `changedAt`, and each
+part keeps whichever change has the larger one, in a conditional `UPDATE` per
+part. A favourite set on one device is never undone by another device's
+unrelated page turn. A `changedAt` later than the server's clock is stored as
+the server's now, so a device with a fast clock cannot win for good.
 For a session, the server keeps whichever `durationMs` is larger.
 
 **Security.** Passwords are hashed with Argon2id. Both tokens are 256 random
@@ -251,8 +259,10 @@ Recorded in `docs/decisions/`:
       `Range`, cover, admin delete. Preceded by moving the format readers out
       of `:shared` into `:formats` (with fixtures in `:formats-testing`), with
       no behaviour change.
-- [ ] 4. Per-account book state: endpoints, last-writer-wins.
-- [ ] 5. Reading sessions: endpoints, idempotent by UUID.
+- [x] 4. Per-account book state: endpoints, last-writer-wins per part
+      (progress, layout, favourite), with a change dated in the future counted
+      as now. Includes the test that one account cannot reach another's state.
+- [x] 5. Reading sessions: endpoints, idempotent by UUID, unique per account.
 - [ ] 5b. Admin page: the one HTML page the server serves - sign in, upload a
       book, make an invite. Until it exists, books are uploaded with `curl`.
 - [ ] 6. Client: migration 11 (content hash, outbox, session uuid), hashing at

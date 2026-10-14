@@ -2,8 +2,8 @@ package io.lukia.server.library
 
 import io.ktor.http.HttpStatusCode
 import io.lukia.api.ApiErrorCodes
-import io.lukia.api.BookPage
 import io.lukia.api.BookResponse
+import io.lukia.api.ChangePage
 import io.lukia.core.domain.document.BookMetadata
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.infrastructure.importing.DocumentContents
@@ -12,6 +12,7 @@ import io.lukia.core.infrastructure.importing.extractContents
 import io.lukia.server.db.Book
 import io.lukia.server.db.ServerDatabase
 import io.lukia.server.http.ApiException
+import io.lukia.server.http.changePage
 import java.io.File
 import java.time.Clock
 
@@ -86,17 +87,14 @@ class LibraryService(
         return Added(books.selectById(upload.id).executeAsOne().toResponse(), isNew = true)
     }
 
-    fun changesSince(since: Long, limit: Int): BookPage {
-        // One more than asked for, to learn whether there is another page without a count.
-        val rows = books.selectSince(since, limit + 1L).executeAsList()
-        val page = rows.take(limit)
-
-        return BookPage(
-            books = page.map { it.toResponse() },
-            cursor = page.lastOrNull()?.seq ?: since,
-            hasMore = rows.size > limit,
+    fun changesSince(since: Long, limit: Int): ChangePage<BookResponse> =
+        changePage(
+            since,
+            limit,
+            fetch = { after, count -> books.selectSince(after, count).executeAsList() },
+            seqOf = Book::seq,
+            toItem = { it.toResponse() },
         )
-    }
 
     fun fileOf(id: String): File {
         val book = books.selectById(id).executeAsOneOrNull()?.takeUnless { it.deleted }

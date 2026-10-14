@@ -1,0 +1,66 @@
+import kotlin.Boolean;
+
+-- What one account has said about one book: progress, PDF layout and
+-- favourite, each with the device time it was changed at.
+--
+-- Three parts with a time each rather than one time for the row, so that the
+-- later change wins per part - see `BookStateRequest`. A part never set is all
+-- nulls.
+--
+-- `bookId` is a content hash with no foreign key on `book`: a book only on one
+-- device still has a place in it worth carrying to the next.
+--
+-- `seq` orders changes across every account, as `book.seq` does the library's;
+-- each account reads its own rows in that order through the index.
+CREATE TABLE book_state (
+    accountId INTEGER NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    bookId TEXT NOT NULL,
+    pageIndex INTEGER,
+    pageCount INTEGER,
+    progressChangedAt INTEGER,
+    layout TEXT,
+    layoutChangedAt INTEGER,
+    isFavorite INTEGER AS Boolean,
+    favoriteChangedAt INTEGER,
+    seq INTEGER NOT NULL,
+    PRIMARY KEY (accountId, bookId)
+);
+
+CREATE INDEX book_state_account_seq ON book_state(accountId, seq);
+
+-- The row the part updates below write into, made empty if it is not there yet.
+ensure:
+INSERT OR IGNORE INTO book_state(accountId, bookId, seq)
+VALUES (?, ?, (SELECT COALESCE(MAX(seq), 0) + 1 FROM book_state));
+
+-- Each part only if it is newer than what is stored. An equal time is the same
+-- change sent again, which leaves the row - and its place in the change order -
+-- alone.
+setProgress:
+UPDATE book_state
+SET pageIndex = :pageIndex, pageCount = :pageCount, progressChangedAt = :changedAt,
+    seq = (SELECT MAX(seq) + 1 FROM book_state)
+WHERE accountId = :accountId AND bookId = :bookId
+  AND (progressChangedAt IS NULL OR progressChangedAt < :changedAt);
+
+setLayout:
+UPDATE book_state
+SET layout = :layout, layoutChangedAt = :changedAt,
+    seq = (SELECT MAX(seq) + 1 FROM book_state)
+WHERE accountId = :accountId AND bookId = :bookId
+  AND (layoutChangedAt IS NULL OR layoutChangedAt < :changedAt);
+
+setFavorite:
+UPDATE book_state
+SET isFavorite = :isFavorite, favoriteChangedAt = :changedAt,
+    seq = (SELECT MAX(seq) + 1 FROM book_state)
+WHERE accountId = :accountId AND bookId = :bookId
+  AND (favoriteChangedAt IS NULL OR favoriteChangedAt < :changedAt);
+
+selectOne:
+SELECT * FROM book_state WHERE accountId = ? AND bookId = ?;
+
+selectSince:
+SELECT * FROM book_state
+WHERE accountId = :accountId AND seq > :since
+ORDER BY seq LIMIT :limit;

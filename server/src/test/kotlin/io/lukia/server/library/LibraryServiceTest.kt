@@ -30,9 +30,9 @@ class LibraryServiceTest {
         val third = library.changesSince(second.cursor, limit = 2)
         val after = library.changesSince(third.cursor, limit = 2)
 
-        assertEquals(ids, (first.books + second.books + third.books).map { it.id })
+        assertEquals(ids, (first.items + second.items + third.items).map { it.id })
         assertEquals(listOf(true, true, false), listOf(first.hasMore, second.hasMore, third.hasMore))
-        assertEquals(emptyList(), after.books)
+        assertEquals(emptyList(), after.items)
         assertEquals(third.cursor, after.cursor)
     }
 

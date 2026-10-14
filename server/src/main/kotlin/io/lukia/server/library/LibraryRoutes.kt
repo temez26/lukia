@@ -18,13 +18,15 @@ import io.lukia.server.accounts.TokenService
 import io.lukia.server.accounts.account
 import io.lukia.server.accounts.requireAdmin
 import io.lukia.server.accounts.signedIn
+import io.lukia.server.http.ChangePageSize
 import io.lukia.server.http.blocking
+import io.lukia.server.http.since
 
 fun Route.libraryRoutes(library: LibraryService, files: BookFiles, tokens: TokenService, maxUploadBytes: Long) {
     signedIn(tokens) {
         get(ApiRoutes.Books) {
-            val since = call.request.queryParameters["since"]?.toLongOrNull()?.coerceAtLeast(0) ?: 0
-            call.respond(blocking { library.changesSince(since, PageSize) })
+            val since = call.since
+            call.respond(blocking { library.changesSince(since, ChangePageSize) })
         }
 
         post(ApiRoutes.Books) {
@@ -80,5 +82,3 @@ private fun ByteArray.startsWith(prefix: List<Int>) =
 private val PngSignature = listOf(0x89, 0x50, 0x4E, 0x47)
 private val JpegSignature = listOf(0xFF, 0xD8)
 private val GifSignature = listOf(0x47, 0x49, 0x46)
-
-private const val PageSize = 500

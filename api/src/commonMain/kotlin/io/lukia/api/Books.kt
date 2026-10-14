@@ -35,16 +35,3 @@ data class BookResponse(
      */
     val deleted: Boolean = false,
 )
-
-/**
- * One page of library changes, oldest first.
- *
- * [cursor] is what to pass as `since` next time; it only ever grows. When
- * [hasMore] is true there is another page waiting now.
- */
-@Serializable
-data class BookPage(
-    val books: List<BookResponse>,
-    val cursor: Long,
-    val hasMore: Boolean,
-)

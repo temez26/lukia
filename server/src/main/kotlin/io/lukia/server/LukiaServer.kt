@@ -26,6 +26,9 @@ import io.lukia.server.http.ApiException
 import io.lukia.server.library.BookFiles
 import io.lukia.server.library.LibraryService
 import io.lukia.server.library.libraryRoutes
+import io.lukia.server.reading.BookStateService
+import io.lukia.server.reading.SessionService
+import io.lukia.server.reading.readingRoutes
 import org.slf4j.event.Level
 import java.time.Clock
 
@@ -45,6 +48,8 @@ fun Application.lukiaServer(
     val accounts = AccountService(database, hasher, tokens, secrets, SignInThrottle(clock), clock)
     val files = BookFiles(config.dataDirectory)
     val library = LibraryService(database, files, clock)
+    val bookStates = BookStateService(database, clock)
+    val sessions = SessionService(database)
 
     install(ContentNegotiation) { json() }
 
@@ -80,5 +85,6 @@ fun Application.lukiaServer(
         healthRoutes(config, database)
         accountRoutes(accounts, tokens)
         libraryRoutes(library, files, tokens, config.maxUploadBytes)
+        readingRoutes(bookStates, sessions, tokens)
     }
 }

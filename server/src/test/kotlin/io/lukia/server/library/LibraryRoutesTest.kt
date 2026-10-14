@@ -17,8 +17,8 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.lukia.api.ApiErrorCodes
 import io.lukia.api.ApiRoutes
-import io.lukia.api.BookPage
 import io.lukia.api.BookResponse
+import io.lukia.api.ChangePage
 import io.lukia.api.TokenResponse
 import io.lukia.core.infrastructure.epub.MinimalEpub
 import io.lukia.server.accounts.errorCode
@@ -66,7 +66,7 @@ class LibraryRoutesTest {
 
         assertEquals(HttpStatusCode.OK, second.status)
         assertEquals(first, second.body())
-        assertEquals(listOf(first), client.changes(alice).books)
+        assertEquals(listOf(first), client.changes(alice).items)
     }
 
     @Test
@@ -76,7 +76,7 @@ class LibraryRoutesTest {
 
         val book: BookResponse = client.upload(alice, "notes.txt", "Call me Ishmael.".toByteArray()).body()
 
-        assertEquals(listOf(book.id), client.changes(admin).books.map { it.id })
+        assertEquals(listOf(book.id), client.changes(admin).items.map { it.id })
     }
 
     @Test
@@ -92,7 +92,7 @@ class LibraryRoutesTest {
         assertEquals(HttpStatusCode.UnsupportedMediaType, unsupported.status)
         assertEquals(ApiErrorCodes.UnsupportedFormat, unsupported.errorCode())
         assertEquals(HttpStatusCode.BadRequest, unnamed.status)
-        assertTrue(client.changes(admin).books.isEmpty())
+        assertTrue(client.changes(admin).items.isEmpty())
     }
 
     @Test
@@ -106,7 +106,7 @@ class LibraryRoutesTest {
 
             assertEquals(HttpStatusCode.PayloadTooLarge, response.status)
             assertEquals(ApiErrorCodes.TooLarge, response.errorCode())
-            assertTrue(client.changes(admin).books.isEmpty())
+            assertTrue(client.changes(admin).items.isEmpty())
             assertTrue(config.dataDirectory.resolve("incoming").listFiles().orEmpty().isEmpty())
             assertTrue(config.dataDirectory.resolve("books").listFiles().orEmpty().isEmpty())
         }
@@ -170,7 +170,7 @@ class LibraryRoutesTest {
 
         assertEquals(HttpStatusCode.Forbidden, refused.status)
         assertEquals(HttpStatusCode.NoContent, removed.status)
-        assertEquals(listOf(book.copy(deleted = true)), since.books)
+        assertEquals(listOf(book.copy(deleted = true)), since.items)
         assertEquals(
             HttpStatusCode.NotFound,
             client.get(ApiRoutes.bookFile(book.id)) { bearerAuth(alice.accessToken) }.status,
@@ -189,8 +189,8 @@ class LibraryRoutesTest {
         val since = client.changes(admin, since = afterRemoval)
 
         assertEquals(HttpStatusCode.Created, again.status)
-        assertEquals(listOf(book.id), since.books.map { it.id })
-        assertEquals(false, since.books.single().deleted)
+        assertEquals(listOf(book.id), since.items.map { it.id })
+        assertEquals(false, since.items.single().deleted)
         assertEquals(
             HttpStatusCode.OK,
             client.get(ApiRoutes.bookFile(book.id)) { bearerAuth(admin.accessToken) }.status,
@@ -220,7 +220,7 @@ class LibraryRoutesTest {
             setBody(bytes)
         }
 
-    private suspend fun HttpClient.changes(by: TokenResponse, since: Long = 0): BookPage =
+    private suspend fun HttpClient.changes(by: TokenResponse, since: Long = 0): ChangePage<BookResponse> =
         get("${ApiRoutes.Books}?since=$since") { bearerAuth(by.accessToken) }.body()
 
     private fun onePagePdf(): ByteArray = PDDocument().use { document ->

@@ -51,4 +51,20 @@ object ApiRoutes {
     fun bookFile(id: String) = BookFile.replace("{id}", id)
 
     fun bookCover(id: String) = BookCover.replace("{id}", id)
+
+    /** GET: changes to the signed-in account's book state since `?since=`. */
+    const val MyBooks = "$Prefix/me/books"
+
+    /** PUT a `BookStateRequest`; answers with the state as it stands after it. */
+    const val MyBook = "$Prefix/me/books/{id}"
+
+    /** GET: the signed-in account's sessions changed since `?since=`. */
+    const val MySessions = "$Prefix/me/sessions"
+
+    /** PUT a `SessionRequest` under the session's own UUID. */
+    const val MySession = "$Prefix/me/sessions/{id}"
+
+    fun myBook(id: String) = MyBook.replace("{id}", id)
+
+    fun mySession(id: String) = MySession.replace("{id}", id)
 }
