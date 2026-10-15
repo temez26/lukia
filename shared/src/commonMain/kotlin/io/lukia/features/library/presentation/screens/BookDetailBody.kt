@@ -71,9 +71,11 @@ internal fun BookDetailBody(
      * both - in the dark theme especially, where the background is true black.
      */
     infoCardColor: Color = MaterialTheme.colorScheme.surface,
-    /** How far fetching a server book onto the device has got - see [BookDownloadRow]. */
-    download: BookDownload = BookDownload.Idle,
-    downloadActions: BookDownloadActions = BookDownloadActions(),
+    /** How far moving the book to or from the server has got - see [BookTransferRow]. */
+    transfer: BookTransfer = BookTransfer.Idle,
+    transferActions: BookTransferActions = BookTransferActions(),
+    /** Whether a book on this device could be added to the server - true while signed in. */
+    canUpload: Boolean = false,
 ) {
     val dimens = LocalLukiaDimens.current
     val document = details.document
@@ -155,10 +157,12 @@ internal fun BookDetailBody(
                 modifier = Modifier.padding(top = Space.sm),
             )
 
-            if (document.awaitsDownload) {
-                BookDownloadRow(
-                    state = download,
-                    actions = downloadActions,
+            val direction = document.transferDirection(canUpload)
+            if (direction != null) {
+                BookTransferRow(
+                    direction = direction,
+                    state = transfer,
+                    actions = transferActions,
                     modifier = Modifier.padding(top = Space.lg),
                 )
             } else if (!document.exists) {

@@ -51,7 +51,8 @@ fun BookDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val message by viewModel.message.collectAsState()
-    val download by viewModel.download.collectAsState()
+    val transfer by viewModel.transfer.collectAsState()
+    val canUpload by viewModel.canUpload.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Read in the composition, shown from the effect - a string resource needs
@@ -75,9 +76,10 @@ fun BookDetailScreen(
         onToggleFavorite = viewModel::toggleFavorite,
         onRefresh = viewModel::refreshDocument,
         snackbarHostState = snackbarHostState,
-        download = download,
-        downloadActions = remember(viewModel) {
-            BookDownloadActions(onStart = viewModel::startDownload, onCancel = viewModel::cancelDownload)
+        transfer = transfer,
+        canUpload = canUpload,
+        transferActions = remember(viewModel) {
+            BookTransferActions(onStart = viewModel::startTransfer, onCancel = viewModel::cancelTransfer)
         },
         // Nothing left on this screen once the entry is gone, so leaving is part
         // of the action rather than something the user is left to do.
@@ -102,9 +104,10 @@ fun BookDetailContent(
      * which is how it is tested and previewed.
      */
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
-    /** How far fetching a server book onto the device has got - see [BookDownloadRow]. */
-    download: BookDownload = BookDownload.Idle,
-    downloadActions: BookDownloadActions = BookDownloadActions(),
+    /** How far fetching a server book onto the device has got - see [BookTransferRow]. */
+    transfer: BookTransfer = BookTransfer.Idle,
+    transferActions: BookTransferActions = BookTransferActions(),
+    canUpload: Boolean = false,
 ) {
     val dimens = LocalLukiaDimens.current
     var menuExpanded by remember { mutableStateOf(false) }
@@ -141,8 +144,9 @@ fun BookDetailContent(
                     details = details,
                     onRead = onRead,
                     onLongPress = { menuExpanded = true },
-                    download = download,
-                    downloadActions = downloadActions,
+                    transfer = transfer,
+                    transferActions = transferActions,
+                    canUpload = canUpload,
                     modifier = Modifier.fillMaxSize(),
                 )
             }

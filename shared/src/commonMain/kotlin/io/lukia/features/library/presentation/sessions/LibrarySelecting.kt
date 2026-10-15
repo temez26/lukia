@@ -58,3 +58,6 @@ fun LibraryViewModel.setFavoriteOnSelected() =
 fun LibraryViewModel.resetProgressOnSelected() = selectionSession.resetProgress(::onBulkDone)
 
 fun LibraryViewModel.deleteSelected() = selectionSession.delete(::onBulkDone)
+
+fun LibraryViewModel.uploadSelected() =
+    selectionSession.upload(uiState.value.dataOrNull.orEmpty(), uploader, ::onBulkDone)

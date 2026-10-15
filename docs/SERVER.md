@@ -46,9 +46,13 @@ quietly using a default.
 
 1. Open the server's address in a browser. With no accounts yet, the page asks
    you to create the admin account.
-2. Add books on the same page. The server reads each book's title, authors and
+2. Add books on the same page - files, or a whole folder at once, of which
+   only the books are taken. The server reads each book's title, authors and
    cover, and names it by a fingerprint of its bytes, so uploading a file twice
    adds it once.
+
+   Anyone signed in can also add books from the app: Add to server on a book's
+   page, or select several in the library and add them together.
 3. Make an invite code for each person who should have an account. A code
    works once, for seven days.
 4. In the app, open Settings, then Account, and type the server's address.

@@ -41,6 +41,13 @@ class SqlServerShelf(
         Unit
     }
 
+    override suspend fun markUploaded(location: String, contentHash: String) = withContext(dispatcher) {
+        database.transaction {
+            database.recordContentHash(location, contentHash)
+            documents.setOnServer(true, contentHash)
+        }
+    }
+
     override suspend fun markOnServer(contentHash: String, onServer: Boolean) = withContext(dispatcher) {
         documents.setOnServer(onServer, contentHash)
         Unit

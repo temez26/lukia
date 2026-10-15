@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.PickedDocument
 import io.lukia.core.domain.document.PickedFolder
+import io.lukia.core.domain.document.ServerBookDownloader
+import io.lukia.core.domain.document.ServerBookUploader
 import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.core.domain.reading.ReadingProgressRepository
 import io.lukia.core.domain.runCatchingApp
@@ -31,6 +33,7 @@ import io.lukia.features.library.presentation.model.asLibrary
 import io.lukia.features.library.presentation.model.facets
 import io.lukia.features.library.presentation.model.matching
 import io.lukia.features.library.presentation.model.upkeep
+import io.lukia.features.library.presentation.sessions.BookTransfers
 import io.lukia.features.library.presentation.sessions.LibraryImportSession
 import io.lukia.features.library.presentation.sessions.LibrarySearchSession
 import io.lukia.features.library.presentation.sessions.LibrarySelectionSession
@@ -65,7 +68,17 @@ class LibraryViewModel(
      * in production, and injectable so tests can run it deterministically.
      */
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    /** Sends books to the sync server, while there is one. */
+    internal val uploader: ServerBookUploader = ServerBookUploader.None,
+    /** Fetches server books onto the device, for the panel's download row. */
+    downloader: ServerBookDownloader = ServerBookDownloader { _, _ -> },
 ) : ViewModel() {
+
+    /** Books moving to or from the server from the panel - see [BookTransfers]. */
+    internal val transfers = BookTransfers(downloader, uploader, viewModelScope)
+
+    /** Whether selected books could be added to the server: true while signed in to one. */
+    val canUpload: StateFlow<Boolean> get() = transfers.canUpload
 
     /**
      * Selecting several books at once. Held apart rather than added to this -

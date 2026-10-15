@@ -58,6 +58,10 @@
         <item quantity="one">1 livre supprimé de la bibliothèque</item>
         <item quantity="other">%1$d livres supprimés de la bibliothèque</item>
     </plurals>
+    <plurals name="library_bulk_uploaded">
+        <item quantity="one">1 livre ajouté au serveur</item>
+        <item quantity="other">%1$d livres ajoutés au serveur</item>
+    </plurals>
     <plurals name="library_bulk_skipped">
         <item quantity="one">%1$s, 1 ignoré</item>
         <item quantity="other">%1$s, %2$d ignorés</item>
@@ -71,6 +75,7 @@
     <string name="library_bulk_running_unfavourite">Retrait des favoris %1$d/%2$d…</string>
     <string name="library_bulk_running_reset">Marquage comme non lu %1$d/%2$d…</string>
     <string name="library_bulk_running_delete">Suppression %1$d/%2$d…</string>
+    <string name="library_bulk_running_upload">Ajout de %1$d sur %2$d au serveur…</string>
     <string name="library_delete_confirm_message">Les fichiers restent là où ils sont sur le disque.</string>
     <plurals name="library_delete_confirm_title">
         <item quantity="one">Supprimer 1 livre de votre bibliothèque ?</item>
@@ -217,6 +222,9 @@
     <string name="book_download">Télécharger</string>
     <string name="book_downloading">Téléchargement…</string>
     <string name="book_download_failed">Le téléchargement n’a pas abouti.</string>
+    <string name="book_upload">Ajouter au serveur</string>
+    <string name="book_uploading">Ajout au serveur…</string>
+    <string name="book_upload_failed">Le livre n’est pas arrivé sur le serveur.</string>
     <string name="book_format_and_size">%1$s · %2$s</string>
     <string name="book_progress_percent">· %1$d\u00A0%</string>
     <string name="format_pdf">PDF</string>
@@ -254,6 +262,7 @@
     <string name="selection_unfavourite">Retirer des favoris</string>
     <string name="selection_mark_unread">Marquer comme non lu</string>
     <string name="selection_delete">Supprimer de la bibliothèque</string>
+    <string name="selection_upload">Ajouter au serveur</string>
     <string name="reader_close_book">Fermer le livre</string>
     <string name="reader_close_the_book">Fermer le livre</string>
     <string name="reader_contents">Sommaire</string>

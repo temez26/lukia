@@ -69,6 +69,10 @@
         <item quantity="one">1 kirja poistettu kirjastosta</item>
         <item quantity="other">%1$d kirjaa poistettu kirjastosta</item>
     </plurals>
+    <plurals name="library_bulk_uploaded">
+        <item quantity="one">1 kirja lisätty palvelimelle</item>
+        <item quantity="other">%1$d kirjaa lisätty palvelimelle</item>
+    </plurals>
 
     <plurals name="library_bulk_skipped">
         <item quantity="one">%1$s, 1 ohitettu</item>
@@ -84,6 +88,7 @@
     <string name="library_bulk_running_unfavourite">Poistetaan suosikeista %1$d/%2$d…</string>
     <string name="library_bulk_running_reset">Merkitään lukemattomaksi %1$d/%2$d…</string>
     <string name="library_bulk_running_delete">Poistetaan %1$d/%2$d…</string>
+    <string name="library_bulk_running_upload">Lisätään %1$d/%2$d palvelimelle…</string>
 
     <string name="library_delete_confirm_message">Tiedostot jäävät levylle paikoilleen.</string>
     <plurals name="library_delete_confirm_title">
@@ -253,6 +258,9 @@
     <string name="book_download">Lataa</string>
     <string name="book_downloading">Ladataan…</string>
     <string name="book_download_failed">Lataus ei valmistunut.</string>
+    <string name="book_upload">Lisää palvelimelle</string>
+    <string name="book_uploading">Lisätään palvelimelle…</string>
+    <string name="book_upload_failed">Kirja ei päätynyt palvelimelle.</string>
     <string name="book_format_and_size">%1$s · %2$s</string>
     <string name="book_progress_percent">· %1$d\u00A0%</string>
 
@@ -295,6 +303,7 @@
     <string name="selection_unfavourite">Poista suosikeista</string>
     <string name="selection_mark_unread">Merkitse lukemattomaksi</string>
     <string name="selection_delete">Poista kirjastosta</string>
+    <string name="selection_upload">Lisää palvelimelle</string>
 
     <string name="reader_close_book">Sulje kirja</string>
     <string name="reader_close_the_book">Sulje kirja</string>

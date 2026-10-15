@@ -35,6 +35,7 @@ import io.lukia.features.library.presentation.model.LibraryBook
 import io.lukia.features.library.presentation.model.LibraryFacets
 import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.library.presentation.model.OpenMenu
+import io.lukia.features.library.presentation.sessions.BookTransferUi
 import io.lukia.features.library.presentation.sessions.LibraryImportUi
 import io.lukia.features.library.presentation.sessions.LibraryShelfUi
 import io.lukia.resources.Res
@@ -93,6 +94,8 @@ fun LibraryContent(
     readingProgress: Map<String, ReadingProgress> = emptyMap(),
     /** How the shelf is laid out, what is picked off it, and what can be done to that. */
     shelf: LibraryShelfUi = LibraryShelfUi.None,
+    /** Books moving to or from the sync server, for the panel's row. */
+    transfers: BookTransferUi = BookTransferUi.None,
     /** False where searching has a screen of its own - see [LibraryNavBar]. */
     showSearch: Boolean = true,
     /** The way to the reader's own page, supplied by the shell - see `MobileShell`. */
@@ -304,6 +307,7 @@ fun LibraryContent(
                 onToggleFavorite = onToggleFavorite,
                 onRefresh = onRefresh,
                 onDelete = onDelete,
+                transfers = transfers,
             )
         }
     }

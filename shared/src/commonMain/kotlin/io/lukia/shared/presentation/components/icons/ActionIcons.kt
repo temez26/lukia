@@ -311,3 +311,33 @@ fun SortGlyph(
         drawPath(path = down, color = tint, style = stroke)
     }
 }
+
+/** An arrow rising out of a tray: sending something away from this device. */
+@Composable
+fun UploadGlyph(
+    tint: Color,
+    modifier: Modifier = Modifier,
+) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        val stroke = glyphStroke(cap = StrokeCap.Round)
+
+        val tray = Path().apply {
+            moveTo(w * 0.16f, h * 0.60f)
+            lineTo(w * 0.16f, h * 0.82f)
+            lineTo(w * 0.84f, h * 0.82f)
+            lineTo(w * 0.84f, h * 0.60f)
+        }
+        val arrow = Path().apply {
+            moveTo(w * 0.50f, h * 0.64f)
+            lineTo(w * 0.50f, h * 0.16f)
+            moveTo(w * 0.30f, h * 0.36f)
+            lineTo(w * 0.50f, h * 0.16f)
+            lineTo(w * 0.70f, h * 0.36f)
+        }
+
+        drawPath(path = tray, color = tint, style = stroke)
+        drawPath(path = arrow, color = tint, style = stroke)
+    }
+}

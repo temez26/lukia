@@ -5,12 +5,19 @@ import io.ktor.client.plugins.HttpTimeoutConfig
 import io.ktor.client.plugins.timeout
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
+import io.ktor.client.request.post
 import io.ktor.client.request.prepareGet
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsChannel
+import io.ktor.http.ContentType
+import io.ktor.http.content.OutgoingContent
 import io.ktor.http.contentLength
+import io.ktor.http.encodeURLParameter
 import io.ktor.http.isSuccess
+import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.readAvailable
+import io.ktor.utils.io.writeFully
 import io.lukia.api.ApiRoutes
 import io.lukia.api.BookResponse
 import io.lukia.api.ChangePage
@@ -21,7 +28,14 @@ import io.lukia.features.account.domain.AccountFailure
 import io.lukia.features.account.domain.AccountProblem
 import io.lukia.features.account.infrastructure.ServerHttp
 
-/** The shared library's endpoints, as a device catching up and downloading uses them. */
+/** A book on its way to the server: its name, which says its type, its length, and its bytes a window at a time. */
+class OutgoingBook(
+    val fileName: String,
+    val size: Long,
+    val read: suspend (offset: Long, length: Int) -> ByteArray,
+)
+
+/** The shared library's endpoints, as a device catching up, downloading and adding books uses them. */
 class ServerLibraryApi(private val http: ServerHttp) {
 
     suspend fun changes(address: String, token: String, since: Long): ChangePage<BookResponse> =
@@ -67,6 +81,32 @@ class ServerLibraryApi(private val http: ServerHttp) {
         if (digest.digest().toHex() != id) throw AccountFailure(AccountProblem.ServerFailed)
     }
 
+    /**
+     * Sends [book] to the shared library, reading it a window at a time so a
+     * book of any size costs one window of memory, and reporting how far it has
+     * got. Answers with the book as the server filed
+     * it: its id is the hash of what arrived.
+     *
+     * The length is stated up front, which is what lets the server - and a
+     * proxy in front of it - turn away a book too large before taking any of
+     * it. Timed like a download, for the same reason.
+     */
+    suspend fun upload(
+        address: String,
+        token: String,
+        book: OutgoingBook,
+        onProgress: (Float) -> Unit,
+    ): BookResponse = http.call {
+        post("$address${ApiRoutes.Books}?fileName=${book.fileName.encodeURLParameter()}") {
+            bearerAuth(token)
+            timeout {
+                requestTimeoutMillis = HttpTimeoutConfig.INFINITE_TIMEOUT_MS
+                socketTimeoutMillis = SilenceMillis
+            }
+            setBody(WindowedBody(book.size, book.read, onProgress))
+        }
+    }
+
     private suspend fun stream(
         response: HttpResponse,
         digest: Sha256,
@@ -87,6 +127,27 @@ class ServerLibraryApi(private val http: ServerHttp) {
             write(buffer, read)
             received += read
             if (total > 0) onProgress((received.toFloat() / total).coerceAtMost(1f))
+        }
+    }
+
+    /** A body written as it is read, so the request never holds more of the book than one window. */
+    private class WindowedBody(
+        size: Long,
+        private val read: suspend (offset: Long, length: Int) -> ByteArray,
+        private val onProgress: (Float) -> Unit,
+    ) : OutgoingContent.WriteChannelContent() {
+        override val contentLength: Long = size
+        override val contentType: ContentType = ContentType.Application.OctetStream
+
+        override suspend fun writeTo(channel: ByteWriteChannel) {
+            var sent = 0L
+            while (sent < contentLength) {
+                val window = read(sent, BufferBytes)
+                if (window.isEmpty()) break
+                channel.writeFully(window)
+                sent += window.size
+                onProgress((sent.toFloat() / contentLength).coerceAtMost(1f))
+            }
         }
     }
 

@@ -8,6 +8,7 @@ import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.domain.document.FakeIncomingDocumentStore
 import io.lukia.core.domain.document.ServerBookDownloader
+import io.lukia.core.domain.document.ServerBookUploader
 import io.lukia.core.domain.document.ShelfChanges
 import io.lukia.core.domain.document.TestDocuments
 import io.lukia.core.domain.reading.FakePdfLayoutRepository
@@ -25,8 +26,9 @@ import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.domain.DocumentAnalyzer
 import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.library.presentation.model.LibraryMessage
-import io.lukia.features.library.presentation.screens.BookDownload
+import io.lukia.features.library.presentation.screens.BookTransfer
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -211,22 +213,22 @@ class BookDetailViewModelTest : MainDispatcherTest() {
     @Test
     fun aDownloadReportsItsProgressAndShowsTheBookOnceItLands() = runTest {
         val repository = FakeLibraryRepository(initialDocuments = listOf(waitingDocumentInfo()))
-        val progress = mutableListOf<BookDownload>()
+        val progress = mutableListOf<BookTransfer>()
         lateinit var viewModel: BookDetailViewModel
         viewModel = createViewModel(
             location = "/test/book.pdf",
             repository = repository,
             downloader = { _, onProgress ->
                 onProgress(0.5f)
-                progress += viewModel.download.value
+                progress += viewModel.transfer.value
                 repository.addDocument(waitingDocumentInfo().copy(exists = true))
             },
         )
 
-        viewModel.startDownload()
+        viewModel.startTransfer()
 
-        assertEquals(listOf<BookDownload>(BookDownload.Running(0.5f)), progress)
-        assertEquals(BookDownload.Idle, viewModel.download.value)
+        assertEquals(listOf<BookTransfer>(BookTransfer.Running(0.5f)), progress)
+        assertEquals(BookTransfer.Idle, viewModel.transfer.value)
         assertEquals(true, viewModel.uiState.value.dataOrNull?.document?.exists)
     }
 
@@ -239,10 +241,30 @@ class BookDetailViewModelTest : MainDispatcherTest() {
             downloader = { _, _ -> throw AppErrorException(AppError.Unexpected()) },
         )
 
-        viewModel.startDownload()
+        viewModel.startTransfer()
 
-        assertEquals(BookDownload.Failed, viewModel.download.value)
+        assertEquals(BookTransfer.Failed, viewModel.transfer.value)
         assertEquals(false, viewModel.uiState.value.dataOrNull?.document?.exists)
+    }
+
+    @Test
+    fun aBookOnlyOnThisDeviceIsSentUpAndShownAsOnTheServer() = runTest {
+        val repository = FakeLibraryRepository(initialDocuments = listOf(pdfDocumentInfo()))
+        val uploader = object : ServerBookUploader {
+            override val available = flowOf(true)
+
+            override suspend fun upload(location: String, onProgress: (Float) -> Unit) {
+                onProgress(1f)
+                repository.addDocument(pdfDocumentInfo().copy(onServer = true))
+            }
+        }
+        val viewModel = createViewModel(location = "/test/book.pdf", repository = repository, uploader = uploader)
+
+        assertEquals(true, viewModel.canUpload.value)
+        viewModel.startTransfer()
+
+        assertEquals(BookTransfer.Idle, viewModel.transfer.value)
+        assertEquals(true, viewModel.uiState.value.dataOrNull?.document?.onServer)
     }
 
     @Test
@@ -254,12 +276,12 @@ class BookDetailViewModelTest : MainDispatcherTest() {
             downloader = { _, _ -> awaitCancellation() },
         )
 
-        viewModel.startDownload()
-        assertEquals(BookDownload.Running(0f), viewModel.download.value)
+        viewModel.startTransfer()
+        assertEquals(BookTransfer.Running(0f), viewModel.transfer.value)
 
-        viewModel.cancelDownload()
+        viewModel.cancelTransfer()
 
-        assertEquals(BookDownload.Idle, viewModel.download.value)
+        assertEquals(BookTransfer.Idle, viewModel.transfer.value)
     }
 
     private fun createViewModel(
@@ -268,6 +290,7 @@ class BookDetailViewModelTest : MainDispatcherTest() {
         analyzer: DocumentAnalyzer = TypeFromExtensionAnalyzer(),
         downloader: ServerBookDownloader = ServerBookDownloader { _, _ -> error("no server here") },
         shelfChanges: ShelfChanges = ShelfChanges(),
+        uploader: ServerBookUploader = ServerBookUploader.None,
     ): BookDetailViewModel = BookDetailViewModel(
         location = location,
         getDocumentDetailsUseCase = GetDocumentDetailsUseCase(
@@ -294,6 +317,7 @@ class BookDetailViewModelTest : MainDispatcherTest() {
         ),
         downloader = downloader,
         shelfChanges = shelfChanges,
+        uploader = uploader,
     )
 
     private class FakeLibraryRepository(

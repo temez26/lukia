@@ -75,6 +75,10 @@
         <item quantity="one">1 book removed from your library</item>
         <item quantity="other">%1$d books removed from your library</item>
     </plurals>
+    <plurals name="library_bulk_uploaded">
+        <item quantity="one">1 book added to the server</item>
+        <item quantity="other">%1$d books added to the server</item>
+    </plurals>
 
     <!-- Wraps a bulk report where some books could not be reached. -->
     <plurals name="library_bulk_skipped">
@@ -92,6 +96,7 @@
     <string name="library_bulk_running_unfavourite">Unfavouriting %1$d of %2$d\u2026</string>
     <string name="library_bulk_running_reset">Resetting %1$d of %2$d\u2026</string>
     <string name="library_bulk_running_delete">Deleting %1$d of %2$d\u2026</string>
+    <string name="library_bulk_running_upload">Adding %1$d of %2$d to the server…</string>
 
     <string name="library_delete_confirm_message">The files stay where they are on disk.</string>
     <plurals name="library_delete_confirm_title">
@@ -293,6 +298,9 @@
     <string name="book_download">Download</string>
     <string name="book_downloading">Downloading\u2026</string>
     <string name="book_download_failed">The download did not finish.</string>
+    <string name="book_upload">Add to server</string>
+    <string name="book_uploading">Adding to server…</string>
+    <string name="book_upload_failed">The book did not reach the server.</string>
     <!-- The format and the size, on one line under the title. -->
     <string name="book_format_and_size">%1$s \u00B7 %2$s</string>
     <!-- How far through, appended to the line above. -->
@@ -345,6 +353,7 @@
     <string name="selection_unfavourite">Remove from favourites</string>
     <string name="selection_mark_unread">Mark as unread</string>
     <string name="selection_delete">Delete from library</string>
+    <string name="selection_upload">Add to server</string>
 
     <!-- The bar over the book, and what it says about where the reader is. -->
     <string name="reader_close_book">Close book</string>

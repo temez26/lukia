@@ -42,6 +42,7 @@ enum class BulkOperation {
     Unfavourite,
     Reset,
     Delete,
+    Upload,
 }
 
 /**
