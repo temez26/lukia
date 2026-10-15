@@ -206,6 +206,10 @@
     <string name="book_actions">Acties voor het boek</string>
     <string name="book_unavailable">Niet beschikbaar</string>
     <string name="book_missing_file">Dit bestand is niet meer beschikbaar</string>
+    <string name="book_on_server">Op de server</string>
+    <string name="book_download">Downloaden</string>
+    <string name="book_downloading">Downloaden…</string>
+    <string name="book_download_failed">Het downloaden is niet voltooid.</string>
     <string name="book_format_and_size">%1$s · %2$s</string>
     <string name="book_progress_percent">· %1$d%</string>
     <string name="format_pdf">PDF</string>

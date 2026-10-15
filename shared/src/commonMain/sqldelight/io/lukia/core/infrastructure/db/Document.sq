@@ -40,7 +40,8 @@ CREATE TABLE document (
     metaDescription TEXT,
     metaSubjects TEXT,
     metaIdentifier TEXT,
-    contentHash TEXT
+    contentHash TEXT,
+    onServer INTEGER AS Boolean NOT NULL DEFAULT 0
 );
 
 -- What `insertIfAbsent` reads to give a new book its place on the shelf.
@@ -75,7 +76,7 @@ CREATE INDEX document_contentHash ON document(contentHash);
 selectAll:
 SELECT location, fileName, extension, type, fileExists, sizeBytes, isFavorite,
        sortKey, metaTitle, metaAuthors, metaPublisher, metaPublished,
-       metaLanguage, metaDescription, metaSubjects, metaIdentifier
+       metaLanguage, metaDescription, metaSubjects, metaIdentifier, onServer
 FROM document ORDER BY sortKey;
 
 -- One book's artwork, for the card about to draw it. Bounded by what the reader
@@ -147,6 +148,42 @@ ORDER BY sortKey;
 
 setContentHash:
 UPDATE document SET contentHash = ? WHERE location = ?;
+
+-- The book on this shelf with these bytes, if there is one: how a server book
+-- is matched to a copy the reader already had.
+selectLocationByHash:
+SELECT location FROM document WHERE contentHash = ? LIMIT 1;
+
+-- A server book not downloaded yet, placed at the location its download will
+-- have. `INSERT OR IGNORE` for the import's reason: a row already there keeps
+-- its place on the shelf.
+insertServerBook:
+INSERT OR IGNORE INTO document(location, fileName, extension, type, fileExists, sizeBytes, coverImage, sortKey, metaTitle, metaAuthors, metaPublisher, metaPublished, metaLanguage, metaDescription, metaSubjects, metaIdentifier, contentHash, onServer)
+VALUES (?, ?, ?, ?, 0, ?, ?, (SELECT COALESCE(MAX(sortKey), 0) + 1 FROM document), ?, ?, ?, ?, ?, ?, ?, ?, ?, 1);
+
+setOnServer:
+UPDATE document SET onServer = ? WHERE contentHash = ?;
+
+-- What a download needs to know about a server book: which bytes, and what to
+-- call the file.
+selectServerBook:
+SELECT contentHash, extension FROM document WHERE location = ? AND onServer = 1 AND contentHash IS NOT NULL;
+
+markDownloaded:
+UPDATE document SET fileExists = 1 WHERE location = ?;
+
+-- A server book never downloaded has nothing on this device but its row, so
+-- when the server stops offering it - removed there, or this device signed
+-- out - the row goes. One that was downloaded stays: it is a book on this
+-- device now, like any other.
+deleteUndownloadedByHash:
+DELETE FROM document WHERE contentHash = ? AND onServer = 1 AND fileExists = 0;
+
+deleteAllUndownloaded:
+DELETE FROM document WHERE onServer = 1 AND fileExists = 0;
+
+clearOnServer:
+UPDATE document SET onServer = 0;
 
 setFavorite:
 UPDATE document SET isFavorite = ? WHERE location = ?;

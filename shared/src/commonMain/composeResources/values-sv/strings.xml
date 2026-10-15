@@ -235,6 +235,10 @@
     <string name="book_actions">Bokens åtgärder</string>
     <string name="book_unavailable">Inte tillgänglig</string>
     <string name="book_missing_file">Den här filen är inte tillgänglig längre</string>
+    <string name="book_on_server">På servern</string>
+    <string name="book_download">Ladda ner</string>
+    <string name="book_downloading">Laddar ner…</string>
+    <string name="book_download_failed">Nedladdningen blev inte klar.</string>
     <string name="book_format_and_size">%1$s · %2$s</string>
     <string name="book_progress_percent">· %1$d\u00A0%</string>
 

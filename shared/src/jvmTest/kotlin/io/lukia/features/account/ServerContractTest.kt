@@ -1,22 +1,12 @@
 package io.lukia.features.account
 
-import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
-import io.ktor.server.cio.CIO
-import io.ktor.server.engine.EmbeddedServer
-import io.ktor.server.engine.embeddedServer
 import io.lukia.features.account.application.AccountSession
 import io.lukia.features.account.domain.AccountFailure
 import io.lukia.features.account.domain.AccountProblem
 import io.lukia.features.account.domain.AccountStatus
 import io.lukia.features.account.infrastructure.KtorServerApi
 import io.lukia.features.account.infrastructure.serverHttpClient
-import io.lukia.server.ServerConfig
-import io.lukia.server.accounts.Argon2PasswordHasher
-import io.lukia.server.db.ServerDatabase
-import io.lukia.server.lukiaServer
 import kotlinx.coroutines.runBlocking
-import java.nio.file.Files
-import java.util.Properties
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -31,16 +21,12 @@ import kotlin.test.assertIs
  */
 class ServerContractTest {
 
-    private val dataDirectory = Files.createTempDirectory("lukia-contract").toFile()
-    private val server = startServer()
-    private val address = "http://127.0.0.1:${runBlocking { server.engine.resolvedConnectors().first().port }}"
+    private val server = TestSyncServer()
+    private val address = server.address
     private val session = AccountSession(KtorServerApi(serverHttpClient()), InMemoryAccountStore())
 
     @AfterTest
-    fun stop() {
-        server.stop(gracePeriodMillis = 0, timeoutMillis = 0)
-        dataDirectory.deleteRecursively()
-    }
+    fun stop() = server.close()
 
     @Test
     fun aNewServerIsSetUpFromTheAppAndSignedOutOf() = runBlocking {
@@ -83,26 +69,11 @@ class ServerContractTest {
 
     @Test
     fun anAddressWithNothingListeningIsUnreachable() = runBlocking {
-        server.stop(gracePeriodMillis = 0, timeoutMillis = 0)
+        server.stop()
 
         assertEquals(AccountProblem.ServerUnreachable, problemOf { session.check(address) })
     }
 
     private suspend fun problemOf(block: suspend () -> Unit): AccountProblem =
         assertFailsWith<AccountFailure> { block() }.problem
-
-    private fun startServer(): EmbeddedServer<*, *> {
-        val database = ServerDatabase(
-            JdbcSqliteDriver(
-                url = JdbcSqliteDriver.IN_MEMORY,
-                properties = Properties().apply { setProperty("foreign_keys", "true") },
-                schema = ServerDatabase.Schema,
-            ),
-        )
-        val config = ServerConfig(name = "Contract shelf", port = 0, dataDirectory = dataDirectory)
-
-        return embeddedServer(CIO, host = "127.0.0.1", port = 0) {
-            lukiaServer(config, database, hasher = Argon2PasswordHasher(memoryKiB = 8, iterations = 1))
-        }.start(wait = false)
-    }
 }

@@ -28,13 +28,13 @@ import io.lukia.core.presentation.authorLine
 import io.lukia.core.presentation.displayTitle
 import io.lukia.core.presentation.displayType
 import io.lukia.core.presentation.formattedSize
+import io.lukia.core.presentation.statusLabel
 import io.lukia.features.library.presentation.components.selection.CardSelection
 import io.lukia.features.library.presentation.components.selection.SelectionMark
 import io.lukia.features.library.presentation.model.LibraryBook
 import io.lukia.resources.Res
 import io.lukia.resources.book_format_and_size
 import io.lukia.resources.book_progress_percent
-import io.lukia.resources.book_unavailable
 import io.lukia.shared.presentation.components.controls.ReadingProgressBar
 import io.lukia.shared.presentation.components.controls.menuGesture
 import io.lukia.shared.presentation.components.controls.pressFeedback
@@ -220,7 +220,7 @@ private fun RowDetails(
         }
 
         if (!document.exists) {
-            StatusBadge(text = stringResource(Res.string.book_unavailable))
+            StatusBadge(text = stringResource(document.statusLabel()))
         }
     }
 }

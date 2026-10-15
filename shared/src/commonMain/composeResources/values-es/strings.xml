@@ -206,6 +206,10 @@
     <string name="book_actions">Acciones del libro</string>
     <string name="book_unavailable">No disponible</string>
     <string name="book_missing_file">Este archivo ya no está disponible</string>
+    <string name="book_on_server">En el servidor</string>
+    <string name="book_download">Descargar</string>
+    <string name="book_downloading">Descargando…</string>
+    <string name="book_download_failed">La descarga no terminó.</string>
     <string name="book_format_and_size">%1$s · %2$s</string>
     <string name="book_progress_percent">· %1$d\u00A0%</string>
     <string name="format_pdf">PDF</string>

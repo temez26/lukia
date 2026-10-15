@@ -152,6 +152,7 @@ private fun SelectAll.toDocumentInfo(): DocumentInfo = DocumentInfo(
     sizeBytes = sizeBytes,
     isFavorite = isFavorite,
     metadata = storedMetadata(),
+    onServer = onServer,
 )
 
 /**
@@ -174,6 +175,7 @@ private fun Document.toDocumentInfo(): DocumentInfo = DocumentInfo(
     coverImage = coverImage?.let { CoverImage(it) },
     isFavorite = isFavorite,
     metadata = storedMetadata(),
+    onServer = onServer,
 )
 
 /** See [Document.toDocumentInfo] for why the name rather than the ordinal. */
@@ -219,7 +221,7 @@ private fun BookMetadata.orNullIfEmpty(): BookMetadata? = takeIf { !it.isEmpty }
  * An empty list stores as null rather than as an empty string, so "no authors"
  * reads back the same whether the column was never written or written empty.
  */
-private fun List<String>?.toStoredList(): String? =
+internal fun List<String>?.toStoredList(): String? =
     this?.takeIf { it.isNotEmpty() }?.joinToString(separator = "\n")
 
 private fun String?.fromStoredList(): List<String> =

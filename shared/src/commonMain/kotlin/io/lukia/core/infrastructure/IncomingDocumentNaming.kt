@@ -20,5 +20,17 @@ internal object IncomingDocumentNaming {
         return if (suffix.isEmpty()) prefix else "$prefix.$suffix"
     }
 
+    /**
+     * A book downloaded from the sync server, named by its content hash so the
+     * name is known before the download starts - see `BookFileStore`. The
+     * prefix keeps it from ever meeting a shared copy's name.
+     */
+    fun serverBookName(contentHash: String, extension: String): String {
+        val suffix = extension.filter { it.isLetterOrDigit() }.lowercase().take(MAX_EXTENSION_LENGTH)
+        val prefix = "srv-${contentHash.filter { it.isLetterOrDigit() }}"
+
+        return if (suffix.isEmpty()) prefix else "$prefix.$suffix"
+    }
+
     private const val MAX_EXTENSION_LENGTH = 8
 }

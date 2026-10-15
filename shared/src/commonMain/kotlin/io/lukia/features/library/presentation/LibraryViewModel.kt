@@ -188,6 +188,10 @@ class LibraryViewModel(
     init {
         loadDocuments()
 
+        viewModelScope.launch {
+            getLibraryDocumentsUseCase.changes.collect { loadDocuments() }
+        }
+
         // A filter can lose its ground under the reader - the last favourite
         // un-favourited, the last EPUB deleted - and a query still asking for it
         // would empty the grid for a reason nothing on screen explains.

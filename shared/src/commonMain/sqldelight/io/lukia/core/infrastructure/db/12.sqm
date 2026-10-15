@@ -1,0 +1,8 @@
+-- Whether a book is in the sync server's shared library - see
+-- docs/specs/sync-server.md. A server book not downloaded yet is a row like any
+-- other, at the place its download will land, with `fileExists` false and this
+-- set; downloading it fills the file in. A book on the device that turns out to
+-- be on the server too gets it as well, which is what puts the mark on its card.
+--
+-- Zero for every book already on a shelf: nothing was on a server until now.
+ALTER TABLE document ADD COLUMN onServer INTEGER NOT NULL DEFAULT 0;

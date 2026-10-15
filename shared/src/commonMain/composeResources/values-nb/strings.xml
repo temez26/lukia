@@ -206,6 +206,10 @@
     <string name="book_actions">Bokens handlinger</string>
     <string name="book_unavailable">Ikke tilgjengelig</string>
     <string name="book_missing_file">Denne filen er ikke tilgjengelig lenger</string>
+    <string name="book_on_server">På serveren</string>
+    <string name="book_download">Last ned</string>
+    <string name="book_downloading">Laster ned…</string>
+    <string name="book_download_failed">Nedlastingen ble ikke fullført.</string>
     <string name="book_format_and_size">%1$s · %2$s</string>
     <string name="book_progress_percent">· %1$d\u00A0%</string>
     <string name="format_pdf">PDF</string>

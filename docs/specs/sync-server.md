@@ -287,7 +287,13 @@ Recorded in `docs/decisions/`:
       plain-HTTP rule moved to `core.domain.network.isAllowedEndpoint` and
       holds the server address to the translator's rule. A contract test runs
       the app's client against the real server on a real port.
-- [ ] 8. Client: server books in the library, download on open, offline after.
+- [x] 8. Client: server books in the library, download on open, offline after.
+      A server book is a shelf row at the location its download will have
+      (`document.onServer`, migration 12), so search, filters, favourites and
+      progress need nothing new. Opening one that is not downloaded goes to its
+      page, which downloads it with progress, cancel and retry; the bytes are
+      streamed to disk and checked against the book's hash before the file
+      appears. Signing out takes away what was never downloaded.
 - [ ] 9. Client: book state sync through the outbox and pull.
 - [ ] 10. Client: session sync, the history prompt on first sign-in, stats
       across devices.

@@ -29,6 +29,7 @@ import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.presentation.displayTitle
 import io.lukia.core.presentation.displayType
 import io.lukia.core.presentation.formattedSize
+import io.lukia.core.presentation.statusLabel
 import io.lukia.features.library.presentation.components.selection.CardSelection
 import io.lukia.features.library.presentation.components.selection.jiggleAngle
 import io.lukia.features.library.presentation.model.LibraryBook
@@ -36,7 +37,6 @@ import io.lukia.resources.Res
 import io.lukia.resources.book_actions
 import io.lukia.resources.book_favourited
 import io.lukia.resources.book_format_and_size
-import io.lukia.resources.book_unavailable
 import io.lukia.resources.reader_percent
 import io.lukia.resources.state_not_selected
 import io.lukia.resources.state_selected
@@ -189,7 +189,7 @@ private fun Modifier.bookCardSemantics(
         title,
         stringResource(Res.string.book_favourited).takeIf { document.isFavorite },
         book.progress?.percent?.let { stringResource(Res.string.reader_percent, it) },
-        stringResource(Res.string.book_unavailable).takeIf { !document.exists },
+        stringResource(document.statusLabel()).takeIf { !document.exists },
     ).joinToString(separator = ". ")
 
     return semantics(mergeDescendants = true) {
@@ -283,7 +283,7 @@ private fun BookCardCaption(
 
         if (!document.exists) {
             StatusBadge(
-                text = stringResource(Res.string.book_unavailable),
+                text = stringResource(document.statusLabel()),
                 modifier = Modifier.padding(top = Space.sm),
             )
         }

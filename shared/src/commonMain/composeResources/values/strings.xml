@@ -288,6 +288,11 @@
     <string name="book_actions">Book actions</string>
     <string name="book_unavailable">Unavailable</string>
     <string name="book_missing_file">This file is no longer available</string>
+    <!-- A book in the sync server's library that is not on this device yet. -->
+    <string name="book_on_server">On server</string>
+    <string name="book_download">Download</string>
+    <string name="book_downloading">Downloading\u2026</string>
+    <string name="book_download_failed">The download did not finish.</string>
     <!-- The format and the size, on one line under the title. -->
     <string name="book_format_and_size">%1$s \u00B7 %2$s</string>
     <!-- How far through, appended to the line above. -->

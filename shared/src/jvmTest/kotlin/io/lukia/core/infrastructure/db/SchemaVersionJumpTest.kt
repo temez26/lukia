@@ -76,8 +76,8 @@ class SchemaVersionJumpTest {
     @Test
     fun theSchemaIsPastEveryMigrationItShips() {
         assertTrue(
-            LukiaDatabase.Schema.version > 11,
-            "the eleventh migration needs a schema version bump, or no installed " +
+            LukiaDatabase.Schema.version > 12,
+            "the twelfth migration needs a schema version bump, or no installed " +
                 "database will ever have it run against it",
         )
     }

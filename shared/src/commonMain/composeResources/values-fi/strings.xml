@@ -249,6 +249,10 @@
     <string name="book_actions">Kirjan toiminnot</string>
     <string name="book_unavailable">Ei saatavilla</string>
     <string name="book_missing_file">Tämä tiedosto ei ole enää saatavilla</string>
+    <string name="book_on_server">Palvelimella</string>
+    <string name="book_download">Lataa</string>
+    <string name="book_downloading">Ladataan…</string>
+    <string name="book_download_failed">Lataus ei valmistunut.</string>
     <string name="book_format_and_size">%1$s · %2$s</string>
     <string name="book_progress_percent">· %1$d\u00A0%</string>
 

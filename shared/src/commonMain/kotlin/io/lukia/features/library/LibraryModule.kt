@@ -12,10 +12,12 @@ import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.domain.ContentHashStore
 import io.lukia.features.library.domain.LibraryRepository
+import io.lukia.features.library.domain.ServerShelf
 import io.lukia.features.library.infrastructure.LibrarySettingsRepository
 import io.lukia.features.library.infrastructure.RecentSearchesRepository
 import io.lukia.features.library.infrastructure.SqlContentHashStore
 import io.lukia.features.library.infrastructure.SqlLibraryRepository
+import io.lukia.features.library.infrastructure.SqlServerShelf
 import io.lukia.features.library.presentation.BookDetailViewModel
 import io.lukia.features.library.presentation.LibraryViewModel
 import org.koin.core.module.dsl.viewModel
@@ -60,7 +62,7 @@ val libraryModule = module {
     }
 
     single {
-        GetLibraryDocumentsUseCase(get())
+        GetLibraryDocumentsUseCase(get(), get())
     }
 
     single {
@@ -77,6 +79,10 @@ val libraryModule = module {
 
     single<ContentHashStore> {
         SqlContentHashStore(get())
+    }
+
+    single<ServerShelf> {
+        SqlServerShelf(get())
     }
 
     single {
@@ -101,6 +107,6 @@ val libraryModule = module {
     }
 
     viewModel { (location: String) ->
-        BookDetailViewModel(location, get(), get(), get(), get())
+        BookDetailViewModel(location, get(), get(), get(), get(), get())
     }
 }

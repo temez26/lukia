@@ -9,6 +9,8 @@ import io.lukia.core.infrastructure.formatDecimal
 import io.lukia.resources.Res
 import io.lukia.resources.author_list_last
 import io.lukia.resources.author_list_separator
+import io.lukia.resources.book_on_server
+import io.lukia.resources.book_unavailable
 import io.lukia.resources.format_docx
 import io.lukia.resources.format_epub
 import io.lukia.resources.format_markdown
@@ -20,7 +22,15 @@ import io.lukia.resources.size_gigabytes
 import io.lukia.resources.size_kilobytes
 import io.lukia.resources.size_megabytes
 import io.lukia.resources.size_terabytes
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+
+/**
+ * What a book whose file is not on this device is called on its card: one the
+ * sync server has, waiting to be downloaded, or one that went missing.
+ */
+fun DocumentInfo.statusLabel(): StringResource =
+    if (awaitsDownload) Res.string.book_on_server else Res.string.book_unavailable
 
 fun DocumentInfo.displayTitle(): String {
     val fileName = document.fileName
