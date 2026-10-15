@@ -16,15 +16,29 @@ class SyncCursors(private val settings: SettingsStore) {
 
     fun setBooks(cursor: Long) = settings.putString(KeyBooks, cursor.toString())
 
-    /** Whether this device has ever caught up with a server - the one sign there is something to forget. */
-    val anySet: Boolean get() = Keys.any { read(it) > 0 }
+    fun bookState(): Long = read(KeyBookState)
 
-    fun clear() = Keys.forEach { settings.putString(it, "") }
+    fun setBookState(cursor: Long) = settings.putString(KeyBookState, cursor.toString())
+
+    /**
+     * Whether what the device knew before signing in has been queued for the
+     * account yet - once per sign-in, see `BookStateStore.snapshot`.
+     */
+    var snapshotTaken: Boolean
+        get() = settings.getString(KeySnapshot) == "true"
+        set(value) = settings.putString(KeySnapshot, if (value) "true" else "")
+
+    /** Whether this device has ever caught up with a server - the one sign there is something to forget. */
+    val anySet: Boolean get() = Keys.any { read(it) > 0 } || snapshotTaken
+
+    fun clear() = (Keys + KeySnapshot).forEach { settings.putString(it, "") }
 
     private fun read(key: String): Long = settings.getString(key)?.toLongOrNull() ?: 0L
 
     private companion object {
         const val KeyBooks = "sync.cursor.books"
-        val Keys = listOf(KeyBooks)
+        const val KeyBookState = "sync.cursor.bookState"
+        const val KeySnapshot = "sync.snapshotTaken"
+        val Keys = listOf(KeyBooks, KeyBookState)
     }
 }

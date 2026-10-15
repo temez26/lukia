@@ -1,17 +1,77 @@
--- Changes made on this device that the sync server has not accepted yet.
+-- Changes made on this device that the sync server has not accepted yet. See
+-- docs/decisions/0003-offline-first-sync.md.
 --
--- One row per thing changed rather than per change: `kind` says what it is -
--- a book's progress, layout or favourite, or a reading session - and `key`
--- which one, a book's content hash or a session's uuid. Writing the same thing
--- again replaces its row, so turning a hundred pages offline leaves one
--- position to send rather than a hundred.
+-- One row per thing changed rather than per change: `kind` says which part of
+-- a book changed - `progress`, `layout` or `favorite` - and `key` which book,
+-- by content hash. Changing it again replaces the row, so turning a hundred
+-- pages offline leaves one position to send rather than a hundred.
 --
--- `payload` is the request body, as the server's API types encode it. Rows are
--- removed once the server has the change; until then a failed send costs
--- nothing but another attempt. See docs/decisions/0003-offline-first-sync.md.
+-- `changedAt` is the device's clock at the change, which is what the server
+-- weighs one device's change against another's by. What the part was changed
+-- to is not kept here: it is read from the shelf when it is sent, which is the
+-- latest value whatever happened in between.
+--
+-- Written whether or not anybody is signed in. It is three rows per book at
+-- most, and it is what lets a reader who signs in later carry what they did
+-- before over to the account.
 CREATE TABLE sync_outbox (
     kind TEXT NOT NULL,
     key TEXT NOT NULL,
-    payload TEXT NOT NULL,
+    changedAt INTEGER NOT NULL,
     PRIMARY KEY (kind, key)
 );
+
+-- A change to the book at `location`, for a book whose hash is known. One not
+-- hashed yet is caught by `snapshot` once it is.
+record:
+INSERT OR REPLACE INTO sync_outbox(kind, key, changedAt)
+SELECT :kind, contentHash, :changedAt FROM document
+WHERE location = :location AND contentHash IS NOT NULL;
+
+-- What the device already had when it first signed in, or what changed before
+-- its book was hashed: every position, chosen layout and favourite, dated as
+-- old as can be so that anything the account already knows wins over it, and
+-- left alone where a real change is already waiting.
+snapshotProgress:
+INSERT OR IGNORE INTO sync_outbox(kind, key, changedAt)
+SELECT 'progress', d.contentHash, 1 FROM document d
+JOIN reading_position p ON p.location = d.location
+WHERE d.contentHash IS NOT NULL;
+
+snapshotLayout:
+INSERT OR IGNORE INTO sync_outbox(kind, key, changedAt)
+SELECT 'layout', d.contentHash, 1 FROM document d
+JOIN reader_layout l ON l.location = d.location
+WHERE d.contentHash IS NOT NULL;
+
+snapshotFavorite:
+INSERT OR IGNORE INTO sync_outbox(kind, key, changedAt)
+SELECT 'favorite', contentHash, 1 FROM document
+WHERE isFavorite = 1 AND contentHash IS NOT NULL;
+
+selectAll:
+SELECT * FROM sync_outbox ORDER BY key, kind;
+
+isPending:
+SELECT EXISTS(SELECT 1 FROM sync_outbox WHERE kind = ? AND key = ?);
+
+-- Drops a change once the server has it - the one that was sent, and not a
+-- newer one made while it was on its way.
+sent:
+DELETE FROM sync_outbox WHERE kind = ? AND key = ? AND changedAt = ?;
+
+-- Watched by the sync engine, which sends a little after anything lands here.
+count:
+SELECT COUNT(*) FROM sync_outbox;
+
+clear:
+DELETE FROM sync_outbox;
+
+-- Everything the device knows about the book with these bytes, for sending.
+selectBookState:
+SELECT d.location, d.isFavorite, p.pageIndex, p.pageCount, l.layout
+FROM document d
+LEFT JOIN reading_position p ON p.location = d.location
+LEFT JOIN reader_layout l ON l.location = d.location
+WHERE d.contentHash = ?
+LIMIT 1;

@@ -294,7 +294,16 @@ Recorded in `docs/decisions/`:
       page, which downloads it with progress, cancel and retry; the bytes are
       streamed to disk and checked against the book's hash before the file
       appears. Signing out takes away what was never downloaded.
-- [ ] 9. Client: book state sync through the outbox and pull.
+- [x] 9. Client: book state sync through the outbox and pull. The outbox
+      (rebuilt in migration 13 as `kind, key, changedAt`) is written by the
+      stores that save progress, layout and favourites, in the same
+      transaction; values are read when sent. It is written whether or not
+      anyone is signed in, and on first sign-in everything the device already
+      knew is queued dated as old as possible, so the account's own changes win
+      over it. The engine sends five seconds after the outbox last changed and
+      whenever the app comes to the front; changes pulled from the account are
+      applied without touching the outbox, and never over a change still
+      waiting to be sent.
 - [ ] 10. Client: session sync, the history prompt on first sign-in, stats
       across devices.
 - [ ] 11. Docs: README, `DIAGNOSTICS.md`, `docs/SERVER.md` (running, backup,

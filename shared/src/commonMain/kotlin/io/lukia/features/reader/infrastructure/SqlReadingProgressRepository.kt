@@ -2,13 +2,15 @@ package io.lukia.features.reader.infrastructure
 
 import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.core.domain.reading.ReadingProgressRepository
+import io.lukia.core.infrastructure.SyncedPart
 import io.lukia.core.infrastructure.db.LukiaDatabase
 import io.lukia.core.infrastructure.ioDispatcher
+import io.lukia.core.infrastructure.noteChange
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
 class SqlReadingProgressRepository(
-    database: LukiaDatabase,
+    private val database: LukiaDatabase,
     /** Injectable so tests can run against a database deterministically. */
     private val dispatcher: CoroutineDispatcher = ioDispatcher(),
 ) : ReadingProgressRepository {
@@ -44,12 +46,14 @@ class SqlReadingProgressRepository(
      */
     override suspend fun save(location: String, progress: ReadingProgress) =
         withContext(dispatcher) {
-            positions.put(
-                location = location,
-                pageIndex = progress.pageIndex.toLong(),
-                pageCount = progress.pageCount.toLong(),
-            )
-            Unit
+            database.transaction {
+                positions.put(
+                    location = location,
+                    pageIndex = progress.pageIndex.toLong(),
+                    pageCount = progress.pageCount.toLong(),
+                )
+                database.noteChange(SyncedPart.Progress, location)
+            }
         }
 
     override suspend fun forget(location: String) = withContext(dispatcher) {

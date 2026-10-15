@@ -293,6 +293,9 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.sqldelight.runtime)
+            // A query as a flow, which is how the sync engine learns a change is
+            // waiting without every store that writes one having to say so.
+            implementation(libs.sqldelight.coroutines)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.contentNegotiation)
             implementation(libs.ktor.serialization.json)
