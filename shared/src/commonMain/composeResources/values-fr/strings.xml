@@ -543,4 +543,36 @@
     <string name="history_add">Ajouter à mon compte</string>
     <string name="history_keep">Garder sur cet appareil</string>
 
+
+    <!-- Where this device stands with the sync server. -->
+    <string name="sync_title">Synchronisation</string>
+    <string name="sync_running">Synchronisation…</string>
+    <string name="sync_up_to_date">À jour</string>
+    <string name="sync_not_yet">Pas encore synchronisé</string>
+    <string name="sync_unreachable">Impossible de joindre %1$s</string>
+    <string name="sync_failed">%1$s n’a pas pu terminer la synchronisation</string>
+    <string name="sync_checked_just_now">Vérifié à l’instant</string>
+    <string name="sync_retry_soon">Nouvel essai dans moins d’une minute.</string>
+    <string name="sync_now">Synchroniser maintenant</string>
+    <string name="filter_device_only">Seulement sur cet appareil</string>
+    <string name="book_info_sync">Serveur de synchronisation</string>
+    <string name="book_sync_on_server">Sur le serveur</string>
+    <string name="book_sync_not_downloaded">Sur le serveur, pas téléchargé</string>
+    <string name="book_sync_device_only">Seulement sur cet appareil</string>
+    <plurals name="sync_checked_minutes">
+        <item quantity="one">Vérifié il y a %1$d minute</item>
+        <item quantity="other">Vérifié il y a %1$d minutes</item>
+    </plurals>
+    <plurals name="sync_checked_hours">
+        <item quantity="one">Vérifié il y a %1$d heure</item>
+        <item quantity="other">Vérifié il y a %1$d heures</item>
+    </plurals>
+    <plurals name="sync_pending">
+        <item quantity="one">%1$d modification en attente d’envoi</item>
+        <item quantity="other">%1$d modifications en attente d’envoi</item>
+    </plurals>
+    <plurals name="sync_retry_minutes">
+        <item quantity="one">Nouvel essai dans %1$d minute.</item>
+        <item quantity="other">Nouvel essai dans %1$d minutes.</item>
+    </plurals>
 </resources>

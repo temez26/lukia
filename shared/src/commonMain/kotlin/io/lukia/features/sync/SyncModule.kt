@@ -20,6 +20,7 @@ import io.lukia.features.sync.infrastructure.SessionApi
 import io.lukia.features.sync.infrastructure.SessionStore
 import io.lukia.features.sync.infrastructure.SyncCursors
 import io.lukia.features.sync.presentation.HistoryViewModel
+import io.lukia.features.sync.presentation.SyncStatusViewModel
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.merge
 import org.koin.core.module.dsl.viewModel
@@ -58,6 +59,8 @@ val syncModule = module {
     single { SyncSessionsUseCase(get(), get(), get(), get(), get()) }
 
     viewModel { HistoryViewModel(get(), get()) }
+
+    viewModel { SyncStatusViewModel(get(), get(), get(), get()) }
 
     single {
         SyncCoordinator(

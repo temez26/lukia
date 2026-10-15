@@ -536,4 +536,36 @@
     <string name="history_add">Añadir a mi cuenta</string>
     <string name="history_keep">Guardar en este dispositivo</string>
 
+
+    <!-- Where this device stands with the sync server. -->
+    <string name="sync_title">Sincronización</string>
+    <string name="sync_running">Sincronizando…</string>
+    <string name="sync_up_to_date">Al día</string>
+    <string name="sync_not_yet">Aún sin sincronizar</string>
+    <string name="sync_unreachable">No se puede conectar con %1$s</string>
+    <string name="sync_failed">%1$s no pudo terminar la sincronización</string>
+    <string name="sync_checked_just_now">Comprobado ahora mismo</string>
+    <string name="sync_retry_soon">Se volverá a intentar en menos de un minuto.</string>
+    <string name="sync_now">Sincronizar ahora</string>
+    <string name="filter_device_only">Solo en este dispositivo</string>
+    <string name="book_info_sync">Servidor de sincronización</string>
+    <string name="book_sync_on_server">En el servidor</string>
+    <string name="book_sync_not_downloaded">En el servidor, sin descargar</string>
+    <string name="book_sync_device_only">Solo en este dispositivo</string>
+    <plurals name="sync_checked_minutes">
+        <item quantity="one">Comprobado hace %1$d minuto</item>
+        <item quantity="other">Comprobado hace %1$d minutos</item>
+    </plurals>
+    <plurals name="sync_checked_hours">
+        <item quantity="one">Comprobado hace %1$d hora</item>
+        <item quantity="other">Comprobado hace %1$d horas</item>
+    </plurals>
+    <plurals name="sync_pending">
+        <item quantity="one">%1$d cambio pendiente de enviar</item>
+        <item quantity="other">%1$d cambios pendientes de enviar</item>
+    </plurals>
+    <plurals name="sync_retry_minutes">
+        <item quantity="one">Se volverá a intentar en %1$d minuto.</item>
+        <item quantity="other">Se volverá a intentar en %1$d minutos.</item>
+    </plurals>
 </resources>

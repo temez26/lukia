@@ -568,4 +568,44 @@
     <string name="history_add">Dodaj do mojego konta</string>
     <string name="history_keep">Zachowaj na tym urządzeniu</string>
 
+
+    <!-- Where this device stands with the sync server. -->
+    <string name="sync_title">Synchronizacja</string>
+    <string name="sync_running">Synchronizowanie…</string>
+    <string name="sync_up_to_date">Aktualne</string>
+    <string name="sync_not_yet">Jeszcze nie zsynchronizowano</string>
+    <string name="sync_unreachable">Brak połączenia z %1$s</string>
+    <string name="sync_failed">%1$s nie dokończył synchronizacji</string>
+    <string name="sync_checked_just_now">Sprawdzono przed chwilą</string>
+    <string name="sync_retry_soon">Ponowna próba za mniej niż minutę.</string>
+    <string name="sync_now">Synchronizuj teraz</string>
+    <string name="filter_device_only">Tylko na tym urządzeniu</string>
+    <string name="book_info_sync">Serwer synchronizacji</string>
+    <string name="book_sync_on_server">Na serwerze</string>
+    <string name="book_sync_not_downloaded">Na serwerze, nie pobrano</string>
+    <string name="book_sync_device_only">Tylko na tym urządzeniu</string>
+    <plurals name="sync_checked_minutes">
+        <item quantity="one">Sprawdzono %1$d minutę temu</item>
+        <item quantity="few">Sprawdzono %1$d minuty temu</item>
+        <item quantity="many">Sprawdzono %1$d minut temu</item>
+        <item quantity="other">Sprawdzono %1$d minuty temu</item>
+    </plurals>
+    <plurals name="sync_checked_hours">
+        <item quantity="one">Sprawdzono %1$d godzinę temu</item>
+        <item quantity="few">Sprawdzono %1$d godziny temu</item>
+        <item quantity="many">Sprawdzono %1$d godzin temu</item>
+        <item quantity="other">Sprawdzono %1$d godziny temu</item>
+    </plurals>
+    <plurals name="sync_pending">
+        <item quantity="one">%1$d zmiana czeka na wysłanie</item>
+        <item quantity="few">%1$d zmiany czekają na wysłanie</item>
+        <item quantity="many">%1$d zmian czeka na wysłanie</item>
+        <item quantity="other">%1$d zmiany czeka na wysłanie</item>
+    </plurals>
+    <plurals name="sync_retry_minutes">
+        <item quantity="one">Ponowna próba za %1$d minutę.</item>
+        <item quantity="few">Ponowna próba za %1$d minuty.</item>
+        <item quantity="many">Ponowna próba za %1$d minut.</item>
+        <item quantity="other">Ponowna próba za %1$d minuty.</item>
+    </plurals>
 </resources>

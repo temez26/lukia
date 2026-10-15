@@ -4,12 +4,14 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
@@ -37,6 +39,7 @@ import io.lukia.resources.Res
 import io.lukia.resources.book_actions
 import io.lukia.resources.book_favourited
 import io.lukia.resources.book_format_and_size
+import io.lukia.resources.book_on_server
 import io.lukia.resources.reader_percent
 import io.lukia.resources.state_not_selected
 import io.lukia.resources.state_selected
@@ -189,6 +192,7 @@ private fun Modifier.bookCardSemantics(
         stringResource(Res.string.book_favourited).takeIf { document.isFavorite },
         book.progress?.percent?.let { stringResource(Res.string.reader_percent, it) },
         stringResource(document.statusLabel()).takeIf { !document.exists },
+        stringResource(Res.string.book_on_server).takeIf { document.alsoOnServer },
     ).joinToString(separator = ". ")
 
     return semantics(mergeDescendants = true) {
@@ -267,18 +271,21 @@ private fun BookCardCaption(
             modifier = Modifier.padding(top = Space.md),
         )
 
-        Text(
-            text = stringResource(
-                Res.string.book_format_and_size,
-                document.displayType(),
-                document.formattedSize(),
-            ),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(top = Space.xxs),
-        )
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = Space.xxs)) {
+            Text(
+                text = stringResource(
+                    Res.string.book_format_and_size,
+                    document.displayType(),
+                    document.formattedSize(),
+                ),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f, fill = false),
+            )
+            if (document.alsoOnServer) OnServerMark(Modifier.padding(start = Space.xs))
+        }
 
         if (!document.exists) {
             BookStatusBadge(document, Modifier.padding(top = Space.sm))

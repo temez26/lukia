@@ -55,6 +55,14 @@ class LibraryFacetsTest {
     }
 
     @Test
+    fun booksOnlyOnThisDeviceAreOfferedOnlyAlongsideBooksOnAServer() {
+        // Nobody signed in: no book is on a server, and nothing about one is offered.
+        assertFalse(library(book("Dune"), book("Solaris")).facets().hasDeviceOnly)
+        assertTrue(library(book("Dune", onServer = true), book("Solaris")).facets().hasDeviceOnly)
+        assertFalse(library(book("Dune", onServer = true), book("Solaris", onServer = true)).facets().hasDeviceOnly)
+    }
+
+    @Test
     fun theShelvesAreTheOnesWithBooksOnThem() {
         val books = library(
             book("Dune", progress = partRead()),

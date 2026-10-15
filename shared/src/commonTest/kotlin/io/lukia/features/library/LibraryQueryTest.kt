@@ -42,6 +42,19 @@ class LibraryQueryTest {
     }
 
     @Test
+    fun onlyOnThisDeviceLeavesOutWhatTheServerHas() {
+        val synced = library(
+            book("Dune", onServer = true),
+            book("Solaris"),
+            book("Notes"),
+        )
+
+        assertEquals(listOf("Solaris", "Notes"), synced.matching(LibraryQuery(deviceOnly = true)).titles())
+        assertTrue(LibraryQuery(deviceOnly = true).isRefined)
+        assertFalse(LibraryQuery(deviceOnly = true).cleared().deviceOnly)
+    }
+
+    @Test
     fun favouritesAndFormatNarrowIndependently() {
         assertEquals(
             listOf("Dune"),

@@ -28,6 +28,7 @@ internal fun book(
     declaredTitle: String? = null,
     sizeBytes: Long = 1024L,
     progress: ReadingProgress? = null,
+    onServer: Boolean = false,
 ): TestBook {
     val extension = when (type) {
         DocumentType.EPUB -> "epub"
@@ -56,6 +57,7 @@ internal fun book(
             sizeBytes = sizeBytes,
             isFavorite = favorite,
             metadata = metadata,
+            onServer = onServer,
         ),
         progress = progress,
     )

@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.presentation.displayType
 import io.lukia.core.presentation.formattedSize
 import io.lukia.core.presentation.languageName
@@ -30,6 +31,7 @@ import io.lukia.features.library.presentation.model.lengthLabel
 import io.lukia.resources.Res
 import io.lukia.resources.book_about
 import io.lukia.resources.book_format
+import io.lukia.resources.book_info_sync
 import io.lukia.resources.book_information
 import io.lukia.resources.book_isbn
 import io.lukia.resources.book_language
@@ -40,6 +42,9 @@ import io.lukia.resources.book_published
 import io.lukia.resources.book_publisher
 import io.lukia.resources.book_size
 import io.lukia.resources.book_subjects
+import io.lukia.resources.book_sync_device_only
+import io.lukia.resources.book_sync_not_downloaded
+import io.lukia.resources.book_sync_on_server
 import io.lukia.shared.presentation.components.controls.ButtonSize
 import io.lukia.shared.presentation.components.controls.ButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaButton
@@ -50,6 +55,7 @@ import io.lukia.shared.presentation.components.surface.LukiaDivider
 import io.lukia.shared.presentation.components.surface.SectionLabel
 import io.lukia.shared.presentation.components.surface.StatusBadge
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 /** How much of a blurb is shown before it is folded away behind "More". */
@@ -131,6 +137,8 @@ internal fun InformationCard(
     details: BookDetails,
     color: Color,
     modifier: Modifier = Modifier,
+    /** Whether to say where the book stands with the sync server - while signed in to one. */
+    showServer: Boolean = false,
 ) {
     val document = details.document
     val metadata = document.metadata
@@ -143,6 +151,9 @@ internal fun InformationCard(
         add(stringResource(Res.string.book_format) to document.displayType())
         add(stringResource(Res.string.book_size) to document.formattedSize())
         metadata?.identifier?.let { add(stringResource(Res.string.book_isbn) to it) }
+        if (showServer || document.onServer) {
+            add(stringResource(Res.string.book_info_sync) to stringResource(document.serverStanding()))
+        }
     }
 
     Column(modifier = modifier.fillMaxWidth()) {
@@ -230,4 +241,11 @@ internal fun SubjectSection(
             }
         }
     }
+}
+
+/** Where a book stands with the sync server, as the Information card says it. */
+private fun DocumentInfo.serverStanding(): StringResource = when {
+    awaitsDownload -> Res.string.book_sync_not_downloaded
+    onServer -> Res.string.book_sync_on_server
+    else -> Res.string.book_sync_device_only
 }
