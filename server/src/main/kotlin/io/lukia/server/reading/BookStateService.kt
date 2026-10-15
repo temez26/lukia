@@ -8,6 +8,8 @@ import io.lukia.api.LayoutPart
 import io.lukia.api.ProgressPart
 import io.lukia.server.db.Book_state
 import io.lukia.server.db.ServerDatabase
+import io.lukia.server.events.ChangeEvents
+import io.lukia.server.events.ChangeKind
 import io.lukia.server.http.changePage
 import java.time.Clock
 
@@ -21,6 +23,7 @@ import java.time.Clock
 class BookStateService(
     private val database: ServerDatabase,
     private val clock: Clock,
+    private val events: ChangeEvents = ChangeEvents(),
 ) {
     private val states get() = database.bookStateQueries
 
@@ -44,7 +47,7 @@ class BookStateService(
                 states.setFavorite(it.isFavorite, it.changedAt.notAfterNow(), accountId, bookId)
             }
             states.selectOne(accountId, bookId).executeAsOne().toResponse()
-        }
+        }.also { events.announce(ChangeKind.BookState, accountId) }
     }
 
     fun changesSince(accountId: Long, since: Long, limit: Int): ChangePage<BookStateResponse> = changePage(

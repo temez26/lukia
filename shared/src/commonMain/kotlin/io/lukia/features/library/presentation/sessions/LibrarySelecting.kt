@@ -1,5 +1,6 @@
 package io.lukia.features.library.presentation.sessions
 
+import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.model.BulkAction
@@ -61,3 +62,16 @@ fun LibraryViewModel.deleteSelected() = selectionSession.delete(::onBulkDone)
 
 fun LibraryViewModel.uploadSelected() =
     selectionSession.upload(uiState.value.dataOrNull.orEmpty(), uploader, ::onBulkDone)
+
+/**
+ * Opens [document] with [open] - at once if it is on this device, or once it
+ * has downloaded if it is only on the server, so tapping a server book reads
+ * it rather than sending the reader to its page first.
+ */
+fun LibraryViewModel.openBook(document: DocumentInfo, open: (DocumentInfo) -> Unit) {
+    if (document.awaitsDownload) {
+        transfers.start(document) { open(document.copy(exists = true)) }
+    } else {
+        open(document)
+    }
+}

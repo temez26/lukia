@@ -4,6 +4,7 @@ import io.lukia.core.domain.storage.SecretStore
 import io.lukia.core.domain.storage.SettingsStore
 import io.lukia.features.account.domain.AccountStore
 import io.lukia.features.account.domain.AuthTokens
+import io.lukia.features.account.domain.LastSignIn
 import io.lukia.features.account.domain.ServerAccount
 import io.lukia.features.account.domain.StoredAccount
 
@@ -36,6 +37,8 @@ class PersistedAccountStore(
         settings.putString(KeyServerName, account.serverName)
         settings.putString(KeyUsername, account.username)
         settings.putString(KeyIsAdmin, account.isAdmin.toString())
+        settings.putString(KeyLastAddress, account.address)
+        settings.putString(KeyLastUsername, account.username)
         saveTokens(tokens)
     }
 
@@ -56,6 +59,11 @@ class PersistedAccountStore(
     override fun clear() {
         forgetTokens()
         listOf(KeyAddress, KeyServerName, KeyUsername, KeyIsAdmin).forEach { settings.putString(it, "") }
+    }
+
+    override fun lastSignIn(): LastSignIn? {
+        val address = settings.read(KeyLastAddress) ?: return null
+        return LastSignIn(address, settings.read(KeyLastUsername).orEmpty())
     }
 
     private fun loadTokens(): AuthTokens? {
@@ -81,5 +89,9 @@ class PersistedAccountStore(
         const val KeyRefreshExpiresAt = "account.refreshExpiresAt"
         const val KeyAccessToken = "account.accessToken"
         const val KeyRefreshToken = "account.refreshToken"
+
+        // Apart from the keys above, which signing out clears.
+        const val KeyLastAddress = "account.last.address"
+        const val KeyLastUsername = "account.last.username"
     }
 }

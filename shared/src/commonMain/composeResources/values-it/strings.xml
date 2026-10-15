@@ -25,6 +25,7 @@
     <string name="menu_favourite">Aggiungi ai preferiti</string>
     <string name="menu_unfavourite">Togli dai preferiti</string>
     <string name="menu_select_books">Seleziona libri</string>
+    <string name="menu_sync_with_server">Sincronizza con il server</string>
     <string name="menu_refresh_details">Aggiorna i dettagli</string>
     <string name="menu_delete_from_library">Elimina dalla libreria</string>
     <string name="library_details_refreshed">Dettagli aggiornati</string>
@@ -498,18 +499,16 @@
     <string name="account_area">Account</string>
     <string name="account_title">Server di sincronizzazione</string>
     <string name="account_footnote">Accedi a un server Lukia per ritrovare il punto in cui sei in ogni libro e le tue statistiche di lettura su tutti i tuoi dispositivi. Senza un server, tutto resta su questo dispositivo.</string>
-    <string name="account_connect">Connetti</string>
-    <string name="account_connecting">Connessione…</string>
     <string name="account_username">Nome utente</string>
     <string name="account_password">Password</string>
     <string name="account_invite_code">Codice di invito</string>
     <string name="account_sign_in">Accedi</string>
     <string name="account_signing_in">Accesso in corso…</string>
     <string name="account_create">Crea account</string>
+    <string name="account_create_admin">Crea account amministratore</string>
     <string name="account_setup_footnote">%1$s non ha ancora account. Quello che crei ora ne sarà l’amministratore.</string>
     <string name="account_use_invite">Ho un codice di invito</string>
     <string name="account_use_password">Ho già un account</string>
-    <string name="account_other_server">Usa un altro server</string>
     <string name="account_signed_in">Accesso a %1$s come %2$s.</string>
     <string name="account_signed_in_admin">Accesso a %1$s come %2$s, il suo amministratore.</string>
     <string name="account_needs_sign_in">%1$s chiede di nuovo la tua password.</string>
@@ -547,6 +546,8 @@
     <string name="sync_checked_just_now">Controllato poco fa</string>
     <string name="sync_retry_soon">Nuovo tentativo tra meno di un minuto.</string>
     <string name="sync_now">Sincronizza ora</string>
+    <string name="sync_auto_upload">Aggiungi al server i libri che importo</string>
+    <string name="sync_auto_upload_detail">I libri aggiunti su questo dispositivo dopo l’accesso vanno nella biblioteca condivisa, per tutti. Quelli che avevi già vengono inviati solo se li aggiungi tu.</string>
     <string name="filter_device_only">Solo su questo dispositivo</string>
     <string name="book_info_sync">Server di sincronizzazione</string>
     <string name="book_sync_on_server">Sul server</string>

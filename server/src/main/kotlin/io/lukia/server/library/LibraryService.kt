@@ -11,6 +11,8 @@ import io.lukia.core.infrastructure.importing.JvmDocumentSource
 import io.lukia.core.infrastructure.importing.extractContents
 import io.lukia.server.db.Book
 import io.lukia.server.db.ServerDatabase
+import io.lukia.server.events.ChangeEvents
+import io.lukia.server.events.ChangeKind
 import io.lukia.server.http.ApiException
 import io.lukia.server.http.changePage
 import java.io.File
@@ -26,6 +28,7 @@ class LibraryService(
     private val database: ServerDatabase,
     private val files: BookFiles,
     private val clock: Clock,
+    private val events: ChangeEvents = ChangeEvents(),
 ) {
     private val books get() = database.bookQueries
 
@@ -87,6 +90,7 @@ class LibraryService(
             added
         }
 
+        if (isNew) events.announce(ChangeKind.Library)
         return Added(books.selectById(upload.id).executeAsOne().toResponse(), isNew)
     }
 
@@ -113,6 +117,7 @@ class LibraryService(
             books.deleteCover(id)
         }
         files.remove(id)
+        events.announce(ChangeKind.Library)
     }
 
     /** What the app's desktop import does, on the calling thread: a file that will not open is a book with nothing to say. */

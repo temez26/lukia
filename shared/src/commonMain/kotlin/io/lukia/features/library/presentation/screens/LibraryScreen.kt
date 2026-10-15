@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,9 +17,11 @@ import io.lukia.core.infrastructure.AppCommand
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.pickers.rememberPlatformFilePicker
 import io.lukia.features.library.presentation.pickers.rememberPlatformFolderPicker
+import io.lukia.features.library.presentation.sessions.openBook
 import io.lukia.features.library.presentation.sessions.rememberImportUi
 import io.lukia.features.settings.presentation.SettingsOverlay
 import io.lukia.features.settings.presentation.screens.AccountPage
+import io.lukia.features.settings.presentation.screens.SettingsArea
 import io.lukia.shared.presentation.components.surface.behindOverlay
 import io.lukia.shared.presentation.theme.isWideWindow
 import org.koin.compose.viewmodel.koinViewModel
@@ -50,6 +53,10 @@ fun LibraryScreen(
     /** The way to the reader's own page, supplied by the shell - see `MobileShell`. */
     statsButton: @Composable () -> Unit = {},
     accountPage: AccountPage? = null,
+    /** Starts a round with the sync server, if signed in to one - supplied by the shell. */
+    onSyncWithServer: () -> Unit = {},
+    /** Opens Settings on the Account page, where a window has no room to open it in place. */
+    onAccountSettings: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val books by viewModel.books.collectAsState()
@@ -58,22 +65,9 @@ fun LibraryScreen(
     val message by viewModel.message.collectAsState()
     val readingProgress by viewModel.readingProgress.collectAsState()
 
-    val filePicker = rememberPlatformFilePicker()
-    val folderPicker = rememberPlatformFolderPicker()
     val snackbarHostState = remember { SnackbarHostState() }
-
-    // Settings open in place for the same reason a book's details do: a window
-    // with room for both should not throw the library away to change a theme.
-    // Held here rather than in the stateless half below, which has no business
-    // knowing about a dependency graph.
-    val settingsOpenInPlace = isWideWindow
-    var settingsOpen by rememberSaveable { mutableStateOf(false) }
-
-    val requests = LibraryRequests(
-        addBooks = { filePicker.launch(viewModel::importDocuments) },
-        addFolder = { folderPicker.launch { picked -> picked?.let(viewModel::importFolder) } },
-        openSettings = { if (settingsOpenInPlace) settingsOpen = true else onSettings() },
-    )
+    val settings = rememberSettingsPanel(onSettings, onAccountSettings)
+    val requests = rememberLibraryRequests(viewModel, settings, onSyncWithServer)
 
     LibraryEffects(
         message = message,
@@ -92,7 +86,7 @@ fun LibraryScreen(
         // see [behindOverlay]. Wrapped rather than passed a modifier because
         // what has to go out of reach is the whole screen under the panel, not
         // any one composable in it.
-        Box(modifier = Modifier.fillMaxSize().behindOverlay(settingsOpen)) {
+        Box(modifier = Modifier.fillMaxSize().behindOverlay(settings.open.value)) {
             LibraryContent(
                 uiState = uiState,
                 books = books,
@@ -101,12 +95,12 @@ fun LibraryScreen(
                 onQueryChange = viewModel::updateQuery,
                 onImport = requests.addBooks,
                 onImportFolder = requests.addFolder,
-                onDocumentClick = onDocumentClick,
+                onDocumentClick = { document -> viewModel.openBook(document, onDocumentClick) },
                 onDocumentDetails = onDocumentDetails,
                 onSettings = requests.openSettings,
                 onToggleFavorite = viewModel::toggleFavorite,
                 onRefresh = viewModel::refreshDocument,
-                shelf = rememberShelfUi(viewModel),
+                shelf = rememberShelfUi(viewModel, requests.syncWithServer),
                 transfers = rememberTransferUi(viewModel),
                 onDelete = viewModel::deleteDocument,
                 onRetry = viewModel::refresh,
@@ -120,9 +114,47 @@ fun LibraryScreen(
 
         // Over the library and its own overlays both, since it is opened from the
         // bar that floats above them.
-        SettingsOverlay(visible = settingsOpen, onDismiss = { settingsOpen = false }, account = accountPage)
+        SettingsOverlay(
+            visible = settings.open.value,
+            onDismiss = { settings.open.value = false },
+            account = accountPage,
+            initialArea = settings.area.value,
+        )
     }
 }
+
+/**
+ * Settings, opened in place for the same reason a book's details are - a
+ * window with room for both should not throw the library away to change a
+ * theme - or as a screen of their own where there is no room. Held by the
+ * screen rather than the stateless half, which has no business knowing about a
+ * dependency graph.
+ */
+private class SettingsPanel(
+    val open: MutableState<Boolean>,
+    val area: MutableState<SettingsArea>,
+    private val inPlace: Boolean,
+    private val onSettings: () -> Unit,
+    private val onAccountSettings: () -> Unit,
+) {
+    fun show(page: SettingsArea) {
+        area.value = page
+        when {
+            inPlace -> open.value = true
+            page == SettingsArea.Account -> onAccountSettings()
+            else -> onSettings()
+        }
+    }
+}
+
+@Composable
+private fun rememberSettingsPanel(onSettings: () -> Unit, onAccountSettings: () -> Unit) = SettingsPanel(
+    open = rememberSaveable { mutableStateOf(false) },
+    area = rememberSaveable { mutableStateOf(SettingsArea.Default) },
+    inPlace = isWideWindow,
+    onSettings = onSettings,
+    onAccountSettings = onAccountSettings,
+)
 
 /**
  * The things the library can be asked for that are not about one book.
@@ -136,6 +168,8 @@ private class LibraryRequests(
     val addBooks: () -> Unit,
     val addFolder: () -> Unit,
     val openSettings: () -> Unit,
+    /** Syncs, and shows how that went where it is reported - or where to sign in. */
+    val syncWithServer: () -> Unit,
 ) {
 
     fun carryOut(command: AppCommand) = when (command) {
@@ -143,4 +177,24 @@ private class LibraryRequests(
         AppCommand.AddFolder -> addFolder()
         AppCommand.OpenSettings -> openSettings()
     }
+}
+
+@Composable
+private fun rememberLibraryRequests(
+    viewModel: LibraryViewModel,
+    settings: SettingsPanel,
+    onSyncWithServer: () -> Unit,
+): LibraryRequests {
+    val filePicker = rememberPlatformFilePicker()
+    val folderPicker = rememberPlatformFolderPicker()
+
+    return LibraryRequests(
+        addBooks = { filePicker.launch(viewModel::importDocuments) },
+        addFolder = { folderPicker.launch { picked -> picked?.let(viewModel::importFolder) } },
+        openSettings = { settings.show(SettingsArea.Default) },
+        syncWithServer = {
+            onSyncWithServer()
+            settings.show(SettingsArea.Account)
+        },
+    )
 }

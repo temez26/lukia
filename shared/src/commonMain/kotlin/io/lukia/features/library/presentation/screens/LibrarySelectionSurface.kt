@@ -45,14 +45,14 @@ import org.jetbrains.compose.resources.stringResource
  * is what would make each of them recompose.
  */
 @Composable
-internal fun rememberShelfUi(viewModel: LibraryViewModel): LibraryShelfUi {
+internal fun rememberShelfUi(viewModel: LibraryViewModel, onSyncWithServer: () -> Unit = {}): LibraryShelfUi {
     val selection by viewModel.selection.collectAsState()
     val running by viewModel.bulkAction.collectAsState()
     val upkeep by viewModel.upkeep.collectAsState()
     val layout by viewModel.layout.collectAsState()
     val canUpload by viewModel.canUpload.collectAsState()
 
-    return remember(viewModel, selection, running, upkeep, layout, canUpload) {
+    return remember(viewModel, selection, running, upkeep, layout, canUpload, onSyncWithServer) {
         LibraryShelfUi(
             selection = selection,
             running = running,
@@ -71,6 +71,7 @@ internal fun rememberShelfUi(viewModel: LibraryViewModel): LibraryShelfUi {
             onSelectDuplicates = viewModel::selectDuplicates,
             layout = layout,
             onLayoutChange = viewModel::setLayout,
+            onSyncWithServer = onSyncWithServer,
         )
     }
 }

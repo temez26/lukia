@@ -44,4 +44,10 @@ interface ServerShelf {
 
     /** The download for [location] has landed. */
     suspend fun markDownloaded(location: String)
+
+    /** Where the library ends now - a mark that books added later are counted from. */
+    suspend fun newestPosition(): Long
+
+    /** Books added after [position] that are on this device and not on the server, oldest first. */
+    suspend fun localOnlyAfter(position: Long): List<String>
 }

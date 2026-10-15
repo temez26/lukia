@@ -81,6 +81,23 @@ Behind a proxy every request comes from the proxy's address, so the limit on
 failed sign-ins per address applies to all of them together; the limit per
 username still works as intended.
 
+With [Nginx Proxy Manager](https://nginxproxymanager.com), point a proxy host at
+the container (scheme `http`, port `8080`), request a certificate, and add this
+under Advanced, or uploads over a megabyte are refused:
+
+```
+client_max_body_size 200m;
+proxy_request_buffering off;
+proxy_read_timeout 300s;
+proxy_send_timeout 300s;
+```
+
+The app keeps one connection open while it is on screen, and the server says
+down it when something changes, so a book added or a page turned on another
+device shows up at once. It is a plain HTTP response that never ends; the server
+asks nginx not to buffer it, so no proxy setting is needed for it. Where a proxy
+cuts it anyway, the app still catches up every two minutes.
+
 ## What the server stores
 
 - **Accounts:** a username, an Argon2id hash of the password, whether it is

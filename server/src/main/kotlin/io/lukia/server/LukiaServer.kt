@@ -22,6 +22,8 @@ import io.lukia.server.accounts.SignInThrottle
 import io.lukia.server.accounts.TokenService
 import io.lukia.server.accounts.accountRoutes
 import io.lukia.server.db.ServerDatabase
+import io.lukia.server.events.ChangeEvents
+import io.lukia.server.events.eventRoutes
 import io.lukia.server.health.healthRoutes
 import io.lukia.server.http.ApiException
 import io.lukia.server.http.JsonBodyLimit
@@ -50,9 +52,10 @@ fun Application.lukiaServer(
     val tokens = TokenService(database, secrets, clock)
     val accounts = AccountService(database, hasher, tokens, secrets, SignInThrottle(clock), clock)
     val files = BookFiles(config.dataDirectory)
-    val library = LibraryService(database, files, clock)
-    val bookStates = BookStateService(database, clock)
-    val sessions = SessionService(database)
+    val events = ChangeEvents()
+    val library = LibraryService(database, files, clock, events)
+    val bookStates = BookStateService(database, clock, events)
+    val sessions = SessionService(database, events)
 
     install(ContentNegotiation) { json() }
     install(SecurityHeaders)
@@ -91,6 +94,7 @@ fun Application.lukiaServer(
         accountRoutes(accounts, tokens)
         libraryRoutes(library, files, tokens, config.maxUploadBytes)
         readingRoutes(bookStates, sessions, tokens)
+        eventRoutes(events, tokens)
 
         // The admin page: the only HTML the server serves. See resources/admin.
         staticResources("/", "admin")

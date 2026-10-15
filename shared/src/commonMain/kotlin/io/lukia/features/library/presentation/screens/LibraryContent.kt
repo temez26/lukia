@@ -255,6 +255,7 @@ fun LibraryContent(
                                     selection = shelf.selection,
                                     onStartSelecting = shelf.onStart,
                                     onToggle = shelf.onToggle,
+                                    transfers = transfers,
                                 )
                             }
                         }

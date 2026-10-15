@@ -1,5 +1,8 @@
 package io.lukia.features.sync
 
+import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.document.DocumentType
+import io.lukia.core.domain.document.PickedDocument
 import io.lukia.core.domain.document.ShelfChanges
 import io.lukia.core.domain.storage.FakeSettingsStore
 import io.lukia.core.infrastructure.JvmBookFileStore
@@ -15,6 +18,7 @@ import io.lukia.features.library.application.HashLibraryUseCase
 import io.lukia.features.library.infrastructure.SqlContentHashStore
 import io.lukia.features.library.infrastructure.SqlLibraryRepository
 import io.lukia.features.library.infrastructure.SqlServerShelf
+import io.lukia.features.library.infrastructure.importing.DesktopDocumentAnalyzer
 import io.lukia.features.reader.infrastructure.SqlPdfLayoutRepository
 import io.lukia.features.reader.infrastructure.SqlReadingProgressRepository
 import io.lukia.features.reader.infrastructure.SqlReadingSessionRepository
@@ -22,6 +26,8 @@ import io.lukia.features.sync.application.PullServerLibraryUseCase
 import io.lukia.features.sync.application.SyncBookStateUseCase
 import io.lukia.features.sync.application.SyncRoundUseCase
 import io.lukia.features.sync.application.SyncSessionsUseCase
+import io.lukia.features.sync.application.UploadNewBooksUseCase
+import io.lukia.features.sync.application.UploadServerBookUseCase
 import io.lukia.features.sync.infrastructure.BookStateApi
 import io.lukia.features.sync.infrastructure.BookStateStore
 import io.lukia.features.sync.infrastructure.HistoryChoice
@@ -29,7 +35,9 @@ import io.lukia.features.sync.infrastructure.ServerLibraryApi
 import io.lukia.features.sync.infrastructure.SessionApi
 import io.lukia.features.sync.infrastructure.SessionStore
 import io.lukia.features.sync.infrastructure.SyncCursors
+import io.lukia.features.sync.infrastructure.UploadChoice
 import kotlinx.coroutines.Dispatchers
+import java.io.File
 import java.nio.file.Files
 
 /**
@@ -50,10 +58,14 @@ class SyncedDevice(private val server: TestSyncServer) : AutoCloseable {
     private val cursors = SyncCursors(settings)
     private val http = ServerHttp(serverHttpClient())
 
+    private val shelf = SqlServerShelf(database, Dispatchers.Unconfined)
+    private val analyzer = DesktopDocumentAnalyzer()
+    val uploads = UploadChoice(settings)
+
     private val pull = PullServerLibraryUseCase(
         session,
         ServerLibraryApi(http),
-        SqlServerShelf(database, Dispatchers.Unconfined),
+        shelf,
         JvmBookFileStore(downloads),
         cursors,
         ShelfChanges(),
@@ -61,9 +73,14 @@ class SyncedDevice(private val server: TestSyncServer) : AutoCloseable {
     private val syncState = SyncBookStateUseCase(session, BookStateApi(http), store, cursors, ShelfChanges())
     val syncSessions = SyncSessionsUseCase(session, SessionApi(http), sessionStore, HistoryChoice(settings), cursors)
 
-    /** Server books arrive hashed, and the tests import no others, so nothing here needs reading. */
-    private val hashLibrary = HashLibraryUseCase(SqlContentHashStore(database, Dispatchers.Unconfined)) { null }
-    private val round = SyncRoundUseCase(hashLibrary, pull, syncState, syncSessions, cursors)
+    private val hashLibrary = HashLibraryUseCase(SqlContentHashStore(database, Dispatchers.Unconfined), analyzer)
+    private val uploadNewBooks = UploadNewBooksUseCase(
+        shelf,
+        UploadServerBookUseCase(session, ServerLibraryApi(http), library, analyzer, shelf, ShelfChanges()),
+        cursors,
+        uploads,
+    )
+    private val round = SyncRoundUseCase(hashLibrary, pull, syncState, syncSessions, cursors, uploadNewBooks)
 
     suspend fun signIn(setUp: Boolean) {
         if (setUp) {
@@ -95,6 +112,19 @@ class SyncedDevice(private val server: TestSyncServer) : AutoCloseable {
     /** Moves the last change to [part] to a chosen time, standing in for when it was made. */
     suspend fun dateLastChange(part: SyncedPart, at: Long) {
         database.syncOutboxQueries.record(part.stored, at, locationOfBook())
+    }
+
+    /** Puts a book on this device's shelf the way an import does: a real file, added to the library. */
+    suspend fun importBook(name: String, bytes: ByteArray) {
+        val file = File(downloads, name).apply { writeBytes(bytes) }
+        library.addDocument(
+            DocumentInfo(
+                document = PickedDocument(name, name.substringAfterLast('.'), file.path),
+                type = DocumentType.EPUB,
+                exists = true,
+                sizeBytes = file.length(),
+            ),
+        )
     }
 
     override fun close() {

@@ -16,21 +16,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import io.lukia.features.account.domain.AccountProblem
 import io.lukia.features.account.domain.AccountStatus
+import io.lukia.features.account.domain.LastSignIn
 import io.lukia.features.account.domain.ServerAccount
 import io.lukia.features.settings.presentation.components.SettingsTextField
 import io.lukia.features.settings.presentation.screens.LabelledField
 import io.lukia.features.settings.presentation.screens.SettingsSection
 import io.lukia.resources.Res
-import io.lukia.resources.account_connect
-import io.lukia.resources.account_connecting
 import io.lukia.resources.account_create
+import io.lukia.resources.account_create_admin
 import io.lukia.resources.account_delete
 import io.lukia.resources.account_delete_message
 import io.lukia.resources.account_delete_title
 import io.lukia.resources.account_footnote
 import io.lukia.resources.account_invite_code
 import io.lukia.resources.account_needs_sign_in
-import io.lukia.resources.account_other_server
 import io.lukia.resources.account_password
 import io.lukia.resources.account_setup_footnote
 import io.lukia.resources.account_sign_in
@@ -62,11 +61,10 @@ fun AccountSettings(groupColor: Color, viewModel: AccountViewModel = koinViewMod
 
     AccountSettingsContent(
         state = state,
+        lastSignIn = viewModel.lastSignIn,
         actions = AccountActions(
-            onConnect = viewModel::connect,
             onSubmit = viewModel::submit,
             onUseInvite = viewModel::useInvite,
-            onOtherServer = viewModel::otherServer,
             onSignInAgain = viewModel::signInAgain,
             onSignOut = viewModel::signOut,
             onDeleteAccount = viewModel::deleteAccount,
@@ -77,10 +75,9 @@ fun AccountSettings(groupColor: Color, viewModel: AccountViewModel = koinViewMod
 
 /** What the Account area can be asked to do. */
 class AccountActions(
-    val onConnect: (address: String) -> Unit = {},
-    val onSubmit: (username: String, password: String, inviteCode: String) -> Unit = { _, _, _ -> },
+    val onSubmit: (address: String, username: String, password: String, inviteCode: String) -> Unit =
+        { _, _, _, _ -> },
     val onUseInvite: (Boolean) -> Unit = {},
-    val onOtherServer: () -> Unit = {},
     val onSignInAgain: (password: String) -> Unit = {},
     val onSignOut: () -> Unit = {},
     val onDeleteAccount: () -> Unit = {},
@@ -92,6 +89,8 @@ internal fun AccountSettingsContent(
     actions: AccountActions,
     groupColor: Color,
     modifier: Modifier = Modifier,
+    /** What to fill the form with - the last sign-in on this device. */
+    lastSignIn: LastSignIn? = null,
 ) {
     SettingsSection(
         title = stringResource(Res.string.account_title),
@@ -103,10 +102,7 @@ internal fun AccountSettingsContent(
             when (val status = state.status) {
                 is AccountStatus.SignedIn -> SignedIn(status.account, state.busy, actions)
                 is AccountStatus.NeedsSignIn -> NeedsSignIn(status.account, state.busy, actions)
-                AccountStatus.SignedOut -> when (val step = state.step) {
-                    AccountStep.EnterAddress -> EnterAddress(state.busy, actions)
-                    is AccountStep.Credentials -> EnterCredentials(step, state.busy, actions)
-                }
+                AccountStatus.SignedOut -> SignInForm(state.form, state.busy, lastSignIn, actions)
             }
 
             state.problem?.let { ProblemText(it) }
@@ -188,41 +184,32 @@ private fun NeedsSignIn(account: ServerAccount, busy: Boolean, actions: AccountA
     }
 }
 
+/**
+ * Everything signing in needs, on one form: where the server is, who the reader
+ * is, and their password - plus an invite code when the account is new. Filled
+ * in from the last sign-in, so coming back asks only for the password.
+ */
 @Composable
-private fun EnterAddress(busy: Boolean, actions: AccountActions) {
-    // Saved across a rotation: an address is no secret, and retyping one is the
-    // kind of small cost that makes somebody give up on setting this up.
-    var address by rememberSaveable { mutableStateOf("") }
-
-    Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
-        LabelledField(label = stringResource(Res.string.settings_address)) {
-            SettingsTextField(value = address, onValueChange = { address = it }, placeholder = ExampleAddress)
-        }
-        LukiaButton(
-            label = stringResource(if (busy) Res.string.account_connecting else Res.string.account_connect),
-            onClick = { actions.onConnect(address) },
-            enabled = !busy && address.isNotBlank(),
-        )
-    }
-}
-
-@Composable
-private fun EnterCredentials(step: AccountStep.Credentials, busy: Boolean, actions: AccountActions) {
-    var username by rememberSaveable(step.address) { mutableStateOf("") }
-    var inviteCode by rememberSaveable(step.address) { mutableStateOf("") }
+private fun SignInForm(form: AccountForm, busy: Boolean, last: LastSignIn?, actions: AccountActions) {
+    // Saved across a rotation: none of these is a secret, and retyping them is
+    // the kind of small cost that makes somebody give up on setting this up.
+    var address by rememberSaveable { mutableStateOf(last?.address.orEmpty()) }
+    var username by rememberSaveable { mutableStateOf(last?.username.orEmpty()) }
+    var inviteCode by rememberSaveable { mutableStateOf("") }
     // Never saved: a saved state outlives the page, and a password should not.
-    var password by remember(step.address) { mutableStateOf("") }
-
-    val creating = step.server.setupRequired || step.withInvite
+    var password by remember { mutableStateOf("") }
 
     Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
-        if (step.server.setupRequired) {
+        if (form is AccountForm.SetUp) {
             Text(
-                text = stringResource(Res.string.account_setup_footnote, step.server.name),
+                text = stringResource(Res.string.account_setup_footnote, form.serverName),
                 style = MaterialTheme.typography.bodyMedium,
             )
         }
-        if (step.withInvite) {
+        LabelledField(label = stringResource(Res.string.settings_address)) {
+            SettingsTextField(value = address, onValueChange = { address = it }, placeholder = ExampleAddress)
+        }
+        if (form == AccountForm.Invite) {
             LabelledField(label = stringResource(Res.string.account_invite_code)) {
                 SettingsTextField(value = inviteCode, onValueChange = { inviteCode = it }, placeholder = "")
             }
@@ -239,41 +226,41 @@ private fun EnterCredentials(step: AccountStep.Credentials, busy: Boolean, actio
             verticalArrangement = Arrangement.spacedBy(Space.sm),
         ) {
             SubmitButton(
-                creating = creating,
+                form = form,
                 busy = busy,
-                complete = username.isNotBlank() &&
+                complete = address.isNotBlank() &&
+                    username.isNotBlank() &&
                     password.isNotEmpty() &&
-                    (!step.withInvite || inviteCode.isNotBlank()),
-                onClick = { actions.onSubmit(username, password, inviteCode) },
+                    (form != AccountForm.Invite || inviteCode.isNotBlank()),
+                onClick = { actions.onSubmit(address, username, password, inviteCode) },
             )
-            if (!step.server.setupRequired) {
+            if (form !is AccountForm.SetUp) {
                 LukiaButton(
                     label = stringResource(
-                        if (step.withInvite) Res.string.account_use_password else Res.string.account_use_invite,
+                        if (form == AccountForm.Invite) {
+                            Res.string.account_use_password
+                        } else {
+                            Res.string.account_use_invite
+                        },
                     ),
-                    onClick = { actions.onUseInvite(!step.withInvite) },
+                    onClick = { actions.onUseInvite(form != AccountForm.Invite) },
                     variant = ButtonVariant.Ghost,
                     enabled = !busy,
                 )
             }
-            LukiaButton(
-                label = stringResource(Res.string.account_other_server),
-                onClick = actions.onOtherServer,
-                variant = ButtonVariant.Ghost,
-                enabled = !busy,
-            )
         }
     }
 }
 
-/** Signs in, or creates the account - whichever the form is for - once it is filled in. */
+/** Signs in, or creates the account or the admin - whichever the form is for - once it is filled in. */
 @Composable
-private fun SubmitButton(creating: Boolean, busy: Boolean, complete: Boolean, onClick: () -> Unit) {
+private fun SubmitButton(form: AccountForm, busy: Boolean, complete: Boolean, onClick: () -> Unit) {
     LukiaButton(
         label = stringResource(
             when {
                 busy -> Res.string.account_signing_in
-                creating -> Res.string.account_create
+                form is AccountForm.SetUp -> Res.string.account_create_admin
+                form == AccountForm.Invite -> Res.string.account_create
                 else -> Res.string.account_sign_in
             },
         ),

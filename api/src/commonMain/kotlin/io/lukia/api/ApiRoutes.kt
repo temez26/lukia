@@ -52,6 +52,13 @@ object ApiRoutes {
 
     fun bookCover(id: String) = BookCover.replace("{id}", id)
 
+    /**
+     * GET: a server-sent event stream, held open, naming each kind of change the
+     * signed-in account should catch up on as it happens - `library`, `state` or
+     * `sessions`. A hint to ask the endpoints below now, not the change itself.
+     */
+    const val MyEvents = "$Prefix/me/events"
+
     /** GET: changes to the signed-in account's book state since `?since=`. */
     const val MyBooks = "$Prefix/me/books"
 

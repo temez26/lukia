@@ -31,6 +31,7 @@ import io.lukia.core.presentation.formattedSize
 import io.lukia.features.library.presentation.components.selection.CardSelection
 import io.lukia.features.library.presentation.components.selection.SelectionMark
 import io.lukia.features.library.presentation.model.LibraryBook
+import io.lukia.features.library.presentation.screens.BookTransfer
 import io.lukia.resources.Res
 import io.lukia.resources.book_format_and_size
 import io.lukia.resources.book_progress_percent
@@ -87,6 +88,8 @@ internal fun BookRow(
     longClickLabel: String = "Book actions",
     /** How this row takes part in selection, or null when nothing is being selected. */
     selection: CardSelection? = null,
+    /** The book on its way down from the server, or null when it is not. */
+    transfer: BookTransfer? = null,
 ) {
     val document = book.document
     val title = document.displayTitle()
@@ -140,6 +143,7 @@ internal fun BookRow(
             modifier = Modifier
                 .weight(1f)
                 .padding(start = Space.md),
+            transfer = transfer,
         )
     }
 }
@@ -154,6 +158,7 @@ private fun RowDetails(
     title: String,
     progress: ReadingProgress?,
     modifier: Modifier = Modifier,
+    transfer: BookTransfer? = null,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(Space.xxs)) {
         Text(
@@ -219,7 +224,7 @@ private fun RowDetails(
         }
 
         if (!document.exists) {
-            BookStatusBadge(document)
+            BookStatusBadge(document, transfer = transfer)
         }
     }
 }

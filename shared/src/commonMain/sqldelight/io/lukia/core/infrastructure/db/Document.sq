@@ -190,3 +190,14 @@ UPDATE document SET isFavorite = ? WHERE location = ?;
 
 deleteByLocation:
 DELETE FROM document WHERE location = ?;
+
+-- Books added after [sortKey] that are on this device, hashed, and not on the
+-- sync server - the ones to add to it, oldest first.
+selectLocalOnlyAfter:
+SELECT location FROM document
+WHERE sortKey > ? AND fileExists = 1 AND onServer = 0 AND contentHash IS NOT NULL
+ORDER BY sortKey;
+
+-- Where the library ends now, so that books added later can be told apart.
+selectNewestSortKey:
+SELECT COALESCE(MAX(sortKey), 0) FROM document;

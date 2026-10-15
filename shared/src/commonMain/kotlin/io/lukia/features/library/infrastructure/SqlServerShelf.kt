@@ -73,4 +73,12 @@ class SqlServerShelf(
         documents.markDownloaded(location)
         Unit
     }
+
+    override suspend fun newestPosition(): Long = withContext(dispatcher) {
+        documents.selectNewestSortKey().executeAsOne()
+    }
+
+    override suspend fun localOnlyAfter(position: Long): List<String> = withContext(dispatcher) {
+        documents.selectLocalOnlyAfter(position).executeAsList()
+    }
 }

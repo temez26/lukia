@@ -39,6 +39,8 @@ class LibraryShelfUi(
     /** Covers or rows, which is remembered between sessions. */
     val layout: LibraryLayout = LibraryLayout.Grid,
     val onLayoutChange: (LibraryLayout) -> Unit = {},
+    /** Catches up with the sync server and shows how that went - or where to sign in to one. */
+    val onSyncWithServer: () -> Unit = {},
 ) {
     val active: Boolean get() = selection.active
 
@@ -78,6 +80,7 @@ class LibraryShelfUi(
         },
         layout = layout,
         onLayoutChange = onLayoutChange,
+        onSyncWithServer = onSyncWithServer,
     )
 
     companion object {

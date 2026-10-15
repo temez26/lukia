@@ -35,6 +35,7 @@
     <string name="menu_favourite">Lisää suosikkeihin</string>
     <string name="menu_unfavourite">Poista suosikeista</string>
     <string name="menu_select_books">Valitse kirjoja</string>
+    <string name="menu_sync_with_server">Synkronoi palvelimen kanssa</string>
     <string name="menu_refresh_details">Päivitä tiedot</string>
     <string name="menu_delete_from_library">Poista kirjastosta</string>
 
@@ -567,18 +568,16 @@
     <string name="account_area">Tili</string>
     <string name="account_title">Synkronointipalvelin</string>
     <string name="account_footnote">Kirjaudu Lukia-palvelimeen, niin kohtasi jokaisessa kirjassa ja lukutilastosi kulkevat kaikilla laitteillasi. Ilman palvelinta kaikki pysyy tällä laitteella.</string>
-    <string name="account_connect">Yhdistä</string>
-    <string name="account_connecting">Yhdistetään…</string>
     <string name="account_username">Käyttäjänimi</string>
     <string name="account_password">Salasana</string>
     <string name="account_invite_code">Kutsukoodi</string>
     <string name="account_sign_in">Kirjaudu</string>
     <string name="account_signing_in">Kirjaudutaan…</string>
     <string name="account_create">Luo tili</string>
+    <string name="account_create_admin">Luo ylläpitäjän tili</string>
     <string name="account_setup_footnote">Palvelimella %1$s ei ole vielä tilejä. Nyt luomastasi tulee sen ylläpitäjä.</string>
     <string name="account_use_invite">Minulla on kutsukoodi</string>
     <string name="account_use_password">Minulla on jo tili</string>
-    <string name="account_other_server">Käytä toista palvelinta</string>
     <string name="account_signed_in">Kirjautunut palvelimeen %1$s käyttäjänä %2$s.</string>
     <string name="account_signed_in_admin">Kirjautunut palvelimeen %1$s käyttäjänä %2$s, ylläpitäjänä.</string>
     <string name="account_needs_sign_in">%1$s pyytää salasanaasi uudelleen.</string>
@@ -616,6 +615,8 @@
     <string name="sync_checked_just_now">Tarkistettu juuri äsken</string>
     <string name="sync_retry_soon">Yritetään uudelleen alle minuutin kuluttua.</string>
     <string name="sync_now">Synkronoi nyt</string>
+    <string name="sync_auto_upload">Lisää tuomani kirjat palvelimelle</string>
+    <string name="sync_auto_upload_detail">Kirjautumisen jälkeen tälle laitteelle lisätyt kirjat menevät kaikkien yhteiseen kirjastoon. Aiemmat kirjasi lähetetään vain, kun lisäät ne itse.</string>
     <string name="filter_device_only">Vain tällä laitteella</string>
     <string name="book_info_sync">Synkronointipalvelin</string>
     <string name="book_sync_on_server">Palvelimella</string>

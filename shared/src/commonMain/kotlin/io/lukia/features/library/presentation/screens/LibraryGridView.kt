@@ -32,6 +32,7 @@ import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.library.presentation.model.LibrarySelection
 import io.lukia.features.library.presentation.model.LibraryShelf
 import io.lukia.features.library.presentation.model.OpenMenu
+import io.lukia.features.library.presentation.sessions.BookTransferUi
 import io.lukia.features.library.presentation.sessions.LibraryImportUi
 import io.lukia.resources.Res
 import io.lukia.resources.library_no_matches_filtered
@@ -80,6 +81,8 @@ internal fun LibraryGrid(
     selection: LibrarySelection = LibrarySelection.None,
     onStartSelecting: () -> Unit = {},
     onToggle: (location: String) -> Unit = {},
+    /** Books downloading or uploading, for the progress their cards show. */
+    transfers: BookTransferUi = BookTransferUi.None,
 ) {
     val dimens = LocalLukiaDimens.current
 
@@ -156,6 +159,7 @@ internal fun LibraryGrid(
                     null
                 },
                 onClick = { onDocumentClick(book.document) },
+                transfer = transfers.states[book.location],
                 onMenuExpandedChange = { expanded ->
                     onOpenMenuChange(OpenMenu.Book(book.location).takeIf { expanded })
                 },
@@ -262,6 +266,7 @@ private fun LazyGridItemScope.ShelfItem(
     onDelete: () -> Unit,
     onShowDetails: () -> Unit,
     onSelectBooks: () -> Unit,
+    transfer: BookTransfer? = null,
 ) {
     when (layout) {
         LibraryLayout.Grid -> BookCard(
@@ -279,6 +284,7 @@ private fun LazyGridItemScope.ShelfItem(
             revealIndex = revealIndex,
             modifier = Modifier.animateItem(),
             selection = selection,
+            transfer = transfer,
         )
 
         LibraryLayout.List -> Box {
@@ -288,6 +294,7 @@ private fun LazyGridItemScope.ShelfItem(
                 onMenuRequest = { onMenuExpandedChange(true) },
                 modifier = Modifier.animateItem(),
                 selection = selection,
+                transfer = transfer,
             )
 
             // Hung off the row itself so it opens where the finger was, the same

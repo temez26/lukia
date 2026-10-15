@@ -50,6 +50,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 internal fun MobileShell(library: LibraryViewModel = koinViewModel()) {
     val navController = rememberNavController()
+    val startSync = rememberStartSync()
     val backStackEntry by navController.currentBackStackEntryAsState()
 
     val tab = MobileTab.forRoute(backStackEntry?.destination?.route)
@@ -86,7 +87,7 @@ internal fun MobileShell(library: LibraryViewModel = koinViewModel()) {
                 if (changesInPlace(motion)) tabExit(motion) else popExit(motion)
             },
         ) {
-            tabDestinations(navController = navController, library = library)
+            tabDestinations(navController = navController, library = library, startSync = startSync)
 
             bookDestinations(navController)
         }
@@ -120,6 +121,7 @@ internal fun MobileShell(library: LibraryViewModel = koinViewModel()) {
 private fun NavGraphBuilder.tabDestinations(
     navController: NavController,
     library: LibraryViewModel,
+    startSync: () -> Unit,
 ) {
     val openDetails: (DocumentInfo) -> Unit = { document ->
         navController.navigate(Routes.Detail.createRoute(document.document.location))
@@ -136,6 +138,7 @@ private fun NavGraphBuilder.tabDestinations(
     }
 
     val openSettings: () -> Unit = { navController.navigate(Routes.Settings.route) }
+    val openAccountSettings: () -> Unit = { navController.navigate(Routes.AccountSettings.route) }
 
     // Filled here rather than by the library screens, which have a place on
     // their bars for it and no business knowing what the statistics screen is.
@@ -155,6 +158,10 @@ private fun NavGraphBuilder.tabDestinations(
             onOpenLibrary = { navController.switchTo(MobileTab.Library) },
             onSettings = openSettings,
             statsButton = statsButton,
+            onSyncWithServer = {
+                startSync()
+                openAccountSettings()
+            },
             viewModel = library,
         )
     }
@@ -175,6 +182,8 @@ private fun NavGraphBuilder.tabDestinations(
             onSettings = openSettings,
             statsButton = statsButton,
             accountPage = AppAccountPage,
+            onSyncWithServer = startSync,
+            onAccountSettings = openAccountSettings,
             // Searching has a tab of its own here, and a field on this screen as
             // well would be a second search with a second answer to the same
             // question.
