@@ -1,15 +1,19 @@
-package io.lukia.features.translate.domain.provider
+package io.lukia.core.domain.network
 
 /**
- * Whether an address is one this app will send a passage to unencrypted.
+ * Whether an address is one this app will talk to unencrypted.
  *
  * Pointing the reader at their own machine means plain HTTP: a model server on a
- * laptop has no certificate, and telling somebody to obtain one before they can
- * translate a sentence is not a real answer. So cleartext is allowed to their
- * own machine or network, never across the internet - what travels here is a
- * sentence out of a book somebody is reading and that book's title, which over a
- * LAN is between them and their own computer and over the open internet is
- * between them and everyone on the way.
+ * laptop or a sync server on a home server has no certificate, and telling
+ * somebody to obtain one before they can use it is not a real answer. So
+ * cleartext is allowed to their own machine or network, never across the
+ * internet. What travels is a sentence out of a book and its title, or an
+ * account's password and reading history - over a LAN that is between them and
+ * their own computer, over the open internet between them and everyone on the
+ * way.
+ *
+ * Here rather than in either feature because both the translator and the sync
+ * server are held to it, and one rule in one place cannot drift into two.
  *
  * This is the whole restriction on both platforms, and has to be. Android's
  * network security configuration matches on domains and cannot say "private
@@ -18,12 +22,12 @@ package io.lukia.features.translate.domain.provider
  * platform refuses this on the app's behalf.
  *
  * Everything it cannot decide, it refuses: a name resolving to a private
- * address, an address in an unrecognised form. Each is a translation that does
- * not happen rather than a passage sent in the clear, and https is always
- * available to whoever meant it - this only ever refuses plain HTTP to a public
- * address, the one case that is a mistake rather than a choice.
+ * address, an address in an unrecognised form. Each is a request that does not
+ * happen rather than one sent in the clear, and https is always available to
+ * whoever meant it - this only ever refuses plain HTTP to a public address, the
+ * one case that is a mistake rather than a choice.
  */
-fun isAllowedTranslationEndpoint(url: String): Boolean {
+fun isAllowedEndpoint(url: String): Boolean {
     val trimmed = url.trim()
 
     if (trimmed.startsWith(HTTPS_SCHEME, ignoreCase = true)) return true
