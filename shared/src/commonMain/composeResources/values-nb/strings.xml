@@ -407,6 +407,7 @@
     <string name="stats_entry">Lesingen din</string>
     <string name="stats_title">Lesing</string>
     <string name="stats_footnote">Telles på denne enheten, og blir her.</string>
+    <string name="stats_footnote_synced">Telles på hver enhet som er logget inn på kontoen din.</string>
     <string name="stats_time_none">Ingenting ennå</string>
     <string name="stats_time_under_a_minute">Under et minutt</string>
     <string name="stats_time_minutes">%1$d\u00A0min</string>

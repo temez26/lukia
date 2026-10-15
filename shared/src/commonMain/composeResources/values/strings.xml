@@ -554,6 +554,7 @@
     <string name="stats_entry">Your reading</string>
     <string name="stats_title">Reading</string>
     <string name="stats_footnote">Counted on this device, and kept here.</string>
+    <string name="stats_footnote_synced">Counted on every device signed in to your account.</string>
 
     <!--
         A stretch of reading. Four whole forms rather than a number with a unit

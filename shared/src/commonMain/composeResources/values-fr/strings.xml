@@ -414,6 +414,7 @@
     <string name="stats_entry">Vos lectures</string>
     <string name="stats_title">Lecture</string>
     <string name="stats_footnote">Compté sur cet appareil, et gardé ici.</string>
+    <string name="stats_footnote_synced">Compté sur chaque appareil connecté à votre compte.</string>
     <string name="stats_time_none">Rien encore</string>
     <string name="stats_time_under_a_minute">Moins d\u2019une minute</string>
     <string name="stats_time_minutes">%1$d\u00A0min</string>

@@ -25,6 +25,7 @@ import io.lukia.features.stats.domain.ReadingSummary
 import io.lukia.resources.Res
 import io.lukia.resources.action_try_again
 import io.lukia.resources.stats_footnote
+import io.lukia.resources.stats_footnote_synced
 import io.lukia.resources.stats_title
 import io.lukia.shared.presentation.components.state.ErrorState
 import io.lukia.shared.presentation.components.state.LoadingState
@@ -59,6 +60,7 @@ internal fun StatsBody(
      * a panel's surface are not the same colour.
      */
     groupColor: Color = MaterialTheme.colorScheme.surface,
+    syncedWithAccount: Boolean = false,
 ) {
     val dimens = LocalLukiaDimens.current
 
@@ -74,7 +76,7 @@ internal fun StatsBody(
                 .fillMaxWidth()
                 .padding(horizontal = dimens.screenPadding),
         ) {
-            StatsTitle()
+            StatsTitle(syncedWithAccount)
 
             CountedContent(
                 summary = summary,
@@ -200,7 +202,9 @@ private fun StatsSections(
  * page read as one column.
  */
 @Composable
-private fun StatsTitle(modifier: Modifier = Modifier) {
+private fun StatsTitle(syncedWithAccount: Boolean, modifier: Modifier = Modifier) {
+    val footnote = if (syncedWithAccount) Res.string.stats_footnote_synced else Res.string.stats_footnote
+
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = stringResource(Res.string.stats_title),
@@ -209,7 +213,7 @@ private fun StatsTitle(modifier: Modifier = Modifier) {
         )
 
         Text(
-            text = stringResource(Res.string.stats_footnote),
+            text = stringResource(footnote),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = Space.xs),

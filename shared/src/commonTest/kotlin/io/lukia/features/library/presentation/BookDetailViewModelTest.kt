@@ -8,6 +8,7 @@ import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.domain.document.FakeIncomingDocumentStore
 import io.lukia.core.domain.document.ServerBookDownloader
+import io.lukia.core.domain.document.ShelfChanges
 import io.lukia.core.domain.document.TestDocuments
 import io.lukia.core.domain.reading.FakePdfLayoutRepository
 import io.lukia.core.domain.reading.FakeReadingProgressRepository
@@ -64,6 +65,36 @@ class BookDetailViewModelTest : MainDispatcherTest() {
         )
 
         assertEquals(UiState.Failure(AppError.Unexpected()), viewModel.uiState.value)
+    }
+
+    @Test
+    fun aShelfChangeFromASyncShowsTheBookAfresh() = runTest {
+        val repository = FakeLibraryRepository()
+        val shelfChanges = ShelfChanges()
+        val viewModel = createViewModel(
+            location = "/test/book.pdf",
+            repository = repository,
+            shelfChanges = shelfChanges,
+        )
+
+        repository.addDocument(pdfDocumentInfo())
+        shelfChanges.announce()
+
+        assertEquals(UiState.Success(BookDetails(pdfDocumentInfo())), viewModel.uiState.value)
+    }
+
+    @Test
+    fun comingBackToTheBookReadsItAgain() = runTest {
+        val repository = FakeLibraryRepository(initialDocuments = listOf(pdfDocumentInfo()))
+        val viewModel = createViewModel(location = "/test/book.pdf", repository = repository)
+
+        repository.setFavorite("/test/book.pdf", true)
+        viewModel.reload()
+
+        assertEquals(
+            UiState.Success(BookDetails(pdfDocumentInfo().copy(isFavorite = true))),
+            viewModel.uiState.value,
+        )
     }
 
     @Test
@@ -236,6 +267,7 @@ class BookDetailViewModelTest : MainDispatcherTest() {
         repository: LibraryRepository,
         analyzer: DocumentAnalyzer = TypeFromExtensionAnalyzer(),
         downloader: ServerBookDownloader = ServerBookDownloader { _, _ -> error("no server here") },
+        shelfChanges: ShelfChanges = ShelfChanges(),
     ): BookDetailViewModel = BookDetailViewModel(
         location = location,
         getDocumentDetailsUseCase = GetDocumentDetailsUseCase(
@@ -261,6 +293,7 @@ class BookDetailViewModelTest : MainDispatcherTest() {
             FakePdfLayoutRepository(),
         ),
         downloader = downloader,
+        shelfChanges = shelfChanges,
     )
 
     private class FakeLibraryRepository(

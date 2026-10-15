@@ -407,6 +407,7 @@
     <string name="stats_entry">Uw lezen</string>
     <string name="stats_title">Lezen</string>
     <string name="stats_footnote">Wordt op dit apparaat geteld, en blijft hier.</string>
+    <string name="stats_footnote_synced">Wordt geteld op elk apparaat dat met je account is aangemeld.</string>
     <string name="stats_time_none">Nog niets</string>
     <string name="stats_time_under_a_minute">Minder dan een minuut</string>
     <string name="stats_time_minutes">%1$d min</string>

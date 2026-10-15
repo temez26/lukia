@@ -35,12 +35,13 @@ class StatsContentTest {
         ),
     )
 
-    private fun ComposeUiTest.setStats(summary: UiState<ReadingSummary>) {
+    private fun ComposeUiTest.setStats(summary: UiState<ReadingSummary>, syncedWithAccount: Boolean = false) {
         setContent {
             LukiaTheme(darkTheme = false) {
                 StatsContent(
                     summary = summary,
                     onBack = {},
+                    syncedWithAccount = syncedWithAccount,
                     actions = StatsActions(
                         onOpenBook = { opened = it },
                         onRetry = { retried++ },
@@ -56,6 +57,13 @@ class StatsContentTest {
 
         onNodeWithText("Reading").assertIsDisplayed()
         onNodeWithText("Counted on this device, and kept here.").assertIsDisplayed()
+    }
+
+    @Test
+    fun signedInThePageSaysTheFiguresComeFromEveryDevice() = runComposeUiTest {
+        setStats(summaryOf(), syncedWithAccount = true)
+
+        onNodeWithText("Counted on every device signed in to your account.").assertIsDisplayed()
     }
 
     @Test

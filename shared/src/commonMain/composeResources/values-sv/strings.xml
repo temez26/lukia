@@ -456,6 +456,7 @@
     <string name="stats_entry">Din läsning</string>
     <string name="stats_title">Läsning</string>
     <string name="stats_footnote">Räknas på den här enheten, och stannar här.</string>
+    <string name="stats_footnote_synced">Räknas på varje enhet som är inloggad på ditt konto.</string>
 
     <string name="stats_time_none">Inget än</string>
     <string name="stats_time_under_a_minute">Under en minut</string>

@@ -28,7 +28,6 @@ import io.lukia.core.presentation.authorLine
 import io.lukia.core.presentation.displayTitle
 import io.lukia.core.presentation.displayType
 import io.lukia.core.presentation.formattedSize
-import io.lukia.core.presentation.statusLabel
 import io.lukia.features.library.presentation.components.selection.CardSelection
 import io.lukia.features.library.presentation.components.selection.SelectionMark
 import io.lukia.features.library.presentation.model.LibraryBook
@@ -40,7 +39,6 @@ import io.lukia.shared.presentation.components.controls.menuGesture
 import io.lukia.shared.presentation.components.controls.pressFeedback
 import io.lukia.shared.presentation.components.cover.BookCover
 import io.lukia.shared.presentation.components.cover.FavoriteBadge
-import io.lukia.shared.presentation.components.surface.StatusBadge
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 
@@ -220,7 +218,7 @@ private fun RowDetails(
         }
 
         if (!document.exists) {
-            StatusBadge(text = stringResource(document.statusLabel()))
+            BookStatusBadge(document)
         }
     }
 }

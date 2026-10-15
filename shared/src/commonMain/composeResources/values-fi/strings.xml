@@ -470,6 +470,7 @@
     <string name="stats_entry">Lukemisesi</string>
     <string name="stats_title">Lukeminen</string>
     <string name="stats_footnote">Lasketaan tällä laitteella, ja säilytetään täällä.</string>
+    <string name="stats_footnote_synced">Lasketaan jokaisella laitteella, jolla olet kirjautunut tilillesi.</string>
 
     <string name="stats_time_none">Ei vielä</string>
     <string name="stats_time_under_a_minute">Alle minuutti</string>

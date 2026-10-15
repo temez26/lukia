@@ -31,6 +31,8 @@ import org.koin.compose.viewmodel.koinViewModel
 fun StatsScreen(
     onBack: () -> Unit,
     onOpenBook: (String) -> Unit,
+    /** Whether these numbers come from every device on an account rather than from this one alone. */
+    syncedWithAccount: Boolean = false,
     viewModel: StatsViewModel = koinViewModel(),
 ) {
     val summary by viewModel.summary.collectAsState()
@@ -45,6 +47,7 @@ fun StatsScreen(
     StatsContent(
         summary = summary,
         onBack = onBack,
+        syncedWithAccount = syncedWithAccount,
         actions = remember(viewModel, onOpenBook) {
             StatsActions(onOpenBook = onOpenBook, onRetry = viewModel::refresh)
         },
@@ -61,6 +64,7 @@ internal fun StatsContent(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     actions: StatsActions = StatsActions(),
+    syncedWithAccount: Boolean = false,
 ) {
     Box(
         modifier = modifier
@@ -78,6 +82,7 @@ internal fun StatsContent(
             StatsBody(
                 summary = summary,
                 actions = actions,
+                syncedWithAccount = syncedWithAccount,
                 modifier = Modifier.fillMaxSize(),
             )
 

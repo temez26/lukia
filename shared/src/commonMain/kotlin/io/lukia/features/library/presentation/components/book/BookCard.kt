@@ -48,7 +48,6 @@ import io.lukia.shared.presentation.components.controls.rememberHoverFraction
 import io.lukia.shared.presentation.components.cover.BookCover
 import io.lukia.shared.presentation.components.launch.LaunchReveal
 import io.lukia.shared.presentation.components.launch.launchReveal
-import io.lukia.shared.presentation.components.surface.StatusBadge
 import io.lukia.shared.presentation.theme.LukiaElevation
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
@@ -282,10 +281,7 @@ private fun BookCardCaption(
         )
 
         if (!document.exists) {
-            StatusBadge(
-                text = stringResource(document.statusLabel()),
-                modifier = Modifier.padding(top = Space.sm),
-            )
+            BookStatusBadge(document, Modifier.padding(top = Space.sm))
         }
     }
 }

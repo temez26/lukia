@@ -427,6 +427,7 @@
     <string name="stats_entry">Twoje czytanie</string>
     <string name="stats_title">Czytanie</string>
     <string name="stats_footnote">Liczone na tym urządzeniu i zostaje tutaj.</string>
+    <string name="stats_footnote_synced">Liczone na każdym urządzeniu zalogowanym na Twoje konto.</string>
     <string name="stats_time_none">Jeszcze nic</string>
     <string name="stats_time_under_a_minute">Poniżej minuty</string>
     <string name="stats_time_minutes">%1$d\u00A0min</string>

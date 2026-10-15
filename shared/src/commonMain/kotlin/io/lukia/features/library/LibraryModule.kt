@@ -107,6 +107,6 @@ val libraryModule = module {
     }
 
     viewModel { (location: String) ->
-        BookDetailViewModel(location, get(), get(), get(), get(), get())
+        BookDetailViewModel(location, get(), get(), get(), get(), get(), get())
     }
 }

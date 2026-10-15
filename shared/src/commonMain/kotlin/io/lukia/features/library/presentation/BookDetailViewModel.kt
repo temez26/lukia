@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.AppErrorException
 import io.lukia.core.domain.document.ServerBookDownloader
+import io.lukia.core.domain.document.ShelfChanges
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.core.domain.toAppError
 import io.lukia.core.presentation.UiState
@@ -32,6 +33,7 @@ class BookDetailViewModel(
     private val downloader: ServerBookDownloader = ServerBookDownloader { _, _ ->
         throw AppErrorException(AppError.DocumentNotFound)
     },
+    shelfChanges: ShelfChanges = ShelfChanges(),
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState<BookDetails>>(UiState.Loading)
@@ -52,6 +54,13 @@ class BookDetailViewModel(
 
     init {
         load()
+        // A sync can change this book - its place, its favourite - while it is on screen.
+        viewModelScope.launch { shelfChanges.changes.collect { load() } }
+    }
+
+    /** Reads the book again on coming back to it, from the reader or from another app. */
+    fun reload() {
+        if (_uiState.value !is UiState.Loading) load()
     }
 
     /**

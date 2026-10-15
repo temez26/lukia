@@ -19,6 +19,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.library.application.BookDetails
@@ -55,6 +57,8 @@ fun BookDetailScreen(
     // Read in the composition, shown from the effect - a string resource needs
     // the one and the snackbar needs the other.
     val notice = message?.displayText()
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.reload() }
 
     LaunchedEffect(notice) {
         notice?.let {
