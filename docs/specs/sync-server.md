@@ -1,6 +1,6 @@
 # Sync server
 
-Status: In progress
+Status: Done
 
 ## Goal
 
@@ -313,9 +313,10 @@ Recorded in `docs/decisions/`:
       ends is fixed at the moment of signing in; until the reader answers the
       question under the Account page, none of it is sent, while reading done
       since goes either way.
-- [ ] 11. Docs: README, `DIAGNOSTICS.md`, `docs/SERVER.md` (running, backup,
+- [x] 11. Docs: README, `DIAGNOSTICS.md`, `docs/SERVER.md` (running, backup,
       upgrading), ADRs, NOTICE and `checkAttribution` for the server's
-      dependencies.
+      dependencies. The release workflow builds the server image for every
+      run and pushes it to `ghcr.io/<owner>/lukia-server` for a tag.
 
 ## Resolved Questions
 

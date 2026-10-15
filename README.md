@@ -10,9 +10,15 @@ reading in a language you are still learning.
   up: Anthropic, OpenAI, or a model on your own machine.
 - **Keeps a library** on the device: covers, search, filters, favourites and
   your place in each book.
-- **Counts your reading** (time, sittings, streaks) on the device only.
+- **Counts your reading** (time, sittings, streaks).
+- **Syncs, if you want it to,** with a server you run yourself: one library
+  shared by everyone with an account, and each person's place in every book,
+  favourites and reading statistics on all their devices. See
+  [SERVER.md](docs/SERVER.md).
 
-Nothing leaves the device except the words and passages you ask about.
+Without a server, nothing leaves the device except the words and passages you
+ask about. Signed in to one, your place in each book, favourites and reading
+sessions go to that server too - see [what it stores](docs/SERVER.md#what-the-server-stores).
 
 ## Platforms
 
@@ -47,7 +53,7 @@ shared/src/commonMain/kotlin/io/lukia
 ├── di/             application composition
 ├── core/           code shared by more than one feature
 ├── shared/         design system and shared UI components
-└── features/       library, reader, translate, settings, stats
+└── features/       library, reader, translate, settings, stats, account, sync
 ```
 
 Each feature holds up to four layers; a layer with only a file or two is left
@@ -77,6 +83,7 @@ Rules, enforced by `ArchitectureTest`:
 | [CONTRIBUTING.md](docs/CONTRIBUTING.md) | Branches and pull requests |
 | [DIAGNOSTICS.md](docs/DIAGNOSTICS.md) | What the app records, and what it never does |
 | [SECURITY.md](docs/SECURITY.md) | Reporting a vulnerability |
+| [SERVER.md](docs/SERVER.md) | Running, backing up and upgrading the sync server |
 | [specs/](docs/specs) | Specifications for changes in progress |
 | [decisions/](docs/decisions) | Architecture decision records |
 

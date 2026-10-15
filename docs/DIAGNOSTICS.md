@@ -7,6 +7,11 @@ There is no telemetry, no crash-reporting SDK and no network path. Recording is
 off by default, kept in memory, and leaves the device only when the reader
 copies it.
 
+A sync server, when the reader signs in to one, is not a way out for any of
+this: it is sent the reader's place in books, favourites and reading sessions,
+and never a diagnostic entry or a crash report. See
+[SERVER.md](SERVER.md#what-the-server-stores).
+
 ## What is recorded
 
 | Area | Event | When |
