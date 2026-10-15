@@ -536,4 +536,36 @@
     <string name="history_add">Føj til min konto</string>
     <string name="history_keep">Behold på denne enhed</string>
 
+
+    <!-- Where this device stands with the sync server. -->
+    <string name="sync_title">Synkronisering</string>
+    <string name="sync_running">Synkroniserer…</string>
+    <string name="sync_up_to_date">Opdateret</string>
+    <string name="sync_not_yet">Ikke synkroniseret endnu</string>
+    <string name="sync_unreachable">Kan ikke nå %1$s</string>
+    <string name="sync_failed">%1$s kunne ikke gøre synkroniseringen færdig</string>
+    <string name="sync_checked_just_now">Tjekket lige nu</string>
+    <string name="sync_retry_soon">Prøver igen om under et minut.</string>
+    <string name="sync_now">Synkroniser nu</string>
+    <string name="filter_device_only">Kun på denne enhed</string>
+    <string name="book_info_sync">Synkroniseringsserver</string>
+    <string name="book_sync_on_server">På serveren</string>
+    <string name="book_sync_not_downloaded">På serveren, ikke hentet</string>
+    <string name="book_sync_device_only">Kun på denne enhed</string>
+    <plurals name="sync_checked_minutes">
+        <item quantity="one">Tjekket for %1$d minut siden</item>
+        <item quantity="other">Tjekket for %1$d minutter siden</item>
+    </plurals>
+    <plurals name="sync_checked_hours">
+        <item quantity="one">Tjekket for %1$d time siden</item>
+        <item quantity="other">Tjekket for %1$d timer siden</item>
+    </plurals>
+    <plurals name="sync_pending">
+        <item quantity="one">%1$d ændring venter på at blive sendt</item>
+        <item quantity="other">%1$d ændringer venter på at blive sendt</item>
+    </plurals>
+    <plurals name="sync_retry_minutes">
+        <item quantity="one">Prøver igen om %1$d minut.</item>
+        <item quantity="other">Prøver igen om %1$d minutter.</item>
+    </plurals>
 </resources>

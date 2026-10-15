@@ -590,4 +590,36 @@
     <string name="history_add">Lägg till på mitt konto</string>
     <string name="history_keep">Behåll på den här enheten</string>
 
+
+    <!-- Where this device stands with the sync server. -->
+    <string name="sync_title">Synkronisering</string>
+    <string name="sync_running">Synkroniserar…</string>
+    <string name="sync_up_to_date">Uppdaterad</string>
+    <string name="sync_not_yet">Inte synkroniserad än</string>
+    <string name="sync_unreachable">Kan inte nå %1$s</string>
+    <string name="sync_failed">%1$s kunde inte slutföra synkroniseringen</string>
+    <string name="sync_checked_just_now">Kontrollerad nyss</string>
+    <string name="sync_retry_soon">Försöker igen om mindre än en minut.</string>
+    <string name="sync_now">Synkronisera nu</string>
+    <string name="filter_device_only">Bara på den här enheten</string>
+    <string name="book_info_sync">Synkroniseringsserver</string>
+    <string name="book_sync_on_server">På servern</string>
+    <string name="book_sync_not_downloaded">På servern, inte nedladdad</string>
+    <string name="book_sync_device_only">Bara på den här enheten</string>
+    <plurals name="sync_checked_minutes">
+        <item quantity="one">Kontrollerad för %1$d minut sedan</item>
+        <item quantity="other">Kontrollerad för %1$d minuter sedan</item>
+    </plurals>
+    <plurals name="sync_checked_hours">
+        <item quantity="one">Kontrollerad för %1$d timme sedan</item>
+        <item quantity="other">Kontrollerad för %1$d timmar sedan</item>
+    </plurals>
+    <plurals name="sync_pending">
+        <item quantity="one">%1$d ändring väntar på att skickas</item>
+        <item quantity="other">%1$d ändringar väntar på att skickas</item>
+    </plurals>
+    <plurals name="sync_retry_minutes">
+        <item quantity="one">Försöker igen om %1$d minut.</item>
+        <item quantity="other">Försöker igen om %1$d minuter.</item>
+    </plurals>
 </resources>

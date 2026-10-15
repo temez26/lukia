@@ -24,6 +24,12 @@ data class LibraryFacets(
     /** Primary language subtags, lower-cased - see [LibraryBook.language]. */
     val languages: List<String> = emptyList(),
     val hasFavourites: Boolean = false,
+    /**
+     * Some books are on a sync server and some on this device are not. Asked
+     * only of a shelf with server books on it, so a reader who never signed in
+     * is never offered a filter about a server.
+     */
+    val hasDeviceOnly: Boolean = false,
 ) {
     companion object {
         val Empty = LibraryFacets()
@@ -48,6 +54,7 @@ fun List<LibraryBook>.facets(): LibraryFacets {
         authors = dividingValues { it.authors },
         languages = dividingValues { listOfNotNull(it.language) },
         hasFavourites = divides { it.document.isFavorite },
+        hasDeviceOnly = any { it.document.onServer } && divides { it.document.exists && !it.document.onServer },
     )
 }
 

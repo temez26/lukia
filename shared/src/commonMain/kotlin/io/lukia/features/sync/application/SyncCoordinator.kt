@@ -2,17 +2,23 @@ package io.lukia.features.sync.application
 
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.features.account.application.AccountSession
+import io.lukia.features.account.domain.AccountFailure
+import io.lukia.features.account.domain.AccountProblem
 import io.lukia.features.account.domain.AccountStatus
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -39,12 +45,18 @@ class SyncCoordinator(
      * See `BookStateStore.waiting` and `SessionStore.waiting`.
      */
     private val waiting: Flow<Long>,
+    private val nowMillis: () -> Long = { Clock.System.now().toEpochMilliseconds() },
 ) {
     /** One round at a time: two would send the same changes twice and race over the cursors. */
     private val oneAtATime = Mutex()
 
     /** Rounds that have failed in a row; while above zero, another is on its way. */
     private val failedRounds = MutableStateFlow(0)
+
+    private val _status = MutableStateFlow(SyncStatus())
+
+    /** How the last round went and whether one is running - see [SyncStatus]. */
+    val status: StateFlow<SyncStatus> = _status.asStateFlow()
 
     @OptIn(FlowPreview::class)
     suspend fun run() = coroutineScope {
@@ -57,6 +69,7 @@ class SyncCoordinator(
                     }
                     AccountStatus.SignedOut -> {
                         failedRounds.value = 0
+                        _status.value = SyncStatus()
                         forgetServer()
                     }
                     is AccountStatus.NeedsSignIn -> Unit
@@ -85,8 +98,21 @@ class SyncCoordinator(
     /** One round, now - see [SyncRoundUseCase]. Does nothing unless signed in. */
     suspend fun syncNow() = oneAtATime.withLock {
         if (session.status.value !is AccountStatus.SignedIn) return@withLock
-        val succeeded = runCatchingApp { round() }.isSuccess
-        failedRounds.value = if (succeeded) 0 else failedRounds.value + 1
+        _status.update { it.copy(running = true) }
+
+        val failure = runCatchingApp { round() }.exceptionOrNull()
+        failedRounds.value = if (failure == null) 0 else failedRounds.value + 1
+        _status.update { previous ->
+            if (failure == null) {
+                SyncStatus(lastSyncedAt = nowMillis())
+            } else {
+                previous.copy(
+                    running = false,
+                    problem = (failure as? AccountFailure)?.problem ?: AccountProblem.ServerFailed,
+                    retryAt = nowMillis() + retryAfter(failedRounds.value).inWholeMilliseconds,
+                )
+            }
+        }
     }
 
     private companion object {

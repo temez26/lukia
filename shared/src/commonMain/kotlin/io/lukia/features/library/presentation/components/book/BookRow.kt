@@ -189,6 +189,7 @@ private fun RowDetails(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f, fill = false),
             )
+            if (document.alsoOnServer) OnServerMark(Modifier.padding(start = Space.xs))
 
             // Only for a book somebody has started. A bar at nothing on every
             // unread row would turn a shelf into a progress report.

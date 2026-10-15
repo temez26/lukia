@@ -22,6 +22,8 @@ data class LibraryQuery(
     val shelf: LibraryShelf = LibraryShelf.All,
     val search: String = "",
     val favouritesOnly: Boolean = false,
+    /** Only books on this device that the sync server does not have - the ones that could be added to it. */
+    val deviceOnly: Boolean = false,
     /** One format, or null for every format the library holds. */
     val format: DocumentType? = null,
     /** A subject as the document wrote it; matched without regard to case. */
@@ -37,6 +39,7 @@ data class LibraryQuery(
      */
     val isRefined: Boolean
         get() = favouritesOnly ||
+            deviceOnly ||
             format != null ||
             category != null ||
             author != null ||
@@ -56,6 +59,7 @@ data class LibraryQuery(
     /** Everything in the filter menu off, leaving the shelf and the search alone. */
     fun cleared(): LibraryQuery = copy(
         favouritesOnly = false,
+        deviceOnly = false,
         format = null,
         category = null,
         author = null,
@@ -73,6 +77,7 @@ data class LibraryQuery(
     fun limitedTo(facets: LibraryFacets): LibraryQuery = copy(
         shelf = shelf.takeIf { it in facets.shelves } ?: LibraryShelf.All,
         favouritesOnly = favouritesOnly && facets.hasFavourites,
+        deviceOnly = deviceOnly && facets.hasDeviceOnly,
         format = format?.takeIf { it in facets.formats },
         category = category?.takeIf { facets.categories.holds(it) },
         author = author?.takeIf { facets.authors.holds(it) },
@@ -93,14 +98,19 @@ fun List<LibraryBook>.matching(query: LibraryQuery): List<LibraryBook> {
 
     return filter { book ->
         query.shelf.matches(book) &&
-            (!query.favouritesOnly || book.document.isFavorite) &&
-            (query.format == null || book.document.type == query.format) &&
-            (query.category == null || book.categories.holds(query.category)) &&
-            (query.author == null || book.authors.holds(query.author)) &&
-            (query.language == null || book.language == query.language) &&
+            query.refinesTo(book) &&
             (search.isEmpty() || book.searchKey.contains(search))
     }.sortedFor(query.sort)
 }
+
+/** Whether [book] passes everything in the filter menu - see [LibraryQuery.isRefined]. */
+private fun LibraryQuery.refinesTo(book: LibraryBook): Boolean =
+    (!favouritesOnly || book.document.isFavorite) &&
+        (!deviceOnly || book.isDeviceOnly) &&
+        (format == null || book.document.type == format) &&
+        (category == null || book.categories.holds(category)) &&
+        (author == null || book.authors.holds(author)) &&
+        (language == null || book.language == language)
 
 /**
  * What the search screen finds for [term]: the whole library, and nothing the
@@ -115,3 +125,7 @@ fun List<LibraryBook>.matching(query: LibraryQuery): List<LibraryBook> {
  */
 fun List<LibraryBook>.searching(term: String): List<LibraryBook> =
     if (term.isBlank()) emptyList() else matching(LibraryQuery(search = term))
+
+/** On this device and not on the sync server: a book that could be added to it. */
+private val LibraryBook.isDeviceOnly: Boolean
+    get() = document.exists && !document.onServer

@@ -252,3 +252,25 @@ fun CopyGlyph(
         drawPath(path = front, color = tint, style = stroke)
     }
 }
+
+/** A cloud: the book is in the sync server's shared library. */
+@Composable
+fun CloudGlyph(
+    tint: Color,
+    modifier: Modifier = Modifier,
+) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+
+        val cloud = Path().apply {
+            moveTo(w * 0.28f, h * 0.76f)
+            arcTo(Rect(w * 0.08f, h * 0.46f, w * 0.38f, h * 0.76f), 90f, 180f, false)
+            arcTo(Rect(w * 0.24f, h * 0.24f, w * 0.68f, h * 0.68f), 205f, 150f, false)
+            arcTo(Rect(w * 0.56f, h * 0.42f, w * 0.90f, h * 0.76f), 290f, 160f, false)
+            close()
+        }
+
+        drawPath(path = cloud, color = tint, style = glyphStroke())
+    }
+}

@@ -537,4 +537,36 @@
     <string name="history_add">Zu meinem Konto hinzufügen</string>
     <string name="history_keep">Auf diesem Gerät behalten</string>
 
+
+    <!-- Where this device stands with the sync server. -->
+    <string name="sync_title">Synchronisierung</string>
+    <string name="sync_running">Wird synchronisiert…</string>
+    <string name="sync_up_to_date">Auf dem neuesten Stand</string>
+    <string name="sync_not_yet">Noch nicht synchronisiert</string>
+    <string name="sync_unreachable">%1$s ist nicht erreichbar</string>
+    <string name="sync_failed">%1$s konnte die Synchronisierung nicht abschließen</string>
+    <string name="sync_checked_just_now">Gerade eben geprüft</string>
+    <string name="sync_retry_soon">Neuer Versuch in weniger als einer Minute.</string>
+    <string name="sync_now">Jetzt synchronisieren</string>
+    <string name="filter_device_only">Nur auf diesem Gerät</string>
+    <string name="book_info_sync">Sync-Server</string>
+    <string name="book_sync_on_server">Auf dem Server</string>
+    <string name="book_sync_not_downloaded">Auf dem Server, nicht heruntergeladen</string>
+    <string name="book_sync_device_only">Nur auf diesem Gerät</string>
+    <plurals name="sync_checked_minutes">
+        <item quantity="one">Vor %1$d Minute geprüft</item>
+        <item quantity="other">Vor %1$d Minuten geprüft</item>
+    </plurals>
+    <plurals name="sync_checked_hours">
+        <item quantity="one">Vor %1$d Stunde geprüft</item>
+        <item quantity="other">Vor %1$d Stunden geprüft</item>
+    </plurals>
+    <plurals name="sync_pending">
+        <item quantity="one">%1$d Änderung wartet auf das Senden</item>
+        <item quantity="other">%1$d Änderungen warten auf das Senden</item>
+    </plurals>
+    <plurals name="sync_retry_minutes">
+        <item quantity="one">Neuer Versuch in %1$d Minute.</item>
+        <item quantity="other">Neuer Versuch in %1$d Minuten.</item>
+    </plurals>
 </resources>

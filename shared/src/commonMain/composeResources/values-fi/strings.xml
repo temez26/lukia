@@ -605,4 +605,36 @@
     <string name="history_add">Lisää tililleni</string>
     <string name="history_keep">Pidä tällä laitteella</string>
 
+
+    <!-- Where this device stands with the sync server. -->
+    <string name="sync_title">Synkronointi</string>
+    <string name="sync_running">Synkronoidaan…</string>
+    <string name="sync_up_to_date">Ajan tasalla</string>
+    <string name="sync_not_yet">Ei vielä synkronoitu</string>
+    <string name="sync_unreachable">Palvelimeen %1$s ei saada yhteyttä</string>
+    <string name="sync_failed">%1$s ei saanut synkronointia valmiiksi</string>
+    <string name="sync_checked_just_now">Tarkistettu juuri äsken</string>
+    <string name="sync_retry_soon">Yritetään uudelleen alle minuutin kuluttua.</string>
+    <string name="sync_now">Synkronoi nyt</string>
+    <string name="filter_device_only">Vain tällä laitteella</string>
+    <string name="book_info_sync">Synkronointipalvelin</string>
+    <string name="book_sync_on_server">Palvelimella</string>
+    <string name="book_sync_not_downloaded">Palvelimella, ei ladattu</string>
+    <string name="book_sync_device_only">Vain tällä laitteella</string>
+    <plurals name="sync_checked_minutes">
+        <item quantity="one">Tarkistettu %1$d minuutti sitten</item>
+        <item quantity="other">Tarkistettu %1$d minuuttia sitten</item>
+    </plurals>
+    <plurals name="sync_checked_hours">
+        <item quantity="one">Tarkistettu %1$d tunti sitten</item>
+        <item quantity="other">Tarkistettu %1$d tuntia sitten</item>
+    </plurals>
+    <plurals name="sync_pending">
+        <item quantity="one">%1$d muutos odottaa lähetystä</item>
+        <item quantity="other">%1$d muutosta odottaa lähetystä</item>
+    </plurals>
+    <plurals name="sync_retry_minutes">
+        <item quantity="one">Yritetään uudelleen %1$d minuutin kuluttua.</item>
+        <item quantity="other">Yritetään uudelleen %1$d minuutin kuluttua.</item>
+    </plurals>
 </resources>

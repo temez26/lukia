@@ -182,6 +182,7 @@ internal fun BookDetailBody(
             InformationCard(
                 details = details,
                 color = infoCardColor,
+                showServer = canUpload,
                 modifier = Modifier.padding(top = dimens.sectionSpacing),
             )
 

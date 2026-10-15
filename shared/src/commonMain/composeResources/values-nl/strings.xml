@@ -536,4 +536,36 @@
     <string name="history_add">Toevoegen aan mijn account</string>
     <string name="history_keep">Op dit apparaat houden</string>
 
+
+    <!-- Where this device stands with the sync server. -->
+    <string name="sync_title">Synchronisatie</string>
+    <string name="sync_running">Bezig met synchroniseren…</string>
+    <string name="sync_up_to_date">Bijgewerkt</string>
+    <string name="sync_not_yet">Nog niet gesynchroniseerd</string>
+    <string name="sync_unreachable">%1$s is niet bereikbaar</string>
+    <string name="sync_failed">%1$s kon de synchronisatie niet voltooien</string>
+    <string name="sync_checked_just_now">Zojuist gecontroleerd</string>
+    <string name="sync_retry_soon">Over minder dan een minuut opnieuw proberen.</string>
+    <string name="sync_now">Nu synchroniseren</string>
+    <string name="filter_device_only">Alleen op dit apparaat</string>
+    <string name="book_info_sync">Synchronisatieserver</string>
+    <string name="book_sync_on_server">Op de server</string>
+    <string name="book_sync_not_downloaded">Op de server, niet gedownload</string>
+    <string name="book_sync_device_only">Alleen op dit apparaat</string>
+    <plurals name="sync_checked_minutes">
+        <item quantity="one">%1$d minuut geleden gecontroleerd</item>
+        <item quantity="other">%1$d minuten geleden gecontroleerd</item>
+    </plurals>
+    <plurals name="sync_checked_hours">
+        <item quantity="one">%1$d uur geleden gecontroleerd</item>
+        <item quantity="other">%1$d uur geleden gecontroleerd</item>
+    </plurals>
+    <plurals name="sync_pending">
+        <item quantity="one">%1$d wijziging wacht om verstuurd te worden</item>
+        <item quantity="other">%1$d wijzigingen wachten om verstuurd te worden</item>
+    </plurals>
+    <plurals name="sync_retry_minutes">
+        <item quantity="one">Over %1$d minuut opnieuw proberen.</item>
+        <item quantity="other">Over %1$d minuten opnieuw proberen.</item>
+    </plurals>
 </resources>

@@ -33,6 +33,7 @@ import io.lukia.resources.filter_all_languages
 import io.lukia.resources.filter_author
 import io.lukia.resources.filter_category
 import io.lukia.resources.filter_clear
+import io.lukia.resources.filter_device_only
 import io.lukia.resources.filter_favourites
 import io.lukia.resources.filter_format
 import io.lukia.resources.filter_language
@@ -40,6 +41,7 @@ import io.lukia.shared.presentation.components.controls.LukiaChip
 import io.lukia.shared.presentation.components.icons.HeartGlyph
 import io.lukia.shared.presentation.components.icons.LayoutGlyph
 import io.lukia.shared.presentation.components.icons.SortGlyph
+import io.lukia.shared.presentation.components.icons.UploadGlyph
 import io.lukia.shared.presentation.components.menu.AnchoredMenu
 import io.lukia.shared.presentation.components.menu.MenuRow
 import io.lukia.shared.presentation.components.menu.MenuSeparator
@@ -91,6 +93,15 @@ internal fun LibraryFilterBar(
                 icon = { tint, glyph ->
                     HeartGlyph(tint = tint, filled = query.favouritesOnly, modifier = glyph)
                 },
+            )
+        }
+
+        if (facets.hasDeviceOnly) {
+            LukiaChip(
+                label = stringResource(Res.string.filter_device_only),
+                selected = query.deviceOnly,
+                onClick = { onQueryChange(query.copy(deviceOnly = !query.deviceOnly)) },
+                icon = { tint, glyph -> UploadGlyph(tint = tint, modifier = glyph) },
             )
         }
 
