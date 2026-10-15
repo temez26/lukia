@@ -178,6 +178,31 @@ class SignInRoutesTest {
         assertEquals(HttpStatusCode.BadRequest, response.status)
         assertEquals(ApiErrorCodes.BadRequest, response.errorCode())
     }
+
+    @Test
+    fun `a JSON body too large to be a request is refused unread`() = serverTest { client ->
+        val response = client.post(ApiRoutes.SignIn) {
+            contentType(ContentType.Application.Json)
+            setBody("\"" + "x".repeat(100_000) + "\"")
+        }
+
+        assertEquals(HttpStatusCode.PayloadTooLarge, response.status)
+        assertEquals(ApiErrorCodes.TooLarge, response.errorCode())
+    }
+
+    @Test
+    fun `signing in successfully gives back the attempt it was counted as`() {
+        val clock = TestClock()
+
+        serverTest(clock = clock) { client ->
+            client.setUpAdmin()
+            repeat(9) { client.postJson(ApiRoutes.SignIn, Credentials("admin", "not the password")) }
+            repeat(3) {
+                val response = client.postJson(ApiRoutes.SignIn, Credentials("admin", AdminPassword))
+                assertEquals(HttpStatusCode.OK, response.status)
+            }
+        }
+    }
 }
 
 suspend fun HttpClient.me(tokens: TokenResponse): HttpResponse = get(ApiRoutes.Me) { bearerAuth(tokens.accessToken) }

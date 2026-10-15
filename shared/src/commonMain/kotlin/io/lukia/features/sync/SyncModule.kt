@@ -41,7 +41,7 @@ val syncModule = module {
 
     single { ForgetServerUseCase(get(), get(), get()) }
 
-    single { SyncRoundUseCase(get(), get(), get(), get()) }
+    single { SyncRoundUseCase(get(), get(), get(), get(), get()) }
 
     single { SessionApi(ServerHttp(serverHttpClient())) }
 

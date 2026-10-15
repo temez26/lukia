@@ -19,11 +19,16 @@ class SqlContentHashStore(
         }
     }
 
-    /** The book and its sittings together, so a sitting is never left nameless beside a named book. */
+    /**
+     * The book, its sittings and what was done to it before now, together: a
+     * sitting is never left nameless beside a named book, and a place or a
+     * favourite never left out of the outbox - see `SyncOutbox.sq`.
+     */
     override suspend fun record(location: String, contentHash: String) = withContext(dispatcher) {
         database.transaction {
             database.documentQueries.setContentHash(contentHash, location)
             database.readingSessionQueries.nameBook(contentHash = contentHash, location = location)
+            database.syncOutboxQueries.queueBook(location)
         }
     }
 }

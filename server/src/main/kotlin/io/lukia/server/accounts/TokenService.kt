@@ -32,8 +32,7 @@ class TokenService(
     /** Starts a new sign-in for [accountId]. */
     fun issue(accountId: Long): TokenResponse = database.transactionWithResult {
         val now = clock.millis()
-        queries.deleteExpiredFamilies(now)
-        queries.deleteExpiredAccess(now)
+        sweep(now)
 
         queries.insertFamily(accountId, now)
         issueInFamily(database.accountQueries.lastInsertId().executeAsOne(), now)
@@ -51,6 +50,7 @@ class TokenService(
     fun refresh(refreshToken: String): TokenResponse {
         val outcome = database.transactionWithResult {
             val now = clock.millis()
+            sweep(now)
             val hash = secrets.hash(refreshToken)
             val stored = queries.selectRefresh(hash).executeAsOneOrNull()
 
@@ -81,6 +81,12 @@ class TokenService(
 
     fun revokeAll(accountId: Long) {
         queries.deleteFamiliesOfAccount(accountId)
+    }
+
+    private fun sweep(now: Long) {
+        queries.deleteExpiredFamilies(now)
+        queries.deleteExpiredAccess(now)
+        queries.deleteExpiredRefresh(now)
     }
 
     private fun issueInFamily(familyId: Long, now: Long): TokenResponse {

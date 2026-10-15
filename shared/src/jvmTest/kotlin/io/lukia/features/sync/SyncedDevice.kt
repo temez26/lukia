@@ -11,6 +11,8 @@ import io.lukia.features.account.application.AccountSession
 import io.lukia.features.account.infrastructure.KtorServerApi
 import io.lukia.features.account.infrastructure.ServerHttp
 import io.lukia.features.account.infrastructure.serverHttpClient
+import io.lukia.features.library.application.HashLibraryUseCase
+import io.lukia.features.library.infrastructure.SqlContentHashStore
 import io.lukia.features.library.infrastructure.SqlLibraryRepository
 import io.lukia.features.library.infrastructure.SqlServerShelf
 import io.lukia.features.reader.infrastructure.SqlPdfLayoutRepository
@@ -18,6 +20,7 @@ import io.lukia.features.reader.infrastructure.SqlReadingProgressRepository
 import io.lukia.features.reader.infrastructure.SqlReadingSessionRepository
 import io.lukia.features.sync.application.PullServerLibraryUseCase
 import io.lukia.features.sync.application.SyncBookStateUseCase
+import io.lukia.features.sync.application.SyncRoundUseCase
 import io.lukia.features.sync.application.SyncSessionsUseCase
 import io.lukia.features.sync.infrastructure.BookStateApi
 import io.lukia.features.sync.infrastructure.BookStateStore
@@ -58,6 +61,10 @@ class SyncedDevice(private val server: TestSyncServer) : AutoCloseable {
     private val syncState = SyncBookStateUseCase(session, BookStateApi(http), store, cursors, ShelfChanges())
     val syncSessions = SyncSessionsUseCase(session, SessionApi(http), sessionStore, HistoryChoice(settings), cursors)
 
+    /** Server books arrive hashed, and the tests import no others, so nothing here needs reading. */
+    private val hashLibrary = HashLibraryUseCase(SqlContentHashStore(database, Dispatchers.Unconfined)) { null }
+    private val round = SyncRoundUseCase(hashLibrary, pull, syncState, syncSessions, cursors)
+
     suspend fun signIn(setUp: Boolean) {
         if (setUp) {
             session.setUp(server.address, "reader", "correct horse battery")
@@ -71,7 +78,12 @@ class SyncedDevice(private val server: TestSyncServer) : AutoCloseable {
     /** Signs out, leaving the shelf as it was - what a reader who never signed in would have. */
     suspend fun forgetSignIn() = session.signOut()
 
-    suspend fun pullLibrary() = pull()
+    suspend fun pullLibrary() {
+        pull()
+    }
+
+    /** Everything, as the coordinator runs it. */
+    suspend fun round() = round.invoke()
 
     suspend fun sync() {
         syncState()

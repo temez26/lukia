@@ -22,14 +22,13 @@ CREATE TABLE sync_outbox (
 );
 
 -- A change to the book at `location`, for a book whose hash is known. One not
--- hashed yet is caught by `snapshot` once it is.
+-- hashed yet is caught by `queueBook` once it is.
 record:
 INSERT OR REPLACE INTO sync_outbox(kind, key, changedAt)
 SELECT :kind, contentHash, :changedAt FROM document
 WHERE location = :location AND contentHash IS NOT NULL;
 
--- What the device already had when it first signed in, or what changed before
--- its book was hashed: every position, chosen layout and favourite, dated as
+-- What the device already had when it first signed in: every position, chosen layout and favourite, dated as
 -- old as can be so that anything the account already knows wins over it, and
 -- left alone where a real change is already waiting.
 snapshotProgress:
@@ -48,6 +47,21 @@ snapshotFavorite:
 INSERT OR IGNORE INTO sync_outbox(kind, key, changedAt)
 SELECT 'favorite', contentHash, 1 FROM document
 WHERE isFavorite = 1 AND contentHash IS NOT NULL;
+
+-- The snapshot above for one book just hashed: what was done to it before then
+-- could not be noted, and the sign-in's snapshot may be long past.
+queueBook:
+INSERT OR IGNORE INTO sync_outbox(kind, key, changedAt)
+SELECT 'progress', d.contentHash, 1 FROM document d
+JOIN reading_position p ON p.location = d.location
+WHERE d.location = :location AND d.contentHash IS NOT NULL
+UNION ALL
+SELECT 'layout', d.contentHash, 1 FROM document d
+JOIN reader_layout l ON l.location = d.location
+WHERE d.location = :location AND d.contentHash IS NOT NULL
+UNION ALL
+SELECT 'favorite', contentHash, 1 FROM document
+WHERE location = :location AND isFavorite = 1 AND contentHash IS NOT NULL;
 
 selectAll:
 SELECT * FROM sync_outbox ORDER BY key, kind;

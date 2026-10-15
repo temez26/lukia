@@ -31,35 +31,45 @@ class PullServerLibraryUseCase(
     private val cursors: SyncCursors,
     private val changes: ShelfChanges,
 ) {
-    suspend operator fun invoke() {
+    /** Whether a book came onto the shelf that was not on it before. */
+    suspend operator fun invoke(): Boolean {
         var since = cursors.books()
         var changed = false
+        var added = false
 
         do {
             val page = session.authorized { address, token -> api.changes(address, token, since) }
-            page.items.forEach { changed = apply(it) || changed }
+            page.items.forEach { book ->
+                when (apply(book)) {
+                    Outcome.Added -> added = true
+                    Outcome.Changed -> changed = true
+                    Outcome.Unchanged -> Unit
+                }
+            }
             since = page.cursor
             cursors.setBooks(since)
         } while (page.hasMore)
 
-        if (changed) changes.announce()
+        if (changed || added) changes.announce()
+        return added
     }
 
-    /** Whether the shelf changed. */
-    private suspend fun apply(book: BookResponse): Boolean {
+    private enum class Outcome { Added, Changed, Unchanged }
+
+    private suspend fun apply(book: BookResponse): Outcome {
         if (book.deleted) {
             shelf.removeUndownloaded(book.id)
             shelf.markOnServer(book.id, onServer = false)
-            return true
+            return Outcome.Changed
         }
 
         if (shelf.locationOf(book.id) != null) {
             shelf.markOnServer(book.id, onServer = true)
-            return true
+            return Outcome.Changed
         }
 
-        val type = DocumentType.entries.firstOrNull { it.name == book.type } ?: return false
-        if (type == DocumentType.UNKNOWN) return false
+        val type = DocumentType.entries.firstOrNull { it.name == book.type } ?: return Outcome.Unchanged
+        if (type == DocumentType.UNKNOWN) return Outcome.Unchanged
 
         val extension = book.fileName.substringAfterLast('.', "")
         shelf.addServerBook(
@@ -74,7 +84,7 @@ class PullServerLibraryUseCase(
             ),
             contentHash = book.id,
         )
-        return true
+        return Outcome.Added
     }
 
     /** A cover that fails to arrive is a book without one, not a catch-up that stops. */

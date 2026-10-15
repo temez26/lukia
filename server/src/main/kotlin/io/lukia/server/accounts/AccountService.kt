@@ -50,13 +50,12 @@ class AccountService(
     }
 
     fun signIn(credentials: Credentials, address: String): TokenResponse {
-        throttle.check(credentials.username, address)
+        throttle.begin(credentials.username, address)
 
         val account = accounts.selectByUsername(credentials.username).executeAsOneOrNull()
         val matches = hasher.verify(credentials.password, account?.passwordHash ?: decoyHash)
 
         if (account == null || !matches) {
-            throttle.recordFailure(credentials.username, address)
             throw ApiException(
                 HttpStatusCode.Unauthorized,
                 ApiErrorCodes.InvalidCredentials,
@@ -64,7 +63,7 @@ class AccountService(
             )
         }
 
-        throttle.clear(credentials.username)
+        throttle.succeeded(credentials.username, address)
         return tokens.issue(account.id)
     }
 

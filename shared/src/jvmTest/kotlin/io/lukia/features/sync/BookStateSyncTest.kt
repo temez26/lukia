@@ -116,6 +116,22 @@ class BookStateSyncTest {
     }
 
     @Test
+    fun aPlaceArrivingBeforeItsBookIsKeptForWhenTheBookComes() = runBlocking {
+        phone.signIn(setUp = true)
+        phone.session.authorized { _, token -> server.upload(token, "moby-dick.epub", epub) }
+        phone.pullLibrary()
+        phone.progress.save(phone.locationOfBook(), ReadingProgress(pageIndex = 41, pageCount = 300))
+        phone.sync()
+
+        // The laptop hears of the place before it has the book to put it in.
+        laptop.signIn(setUp = false)
+        laptop.sync()
+        laptop.round()
+
+        assertEquals(41, laptop.progress.progressFor(laptop.locationOfBook())?.pageIndex)
+    }
+
+    @Test
     fun nothingIsLeftWaitingOnceTheServerHasIt() = runBlocking {
         bothOnTheSameBook()
 

@@ -24,6 +24,7 @@ import io.lukia.server.accounts.accountRoutes
 import io.lukia.server.db.ServerDatabase
 import io.lukia.server.health.healthRoutes
 import io.lukia.server.http.ApiException
+import io.lukia.server.http.JsonBodyLimit
 import io.lukia.server.http.SecurityHeaders
 import io.lukia.server.library.BookFiles
 import io.lukia.server.library.LibraryService
@@ -55,6 +56,7 @@ fun Application.lukiaServer(
 
     install(ContentNegotiation) { json() }
     install(SecurityHeaders)
+    install(JsonBodyLimit)
 
     // Lets a download that broke off resume where it stopped, rather than
     // starting a hundred-megabyte PDF again.

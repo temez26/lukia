@@ -67,8 +67,8 @@ deleteFamiliesOfAccount:
 DELETE FROM auth_family WHERE accountId = ?;
 
 -- Families whose every refresh token has expired can never issue again. Swept
--- on each sign-in rather than on a schedule: a household signs in rarely enough
--- that the sweep costs nothing, and often enough that nothing piles up.
+-- on each sign-in and refresh rather than on a schedule: the tables stay small
+-- enough that the sweep costs nothing, and nothing piles up.
 deleteExpiredFamilies:
 DELETE FROM auth_family
 WHERE NOT EXISTS (
@@ -78,3 +78,9 @@ WHERE NOT EXISTS (
 
 deleteExpiredAccess:
 DELETE FROM access_token WHERE expiresAt <= :now;
+
+-- A family in use lives on through each rotation, and leaves a spent refresh
+-- token behind every time. Past its expiry one is refused either way, so its
+-- row has nothing left to tell.
+deleteExpiredRefresh:
+DELETE FROM refresh_token WHERE expiresAt <= :now;

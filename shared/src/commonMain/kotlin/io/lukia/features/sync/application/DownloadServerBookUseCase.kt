@@ -8,7 +8,8 @@ import io.lukia.core.domain.document.ShelfChanges
 import io.lukia.features.account.application.AccountSession
 import io.lukia.features.library.domain.ServerShelf
 import io.lukia.features.sync.infrastructure.ServerLibraryApi
-import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 
 /**
  * Fetches a server book onto the device, so it opens like any other from then
@@ -31,6 +32,7 @@ class DownloadServerBookUseCase(
             ?: throw AppErrorException(AppError.DocumentNotFound)
 
         val writer = files.open(contentHash, extension)
+        var committed = false
         try {
             // A refused token is found from the response's status, before a
             // byte of the body is written - so `authorized` asking twice never
@@ -39,12 +41,11 @@ class DownloadServerBookUseCase(
                 api.download(address, token, contentHash, writer::write, onProgress)
             }
             writer.commit()
-        } catch (failure: CancellationException) {
-            writer.abort()
-            throw failure
-        } catch (failure: AppErrorException) {
-            writer.abort()
-            throw failure
+            committed = true
+        } finally {
+            // Whatever stopped it, cancellation included - which is why this
+            // cleanup must not itself be cancellable.
+            if (!committed) withContext(NonCancellable) { writer.abort() }
         }
 
         shelf.markDownloaded(location)

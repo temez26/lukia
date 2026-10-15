@@ -55,9 +55,10 @@ SELECT * FROM book WHERE seq > :since ORDER BY seq LIMIT :limit;
 
 -- Separate statements rather than an upsert, for the app's reason (SQLite 3.9 on
 -- old Androids) - which does not apply here, but one dialect across the project
--- is worth more than the one statement it saves.
+-- is worth more than the one statement it saves. `OR IGNORE` for the same book
+-- uploaded twice at once: the second finds the first's row, by `changes()`.
 insert:
-INSERT INTO book(id, fileName, type, sizeBytes, hasCover, metaTitle, metaAuthors, metaPublisher, metaPublished, metaLanguage, metaDescription, metaSubjects, metaIdentifier, addedBy, addedAt, seq)
+INSERT OR IGNORE INTO book(id, fileName, type, sizeBytes, hasCover, metaTitle, metaAuthors, metaPublisher, metaPublished, metaLanguage, metaDescription, metaSubjects, metaIdentifier, addedBy, addedAt, seq)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(seq), 0) + 1 FROM book));
 
 -- A removed book uploaded again: back on the shelf as a new change, read

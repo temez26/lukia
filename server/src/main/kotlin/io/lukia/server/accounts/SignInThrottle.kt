@@ -4,7 +4,6 @@ import io.ktor.http.HttpStatusCode
 import io.lukia.api.ApiErrorCodes
 import io.lukia.server.http.ApiException
 import java.time.Clock
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -25,38 +24,39 @@ class SignInThrottle(
 ) {
     private class Window(val startedAt: Long, val failures: Int)
 
-    private val failures = ConcurrentHashMap<String, Window>()
+    private val failures = HashMap<String, Window>()
 
-    fun check(username: String, address: String) {
-        if (count(usernameKey(username)) >= maxPerUsername || count(addressKey(address)) >= maxPerAddress) {
+    /**
+     * Counts an attempt as failed before its password is checked, so attempts
+     * sent all at once cannot each slip under the limit while the slow hash
+     * runs. One that succeeds is given back with [succeeded].
+     */
+    fun begin(username: String, address: String) = synchronized(this) {
+        val now = clock.millis()
+        val keys = listOf(usernameKey(username), addressKey(address))
+        if (count(keys[0], now) >= maxPerUsername || count(keys[1], now) >= maxPerAddress) {
             throw ApiException(
                 HttpStatusCode.TooManyRequests,
                 ApiErrorCodes.TooManyAttempts,
                 "Too many failed sign-ins. Try again in a few minutes.",
             )
         }
-    }
 
-    fun recordFailure(username: String, address: String) {
-        val now = clock.millis()
         if (failures.size > PruneAbove) failures.values.removeIf { it.isOver(now) }
-
-        listOf(usernameKey(username), addressKey(address)).forEach { key ->
-            failures.compute(key) { _, current ->
-                when {
-                    current == null || current.isOver(now) -> Window(now, 1)
-                    else -> Window(current.startedAt, current.failures + 1)
-                }
-            }
+        keys.forEach { key ->
+            val current = failures[key]?.takeUnless { it.isOver(now) }
+            failures[key] = Window(current?.startedAt ?: now, (current?.failures ?: 0) + 1)
         }
     }
 
-    /** A successful sign-in clears its username, so the owner is not locked out by their own typos. */
-    fun clear(username: String) {
+    /** Clears the username, so the owner is not locked out by their own typos, and gives the address its attempt back. */
+    fun succeeded(username: String, address: String) = synchronized(this) {
         failures.remove(usernameKey(username))
+        val key = addressKey(address)
+        failures[key]?.let { failures[key] = Window(it.startedAt, (it.failures - 1).coerceAtLeast(0)) }
     }
 
-    private fun count(key: String): Int = failures[key]?.takeUnless { it.isOver(clock.millis()) }?.failures ?: 0
+    private fun count(key: String, now: Long): Int = failures[key]?.takeUnless { it.isOver(now) }?.failures ?: 0
 
     private fun Window.isOver(now: Long) = now - startedAt >= window.inWholeMilliseconds
 

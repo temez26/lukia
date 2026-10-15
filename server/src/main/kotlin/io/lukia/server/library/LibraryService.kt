@@ -53,7 +53,7 @@ class LibraryService(
         // The file goes into place before the row exists, so no row ever names a missing file.
         files.store(upload.file, upload.id)
 
-        database.transaction {
+        val isNew = database.transactionWithResult {
             val now = clock.millis()
             if (existing == null) {
                 books.insert(
@@ -81,10 +81,13 @@ class LibraryService(
                     id = upload.id,
                 )
             }
-            cover?.let { books.insertCover(upload.id, it) }
+            // Nothing changed when the same book, uploaded at the same moment, got here first.
+            val added = database.accountQueries.changes().executeAsOne() > 0L
+            if (added) cover?.let { books.insertCover(upload.id, it) }
+            added
         }
 
-        return Added(books.selectById(upload.id).executeAsOne().toResponse(), isNew = true)
+        return Added(books.selectById(upload.id).executeAsOne().toResponse(), isNew)
     }
 
     fun changesSince(since: Long, limit: Int): ChangePage<BookResponse> =

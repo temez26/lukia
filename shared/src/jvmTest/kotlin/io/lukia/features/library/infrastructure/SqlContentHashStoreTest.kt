@@ -68,6 +68,20 @@ class SqlContentHashStoreTest {
     }
 
     @Test
+    fun whatWasDoneToABookBeforeItsHashWasKnownWaitsToBeSent() = runTest {
+        library.addDocument(book("moby.pdf"))
+        library.setFavorite(location("moby.pdf"), true)
+        database.readingPositionQueries.put(location("moby.pdf"), 41, 300)
+
+        store.record(location("moby.pdf"), MobyHash)
+
+        assertEquals(
+            setOf("favorite" to MobyHash, "progress" to MobyHash),
+            database.syncOutboxQueries.selectAll().executeAsList().map { it.kind to it.key }.toSet(),
+        )
+    }
+
+    @Test
     fun reImportingTheSameFileKeepsTheHash() = runTest {
         library.addDocument(book("moby.pdf"))
         store.record(location("moby.pdf"), MobyHash)
