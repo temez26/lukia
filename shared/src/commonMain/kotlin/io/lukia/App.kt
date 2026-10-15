@@ -8,10 +8,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import io.lukia.core.domain.AppTheme
 import io.lukia.features.library.presentation.pickers.PlatformPickerHost
 import io.lukia.features.settings.domain.AppSettingsRepository
@@ -21,8 +21,9 @@ import io.lukia.navigation.MobileShell
 import io.lukia.shared.presentation.components.launch.LaunchSplash
 import io.lukia.shared.presentation.theme.LukiaTheme
 import io.lukia.shared.presentation.theme.SystemAppearanceEffect
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import org.koin.compose.koinInject
+import kotlin.time.Duration.Companion.minutes
 
 @Composable
 fun App() {
@@ -56,9 +57,19 @@ fun App() {
     LaunchedEffect(sync) { sync.run() }
 
     // And again whenever the app comes back to the front, which is when another
-    // device is most likely to have moved on since.
-    val scope = rememberCoroutineScope()
-    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { scope.launch { sync.syncNow() } }
+    // device is most likely to have moved on since - then every so often for as
+    // long as it stays there, so a book added on the server, or a page turned
+    // on another device, turns up without leaving the app. Never in the
+    // background, where nobody is looking.
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(sync, lifecycle) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            while (true) {
+                sync.syncNow()
+                delay(KeepUpEvery)
+            }
+        }
+    }
 
     LukiaTheme(
         darkTheme = darkTheme,
@@ -96,3 +107,6 @@ private fun AppShell(mobile: Boolean, modifier: Modifier = Modifier) {
         PlatformPickerHost()
     }
 }
+
+/** How often a signed-in app on screen asks the server what changed: soon enough to notice, rarely enough to cost nothing. */
+private val KeepUpEvery = 2.minutes
