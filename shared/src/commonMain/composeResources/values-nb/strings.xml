@@ -480,4 +480,38 @@
     <string name="book_read_title">Les %1$s</string>
     <string name="book_favourited">Favoritt</string>
 
+    <!-- Settings > Account: signing in to a sync server. -->
+    <string name="account_area">Konto</string>
+    <string name="account_title">Synkroniseringsserver</string>
+    <string name="account_footnote">Logg inn på en Lukia-server for å ha plassen din i hver bok og lesestatistikken din med deg på alle enhetene dine. Uten en blir alt på denne enheten.</string>
+    <string name="account_connect">Koble til</string>
+    <string name="account_connecting">Kobler til…</string>
+    <string name="account_username">Brukernavn</string>
+    <string name="account_password">Passord</string>
+    <string name="account_invite_code">Invitasjonskode</string>
+    <string name="account_sign_in">Logg inn</string>
+    <string name="account_signing_in">Logger inn…</string>
+    <string name="account_create">Opprett konto</string>
+    <string name="account_setup_footnote">%1$s har ingen kontoer ennå. Den du oppretter nå, blir administratoren.</string>
+    <string name="account_use_invite">Jeg har en invitasjonskode</string>
+    <string name="account_use_password">Jeg har allerede en konto</string>
+    <string name="account_other_server">Bruk en annen server</string>
+    <string name="account_signed_in">Logget inn på %1$s som %2$s.</string>
+    <string name="account_signed_in_admin">Logget inn på %1$s som %2$s, administratoren.</string>
+    <string name="account_needs_sign_in">%1$s ber om passordet ditt igjen.</string>
+    <string name="account_sign_out">Logg ut</string>
+    <string name="account_problem_invalid_address">Det er ikke en serveradresse.</string>
+    <string name="account_problem_unreachable">Ingenting svarte på den adressen. Sjekk den, og at serveren kjører.</string>
+    <string name="account_problem_not_lukia">Noe svarte, men det er ikke en Lukia-server.</string>
+    <string name="account_problem_insecure">Bruk https:// for en server utenfor ditt eget nettverk.</string>
+    <string name="account_problem_rejected">Det brukernavnet og passordet passer ikke til noen konto.</string>
+    <string name="account_problem_too_many">For mange forsøk. Vent noen minutter og prøv igjen.</string>
+    <string name="account_problem_invalid_username">Et brukernavn er 3 til 32 små bokstaver, sifre, punktum, bindestreker eller understreker.</string>
+    <string name="account_problem_invalid_password">Et passord må ha minst 10 tegn.</string>
+    <string name="account_problem_username_taken">Det brukernavnet er opptatt.</string>
+    <string name="account_problem_invalid_invite">Den invitasjonskoden er ukjent, brukt eller utløpt.</string>
+    <string name="account_problem_already_set_up">Noen har nettopp satt opp denne serveren. Logg inn i stedet.</string>
+    <string name="account_problem_session_expired">Innloggingen din er utløpt. Logg inn igjen.</string>
+    <string name="account_problem_server_failed">Serveren klarte ikke det. Prøv igjen senere.</string>
+
 </resources>

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Cleartext HTTP is permitted so the reader can point translation at a model
-    running on their own machine. Such a server has no certificate, and telling
-    somebody to obtain one before they can translate a sentence is not a real
-    answer.
+    running on their own machine, or sync with a Lukia server on their own
+    network. Such a server has no certificate, and telling somebody to obtain
+    one before they can use it is not a real answer.
 
     The base rule is broader than the app actually allows. Android's
     configuration matches on domains, and it cannot say "private address ranges
     only" - a home network's addresses are not knowable in advance - so the real
-    restriction lives in code, in `isAllowedTranslationEndpoint`: plain HTTP is
+    restriction lives in code, in `isAllowedEndpoint`: plain HTTP is
     refused to anything that is not loopback or a private range, before a
     request is made.
 

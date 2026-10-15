@@ -487,4 +487,38 @@
     <string name="book_read_title">Lire %1$s</string>
     <string name="book_favourited">Favori</string>
 
+    <!-- Settings > Account: signing in to a sync server. -->
+    <string name="account_area">Compte</string>
+    <string name="account_title">Serveur de synchronisation</string>
+    <string name="account_footnote">Connectez-vous à un serveur Lukia pour retrouver votre page dans chaque livre et vos statistiques de lecture sur tous vos appareils. Sans serveur, tout reste sur cet appareil.</string>
+    <string name="account_connect">Se connecter</string>
+    <string name="account_connecting">Connexion…</string>
+    <string name="account_username">Nom d’utilisateur</string>
+    <string name="account_password">Mot de passe</string>
+    <string name="account_invite_code">Code d’invitation</string>
+    <string name="account_sign_in">Se connecter</string>
+    <string name="account_signing_in">Connexion…</string>
+    <string name="account_create">Créer un compte</string>
+    <string name="account_setup_footnote">%1$s n’a encore aucun compte. Celui que vous créez maintenant en sera l’administrateur.</string>
+    <string name="account_use_invite">J’ai un code d’invitation</string>
+    <string name="account_use_password">J’ai déjà un compte</string>
+    <string name="account_other_server">Utiliser un autre serveur</string>
+    <string name="account_signed_in">Connecté à %1$s en tant que %2$s.</string>
+    <string name="account_signed_in_admin">Connecté à %1$s en tant que %2$s, son administrateur.</string>
+    <string name="account_needs_sign_in">%1$s redemande votre mot de passe.</string>
+    <string name="account_sign_out">Se déconnecter</string>
+    <string name="account_problem_invalid_address">Ce n’est pas une adresse de serveur.</string>
+    <string name="account_problem_unreachable">Rien n’a répondu à cette adresse. Vérifiez-la, et que le serveur est en marche.</string>
+    <string name="account_problem_not_lukia">Quelque chose a répondu, mais ce n’est pas un serveur Lukia.</string>
+    <string name="account_problem_insecure">Utilisez https:// pour un serveur hors de votre propre réseau.</string>
+    <string name="account_problem_rejected">Ce nom d’utilisateur et ce mot de passe ne correspondent à aucun compte.</string>
+    <string name="account_problem_too_many">Trop de tentatives. Attendez quelques minutes, puis réessayez.</string>
+    <string name="account_problem_invalid_username">Un nom d’utilisateur compte de 3 à 32 lettres minuscules, chiffres, points, tirets ou traits de soulignement.</string>
+    <string name="account_problem_invalid_password">Un mot de passe doit compter au moins 10 caractères.</string>
+    <string name="account_problem_username_taken">Ce nom d’utilisateur est déjà pris.</string>
+    <string name="account_problem_invalid_invite">Ce code d’invitation est inconnu, déjà utilisé ou expiré.</string>
+    <string name="account_problem_already_set_up">Quelqu’un vient de configurer ce serveur. Connectez-vous plutôt.</string>
+    <string name="account_problem_session_expired">Votre connexion a expiré. Reconnectez-vous.</string>
+    <string name="account_problem_server_failed">Le serveur n’a pas pu le faire. Réessayez plus tard.</string>
+
 </resources>

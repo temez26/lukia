@@ -480,4 +480,38 @@
     <string name="book_read_title">%1$s lezen</string>
     <string name="book_favourited">Favoriet</string>
 
+    <!-- Settings > Account: signing in to a sync server. -->
+    <string name="account_area">Account</string>
+    <string name="account_title">Synchronisatieserver</string>
+    <string name="account_footnote">Log in op een Lukia-server om je plek in elk boek en je leesstatistieken op al je apparaten bij je te hebben. Zonder server blijft alles op dit apparaat.</string>
+    <string name="account_connect">Verbinden</string>
+    <string name="account_connecting">Verbinden…</string>
+    <string name="account_username">Gebruikersnaam</string>
+    <string name="account_password">Wachtwoord</string>
+    <string name="account_invite_code">Uitnodigingscode</string>
+    <string name="account_sign_in">Inloggen</string>
+    <string name="account_signing_in">Inloggen…</string>
+    <string name="account_create">Account maken</string>
+    <string name="account_setup_footnote">%1$s heeft nog geen accounts. Het account dat je nu maakt, wordt de beheerder.</string>
+    <string name="account_use_invite">Ik heb een uitnodigingscode</string>
+    <string name="account_use_password">Ik heb al een account</string>
+    <string name="account_other_server">Andere server gebruiken</string>
+    <string name="account_signed_in">Ingelogd op %1$s als %2$s.</string>
+    <string name="account_signed_in_admin">Ingelogd op %1$s als %2$s, de beheerder.</string>
+    <string name="account_needs_sign_in">%1$s vraagt opnieuw om je wachtwoord.</string>
+    <string name="account_sign_out">Uitloggen</string>
+    <string name="account_problem_invalid_address">Dat is geen serveradres.</string>
+    <string name="account_problem_unreachable">Er antwoordde niets op dat adres. Controleer het, en of de server draait.</string>
+    <string name="account_problem_not_lukia">Er antwoordde iets, maar het is geen Lukia-server.</string>
+    <string name="account_problem_insecure">Gebruik https:// voor een server buiten je eigen netwerk.</string>
+    <string name="account_problem_rejected">Die gebruikersnaam en dat wachtwoord horen bij geen enkel account.</string>
+    <string name="account_problem_too_many">Te veel pogingen. Wacht een paar minuten en probeer het opnieuw.</string>
+    <string name="account_problem_invalid_username">Een gebruikersnaam bestaat uit 3 tot 32 kleine letters, cijfers, punten, streepjes of underscores.</string>
+    <string name="account_problem_invalid_password">Een wachtwoord heeft minstens 10 tekens nodig.</string>
+    <string name="account_problem_username_taken">Die gebruikersnaam is al bezet.</string>
+    <string name="account_problem_invalid_invite">Die uitnodigingscode is onbekend, gebruikt of verlopen.</string>
+    <string name="account_problem_already_set_up">Iemand heeft deze server net ingesteld. Log in plaats daarvan in.</string>
+    <string name="account_problem_session_expired">Je aanmelding is verlopen. Log opnieuw in.</string>
+    <string name="account_problem_server_failed">De server kon dat niet doen. Probeer het later opnieuw.</string>
+
 </resources>

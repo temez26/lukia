@@ -41,6 +41,8 @@ internal fun SettingsAreaContent(
      * why it arrives as a slot rather than as more parameters.
      */
     diagnostics: (@Composable () -> Unit)? = null,
+    /** The Account page - see [SettingsBody]. */
+    account: AccountPage? = null,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         when (area) {
@@ -77,6 +79,8 @@ internal fun SettingsAreaContent(
                 groupColor = groupColor,
                 diagnostics = diagnostics,
             )
+
+            SettingsArea.Account -> account?.invoke(groupColor)
         }
     }
 }

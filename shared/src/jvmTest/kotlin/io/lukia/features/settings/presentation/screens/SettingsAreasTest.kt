@@ -14,6 +14,7 @@ import io.lukia.features.settings.presentation.ProviderState
 import io.lukia.features.settings.presentation.TranslatingActions
 import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.resources.Res
+import io.lukia.resources.account_area
 import io.lukia.resources.settings_about
 import io.lukia.resources.settings_area_ai_translation
 import io.lukia.resources.settings_area_appearance
@@ -41,6 +42,8 @@ class SettingsAreasTest {
 
     private fun ComposeUiTest.setSettings(
         settings: AppSettings = AppSettings(),
+        /** The Account page, as the navigation supplies it - see [SettingsBody]. */
+        account: AccountPage? = null,
         /**
          * With AI switched on unless a test says otherwise, because most of what
          * this file asks about is behind that switch - see `AiSwitchSection`.
@@ -59,6 +62,7 @@ class SettingsAreasTest {
                     translatingActions = TranslatingActions(),
                     providerActions = ProviderActions(),
                     diagnostics = { DiagnosticsMarker() },
+                    account = account,
                 )
             }
         }
@@ -79,6 +83,7 @@ class SettingsAreasTest {
         SettingsArea.Translating -> Res.string.settings_area_translating
         SettingsArea.AiTranslation -> Res.string.settings_area_ai_translation
         SettingsArea.About -> Res.string.settings_about
+        SettingsArea.Account -> Res.string.account_area
     }
 
     @Test
@@ -167,7 +172,7 @@ class SettingsAreasTest {
     fun andIsNotUnderTheOtherGroups() = runComposeUiTest {
         setSettings()
 
-        (SettingsArea.entries - SettingsArea.About).forEach { area ->
+        (SettingsArea.Segments - SettingsArea.About).forEach { area ->
             if (area != SettingsArea.Default) open(area)
 
             onNodeWithText("Open-source licences").assertDoesNotExist()
@@ -240,7 +245,32 @@ class SettingsAreasTest {
         onNodeWithText("Reading more about a word").assertDoesNotExist()
     }
 
+    /**
+     * Signing in to a server is a page most readers open once, so it is not a
+     * sixth segment cutting every label short, but a control beside the title.
+     */
+    @Test
+    fun theAccountPageIsReachedFromBesideTheTitle() = runComposeUiTest {
+        setSettings(account = { Text(AccountWords) })
+
+        onNodeWithText(AccountWords).assertDoesNotExist()
+
+        open(SettingsArea.Account)
+
+        onNodeWithText(AccountWords).assertExists()
+        onNodeWithText("Open-source licences").assertDoesNotExist()
+    }
+
+    /** And it is not offered at all where nothing provides it. */
+    @Test
+    fun noAccountControlWithoutAnAccountPage() = runComposeUiTest {
+        setSettings()
+
+        onNodeWithText(words(Res.string.account_area)).assertDoesNotExist()
+    }
+
     private companion object {
+        const val AccountWords = "the account page"
         const val DiagnosticsWords = "what the app wrote down"
     }
 }

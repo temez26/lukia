@@ -14,6 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import io.lukia.Routes
 import io.lukia.core.infrastructure.AppCommand
 import io.lukia.core.infrastructure.AppCommands
+import io.lukia.features.account.presentation.AccountSettings
 import io.lukia.features.library.presentation.screens.LibraryScreen
 import io.lukia.features.stats.presentation.StatsButton
 import io.lukia.shared.presentation.theme.LocalMotionStyle
@@ -66,6 +67,7 @@ internal fun DesktopShell() {
                 statsButton = {
                     StatsButton(onClick = { navController.navigate(Routes.Stats.route) })
                 },
+                accountPage = { AccountSettings(it) },
             )
         }
 

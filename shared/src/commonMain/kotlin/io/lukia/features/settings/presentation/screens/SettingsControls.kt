@@ -90,9 +90,22 @@ enum class SettingsArea {
      * One press is not further away than the bottom of a scrolling page.
      */
     About,
+
+    /**
+     * Signing in to a sync server - see docs/specs/sync-server.md.
+     *
+     * Not a segment: five already share a phone's width with little to spare,
+     * and a sixth would cut every other label short for a page most readers open
+     * once. It is reached from its own control beside the title instead, and
+     * only when the app has an account page to show - see [SettingsBody].
+     */
+    Account,
     ;
 
     companion object {
+
+        /** The areas the segmented control switches between: every one but [Account]. */
+        val Segments: List<SettingsArea> = entries - Account
 
         /**
          * What Settings opens on. The one with the fewest ways to go wrong and

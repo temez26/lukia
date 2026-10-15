@@ -6,6 +6,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.savedstate.read
 import io.lukia.Routes
+import io.lukia.features.account.presentation.AccountSettings
 import io.lukia.features.library.presentation.screens.BookDetailScreen
 import io.lukia.features.reader.presentation.screens.ReaderScreen
 import io.lukia.features.settings.presentation.screens.SettingsScreen
@@ -22,7 +23,7 @@ import io.lukia.features.stats.presentation.screens.StatsScreen
  */
 internal fun NavGraphBuilder.bookDestinations(navController: NavController) {
     composable(Routes.Settings.route) {
-        SettingsScreen(onBack = { navController.popBackStack() })
+        SettingsScreen(onBack = { navController.popBackStack() }, account = { AccountSettings(it) })
     }
 
     composable(Routes.Stats.route) {

@@ -279,8 +279,14 @@ Recorded in `docs/decisions/`:
 - [x] 6. Client: migration 11 (content hash, outbox, session uuid) and the
       background hashing pass, with SHA-256 in common code checked against
       the JDK's.
-- [ ] 7. Client: Account section, sign-in and sign-out, tokens in
-      `SecretStore`, health check.
+- [x] 7. Client: Account section, sign-in and sign-out, tokens in
+      `SecretStore`, health check. Account is reached from a control beside
+      the Settings title rather than a sixth segment, which would cut every
+      label short on a phone; it arrives in Settings as a slot from the
+      navigation, so Settings never depends on the account feature. The
+      plain-HTTP rule moved to `core.domain.network.isAllowedEndpoint` and
+      holds the server address to the translator's rule. A contract test runs
+      the app's client against the real server on a real port.
 - [ ] 8. Client: server books in the library, download on open, offline after.
 - [ ] 9. Client: book state sync through the outbox and pull.
 - [ ] 10. Client: session sync, the history prompt on first sign-in, stats

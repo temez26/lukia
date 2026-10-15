@@ -272,6 +272,9 @@ kotlin {
             // The format readers and the document types they produce, shared
             // with the sync server - and so part of this module's own API.
             api(project(":formats"))
+            // What the sync server and the app send each other - see
+            // docs/decisions/0004-shared-api-module.md.
+            implementation(project(":api"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
@@ -322,6 +325,11 @@ kotlin {
             // layout, and nothing else here can see them.
             @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
             implementation(compose.uiTest)
+            // The sync server itself, started on a real port, so the app's
+            // client is tested against the server it will talk to rather than
+            // against a description of it.
+            implementation(project(":server"))
+            implementation(libs.ktor.server.cio)
         }
         /**
          * The Android tests that want nothing of a device but a `Context`.

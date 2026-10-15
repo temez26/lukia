@@ -480,4 +480,38 @@
     <string name="book_read_title">Leggi %1$s</string>
     <string name="book_favourited">Preferito</string>
 
+    <!-- Settings > Account: signing in to a sync server. -->
+    <string name="account_area">Account</string>
+    <string name="account_title">Server di sincronizzazione</string>
+    <string name="account_footnote">Accedi a un server Lukia per ritrovare il punto in cui sei in ogni libro e le tue statistiche di lettura su tutti i tuoi dispositivi. Senza un server, tutto resta su questo dispositivo.</string>
+    <string name="account_connect">Connetti</string>
+    <string name="account_connecting">Connessione…</string>
+    <string name="account_username">Nome utente</string>
+    <string name="account_password">Password</string>
+    <string name="account_invite_code">Codice di invito</string>
+    <string name="account_sign_in">Accedi</string>
+    <string name="account_signing_in">Accesso in corso…</string>
+    <string name="account_create">Crea account</string>
+    <string name="account_setup_footnote">%1$s non ha ancora account. Quello che crei ora ne sarà l’amministratore.</string>
+    <string name="account_use_invite">Ho un codice di invito</string>
+    <string name="account_use_password">Ho già un account</string>
+    <string name="account_other_server">Usa un altro server</string>
+    <string name="account_signed_in">Accesso a %1$s come %2$s.</string>
+    <string name="account_signed_in_admin">Accesso a %1$s come %2$s, il suo amministratore.</string>
+    <string name="account_needs_sign_in">%1$s chiede di nuovo la tua password.</string>
+    <string name="account_sign_out">Esci</string>
+    <string name="account_problem_invalid_address">Questo non è un indirizzo di server.</string>
+    <string name="account_problem_unreachable">Nessuno ha risposto a quell’indirizzo. Controllalo, e che il server sia in funzione.</string>
+    <string name="account_problem_not_lukia">Qualcosa ha risposto, ma non è un server Lukia.</string>
+    <string name="account_problem_insecure">Usa https:// per un server fuori dalla tua rete.</string>
+    <string name="account_problem_rejected">Questo nome utente e questa password non corrispondono a nessun account.</string>
+    <string name="account_problem_too_many">Troppi tentativi. Attendi qualche minuto e riprova.</string>
+    <string name="account_problem_invalid_username">Un nome utente ha da 3 a 32 lettere minuscole, cifre, punti, trattini o trattini bassi.</string>
+    <string name="account_problem_invalid_password">Una password deve avere almeno 10 caratteri.</string>
+    <string name="account_problem_username_taken">Questo nome utente è già in uso.</string>
+    <string name="account_problem_invalid_invite">Questo codice di invito è sconosciuto, già usato o scaduto.</string>
+    <string name="account_problem_already_set_up">Qualcuno ha appena configurato questo server. Accedi invece.</string>
+    <string name="account_problem_session_expired">Il tuo accesso è scaduto. Accedi di nuovo.</string>
+    <string name="account_problem_server_failed">Il server non è riuscito a farlo. Riprova più tardi.</string>
+
 </resources>

@@ -18,6 +18,7 @@ import io.lukia.features.library.presentation.pickers.rememberPlatformFilePicker
 import io.lukia.features.library.presentation.pickers.rememberPlatformFolderPicker
 import io.lukia.features.library.presentation.sessions.rememberImportUi
 import io.lukia.features.settings.presentation.SettingsOverlay
+import io.lukia.features.settings.presentation.screens.AccountPage
 import io.lukia.shared.presentation.components.surface.behindOverlay
 import io.lukia.shared.presentation.theme.isWideWindow
 import org.koin.compose.viewmodel.koinViewModel
@@ -48,6 +49,7 @@ fun LibraryScreen(
     showSearch: Boolean = true,
     /** The way to the reader's own page, supplied by the shell - see `MobileShell`. */
     statsButton: @Composable () -> Unit = {},
+    accountPage: AccountPage? = null,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val books by viewModel.books.collectAsState()
@@ -117,10 +119,7 @@ fun LibraryScreen(
 
         // Over the library and its own overlays both, since it is opened from the
         // bar that floats above them.
-        SettingsOverlay(
-            visible = settingsOpen,
-            onDismiss = { settingsOpen = false },
-        )
+        SettingsOverlay(visible = settingsOpen, onDismiss = { settingsOpen = false }, account = accountPage)
     }
 }
 

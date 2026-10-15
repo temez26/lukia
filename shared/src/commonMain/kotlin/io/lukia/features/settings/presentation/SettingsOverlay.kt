@@ -7,6 +7,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import io.lukia.features.settings.presentation.screens.AccountPage
 import io.lukia.features.settings.presentation.screens.SettingsBody
 import io.lukia.shared.presentation.components.surface.OverlayPanel
 import io.lukia.shared.presentation.components.surface.OverlayPanelTopClearance
@@ -27,18 +28,20 @@ fun SettingsOverlay(
     visible: Boolean,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    /** The Account page - see `SettingsBody`. */
+    account: AccountPage? = null,
 ) {
     OverlayPanel(
         visible = visible,
         onDismiss = onDismiss,
         modifier = modifier,
     ) {
-        SettingsPanelBody()
+        SettingsPanelBody(account = account)
     }
 }
 
 @Composable
-private fun SettingsPanelBody(viewModel: SettingsViewModel = koinViewModel()) {
+private fun SettingsPanelBody(account: AccountPage?, viewModel: SettingsViewModel = koinViewModel()) {
     val settings by viewModel.settings.collectAsState()
     val reader by viewModel.readerSettings.collectAsState()
     val translation by viewModel.translationSettings.collectAsState()
@@ -65,5 +68,6 @@ private fun SettingsPanelBody(viewModel: SettingsViewModel = koinViewModel()) {
         // background the screen version sits on.
         groupColor = MaterialTheme.colorScheme.surfaceVariant,
         diagnostics = { DiagnosticsGroup(groupColor = MaterialTheme.colorScheme.surfaceVariant) },
+        account = account,
     )
 }

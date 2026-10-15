@@ -8,6 +8,7 @@ import io.lukia.core.infrastructure.db.LukiaDatabase
 import io.lukia.core.infrastructure.diagnostics.CrashRecorder
 import io.lukia.core.infrastructure.diagnostics.DiagnosticBuffer
 import io.lukia.core.infrastructure.diagnostics.RecordingDiagnostics
+import io.lukia.features.account.accountModule
 import io.lukia.features.library.libraryModule
 import io.lukia.features.reader.readerModule
 import io.lukia.features.settings.domain.AppSettingsRepository
@@ -83,6 +84,7 @@ val commonModule = module {
     }
 
     includes(
+        accountModule,
         libraryModule,
         readerModule,
         translateModule,
