@@ -2,7 +2,9 @@ package io.lukia.features.library.application
 
 import io.lukia.core.domain.document.CoverImage
 import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.document.ShelfChanges
 import io.lukia.features.library.domain.LibraryRepository
+import kotlinx.coroutines.flow.Flow
 
 /**
  * The library, as the shelf shows it.
@@ -14,7 +16,15 @@ import io.lukia.features.library.domain.LibraryRepository
  */
 class GetLibraryDocumentsUseCase(
     private val repository: LibraryRepository,
+    shelfChanges: ShelfChanges = ShelfChanges(),
 ) {
+    /**
+     * Fires when the shelf changed somewhere other than through the library's
+     * own controls - books arriving from or leaving with a sync server - so a
+     * screen showing it reads it again.
+     */
+    val changes: Flow<Unit> = shelfChanges.changes
+
     suspend operator fun invoke(): List<DocumentInfo> = repository.getDocuments()
 
     /** One book's artwork, for the card that is about to draw it. */

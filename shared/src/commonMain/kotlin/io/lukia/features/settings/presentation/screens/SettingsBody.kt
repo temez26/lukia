@@ -4,6 +4,7 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -33,12 +34,16 @@ import io.lukia.features.settings.presentation.TranslatingActions
 import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.resources.Res
 import io.lukia.resources.settings_title
+import io.lukia.shared.presentation.components.controls.LukiaChip
 import io.lukia.shared.presentation.components.controls.SegmentedControl
 import io.lukia.shared.presentation.theme.Clearance
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
+
+/** The Account page, as the account feature builds it - see [SettingsArea.Account]. */
+typealias AccountPage = @Composable (groupColor: Color) -> Unit
 
 /**
  * The least room a group is given, however little it has to put in it.
@@ -101,6 +106,13 @@ internal fun SettingsBody(
      * model on a page that would not show it.
      */
     diagnostics: (@Composable () -> Unit)? = null,
+    /**
+     * The Account page, which the account feature builds out of this feature's
+     * controls - so it arrives as a slot, from the navigation that knows both,
+     * rather than being named here and making the two features a circle. Null
+     * leaves it off the page and its control out of the header.
+     */
+    account: AccountPage? = null,
 ) {
     val dimens = LocalLukiaDimens.current
     val scroll = rememberScrollState()
@@ -123,7 +135,7 @@ internal fun SettingsBody(
             // nothing to go back out of.
             var area by rememberSaveable { mutableStateOf(SettingsArea.Default) }
 
-            SettingsHeader(area = area, onAreaChange = { area = it })
+            SettingsHeader(area = area, onAreaChange = { area = it }, showAccount = account != null)
 
             // Back to the top of whatever was opened. Switching from a long
             // group to a short one while scrolled down otherwise lands the
@@ -160,6 +172,7 @@ internal fun SettingsBody(
                     groupColor = groupColor,
                     modifier = Modifier.padding(top = dimens.sectionSpacing),
                     diagnostics = diagnostics,
+                    account = account,
                 )
             }
         }
@@ -169,7 +182,8 @@ internal fun SettingsBody(
 }
 
 /**
- * The page's name and the control that switches between its five groups.
+ * The page's name, the control that switches between its five groups, and the
+ * way to the Account page beside the name.
  *
  * It keeps its title where the library dropped one: the library is the app's
  * home and needs no introduction, while arriving here from a menu does.
@@ -178,18 +192,32 @@ internal fun SettingsBody(
 private fun SettingsHeader(
     area: SettingsArea,
     onAreaChange: (SettingsArea) -> Unit,
+    showAccount: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
-        Text(
-            text = stringResource(Res.string.settings_title),
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = stringResource(Res.string.settings_title),
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.weight(1f),
+            )
 
+            if (showAccount) {
+                LukiaChip(
+                    label = SettingsArea.Account.displayTitle(),
+                    selected = area == SettingsArea.Account,
+                    onClick = { onAreaChange(SettingsArea.Account) },
+                )
+            }
+        }
+
+        // No segment is lit while Account is open, which is what the control's
+        // nullable selection is for: the page shown is none of these five.
         SegmentedControl(
-            options = SettingsArea.entries,
-            selected = area,
+            options = SettingsArea.Segments,
+            selected = area.takeIf { it in SettingsArea.Segments },
             label = { it.displayTitle() },
             onSelect = onAreaChange,
             modifier = Modifier.padding(top = Space.lg),

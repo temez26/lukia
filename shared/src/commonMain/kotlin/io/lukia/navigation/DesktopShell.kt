@@ -51,8 +51,11 @@ internal fun DesktopShell() {
             LibraryScreen(
                 // Opening the book is what tapping it is for; everything
                 // else about it lives behind the card's own menu.
+                // A server book not downloaded yet has nothing to read: its
+                // page is where it is downloaded from.
                 onDocumentClick = { document ->
-                    navController.navigate(Routes.Reader.createRoute(document.document.location))
+                    val route = if (document.awaitsDownload) Routes.Detail else Routes.Reader
+                    navController.navigate(route.createRoute(document.document.location))
                 },
                 onDocumentDetails = { document ->
                     navController.navigate(Routes.Detail.createRoute(document.document.location))
@@ -66,6 +69,7 @@ internal fun DesktopShell() {
                 statsButton = {
                     StatsButton(onClick = { navController.navigate(Routes.Stats.route) })
                 },
+                accountPage = AppAccountPage,
             )
         }
 

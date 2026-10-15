@@ -5,10 +5,12 @@ import io.lukia.core.domain.document.CoverImage
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.domain.document.PickedDocument
+import io.lukia.core.infrastructure.SyncedPart
 import io.lukia.core.infrastructure.db.Document
 import io.lukia.core.infrastructure.db.LukiaDatabase
 import io.lukia.core.infrastructure.db.SelectAll
 import io.lukia.core.infrastructure.ioDispatcher
+import io.lukia.core.infrastructure.noteChange
 import io.lukia.features.library.domain.LibraryRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -28,7 +30,7 @@ import kotlinx.coroutines.withContext
  * covers it just returned.
  */
 class SqlLibraryRepository(
-    database: LukiaDatabase,
+    private val database: LukiaDatabase,
     /** Injectable so tests can run against a database deterministically. */
     private val dispatcher: CoroutineDispatcher = ioDispatcher(),
 ) : LibraryRepository {
@@ -123,8 +125,10 @@ class SqlLibraryRepository(
         withContext(dispatcher) {
             // A statement that matches no row is already the no-op the contract
             // asks for, so an unknown location needs no check of its own.
-            documents.setFavorite(isFavorite = isFavorite, location = location)
-            Unit
+            database.transaction {
+                documents.setFavorite(isFavorite = isFavorite, location = location)
+                database.noteChange(SyncedPart.Favorite, location)
+            }
         }
 
     override suspend fun removeDocument(location: String) = withContext(dispatcher) {
@@ -152,6 +156,7 @@ private fun SelectAll.toDocumentInfo(): DocumentInfo = DocumentInfo(
     sizeBytes = sizeBytes,
     isFavorite = isFavorite,
     metadata = storedMetadata(),
+    onServer = onServer,
 )
 
 /**
@@ -174,6 +179,7 @@ private fun Document.toDocumentInfo(): DocumentInfo = DocumentInfo(
     coverImage = coverImage?.let { CoverImage(it) },
     isFavorite = isFavorite,
     metadata = storedMetadata(),
+    onServer = onServer,
 )
 
 /** See [Document.toDocumentInfo] for why the name rather than the ordinal. */
@@ -219,7 +225,7 @@ private fun BookMetadata.orNullIfEmpty(): BookMetadata? = takeIf { !it.isEmpty }
  * An empty list stores as null rather than as an empty string, so "no authors"
  * reads back the same whether the column was never written or written empty.
  */
-private fun List<String>?.toStoredList(): String? =
+internal fun List<String>?.toStoredList(): String? =
     this?.takeIf { it.isNotEmpty() }?.joinToString(separator = "\n")
 
 private fun String?.fromStoredList(): List<String> =

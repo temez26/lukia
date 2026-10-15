@@ -60,7 +60,11 @@ class RemovedBookCascadeTest {
      */
     @Test
     fun theSittingsSpentInItAreNotTakenBack() {
-        database.readingSessionQueries.start(location = LOCATION, startedAt = 1_700_000_000_000L)
+        database.readingSessionQueries.start(
+            location = LOCATION,
+            startedAt = 1_700_000_000_000L,
+            uuid = "0b6f8c1e-6d7a-4c1b-9e1f-3a2b5c4d6e7f",
+        )
 
         database.documentQueries.deleteByLocation(LOCATION)
 

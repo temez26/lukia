@@ -13,4 +13,13 @@ data class DocumentInfo(
      * see [BookMetadata].
      */
     val metadata: BookMetadata? = null,
-)
+    /**
+     * In the sync server's shared library. Read with [exists]: a server book
+     * that does not exist here yet is one to download rather than one that
+     * went missing - see docs/specs/sync-server.md.
+     */
+    val onServer: Boolean = false,
+) {
+    /** On the sync server and not on this device yet: a book to download rather than one that went missing. */
+    val awaitsDownload: Boolean get() = onServer && !exists
+}

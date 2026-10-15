@@ -224,6 +224,10 @@
     <string name="book_actions">Działania na książce</string>
     <string name="book_unavailable">Niedostępna</string>
     <string name="book_missing_file">Ten plik nie jest już dostępny</string>
+    <string name="book_on_server">Na serwerze</string>
+    <string name="book_download">Pobierz</string>
+    <string name="book_downloading">Pobieranie…</string>
+    <string name="book_download_failed">Pobieranie nie zostało ukończone.</string>
     <string name="book_format_and_size">%1$s · %2$s</string>
     <string name="book_progress_percent">· %1$d%</string>
     <string name="format_pdf">PDF</string>
@@ -423,6 +427,7 @@
     <string name="stats_entry">Twoje czytanie</string>
     <string name="stats_title">Czytanie</string>
     <string name="stats_footnote">Liczone na tym urządzeniu i zostaje tutaj.</string>
+    <string name="stats_footnote_synced">Liczone na każdym urządzeniu zalogowanym na Twoje konto.</string>
     <string name="stats_time_none">Jeszcze nic</string>
     <string name="stats_time_under_a_minute">Poniżej minuty</string>
     <string name="stats_time_minutes">%1$d\u00A0min</string>
@@ -509,5 +514,47 @@
     <string name="book_open_title">Otwórz %1$s</string>
     <string name="book_read_title">Czytaj %1$s</string>
     <string name="book_favourited">Ulubiona</string>
+
+    <!-- Settings > Account: signing in to a sync server. -->
+    <string name="account_area">Konto</string>
+    <string name="account_title">Serwer synchronizacji</string>
+    <string name="account_footnote">Zaloguj się na serwer Lukia, aby miejsce, w którym jesteś w każdej książce, i statystyki czytania były na wszystkich twoich urządzeniach. Bez serwera wszystko zostaje na tym urządzeniu.</string>
+    <string name="account_connect">Połącz</string>
+    <string name="account_connecting">Łączenie…</string>
+    <string name="account_username">Nazwa użytkownika</string>
+    <string name="account_password">Hasło</string>
+    <string name="account_invite_code">Kod zaproszenia</string>
+    <string name="account_sign_in">Zaloguj się</string>
+    <string name="account_signing_in">Logowanie…</string>
+    <string name="account_create">Utwórz konto</string>
+    <string name="account_setup_footnote">%1$s nie ma jeszcze kont. Konto, które teraz utworzysz, będzie jego administratorem.</string>
+    <string name="account_use_invite">Mam kod zaproszenia</string>
+    <string name="account_use_password">Mam już konto</string>
+    <string name="account_other_server">Użyj innego serwera</string>
+    <string name="account_signed_in">Zalogowano na %1$s jako %2$s.</string>
+    <string name="account_signed_in_admin">Zalogowano na %1$s jako %2$s, administrator.</string>
+    <string name="account_needs_sign_in">%1$s ponownie prosi o hasło.</string>
+    <string name="account_sign_out">Wyloguj się</string>
+    <string name="account_delete">Usuń konto</string>
+    <string name="account_delete_title">Usunąć konto?</string>
+    <string name="account_delete_message">Twoje miejsce w każdej książce, ulubione i sesje czytania zostaną usunięte z %1$s, a to urządzenie zostanie wylogowane. Książki zostają we wspólnej bibliotece, a wszystko na tym urządzeniu zostaje tutaj.</string>
+    <string name="account_problem_last_admin">Jesteś jedynym administratorem tego serwera, więc tego konta nie można usunąć.</string>
+    <string name="account_problem_invalid_address">To nie jest adres serwera.</string>
+    <string name="account_problem_unreachable">Pod tym adresem nic nie odpowiedziało. Sprawdź go i czy serwer działa.</string>
+    <string name="account_problem_not_lukia">Coś odpowiedziało, ale to nie jest serwer Lukia.</string>
+    <string name="account_problem_insecure">Użyj https:// dla serwera spoza twojej sieci.</string>
+    <string name="account_problem_rejected">Ta nazwa użytkownika i hasło nie pasują do żadnego konta.</string>
+    <string name="account_problem_too_many">Zbyt wiele prób. Odczekaj kilka minut i spróbuj ponownie.</string>
+    <string name="account_problem_invalid_username">Nazwa użytkownika ma od 3 do 32 małych liter, cyfr, kropek, myślników lub podkreślników.</string>
+    <string name="account_problem_invalid_password">Hasło musi mieć co najmniej 10 znaków.</string>
+    <string name="account_problem_username_taken">Ta nazwa użytkownika jest zajęta.</string>
+    <string name="account_problem_invalid_invite">Ten kod zaproszenia jest nieznany, wykorzystany lub wygasł.</string>
+    <string name="account_problem_already_set_up">Ktoś właśnie skonfigurował ten serwer. Zamiast tego zaloguj się.</string>
+    <string name="account_problem_session_expired">Twoja sesja wygasła. Zaloguj się ponownie.</string>
+    <string name="account_problem_server_failed">Serwer nie mógł tego zrobić. Spróbuj później.</string>
+    <string name="history_title">Czytanie na tym urządzeniu</string>
+    <string name="history_question">To urządzenie zapisało czytanie, zanim się zalogowałeś. Dodać je do statystyk konta czy zachować tylko na tym urządzeniu?</string>
+    <string name="history_add">Dodaj do mojego konta</string>
+    <string name="history_keep">Zachowaj na tym urządzeniu</string>
 
 </resources>

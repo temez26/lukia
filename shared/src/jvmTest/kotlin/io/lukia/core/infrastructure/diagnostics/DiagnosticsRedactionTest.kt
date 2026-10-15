@@ -1,8 +1,8 @@
 package io.lukia.core.infrastructure.diagnostics
 
 import io.lukia.core.domain.document.DocumentType
-import io.lukia.features.library.infrastructure.importing.extractContents
-import io.lukia.features.library.infrastructure.importing.openedDocument
+import io.lukia.core.infrastructure.importing.extractContents
+import io.lukia.core.infrastructure.importing.openedDocument
 import io.lukia.features.reader.infrastructure.text.decodeText
 import java.io.ByteArrayOutputStream
 import java.util.zip.ZipEntry

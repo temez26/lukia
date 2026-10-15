@@ -107,7 +107,8 @@ Bouncy Castle Licence
 Bouncy Castle
 Copyright the Legion of the Bouncy Castle Inc.
 
-  Reached through PdfBox-Android, which uses it to open encrypted PDFs.
+  Reached through PdfBox-Android, which uses it to open encrypted PDFs, and
+  used by the sync server to hash passwords.
   https://www.bouncycastle.org/licence.html
 
 -------------------------------------------------------------------------------
@@ -120,3 +121,22 @@ Copyright Google LLC
   What Compose Multiplatform draws the desktop app with. Skiko, the Kotlin
   binding around it, is Apache-2.0 and JetBrains'; Skia inside it is Google's
   and BSD-3-Clause.
+
+-------------------------------------------------------------------------------
+Eclipse Public License 1.0
+-------------------------------------------------------------------------------
+
+Logback
+Copyright QOS.ch
+
+  The sync server's log output. Ships in the server image only, under the EPL
+  1.0 of its dual EPL 1.0 / LGPL 2.1 licence. https://logback.qos.ch/license.html
+
+-------------------------------------------------------------------------------
+MIT License
+-------------------------------------------------------------------------------
+
+SLF4J
+Copyright QOS.ch
+
+  The logging interface Ktor writes through. https://www.slf4j.org/license.html

@@ -207,6 +207,10 @@
     <string name="book_actions">Aktionen zum Buch</string>
     <string name="book_unavailable">Nicht verfügbar</string>
     <string name="book_missing_file">Diese Datei ist nicht mehr verfügbar</string>
+    <string name="book_on_server">Auf dem Server</string>
+    <string name="book_download">Herunterladen</string>
+    <string name="book_downloading">Wird heruntergeladen…</string>
+    <string name="book_download_failed">Der Download wurde nicht abgeschlossen.</string>
     <string name="book_format_and_size">%1$s · %2$s</string>
     <string name="book_progress_percent">· %1$d\u00A0%</string>
     <string name="format_pdf">PDF</string>
@@ -404,6 +408,7 @@
     <string name="stats_entry">Ihr Lesen</string>
     <string name="stats_title">Lesen</string>
     <string name="stats_footnote">Wird auf diesem Gerät gezählt und bleibt hier.</string>
+    <string name="stats_footnote_synced">Wird auf jedem Gerät gezählt, das mit deinem Konto angemeldet ist.</string>
     <string name="stats_time_none">Noch nichts</string>
     <string name="stats_time_under_a_minute">Unter einer Minute</string>
     <string name="stats_time_minutes">%1$d\u00A0min</string>
@@ -480,5 +485,47 @@
     <string name="book_open_title">%1$s öffnen</string>
     <string name="book_read_title">%1$s lesen</string>
     <string name="book_favourited">Favorit</string>
+
+    <!-- Settings > Account: signing in to a sync server. -->
+    <string name="account_area">Konto</string>
+    <string name="account_title">Sync-Server</string>
+    <string name="account_footnote">Melde dich bei einem Lukia-Server an, damit deine Stelle in jedem Buch und deine Lesestatistik auf all deinen Geräten dabei sind. Ohne Server bleibt alles auf diesem Gerät.</string>
+    <string name="account_connect">Verbinden</string>
+    <string name="account_connecting">Wird verbunden…</string>
+    <string name="account_username">Benutzername</string>
+    <string name="account_password">Passwort</string>
+    <string name="account_invite_code">Einladungscode</string>
+    <string name="account_sign_in">Anmelden</string>
+    <string name="account_signing_in">Wird angemeldet…</string>
+    <string name="account_create">Konto erstellen</string>
+    <string name="account_setup_footnote">%1$s hat noch keine Konten. Das Konto, das du jetzt erstellst, verwaltet den Server.</string>
+    <string name="account_use_invite">Ich habe einen Einladungscode</string>
+    <string name="account_use_password">Ich habe schon ein Konto</string>
+    <string name="account_other_server">Anderen Server verwenden</string>
+    <string name="account_signed_in">Bei %1$s angemeldet als %2$s.</string>
+    <string name="account_signed_in_admin">Bei %1$s angemeldet als %2$s, Verwaltung.</string>
+    <string name="account_needs_sign_in">%1$s fragt erneut nach deinem Passwort.</string>
+    <string name="account_sign_out">Abmelden</string>
+    <string name="account_delete">Konto löschen</string>
+    <string name="account_delete_title">Dein Konto löschen?</string>
+    <string name="account_delete_message">Deine Stelle in jedem Buch, deine Favoriten und deine Lesesitzungen werden von %1$s entfernt, und dieses Gerät wird abgemeldet. Die Bücher bleiben in der gemeinsamen Bibliothek, und alles auf diesem Gerät bleibt hier.</string>
+    <string name="account_problem_last_admin">Du bist der einzige Admin dieses Servers, daher kann dieses Konto nicht gelöscht werden.</string>
+    <string name="account_problem_invalid_address">Das ist keine Serveradresse.</string>
+    <string name="account_problem_unreachable">Unter dieser Adresse hat nichts geantwortet. Prüfe sie und ob der Server läuft.</string>
+    <string name="account_problem_not_lukia">Etwas hat geantwortet, aber es ist kein Lukia-Server.</string>
+    <string name="account_problem_insecure">Verwende https:// für einen Server außerhalb deines eigenen Netzwerks.</string>
+    <string name="account_problem_rejected">Benutzername und Passwort passen zu keinem Konto.</string>
+    <string name="account_problem_too_many">Zu viele Versuche. Warte ein paar Minuten und versuche es erneut.</string>
+    <string name="account_problem_invalid_username">Ein Benutzername besteht aus 3 bis 32 Kleinbuchstaben, Ziffern, Punkten, Bindestrichen oder Unterstrichen.</string>
+    <string name="account_problem_invalid_password">Ein Passwort braucht mindestens 10 Zeichen.</string>
+    <string name="account_problem_username_taken">Dieser Benutzername ist vergeben.</string>
+    <string name="account_problem_invalid_invite">Dieser Einladungscode ist unbekannt, verbraucht oder abgelaufen.</string>
+    <string name="account_problem_already_set_up">Jemand hat diesen Server gerade eingerichtet. Melde dich stattdessen an.</string>
+    <string name="account_problem_session_expired">Deine Anmeldung ist abgelaufen. Melde dich erneut an.</string>
+    <string name="account_problem_server_failed">Der Server konnte das nicht ausführen. Versuche es später erneut.</string>
+    <string name="history_title">Lesen auf diesem Gerät</string>
+    <string name="history_question">Dieses Gerät hat Lesezeit aufgezeichnet, bevor du dich angemeldet hast. Zur Statistik deines Kontos hinzufügen oder nur auf diesem Gerät behalten?</string>
+    <string name="history_add">Zu meinem Konto hinzufügen</string>
+    <string name="history_keep">Auf diesem Gerät behalten</string>
 
 </resources>

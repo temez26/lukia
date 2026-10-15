@@ -1,0 +1,8 @@
+-- What the sync server already has of each sitting, and which sittings it
+-- should never have. See `ReadingSession.sq`.
+--
+-- Null and zero for every sitting already recorded: none has been sent, and
+-- whether this device's history goes to an account at all is asked the first
+-- time somebody signs in.
+ALTER TABLE reading_session ADD COLUMN sentDurationMs INTEGER;
+ALTER TABLE reading_session ADD COLUMN deviceOnly INTEGER NOT NULL DEFAULT 0;

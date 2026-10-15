@@ -1,5 +1,6 @@
 package io.lukia.features.library.infrastructure.importing
 
+import io.lukia.core.infrastructure.importing.DocumentSource
 import io.lukia.core.infrastructure.toByteArray
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi

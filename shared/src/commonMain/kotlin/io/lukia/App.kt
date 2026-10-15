@@ -4,18 +4,24 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import io.lukia.core.domain.AppTheme
 import io.lukia.features.library.presentation.pickers.PlatformPickerHost
 import io.lukia.features.settings.domain.AppSettingsRepository
+import io.lukia.features.sync.application.SyncCoordinator
 import io.lukia.navigation.DesktopShell
 import io.lukia.navigation.MobileShell
 import io.lukia.shared.presentation.components.launch.LaunchSplash
 import io.lukia.shared.presentation.theme.LukiaTheme
 import io.lukia.shared.presentation.theme.SystemAppearanceEffect
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 @Composable
@@ -43,6 +49,16 @@ fun App() {
     // into is painted before any of the above has run, and this is what the
     // system consults when it picks the colour.
     SystemAppearanceEffect(appSettings.theme)
+
+    // Keeps the shelf and the reader's place in step with a sync server for as
+    // long as the app runs. Does nothing until somebody signs in.
+    val sync = koinInject<SyncCoordinator>()
+    LaunchedEffect(sync) { sync.run() }
+
+    // And again whenever the app comes back to the front, which is when another
+    // device is most likely to have moved on since.
+    val scope = rememberCoroutineScope()
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { scope.launch { sync.syncNow() } }
 
     LukiaTheme(
         darkTheme = darkTheme,

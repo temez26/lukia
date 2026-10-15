@@ -121,12 +121,18 @@ private fun NavGraphBuilder.tabDestinations(
     navController: NavController,
     library: LibraryViewModel,
 ) {
-    val openBook: (DocumentInfo) -> Unit = { document ->
-        navController.navigate(Routes.Reader.createRoute(document.document.location))
-    }
-
     val openDetails: (DocumentInfo) -> Unit = { document ->
         navController.navigate(Routes.Detail.createRoute(document.document.location))
+    }
+
+    // A server book not downloaded yet has nothing to read: its page is where
+    // it is downloaded from.
+    val openBook: (DocumentInfo) -> Unit = { document ->
+        if (document.awaitsDownload) {
+            openDetails(document)
+        } else {
+            navController.navigate(Routes.Reader.createRoute(document.document.location))
+        }
     }
 
     val openSettings: () -> Unit = { navController.navigate(Routes.Settings.route) }
@@ -168,6 +174,7 @@ private fun NavGraphBuilder.tabDestinations(
             onDocumentDetails = openDetails,
             onSettings = openSettings,
             statsButton = statsButton,
+            accountPage = AppAccountPage,
             // Searching has a tab of its own here, and a field on this screen as
             // well would be a second search with a second answer to the same
             // question.

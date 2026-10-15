@@ -7,8 +7,8 @@
     <ID>CyclomaticComplexMethod:Buttons.kt$@Composable fun LukiaButton( label: String, onClick: () -&gt; Unit, modifier: Modifier = Modifier, variant: ButtonVariant = ButtonVariant.Primary, size: ButtonSize = ButtonSize.Regular, enabled: Boolean = true, icon: (@Composable (Color, Modifier) -&gt; Unit)? = null, )</ID>
     <ID>CyclomaticComplexMethod:ReaderCommandHandling.kt$@Composable internal fun readerCommands( listState: LazyListState, pageCount: Int, reflowable: Boolean, settings: ReaderSettings, onSettingsChange: (ReaderSettings) -&gt; Unit, onBack: () -&gt; Unit, onToggleContents: () -&gt; Unit, onToggleSettings: () -&gt; Unit, onTranslateOnScreen: () -&gt; Unit, onToggleContinuousTranslation: () -&gt; Unit, onToggleTranslationsShown: () -&gt; Unit, ): (ReaderCommand) -&gt; Unit</ID>
     <ID>CyclomaticComplexMethod:ReaderShortcuts.kt$internal fun readerCommandFor(event: KeyEvent): ReaderCommand?</ID>
-    <ID>LongMethod:BookDetailBody.kt$@Composable internal fun BookDetailBody( details: BookDetails, onRead: () -&gt; Unit, onLongPress: () -&gt; Unit, modifier: Modifier = Modifier, topClearance: Dp = Clearance.topChrome, bottomClearance: Dp = Clearance.pageBottom, coverWidth: Dp = Dp.Unspecified, /** * What the grouped details sit in. It has to contrast with whatever is behind * this body, and that differs: the screen lays it on the window background, * the panel on a raised surface, and one colour cannot be a step away from * both - in the dark theme especially, where the background is true black. */ infoCardColor: Color = MaterialTheme.colorScheme.surface, )</ID>
-    <ID>LongMethod:BookDetailScreen.kt$@Composable fun BookDetailContent( uiState: UiState&lt;BookDetails&gt;, onBack: () -&gt; Unit, onRead: () -&gt; Unit, onRetry: () -&gt; Unit, onToggleFavorite: () -&gt; Unit, onRefresh: () -&gt; Unit, onDelete: () -&gt; Unit, /** * Defaulted so this screen still composes without a ViewModel behind it, * which is how it is tested and previewed. */ snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }, )</ID>
+    <ID>LongMethod:BookDetailBody.kt$@Composable internal fun BookDetailBody( details: BookDetails, onRead: () -&gt; Unit, onLongPress: () -&gt; Unit, modifier: Modifier = Modifier, topClearance: Dp = Clearance.topChrome, bottomClearance: Dp = Clearance.pageBottom, coverWidth: Dp = Dp.Unspecified, /** * What the grouped details sit in. It has to contrast with whatever is behind * this body, and that differs: the screen lays it on the window background, * the panel on a raised surface, and one colour cannot be a step away from * both - in the dark theme especially, where the background is true black. */ infoCardColor: Color = MaterialTheme.colorScheme.surface, /** How far fetching a server book onto the device has got - see [BookDownloadRow]. */ download: BookDownload = BookDownload.Idle, downloadActions: BookDownloadActions = BookDownloadActions(), )</ID>
+    <ID>LongMethod:BookDetailScreen.kt$@Composable fun BookDetailContent( uiState: UiState&lt;BookDetails&gt;, onBack: () -&gt; Unit, onRead: () -&gt; Unit, onRetry: () -&gt; Unit, onToggleFavorite: () -&gt; Unit, onRefresh: () -&gt; Unit, onDelete: () -&gt; Unit, /** * Defaulted so this screen still composes without a ViewModel behind it, * which is how it is tested and previewed. */ snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }, /** How far fetching a server book onto the device has got - see [BookDownloadRow]. */ download: BookDownload = BookDownload.Idle, downloadActions: BookDownloadActions = BookDownloadActions(), )</ID>
     <ID>LongMethod:Buttons.kt$@Composable fun LukiaButton( label: String, onClick: () -&gt; Unit, modifier: Modifier = Modifier, variant: ButtonVariant = ButtonVariant.Primary, size: ButtonSize = ButtonSize.Regular, enabled: Boolean = true, icon: (@Composable (Color, Modifier) -&gt; Unit)? = null, )</ID>
     <ID>LongMethod:ChapterRow.kt$@Composable internal fun ChapterRowItem( row: ChapterRow, inset: Dp, isCurrent: Boolean, onToggle: () -&gt; Unit, onClick: () -&gt; Unit, )</ID>
     <ID>LongMethod:Chip.kt$@Composable fun LukiaChip( label: String, selected: Boolean, onClick: () -&gt; Unit, modifier: Modifier = Modifier, /** Marks a chip that opens a menu beneath itself. */ chevron: Boolean = false, icon: (@Composable (Color, Modifier) -&gt; Unit)? = null, )</ID>
@@ -30,17 +30,17 @@
     <ID>MagicNumber:TranslationCache.kt$16</ID>
     <ID>MagicNumber:TranslationCache.kt$4</ID>
     <ID>MagicNumber:TranslationCache.kt$60</ID>
-    <ID>MagicNumber:TranslationEndpoint.kt$10</ID>
-    <ID>MagicNumber:TranslationEndpoint.kt$127</ID>
-    <ID>MagicNumber:TranslationEndpoint.kt$16</ID>
-    <ID>MagicNumber:TranslationEndpoint.kt$168</ID>
-    <ID>MagicNumber:TranslationEndpoint.kt$169</ID>
-    <ID>MagicNumber:TranslationEndpoint.kt$172</ID>
-    <ID>MagicNumber:TranslationEndpoint.kt$192</ID>
-    <ID>MagicNumber:TranslationEndpoint.kt$254</ID>
-    <ID>MagicNumber:TranslationEndpoint.kt$255</ID>
-    <ID>MagicNumber:TranslationEndpoint.kt$31</ID>
-    <ID>MagicNumber:TranslationEndpoint.kt$4</ID>
+    <ID>MagicNumber:Endpoint.kt$10</ID>
+    <ID>MagicNumber:Endpoint.kt$127</ID>
+    <ID>MagicNumber:Endpoint.kt$16</ID>
+    <ID>MagicNumber:Endpoint.kt$168</ID>
+    <ID>MagicNumber:Endpoint.kt$169</ID>
+    <ID>MagicNumber:Endpoint.kt$172</ID>
+    <ID>MagicNumber:Endpoint.kt$192</ID>
+    <ID>MagicNumber:Endpoint.kt$254</ID>
+    <ID>MagicNumber:Endpoint.kt$255</ID>
+    <ID>MagicNumber:Endpoint.kt$31</ID>
+    <ID>MagicNumber:Endpoint.kt$4</ID>
     <ID>ModifierMissing:BookDetailScreen.kt$BookDetailContent</ID>
     <ID>ModifierMissing:LibraryContent.kt$LibraryContent</ID>
     <ID>ModifierMissing:LibraryScreen.kt$LibraryScreen</ID>

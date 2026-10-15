@@ -206,6 +206,10 @@
     <string name="book_actions">Bogens handlinger</string>
     <string name="book_unavailable">Ikke tilgængelig</string>
     <string name="book_missing_file">Denne fil er ikke tilgængelig længere</string>
+    <string name="book_on_server">På serveren</string>
+    <string name="book_download">Hent</string>
+    <string name="book_downloading">Henter…</string>
+    <string name="book_download_failed">Hentningen blev ikke færdig.</string>
     <string name="book_format_and_size">%1$s · %2$s</string>
     <string name="book_progress_percent">· %1$d\u00A0%</string>
     <string name="format_pdf">PDF</string>
@@ -403,6 +407,7 @@
     <string name="stats_entry">Din læsning</string>
     <string name="stats_title">Læsning</string>
     <string name="stats_footnote">Tælles på denne enhed, og bliver her.</string>
+    <string name="stats_footnote_synced">Tælles på alle enheder, der er logget ind på din konto.</string>
     <string name="stats_time_none">Ingenting endnu</string>
     <string name="stats_time_under_a_minute">Under et minut</string>
     <string name="stats_time_minutes">%1$d\u00A0min</string>
@@ -479,5 +484,47 @@
     <string name="book_open_title">Åbn %1$s</string>
     <string name="book_read_title">Læs %1$s</string>
     <string name="book_favourited">Favorit</string>
+
+    <!-- Settings > Account: signing in to a sync server. -->
+    <string name="account_area">Konto</string>
+    <string name="account_title">Synkroniseringsserver</string>
+    <string name="account_footnote">Log ind på en Lukia-server for at have din plads i hver bog og din læsestatistik med på alle dine enheder. Uden en bliver alt på denne enhed.</string>
+    <string name="account_connect">Forbind</string>
+    <string name="account_connecting">Forbinder…</string>
+    <string name="account_username">Brugernavn</string>
+    <string name="account_password">Adgangskode</string>
+    <string name="account_invite_code">Invitationskode</string>
+    <string name="account_sign_in">Log ind</string>
+    <string name="account_signing_in">Logger ind…</string>
+    <string name="account_create">Opret konto</string>
+    <string name="account_setup_footnote">%1$s har ingen konti endnu. Den, du opretter nu, bliver dens administrator.</string>
+    <string name="account_use_invite">Jeg har en invitationskode</string>
+    <string name="account_use_password">Jeg har allerede en konto</string>
+    <string name="account_other_server">Brug en anden server</string>
+    <string name="account_signed_in">Logget ind på %1$s som %2$s.</string>
+    <string name="account_signed_in_admin">Logget ind på %1$s som %2$s, dens administrator.</string>
+    <string name="account_needs_sign_in">%1$s beder om din adgangskode igen.</string>
+    <string name="account_sign_out">Log ud</string>
+    <string name="account_delete">Slet konto</string>
+    <string name="account_delete_title">Slet din konto?</string>
+    <string name="account_delete_message">Din plads i hver bog, dine favoritter og dine læsesessioner fjernes fra %1$s, og denne enhed logges ud. Bøgerne bliver i det fælles bibliotek, og alt på denne enhed bliver her.</string>
+    <string name="account_problem_last_admin">Du er serverens eneste administrator, så denne konto kan ikke slettes.</string>
+    <string name="account_problem_invalid_address">Det er ikke en serveradresse.</string>
+    <string name="account_problem_unreachable">Intet svarede på den adresse. Tjek den, og at serveren kører.</string>
+    <string name="account_problem_not_lukia">Noget svarede, men det er ikke en Lukia-server.</string>
+    <string name="account_problem_insecure">Brug https:// til en server uden for dit eget netværk.</string>
+    <string name="account_problem_rejected">Det brugernavn og den adgangskode passer ikke til en konto.</string>
+    <string name="account_problem_too_many">For mange forsøg. Vent et par minutter, og prøv igen.</string>
+    <string name="account_problem_invalid_username">Et brugernavn er 3 til 32 små bogstaver, tal, punktummer, bindestreger eller understreger.</string>
+    <string name="account_problem_invalid_password">En adgangskode skal være på mindst 10 tegn.</string>
+    <string name="account_problem_username_taken">Det brugernavn er optaget.</string>
+    <string name="account_problem_invalid_invite">Den invitationskode er ukendt, brugt eller udløbet.</string>
+    <string name="account_problem_already_set_up">Nogen har lige sat denne server op. Log ind i stedet.</string>
+    <string name="account_problem_session_expired">Dit login er udløbet. Log ind igen.</string>
+    <string name="account_problem_server_failed">Serveren kunne ikke gøre det. Prøv igen senere.</string>
+    <string name="history_title">Læsning på denne enhed</string>
+    <string name="history_question">Denne enhed registrerede læsning, før du loggede ind. Vil du føje den til din kontos statistik eller kun beholde den på denne enhed?</string>
+    <string name="history_add">Føj til min konto</string>
+    <string name="history_keep">Behold på denne enhed</string>
 
 </resources>

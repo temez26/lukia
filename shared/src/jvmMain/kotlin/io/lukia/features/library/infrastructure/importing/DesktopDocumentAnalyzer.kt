@@ -4,6 +4,11 @@ import io.lukia.core.domain.diagnostics.Diagnostics
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.domain.document.PickedDocument
+import io.lukia.core.infrastructure.importing.DocumentContents
+import io.lukia.core.infrastructure.importing.JvmDocumentSource
+import io.lukia.core.infrastructure.importing.extractContents
+import io.lukia.core.infrastructure.sha256Hex
+import io.lukia.features.library.domain.ContentHasher
 import io.lukia.features.library.domain.DocumentAnalyzer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -11,7 +16,7 @@ import java.io.File
 
 class DesktopDocumentAnalyzer(
     private val diagnostics: Diagnostics = Diagnostics.None,
-) : DocumentAnalyzer {
+) : DocumentAnalyzer, ContentHasher {
 
     override suspend fun exists(document: PickedDocument): Boolean =
         withContext(Dispatchers.IO) { File(document.location).isFile }
@@ -44,6 +49,11 @@ class DesktopDocumentAnalyzer(
             coverImage = contents.coverImage,
             metadata = contents.metadata,
         )
+    }
+
+    /** Read through the same source the import opens, a window at a time - see [sha256Hex]. */
+    override suspend fun contentHash(document: PickedDocument): String? = withContext(Dispatchers.IO) {
+        runCatching { JvmDocumentSource(File(document.location)).use { it.sha256Hex() } }.getOrNull()
     }
 
     private suspend fun openedSource(file: File): JvmDocumentSource? = withContext(Dispatchers.IO) {

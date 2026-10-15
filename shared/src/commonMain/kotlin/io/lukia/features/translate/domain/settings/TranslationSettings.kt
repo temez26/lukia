@@ -1,9 +1,9 @@
 package io.lukia.features.translate.domain.settings
 
+import io.lukia.core.domain.network.isAllowedEndpoint
 import io.lukia.features.translate.domain.BulkTranslation
 import io.lukia.features.translate.domain.lookup.WordSite
 import io.lukia.features.translate.domain.provider.TranslationProvider
-import io.lukia.features.translate.domain.provider.isAllowedTranslationEndpoint
 
 /**
  * What translating is set to do, as opposed to the reader's own presentation
@@ -174,10 +174,10 @@ data class TranslationSettings(
     /**
      * False only when the reader has pointed this at a public address over
      * plain HTTP, which sends a passage out of their book across the internet
-     * in the clear. See [isAllowedTranslationEndpoint].
+     * in the clear. See [isAllowedEndpoint].
      */
     val isEndpointAllowed: Boolean
-        get() = isAllowedTranslationEndpoint(baseUrl)
+        get() = isAllowedEndpoint(baseUrl)
 
     fun withModel(model: String): TranslationSettings =
         copy(models = models.replacing(provider, model))

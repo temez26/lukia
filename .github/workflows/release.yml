@@ -153,6 +153,46 @@ jobs:
           path: desktopApp/build/compose/binaries/main/${{ matrix.format }}/*
           if-no-files-found: error
 
+  server-image:
+    name: Server image
+    needs: verify-version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: zulu
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+        with:
+          cache-read-only: true
+
+      # The image packages a distribution Gradle built - see server/Dockerfile
+      # for why it is not built inside the image.
+      - name: Build the distribution
+        run: ./gradlew :server:installDist
+
+      # Tagged with the version and with `latest`, so a server can be pinned to
+      # a release or follow them. Pushed only for a tag: a run started by hand
+      # proves the image builds and stops there, as the publish job does.
+      - name: Build and publish
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version="$(sed -n 's/^lukia\.version=//p' gradle.properties)"
+          image="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/lukia-server"
+          docker build -t "$image:$version" -t "$image:latest" server
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            echo "$TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+            docker push "$image:$version"
+            docker push "$image:latest"
+          fi
+
   publish:
     name: Draft the release
     needs: [android, desktop]

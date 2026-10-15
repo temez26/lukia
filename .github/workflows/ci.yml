@@ -60,6 +60,8 @@ jobs:
           :shared:jvmCommonTest
           :shared:jvmMigrationTest
           :shared:testAndroidHostTest
+          :formats:jvmTest
+          :formats:testAndroidHostTest
           :androidApp:assembleDebug
           :desktopApp:compileKotlin
 
@@ -106,6 +108,47 @@ jobs:
             **/build/test-results/**/*.xml
           if-no-files-found: ignore
 
+  server:
+    name: Server tests and image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: zulu
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+
+      - name: Test and build the distribution
+        run: ./gradlew --continue :server:test :server:installDist
+
+      # Proves the image starts as a non-root user with an empty volume and
+      # answers health, which no test inside the JVM can: the entrypoint, the
+      # permissions on /data and the native SQLite library are all the image's.
+      - name: Build and start the image
+        run: |
+          docker build -t lukia-server server
+          docker run -d --name lukia-server -p 8080:8080 lukia-server
+          for _ in $(seq 1 30); do
+            if curl -fsS http://localhost:8080/api/v1/health; then exit 0; fi
+            sleep 1
+          done
+          docker logs lukia-server
+          exit 1
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() }}
+        with:
+          name: server-test-results
+          path: |
+            server/build/reports/tests/**
+            server/build/test-results/**/*.xml
+          if-no-files-found: ignore
+
   ios:
     name: iOS compile, link and test
     runs-on: macos-15
@@ -141,6 +184,7 @@ jobs:
         run: >
           ./gradlew --continue
           :shared:iosSimulatorArm64Test
+          :formats:iosSimulatorArm64Test
           :shared:linkDebugFrameworkIosSimulatorArm64
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -150,6 +194,8 @@ jobs:
           path: |
             shared/build/reports/tests/**
             shared/build/test-results/**/*.xml
+            formats/build/reports/tests/**
+            formats/build/test-results/**/*.xml
           if-no-files-found: ignore
 
   lint:

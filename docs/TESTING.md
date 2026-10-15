@@ -6,13 +6,23 @@ Everything the JVM can run, including the Compose UI suites. Run this before
 opening a pull request, since CI does not:
 
 ```bash
-./gradlew :shared:jvmTest
+./gradlew :shared:jvmTest :formats:jvmTest
 ```
+
+The file-format readers live in `:formats`, with their tests. Fixtures that
+build minimal ZIP, EPUB and PDF files live in `:formats-testing`, so the tests
+of every module that reads those formats can use them.
 
 What CI runs, to reproduce a CI failure:
 
 ```bash
 ./gradlew :shared:jvmCommonTest :shared:testAndroidHostTest
+```
+
+The sync server, which CI runs along with building and starting its image:
+
+```bash
+./gradlew :server:test
 ```
 
 On a connected Android device or emulator:
@@ -36,6 +46,7 @@ On macOS with an iOS Simulator:
 | `iosTest` | yes | iOS implementations and cinterop code |
 | `jvmTest` | compiled only | Compose UI suites, PDFBox, the JDBC driver, `java.io` |
 | `androidDeviceTest` | no | What only a device can answer: keystore, `BitmapFactory`, pdfbox-android |
+| `server/src/test` | yes | The sync server's endpoints, through Ktor's test host and in-memory SQLite |
 
 A test in `jvmTest` that imports nothing platform-specific belongs in
 `commonTest`, where it runs on all three platforms.

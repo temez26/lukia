@@ -2,15 +2,19 @@ package io.lukia.features.library.presentation
 
 import io.lukia.MainDispatcherTest
 import io.lukia.core.domain.AppError
+import io.lukia.core.domain.AppErrorException
 import io.lukia.core.domain.document.CoverImage
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.domain.document.FakeIncomingDocumentStore
+import io.lukia.core.domain.document.ServerBookDownloader
+import io.lukia.core.domain.document.ShelfChanges
 import io.lukia.core.domain.document.TestDocuments
 import io.lukia.core.domain.reading.FakePdfLayoutRepository
 import io.lukia.core.domain.reading.FakeReadingProgressRepository
 import io.lukia.core.domain.storage.FakeDocumentWorkspace
 import io.lukia.core.presentation.UiState
+import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.library.TypeFromExtensionAnalyzer
 import io.lukia.features.library.application.BookDetails
 import io.lukia.features.library.application.GetDocumentDetailsUseCase
@@ -21,6 +25,8 @@ import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.domain.DocumentAnalyzer
 import io.lukia.features.library.domain.LibraryRepository
 import io.lukia.features.library.presentation.model.LibraryMessage
+import io.lukia.features.library.presentation.screens.BookDownload
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -59,6 +65,36 @@ class BookDetailViewModelTest : MainDispatcherTest() {
         )
 
         assertEquals(UiState.Failure(AppError.Unexpected()), viewModel.uiState.value)
+    }
+
+    @Test
+    fun aShelfChangeFromASyncShowsTheBookAfresh() = runTest {
+        val repository = FakeLibraryRepository()
+        val shelfChanges = ShelfChanges()
+        val viewModel = createViewModel(
+            location = "/test/book.pdf",
+            repository = repository,
+            shelfChanges = shelfChanges,
+        )
+
+        repository.addDocument(pdfDocumentInfo())
+        shelfChanges.announce()
+
+        assertEquals(UiState.Success(BookDetails(pdfDocumentInfo())), viewModel.uiState.value)
+    }
+
+    @Test
+    fun comingBackToTheBookReadsItAgain() = runTest {
+        val repository = FakeLibraryRepository(initialDocuments = listOf(pdfDocumentInfo()))
+        val viewModel = createViewModel(location = "/test/book.pdf", repository = repository)
+
+        repository.setFavorite("/test/book.pdf", true)
+        viewModel.reload()
+
+        assertEquals(
+            UiState.Success(BookDetails(pdfDocumentInfo().copy(isFavorite = true))),
+            viewModel.uiState.value,
+        )
     }
 
     @Test
@@ -169,10 +205,69 @@ class BookDetailViewModelTest : MainDispatcherTest() {
         sizeBytes = 1024L,
     )
 
+    /** A server book on the shelf, not on the device yet. */
+    private fun waitingDocumentInfo() = pdfDocumentInfo().copy(exists = false, onServer = true)
+
+    @Test
+    fun aDownloadReportsItsProgressAndShowsTheBookOnceItLands() = runTest {
+        val repository = FakeLibraryRepository(initialDocuments = listOf(waitingDocumentInfo()))
+        val progress = mutableListOf<BookDownload>()
+        lateinit var viewModel: BookDetailViewModel
+        viewModel = createViewModel(
+            location = "/test/book.pdf",
+            repository = repository,
+            downloader = { _, onProgress ->
+                onProgress(0.5f)
+                progress += viewModel.download.value
+                repository.addDocument(waitingDocumentInfo().copy(exists = true))
+            },
+        )
+
+        viewModel.startDownload()
+
+        assertEquals(listOf<BookDownload>(BookDownload.Running(0.5f)), progress)
+        assertEquals(BookDownload.Idle, viewModel.download.value)
+        assertEquals(true, viewModel.uiState.value.dataOrNull?.document?.exists)
+    }
+
+    @Test
+    fun aDownloadThatFailsOffersToTryAgain() = runTest {
+        val repository = FakeLibraryRepository(initialDocuments = listOf(waitingDocumentInfo()))
+        val viewModel = createViewModel(
+            location = "/test/book.pdf",
+            repository = repository,
+            downloader = { _, _ -> throw AppErrorException(AppError.Unexpected()) },
+        )
+
+        viewModel.startDownload()
+
+        assertEquals(BookDownload.Failed, viewModel.download.value)
+        assertEquals(false, viewModel.uiState.value.dataOrNull?.document?.exists)
+    }
+
+    @Test
+    fun aCancelledDownloadGoesBackToTheButton() = runTest {
+        val repository = FakeLibraryRepository(initialDocuments = listOf(waitingDocumentInfo()))
+        val viewModel = createViewModel(
+            location = "/test/book.pdf",
+            repository = repository,
+            downloader = { _, _ -> awaitCancellation() },
+        )
+
+        viewModel.startDownload()
+        assertEquals(BookDownload.Running(0f), viewModel.download.value)
+
+        viewModel.cancelDownload()
+
+        assertEquals(BookDownload.Idle, viewModel.download.value)
+    }
+
     private fun createViewModel(
         location: String,
         repository: LibraryRepository,
         analyzer: DocumentAnalyzer = TypeFromExtensionAnalyzer(),
+        downloader: ServerBookDownloader = ServerBookDownloader { _, _ -> error("no server here") },
+        shelfChanges: ShelfChanges = ShelfChanges(),
     ): BookDetailViewModel = BookDetailViewModel(
         location = location,
         getDocumentDetailsUseCase = GetDocumentDetailsUseCase(
@@ -197,6 +292,8 @@ class BookDetailViewModelTest : MainDispatcherTest() {
             FakeReadingProgressRepository(),
             FakePdfLayoutRepository(),
         ),
+        downloader = downloader,
+        shelfChanges = shelfChanges,
     )
 
     private class FakeLibraryRepository(

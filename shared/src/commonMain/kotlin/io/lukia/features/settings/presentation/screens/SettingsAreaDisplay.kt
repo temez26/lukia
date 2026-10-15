@@ -2,6 +2,7 @@ package io.lukia.features.settings.presentation.screens
 
 import androidx.compose.runtime.Composable
 import io.lukia.resources.Res
+import io.lukia.resources.account_area
 import io.lukia.resources.settings_about
 import io.lukia.resources.settings_area_ai_translation
 import io.lukia.resources.settings_area_appearance
@@ -27,4 +28,5 @@ internal fun SettingsArea.displayTitle(): String = when (this) {
     SettingsArea.Translating -> stringResource(Res.string.settings_area_translating)
     SettingsArea.AiTranslation -> stringResource(Res.string.settings_area_ai_translation)
     SettingsArea.About -> stringResource(Res.string.settings_about)
+    SettingsArea.Account -> stringResource(Res.string.account_area)
 }

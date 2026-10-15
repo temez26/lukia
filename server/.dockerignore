@@ -1,0 +1,3 @@
+# The image takes only the built distribution - see the Dockerfile.
+*
+!build/install/

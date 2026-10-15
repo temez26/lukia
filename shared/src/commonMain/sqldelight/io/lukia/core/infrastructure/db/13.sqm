@@ -1,0 +1,15 @@
+-- The outbox as the sync engine turned out to need it - see `SyncOutbox.sq`.
+--
+-- Version 12's table held a request body per change. Nothing ever wrote to it,
+-- and a body written at the time of a change is the wrong one by the time it
+-- is sent: the latest page, not the page at the time. What is worth keeping is
+-- which thing changed and when; what it changed to is read when it is sent.
+-- The table is empty everywhere, so it is replaced rather than altered.
+DROP TABLE sync_outbox;
+
+CREATE TABLE sync_outbox (
+    kind TEXT NOT NULL,
+    key TEXT NOT NULL,
+    changedAt INTEGER NOT NULL,
+    PRIMARY KEY (kind, key)
+);

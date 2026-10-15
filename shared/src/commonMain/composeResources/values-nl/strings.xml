@@ -206,6 +206,10 @@
     <string name="book_actions">Acties voor het boek</string>
     <string name="book_unavailable">Niet beschikbaar</string>
     <string name="book_missing_file">Dit bestand is niet meer beschikbaar</string>
+    <string name="book_on_server">Op de server</string>
+    <string name="book_download">Downloaden</string>
+    <string name="book_downloading">Downloaden…</string>
+    <string name="book_download_failed">Het downloaden is niet voltooid.</string>
     <string name="book_format_and_size">%1$s · %2$s</string>
     <string name="book_progress_percent">· %1$d%</string>
     <string name="format_pdf">PDF</string>
@@ -403,6 +407,7 @@
     <string name="stats_entry">Uw lezen</string>
     <string name="stats_title">Lezen</string>
     <string name="stats_footnote">Wordt op dit apparaat geteld, en blijft hier.</string>
+    <string name="stats_footnote_synced">Wordt geteld op elk apparaat dat met je account is aangemeld.</string>
     <string name="stats_time_none">Nog niets</string>
     <string name="stats_time_under_a_minute">Minder dan een minuut</string>
     <string name="stats_time_minutes">%1$d min</string>
@@ -479,5 +484,47 @@
     <string name="book_open_title">%1$s openen</string>
     <string name="book_read_title">%1$s lezen</string>
     <string name="book_favourited">Favoriet</string>
+
+    <!-- Settings > Account: signing in to a sync server. -->
+    <string name="account_area">Account</string>
+    <string name="account_title">Synchronisatieserver</string>
+    <string name="account_footnote">Log in op een Lukia-server om je plek in elk boek en je leesstatistieken op al je apparaten bij je te hebben. Zonder server blijft alles op dit apparaat.</string>
+    <string name="account_connect">Verbinden</string>
+    <string name="account_connecting">Verbinden…</string>
+    <string name="account_username">Gebruikersnaam</string>
+    <string name="account_password">Wachtwoord</string>
+    <string name="account_invite_code">Uitnodigingscode</string>
+    <string name="account_sign_in">Inloggen</string>
+    <string name="account_signing_in">Inloggen…</string>
+    <string name="account_create">Account maken</string>
+    <string name="account_setup_footnote">%1$s heeft nog geen accounts. Het account dat je nu maakt, wordt de beheerder.</string>
+    <string name="account_use_invite">Ik heb een uitnodigingscode</string>
+    <string name="account_use_password">Ik heb al een account</string>
+    <string name="account_other_server">Andere server gebruiken</string>
+    <string name="account_signed_in">Ingelogd op %1$s als %2$s.</string>
+    <string name="account_signed_in_admin">Ingelogd op %1$s als %2$s, de beheerder.</string>
+    <string name="account_needs_sign_in">%1$s vraagt opnieuw om je wachtwoord.</string>
+    <string name="account_sign_out">Uitloggen</string>
+    <string name="account_delete">Account verwijderen</string>
+    <string name="account_delete_title">Je account verwijderen?</string>
+    <string name="account_delete_message">Je plek in elk boek, je favorieten en je leessessies worden van %1$s verwijderd, en dit apparaat wordt afgemeld. De boeken blijven in de gedeelde bibliotheek, en alles op dit apparaat blijft hier.</string>
+    <string name="account_problem_last_admin">Je bent de enige beheerder van deze server, dus dit account kan niet worden verwijderd.</string>
+    <string name="account_problem_invalid_address">Dat is geen serveradres.</string>
+    <string name="account_problem_unreachable">Er antwoordde niets op dat adres. Controleer het, en of de server draait.</string>
+    <string name="account_problem_not_lukia">Er antwoordde iets, maar het is geen Lukia-server.</string>
+    <string name="account_problem_insecure">Gebruik https:// voor een server buiten je eigen netwerk.</string>
+    <string name="account_problem_rejected">Die gebruikersnaam en dat wachtwoord horen bij geen enkel account.</string>
+    <string name="account_problem_too_many">Te veel pogingen. Wacht een paar minuten en probeer het opnieuw.</string>
+    <string name="account_problem_invalid_username">Een gebruikersnaam bestaat uit 3 tot 32 kleine letters, cijfers, punten, streepjes of underscores.</string>
+    <string name="account_problem_invalid_password">Een wachtwoord heeft minstens 10 tekens nodig.</string>
+    <string name="account_problem_username_taken">Die gebruikersnaam is al bezet.</string>
+    <string name="account_problem_invalid_invite">Die uitnodigingscode is onbekend, gebruikt of verlopen.</string>
+    <string name="account_problem_already_set_up">Iemand heeft deze server net ingesteld. Log in plaats daarvan in.</string>
+    <string name="account_problem_session_expired">Je aanmelding is verlopen. Log opnieuw in.</string>
+    <string name="account_problem_server_failed">De server kon dat niet doen. Probeer het later opnieuw.</string>
+    <string name="history_title">Lezen op dit apparaat</string>
+    <string name="history_question">Dit apparaat heeft leestijd vastgelegd voordat je inlogde. Toevoegen aan de statistieken van je account, of alleen op dit apparaat houden?</string>
+    <string name="history_add">Toevoegen aan mijn account</string>
+    <string name="history_keep">Op dit apparaat houden</string>
 
 </resources>

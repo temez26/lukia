@@ -71,6 +71,9 @@ internal fun BookDetailBody(
      * both - in the dark theme especially, where the background is true black.
      */
     infoCardColor: Color = MaterialTheme.colorScheme.surface,
+    /** How far fetching a server book onto the device has got - see [BookDownloadRow]. */
+    download: BookDownload = BookDownload.Idle,
+    downloadActions: BookDownloadActions = BookDownloadActions(),
 ) {
     val dimens = LocalLukiaDimens.current
     val document = details.document
@@ -152,7 +155,13 @@ internal fun BookDetailBody(
                 modifier = Modifier.padding(top = Space.sm),
             )
 
-            if (!document.exists) {
+            if (document.awaitsDownload) {
+                BookDownloadRow(
+                    state = download,
+                    actions = downloadActions,
+                    modifier = Modifier.padding(top = Space.lg),
+                )
+            } else if (!document.exists) {
                 StatusBadge(
                     text = stringResource(Res.string.book_missing_file),
                     modifier = Modifier.padding(top = Space.lg),

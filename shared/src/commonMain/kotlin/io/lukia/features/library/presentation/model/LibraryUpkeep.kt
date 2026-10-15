@@ -10,7 +10,7 @@ package io.lukia.features.library.presentation.model
  * library, and an app that quietly tidied it would be answering it for them.
  */
 data class LibraryUpkeep(
-    /** Books the library lists whose file is gone or has moved. */
+    /** Books the library lists whose file is gone or has moved - not ones the sync server has yet to send. */
     val missing: Set<String> = emptySet(),
     /**
      * The later copies of a book that is on the shelf more than once - never the
@@ -43,7 +43,7 @@ fun List<LibraryBook>.upkeep(): LibraryUpkeep {
     }
 
     return LibraryUpkeep(
-        missing = filterNot { it.document.exists }.map { it.location }.toSet(),
+        missing = filter { !it.document.exists && !it.document.awaitsDownload }.map { it.location }.toSet(),
         duplicates = duplicates,
     )
 }

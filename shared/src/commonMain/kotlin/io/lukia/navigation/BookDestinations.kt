@@ -1,15 +1,20 @@
 package io.lukia.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.savedstate.read
 import io.lukia.Routes
+import io.lukia.features.account.application.AccountSession
+import io.lukia.features.account.domain.AccountStatus
 import io.lukia.features.library.presentation.screens.BookDetailScreen
 import io.lukia.features.reader.presentation.screens.ReaderScreen
 import io.lukia.features.settings.presentation.screens.SettingsScreen
 import io.lukia.features.stats.presentation.screens.StatsScreen
+import org.koin.compose.koinInject
 
 /**
  * The screens that push over whatever was showing: one book being read, one
@@ -22,12 +27,14 @@ import io.lukia.features.stats.presentation.screens.StatsScreen
  */
 internal fun NavGraphBuilder.bookDestinations(navController: NavController) {
     composable(Routes.Settings.route) {
-        SettingsScreen(onBack = { navController.popBackStack() })
+        SettingsScreen(onBack = { navController.popBackStack() }, account = AppAccountPage)
     }
 
     composable(Routes.Stats.route) {
+        val account by koinInject<AccountSession>().status.collectAsState()
         StatsScreen(
             onBack = { navController.popBackStack() },
+            syncedWithAccount = account !is AccountStatus.SignedOut,
             // Straight into the book rather than back to the shelf it is on:
             // the list this comes from is what was read most recently, and the
             // only thing anybody wants from a row of it is to carry on.

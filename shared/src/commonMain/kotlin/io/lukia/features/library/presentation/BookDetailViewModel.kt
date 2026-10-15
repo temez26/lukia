@@ -3,6 +3,9 @@ package io.lukia.features.library.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.lukia.core.domain.AppError
+import io.lukia.core.domain.AppErrorException
+import io.lukia.core.domain.document.ServerBookDownloader
+import io.lukia.core.domain.document.ShelfChanges
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.core.domain.toAppError
 import io.lukia.core.presentation.UiState
@@ -13,6 +16,8 @@ import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.presentation.model.LibraryMessage
+import io.lukia.features.library.presentation.screens.BookDownload
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +29,11 @@ class BookDetailViewModel(
     private val setFavoriteUseCase: SetFavoriteUseCase,
     private val refreshDocumentUseCase: RefreshDocumentUseCase,
     private val removeDocumentUseCase: RemoveDocumentUseCase,
+    /** Fetches a server book onto the device. Defaulted for the screens and tests that never meet one. */
+    private val downloader: ServerBookDownloader = ServerBookDownloader { _, _ ->
+        throw AppErrorException(AppError.DocumentNotFound)
+    },
+    shelfChanges: ShelfChanges = ShelfChanges(),
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState<BookDetails>>(UiState.Loading)
@@ -37,8 +47,44 @@ class BookDetailViewModel(
     private val _message = MutableStateFlow<LibraryMessage?>(null)
     val message: StateFlow<LibraryMessage?> = _message.asStateFlow()
 
+    private val _download = MutableStateFlow<BookDownload>(BookDownload.Idle)
+    val download: StateFlow<BookDownload> = _download.asStateFlow()
+
+    private var downloading: Job? = null
+
     init {
         load()
+        // A sync can change this book - its place, its favourite - while it is on screen.
+        viewModelScope.launch { shelfChanges.changes.collect { load() } }
+    }
+
+    /** Reads the book again on coming back to it, from the reader or from another app. */
+    fun reload() {
+        if (_uiState.value !is UiState.Loading) load()
+    }
+
+    /**
+     * Fetches the book onto the device, then shows it as one that is - after
+     * which it opens like any other, offline included.
+     */
+    fun startDownload() {
+        if (_download.value is BookDownload.Running) return
+        _download.value = BookDownload.Running(progress = 0f)
+
+        downloading = viewModelScope.launch {
+            runCatchingApp { downloader.download(location) { _download.value = BookDownload.Running(it) } }
+                .onSuccess {
+                    _download.value = BookDownload.Idle
+                    load()
+                }
+                .onFailure { _download.value = BookDownload.Failed }
+        }
+    }
+
+    /** Stops the download; nothing of it is kept. */
+    fun cancelDownload() {
+        downloading?.cancel()
+        _download.value = BookDownload.Idle
     }
 
     /**

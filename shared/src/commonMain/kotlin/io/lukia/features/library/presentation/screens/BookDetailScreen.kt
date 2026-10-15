@@ -19,6 +19,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.library.application.BookDetails
@@ -49,11 +51,14 @@ fun BookDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val message by viewModel.message.collectAsState()
+    val download by viewModel.download.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Read in the composition, shown from the effect - a string resource needs
     // the one and the snackbar needs the other.
     val notice = message?.displayText()
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.reload() }
 
     LaunchedEffect(notice) {
         notice?.let {
@@ -70,6 +75,10 @@ fun BookDetailScreen(
         onToggleFavorite = viewModel::toggleFavorite,
         onRefresh = viewModel::refreshDocument,
         snackbarHostState = snackbarHostState,
+        download = download,
+        downloadActions = remember(viewModel) {
+            BookDownloadActions(onStart = viewModel::startDownload, onCancel = viewModel::cancelDownload)
+        },
         // Nothing left on this screen once the entry is gone, so leaving is part
         // of the action rather than something the user is left to do.
         onDelete = {
@@ -93,6 +102,9 @@ fun BookDetailContent(
      * which is how it is tested and previewed.
      */
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    /** How far fetching a server book onto the device has got - see [BookDownloadRow]. */
+    download: BookDownload = BookDownload.Idle,
+    downloadActions: BookDownloadActions = BookDownloadActions(),
 ) {
     val dimens = LocalLukiaDimens.current
     var menuExpanded by remember { mutableStateOf(false) }
@@ -129,6 +141,8 @@ fun BookDetailContent(
                     details = details,
                     onRead = onRead,
                     onLongPress = { menuExpanded = true },
+                    download = download,
+                    downloadActions = downloadActions,
                     modifier = Modifier.fillMaxSize(),
                 )
             }

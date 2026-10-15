@@ -51,6 +51,13 @@ class LibraryUpkeepTest {
         assertEquals(setOf(gone.document.location), found.missing)
     }
 
+    @Test
+    fun aServerBookNotYetDownloadedIsNotMissing() {
+        val waiting = book("Waiting", exists = false).copy(onServer = true)
+
+        assertTrue(shelf(waiting).upkeep().missing.isEmpty())
+    }
+
     /**
      * Never the first: acting on every duplicate has to leave exactly one of
      * each book behind, or tidying a shelf would empty it.

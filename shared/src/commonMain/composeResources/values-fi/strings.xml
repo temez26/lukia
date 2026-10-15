@@ -249,6 +249,10 @@
     <string name="book_actions">Kirjan toiminnot</string>
     <string name="book_unavailable">Ei saatavilla</string>
     <string name="book_missing_file">Tämä tiedosto ei ole enää saatavilla</string>
+    <string name="book_on_server">Palvelimella</string>
+    <string name="book_download">Lataa</string>
+    <string name="book_downloading">Ladataan…</string>
+    <string name="book_download_failed">Lataus ei valmistunut.</string>
     <string name="book_format_and_size">%1$s · %2$s</string>
     <string name="book_progress_percent">· %1$d\u00A0%</string>
 
@@ -466,6 +470,7 @@
     <string name="stats_entry">Lukemisesi</string>
     <string name="stats_title">Lukeminen</string>
     <string name="stats_footnote">Lasketaan tällä laitteella, ja säilytetään täällä.</string>
+    <string name="stats_footnote_synced">Lasketaan jokaisella laitteella, jolla olet kirjautunut tilillesi.</string>
 
     <string name="stats_time_none">Ei vielä</string>
     <string name="stats_time_under_a_minute">Alle minuutti</string>
@@ -548,5 +553,47 @@
     <string name="book_open_title">Avaa %1$s</string>
     <string name="book_read_title">Lue %1$s</string>
     <string name="book_favourited">Suosikki</string>
+
+    <!-- Settings > Account: signing in to a sync server. -->
+    <string name="account_area">Tili</string>
+    <string name="account_title">Synkronointipalvelin</string>
+    <string name="account_footnote">Kirjaudu Lukia-palvelimeen, niin kohtasi jokaisessa kirjassa ja lukutilastosi kulkevat kaikilla laitteillasi. Ilman palvelinta kaikki pysyy tällä laitteella.</string>
+    <string name="account_connect">Yhdistä</string>
+    <string name="account_connecting">Yhdistetään…</string>
+    <string name="account_username">Käyttäjänimi</string>
+    <string name="account_password">Salasana</string>
+    <string name="account_invite_code">Kutsukoodi</string>
+    <string name="account_sign_in">Kirjaudu</string>
+    <string name="account_signing_in">Kirjaudutaan…</string>
+    <string name="account_create">Luo tili</string>
+    <string name="account_setup_footnote">Palvelimella %1$s ei ole vielä tilejä. Nyt luomastasi tulee sen ylläpitäjä.</string>
+    <string name="account_use_invite">Minulla on kutsukoodi</string>
+    <string name="account_use_password">Minulla on jo tili</string>
+    <string name="account_other_server">Käytä toista palvelinta</string>
+    <string name="account_signed_in">Kirjautunut palvelimeen %1$s käyttäjänä %2$s.</string>
+    <string name="account_signed_in_admin">Kirjautunut palvelimeen %1$s käyttäjänä %2$s, ylläpitäjänä.</string>
+    <string name="account_needs_sign_in">%1$s pyytää salasanaasi uudelleen.</string>
+    <string name="account_sign_out">Kirjaudu ulos</string>
+    <string name="account_delete">Poista tili</string>
+    <string name="account_delete_title">Poistetaanko tilisi?</string>
+    <string name="account_delete_message">Kohtasi jokaisessa kirjassa, suosikkisi ja lukukertasi poistetaan palvelimelta %1$s, ja tämä laite kirjautuu ulos. Kirjat jäävät yhteiseen kirjastoon, ja kaikki tällä laitteella oleva jää tänne.</string>
+    <string name="account_problem_last_admin">Olet tämän palvelimen ainoa ylläpitäjä, joten tätä tiliä ei voi poistaa.</string>
+    <string name="account_problem_invalid_address">Tämä ei ole palvelimen osoite.</string>
+    <string name="account_problem_unreachable">Tästä osoitteesta ei vastannut mikään. Tarkista osoite ja että palvelin on käynnissä.</string>
+    <string name="account_problem_not_lukia">Jokin vastasi, mutta se ei ole Lukia-palvelin.</string>
+    <string name="account_problem_insecure">Käytä https://-osoitetta, kun palvelin on oman verkkosi ulkopuolella.</string>
+    <string name="account_problem_rejected">Käyttäjänimi ja salasana eivät vastaa mitään tiliä.</string>
+    <string name="account_problem_too_many">Liian monta yritystä. Odota muutama minuutti ja yritä uudelleen.</string>
+    <string name="account_problem_invalid_username">Käyttäjänimessä on 3–32 pientä kirjainta, numeroa, pistettä, yhdysmerkkiä tai alaviivaa.</string>
+    <string name="account_problem_invalid_password">Salasanassa on oltava vähintään 10 merkkiä.</string>
+    <string name="account_problem_username_taken">Käyttäjänimi on jo varattu.</string>
+    <string name="account_problem_invalid_invite">Kutsukoodi on tuntematon, käytetty tai vanhentunut.</string>
+    <string name="account_problem_already_set_up">Joku otti tämän palvelimen juuri käyttöön. Kirjaudu sen sijaan.</string>
+    <string name="account_problem_session_expired">Kirjautumisesi on päättynyt. Kirjaudu uudelleen.</string>
+    <string name="account_problem_server_failed">Palvelin ei pystynyt tekemään sitä. Yritä myöhemmin uudelleen.</string>
+    <string name="history_title">Lukeminen tällä laitteella</string>
+    <string name="history_question">Tämä laite tallensi lukemista ennen kuin kirjauduit. Lisätäänkö se tilisi tilastoihin, vai pidetäänkö se vain tällä laitteella?</string>
+    <string name="history_add">Lisää tililleni</string>
+    <string name="history_keep">Pidä tällä laitteella</string>
 
 </resources>

@@ -1,0 +1,41 @@
+-- A stretch of time one account spent in a book, as the app's own
+-- `reading_session` records it.
+--
+-- `id` is the UUID the device made when the sitting began, unique per account
+-- rather than across them, so no account's ids can collide with - or be used
+-- to probe - another's.
+--
+-- Only `durationMs` changes after the first write, and only upwards: a sitting
+-- is sent again as it grows, and a retry of an older send must not shrink it.
+--
+-- `title` is what the device called the book, so a device without that book
+-- can still name it in its statistics.
+CREATE TABLE reading_session (
+    accountId INTEGER NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    id TEXT NOT NULL,
+    bookId TEXT NOT NULL,
+    title TEXT,
+    startedAt INTEGER NOT NULL,
+    durationMs INTEGER NOT NULL,
+    seq INTEGER NOT NULL,
+    PRIMARY KEY (accountId, id)
+);
+
+CREATE INDEX reading_session_account_seq ON reading_session(accountId, seq);
+
+insertIfAbsent:
+INSERT OR IGNORE INTO reading_session(accountId, id, bookId, title, startedAt, durationMs, seq)
+VALUES (?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(seq), 0) + 1 FROM reading_session));
+
+extend:
+UPDATE reading_session
+SET durationMs = :durationMs, seq = (SELECT MAX(seq) + 1 FROM reading_session)
+WHERE accountId = :accountId AND id = :id AND durationMs < :durationMs;
+
+selectOne:
+SELECT * FROM reading_session WHERE accountId = ? AND id = ?;
+
+selectSince:
+SELECT * FROM reading_session
+WHERE accountId = :accountId AND seq > :since
+ORDER BY seq LIMIT :limit;

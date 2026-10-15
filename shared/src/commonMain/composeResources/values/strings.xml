@@ -288,6 +288,11 @@
     <string name="book_actions">Book actions</string>
     <string name="book_unavailable">Unavailable</string>
     <string name="book_missing_file">This file is no longer available</string>
+    <!-- A book in the sync server's library that is not on this device yet. -->
+    <string name="book_on_server">On server</string>
+    <string name="book_download">Download</string>
+    <string name="book_downloading">Downloading\u2026</string>
+    <string name="book_download_failed">The download did not finish.</string>
     <!-- The format and the size, on one line under the title. -->
     <string name="book_format_and_size">%1$s \u00B7 %2$s</string>
     <!-- How far through, appended to the line above. -->
@@ -549,6 +554,7 @@
     <string name="stats_entry">Your reading</string>
     <string name="stats_title">Reading</string>
     <string name="stats_footnote">Counted on this device, and kept here.</string>
+    <string name="stats_footnote_synced">Counted on every device signed in to your account.</string>
 
     <!--
         A stretch of reading. Four whole forms rather than a number with a unit
@@ -660,5 +666,51 @@
     <string name="book_open_title">Open %1$s</string>
     <string name="book_read_title">Read %1$s</string>
     <string name="book_favourited">Favourite</string>
+
+    <!--
+        Settings > Account: signing in to a sync server, which keeps the reader's
+        place in each book and their reading statistics on every device. See
+        docs/specs/sync-server.md.
+    -->
+    <string name="account_area">Account</string>
+    <string name="account_title">Sync server</string>
+    <string name="account_footnote">Sign in to a Lukia server to keep your place in each book and your reading statistics on all your devices. Without one, everything stays on this device.</string>
+    <string name="account_connect">Connect</string>
+    <string name="account_connecting">Connecting\u2026</string>
+    <string name="account_username">Username</string>
+    <string name="account_password">Password</string>
+    <string name="account_invite_code">Invite code</string>
+    <string name="account_sign_in">Sign in</string>
+    <string name="account_signing_in">Signing in\u2026</string>
+    <string name="account_create">Create account</string>
+    <string name="account_setup_footnote">%1$s has no accounts yet. The one you create now is its admin.</string>
+    <string name="account_use_invite">I have an invite code</string>
+    <string name="account_use_password">I already have an account</string>
+    <string name="account_other_server">Use another server</string>
+    <string name="account_signed_in">Signed in to %1$s as %2$s.</string>
+    <string name="account_signed_in_admin">Signed in to %1$s as %2$s, its admin.</string>
+    <string name="account_needs_sign_in">%1$s asks for your password again.</string>
+    <string name="account_sign_out">Sign out</string>
+    <string name="account_delete">Delete account</string>
+    <string name="account_delete_title">Delete your account?</string>
+    <string name="account_delete_message">Your place in each book, your favourites and your reading sessions are removed from %1$s, and this device signs out. The books stay in the shared library, and everything on this device stays here.</string>
+    <string name="account_problem_last_admin">You are this server's only admin, so this account cannot be deleted.</string>
+    <string name="account_problem_invalid_address">That is not a server address.</string>
+    <string name="account_problem_unreachable">Nothing answered at that address. Check it, and that the server is running.</string>
+    <string name="account_problem_not_lukia">Something answered, but it is not a Lukia server.</string>
+    <string name="account_problem_insecure">Use https:// for a server outside your own network.</string>
+    <string name="account_problem_rejected">That username and password do not match an account.</string>
+    <string name="account_problem_too_many">Too many tries. Wait a few minutes and try again.</string>
+    <string name="account_problem_invalid_username">A username is 3 to 32 lower-case letters, digits, dots, dashes or underscores.</string>
+    <string name="account_problem_invalid_password">A password needs at least 10 characters.</string>
+    <string name="account_problem_username_taken">That username is taken.</string>
+    <string name="account_problem_invalid_invite">That invite code is unknown, used or expired.</string>
+    <string name="account_problem_already_set_up">Someone has just set this server up. Sign in instead.</string>
+    <string name="account_problem_session_expired">Your sign-in has ended. Sign in again.</string>
+    <string name="account_problem_server_failed">The server could not do that. Try again later.</string>
+    <string name="history_title">Reading on this device</string>
+    <string name="history_question">This device recorded reading before you signed in. Add it to your account's statistics, or keep it on this device only?</string>
+    <string name="history_add">Add to my account</string>
+    <string name="history_keep">Keep on this device</string>
 
 </resources>

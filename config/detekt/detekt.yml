@@ -21,6 +21,11 @@ testSources: &testSources
   - '**/iosTest/**'
   - '**/androidDeviceTest/**'
   - '**/androidHostTest/**'
+  # `:server` is a plain JVM module, whose tests sit in Gradle's default layout.
+  - '**/src/test/**'
+  # Fixtures for other modules' tests, which only live in a main source set
+  # because Kotlin Multiplatform has nowhere else to share them from.
+  - '**/formats-testing/**'
   - '**/*.kts'
 
 build:
@@ -198,6 +203,8 @@ style:
       - '**/jvmTest/**'
       - '**/iosTest/**'
       - '**/androidDeviceTest/**'
+      - '**/src/test/**'
+      - '**/formats-testing/**'
       - '**/*.kts'
       # The layer that decodes published formats and speaks protocols. A ZIP
       # central-directory record puts the name length at offset 28, a surrogate

@@ -34,13 +34,11 @@ import io.lukia.features.library.presentation.model.LibraryBook
 import io.lukia.resources.Res
 import io.lukia.resources.book_format_and_size
 import io.lukia.resources.book_progress_percent
-import io.lukia.resources.book_unavailable
 import io.lukia.shared.presentation.components.controls.ReadingProgressBar
 import io.lukia.shared.presentation.components.controls.menuGesture
 import io.lukia.shared.presentation.components.controls.pressFeedback
 import io.lukia.shared.presentation.components.cover.BookCover
 import io.lukia.shared.presentation.components.cover.FavoriteBadge
-import io.lukia.shared.presentation.components.surface.StatusBadge
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 
@@ -220,7 +218,7 @@ private fun RowDetails(
         }
 
         if (!document.exists) {
-            StatusBadge(text = stringResource(Res.string.book_unavailable))
+            BookStatusBadge(document)
         }
     }
 }

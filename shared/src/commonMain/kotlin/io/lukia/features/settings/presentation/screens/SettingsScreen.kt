@@ -28,6 +28,8 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    /** The Account page - see `SettingsBody`. */
+    account: AccountPage? = null,
     viewModel: SettingsViewModel = koinViewModel(),
 ) {
     val settings by viewModel.settings.collectAsState()
@@ -50,6 +52,7 @@ fun SettingsScreen(
         providerActions = rememberProviderActions(viewModel),
         onBack = onBack,
         diagnostics = { DiagnosticsGroup() },
+        account = account,
     )
 }
 
@@ -72,6 +75,8 @@ fun SettingsContent(
     providerActions: ProviderActions = ProviderActions(),
     /** The diagnostics group - see `SettingsBody`. Absent leaves it off the page. */
     diagnostics: (@Composable () -> Unit)? = null,
+    /** The Account page - see `SettingsBody`. */
+    account: AccountPage? = null,
 ) {
     Box(
         modifier = modifier
@@ -98,6 +103,7 @@ fun SettingsContent(
                 providerActions = providerActions,
                 modifier = Modifier.fillMaxSize(),
                 diagnostics = diagnostics,
+                account = account,
             )
 
             FloatingBackButton(onBack = onBack)

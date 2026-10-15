@@ -1,6 +1,7 @@
 package io.lukia.di
 
 import io.lukia.core.domain.diagnostics.Diagnostics
+import io.lukia.core.domain.document.ShelfChanges
 import io.lukia.core.infrastructure.AppCommands
 import io.lukia.core.infrastructure.DocumentInbox
 import io.lukia.core.infrastructure.IncomingDocuments
@@ -8,11 +9,13 @@ import io.lukia.core.infrastructure.db.LukiaDatabase
 import io.lukia.core.infrastructure.diagnostics.CrashRecorder
 import io.lukia.core.infrastructure.diagnostics.DiagnosticBuffer
 import io.lukia.core.infrastructure.diagnostics.RecordingDiagnostics
+import io.lukia.features.account.accountModule
 import io.lukia.features.library.libraryModule
 import io.lukia.features.reader.readerModule
 import io.lukia.features.settings.domain.AppSettingsRepository
 import io.lukia.features.settings.settingsModule
 import io.lukia.features.stats.statsModule
+import io.lukia.features.sync.syncModule
 import io.lukia.features.translate.translateModule
 import org.koin.dsl.module
 
@@ -50,6 +53,12 @@ val commonModule = module {
         AppCommands()
     }
 
+    // One for the app: whatever changes the shelf behind the library's back -
+    // the sync server, so far - and the library itself hold the same one.
+    single {
+        ShelfChanges()
+    }
+
     // Where the boundaries write down what they absorbed. One for the process,
     // because a report is about a run of the app rather than about a screen.
     //
@@ -83,6 +92,8 @@ val commonModule = module {
     }
 
     includes(
+        accountModule,
+        syncModule,
         libraryModule,
         readerModule,
         translateModule,

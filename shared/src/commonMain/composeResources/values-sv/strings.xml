@@ -235,6 +235,10 @@
     <string name="book_actions">Bokens åtgärder</string>
     <string name="book_unavailable">Inte tillgänglig</string>
     <string name="book_missing_file">Den här filen är inte tillgänglig längre</string>
+    <string name="book_on_server">På servern</string>
+    <string name="book_download">Ladda ner</string>
+    <string name="book_downloading">Laddar ner…</string>
+    <string name="book_download_failed">Nedladdningen blev inte klar.</string>
     <string name="book_format_and_size">%1$s · %2$s</string>
     <string name="book_progress_percent">· %1$d\u00A0%</string>
 
@@ -452,6 +456,7 @@
     <string name="stats_entry">Din läsning</string>
     <string name="stats_title">Läsning</string>
     <string name="stats_footnote">Räknas på den här enheten, och stannar här.</string>
+    <string name="stats_footnote_synced">Räknas på varje enhet som är inloggad på ditt konto.</string>
 
     <string name="stats_time_none">Inget än</string>
     <string name="stats_time_under_a_minute">Under en minut</string>
@@ -533,5 +538,47 @@
     <string name="book_open_title">Öppna %1$s</string>
     <string name="book_read_title">Läs %1$s</string>
     <string name="book_favourited">Favorit</string>
+
+    <!-- Settings > Account: signing in to a sync server. -->
+    <string name="account_area">Konto</string>
+    <string name="account_title">Synkserver</string>
+    <string name="account_footnote">Logga in på en Lukia-server för att ha din plats i varje bok och din lässtatistik med dig på alla dina enheter. Utan en stannar allt på den här enheten.</string>
+    <string name="account_connect">Anslut</string>
+    <string name="account_connecting">Ansluter…</string>
+    <string name="account_username">Användarnamn</string>
+    <string name="account_password">Lösenord</string>
+    <string name="account_invite_code">Inbjudningskod</string>
+    <string name="account_sign_in">Logga in</string>
+    <string name="account_signing_in">Loggar in…</string>
+    <string name="account_create">Skapa konto</string>
+    <string name="account_setup_footnote">%1$s har inga konton än. Det du skapar nu blir dess administratör.</string>
+    <string name="account_use_invite">Jag har en inbjudningskod</string>
+    <string name="account_use_password">Jag har redan ett konto</string>
+    <string name="account_other_server">Använd en annan server</string>
+    <string name="account_signed_in">Inloggad på %1$s som %2$s.</string>
+    <string name="account_signed_in_admin">Inloggad på %1$s som %2$s, dess administratör.</string>
+    <string name="account_needs_sign_in">%1$s ber om ditt lösenord igen.</string>
+    <string name="account_sign_out">Logga ut</string>
+    <string name="account_delete">Radera konto</string>
+    <string name="account_delete_title">Radera ditt konto?</string>
+    <string name="account_delete_message">Din plats i varje bok, dina favoriter och dina lässessioner tas bort från %1$s, och den här enheten loggas ut. Böckerna stannar i det delade biblioteket, och allt på den här enheten stannar här.</string>
+    <string name="account_problem_last_admin">Du är serverns enda administratör, så det här kontot kan inte raderas.</string>
+    <string name="account_problem_invalid_address">Det är inte en serveradress.</string>
+    <string name="account_problem_unreachable">Ingenting svarade på den adressen. Kontrollera den, och att servern är igång.</string>
+    <string name="account_problem_not_lukia">Något svarade, men det är inte en Lukia-server.</string>
+    <string name="account_problem_insecure">Använd https:// för en server utanför ditt eget nätverk.</string>
+    <string name="account_problem_rejected">Det användarnamnet och lösenordet matchar inget konto.</string>
+    <string name="account_problem_too_many">För många försök. Vänta några minuter och försök igen.</string>
+    <string name="account_problem_invalid_username">Ett användarnamn har 3 till 32 små bokstäver, siffror, punkter, bindestreck eller understreck.</string>
+    <string name="account_problem_invalid_password">Ett lösenord behöver minst 10 tecken.</string>
+    <string name="account_problem_username_taken">Det användarnamnet är upptaget.</string>
+    <string name="account_problem_invalid_invite">Den inbjudningskoden är okänd, använd eller har gått ut.</string>
+    <string name="account_problem_already_set_up">Någon har just konfigurerat den här servern. Logga in i stället.</string>
+    <string name="account_problem_session_expired">Din inloggning har gått ut. Logga in igen.</string>
+    <string name="account_problem_server_failed">Servern kunde inte göra det. Försök igen senare.</string>
+    <string name="history_title">Läsning på den här enheten</string>
+    <string name="history_question">Den här enheten registrerade läsning innan du loggade in. Vill du lägga till den i kontots statistik eller bara behålla den på den här enheten?</string>
+    <string name="history_add">Lägg till på mitt konto</string>
+    <string name="history_keep">Behåll på den här enheten</string>
 
 </resources>

@@ -3,16 +3,21 @@ package io.lukia.features.library
 import io.lukia.core.domain.document.DocumentCatalogue
 import io.lukia.features.library.application.GetDocumentDetailsUseCase
 import io.lukia.features.library.application.GetLibraryDocumentsUseCase
+import io.lukia.features.library.application.HashLibraryUseCase
 import io.lukia.features.library.application.ImportDocumentUseCase
 import io.lukia.features.library.application.ImportDocumentsUseCase
 import io.lukia.features.library.application.ImportFolderUseCase
 import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
+import io.lukia.features.library.domain.ContentHashStore
 import io.lukia.features.library.domain.LibraryRepository
+import io.lukia.features.library.domain.ServerShelf
 import io.lukia.features.library.infrastructure.LibrarySettingsRepository
 import io.lukia.features.library.infrastructure.RecentSearchesRepository
+import io.lukia.features.library.infrastructure.SqlContentHashStore
 import io.lukia.features.library.infrastructure.SqlLibraryRepository
+import io.lukia.features.library.infrastructure.SqlServerShelf
 import io.lukia.features.library.presentation.BookDetailViewModel
 import io.lukia.features.library.presentation.LibraryViewModel
 import org.koin.core.module.dsl.viewModel
@@ -57,7 +62,7 @@ val libraryModule = module {
     }
 
     single {
-        GetLibraryDocumentsUseCase(get())
+        GetLibraryDocumentsUseCase(get(), get())
     }
 
     single {
@@ -70,6 +75,18 @@ val libraryModule = module {
 
     single {
         RemoveDocumentUseCase(get(), get(), get(), get(), get())
+    }
+
+    single<ContentHashStore> {
+        SqlContentHashStore(get())
+    }
+
+    single<ServerShelf> {
+        SqlServerShelf(get())
+    }
+
+    single {
+        HashLibraryUseCase(get(), get())
     }
 
     // How the shelf is laid out is remembered between sessions, and read back by
@@ -90,6 +107,6 @@ val libraryModule = module {
     }
 
     viewModel { (location: String) ->
-        BookDetailViewModel(location, get(), get(), get(), get())
+        BookDetailViewModel(location, get(), get(), get(), get(), get(), get())
     }
 }

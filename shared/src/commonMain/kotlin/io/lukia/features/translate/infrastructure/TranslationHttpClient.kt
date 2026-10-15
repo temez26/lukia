@@ -39,7 +39,7 @@ fun translationHttpClient(): HttpClient = HttpClient {
     // A redirect is somebody else choosing where the request goes, and the
     // check that says a plain-HTTP address is the reader's own machine has
     // already been made against the address they configured - see
-    // `isAllowedTranslationEndpoint`. Following one would move the request to a
+    // `isAllowedEndpoint`. Following one would move the request to a
     // host nothing has checked, so the answer to a 3xx is the same as the
     // answer to any other unexpected status: report it and send nothing more.
     // No provider this app speaks to redirects its API.

@@ -1,0 +1,86 @@
+-- One sign-in, on one device: the line of tokens every refresh descends from.
+--
+-- Revoking is deleting the family, which takes every access and refresh token
+-- it ever issued - signing out, a refresh token used twice, and a password reset
+-- all mean exactly that.
+CREATE TABLE auth_family (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    accountId INTEGER NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    createdAt INTEGER NOT NULL
+);
+
+CREATE INDEX auth_family_accountId ON auth_family(accountId);
+
+-- Tokens are stored as SHA-256 hashes only, so a copy of the database signs
+-- nobody in. 256 random bits need no salt or slow hash: there is nothing to
+-- guess.
+CREATE TABLE access_token (
+    hash TEXT NOT NULL PRIMARY KEY,
+    familyId INTEGER NOT NULL REFERENCES auth_family(id) ON DELETE CASCADE,
+    expiresAt INTEGER NOT NULL
+);
+
+CREATE INDEX access_token_familyId ON access_token(familyId);
+
+-- `usedAt` stays set after a rotation instead of the row being deleted, so a
+-- second use can be told from a token that never existed - the one is a stolen
+-- token racing its owner, and revokes the family.
+CREATE TABLE refresh_token (
+    hash TEXT NOT NULL PRIMARY KEY,
+    familyId INTEGER NOT NULL REFERENCES auth_family(id) ON DELETE CASCADE,
+    expiresAt INTEGER NOT NULL,
+    usedAt INTEGER
+);
+
+CREATE INDEX refresh_token_familyId ON refresh_token(familyId);
+
+insertFamily:
+INSERT INTO auth_family(accountId, createdAt) VALUES (?, ?);
+
+insertAccess:
+INSERT INTO access_token(hash, familyId, expiresAt) VALUES (?, ?, ?);
+
+insertRefresh:
+INSERT INTO refresh_token(hash, familyId, expiresAt) VALUES (?, ?, ?);
+
+-- Who an access token belongs to, if it still belongs to anyone.
+selectAccess:
+SELECT account.id, account.username, account.isAdmin, access_token.familyId
+FROM access_token
+JOIN auth_family ON auth_family.id = access_token.familyId
+JOIN account ON account.id = auth_family.accountId
+WHERE access_token.hash = :hash AND access_token.expiresAt > :now;
+
+selectRefresh:
+SELECT refresh_token.*, auth_family.accountId
+FROM refresh_token
+JOIN auth_family ON auth_family.id = refresh_token.familyId
+WHERE refresh_token.hash = ?;
+
+markRefreshUsed:
+UPDATE refresh_token SET usedAt = ? WHERE hash = ?;
+
+deleteFamily:
+DELETE FROM auth_family WHERE id = ?;
+
+deleteFamiliesOfAccount:
+DELETE FROM auth_family WHERE accountId = ?;
+
+-- Families whose every refresh token has expired can never issue again. Swept
+-- on each sign-in and refresh rather than on a schedule: the tables stay small
+-- enough that the sweep costs nothing, and nothing piles up.
+deleteExpiredFamilies:
+DELETE FROM auth_family
+WHERE NOT EXISTS (
+    SELECT 1 FROM refresh_token
+    WHERE refresh_token.familyId = auth_family.id AND refresh_token.expiresAt > :now
+);
+
+deleteExpiredAccess:
+DELETE FROM access_token WHERE expiresAt <= :now;
+
+-- A family in use lives on through each rotation, and leaves a spent refresh
+-- token behind every time. Past its expiry one is refused either way, so its
+-- row has nothing left to tell.
+deleteExpiredRefresh:
+DELETE FROM refresh_token WHERE expiresAt <= :now;

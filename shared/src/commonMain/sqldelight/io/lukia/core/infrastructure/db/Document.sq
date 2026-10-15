@@ -39,7 +39,9 @@ CREATE TABLE document (
     metaLanguage TEXT,
     metaDescription TEXT,
     metaSubjects TEXT,
-    metaIdentifier TEXT
+    metaIdentifier TEXT,
+    contentHash TEXT,
+    onServer INTEGER AS Boolean NOT NULL DEFAULT 0
 );
 
 -- What `insertIfAbsent` reads to give a new book its place on the shelf.
@@ -55,6 +57,13 @@ CREATE TABLE document (
 -- library's worth of rows sorts in no time.
 CREATE INDEX document_sortKey ON document(sortKey);
 
+-- The SHA-256 of the file, which is what names the book to a sync server and to
+-- every other device - see docs/decisions/0002-content-hash-book-identity.md.
+-- Null until a pass after signing in works it out: reading every byte of every
+-- book costs a second per large PDF, and a reader who never syncs should never
+-- pay it. Indexed for the other direction, a server's book to this shelf's.
+CREATE INDEX document_contentHash ON document(contentHash);
+
 -- The shelf, without the artwork on it.
 --
 -- Every column but `coverImage`, spelled out rather than `*`, because the one
@@ -67,7 +76,7 @@ CREATE INDEX document_sortKey ON document(sortKey);
 selectAll:
 SELECT location, fileName, extension, type, fileExists, sizeBytes, isFavorite,
        sortKey, metaTitle, metaAuthors, metaPublisher, metaPublished,
-       metaLanguage, metaDescription, metaSubjects, metaIdentifier
+       metaLanguage, metaDescription, metaSubjects, metaIdentifier, onServer
 FROM document ORDER BY sortKey;
 
 -- One book's artwork, for the card about to draw it. Bounded by what the reader
@@ -123,8 +132,58 @@ SET fileName = :fileName,
     metaLanguage = CASE WHEN :hasMetadata THEN :metaLanguage ELSE metaLanguage END,
     metaDescription = CASE WHEN :hasMetadata THEN :metaDescription ELSE metaDescription END,
     metaSubjects = CASE WHEN :hasMetadata THEN :metaSubjects ELSE metaSubjects END,
-    metaIdentifier = CASE WHEN :hasMetadata THEN :metaIdentifier ELSE metaIdentifier END
+    metaIdentifier = CASE WHEN :hasMetadata THEN :metaIdentifier ELSE metaIdentifier END,
+    -- A file that changed size is different bytes, so its hash is forgotten and
+    -- worked out again. One edited without changing size keeps a stale hash
+    -- until it is next re-imported; rehashing every file on every rescan to
+    -- catch that would cost a library's worth of reading each time.
+    contentHash = CASE WHEN sizeBytes = :sizeBytes THEN contentHash ELSE NULL END
 WHERE location = :location;
+
+-- The books still to be hashed, oldest on the shelf first.
+selectUnhashed:
+SELECT location, fileName, extension FROM document
+WHERE contentHash IS NULL AND fileExists
+ORDER BY sortKey;
+
+setContentHash:
+UPDATE document SET contentHash = ? WHERE location = ?;
+
+-- The book on this shelf with these bytes, if there is one: how a server book
+-- is matched to a copy the reader already had.
+selectLocationByHash:
+SELECT location FROM document WHERE contentHash = ? LIMIT 1;
+
+-- A server book not downloaded yet, placed at the location its download will
+-- have. `INSERT OR IGNORE` for the import's reason: a row already there keeps
+-- its place on the shelf.
+insertServerBook:
+INSERT OR IGNORE INTO document(location, fileName, extension, type, fileExists, sizeBytes, coverImage, sortKey, metaTitle, metaAuthors, metaPublisher, metaPublished, metaLanguage, metaDescription, metaSubjects, metaIdentifier, contentHash, onServer)
+VALUES (?, ?, ?, ?, 0, ?, ?, (SELECT COALESCE(MAX(sortKey), 0) + 1 FROM document), ?, ?, ?, ?, ?, ?, ?, ?, ?, 1);
+
+setOnServer:
+UPDATE document SET onServer = ? WHERE contentHash = ?;
+
+-- What a download needs to know about a server book: which bytes, and what to
+-- call the file.
+selectServerBook:
+SELECT contentHash, extension FROM document WHERE location = ? AND onServer = 1 AND contentHash IS NOT NULL;
+
+markDownloaded:
+UPDATE document SET fileExists = 1 WHERE location = ?;
+
+-- A server book never downloaded has nothing on this device but its row, so
+-- when the server stops offering it - removed there, or this device signed
+-- out - the row goes. One that was downloaded stays: it is a book on this
+-- device now, like any other.
+deleteUndownloadedByHash:
+DELETE FROM document WHERE contentHash = ? AND onServer = 1 AND fileExists = 0;
+
+deleteAllUndownloaded:
+DELETE FROM document WHERE onServer = 1 AND fileExists = 0;
+
+clearOnServer:
+UPDATE document SET onServer = 0;
 
 setFavorite:
 UPDATE document SET isFavorite = ? WHERE location = ?;
