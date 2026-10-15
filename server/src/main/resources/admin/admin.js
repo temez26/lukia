@@ -1,5 +1,6 @@
 // The server's one page: set up the first account, sign in, add books to the
-// shared library, remove them (admin), and make invite codes (admin).
+// shared library, remove them (admin), make invite codes and reset passwords
+// (admin).
 //
 // It speaks the same /api/v1 the app does. Tokens live in this script's memory
 // only, so closing or reloading the page signs out - nothing is left in the
@@ -91,6 +92,7 @@ async function signedIn(newTokens) {
     show("sign-in", false);
     show("library", true);
     show("invites", account.isAdmin);
+    show("passwords", account.isAdmin);
     say("");
     await loadBooks();
 }
@@ -102,6 +104,7 @@ function signedOut(text = "") {
     show("library", false);
     show("invites", false);
     show("invite-code", false);
+    show("passwords", false);
     show("sign-in", true);
     $("books").replaceChildren();
     say(text, Boolean(text));
@@ -241,6 +244,29 @@ async function makeInvite() {
     show("invite-code", true);
 }
 
+async function resetPassword(event) {
+    event.preventDefault();
+    const form = event.target;
+    const username = form.username.value.trim();
+    const button = form.querySelector("button");
+    button.disabled = true;
+    try {
+        const response = await call(`/accounts/${encodeURIComponent(username)}/password`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ password: form.password.value }),
+        });
+        if (!response.ok) {
+            say(await errorText(response), true);
+            return;
+        }
+        form.reset();
+        say(`New password set for ${username}. They are signed out everywhere.`);
+    } finally {
+        button.disabled = false;
+    }
+}
+
 async function signOut() {
     try {
         await call("/auth/signout", { method: "POST" });
@@ -253,6 +279,7 @@ $("setup-form").addEventListener("submit", (event) => submitCredentials(event, "
 $("sign-in-form").addEventListener("submit", (event) => submitCredentials(event, "/auth/signin"));
 $("upload-form").addEventListener("submit", upload);
 $("invite").addEventListener("click", makeInvite);
+$("password-form").addEventListener("submit", resetPassword);
 $("sign-out").addEventListener("click", signOut);
 
 start().catch(() => say("The server is not answering.", true));

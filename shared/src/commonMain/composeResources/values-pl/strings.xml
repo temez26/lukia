@@ -535,6 +535,10 @@
     <string name="account_signed_in_admin">Zalogowano na %1$s jako %2$s, administrator.</string>
     <string name="account_needs_sign_in">%1$s ponownie prosi o hasło.</string>
     <string name="account_sign_out">Wyloguj się</string>
+    <string name="account_delete">Usuń konto</string>
+    <string name="account_delete_title">Usunąć konto?</string>
+    <string name="account_delete_message">Twoje miejsce w każdej książce, ulubione i sesje czytania zostaną usunięte z %1$s, a to urządzenie zostanie wylogowane. Książki zostają we wspólnej bibliotece, a wszystko na tym urządzeniu zostaje tutaj.</string>
+    <string name="account_problem_last_admin">Jesteś jedynym administratorem tego serwera, więc tego konta nie można usunąć.</string>
     <string name="account_problem_invalid_address">To nie jest adres serwera.</string>
     <string name="account_problem_unreachable">Pod tym adresem nic nie odpowiedziało. Sprawdź go i czy serwer działa.</string>
     <string name="account_problem_not_lukia">Coś odpowiedziało, ale to nie jest serwer Lukia.</string>

@@ -89,11 +89,11 @@ username still works as intended.
 It stores no translations, settings or diagnostics, and no API keys for
 translation services: those never leave the device.
 
-Deleting an account - `DELETE /api/v1/me` with that account's token; the app
-has no button for it yet - removes its sign-ins, its state and its sessions
-at once. The books it uploaded stay,
-because they belong to the shared library. The admin cannot delete their own
-account while they are the only admin.
+Deleting an account - Settings, then Account, then Delete account in the app -
+removes its sign-ins, its state and its sessions at once. The books it uploaded
+stay, because they belong to the shared library, and so does everything on the
+device. The admin cannot delete their own account while they are the only
+admin.
 
 ## Backing up
 
@@ -136,8 +136,9 @@ versioned by path, and fields are only ever added.
 
 ## Forgotten passwords
 
-There is no email reset. The admin sets a new password, which also signs that
-account out everywhere:
+There is no email reset. The admin sets a new password on the admin page,
+under Reset a password, which also signs that account out everywhere. The same
+from a shell:
 
 ```bash
 curl -X PUT "https://books.example.com/api/v1/accounts/alice/password" -H "Authorization: Bearer $ADMIN_TOKEN" -H "Content-Type: application/json" -d '{"password":"a new long password"}'

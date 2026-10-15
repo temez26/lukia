@@ -46,6 +46,22 @@ class AccountSettingsTest {
     }
 
     @Test
+    fun deletingTheAccountAsksFirst() = runComposeUiTest {
+        var deleted = 0
+        show(
+            AccountUiState(status = AccountStatus.SignedIn(alice)),
+            AccountActions(onDeleteAccount = { deleted++ }),
+        )
+
+        onNodeWithText("Delete account").performClick()
+        assertEquals(0, deleted)
+        onNodeWithText("Delete your account?").assertExists()
+        onNodeWithText("Delete").performClick()
+
+        assertEquals(1, deleted)
+    }
+
+    @Test
     fun signedOutAsksForAnAddressAndConnectsOnceThereIsOne() = runComposeUiTest {
         show(AccountUiState())
 

@@ -505,6 +505,10 @@
     <string name="account_signed_in_admin">Accesso a %1$s come %2$s, il suo amministratore.</string>
     <string name="account_needs_sign_in">%1$s chiede di nuovo la tua password.</string>
     <string name="account_sign_out">Esci</string>
+    <string name="account_delete">Elimina account</string>
+    <string name="account_delete_title">Eliminare il tuo account?</string>
+    <string name="account_delete_message">Il punto in cui sei in ogni libro, i tuoi preferiti e le tue sessioni di lettura vengono rimossi da %1$s, e questo dispositivo esce. I libri restano nella biblioteca condivisa, e tutto ciò che è su questo dispositivo resta qui.</string>
+    <string name="account_problem_last_admin">Sei l'unico amministratore di questo server, quindi questo account non può essere eliminato.</string>
     <string name="account_problem_invalid_address">Questo non è un indirizzo di server.</string>
     <string name="account_problem_unreachable">Nessuno ha risposto a quell’indirizzo. Controllalo, e che il server sia in funzione.</string>
     <string name="account_problem_not_lukia">Qualcosa ha risposto, ma non è un server Lukia.</string>

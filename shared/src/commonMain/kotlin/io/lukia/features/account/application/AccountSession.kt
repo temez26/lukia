@@ -67,6 +67,16 @@ class AccountSession(
     }
 
     /**
+     * Deletes the account on the server, then signs out here. Nothing on this
+     * device goes with it: the books, places and sittings here are the reader's.
+     */
+    suspend fun deleteAccount() {
+        authorized { address, token -> api.deleteAccount(address, token) }
+        store.clear()
+        _status.value = AccountStatus.SignedOut
+    }
+
+    /**
      * Runs [block] with a current access token, refreshing it first when it is
      * about to run out and once more if the server turns it away. When the
      * refresh itself is refused, the reader is asked to sign in again.

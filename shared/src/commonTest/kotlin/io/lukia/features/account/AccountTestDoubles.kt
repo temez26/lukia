@@ -62,6 +62,16 @@ internal class FakeServerApi(
         signOuts++
     }
 
+    var deleted = 0
+    var onlyAdmin = false
+
+    override suspend fun deleteAccount(address: String, accessToken: String) {
+        reachable()
+        if (accessToken !in validAccess) throw AccountFailure(AccountProblem.SessionExpired)
+        if (onlyAdmin) throw AccountFailure(AccountProblem.LastAdmin)
+        deleted++
+    }
+
     override suspend fun me(address: String, accessToken: String): Pair<String, Boolean> {
         reachable()
         if (accessToken !in validAccess) throw AccountFailure(AccountProblem.SessionExpired)

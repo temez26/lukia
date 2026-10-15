@@ -52,6 +52,16 @@
         <button id="invite" type="button">Make an invite code</button>
         <p id="invite-code" hidden><code></code></p>
     </section>
+
+    <section id="passwords" hidden>
+        <h2>Reset a password</h2>
+        <p>For someone who has forgotten theirs. It signs them out on every device.</p>
+        <form id="password-form">
+            <label>Username <input name="username" autocomplete="off" required></label>
+            <label>New password <input name="password" type="password" autocomplete="new-password" required minlength="10"></label>
+            <button type="submit">Set password</button>
+        </form>
+    </section>
 </main>
 </body>
 </html>

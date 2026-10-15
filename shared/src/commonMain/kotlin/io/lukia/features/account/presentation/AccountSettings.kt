@@ -24,6 +24,9 @@ import io.lukia.resources.Res
 import io.lukia.resources.account_connect
 import io.lukia.resources.account_connecting
 import io.lukia.resources.account_create
+import io.lukia.resources.account_delete
+import io.lukia.resources.account_delete_message
+import io.lukia.resources.account_delete_title
 import io.lukia.resources.account_footnote
 import io.lukia.resources.account_invite_code
 import io.lukia.resources.account_needs_sign_in
@@ -39,9 +42,11 @@ import io.lukia.resources.account_title
 import io.lukia.resources.account_use_invite
 import io.lukia.resources.account_use_password
 import io.lukia.resources.account_username
+import io.lukia.resources.action_delete
 import io.lukia.resources.settings_address
 import io.lukia.shared.presentation.components.controls.ButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaButton
+import io.lukia.shared.presentation.components.surface.ConfirmDialog
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -64,6 +69,7 @@ fun AccountSettings(groupColor: Color, viewModel: AccountViewModel = koinViewMod
             onOtherServer = viewModel::otherServer,
             onSignInAgain = viewModel::signInAgain,
             onSignOut = viewModel::signOut,
+            onDeleteAccount = viewModel::deleteAccount,
         ),
         groupColor = groupColor,
     )
@@ -77,6 +83,7 @@ class AccountActions(
     val onOtherServer: () -> Unit = {},
     val onSignInAgain: (password: String) -> Unit = {},
     val onSignOut: () -> Unit = {},
+    val onDeleteAccount: () -> Unit = {},
 )
 
 @Composable
@@ -94,7 +101,7 @@ internal fun AccountSettingsContent(
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
             when (val status = state.status) {
-                is AccountStatus.SignedIn -> SignedIn(status.account, actions)
+                is AccountStatus.SignedIn -> SignedIn(status.account, state.busy, actions)
                 is AccountStatus.NeedsSignIn -> NeedsSignIn(status.account, state.busy, actions)
                 AccountStatus.SignedOut -> when (val step = state.step) {
                     AccountStep.EnterAddress -> EnterAddress(state.busy, actions)
@@ -108,7 +115,9 @@ internal fun AccountSettingsContent(
 }
 
 @Composable
-private fun SignedIn(account: ServerAccount, actions: AccountActions) {
+private fun SignedIn(account: ServerAccount, busy: Boolean, actions: AccountActions) {
+    var confirmingDelete by remember { mutableStateOf(false) }
+
     Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
         Text(
             text = stringResource(
@@ -118,12 +127,34 @@ private fun SignedIn(account: ServerAccount, actions: AccountActions) {
             ),
             style = MaterialTheme.typography.bodyMedium,
         )
-        LukiaButton(
-            label = stringResource(Res.string.account_sign_out),
-            onClick = actions.onSignOut,
-            variant = ButtonVariant.Secondary,
-        )
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(Space.sm),
+            verticalArrangement = Arrangement.spacedBy(Space.sm),
+        ) {
+            LukiaButton(
+                label = stringResource(Res.string.account_sign_out),
+                onClick = actions.onSignOut,
+                variant = ButtonVariant.Secondary,
+                enabled = !busy,
+            )
+            LukiaButton(
+                label = stringResource(Res.string.account_delete),
+                onClick = { confirmingDelete = true },
+                variant = ButtonVariant.Destructive,
+                enabled = !busy,
+            )
+        }
     }
+
+    ConfirmDialog(
+        visible = confirmingDelete,
+        title = stringResource(Res.string.account_delete_title),
+        message = stringResource(Res.string.account_delete_message, account.serverName),
+        confirmLabel = stringResource(Res.string.action_delete),
+        onConfirm = actions.onDeleteAccount,
+        onDismissRequest = { confirmingDelete = false },
+        destructive = true,
+    )
 }
 
 @Composable

@@ -94,6 +94,11 @@ class AccountViewModel(private val session: AccountSession) : ViewModel() {
         step.value = AccountStep.EnterAddress
     }
 
+    fun deleteAccount() = perform {
+        session.deleteAccount()
+        step.value = AccountStep.EnterAddress
+    }
+
     private fun perform(action: suspend () -> Unit) {
         if (busy.value) return
         busy.value = true

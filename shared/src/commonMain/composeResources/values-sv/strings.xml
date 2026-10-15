@@ -559,6 +559,10 @@
     <string name="account_signed_in_admin">Inloggad på %1$s som %2$s, dess administratör.</string>
     <string name="account_needs_sign_in">%1$s ber om ditt lösenord igen.</string>
     <string name="account_sign_out">Logga ut</string>
+    <string name="account_delete">Radera konto</string>
+    <string name="account_delete_title">Radera ditt konto?</string>
+    <string name="account_delete_message">Din plats i varje bok, dina favoriter och dina lässessioner tas bort från %1$s, och den här enheten loggas ut. Böckerna stannar i det delade biblioteket, och allt på den här enheten stannar här.</string>
+    <string name="account_problem_last_admin">Du är serverns enda administratör, så det här kontot kan inte raderas.</string>
     <string name="account_problem_invalid_address">Det är inte en serveradress.</string>
     <string name="account_problem_unreachable">Ingenting svarade på den adressen. Kontrollera den, och att servern är igång.</string>
     <string name="account_problem_not_lukia">Något svarade, men det är inte en Lukia-server.</string>

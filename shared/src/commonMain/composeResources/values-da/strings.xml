@@ -505,6 +505,10 @@
     <string name="account_signed_in_admin">Logget ind på %1$s som %2$s, dens administrator.</string>
     <string name="account_needs_sign_in">%1$s beder om din adgangskode igen.</string>
     <string name="account_sign_out">Log ud</string>
+    <string name="account_delete">Slet konto</string>
+    <string name="account_delete_title">Slet din konto?</string>
+    <string name="account_delete_message">Din plads i hver bog, dine favoritter og dine læsesessioner fjernes fra %1$s, og denne enhed logges ud. Bøgerne bliver i det fælles bibliotek, og alt på denne enhed bliver her.</string>
+    <string name="account_problem_last_admin">Du er serverens eneste administrator, så denne konto kan ikke slettes.</string>
     <string name="account_problem_invalid_address">Det er ikke en serveradresse.</string>
     <string name="account_problem_unreachable">Intet svarede på den adresse. Tjek den, og at serveren kører.</string>
     <string name="account_problem_not_lukia">Noget svarede, men det er ikke en Lukia-server.</string>

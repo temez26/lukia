@@ -23,6 +23,9 @@ interface ServerApi {
     /** Ends this sign-in on the server. */
     suspend fun signOut(address: String, accessToken: String)
 
+    /** Deletes the account the token belongs to, with its state and sessions; the shared library keeps its books. */
+    suspend fun deleteAccount(address: String, accessToken: String)
+
     /** Who the token belongs to: the username and whether they are the admin. */
     suspend fun me(address: String, accessToken: String): Pair<String, Boolean>
 }

@@ -691,6 +691,10 @@
     <string name="account_signed_in_admin">Signed in to %1$s as %2$s, its admin.</string>
     <string name="account_needs_sign_in">%1$s asks for your password again.</string>
     <string name="account_sign_out">Sign out</string>
+    <string name="account_delete">Delete account</string>
+    <string name="account_delete_title">Delete your account?</string>
+    <string name="account_delete_message">Your place in each book, your favourites and your reading sessions are removed from %1$s, and this device signs out. The books stay in the shared library, and everything on this device stays here.</string>
+    <string name="account_problem_last_admin">You are this server's only admin, so this account cannot be deleted.</string>
     <string name="account_problem_invalid_address">That is not a server address.</string>
     <string name="account_problem_unreachable">Nothing answered at that address. Check it, and that the server is running.</string>
     <string name="account_problem_not_lukia">Something answered, but it is not a Lukia server.</string>

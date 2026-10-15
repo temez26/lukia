@@ -6,6 +6,7 @@ import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.bearerAuth
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -84,6 +85,10 @@ class KtorServerApi(private val http: ServerHttp) : ServerApi {
 
     override suspend fun signOut(address: String, accessToken: String) {
         http.send { post(address + ApiRoutes.SignOut) { bearerAuth(accessToken) } }
+    }
+
+    override suspend fun deleteAccount(address: String, accessToken: String) {
+        http.send { delete(address + ApiRoutes.Me) { bearerAuth(accessToken) } }
     }
 
     override suspend fun me(address: String, accessToken: String): Pair<String, Boolean> =

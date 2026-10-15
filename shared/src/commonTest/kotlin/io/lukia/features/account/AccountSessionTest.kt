@@ -132,6 +132,28 @@ class AccountSessionTest {
     }
 
     @Test
+    fun deletingTheAccountRemovesItOnTheServerAndSignsOut() = runTest {
+        session.signIn(HomeServer, "alice", "correct horse")
+
+        session.deleteAccount()
+
+        assertEquals(1, api.deleted)
+        assertEquals(AccountStatus.SignedOut, session.status.value)
+        assertNull(store.load())
+    }
+
+    @Test
+    fun theOnlyAdminStaysSignedInWhenTheServerRefusesTheDeletion() = runTest {
+        session.signIn(HomeServer, "alice", "correct horse")
+        api.onlyAdmin = true
+
+        val failure = assertFailsWith<AccountFailure> { session.deleteAccount() }
+
+        assertEquals(AccountProblem.LastAdmin, failure.problem)
+        assertIs<AccountStatus.SignedIn>(session.status.value)
+    }
+
+    @Test
     fun aNewServerIsSetUpAndAnInviteRedeemed() = runTest {
         api.info = api.info.copy(setupRequired = true)
         session.setUp(HomeServer, "alice", "correct horse")

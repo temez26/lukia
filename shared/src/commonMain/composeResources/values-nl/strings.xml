@@ -505,6 +505,10 @@
     <string name="account_signed_in_admin">Ingelogd op %1$s als %2$s, de beheerder.</string>
     <string name="account_needs_sign_in">%1$s vraagt opnieuw om je wachtwoord.</string>
     <string name="account_sign_out">Uitloggen</string>
+    <string name="account_delete">Account verwijderen</string>
+    <string name="account_delete_title">Je account verwijderen?</string>
+    <string name="account_delete_message">Je plek in elk boek, je favorieten en je leessessies worden van %1$s verwijderd, en dit apparaat wordt afgemeld. De boeken blijven in de gedeelde bibliotheek, en alles op dit apparaat blijft hier.</string>
+    <string name="account_problem_last_admin">Je bent de enige beheerder van deze server, dus dit account kan niet worden verwijderd.</string>
     <string name="account_problem_invalid_address">Dat is geen serveradres.</string>
     <string name="account_problem_unreachable">Er antwoordde niets op dat adres. Controleer het, en of de server draait.</string>
     <string name="account_problem_not_lukia">Er antwoordde iets, maar het is geen Lukia-server.</string>

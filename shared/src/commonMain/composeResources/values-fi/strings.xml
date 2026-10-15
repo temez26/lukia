@@ -574,6 +574,10 @@
     <string name="account_signed_in_admin">Kirjautunut palvelimeen %1$s käyttäjänä %2$s, ylläpitäjänä.</string>
     <string name="account_needs_sign_in">%1$s pyytää salasanaasi uudelleen.</string>
     <string name="account_sign_out">Kirjaudu ulos</string>
+    <string name="account_delete">Poista tili</string>
+    <string name="account_delete_title">Poistetaanko tilisi?</string>
+    <string name="account_delete_message">Kohtasi jokaisessa kirjassa, suosikkisi ja lukukertasi poistetaan palvelimelta %1$s, ja tämä laite kirjautuu ulos. Kirjat jäävät yhteiseen kirjastoon, ja kaikki tällä laitteella oleva jää tänne.</string>
+    <string name="account_problem_last_admin">Olet tämän palvelimen ainoa ylläpitäjä, joten tätä tiliä ei voi poistaa.</string>
     <string name="account_problem_invalid_address">Tämä ei ole palvelimen osoite.</string>
     <string name="account_problem_unreachable">Tästä osoitteesta ei vastannut mikään. Tarkista osoite ja että palvelin on käynnissä.</string>
     <string name="account_problem_not_lukia">Jokin vastasi, mutta se ei ole Lukia-palvelin.</string>

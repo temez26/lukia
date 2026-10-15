@@ -84,6 +84,9 @@ enum class AccountProblem {
     /** Somebody else set the server up first. */
     AlreadySetUp,
 
+    /** The server's only admin cannot delete their account: nobody would be left to run it. */
+    LastAdmin,
+
     /** The sign-in is no longer accepted; the reader has to sign in again. */
     SessionExpired,
 

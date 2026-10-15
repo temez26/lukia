@@ -512,6 +512,10 @@
     <string name="account_signed_in_admin">Connecté à %1$s en tant que %2$s, son administrateur.</string>
     <string name="account_needs_sign_in">%1$s redemande votre mot de passe.</string>
     <string name="account_sign_out">Se déconnecter</string>
+    <string name="account_delete">Supprimer le compte</string>
+    <string name="account_delete_title">Supprimer votre compte ?</string>
+    <string name="account_delete_message">Votre position dans chaque livre, vos favoris et vos sessions de lecture sont supprimés de %1$s, et cet appareil se déconnecte. Les livres restent dans la bibliothèque partagée, et tout ce qui est sur cet appareil reste ici.</string>
+    <string name="account_problem_last_admin">Vous êtes le seul administrateur de ce serveur, ce compte ne peut donc pas être supprimé.</string>
     <string name="account_problem_invalid_address">Ce n’est pas une adresse de serveur.</string>
     <string name="account_problem_unreachable">Rien n’a répondu à cette adresse. Vérifiez-la, et que le serveur est en marche.</string>
     <string name="account_problem_not_lukia">Quelque chose a répondu, mais ce n’est pas un serveur Lukia.</string>
