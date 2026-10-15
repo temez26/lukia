@@ -586,5 +586,9 @@
     <string name="account_problem_already_set_up">Joku otti tämän palvelimen juuri käyttöön. Kirjaudu sen sijaan.</string>
     <string name="account_problem_session_expired">Kirjautumisesi on päättynyt. Kirjaudu uudelleen.</string>
     <string name="account_problem_server_failed">Palvelin ei pystynyt tekemään sitä. Yritä myöhemmin uudelleen.</string>
+    <string name="history_title">Lukeminen tällä laitteella</string>
+    <string name="history_question">Tämä laite tallensi lukemista ennen kuin kirjauduit. Lisätäänkö se tilisi tilastoihin, vai pidetäänkö se vain tällä laitteella?</string>
+    <string name="history_add">Lisää tililleni</string>
+    <string name="history_keep">Pidä tällä laitteella</string>
 
 </resources>

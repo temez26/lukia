@@ -547,5 +547,9 @@
     <string name="account_problem_already_set_up">Ktoś właśnie skonfigurował ten serwer. Zamiast tego zaloguj się.</string>
     <string name="account_problem_session_expired">Twoja sesja wygasła. Zaloguj się ponownie.</string>
     <string name="account_problem_server_failed">Serwer nie mógł tego zrobić. Spróbuj później.</string>
+    <string name="history_title">Czytanie na tym urządzeniu</string>
+    <string name="history_question">To urządzenie zapisało czytanie, zanim się zalogowałeś. Dodać je do statystyk konta czy zachować tylko na tym urządzeniu?</string>
+    <string name="history_add">Dodaj do mojego konta</string>
+    <string name="history_keep">Zachowaj na tym urządzeniu</string>
 
 </resources>

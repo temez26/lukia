@@ -524,5 +524,9 @@
     <string name="account_problem_already_set_up">Quelqu’un vient de configurer ce serveur. Connectez-vous plutôt.</string>
     <string name="account_problem_session_expired">Votre connexion a expiré. Reconnectez-vous.</string>
     <string name="account_problem_server_failed">Le serveur n’a pas pu le faire. Réessayez plus tard.</string>
+    <string name="history_title">Lecture sur cet appareil</string>
+    <string name="history_question">Cet appareil a enregistré de la lecture avant votre connexion. L’ajouter aux statistiques de votre compte, ou la garder sur cet appareil seulement ?</string>
+    <string name="history_add">Ajouter à mon compte</string>
+    <string name="history_keep">Garder sur cet appareil</string>
 
 </resources>

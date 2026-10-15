@@ -1,3 +1,5 @@
+import kotlin.Boolean;
+
 -- A stretch of time somebody spent in a book.
 --
 -- Rows are written while the book is open rather than when it closes: a reader
@@ -27,7 +29,9 @@ CREATE TABLE reading_session (
     durationMs INTEGER NOT NULL,
     uuid TEXT,
     contentHash TEXT,
-    title TEXT
+    title TEXT,
+    sentDurationMs INTEGER,
+    deviceOnly INTEGER AS Boolean NOT NULL DEFAULT 0
 );
 
 -- Every reading of this table is "what did the last N days look like", which is
@@ -72,6 +76,58 @@ UPDATE reading_session SET durationMs = :durationMs WHERE id = :id;
 -- place rather than in SQL that has to agree with itself.
 selectAll:
 SELECT * FROM reading_session ORDER BY startedAt;
+
+-- `sentDurationMs` is how long the sync server last heard the sitting was:
+-- null for one it has never heard of. A sitting is sent again whenever it has
+-- grown past that, and one that came from the server arrives already equal.
+--
+-- `deviceOnly` marks sittings the reader chose to keep off their account when
+-- they first signed in; nothing sends them, ever.
+
+-- Sittings the account has not heard all of yet, among those after `afterId`
+-- - zero for all of them, or the last sitting before signing in while the
+-- reader has not said whether those go to the account.
+selectUnsent:
+SELECT * FROM reading_session
+WHERE id > :afterId AND deviceOnly = 0 AND uuid IS NOT NULL AND contentHash IS NOT NULL
+  AND (sentDurationMs IS NULL OR durationMs > sentDurationMs)
+ORDER BY id;
+
+-- Watched by the sync engine, which sends a little after a sitting grows.
+countUnsent:
+SELECT COUNT(*) FROM reading_session
+WHERE deviceOnly = 0 AND uuid IS NOT NULL AND contentHash IS NOT NULL
+  AND (sentDurationMs IS NULL OR durationMs > sentDurationMs);
+
+markSent:
+UPDATE reading_session SET sentDurationMs = :sentDurationMs WHERE uuid = :uuid;
+
+-- Whether this device holds reading no account has heard of - the question of
+-- whether it should only arises when it does.
+hasUnsentHistory:
+SELECT EXISTS(
+    SELECT 1 FROM reading_session
+    WHERE id <= :upToId AND deviceOnly = 0 AND sentDurationMs IS NULL AND durationMs > 0
+);
+
+maxId:
+SELECT COALESCE(MAX(id), 0) FROM reading_session;
+
+-- The reader's answer to keep the history recorded before signing in off the
+-- account: the sittings up to the point the question was asked.
+keepOnDevice:
+UPDATE reading_session SET deviceOnly = 1 WHERE id <= :upToId AND sentDurationMs IS NULL;
+
+-- A sitting read on another device. Arrives as already sent, so it is never
+-- sent back; `location` is this shelf's copy of the book, or a stand-in when
+-- the book is not on it.
+insertFromServer:
+INSERT OR IGNORE INTO reading_session(location, startedAt, durationMs, uuid, contentHash, title, sentDurationMs)
+VALUES (:location, :startedAt, :durationMs, :uuid, :contentHash, :title, :durationMs);
+
+extendFromServer:
+UPDATE reading_session SET durationMs = :durationMs, sentDurationMs = :durationMs
+WHERE uuid = :uuid AND durationMs < :durationMs;
 
 -- The sittings in a book recorded before its hash was known.
 nameBook:

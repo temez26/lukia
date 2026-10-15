@@ -26,7 +26,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import io.lukia.Routes
 import io.lukia.core.domain.document.DocumentInfo
-import io.lukia.features.account.presentation.AccountSettings
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.screens.HomeScreen
 import io.lukia.features.library.presentation.screens.LibraryScreen
@@ -175,7 +174,7 @@ private fun NavGraphBuilder.tabDestinations(
             onDocumentDetails = openDetails,
             onSettings = openSettings,
             statsButton = statsButton,
-            accountPage = { AccountSettings(it) },
+            accountPage = AppAccountPage,
             // Searching has a tab of its own here, and a field on this screen as
             // well would be a second search with a second answer to the same
             // question.

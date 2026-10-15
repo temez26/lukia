@@ -304,8 +304,15 @@ Recorded in `docs/decisions/`:
       whenever the app comes to the front; changes pulled from the account are
       applied without touching the outbox, and never over a change still
       waiting to be sent.
-- [ ] 10. Client: session sync, the history prompt on first sign-in, stats
-      across devices.
+- [x] 10. Client: session sync, the history prompt on first sign-in, stats
+      across devices. Each sitting remembers how much of it the server has
+      (`sentDurationMs`, migration 14) and is sent again only once it has
+      grown; sittings from other devices arrive as already sent, filed under
+      the shelf's copy of the book or `remote:<hash>`, and the statistics count
+      them with no change of their own. Where history before the first sign-in
+      ends is fixed at the moment of signing in; until the reader answers the
+      question under the Account page, none of it is sent, while reading done
+      since goes either way.
 - [ ] 11. Docs: README, `DIAGNOSTICS.md`, `docs/SERVER.md` (running, backup,
       upgrading), ADRs, NOTICE and `checkAttribution` for the server's
       dependencies.

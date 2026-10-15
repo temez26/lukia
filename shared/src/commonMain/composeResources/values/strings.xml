@@ -703,5 +703,9 @@
     <string name="account_problem_already_set_up">Someone has just set this server up. Sign in instead.</string>
     <string name="account_problem_session_expired">Your sign-in has ended. Sign in again.</string>
     <string name="account_problem_server_failed">The server could not do that. Try again later.</string>
+    <string name="history_title">Reading on this device</string>
+    <string name="history_question">This device recorded reading before you signed in. Add it to your account's statistics, or keep it on this device only?</string>
+    <string name="history_add">Add to my account</string>
+    <string name="history_keep">Keep on this device</string>
 
 </resources>

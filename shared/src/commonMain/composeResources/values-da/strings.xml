@@ -517,5 +517,9 @@
     <string name="account_problem_already_set_up">Nogen har lige sat denne server op. Log ind i stedet.</string>
     <string name="account_problem_session_expired">Dit login er udløbet. Log ind igen.</string>
     <string name="account_problem_server_failed">Serveren kunne ikke gøre det. Prøv igen senere.</string>
+    <string name="history_title">Læsning på denne enhed</string>
+    <string name="history_question">Denne enhed registrerede læsning, før du loggede ind. Vil du føje den til din kontos statistik eller kun beholde den på denne enhed?</string>
+    <string name="history_add">Føj til min konto</string>
+    <string name="history_keep">Behold på denne enhed</string>
 
 </resources>

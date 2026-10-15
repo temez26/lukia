@@ -20,6 +20,10 @@ class SyncCursors(private val settings: SettingsStore) {
 
     fun setBookState(cursor: Long) = settings.putString(KeyBookState, cursor.toString())
 
+    fun sessions(): Long = read(KeySessions)
+
+    fun setSessions(cursor: Long) = settings.putString(KeySessions, cursor.toString())
+
     /**
      * Whether what the device knew before signing in has been queued for the
      * account yet - once per sign-in, see `BookStateStore.snapshot`.
@@ -38,7 +42,8 @@ class SyncCursors(private val settings: SettingsStore) {
     private companion object {
         const val KeyBooks = "sync.cursor.books"
         const val KeyBookState = "sync.cursor.bookState"
+        const val KeySessions = "sync.cursor.sessions"
         const val KeySnapshot = "sync.snapshotTaken"
-        val Keys = listOf(KeyBooks, KeyBookState)
+        val Keys = listOf(KeyBooks, KeyBookState, KeySessions)
     }
 }

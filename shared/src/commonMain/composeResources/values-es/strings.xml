@@ -517,5 +517,9 @@
     <string name="account_problem_already_set_up">Alguien acaba de configurar este servidor. Inicia sesión en su lugar.</string>
     <string name="account_problem_session_expired">Tu sesión ha terminado. Vuelve a iniciar sesión.</string>
     <string name="account_problem_server_failed">El servidor no pudo hacerlo. Inténtalo más tarde.</string>
+    <string name="history_title">Lectura en este dispositivo</string>
+    <string name="history_question">Este dispositivo registró lectura antes de que iniciaras sesión. ¿La añades a las estadísticas de tu cuenta o la guardas solo en este dispositivo?</string>
+    <string name="history_add">Añadir a mi cuenta</string>
+    <string name="history_keep">Guardar en este dispositivo</string>
 
 </resources>

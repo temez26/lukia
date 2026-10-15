@@ -571,5 +571,9 @@
     <string name="account_problem_already_set_up">Någon har just konfigurerat den här servern. Logga in i stället.</string>
     <string name="account_problem_session_expired">Din inloggning har gått ut. Logga in igen.</string>
     <string name="account_problem_server_failed">Servern kunde inte göra det. Försök igen senare.</string>
+    <string name="history_title">Läsning på den här enheten</string>
+    <string name="history_question">Den här enheten registrerade läsning innan du loggade in. Vill du lägga till den i kontots statistik eller bara behålla den på den här enheten?</string>
+    <string name="history_add">Lägg till på mitt konto</string>
+    <string name="history_keep">Behåll på den här enheten</string>
 
 </resources>

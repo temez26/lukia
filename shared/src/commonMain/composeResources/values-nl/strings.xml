@@ -517,5 +517,9 @@
     <string name="account_problem_already_set_up">Iemand heeft deze server net ingesteld. Log in plaats daarvan in.</string>
     <string name="account_problem_session_expired">Je aanmelding is verlopen. Log opnieuw in.</string>
     <string name="account_problem_server_failed">De server kon dat niet doen. Probeer het later opnieuw.</string>
+    <string name="history_title">Lezen op dit apparaat</string>
+    <string name="history_question">Dit apparaat heeft leestijd vastgelegd voordat je inlogde. Toevoegen aan de statistieken van je account, of alleen op dit apparaat houden?</string>
+    <string name="history_add">Toevoegen aan mijn account</string>
+    <string name="history_keep">Op dit apparaat houden</string>
 
 </resources>

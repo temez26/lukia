@@ -3,13 +3,11 @@ package io.lukia.features.sync.application
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.features.account.application.AccountSession
 import io.lukia.features.account.domain.AccountStatus
-import io.lukia.features.library.application.HashLibraryUseCase
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -27,22 +25,28 @@ import kotlin.time.Duration.Companion.seconds
  */
 class SyncCoordinator(
     private val session: AccountSession,
-    private val hashLibrary: HashLibraryUseCase,
-    private val pullLibrary: PullServerLibraryUseCase,
-    private val syncBookState: SyncBookStateUseCase,
+    private val round: SyncRoundUseCase,
+    private val syncSessions: SyncSessionsUseCase,
     private val forgetServer: ForgetServerUseCase,
-    /** How many changes are waiting to be sent, as it changes - see `BookStateStore.waiting`. */
+    /**
+     * Fires whenever what is waiting to be sent changes - a position, a
+     * favourite, a sitting growing - and not for what was waiting at launch.
+     * See `BookStateStore.waiting` and `SessionStore.waiting`.
+     */
     private val waiting: Flow<Long>,
 ) {
     /** One round at a time: two would send the same changes twice and race over the cursors. */
-    private val round = Mutex()
+    private val oneAtATime = Mutex()
 
     @OptIn(FlowPreview::class)
     suspend fun run() = coroutineScope {
         launch {
             session.status.collectLatest { status ->
                 when (status) {
-                    is AccountStatus.SignedIn -> syncNow()
+                    is AccountStatus.SignedIn -> {
+                        syncSessions.signedIn()
+                        syncNow()
+                    }
                     AccountStatus.SignedOut -> forgetServer()
                     is AccountStatus.NeedsSignIn -> Unit
                 }
@@ -51,24 +55,15 @@ class SyncCoordinator(
 
         // Settled for a moment rather than on every write, so a reader turning
         // pages sends one position when they pause rather than one per page.
-        // The first value is the count at launch, which the round above covers.
         launch {
-            waiting.drop(1).debounce(SendAfter).collect { syncNow() }
+            waiting.debounce(SendAfter).collect { syncNow() }
         }
     }
 
-    /**
-     * One round. Books are hashed first, so a book already on this device is
-     * recognised as the server's; the library comes next, so a book's state has
-     * a book on the shelf to land on.
-     */
-    suspend fun syncNow() = round.withLock {
+    /** One round, now - see [SyncRoundUseCase]. Does nothing unless signed in. */
+    suspend fun syncNow() = oneAtATime.withLock {
         if (session.status.value !is AccountStatus.SignedIn) return@withLock
-        runCatchingApp {
-            hashLibrary()
-            pullLibrary()
-            syncBookState()
-        }
+        runCatchingApp { round() }
     }
 
     private companion object {

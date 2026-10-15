@@ -517,5 +517,9 @@
     <string name="account_problem_already_set_up">Qualcuno ha appena configurato questo server. Accedi invece.</string>
     <string name="account_problem_session_expired">Il tuo accesso è scaduto. Accedi di nuovo.</string>
     <string name="account_problem_server_failed">Il server non è riuscito a farlo. Riprova più tardi.</string>
+    <string name="history_title">Lettura su questo dispositivo</string>
+    <string name="history_question">Questo dispositivo ha registrato letture prima che accedessi. Aggiungerle alle statistiche del tuo account o tenerle solo su questo dispositivo?</string>
+    <string name="history_add">Aggiungi al mio account</string>
+    <string name="history_keep">Tieni su questo dispositivo</string>
 
 </resources>

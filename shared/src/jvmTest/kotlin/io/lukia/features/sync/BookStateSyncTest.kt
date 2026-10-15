@@ -1,32 +1,11 @@
 package io.lukia.features.sync
 
-import io.lukia.core.domain.document.ShelfChanges
 import io.lukia.core.domain.reading.PdfLayout
 import io.lukia.core.domain.reading.ReadingProgress
-import io.lukia.core.domain.storage.FakeSettingsStore
-import io.lukia.core.infrastructure.JvmBookFileStore
 import io.lukia.core.infrastructure.SyncedPart
 import io.lukia.core.infrastructure.epub.MinimalEpub
-import io.lukia.core.infrastructure.testDatabase
-import io.lukia.features.account.InMemoryAccountStore
 import io.lukia.features.account.TestSyncServer
-import io.lukia.features.account.application.AccountSession
-import io.lukia.features.account.infrastructure.KtorServerApi
-import io.lukia.features.account.infrastructure.ServerHttp
-import io.lukia.features.account.infrastructure.serverHttpClient
-import io.lukia.features.library.infrastructure.SqlLibraryRepository
-import io.lukia.features.library.infrastructure.SqlServerShelf
-import io.lukia.features.reader.infrastructure.SqlPdfLayoutRepository
-import io.lukia.features.reader.infrastructure.SqlReadingProgressRepository
-import io.lukia.features.sync.application.PullServerLibraryUseCase
-import io.lukia.features.sync.application.SyncBookStateUseCase
-import io.lukia.features.sync.infrastructure.BookStateApi
-import io.lukia.features.sync.infrastructure.BookStateStore
-import io.lukia.features.sync.infrastructure.ServerLibraryApi
-import io.lukia.features.sync.infrastructure.SyncCursors
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import java.nio.file.Files
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -42,8 +21,8 @@ class BookStateSyncTest {
     private val server = TestSyncServer()
     private val epub = MinimalEpub.book()
 
-    private val phone = Device()
-    private val laptop = Device()
+    private val phone = SyncedDevice(server)
+    private val laptop = SyncedDevice(server)
 
     @AfterTest
     fun cleanUp() {
@@ -117,7 +96,7 @@ class BookStateSyncTest {
         laptop.sync()
 
         // A third device that read the book on its own before ever signing in.
-        val tablet = Device()
+        val tablet = SyncedDevice(server)
         try {
             tablet.signIn(setUp = false)
             tablet.pullLibrary()
@@ -155,50 +134,5 @@ class BookStateSyncTest {
         phone.pullLibrary()
         laptop.pullLibrary()
         return laptop.locationOfBook()
-    }
-
-    private inner class Device : AutoCloseable {
-        val database = testDatabase()
-        private val downloads = Files.createTempDirectory("lukia-device").toFile()
-        val session = AccountSession(KtorServerApi(serverHttpClient()), InMemoryAccountStore())
-        val library = SqlLibraryRepository(database, Dispatchers.Unconfined)
-        val progress = SqlReadingProgressRepository(database, Dispatchers.Unconfined)
-        val layouts = SqlPdfLayoutRepository(database, Dispatchers.Unconfined)
-        val store = BookStateStore(database, Dispatchers.Unconfined)
-        private val cursors = SyncCursors(FakeSettingsStore())
-        private val http = ServerHttp(serverHttpClient())
-
-        private val pull = PullServerLibraryUseCase(
-            session,
-            ServerLibraryApi(http),
-            SqlServerShelf(database, Dispatchers.Unconfined),
-            JvmBookFileStore(downloads),
-            cursors,
-            ShelfChanges(),
-        )
-        private val syncState = SyncBookStateUseCase(session, BookStateApi(http), store, cursors, ShelfChanges())
-
-        suspend fun signIn(setUp: Boolean) {
-            if (setUp) {
-                session.setUp(server.address, "reader", "correct horse battery")
-            } else {
-                session.signIn(server.address, "reader", "correct horse battery")
-            }
-        }
-
-        suspend fun pullLibrary() = pull()
-
-        suspend fun sync() = syncState()
-
-        suspend fun locationOfBook(): String = library.getDocuments().single().document.location
-
-        /** Moves the last change to [part] to a chosen time, standing in for when it was made. */
-        suspend fun dateLastChange(part: SyncedPart, at: Long) {
-            database.syncOutboxQueries.record(part.stored, at, locationOfBook())
-        }
-
-        override fun close() {
-            downloads.deleteRecursively()
-        }
     }
 }

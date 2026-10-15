@@ -518,5 +518,9 @@
     <string name="account_problem_already_set_up">Jemand hat diesen Server gerade eingerichtet. Melde dich stattdessen an.</string>
     <string name="account_problem_session_expired">Deine Anmeldung ist abgelaufen. Melde dich erneut an.</string>
     <string name="account_problem_server_failed">Der Server konnte das nicht ausführen. Versuche es später erneut.</string>
+    <string name="history_title">Lesen auf diesem Gerät</string>
+    <string name="history_question">Dieses Gerät hat Lesezeit aufgezeichnet, bevor du dich angemeldet hast. Zur Statistik deines Kontos hinzufügen oder nur auf diesem Gerät behalten?</string>
+    <string name="history_add">Zu meinem Konto hinzufügen</string>
+    <string name="history_keep">Auf diesem Gerät behalten</string>
 
 </resources>
