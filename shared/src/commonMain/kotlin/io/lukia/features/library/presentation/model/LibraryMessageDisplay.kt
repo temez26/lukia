@@ -12,8 +12,10 @@ import io.lukia.resources.library_bulk_running_favourite
 import io.lukia.resources.library_bulk_running_refresh
 import io.lukia.resources.library_bulk_running_reset
 import io.lukia.resources.library_bulk_running_unfavourite
+import io.lukia.resources.library_bulk_running_upload
 import io.lukia.resources.library_bulk_skipped
 import io.lukia.resources.library_bulk_updated
+import io.lukia.resources.library_bulk_uploaded
 import io.lukia.resources.library_details_refreshed
 import io.lukia.resources.library_imported_mixed
 import io.lukia.resources.library_imported_with_existing
@@ -102,6 +104,7 @@ private fun BulkOperation.doneQuantity() = when (this) {
     BulkOperation.Favourite, BulkOperation.Unfavourite -> Res.plurals.library_bulk_updated
     BulkOperation.Reset -> Res.plurals.library_bulk_reset
     BulkOperation.Delete -> Res.plurals.library_bulk_deleted
+    BulkOperation.Upload -> Res.plurals.library_bulk_uploaded
 }
 
 private fun BulkOperation.runningFormat(): StringResource = when (this) {
@@ -110,4 +113,5 @@ private fun BulkOperation.runningFormat(): StringResource = when (this) {
     BulkOperation.Unfavourite -> Res.string.library_bulk_running_unfavourite
     BulkOperation.Reset -> Res.string.library_bulk_running_reset
     BulkOperation.Delete -> Res.string.library_bulk_running_delete
+    BulkOperation.Upload -> Res.string.library_bulk_running_upload
 }

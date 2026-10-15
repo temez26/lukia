@@ -51,6 +51,10 @@
         <item quantity="one">1 boek uit de bibliotheek verwijderd</item>
         <item quantity="other">%1$d boeken uit de bibliotheek verwijderd</item>
     </plurals>
+    <plurals name="library_bulk_uploaded">
+        <item quantity="one">1 boek aan de server toegevoegd</item>
+        <item quantity="other">%1$d boeken aan de server toegevoegd</item>
+    </plurals>
     <plurals name="library_bulk_skipped">
         <item quantity="one">%1$s, 1 overgeslagen</item>
         <item quantity="other">%1$s, %2$d overgeslagen</item>
@@ -64,6 +68,7 @@
     <string name="library_bulk_running_unfavourite">Verwijderen uit favorieten %1$d/%2$d…</string>
     <string name="library_bulk_running_reset">Markeren als ongelezen %1$d/%2$d…</string>
     <string name="library_bulk_running_delete">Verwijderen %1$d/%2$d…</string>
+    <string name="library_bulk_running_upload">%1$d van %2$d aan de server toevoegen…</string>
     <string name="library_delete_confirm_message">De bestanden blijven staan waar ze op de schijf staan.</string>
     <plurals name="library_delete_confirm_title">
         <item quantity="one">1 boek uit uw bibliotheek verwijderen?</item>
@@ -210,6 +215,9 @@
     <string name="book_download">Downloaden</string>
     <string name="book_downloading">Downloaden…</string>
     <string name="book_download_failed">Het downloaden is niet voltooid.</string>
+    <string name="book_upload">Aan server toevoegen</string>
+    <string name="book_uploading">Wordt aan server toegevoegd…</string>
+    <string name="book_upload_failed">Het boek is niet op de server aangekomen.</string>
     <string name="book_format_and_size">%1$s · %2$s</string>
     <string name="book_progress_percent">· %1$d%</string>
     <string name="format_pdf">PDF</string>
@@ -247,6 +255,7 @@
     <string name="selection_unfavourite">Uit favorieten verwijderen</string>
     <string name="selection_mark_unread">Markeren als ongelezen</string>
     <string name="selection_delete">Uit de bibliotheek verwijderen</string>
+    <string name="selection_upload">Aan server toevoegen</string>
     <string name="reader_close_book">Boek sluiten</string>
     <string name="reader_close_the_book">Het boek sluiten</string>
     <string name="reader_contents">Inhoud</string>

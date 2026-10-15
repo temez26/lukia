@@ -27,6 +27,9 @@ class LibraryShelfUi(
     val onFavorite: () -> Unit = {},
     val onResetProgress: () -> Unit = {},
     val onDelete: () -> Unit = {},
+    /** Whether there is a server to add the selected books to - true while signed in. */
+    val canUpload: Boolean = false,
+    val onUpload: () -> Unit = {},
     /** What is worth tidying on the shelf, for the menu that offers to. */
     val upkeep: LibraryUpkeep = LibraryUpkeep.None,
     /** Ticks the books whose files have gone. */
@@ -62,6 +65,8 @@ class LibraryShelfUi(
         onFavorite = onFavorite,
         onResetProgress = onResetProgress,
         onDelete = onDelete,
+        canUpload = canUpload,
+        onUpload = onUpload,
         upkeep = upkeep,
         onSelectMissing = {
             shelf()

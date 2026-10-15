@@ -51,6 +51,10 @@
         <item quantity="one">1 bok slettet fra biblioteket</item>
         <item quantity="other">%1$d bøker slettet fra biblioteket</item>
     </plurals>
+    <plurals name="library_bulk_uploaded">
+        <item quantity="one">1 bok lagt til på serveren</item>
+        <item quantity="other">%1$d bøker lagt til på serveren</item>
+    </plurals>
     <plurals name="library_bulk_skipped">
         <item quantity="one">%1$s, 1 hoppet over</item>
         <item quantity="other">%1$s, %2$d hoppet over</item>
@@ -64,6 +68,7 @@
     <string name="library_bulk_running_unfavourite">Fjerner fra favoritter %1$d/%2$d…</string>
     <string name="library_bulk_running_reset">Merker som ulest %1$d/%2$d…</string>
     <string name="library_bulk_running_delete">Sletter %1$d/%2$d…</string>
+    <string name="library_bulk_running_upload">Legger til %1$d av %2$d på serveren…</string>
     <string name="library_delete_confirm_message">Filene blir liggende der de er på disken.</string>
     <plurals name="library_delete_confirm_title">
         <item quantity="one">Slette 1 bok fra biblioteket ditt?</item>
@@ -210,6 +215,9 @@
     <string name="book_download">Last ned</string>
     <string name="book_downloading">Laster ned…</string>
     <string name="book_download_failed">Nedlastingen ble ikke fullført.</string>
+    <string name="book_upload">Legg til på serveren</string>
+    <string name="book_uploading">Legger til på serveren…</string>
+    <string name="book_upload_failed">Boken kom ikke frem til serveren.</string>
     <string name="book_format_and_size">%1$s · %2$s</string>
     <string name="book_progress_percent">· %1$d\u00A0%</string>
     <string name="format_pdf">PDF</string>
@@ -247,6 +255,7 @@
     <string name="selection_unfavourite">Fjern fra favoritter</string>
     <string name="selection_mark_unread">Merk som ulest</string>
     <string name="selection_delete">Slett fra biblioteket</string>
+    <string name="selection_upload">Legg til på serveren</string>
     <string name="reader_close_book">Lukk boken</string>
     <string name="reader_close_the_book">Lukk boken</string>
     <string name="reader_contents">Innhold</string>

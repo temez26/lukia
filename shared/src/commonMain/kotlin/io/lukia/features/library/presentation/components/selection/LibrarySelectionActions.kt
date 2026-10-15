@@ -15,11 +15,13 @@ import io.lukia.resources.selection_favourite
 import io.lukia.resources.selection_mark_unread
 import io.lukia.resources.selection_refresh
 import io.lukia.resources.selection_unfavourite
+import io.lukia.resources.selection_upload
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.icons.HeartGlyph
 import io.lukia.shared.presentation.components.icons.OpenBookGlyph
 import io.lukia.shared.presentation.components.icons.RefreshGlyph
 import io.lukia.shared.presentation.components.icons.TrashGlyph
+import io.lukia.shared.presentation.components.icons.UploadGlyph
 import io.lukia.shared.presentation.components.surface.GlassSurface
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
@@ -46,6 +48,8 @@ internal fun LibrarySelectionActions(
     onResetProgress: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Adds the selection to the sync server; null, and no button, while there is no server to add to. */
+    onUpload: (() -> Unit)? = null,
 ) {
     val dimens = LocalLukiaDimens.current
 
@@ -81,6 +85,14 @@ internal fun LibrarySelectionActions(
                 onClick = onResetProgress,
                 enabled = enabled,
             ) { tint, glyph -> OpenBookGlyph(tint = tint, modifier = glyph) }
+
+            onUpload?.let { upload ->
+                LukiaIconButton(
+                    label = stringResource(Res.string.selection_upload),
+                    onClick = upload,
+                    enabled = enabled,
+                ) { tint, glyph -> UploadGlyph(tint = tint, modifier = glyph) }
+            }
 
             LukiaIconButton(
                 label = stringResource(Res.string.selection_delete),

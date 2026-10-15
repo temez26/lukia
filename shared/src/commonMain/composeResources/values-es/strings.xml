@@ -51,6 +51,10 @@
         <item quantity="one">1 libro eliminado de la biblioteca</item>
         <item quantity="other">%1$d libros eliminados de la biblioteca</item>
     </plurals>
+    <plurals name="library_bulk_uploaded">
+        <item quantity="one">1 libro añadido al servidor</item>
+        <item quantity="other">%1$d libros añadidos al servidor</item>
+    </plurals>
     <plurals name="library_bulk_skipped">
         <item quantity="one">%1$s, 1 omitido</item>
         <item quantity="other">%1$s, %2$d omitidos</item>
@@ -64,6 +68,7 @@
     <string name="library_bulk_running_unfavourite">Quitando de favoritos %1$d/%2$d…</string>
     <string name="library_bulk_running_reset">Marcando como no leído %1$d/%2$d…</string>
     <string name="library_bulk_running_delete">Eliminando %1$d/%2$d…</string>
+    <string name="library_bulk_running_upload">Añadiendo %1$d de %2$d al servidor…</string>
     <string name="library_delete_confirm_message">Los archivos se quedan donde están en el disco.</string>
     <plurals name="library_delete_confirm_title">
         <item quantity="one">¿Eliminar 1 libro de tu biblioteca?</item>
@@ -210,6 +215,9 @@
     <string name="book_download">Descargar</string>
     <string name="book_downloading">Descargando…</string>
     <string name="book_download_failed">La descarga no terminó.</string>
+    <string name="book_upload">Añadir al servidor</string>
+    <string name="book_uploading">Añadiendo al servidor…</string>
+    <string name="book_upload_failed">El libro no llegó al servidor.</string>
     <string name="book_format_and_size">%1$s · %2$s</string>
     <string name="book_progress_percent">· %1$d\u00A0%</string>
     <string name="format_pdf">PDF</string>
@@ -247,6 +255,7 @@
     <string name="selection_unfavourite">Quitar de favoritos</string>
     <string name="selection_mark_unread">Marcar como no leído</string>
     <string name="selection_delete">Eliminar de la biblioteca</string>
+    <string name="selection_upload">Añadir al servidor</string>
     <string name="reader_close_book">Cerrar el libro</string>
     <string name="reader_close_the_book">Cerrar el libro</string>
     <string name="reader_contents">Índice</string>

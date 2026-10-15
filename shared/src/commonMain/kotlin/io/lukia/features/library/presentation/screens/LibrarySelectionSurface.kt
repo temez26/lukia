@@ -14,6 +14,7 @@ import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.components.selection.LibrarySelectionActions
 import io.lukia.features.library.presentation.components.selection.LibrarySelectionBar
 import io.lukia.features.library.presentation.model.LibraryBook
+import io.lukia.features.library.presentation.sessions.BookTransferUi
 import io.lukia.features.library.presentation.sessions.LibraryShelfUi
 import io.lukia.features.library.presentation.sessions.bulkAction
 import io.lukia.features.library.presentation.sessions.deleteSelected
@@ -27,6 +28,7 @@ import io.lukia.features.library.presentation.sessions.startSelecting
 import io.lukia.features.library.presentation.sessions.stopSelecting
 import io.lukia.features.library.presentation.sessions.toggleAllSelected
 import io.lukia.features.library.presentation.sessions.toggleSelected
+import io.lukia.features.library.presentation.sessions.uploadSelected
 import io.lukia.resources.Res
 import io.lukia.resources.action_delete
 import io.lukia.resources.library_delete_confirm_message
@@ -48,8 +50,9 @@ internal fun rememberShelfUi(viewModel: LibraryViewModel): LibraryShelfUi {
     val running by viewModel.bulkAction.collectAsState()
     val upkeep by viewModel.upkeep.collectAsState()
     val layout by viewModel.layout.collectAsState()
+    val canUpload by viewModel.canUpload.collectAsState()
 
-    return remember(viewModel, selection, running, upkeep, layout) {
+    return remember(viewModel, selection, running, upkeep, layout, canUpload) {
         LibraryShelfUi(
             selection = selection,
             running = running,
@@ -62,10 +65,28 @@ internal fun rememberShelfUi(viewModel: LibraryViewModel): LibraryShelfUi {
             onFavorite = viewModel::setFavoriteOnSelected,
             onResetProgress = viewModel::resetProgressOnSelected,
             onDelete = viewModel::deleteSelected,
+            canUpload = canUpload,
+            onUpload = viewModel::uploadSelected,
             onSelectMissing = viewModel::selectMissing,
             onSelectDuplicates = viewModel::selectDuplicates,
             layout = layout,
             onLayoutChange = viewModel::setLayout,
+        )
+    }
+}
+
+/** The panel's books moving to or from the server, wired to the view model's transfers. */
+@Composable
+internal fun rememberTransferUi(viewModel: LibraryViewModel): BookTransferUi {
+    val states by viewModel.transfers.states.collectAsState()
+    val canUpload by viewModel.transfers.canUpload.collectAsState()
+
+    return remember(viewModel, states, canUpload) {
+        BookTransferUi(
+            states = states,
+            canUpload = canUpload,
+            onStart = { viewModel.transfers.start(it) },
+            onCancel = viewModel.transfers::cancel,
         )
     }
 }
@@ -116,6 +137,7 @@ internal fun BoxScope.LibrarySelectionSurface(
         onToggleFavorite = ui.onFavorite,
         onResetProgress = ui.onResetProgress,
         onDelete = { confirming = true },
+        onUpload = ui.onUpload.takeIf { ui.canUpload },
         modifier = Modifier.align(Alignment.BottomCenter),
     )
 

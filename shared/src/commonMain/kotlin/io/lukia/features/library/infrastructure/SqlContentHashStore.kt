@@ -25,10 +25,13 @@ class SqlContentHashStore(
      * favourite never left out of the outbox - see `SyncOutbox.sq`.
      */
     override suspend fun record(location: String, contentHash: String) = withContext(dispatcher) {
-        database.transaction {
-            database.documentQueries.setContentHash(contentHash, location)
-            database.readingSessionQueries.nameBook(contentHash = contentHash, location = location)
-            database.syncOutboxQueries.queueBook(location)
-        }
+        database.transaction { database.recordContentHash(location, contentHash) }
     }
+}
+
+/** See [SqlContentHashStore.record]. Inside whatever transaction is open. */
+internal fun LukiaDatabase.recordContentHash(location: String, contentHash: String) {
+    documentQueries.setContentHash(contentHash, location)
+    readingSessionQueries.nameBook(contentHash = contentHash, location = location)
+    syncOutboxQueries.queueBook(location)
 }

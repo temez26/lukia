@@ -16,6 +16,8 @@ import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.features.library.application.BookDetails
 import io.lukia.features.library.presentation.screens.BookDetailBody
+import io.lukia.features.library.presentation.screens.BookTransferActions
+import io.lukia.features.library.presentation.sessions.BookTransferUi
 import io.lukia.resources.Res
 import io.lukia.resources.book_actions
 import io.lukia.shared.presentation.components.controls.IconButtonVariant
@@ -56,6 +58,7 @@ fun BookDetailOverlay(
     onRefresh: (DocumentInfo) -> Unit,
     onDelete: (DocumentInfo) -> Unit,
     modifier: Modifier = Modifier,
+    transfers: BookTransferUi = BookTransferUi.None,
 ) {
     val dimens = LocalLukiaDimens.current
 
@@ -104,6 +107,12 @@ fun BookDetailOverlay(
                 // A step away from the panel it sits on, rather than from the
                 // window background the screen version sits on.
                 infoCardColor = MaterialTheme.colorScheme.surfaceVariant,
+                transfer = transfers.stateOf(shown.document.location),
+                transferActions = BookTransferActions(
+                    onStart = { transfers.onStart(shown) },
+                    onCancel = { transfers.onCancel(shown.document.location) },
+                ),
+                canUpload = transfers.canUpload,
             )
         }
 

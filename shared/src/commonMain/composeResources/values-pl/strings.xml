@@ -63,6 +63,12 @@
         <item quantity="many">Usunięto %1$d książek z biblioteki</item>
         <item quantity="other">Usunięto %1$d książki z biblioteki</item>
     </plurals>
+    <plurals name="library_bulk_uploaded">
+        <item quantity="one">Dodano 1 książkę na serwer</item>
+        <item quantity="few">Dodano %1$d książki na serwer</item>
+        <item quantity="many">Dodano %1$d książek na serwer</item>
+        <item quantity="other">Dodano %1$d książki na serwer</item>
+    </plurals>
     <plurals name="library_bulk_skipped">
         <item quantity="one">%1$s, pominięto 1</item>
         <item quantity="few">%1$s, pominięto %2$d</item>
@@ -78,6 +84,7 @@
     <string name="library_bulk_running_unfavourite">Usuwanie z ulubionych %1$d/%2$d…</string>
     <string name="library_bulk_running_reset">Oznaczanie jako nieprzeczytane %1$d/%2$d…</string>
     <string name="library_bulk_running_delete">Usuwanie %1$d/%2$d…</string>
+    <string name="library_bulk_running_upload">Dodawanie %1$d z %2$d na serwer…</string>
     <string name="library_delete_confirm_message">Pliki zostają tam, gdzie są na dysku.</string>
     <plurals name="library_delete_confirm_title">
         <item quantity="one">Usunąć 1 książkę z Twojej biblioteki?</item>
@@ -228,6 +235,9 @@
     <string name="book_download">Pobierz</string>
     <string name="book_downloading">Pobieranie…</string>
     <string name="book_download_failed">Pobieranie nie zostało ukończone.</string>
+    <string name="book_upload">Dodaj na serwer</string>
+    <string name="book_uploading">Dodawanie na serwer…</string>
+    <string name="book_upload_failed">Książka nie dotarła na serwer.</string>
     <string name="book_format_and_size">%1$s · %2$s</string>
     <string name="book_progress_percent">· %1$d%</string>
     <string name="format_pdf">PDF</string>
@@ -267,6 +277,7 @@
     <string name="selection_unfavourite">Usuń z ulubionych</string>
     <string name="selection_mark_unread">Oznacz jako nieprzeczytane</string>
     <string name="selection_delete">Usuń z biblioteki</string>
+    <string name="selection_upload">Dodaj na serwer</string>
     <string name="reader_close_book">Zamknij książkę</string>
     <string name="reader_close_the_book">Zamknij książkę</string>
     <string name="reader_contents">Spis treści</string>

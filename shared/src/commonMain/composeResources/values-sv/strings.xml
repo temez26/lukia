@@ -57,6 +57,10 @@
         <item quantity="one">1 bok borttagen från biblioteket</item>
         <item quantity="other">%1$d böcker borttagna från biblioteket</item>
     </plurals>
+    <plurals name="library_bulk_uploaded">
+        <item quantity="one">1 bok tillagd på servern</item>
+        <item quantity="other">%1$d böcker tillagda på servern</item>
+    </plurals>
 
     <plurals name="library_bulk_skipped">
         <item quantity="one">%1$s, 1 överhoppad</item>
@@ -72,6 +76,7 @@
     <string name="library_bulk_running_unfavourite">Tar bort från favoriter %1$d/%2$d…</string>
     <string name="library_bulk_running_reset">Markerar som oläst %1$d/%2$d…</string>
     <string name="library_bulk_running_delete">Tar bort %1$d/%2$d…</string>
+    <string name="library_bulk_running_upload">Lägger till %1$d av %2$d på servern…</string>
 
     <string name="library_delete_confirm_message">Filerna ligger kvar där de är på disken.</string>
     <plurals name="library_delete_confirm_title">
@@ -239,6 +244,9 @@
     <string name="book_download">Ladda ner</string>
     <string name="book_downloading">Laddar ner…</string>
     <string name="book_download_failed">Nedladdningen blev inte klar.</string>
+    <string name="book_upload">Lägg till på servern</string>
+    <string name="book_uploading">Lägger till på servern…</string>
+    <string name="book_upload_failed">Boken kom inte fram till servern.</string>
     <string name="book_format_and_size">%1$s · %2$s</string>
     <string name="book_progress_percent">· %1$d\u00A0%</string>
 
@@ -281,6 +289,7 @@
     <string name="selection_unfavourite">Ta bort från favoriter</string>
     <string name="selection_mark_unread">Markera som oläst</string>
     <string name="selection_delete">Ta bort från biblioteket</string>
+    <string name="selection_upload">Lägg till på servern</string>
 
     <string name="reader_close_book">Stäng boken</string>
     <string name="reader_close_the_book">Stäng boken</string>

@@ -21,6 +21,12 @@ interface ServerShelf {
      */
     suspend fun addServerBook(document: DocumentInfo, contentHash: String)
 
+    /**
+     * The book at [location] is on the server now, as [contentHash] - which it
+     * learns here, with everything a hash brings, if it was not hashed yet.
+     */
+    suspend fun markUploaded(location: String, contentHash: String)
+
     /** Marks every copy of these bytes on the shelf as on the server, or no longer. */
     suspend fun markOnServer(contentHash: String, onServer: Boolean)
 

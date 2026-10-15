@@ -1,6 +1,6 @@
-// The server's one page: set up the first account, sign in, add books to the
-// shared library, remove them (admin), make invite codes and reset passwords
-// (admin).
+// The server's one page: set up the first account, sign in, add books - or a
+// whole folder of them - to the shared library, remove them (admin), make
+// invite codes and reset passwords (admin).
 //
 // It speaks the same /api/v1 the app does. Tokens live in this script's memory
 // only, so closing or reloading the page signs out - nothing is left in the
@@ -192,11 +192,25 @@ function size(bytes) {
     return kilobytes < 1024 ? `${Math.max(1, Math.round(kilobytes))} kB` : `${(kilobytes / 1024).toFixed(1)} MB`;
 }
 
+// The formats the app reads, as the server checks them - by extension.
+const bookExtensions = ["pdf", "epub", "docx", "txt", "text", "md", "markdown"];
+
+function isBook(file) {
+    return bookExtensions.includes(file.name.split(".").pop().toLowerCase());
+}
+
 async function upload(event) {
     event.preventDefault();
     const form = event.target;
     const button = form.querySelector("button");
-    const files = [...form.files.files];
+    // A folder brings everything in it, subfolders included; only the books go.
+    const chosen = [...form.files.files, ...form.folder.files];
+    const files = chosen.filter(isBook);
+    const skipped = chosen.length - files.length;
+    if (files.length === 0) {
+        say(chosen.length ? "None of those are books Lukia reads." : "Choose some books or a folder first.", true);
+        return;
+    }
     button.disabled = true;
 
     const failures = [];
@@ -216,8 +230,10 @@ async function upload(event) {
 
     form.reset();
     await loadBooks();
-    if (failures.length) say(failures.join("\n"), true);
-    else say(files.length === 1 ? "Added." : `Added ${files.length} books.`);
+    const added = files.length - failures.length;
+    const report = [added === 1 ? "Added 1 book." : `Added ${added} books.`];
+    if (skipped) report.push(`Skipped ${skipped} ${skipped === 1 ? "file that is" : "files that are"} not a book.`);
+    say([...report, ...failures].join("\n"), failures.length > 0);
 }
 
 async function removeBook(book, name) {

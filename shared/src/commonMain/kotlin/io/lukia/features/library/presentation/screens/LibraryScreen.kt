@@ -107,6 +107,7 @@ fun LibraryScreen(
                 onToggleFavorite = viewModel::toggleFavorite,
                 onRefresh = viewModel::refreshDocument,
                 shelf = rememberShelfUi(viewModel),
+                transfers = rememberTransferUi(viewModel),
                 onDelete = viewModel::deleteDocument,
                 onRetry = viewModel::refresh,
                 importing = rememberImportUi(viewModel),

@@ -51,6 +51,10 @@
         <item quantity="one">1 bog slettet fra biblioteket</item>
         <item quantity="other">%1$d bøger slettet fra biblioteket</item>
     </plurals>
+    <plurals name="library_bulk_uploaded">
+        <item quantity="one">1 bog føjet til serveren</item>
+        <item quantity="other">%1$d bøger føjet til serveren</item>
+    </plurals>
     <plurals name="library_bulk_skipped">
         <item quantity="one">%1$s, 1 sprunget over</item>
         <item quantity="other">%1$s, %2$d sprunget over</item>
@@ -64,6 +68,7 @@
     <string name="library_bulk_running_unfavourite">Fjerner fra favoritter %1$d/%2$d…</string>
     <string name="library_bulk_running_reset">Markerer som ulæst %1$d/%2$d…</string>
     <string name="library_bulk_running_delete">Sletter %1$d/%2$d…</string>
+    <string name="library_bulk_running_upload">Føjer %1$d af %2$d til serveren…</string>
     <string name="library_delete_confirm_message">Filerne bliver liggende, hvor de er på disken.</string>
     <plurals name="library_delete_confirm_title">
         <item quantity="one">Slet 1 bog fra dit bibliotek?</item>
@@ -210,6 +215,9 @@
     <string name="book_download">Hent</string>
     <string name="book_downloading">Henter…</string>
     <string name="book_download_failed">Hentningen blev ikke færdig.</string>
+    <string name="book_upload">Føj til serveren</string>
+    <string name="book_uploading">Føjer til serveren…</string>
+    <string name="book_upload_failed">Bogen nåede ikke frem til serveren.</string>
     <string name="book_format_and_size">%1$s · %2$s</string>
     <string name="book_progress_percent">· %1$d\u00A0%</string>
     <string name="format_pdf">PDF</string>
@@ -247,6 +255,7 @@
     <string name="selection_unfavourite">Fjern fra favoritter</string>
     <string name="selection_mark_unread">Marker som ulæst</string>
     <string name="selection_delete">Slet fra biblioteket</string>
+    <string name="selection_upload">Føj til serveren</string>
     <string name="reader_close_book">Luk bogen</string>
     <string name="reader_close_the_book">Luk bogen</string>
     <string name="reader_contents">Indhold</string>

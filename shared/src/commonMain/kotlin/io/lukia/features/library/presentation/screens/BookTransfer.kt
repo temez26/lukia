@@ -10,59 +10,78 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.resources.Res
 import io.lukia.resources.action_cancel
 import io.lukia.resources.action_try_again
 import io.lukia.resources.book_download
 import io.lukia.resources.book_download_failed
 import io.lukia.resources.book_downloading
+import io.lukia.resources.book_upload
+import io.lukia.resources.book_upload_failed
+import io.lukia.resources.book_uploading
 import io.lukia.resources.reader_percent
 import io.lukia.shared.presentation.components.controls.ButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaButton
 import io.lukia.shared.presentation.components.controls.ReadingProgressBar
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-/** Where fetching a server book onto the device has got to - see `ServerBookDownloader`. */
-sealed interface BookDownload {
+/** Which way a book is going: from the server onto the device, or the other way. */
+enum class TransferDirection { Download, Upload }
+
+/**
+ * Where moving a book between the device and the sync server has got to - see
+ * `ServerBookDownloader` and `ServerBookUploader`.
+ */
+sealed interface BookTransfer {
 
     /** Not started, or cancelled. */
-    data object Idle : BookDownload
+    data object Idle : BookTransfer
 
     /** Arriving; [progress] from 0 to 1. */
-    data class Running(val progress: Float) : BookDownload
+    data class Running(val progress: Float) : BookTransfer
 
     /** Stopped before the end - offline, server gone. Nothing was kept, so trying again starts over. */
-    data object Failed : BookDownload
+    data object Failed : BookTransfer
 }
 
 /** What the download row can be asked to do. */
-class BookDownloadActions(
+class BookTransferActions(
     val onStart: () -> Unit = {},
     val onCancel: () -> Unit = {},
 )
 
 /**
- * The control a server book not downloaded yet has in place of reading it:
- * a button, then progress that can be cancelled, then - only if it failed - a
- * way to try again.
+ * The control for a book that is only on one side: a server book not
+ * downloaded yet, or a book on the device the server does not have. A button,
+ * then progress that can be cancelled, then - only if it failed - a way to try
+ * again.
  */
 @Composable
-internal fun BookDownloadRow(state: BookDownload, actions: BookDownloadActions, modifier: Modifier = Modifier) {
+internal fun BookTransferRow(
+    direction: TransferDirection,
+    state: BookTransfer,
+    actions: BookTransferActions,
+    modifier: Modifier = Modifier,
+) {
+    val labels = TransferLabels.of(direction)
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(Space.sm),
         modifier = modifier,
     ) {
         when (state) {
-            BookDownload.Idle -> LukiaButton(
-                label = stringResource(Res.string.book_download),
+            BookTransfer.Idle -> LukiaButton(
+                label = stringResource(labels.start),
                 onClick = actions.onStart,
             )
 
-            is BookDownload.Running -> {
+            is BookTransfer.Running -> {
                 Text(
-                    text = stringResource(Res.string.book_downloading) + " " +
+                    text = stringResource(labels.running) + " " +
                         stringResource(Res.string.reader_percent, (state.progress * PercentScale).toInt()),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -75,15 +94,43 @@ internal fun BookDownloadRow(state: BookDownload, actions: BookDownloadActions, 
                 )
             }
 
-            BookDownload.Failed -> {
+            BookTransfer.Failed -> {
                 Text(
-                    text = stringResource(Res.string.book_download_failed),
+                    text = stringResource(labels.failed),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error,
                 )
                 LukiaButton(label = stringResource(Res.string.action_try_again), onClick = actions.onStart)
             }
         }
+    }
+}
+
+/** Which way [this] book could go, or null when it is on both sides or there is no server to send it to. */
+fun DocumentInfo.transferDirection(canUpload: Boolean): TransferDirection? = when {
+    awaitsDownload -> TransferDirection.Download
+    canUpload && exists && !onServer -> TransferDirection.Upload
+    else -> null
+}
+
+/** What the row says, for the way the book is going. */
+private class TransferLabels(val start: StringResource, val running: StringResource, val failed: StringResource) {
+    companion object {
+        fun of(direction: TransferDirection) = when (direction) {
+            TransferDirection.Download -> Download
+            TransferDirection.Upload -> Upload
+        }
+
+        private val Download = TransferLabels(
+            Res.string.book_download,
+            Res.string.book_downloading,
+            Res.string.book_download_failed,
+        )
+        private val Upload = TransferLabels(
+            Res.string.book_upload,
+            Res.string.book_uploading,
+            Res.string.book_upload_failed,
+        )
     }
 }
 

@@ -17,6 +17,7 @@ import io.lukia.core.infrastructure.lukiaSqlDriver
 import io.lukia.features.library.domain.ContentHasher
 import io.lukia.features.library.domain.DocumentAnalyzer
 import io.lukia.features.library.domain.FolderScanner
+import io.lukia.features.library.infrastructure.BookFileReader
 import io.lukia.features.library.infrastructure.importing.AndroidDocumentAnalyzer
 import io.lukia.features.library.infrastructure.importing.AndroidFolderScanner
 import org.koin.dsl.module
@@ -30,6 +31,11 @@ val platformModule = module {
     // The analyser also hashes, from the same file handles - see `ContentHasher`.
     // A second instance rather than a cast: it holds nothing but its context.
     single<ContentHasher> {
+        AndroidDocumentAnalyzer(get(), get())
+    }
+
+    // And opens a book for sending to a sync server - see `BookFileReader`.
+    single<BookFileReader> {
         AndroidDocumentAnalyzer(get(), get())
     }
 

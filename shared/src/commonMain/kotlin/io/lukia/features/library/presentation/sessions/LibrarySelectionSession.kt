@@ -1,6 +1,7 @@
 package io.lukia.features.library.presentation.sessions
 
 import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.core.domain.document.ServerBookUploader
 import io.lukia.core.domain.reading.ReadingProgressRepository
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.features.library.application.RefreshDocumentUseCase
@@ -35,7 +36,6 @@ class LibrarySelectionSession(
     private val progressRepository: ReadingProgressRepository,
     private val scope: CoroutineScope,
 ) {
-
     private val _selection = MutableStateFlow(LibrarySelection.None)
     val selection: StateFlow<LibrarySelection> = _selection.asStateFlow()
 
@@ -122,6 +122,27 @@ class LibrarySelectionSession(
         }
 
     /**
+     * Sends the selected books to the sync server. Those already there, and
+     * those whose file is not on this device, are left out rather than counted
+     * as failures: there is nothing to send.
+     */
+    fun upload(books: List<DocumentInfo>, uploader: ServerBookUploader, onDone: (LibraryMessage) -> Unit) {
+        val sending = books
+            .filter { it.document.location in _selection.value && it.exists && !it.onServer }
+            .map { it.document.location }
+
+        if (sending.isEmpty()) {
+            stop()
+            onDone(LibraryMessage.BulkDone(operation = BulkOperation.Upload, done = 0, failed = 0))
+            return
+        }
+
+        run(operation = BulkOperation.Upload, onDone = onDone, locations = sending) { location ->
+            uploader.upload(location) {}
+        }
+    }
+
+    /**
      * Runs [action] over everything selected, counting as it goes, and leaves
      * selection mode when it is done.
      *
@@ -133,10 +154,9 @@ class LibrarySelectionSession(
     private fun run(
         operation: BulkOperation,
         onDone: (LibraryMessage) -> Unit,
+        locations: List<String> = _selection.value.locations.toList(),
         action: suspend (location: String) -> Unit,
     ) {
-        val locations = _selection.value.locations.toList()
-
         if (locations.isEmpty() || _running.value != null) return
 
         scope.launch {

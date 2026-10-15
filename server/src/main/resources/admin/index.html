@@ -38,8 +38,9 @@
     <section id="library" hidden>
         <h2>Library</h2>
         <form id="upload-form">
-            <label>Add books <input name="files" type="file" multiple required
+            <label>Add books <input name="files" type="file" multiple
                 accept=".pdf,.epub,.docx,.txt,.text,.md,.markdown"></label>
+            <label>Or a whole folder <input name="folder" type="file" webkitdirectory multiple></label>
             <button type="submit">Upload</button>
         </form>
         <p id="empty" hidden>No books yet.</p>

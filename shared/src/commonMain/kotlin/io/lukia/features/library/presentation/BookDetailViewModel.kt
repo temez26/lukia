@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.AppErrorException
 import io.lukia.core.domain.document.ServerBookDownloader
+import io.lukia.core.domain.document.ServerBookUploader
 import io.lukia.core.domain.document.ShelfChanges
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.core.domain.toAppError
@@ -16,8 +17,8 @@ import io.lukia.features.library.application.RefreshDocumentUseCase
 import io.lukia.features.library.application.RemoveDocumentUseCase
 import io.lukia.features.library.application.SetFavoriteUseCase
 import io.lukia.features.library.presentation.model.LibraryMessage
-import io.lukia.features.library.presentation.screens.BookDownload
-import kotlinx.coroutines.Job
+import io.lukia.features.library.presentation.screens.BookTransfer
+import io.lukia.features.library.presentation.sessions.BookTransfers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,6 +35,8 @@ class BookDetailViewModel(
         throw AppErrorException(AppError.DocumentNotFound)
     },
     shelfChanges: ShelfChanges = ShelfChanges(),
+    /** Sends a book on this device to the server. Defaulted for the same reason as [downloader]. */
+    private val uploader: ServerBookUploader = ServerBookUploader.None,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState<BookDetails>>(UiState.Loading)
@@ -47,10 +50,13 @@ class BookDetailViewModel(
     private val _message = MutableStateFlow<LibraryMessage?>(null)
     val message: StateFlow<LibraryMessage?> = _message.asStateFlow()
 
-    private val _download = MutableStateFlow<BookDownload>(BookDownload.Idle)
-    val download: StateFlow<BookDownload> = _download.asStateFlow()
+    private val transfers = BookTransfers(downloader, uploader, viewModelScope)
 
-    private var downloading: Job? = null
+    /** How far moving this book to or from the server has got - see [BookTransfers]. */
+    val transfer: StateFlow<BookTransfer> = transfers.stateOf(location)
+
+    /** Whether a book here could be added to the server: there is one, and the reader is signed in to it. */
+    val canUpload: StateFlow<Boolean> = transfers.canUpload
 
     init {
         load()
@@ -63,29 +69,13 @@ class BookDetailViewModel(
         if (_uiState.value !is UiState.Loading) load()
     }
 
-    /**
-     * Fetches the book onto the device, then shows it as one that is - after
-     * which it opens like any other, offline included.
-     */
-    fun startDownload() {
-        if (_download.value is BookDownload.Running) return
-        _download.value = BookDownload.Running(progress = 0f)
-
-        downloading = viewModelScope.launch {
-            runCatchingApp { downloader.download(location) { _download.value = BookDownload.Running(it) } }
-                .onSuccess {
-                    _download.value = BookDownload.Idle
-                    load()
-                }
-                .onFailure { _download.value = BookDownload.Failed }
-        }
+    /** Fetches a server book onto the device, or sends one on the device to the server - whichever it lacks. */
+    fun startTransfer() {
+        val document = (_uiState.value as? UiState.Success)?.data?.document ?: return
+        transfers.start(document, onDone = ::load)
     }
 
-    /** Stops the download; nothing of it is kept. */
-    fun cancelDownload() {
-        downloading?.cancel()
-        _download.value = BookDownload.Idle
-    }
+    fun cancelTransfer() = transfers.cancel(location)
 
     /**
      * A location with no entry behind it is a failure rather than empty content:

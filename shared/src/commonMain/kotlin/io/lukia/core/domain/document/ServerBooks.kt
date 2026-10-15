@@ -1,9 +1,13 @@
 package io.lukia.core.domain.document
 
+import io.lukia.core.domain.AppError
+import io.lukia.core.domain.AppErrorException
 import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.flowOf
 
 /*
  * What the library needs from the sync server, said in the library's own
@@ -49,6 +53,27 @@ interface BookFileWriter {
  */
 fun interface ServerBookDownloader {
     suspend fun download(location: String, onProgress: (Float) -> Unit)
+}
+
+/**
+ * Sends a book on this device to the sync server's shared library, where every
+ * account sees it. Reports how far it has got, from 0 to 1, as it goes; throws
+ * an [io.lukia.core.domain.AppErrorException] when it cannot.
+ */
+interface ServerBookUploader {
+
+    /** Whether there is a server to send to - true while signed in. */
+    val available: Flow<Boolean>
+
+    suspend fun upload(location: String, onProgress: (Float) -> Unit)
+
+    /** For the screens and tests that never meet a server. */
+    object None : ServerBookUploader {
+        override val available: Flow<Boolean> = flowOf(false)
+
+        override suspend fun upload(location: String, onProgress: (Float) -> Unit) =
+            throw AppErrorException(AppError.DocumentNotFound)
+    }
 }
 
 /**

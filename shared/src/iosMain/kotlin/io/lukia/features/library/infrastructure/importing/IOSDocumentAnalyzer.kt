@@ -5,10 +5,12 @@ import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.domain.document.PickedDocument
 import io.lukia.core.infrastructure.importing.DocumentContents
+import io.lukia.core.infrastructure.importing.DocumentSource
 import io.lukia.core.infrastructure.importing.extractContents
 import io.lukia.core.infrastructure.sha256Hex
 import io.lukia.features.library.domain.ContentHasher
 import io.lukia.features.library.domain.DocumentAnalyzer
+import io.lukia.features.library.infrastructure.BookFileReader
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +26,7 @@ import platform.Foundation.NSURL
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 class IOSDocumentAnalyzer(
     private val diagnostics: Diagnostics = Diagnostics.None,
-) : DocumentAnalyzer, ContentHasher {
+) : DocumentAnalyzer, ContentHasher, BookFileReader {
 
     override suspend fun exists(document: PickedDocument): Boolean {
         val path = NSURL.URLWithString(document.location)?.path ?: return false
@@ -85,15 +87,19 @@ class IOSDocumentAnalyzer(
         )
     }
 
-    /** Read through the same source the import opens, a window at a time - see [sha256Hex]. */
-    override suspend fun contentHash(document: PickedDocument): String? = withContext(Dispatchers.IO) {
+    override suspend fun open(document: PickedDocument): DocumentSource? = withContext(Dispatchers.IO) {
         val url = NSURL.URLWithString(document.location) ?: return@withContext null
         val path = url.path ?: return@withContext null
         val size = (NSFileManager.defaultManager.attributesOfItemAtPath(path, null)?.get(NSFileSize) as? NSNumber)
             ?.longLongValue
             ?: return@withContext null
 
-        IOSDocumentSource.open(url, size)?.use { source -> runCatching { source.sha256Hex() }.getOrNull() }
+        IOSDocumentSource.open(url, size)
+    }
+
+    /** Read through the same source the import opens, a window at a time - see [sha256Hex]. */
+    override suspend fun contentHash(document: PickedDocument): String? = withContext(Dispatchers.IO) {
+        open(document)?.use { source -> runCatching { source.sha256Hex() }.getOrNull() }
     }
 
     private suspend fun openedSource(url: NSURL, size: Long): IOSDocumentSource? =

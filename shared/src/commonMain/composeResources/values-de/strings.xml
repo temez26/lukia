@@ -52,6 +52,10 @@
         <item quantity="one">1 Buch aus der Bibliothek gelöscht</item>
         <item quantity="other">%1$d Bücher aus der Bibliothek gelöscht</item>
     </plurals>
+    <plurals name="library_bulk_uploaded">
+        <item quantity="one">1 Buch zum Server hinzugefügt</item>
+        <item quantity="other">%1$d Bücher zum Server hinzugefügt</item>
+    </plurals>
     <plurals name="library_bulk_skipped">
         <item quantity="one">%1$s, 1 übersprungen</item>
         <item quantity="other">%1$s, %2$d übersprungen</item>
@@ -65,6 +69,7 @@
     <string name="library_bulk_running_unfavourite">Wird aus Favoriten entfernt %1$d/%2$d…</string>
     <string name="library_bulk_running_reset">Wird als ungelesen markiert %1$d/%2$d…</string>
     <string name="library_bulk_running_delete">Wird gelöscht %1$d/%2$d…</string>
+    <string name="library_bulk_running_upload">%1$d von %2$d werden zum Server hinzugefügt…</string>
     <string name="library_delete_confirm_message">Die Dateien bleiben, wo sie auf der Festplatte liegen.</string>
     <plurals name="library_delete_confirm_title">
         <item quantity="one">1 Buch aus Ihrer Bibliothek löschen?</item>
@@ -211,6 +216,9 @@
     <string name="book_download">Herunterladen</string>
     <string name="book_downloading">Wird heruntergeladen…</string>
     <string name="book_download_failed">Der Download wurde nicht abgeschlossen.</string>
+    <string name="book_upload">Zum Server hinzufügen</string>
+    <string name="book_uploading">Wird zum Server hinzugefügt…</string>
+    <string name="book_upload_failed">Das Buch hat den Server nicht erreicht.</string>
     <string name="book_format_and_size">%1$s · %2$s</string>
     <string name="book_progress_percent">· %1$d\u00A0%</string>
     <string name="format_pdf">PDF</string>
@@ -248,6 +256,7 @@
     <string name="selection_unfavourite">Aus Favoriten entfernen</string>
     <string name="selection_mark_unread">Als ungelesen markieren</string>
     <string name="selection_delete">Aus der Bibliothek löschen</string>
+    <string name="selection_upload">Zum Server hinzufügen</string>
     <string name="reader_close_book">Buch schließen</string>
     <string name="reader_close_the_book">Das Buch schließen</string>
     <string name="reader_contents">Inhalt</string>

@@ -9,14 +9,18 @@ import io.lukia.shared.presentation.theme.LukiaTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/** What a server book's page offers in place of reading it, in each state of fetching it. */
+/** What a book on only one side offers - fetching it down, or sending it up - in each state of doing so. */
 @OptIn(ExperimentalTestApi::class)
-class BookDownloadRowTest {
+class BookTransferRowTest {
 
-    private fun ComposeUiTest.show(state: BookDownload, actions: BookDownloadActions = BookDownloadActions()) {
+    private fun ComposeUiTest.show(
+        state: BookTransfer,
+        actions: BookTransferActions = BookTransferActions(),
+        direction: TransferDirection = TransferDirection.Download,
+    ) {
         setContent {
             LukiaTheme(darkTheme = false) {
-                BookDownloadRow(state = state, actions = actions)
+                BookTransferRow(direction = direction, state = state, actions = actions)
             }
         }
     }
@@ -24,7 +28,7 @@ class BookDownloadRowTest {
     @Test
     fun aBookNotFetchedYetOffersToDownload() = runComposeUiTest {
         var started = false
-        show(BookDownload.Idle, BookDownloadActions(onStart = { started = true }))
+        show(BookTransfer.Idle, BookTransferActions(onStart = { started = true }))
 
         onNodeWithText("Download").performClick()
 
@@ -34,7 +38,7 @@ class BookDownloadRowTest {
     @Test
     fun aDownloadUnderWaySaysHowFarAndCanBeCancelled() = runComposeUiTest {
         var cancelled = false
-        show(BookDownload.Running(0.42f), BookDownloadActions(onCancel = { cancelled = true }))
+        show(BookTransfer.Running(0.42f), BookTransferActions(onCancel = { cancelled = true }))
 
         onNodeWithText("Downloading… 42%").assertExists()
         onNodeWithText("Cancel").performClick()
@@ -45,11 +49,28 @@ class BookDownloadRowTest {
     @Test
     fun aFailedDownloadSaysSoAndOffersToTryAgain() = runComposeUiTest {
         var retried = false
-        show(BookDownload.Failed, BookDownloadActions(onStart = { retried = true }))
+        show(BookTransfer.Failed, BookTransferActions(onStart = { retried = true }))
 
         onNodeWithText("The download did not finish.").assertExists()
         onNodeWithText("Try again").performClick()
 
         assertEquals(true, retried)
+    }
+
+    @Test
+    fun aBookOnlyOnThisDeviceOffersToGoToTheServer() = runComposeUiTest {
+        var started = false
+        show(BookTransfer.Idle, BookTransferActions(onStart = { started = true }), TransferDirection.Upload)
+
+        onNodeWithText("Add to server").performClick()
+
+        assertEquals(true, started)
+    }
+
+    @Test
+    fun aFailedUploadSaysSo() = runComposeUiTest {
+        show(BookTransfer.Failed, direction = TransferDirection.Upload)
+
+        onNodeWithText("The book did not reach the server.").assertExists()
     }
 }

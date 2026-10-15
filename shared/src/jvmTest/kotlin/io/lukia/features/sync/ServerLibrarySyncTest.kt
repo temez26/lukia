@@ -18,8 +18,10 @@ import io.lukia.features.account.infrastructure.serverHttpClient
 import io.lukia.features.library.infrastructure.SqlContentHashStore
 import io.lukia.features.library.infrastructure.SqlLibraryRepository
 import io.lukia.features.library.infrastructure.SqlServerShelf
+import io.lukia.features.library.infrastructure.importing.DesktopDocumentAnalyzer
 import io.lukia.features.sync.application.DownloadServerBookUseCase
 import io.lukia.features.sync.application.PullServerLibraryUseCase
+import io.lukia.features.sync.application.UploadServerBookUseCase
 import io.lukia.features.sync.infrastructure.ServerLibraryApi
 import io.lukia.features.sync.infrastructure.SyncCursors
 import kotlinx.coroutines.Dispatchers
@@ -52,6 +54,14 @@ class ServerLibrarySyncTest {
     private val changes = ShelfChanges()
     private val pull = PullServerLibraryUseCase(session, api, shelf, files, cursors, changes)
     private val download = DownloadServerBookUseCase(session, api, shelf, files, changes)
+    private val upload = UploadServerBookUseCase(
+        session,
+        api,
+        library,
+        DesktopDocumentAnalyzer(),
+        shelf,
+        changes,
+    )
 
     private val epub = MinimalEpub.book()
     private val epubHash = sha256(epub)
@@ -172,6 +182,39 @@ class ServerLibrarySyncTest {
         assertFalse(library.getDocuments().single().exists)
     }
 
+    @Test
+    fun aBookOnTheDeviceGoesToTheServerAndIsKnownToBeThere() = runBlocking {
+        val local = File(downloads, "my-copy.epub").apply { writeBytes(epub) }
+        library.addDocument(localBook("my-copy.epub", local))
+        signInAndUpload()
+        val progress = mutableListOf<Float>()
+
+        upload.upload(local.path) { progress += it }
+        pull()
+
+        val only = library.getDocuments().single()
+        assertEquals(local.path, only.document.location)
+        assertTrue(only.onServer)
+        assertEquals(local.path, shelf.locationOf(epubHash))
+        assertEquals(1f, progress.last())
+        val onServer = session.authorized { address, token -> api.changes(address, token, since = 0) }.items
+        assertEquals(listOf(epubHash), onServer.map { it.id })
+        assertEquals(MinimalEpub.TITLE, onServer.single().title)
+    }
+
+    @Test
+    fun aBookWhoseFileIsGoneIsNotSent() = runBlocking {
+        val gone = File(downloads, "gone.epub")
+        library.addDocument(localBook("gone.epub", gone))
+        signInAndUpload()
+
+        runCatching { upload.upload(gone.path) {} }
+            .onSuccess { error("a book with no file should not reach the server") }
+            .onFailure { assertTrue(it is AppErrorException) }
+
+        assertFalse(library.getDocuments().single().onServer)
+    }
+
     /** Sets the server up as `admin`, signs this device in, and uploads [books]. Answers the admin's token. */
     private suspend fun signInAndUpload(vararg books: Pair<String, ByteArray>): String {
         session.setUp(server.address, "admin", "correct horse battery")
@@ -184,6 +227,13 @@ class ServerLibrarySyncTest {
     private suspend fun removeOnServer(token: String, id: String) {
         server.remove(token, id)
     }
+
+    private fun localBook(name: String, file: File) = DocumentInfo(
+        document = PickedDocument(name, "epub", file.path),
+        type = DocumentType.EPUB,
+        exists = true,
+        sizeBytes = file.length(),
+    )
 
     private fun sha256(bytes: ByteArray) =
         MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }

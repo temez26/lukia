@@ -8,17 +8,19 @@ import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.domain.document.PickedDocument
 import io.lukia.core.infrastructure.importing.DocumentContents
+import io.lukia.core.infrastructure.importing.DocumentSource
 import io.lukia.core.infrastructure.importing.extractContents
 import io.lukia.core.infrastructure.sha256Hex
 import io.lukia.features.library.domain.ContentHasher
 import io.lukia.features.library.domain.DocumentAnalyzer
+import io.lukia.features.library.infrastructure.BookFileReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class AndroidDocumentAnalyzer(
     private val context: Context,
     private val diagnostics: Diagnostics = Diagnostics.None,
-) : DocumentAnalyzer, ContentHasher {
+) : DocumentAnalyzer, ContentHasher, BookFileReader {
 
     override suspend fun exists(document: PickedDocument): Boolean =
         withContext(Dispatchers.IO) { sizeOf(Uri.parse(document.location)) != null }
@@ -55,10 +57,12 @@ class AndroidDocumentAnalyzer(
         )
     }
 
+    override suspend fun open(document: PickedDocument): DocumentSource? =
+        withContext(Dispatchers.IO) { AndroidDocumentSource.open(context, Uri.parse(document.location)) }
+
     /** Read through the same source the import opens, a window at a time - see [sha256Hex]. */
     override suspend fun contentHash(document: PickedDocument): String? = withContext(Dispatchers.IO) {
-        AndroidDocumentSource.open(context, Uri.parse(document.location))
-            ?.use { source -> runCatching { source.sha256Hex() }.getOrNull() }
+        open(document)?.use { source -> runCatching { source.sha256Hex() }.getOrNull() }
     }
 
     private suspend fun openedSource(uri: Uri): AndroidDocumentSource? =
