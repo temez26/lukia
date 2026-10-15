@@ -17,7 +17,7 @@ Each release publishes an image to the GitHub container registry:
 docker run -d --name lukia -p 8080:8080 -v lukia-data:/data --restart unless-stopped ghcr.io/temez26/lukia-server:latest
 ```
 
-Pin a version (`:1.1.0`) rather than `latest` if you want upgrades to happen
+Pin a version (`:1.2.0`) rather than `latest` if you want upgrades to happen
 only when you choose.
 
 To build the image yourself from a checkout:
