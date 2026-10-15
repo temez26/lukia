@@ -16,10 +16,10 @@ DEVELOPMENT_TEAM=$(TEAM_ID)
 // document picker arrived, and Compose Multiplatform's is lower still.
 IPHONEOS_DEPLOYMENT_TARGET=15.0
 
-CURRENT_PROJECT_VERSION=2
+CURRENT_PROJECT_VERSION=3
 // Outside Gradle's reach, so this is the one copy that has to be changed by
 // hand - keep it equal to `lukia.version` in gradle.properties.
-MARKETING_VERSION=1.0.1
+MARKETING_VERSION=1.1.0
 
 // Shared.framework is static, so the linker options its dependencies declare -
 // SQLDelight's native driver needs the system SQLite - do not travel with it and
