@@ -32,9 +32,10 @@ class BookStateService(
      *
      * Devices are told only when something was actually stored: a part that
      * lost to a newer one, or a change sent again, would otherwise send every
-     * device on the account round for nothing.
+     * device on the account round for nothing. [from] is the sign-in that sent
+     * it, which is not told of its own change.
      */
-    fun apply(accountId: Long, bookId: String, request: BookStateRequest): BookStateResponse {
+    fun apply(accountId: Long, bookId: String, request: BookStateRequest, from: Long? = null): BookStateResponse {
         validate(bookId, request)
 
         val (stored, changed) = database.transactionWithResult {
@@ -57,7 +58,7 @@ class BookStateService(
             after.toResponse() to (after.seq != seqBefore)
         }
 
-        if (changed) events.announce(ChangeKind.BookState, accountId)
+        if (changed) events.announce(ChangeKind.BookState, accountId, from)
         return stored
     }
 

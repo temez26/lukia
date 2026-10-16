@@ -5,6 +5,7 @@ import io.lukia.api.FavoritePart
 import io.lukia.api.ProgressPart
 import io.lukia.api.SessionRequest
 import io.lukia.server.TestClock
+import io.lukia.server.accounts.SignedInAccount
 import io.lukia.server.inMemoryDatabase
 import io.lukia.server.reading.BookStateService
 import io.lukia.server.reading.MobyDick
@@ -16,6 +17,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 /** What the reading services tell listening devices: something stored, and nothing else. */
 class ChangeAnnouncementsTest {
@@ -54,6 +57,20 @@ class ChangeAnnouncementsTest {
         sessions.record(accountId, SessionId, request.copy(durationMs = 90_000))
 
         assertEquals(2, announced().count { it.kind == ChangeKind.Sessions })
+    }
+
+    @Test
+    fun `a device hears the library's changes and its account's, but not its own`() {
+        val phone = SignedInAccount(id = 1, username = "alice", isAdmin = false, familyId = 10)
+        val laptop = phone.copy(familyId = 11)
+        val bob = SignedInAccount(id = 2, username = "bob", isAdmin = false, familyId = 20)
+        val turnedOnPhone = Change(ChangeKind.BookState, accountId = 1, from = 10)
+
+        assertFalse(turnedOnPhone.isFor(phone))
+        assertTrue(turnedOnPhone.isFor(laptop))
+        assertFalse(turnedOnPhone.isFor(bob))
+        assertTrue(Change(ChangeKind.Library, accountId = null, from = 20).isFor(phone))
+        assertTrue(Change(ChangeKind.Library, accountId = null).isFor(bob))
     }
 
     /** Runs [block] with a listener already subscribed, and hands it what was heard so far. */

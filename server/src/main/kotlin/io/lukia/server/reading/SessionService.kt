@@ -26,7 +26,7 @@ class SessionService(
      * Records the session, or lengthens it if it is already recorded. Its book,
      * start and title are the first send's: a sitting does not move.
      */
-    fun record(accountId: Long, id: String, request: SessionRequest): SessionResponse {
+    fun record(accountId: Long, id: String, request: SessionRequest, from: Long? = null): SessionResponse {
         validate(id, request)
 
         val (stored, changed) = database.transactionWithResult {
@@ -45,7 +45,7 @@ class SessionService(
         }
 
         // As for a book's state: only a session recorded or lengthened is news.
-        if (changed) events.announce(ChangeKind.Sessions, accountId)
+        if (changed) events.announce(ChangeKind.Sessions, accountId, from)
         return stored
     }
 

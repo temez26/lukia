@@ -38,7 +38,7 @@ fun Route.libraryRoutes(library: LibraryService, files: BookFiles, tokens: Token
             val upload = files.newIncoming()
             try {
                 val received = receiveUpload(call.receiveChannel(), upload, maxUploadBytes)
-                val added = blocking { library.add(received, name, call.account.id) }
+                val added = blocking { library.add(received, name, call.account.id, from = call.account.familyId) }
                 call.respond(if (added.isNew) HttpStatusCode.Created else HttpStatusCode.OK, added.book)
             } finally {
                 // Gone already when it became a book; this is for every way it did not.
@@ -58,7 +58,7 @@ fun Route.libraryRoutes(library: LibraryService, files: BookFiles, tokens: Token
 
         delete(ApiRoutes.Book) {
             call.requireAdmin()
-            blocking { library.delete(call.parameters.getOrFail("id")) }
+            blocking { library.delete(call.parameters.getOrFail("id"), from = call.account.familyId) }
             call.respond(HttpStatusCode.NoContent)
         }
     }
