@@ -53,6 +53,14 @@ class SyncCoordinator(
     /** One round at a time: two would send the same changes twice and race over the cursors. */
     private val oneAtATime = Mutex()
 
+    /**
+     * How many rounds have started. A request that finds one started after it
+     * was made is already answered - that round asked the server for
+     * everything this one would - so a burst of requests during a round costs
+     * one more round, not one each.
+     */
+    private val roundsStarted = MutableStateFlow(0L)
+
     /** Rounds that have failed in a row; while above zero, another is on its way. */
     private val failedRounds = MutableStateFlow(0)
 
@@ -64,11 +72,17 @@ class SyncCoordinator(
     @OptIn(FlowPreview::class)
     suspend fun run() = coroutineScope {
         launch {
+            // The status found at launch is not a sign-in: the app coming to the
+            // front catches up then (see `App`), and a round for it here as well
+            // was the same round twice, back to back.
+            var atLaunch = true
             session.status.collectLatest { status ->
+                val signingIn = !atLaunch
+                atLaunch = false
                 when (status) {
                     is AccountStatus.SignedIn -> {
                         syncSessions.signedIn()
-                        syncNow()
+                        if (signingIn) syncNow()
                     }
                     AccountStatus.SignedOut -> {
                         failedRounds.value = 0
@@ -122,9 +136,22 @@ class SyncCoordinator(
         }
     }
 
-    /** One round, now - see [SyncRoundUseCase]. Does nothing unless signed in. */
-    suspend fun syncNow() = oneAtATime.withLock {
-        if (session.status.value !is AccountStatus.SignedIn) return@withLock
+    /**
+     * One round, now - see [SyncRoundUseCase] - unless one has started since this
+     * was asked for. Does nothing unless signed in.
+     */
+    suspend fun syncNow() {
+        val askedAfter = roundsStarted.value
+        oneAtATime.withLock {
+            if (roundsStarted.value > askedAfter) return
+            runRound()
+        }
+    }
+
+    /** The round itself; [oneAtATime] is held. */
+    private suspend fun runRound() {
+        if (session.status.value !is AccountStatus.SignedIn) return
+        roundsStarted.value++
         _status.update { it.copy(running = true) }
 
         val failure = runCatchingApp { round() }.exceptionOrNull()

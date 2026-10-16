@@ -22,8 +22,10 @@ import io.lukia.features.library.infrastructure.importing.DesktopDocumentAnalyze
 import io.lukia.features.reader.infrastructure.SqlPdfLayoutRepository
 import io.lukia.features.reader.infrastructure.SqlReadingProgressRepository
 import io.lukia.features.reader.infrastructure.SqlReadingSessionRepository
+import io.lukia.features.sync.application.ForgetServerUseCase
 import io.lukia.features.sync.application.PullServerLibraryUseCase
 import io.lukia.features.sync.application.SyncBookStateUseCase
+import io.lukia.features.sync.application.SyncCoordinator
 import io.lukia.features.sync.application.SyncRoundUseCase
 import io.lukia.features.sync.application.SyncSessionsUseCase
 import io.lukia.features.sync.application.UploadNewBooksUseCase
@@ -31,12 +33,14 @@ import io.lukia.features.sync.application.UploadServerBookUseCase
 import io.lukia.features.sync.infrastructure.BookStateApi
 import io.lukia.features.sync.infrastructure.BookStateStore
 import io.lukia.features.sync.infrastructure.HistoryChoice
+import io.lukia.features.sync.infrastructure.ServerEvents
 import io.lukia.features.sync.infrastructure.ServerLibraryApi
 import io.lukia.features.sync.infrastructure.SessionApi
 import io.lukia.features.sync.infrastructure.SessionStore
 import io.lukia.features.sync.infrastructure.SyncCursors
 import io.lukia.features.sync.infrastructure.UploadChoice
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.emptyFlow
 import java.io.File
 import java.nio.file.Files
 
@@ -98,6 +102,16 @@ class SyncedDevice(private val server: TestSyncServer) : AutoCloseable {
     suspend fun pullLibrary() {
         pull()
     }
+
+    /** This device's coordinator, as the app wires it up, with nothing waiting to be sent. */
+    fun coordinator() = SyncCoordinator(
+        session = session,
+        round = round,
+        syncSessions = syncSessions,
+        forgetServer = ForgetServerUseCase(shelf, cursors, ShelfChanges()),
+        waiting = emptyFlow(),
+        events = ServerEvents(http),
+    )
 
     /** Everything, as the coordinator runs it. */
     suspend fun round() = round.invoke()
