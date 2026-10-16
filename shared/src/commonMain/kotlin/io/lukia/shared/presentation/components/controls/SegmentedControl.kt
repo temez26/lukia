@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -178,32 +179,69 @@ private fun Segment(
                 onClick = onClick,
             ),
     ) {
-        val style = MaterialTheme.typography.labelSmall
-
-        // Set at full size until it is seen not to fit. Shrinking to fit measures
-        // the label at several sizes on every layout, four to six times the work
-        // of setting it once, and almost every label fits.
-        var overflows by remember(text) { mutableStateOf(false) }
-
-        Text(
-            text = text,
-            style = style,
-            textAlign = TextAlign.Center,
-            maxLines = 1,
-            // Shrinks to fit before it is cut short. Five segments at the
-            // largest system text size came out as "Auss…" and "Über…"; a
-            // smaller whole word says what the segment is, half of one does not.
-            autoSize = if (overflows) {
-                TextAutoSize.StepBased(minFontSize = MinLabelSize, maxFontSize = style.fontSize)
-            } else {
-                null
-            },
-            onTextLayout = { layout -> if (layout.hasVisualOverflow) overflows = true },
-            overflow = TextOverflow.Ellipsis,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-            color = MaterialTheme.colorScheme.onSurface.copy(
-                alpha = if (enabled) 1f else LukiaAlpha.Disabled,
-            ),
-        )
+        SegmentLabel(text = text, width = width, selected = selected, enabled = enabled)
     }
+}
+
+/** How a segment's label is being fitted into its segment. */
+private enum class LabelFit {
+    /** At full size, which is where almost every label stays. */
+    Full,
+
+    /** Shrinking to fit, clipped rather than ellipsised so that the shrinking can see it does not fit. */
+    Shrinking,
+
+    /** At the smallest size and still too wide, so ellipsised there. */
+    Smallest,
+}
+
+/**
+ * A segment's word: at full size, shrunk until it fits, or at the smallest size
+ * with an ellipsis - in that order, each step taken only when the one before is
+ * seen not to fit.
+ *
+ * Five segments at the largest system text size came out as "Auss…" and
+ * "Über…"; a smaller whole word says what the segment is, half of one does not.
+ * Shrinking has to clip rather than ellipsise, because a label ellipsised to
+ * fit counts as fitting and is never shrunk. And it is not done until needed:
+ * it lays the label out at several sizes on every layout, four to six times the
+ * work of setting it once.
+ *
+ * Fitted afresh whenever the label, the segment's width or the system's text
+ * size changes, so a label shrunk in a narrow window grows back in a wide one.
+ */
+@Composable
+private fun SegmentLabel(
+    text: String,
+    width: Dp,
+    selected: Boolean,
+    enabled: Boolean,
+) {
+    val style = MaterialTheme.typography.labelSmall
+    var fit by remember(text, width, LocalDensity.current.fontScale) { mutableStateOf(LabelFit.Full) }
+
+    Text(
+        text = text,
+        style = if (fit == LabelFit.Smallest) style.copy(fontSize = MinLabelSize) else style,
+        textAlign = TextAlign.Center,
+        maxLines = 1,
+        autoSize = if (fit == LabelFit.Shrinking) {
+            TextAutoSize.StepBased(minFontSize = MinLabelSize, maxFontSize = style.fontSize)
+        } else {
+            null
+        },
+        onTextLayout = { layout ->
+            if (layout.hasVisualOverflow) {
+                fit = when (fit) {
+                    LabelFit.Full -> LabelFit.Shrinking
+                    LabelFit.Shrinking, LabelFit.Smallest -> LabelFit.Smallest
+                }
+            }
+        },
+        overflow = if (fit == LabelFit.Shrinking) TextOverflow.Clip else TextOverflow.Ellipsis,
+        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+        color = MaterialTheme.colorScheme.onSurface.copy(
+            alpha = if (enabled) 1f else LukiaAlpha.Disabled,
+        ),
+    )
 }

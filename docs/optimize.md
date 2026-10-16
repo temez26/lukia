@@ -58,9 +58,20 @@ logic.
 
 ## Found along the way
 
-Measuring finding 3 showed that shrink-to-fit, added in the polish pass, does
-not shrink a label that is too wide: with `TextOverflow.Ellipsis` a label cut
-short counts as fitting, so the selected "Appearance" in a 300dp control is
-still shown as "Appeara…". It shrank on a phone at 200% text only because the
-text overflowed in height there. This is a behaviour bug, not waste, so it was
-left for a separate change.
+Measuring finding 3 showed that shrink-to-fit, added in the polish pass, did
+not shrink a label that was too wide: with `TextOverflow.Ellipsis` a label cut
+short counted as fitting, so the selected "Appearance" in a 300dp control was
+shown as "Appeara…". It had only seemed to work on a phone at 200% text,
+where the label overflowed in height.
+
+Fixed separately: a label is set at full size, shrinks (clipped, so the
+shrinking can see it does not fit) when it overflows, and is ellipsised at the
+smallest size only if it still does not fit there. It is fitted afresh when
+the text, the segment's width or the system text size changes.
+`SegmentedControlFitTest` covers all three cases. Re-fitting on a width change
+costs some of finding 3's saving back: the same benchmark measures a median of
+771 ms (1017 ms originally, 670 ms with the earlier version that never shrank).
+
+Checked on a phone at 200% text: "Aussehen" now shrinks whole; "Appearance",
+"Translating" and "Übersetzen" do not fit even at the smallest size and are
+ellipsised there.
