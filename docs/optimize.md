@@ -198,3 +198,30 @@ Noticed on the way, not changed: the sync status card counts the held-back
 reading as waiting too, so it shows changes waiting that will not go until the
 reader answers; and the server logs a 500 when a device's event stream ends
 because the device went away.
+
+# Reader, library and import hashing
+
+**Date:** 2026-10-16
+**Scope:** the reader (pagination, page rendering, PDF text), the library
+(loading, covers, search) and the content hashing done at import and first sync.
+
+| # | Finding | Category | Location | Status |
+| --- | --- | --- | --- | --- |
+| R1 | After every page change it sends, the phone applies its own change again and reloads the library | Duplicate trigger | `SyncBookStateUseCase.receive`, `BookStateStore.apply*` | Open |
+| R2 | The library is rebuilt twice on every load | Recomputation | `LibraryViewModel.loadDocuments` | Open |
+| R3 | Two library loads at launch; overlapping loads are not cancelled | Duplicate trigger | `LibraryViewModel.init`, `HomeScreen` | Open |
+| R4 | Content hashing uses a common-code SHA-256, about 6x slower than the platform's on the JVM | Algorithm | `formats/.../Sha256.kt`, the import analysers | Open |
+| R5 | A book's figures are fully decoded to read their size during pagination, then decoded again to draw | Unneeded work | `RememberPagination.FigureShapes` | Open |
+| R6 | A cover shown twice at once on Home is decoded twice | Duplicate work | `CoverArtCache.artworkFor` | Won't fix |
+
+Checked and fine: search (precomputed keys, off the main thread), the page
+cache (in-flight sharing, LRU by pixels, widths stepped by 128 px), pagination
+(layouts reused, not redone for a theme, several workers), PDF text (stored
+beside the file after the first conversion) and covers (shrunk at import).
+
+**R4 measured** on the JVM, 64 MB: 172 ms common SHA-256, 29 ms
+`MessageDigest`. Not measured on a phone; the first sync after signing in
+spent about 50 s hashing a real library.
+
+**R6:** a few milliseconds the first time a book appears in two Home rows;
+sharing a decode in progress would add more than it saves.
