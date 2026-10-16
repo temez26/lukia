@@ -236,14 +236,10 @@
     <string name="sort_largest">Largest first</string>
 
     <string name="home_title">Home</string>
-    <string name="home_shelf_recent">Recent</string>
+    <string name="home_shelf_reading">Also Reading</string>
     <string name="home_shelf_recently_added">Recently Added</string>
-    <string name="home_shelf_almost_done">Almost Done</string>
     <string name="home_shelf_unread">Unread</string>
-    <string name="home_shelf_favorites">Favorites</string>
-    <string name="home_shelf_finished">Finished</string>
-    <string name="home_browse_by_category">Browse by Category</string>
-    <string name="home_see_all">See All</string>
+    <string name="search_browse_by_category">Browse by Category</string>
 
     <!-- The bar over the shelf. -->
     <string name="library_title">Library</string>
@@ -683,6 +679,7 @@
     <string name="figure_close">Close the illustration</string>
     <string name="figure_illustration">Illustration</string>
     <string name="home_see_all_shelf">See all %1$s</string>
+    <string name="home_resume">Resume</string>
     <string name="search_for_term">Search for %1$s</string>
     <string name="search_clear_recent">Clear recent searches</string>
     <string name="book_open_title">Open %1$s</string>

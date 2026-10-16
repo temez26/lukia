@@ -18,9 +18,9 @@ import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.presentation.UiState
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.model.HomeMenu
-import io.lukia.features.library.presentation.model.HomeRow
+import io.lukia.features.library.presentation.model.HomeLayout
 import io.lukia.features.library.presentation.model.LibraryQuery
-import io.lukia.features.library.presentation.model.homeRows
+import io.lukia.features.library.presentation.model.homeLayout
 import io.lukia.features.library.presentation.pickers.rememberPlatformFilePicker
 import io.lukia.features.library.presentation.pickers.rememberPlatformFolderPicker
 import io.lukia.features.library.presentation.sessions.HomeBookActions
@@ -37,8 +37,8 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
- * Where the mobile app opens: what you were reading, what has just arrived, what
- * is nearly done, and the rest of the library sampled a row at a time.
+ * Where the mobile app opens: the book being read, then what else is on the go,
+ * what has just arrived and what has not been started.
  *
  * A way back in rather than a place to work: a press opens the book, and a long
  * press offers the same menu the shelf hangs off its covers - one learned
@@ -47,8 +47,7 @@ import org.koin.compose.viewmodel.koinViewModel
  *
  * It draws from the shared library - see `MobileShell` - so the rows are already
  * loaded when the tab is first looked at, and favouriting a book on the library
- * tab moves it onto the Favorites row here without either screen telling the
- * other.
+ * tab shows its mark here without either screen telling the other.
  */
 @Composable
 internal fun HomeScreen(
@@ -65,7 +64,6 @@ internal fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val library by viewModel.library.collectAsState()
-    val facets by viewModel.facets.collectAsState()
 
     val filePicker = rememberPlatformFilePicker()
     val folderPicker = rememberPlatformFolderPicker()
@@ -84,7 +82,7 @@ internal fun HomeScreen(
     // Over the whole library rather than over what the library tab is narrowed
     // to: these rows are about the books themselves, and a filter somebody left
     // on another tab has nothing to say about where they stopped reading.
-    val rows = remember(library) { library.homeRows() }
+    val home = remember(library) { library.homeLayout() }
 
     val actions = remember(homeShelf, onOpenBook, onShowDetails, viewModel) {
         HomeBookActions(
@@ -99,7 +97,7 @@ internal fun HomeScreen(
 
     HomeContent(
         uiState = uiState,
-        rows = rows,
+        home = home,
         importing = rememberImportUi(viewModel),
         actions = actions,
         onSeeAll = onSeeAll,
@@ -110,7 +108,6 @@ internal fun HomeScreen(
             }
         },
         onRetry = viewModel::refresh,
-        categories = facets.categories,
         shelf = homeShelf,
         onSettings = onSettings,
         statsButton = statsButton,
@@ -118,21 +115,19 @@ internal fun HomeScreen(
 }
 
 /**
- * [rows] arrives already grouped and ordered - see `homeRows` - so this screen
+ * [home] arrives already grouped and ordered - see `homeLayout` - so this screen
  * only ever draws what it is handed.
  */
 @Composable
 internal fun HomeContent(
     uiState: UiState<List<DocumentInfo>>,
-    rows: List<HomeRow>,
+    home: HomeLayout,
     actions: HomeBookActions,
     onSeeAll: (LibraryQuery) -> Unit,
     onImport: () -> Unit,
     onImportFolder: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
-    /** The subjects worth browsing by, or empty where the library has none. */
-    categories: List<String> = emptyList(),
     /**
      * How far through a multi-file import the library is, when there is more
      * than one file to count. Defaulted to nothing so this screen still composes
@@ -170,9 +165,8 @@ internal fun HomeContent(
                 .padding(paddingValues),
         ) {
             when {
-                rows.isNotEmpty() -> HomeRows(
-                    rows = rows,
-                    categories = categories,
+                !home.isEmpty -> HomeRows(
+                    home = home,
                     actions = actions,
                     openMenu = menuOpen,
                     onOpenMenuChange = { menuOpen = it },

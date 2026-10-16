@@ -21,11 +21,8 @@ internal sealed interface HomeMenu {
     /**
      * One book's actions.
      *
-     * Named by the row as well as by the book. A shelf shows a book once, so
-     * there its location is enough; the home rows are samples of the same
-     * library taken different ways, and the book you are still reading is
-     * usually also the book that arrived most recently - so a location alone
-     * would open a menu on every row the book appears on at once.
+     * The location alone names it: the home screen shows each book once - see
+     * `homeLayout`.
      */
-    data class Book(val shelf: HomeShelf, val location: String) : HomeMenu
+    data class Book(val location: String) : HomeMenu
 }

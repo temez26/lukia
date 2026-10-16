@@ -29,7 +29,6 @@ import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.library.presentation.model.displayTitle
 import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.resources.Res
-import io.lukia.resources.home_see_all
 import io.lukia.resources.home_see_all_shelf
 import io.lukia.shared.presentation.components.controls.pressable
 import io.lukia.shared.presentation.components.icons.DisclosureChevron
@@ -37,21 +36,11 @@ import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 
-/**
- * How much larger a cover is drawn on the row a reader came back for than on
- * every other row.
- *
- * Where you left off is the reason the screen exists, so it is given the larger
- * card. The rows under it are a wall of jackets to scan, and a smaller cover
- * puts more of them within a flick.
- */
-private const val ContinueCardScale = 1.27f
-
-/** The chevron after "See All", at the size a label wears rather than a button. */
-private val SeeAllChevronSize: Dp = 14.dp
+/** The chevron after a row's title, at the size a heading wears rather than a button. */
+private val TitleChevronSize: Dp = 18.dp
 
 /**
- * One row of the home screen: what it is called, a way through to all of it, and
+ * One row of the home screen: its title, which leads through to all of it, and
  * the books themselves scrolling sideways.
  *
  * Sideways because a home screen is a summary. Three rows down the page, each
@@ -69,18 +58,6 @@ internal fun HomeShelfRow(
     modifier: Modifier = Modifier,
 ) {
     val dimens = LocalLukiaDimens.current
-
-    // Off the same measurement the library grid sizes its cells from, rather
-    // than off two constants of its own. Written as fixed dp, a home row stayed
-    // at phone proportions on every window the app opens in: an iPad running
-    // the mobile shell grew its shelf to 142dp cells and went on sampling them
-    // at 104, so the two screens showing the same books disagreed about how big
-    // a book is. Identical on a phone, which is where these numbers came from.
-    val cardWidth = if (row.shelf == HomeShelf.Recent) {
-        dimens.bookCellMinWidth * ContinueCardScale
-    } else {
-        dimens.bookCellMinWidth
-    }
 
     Column(modifier = modifier.fillMaxWidth()) {
         RowHeader(
@@ -106,13 +83,13 @@ internal fun HomeShelfRow(
             ) { book ->
                 HomeBookCard(
                     book = book,
-                    width = cardWidth,
+                    // Off the measurement the library grid sizes its cells
+                    // from, so both screens agree how big a book is.
+                    width = dimens.bookCellMinWidth,
                     actions = actions,
-                    menuExpanded = openMenu == HomeMenu.Book(row.shelf, book.location),
+                    menuExpanded = openMenu == HomeMenu.Book(book.location),
                     onMenuExpandedChange = { expanded ->
-                        onOpenMenuChange(
-                            HomeMenu.Book(row.shelf, book.location).takeIf { expanded },
-                        )
+                        onOpenMenuChange(HomeMenu.Book(book.location).takeIf { expanded })
                     },
                 )
             }
@@ -121,12 +98,12 @@ internal fun HomeShelfRow(
 }
 
 /**
- * The row's name, and the way to the whole of what it is a sample of.
+ * The row's name, as the way to the whole of what it is a sample of.
  *
- * "See All" lands on the library tab already narrowed to this row's subject -
- * see [HomeShelf.seeAll]. It is a way deeper into the same idea rather than a
- * different screen, which is why it is a quiet label beside the heading and not
- * a button.
+ * The title itself is the link, with a quiet chevron after it, rather than a
+ * "See All" label beside it: one per row put the accent colour down the screen
+ * six times, competing with the covers it was meant to lead past. The press
+ * lands on the library tab already narrowed to this row - see [HomeShelf.seeAll].
  */
 @Composable
 private fun RowHeader(
@@ -139,44 +116,33 @@ private fun RowHeader(
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .clip(shape)
+            .pressable(
+                interactionSource = interactionSource,
+                shape = shape,
+                onClickLabel = stringResource(Res.string.home_see_all_shelf, title),
+                onClick = onSeeAll,
+            )
+            .padding(vertical = Space.xxs),
     ) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f, fill = false),
         )
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+        Spacer(modifier = Modifier.size(Space.xs))
+
+        // The app's one disclosure mark, turned to point the way this control
+        // goes rather than drawn a second time facing sideways.
+        DisclosureChevron(
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
-                .clip(shape)
-                .pressable(
-                    interactionSource = interactionSource,
-                    shape = shape,
-                    onClickLabel = stringResource(Res.string.home_see_all_shelf, title),
-                    onClick = onSeeAll,
-                )
-                .padding(horizontal = Space.xs, vertical = Space.xxs),
-        ) {
-            Text(
-                text = stringResource(Res.string.home_see_all),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary,
-            )
-
-            Spacer(modifier = Modifier.size(Space.xxs))
-
-            // The app's one disclosure mark, turned to point the way this
-            // control goes rather than drawn a second time facing sideways.
-            DisclosureChevron(
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .size(SeeAllChevronSize)
-                    .graphicsLayer { rotationZ = -90f },
-            )
-        }
+                .size(TitleChevronSize)
+                .graphicsLayer { rotationZ = -90f },
+        )
     }
 }
