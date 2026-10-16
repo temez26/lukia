@@ -31,14 +31,17 @@ import io.lukia.features.library.presentation.model.LibraryBook
 import io.lukia.resources.Res
 import io.lukia.resources.library_no_matches_term
 import io.lukia.resources.library_no_results_title
+import io.lukia.resources.menu_book_details
 import io.lukia.resources.search_empty_message
 import io.lukia.resources.search_empty_title
 import io.lukia.resources.search_placeholder
+import io.lukia.resources.search_result_count
 import io.lukia.shared.presentation.components.surface.EmptyState
 import io.lukia.shared.presentation.components.surface.SectionLabel
 import io.lukia.shared.presentation.theme.Clearance
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -242,7 +245,7 @@ private fun SearchResults(
     ) {
         item(key = "count", contentType = "count") {
             SectionLabel(
-                text = resultCount(results.size),
+                text = pluralStringResource(Res.plurals.search_result_count, results.size, results.size),
                 modifier = Modifier.padding(bottom = Space.sm),
             )
         }
@@ -259,13 +262,11 @@ private fun SearchResults(
                 // press that is not "open it" is "tell me more" rather than the
                 // shelf-keeping menu the library tab offers.
                 onMenuRequest = { onShowDetails(book) },
-                longClickLabel = "Book details",
+                longClickLabel = stringResource(Res.string.menu_book_details),
             )
         }
     }
 }
-
-private fun resultCount(size: Int): String = if (size == 1) "1 result" else "$size results"
 
 @Composable
 private fun SearchNotice(

@@ -3,6 +3,7 @@ package io.lukia.features.library.presentation.model
 import androidx.compose.runtime.Immutable
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.reading.ReadingProgress
+import io.lukia.core.presentation.bookTitle
 import io.lukia.core.presentation.displayTitle
 import io.lukia.shared.presentation.components.cover.CoverArtSource
 
@@ -35,8 +36,8 @@ data class LibraryBook(
     val progress: ReadingProgress? = null,
     /**
      * Everything the search field matches against, lower-cased and newline
-     * separated: the title on the card, the title the document declares if it
-     * differs, and everyone credited with writing it.
+     * separated: the title on the card, the file's name if it differs, and
+     * everyone credited with writing it.
      */
     val searchKey: String = "",
     /** The title as the card shows it, lower-cased, for ordering. */
@@ -89,8 +90,8 @@ fun List<DocumentInfo>.asLibrary(
 ): List<LibraryBook> =
     map { document ->
         val metadata = document.metadata
-        val title = document.displayTitle()
-        val declaredTitle = metadata?.title?.takeIf { !it.equals(title, ignoreCase = true) }
+        val title = document.bookTitle()
+        val fileTitle = document.displayTitle().takeIf { !it.equals(title, ignoreCase = true) }
 
         LibraryBook(
             document = document,
@@ -98,7 +99,7 @@ fun List<DocumentInfo>.asLibrary(
             progress = progress[document.document.location],
             searchKey = buildList {
                 add(title)
-                declaredTitle?.let(::add)
+                fileTitle?.let(::add)
                 metadata?.authors?.let(::addAll)
             }.joinToString(separator = "\n").lowercase(),
             sortTitle = title.lowercase(),

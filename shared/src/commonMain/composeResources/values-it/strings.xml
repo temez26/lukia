@@ -175,6 +175,7 @@
     <string name="library_close_menu">Chiudi il menu</string>
     <string name="library_import_books">Importa libri</string>
     <string name="library_add_folder">Aggiungi cartella</string>
+    <string name="library_add_books">Aggiungi libri</string>
     <string name="library_importing">Importazione…</string>
     <string name="library_importing_count">Importazione di %1$d di %2$d…</string>
     <string name="library_import_stop">Interrompi</string>
@@ -204,6 +205,10 @@
     <string name="search_empty_title">Cerca nella tua libreria</string>
     <string name="search_empty_message">Scrivi un titolo o un autore per trovare un libro.</string>
     <string name="library_no_results_title">Nessun risultato</string>
+    <plurals name="search_result_count">
+        <item quantity="one">1 risultato</item>
+        <item quantity="other">%1$d risultati</item>
+    </plurals>
     <string name="library_no_matches_filtered">Niente nella tua libreria corrisponde a tutti i filtri che hai messo.</string>
     <string name="library_no_matches_term">Nessun libro corrisponde a \u00AB%1$s\u00BB.</string>
     <string name="library_no_matches_filtered_term">Non resta niente che corrisponda a \u00AB%1$s\u00BB una volta applicati i tuoi filtri.</string>
@@ -267,7 +272,12 @@
     <string name="reader_percent_read">%1$d per cento letto</string>
     <string name="reader_percent">%1$d%</string>
     <string name="reader_percent_start">0</string>
+    <string name="reader_opening">Apertura…</string>
+    <string name="reader_reading_text">Lettura del testo… pagina %1$d di %2$d</string>
     <string name="reader_chapters">Capitoli</string>
+    <string name="reader_chapters_loading">Lettura dei capitoli…</string>
+    <string name="reader_chapters_unavailable">Impossibile leggere i capitoli di questo documento.</string>
+    <string name="reader_chapters_none">Questo documento non ha capitoli.</string>
     <string name="reader_collapse_all">Comprimi tutto</string>
     <string name="reader_expand_all">Espandi tutto</string>
     <string name="reader_show_sections_of">Mostra le sezioni di %1$s</string>

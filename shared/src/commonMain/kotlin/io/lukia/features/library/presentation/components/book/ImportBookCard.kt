@@ -25,11 +25,15 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.hideFromAccessibility
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import io.lukia.features.library.presentation.components.toolbar.ImportMenuRows
 import io.lukia.resources.Res
+import io.lukia.resources.library_add_books
 import io.lukia.resources.library_import_books
 import io.lukia.shared.presentation.components.controls.focusRing
 import io.lukia.shared.presentation.components.controls.rememberHoverFraction
@@ -71,7 +75,7 @@ internal fun ImportBookCard(
     reveal: LaunchReveal,
     revealIndex: Int,
     modifier: Modifier = Modifier,
-    label: String? = "Add Books",
+    label: String? = stringResource(Res.string.library_add_books),
 ) {
     val scope = rememberCoroutineScope()
     val openAngle = remember { Animatable(0f) }
@@ -79,6 +83,7 @@ internal fun ImportBookCard(
     val interactionSource = remember { MutableInteractionSource() }
     val hover = rememberHoverFraction(interactionSource)
     val shape = MaterialTheme.shapes.medium
+    val name = label ?: stringResource(Res.string.library_add_books)
 
     // Warms to the accent colour under a pointer, confirming the card is a
     // control rather than an empty slot. Interpolated on the hover fraction so
@@ -131,6 +136,9 @@ internal fun ImportBookCard(
                         shape = shape,
                     )
                     .focusRing(interactionSource, shape)
+                    // Named even where no caption is shown under it, as on an
+                    // empty shelf, so it is not announced as a bare "button".
+                    .semantics { contentDescription = name }
                     .clickable(
                         interactionSource = interactionSource,
                         indication = null,
@@ -173,7 +181,10 @@ internal fun ImportBookCard(
                 // caption sits on the same line as its neighbours'.
                 minLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(top = Space.md),
+                modifier = Modifier
+                    .padding(top = Space.md)
+                    // The cover above already says it, as its name.
+                    .semantics { hideFromAccessibility() },
             )
         }
     }

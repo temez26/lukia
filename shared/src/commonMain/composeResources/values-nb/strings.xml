@@ -175,6 +175,7 @@
     <string name="library_close_menu">Lukk menyen</string>
     <string name="library_import_books">Importer bøker</string>
     <string name="library_add_folder">Legg til mappe</string>
+    <string name="library_add_books">Legg til bøker</string>
     <string name="library_importing">Importerer…</string>
     <string name="library_importing_count">Importerer %1$d av %2$d…</string>
     <string name="library_import_stop">Stopp</string>
@@ -204,6 +205,10 @@
     <string name="search_empty_title">Søk i biblioteket ditt</string>
     <string name="search_empty_message">Skriv en tittel eller en forfatter for å finne en bok.</string>
     <string name="library_no_results_title">Ingen treff</string>
+    <plurals name="search_result_count">
+        <item quantity="one">1 treff</item>
+        <item quantity="other">%1$d treff</item>
+    </plurals>
     <string name="library_no_matches_filtered">Ingenting i biblioteket ditt passer med alle filtrene du har satt.</string>
     <string name="library_no_matches_term">Ingen bøker passer med «%1$s».</string>
     <string name="library_no_matches_filtered_term">Ingenting som passer med «%1$s» står igjen når filtrene dine brukes.</string>
@@ -267,7 +272,12 @@
     <string name="reader_percent_read">%1$d prosent lest</string>
     <string name="reader_percent">%1$d\u00A0%</string>
     <string name="reader_percent_start">0</string>
+    <string name="reader_opening">Åpner…</string>
+    <string name="reader_reading_text">Leser tekst… side %1$d av %2$d</string>
     <string name="reader_chapters">Kapitler</string>
+    <string name="reader_chapters_loading">Leser kapitler…</string>
+    <string name="reader_chapters_unavailable">Kapitlene kunne ikke leses fra dette dokumentet.</string>
+    <string name="reader_chapters_none">Dette dokumentet har ingen kapitler.</string>
     <string name="reader_collapse_all">Slå sammen alle</string>
     <string name="reader_expand_all">Utvid alle</string>
     <string name="reader_show_sections_of">Vis delene i %1$s</string>

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -20,11 +21,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentType
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -58,6 +64,11 @@ private val FieldPadding: Dp = 12.dp
  * Reported as it is typed rather than on a save button. Storing per keystroke is
  * cheap - short strings in the same store as every other preference - and a key
  * pasted in works on the very next tap in the reader.
+ *
+ * [autofill] tells a password manager what the field holds, which is what lets it
+ * offer a saved account at all. [imeAction] and [onImeAction] make the
+ * keyboard's action key move through a form and submit it from the last field,
+ * rather than every field simply putting the keyboard away.
  */
 @Composable
 internal fun SettingsTextField(
@@ -66,6 +77,12 @@ internal fun SettingsTextField(
     placeholder: String,
     modifier: Modifier = Modifier,
     secret: Boolean = false,
+    autofill: ContentType? = null,
+    imeAction: ImeAction = ImeAction.Done,
+    /** Replaces the action key's own behaviour; left null, Done closes the keyboard. */
+    onImeAction: (() -> Unit)? = null,
+    /** How a form moves here from the field before, since Next would stop on that field's clear button. */
+    focusRequester: FocusRequester? = null,
 ) {
     var revealed by remember { mutableStateOf(false) }
     val masked = secret && !revealed
@@ -116,10 +133,19 @@ internal fun SettingsTextField(
                 // capitalises the first character of one produces a value that
                 // is silently rejected.
                 keyboardOptions = KeyboardOptions(
-                    keyboardType = if (secret) KeyboardType.Password else KeyboardType.Uri,
-                    imeAction = ImeAction.Done,
+                    keyboardType = keyboardFor(secret, autofill),
+                    imeAction = imeAction,
+                    autoCorrectEnabled = false,
                 ),
-                modifier = Modifier.fillMaxWidth().padding(vertical = Space.sm),
+                keyboardActions = onImeAction?.let { action -> KeyboardActions(onAny = { action() }) }
+                    ?: KeyboardActions.Default,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = Space.sm)
+                    .then(if (focusRequester == null) Modifier else Modifier.focusRequester(focusRequester))
+                    .then(
+                        if (autofill == null) Modifier else Modifier.semantics { contentType = autofill },
+                    ),
             )
         }
 
@@ -141,6 +167,16 @@ internal fun SettingsTextField(
             }
         }
     }
+}
+
+/**
+ * A name is typed on the ordinary keyboard: the address keyboard this field
+ * otherwise uses puts "/" and ".com" where a username wants its letters.
+ */
+private fun keyboardFor(secret: Boolean, autofill: ContentType?): KeyboardType = when {
+    secret -> KeyboardType.Password
+    autofill == ContentType.Username -> KeyboardType.Text
+    else -> KeyboardType.Uri
 }
 
 /**

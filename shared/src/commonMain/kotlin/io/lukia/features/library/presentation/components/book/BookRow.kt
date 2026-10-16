@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.sp
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.core.presentation.authorLine
-import io.lukia.core.presentation.displayTitle
+import io.lukia.core.presentation.bookTitle
 import io.lukia.core.presentation.displayType
 import io.lukia.core.presentation.formattedSize
 import io.lukia.features.library.presentation.components.selection.CardSelection
@@ -33,6 +33,7 @@ import io.lukia.features.library.presentation.components.selection.SelectionMark
 import io.lukia.features.library.presentation.model.LibraryBook
 import io.lukia.features.library.presentation.screens.BookTransfer
 import io.lukia.resources.Res
+import io.lukia.resources.book_actions
 import io.lukia.resources.book_format_and_size
 import io.lukia.resources.book_progress_percent
 import io.lukia.shared.presentation.components.controls.ReadingProgressBar
@@ -85,14 +86,14 @@ internal fun BookRow(
      * a list of search results offers what the book is, and a screen reader
      * should say which of the two this row is.
      */
-    longClickLabel: String = "Book actions",
+    longClickLabel: String = stringResource(Res.string.book_actions),
     /** How this row takes part in selection, or null when nothing is being selected. */
     selection: CardSelection? = null,
     /** The book on its way down from the server, or null when it is not. */
     transfer: BookTransfer? = null,
 ) {
     val document = book.document
-    val title = document.displayTitle()
+    val title = document.bookTitle()
     val interactionSource = remember { MutableInteractionSource() }
     val shape = MaterialTheme.shapes.medium
 

@@ -242,7 +242,7 @@ internal fun ReaderContent(
                         // Reading a PDF's text is the one opening long enough to
                         // count: the whole file is read before the first page can
                         // be laid out.
-                        loadingMessage = layout.loadingMessage,
+                        loadingMessage = layout.loadingMessage(),
                         // Opening can fail on something worth a second attempt - a
                         // copy that could not be written, a file being read as it is
                         // moved.

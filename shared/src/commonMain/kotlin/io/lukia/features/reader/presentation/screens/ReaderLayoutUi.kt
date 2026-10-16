@@ -1,8 +1,13 @@
 package io.lukia.features.reader.presentation.screens
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import io.lukia.core.domain.reading.PdfLayout
 import io.lukia.features.reader.domain.text.TextExtraction
+import io.lukia.resources.Res
+import io.lukia.resources.reader_opening
+import io.lukia.resources.reader_reading_text
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * What the screen needs to know about how this book is being read, gathered so
@@ -37,8 +42,8 @@ internal data class ReaderLayoutUi(
      * six-hundred page book is indistinguishable from one that has hung.
      * Everything else opens quickly enough to say only that it is opening.
      */
-    val loadingMessage: String
-        get() = converting
-            ?.let { "Reading text… page ${it.pagesRead} of ${it.pageCount}" }
-            ?: "Opening…"
+    @Composable
+    fun loadingMessage(): String = converting
+        ?.let { stringResource(Res.string.reader_reading_text, it.pagesRead, it.pageCount) }
+        ?: stringResource(Res.string.reader_opening)
 }

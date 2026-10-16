@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.zIndex
 import io.lukia.core.domain.document.DocumentInfo
-import io.lukia.core.presentation.displayTitle
+import io.lukia.core.presentation.bookTitle
 import io.lukia.core.presentation.displayType
 import io.lukia.core.presentation.formattedSize
 import io.lukia.core.presentation.statusLabel
@@ -92,7 +92,7 @@ internal fun BookCard(
     transfer: BookTransfer? = null,
 ) {
     val document = book.document
-    val title = document.displayTitle()
+    val title = document.bookTitle()
 
     val interactionSource = remember { MutableInteractionSource() }
     val hover = rememberHoverFraction(interactionSource)

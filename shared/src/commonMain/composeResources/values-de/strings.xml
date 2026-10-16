@@ -176,6 +176,7 @@
     <string name="library_close_menu">Menü schließen</string>
     <string name="library_import_books">Bücher importieren</string>
     <string name="library_add_folder">Ordner hinzufügen</string>
+    <string name="library_add_books">Bücher hinzufügen</string>
     <string name="library_importing">Wird importiert…</string>
     <string name="library_importing_count">%1$d von %2$d werden importiert…</string>
     <string name="library_import_stop">Anhalten</string>
@@ -205,6 +206,10 @@
     <string name="search_empty_title">In Ihrer Bibliothek suchen</string>
     <string name="search_empty_message">Geben Sie einen Titel oder einen Autor ein, um ein Buch zu finden.</string>
     <string name="library_no_results_title">Keine Treffer</string>
+    <plurals name="search_result_count">
+        <item quantity="one">1 Treffer</item>
+        <item quantity="other">%1$d Treffer</item>
+    </plurals>
     <string name="library_no_matches_filtered">Nichts in Ihrer Bibliothek passt zu allen gesetzten Filtern.</string>
     <string name="library_no_matches_term">Keine Bücher passen zu \u201E%1$s\u201C.</string>
     <string name="library_no_matches_filtered_term">Zu \u201E%1$s\u201C bleibt nichts übrig, sobald Ihre Filter angewendet werden.</string>
@@ -268,7 +273,12 @@
     <string name="reader_percent_read">%1$d Prozent gelesen</string>
     <string name="reader_percent">%1$d\u00A0%</string>
     <string name="reader_percent_start">0</string>
+    <string name="reader_opening">Wird geöffnet…</string>
+    <string name="reader_reading_text">Text wird gelesen… Seite %1$d von %2$d</string>
     <string name="reader_chapters">Kapitel</string>
+    <string name="reader_chapters_loading">Kapitel werden gelesen…</string>
+    <string name="reader_chapters_unavailable">Die Kapitel konnten aus diesem Dokument nicht gelesen werden.</string>
+    <string name="reader_chapters_none">Dieses Dokument hat keine Kapitel.</string>
     <string name="reader_collapse_all">Alle einklappen</string>
     <string name="reader_expand_all">Alle ausklappen</string>
     <string name="reader_show_sections_of">Abschnitte von %1$s anzeigen</string>
@@ -418,7 +428,7 @@
     <string name="stats_entry">Ihr Lesen</string>
     <string name="stats_title">Lesen</string>
     <string name="stats_footnote">Wird auf diesem Gerät gezählt und bleibt hier.</string>
-    <string name="stats_footnote_synced">Wird auf jedem Gerät gezählt, das mit deinem Konto angemeldet ist.</string>
+    <string name="stats_footnote_synced">Wird auf jedem Gerät gezählt, das mit Ihrem Konto angemeldet ist.</string>
     <string name="stats_time_none">Noch nichts</string>
     <string name="stats_time_under_a_minute">Unter einer Minute</string>
     <string name="stats_time_minutes">%1$d\u00A0min</string>
@@ -499,7 +509,7 @@
     <!-- Settings > Account: signing in to a sync server. -->
     <string name="account_area">Konto</string>
     <string name="account_title">Sync-Server</string>
-    <string name="account_footnote">Melde dich bei einem Lukia-Server an, damit deine Stelle in jedem Buch und deine Lesestatistik auf all deinen Geräten dabei sind. Ohne Server bleibt alles auf diesem Gerät.</string>
+    <string name="account_footnote">Melden Sie sich bei einem Lukia-Server an, damit Ihre Stelle in jedem Buch und Ihre Lesestatistik auf all Ihren Geräten dabei sind. Ohne Server bleibt alles auf diesem Gerät.</string>
     <string name="account_username">Benutzername</string>
     <string name="account_password">Passwort</string>
     <string name="account_invite_code">Einladungscode</string>
@@ -507,32 +517,32 @@
     <string name="account_signing_in">Wird angemeldet…</string>
     <string name="account_create">Konto erstellen</string>
     <string name="account_create_admin">Admin-Konto erstellen</string>
-    <string name="account_setup_footnote">%1$s hat noch keine Konten. Das Konto, das du jetzt erstellst, verwaltet den Server.</string>
+    <string name="account_setup_footnote">%1$s hat noch keine Konten. Das Konto, das Sie jetzt erstellen, verwaltet den Server.</string>
     <string name="account_use_invite">Ich habe einen Einladungscode</string>
     <string name="account_use_password">Ich habe schon ein Konto</string>
     <string name="account_signed_in">Bei %1$s angemeldet als %2$s.</string>
     <string name="account_signed_in_admin">Bei %1$s angemeldet als %2$s, Verwaltung.</string>
-    <string name="account_needs_sign_in">%1$s fragt erneut nach deinem Passwort.</string>
+    <string name="account_needs_sign_in">%1$s fragt erneut nach Ihrem Passwort.</string>
     <string name="account_sign_out">Abmelden</string>
     <string name="account_delete">Konto löschen</string>
-    <string name="account_delete_title">Dein Konto löschen?</string>
-    <string name="account_delete_message">Deine Stelle in jedem Buch, deine Favoriten und deine Lesesitzungen werden von %1$s entfernt, und dieses Gerät wird abgemeldet. Die Bücher bleiben in der gemeinsamen Bibliothek, und alles auf diesem Gerät bleibt hier.</string>
-    <string name="account_problem_last_admin">Du bist der einzige Admin dieses Servers, daher kann dieses Konto nicht gelöscht werden.</string>
+    <string name="account_delete_title">Ihr Konto löschen?</string>
+    <string name="account_delete_message">Ihre Stelle in jedem Buch, Ihre Favoriten und Ihre Lesesitzungen werden von %1$s entfernt, und dieses Gerät wird abgemeldet. Die Bücher bleiben in der gemeinsamen Bibliothek, und alles auf diesem Gerät bleibt hier.</string>
+    <string name="account_problem_last_admin">Sie sind der einzige Admin dieses Servers, daher kann dieses Konto nicht gelöscht werden.</string>
     <string name="account_problem_invalid_address">Das ist keine Serveradresse.</string>
-    <string name="account_problem_unreachable">Unter dieser Adresse hat nichts geantwortet. Prüfe sie und ob der Server läuft.</string>
+    <string name="account_problem_unreachable">Unter dieser Adresse hat nichts geantwortet. Prüfen Sie sie und ob der Server läuft.</string>
     <string name="account_problem_not_lukia">Etwas hat geantwortet, aber es ist kein Lukia-Server.</string>
-    <string name="account_problem_insecure">Verwende https:// für einen Server außerhalb deines eigenen Netzwerks.</string>
+    <string name="account_problem_insecure">Verwenden Sie https:// für einen Server außerhalb Ihres eigenen Netzwerks.</string>
     <string name="account_problem_rejected">Benutzername und Passwort passen zu keinem Konto.</string>
-    <string name="account_problem_too_many">Zu viele Versuche. Warte ein paar Minuten und versuche es erneut.</string>
+    <string name="account_problem_too_many">Zu viele Versuche. Warten Sie ein paar Minuten und versuchen Sie es erneut.</string>
     <string name="account_problem_invalid_username">Ein Benutzername besteht aus 3 bis 32 Kleinbuchstaben, Ziffern, Punkten, Bindestrichen oder Unterstrichen.</string>
     <string name="account_problem_invalid_password">Ein Passwort braucht mindestens 10 Zeichen.</string>
     <string name="account_problem_username_taken">Dieser Benutzername ist vergeben.</string>
     <string name="account_problem_invalid_invite">Dieser Einladungscode ist unbekannt, verbraucht oder abgelaufen.</string>
-    <string name="account_problem_already_set_up">Jemand hat diesen Server gerade eingerichtet. Melde dich stattdessen an.</string>
-    <string name="account_problem_session_expired">Deine Anmeldung ist abgelaufen. Melde dich erneut an.</string>
-    <string name="account_problem_server_failed">Der Server konnte das nicht ausführen. Versuche es später erneut.</string>
+    <string name="account_problem_already_set_up">Jemand hat diesen Server gerade eingerichtet. Melden Sie sich stattdessen an.</string>
+    <string name="account_problem_session_expired">Ihre Anmeldung ist abgelaufen. Melden Sie sich erneut an.</string>
+    <string name="account_problem_server_failed">Der Server konnte das nicht ausführen. Versuchen Sie es später erneut.</string>
     <string name="history_title">Lesen auf diesem Gerät</string>
-    <string name="history_question">Dieses Gerät hat Lesezeit aufgezeichnet, bevor du dich angemeldet hast. Zur Statistik deines Kontos hinzufügen oder nur auf diesem Gerät behalten?</string>
+    <string name="history_question">Dieses Gerät hat Lesezeit aufgezeichnet, bevor Sie sich angemeldet haben. Zur Statistik Ihres Kontos hinzufügen oder nur auf diesem Gerät behalten?</string>
     <string name="history_add">Zu meinem Konto hinzufügen</string>
     <string name="history_keep">Auf diesem Gerät behalten</string>
 
@@ -548,7 +558,7 @@
     <string name="sync_retry_soon">Neuer Versuch in weniger als einer Minute.</string>
     <string name="sync_now">Jetzt synchronisieren</string>
     <string name="sync_auto_upload">Importierte Bücher zum Server hinzufügen</string>
-    <string name="sync_auto_upload_detail">Bücher, die nach der Anmeldung auf diesem Gerät hinzugefügt werden, kommen in die gemeinsame Bibliothek für alle. Bücher, die du schon hattest, werden nur gesendet, wenn du sie selbst hinzufügst.</string>
+    <string name="sync_auto_upload_detail">Bücher, die nach der Anmeldung auf diesem Gerät hinzugefügt werden, kommen in die gemeinsame Bibliothek für alle. Bücher, die Sie schon hatten, werden nur gesendet, wenn Sie sie selbst hinzufügen.</string>
     <string name="filter_device_only">Nur auf diesem Gerät</string>
     <string name="book_info_sync">Sync-Server</string>
     <string name="book_sync_on_server">Auf dem Server</string>

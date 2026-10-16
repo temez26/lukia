@@ -200,6 +200,7 @@
     <string name="library_close_menu">Stäng menyn</string>
     <string name="library_import_books">Importera böcker</string>
     <string name="library_add_folder">Lägg till mapp</string>
+    <string name="library_add_books">Lägg till böcker</string>
     <string name="library_importing">Importerar…</string>
     <string name="library_importing_count">Importerar %1$d av %2$d…</string>
     <string name="library_import_stop">Stoppa</string>
@@ -232,6 +233,10 @@
     <string name="search_empty_message">Skriv en titel eller en författare för att hitta en bok.</string>
 
     <string name="library_no_results_title">Inga träffar</string>
+    <plurals name="search_result_count">
+        <item quantity="one">1 träff</item>
+        <item quantity="other">%1$d träffar</item>
+    </plurals>
     <string name="library_no_matches_filtered">Inget i ditt bibliotek matchar alla filter du har satt.</string>
     <string name="library_no_matches_term">Inga böcker matchar ”%1$s”.</string>
     <string name="library_no_matches_filtered_term">Inget som matchar ”%1$s” blir kvar när dina filter tillämpas.</string>
@@ -302,8 +307,13 @@
     <string name="reader_percent_read">%1$d procent läst</string>
     <string name="reader_percent">%1$d\u00A0%</string>
     <string name="reader_percent_start">0</string>
+    <string name="reader_opening">Öppnar…</string>
+    <string name="reader_reading_text">Läser text… sida %1$d av %2$d</string>
 
     <string name="reader_chapters">Kapitel</string>
+    <string name="reader_chapters_loading">Läser kapitel…</string>
+    <string name="reader_chapters_unavailable">Kapitlen kunde inte läsas från det här dokumentet.</string>
+    <string name="reader_chapters_none">Det här dokumentet har inga kapitel.</string>
     <string name="reader_collapse_all">Fäll ihop alla</string>
     <string name="reader_expand_all">Fäll ut alla</string>
     <string name="reader_show_sections_of">Visa avsnitten i %1$s</string>

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,13 +28,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.lukia.shared.presentation.theme.LocalLukiaMetrics
 import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.LukiaMotion
 
 /** Inset of the selection pill from the track around it. */
 private val TrackPadding: Dp = 2.dp
+
+/** The smallest a label shrinks to before it is ellipsised instead. */
+private val MinLabelSize: TextUnit = 8.sp
 
 /**
  * One choice from a short list, in the style of an iOS segmented control.
@@ -170,11 +176,17 @@ private fun Segment(
                 onClick = onClick,
             ),
     ) {
+        val style = MaterialTheme.typography.labelSmall
+
         Text(
             text = text,
-            style = MaterialTheme.typography.labelSmall,
+            style = style,
             textAlign = TextAlign.Center,
             maxLines = 1,
+            // Shrinks to fit before it is cut short. Five segments at the
+            // largest system text size came out as "Auss…" and "Über…"; a
+            // smaller whole word says what the segment is, half of one does not.
+            autoSize = TextAutoSize.StepBased(minFontSize = MinLabelSize, maxFontSize = style.fontSize),
             overflow = TextOverflow.Ellipsis,
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
             color = MaterialTheme.colorScheme.onSurface.copy(

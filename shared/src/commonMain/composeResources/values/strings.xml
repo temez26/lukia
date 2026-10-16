@@ -39,7 +39,7 @@
     <string name="menu_favourite">Add to Favourites</string>
     <string name="menu_unfavourite">Remove from Favourites</string>
     <string name="menu_select_books">Select Books</string>
-    <string name="menu_sync_with_server">Sync with server</string>
+    <string name="menu_sync_with_server">Sync with Server</string>
     <string name="menu_refresh_details">Refresh Details</string>
     <string name="menu_delete_from_library">Delete from Library</string>
 
@@ -249,6 +249,7 @@
     <string name="library_close_menu">Close menu</string>
     <string name="library_import_books">Import Books</string>
     <string name="library_add_folder">Add Folder</string>
+    <string name="library_add_books">Add Books</string>
     <string name="library_importing">Importing…</string>
     <string name="library_importing_count">Importing %1$d of %2$d…</string>
     <string name="library_import_stop">Stop</string>
@@ -279,11 +280,15 @@
     <string name="search_placeholder">Search by title or author</string>
     <string name="search_recent">Recent Searches</string>
     <string name="search_forget">Forget %1$s</string>
-    <string name="search_empty_title">Search Your Library</string>
+    <string name="search_empty_title">Search your library</string>
     <string name="search_empty_message">Type a title or an author to find a book.</string>
 
     <!-- Nothing found, and nothing there. -->
-    <string name="library_no_results_title">No Results</string>
+    <string name="library_no_results_title">No results</string>
+    <plurals name="search_result_count">
+        <item quantity="one">1 result</item>
+        <item quantity="other">%1$d results</item>
+    </plurals>
     <string name="library_no_matches_filtered">Nothing in your library matches every filter you have set.</string>
     <string name="library_no_matches_term">No books match \u201C%1$s\u201D.</string>
     <string name="library_no_matches_filtered_term">Nothing matching \u201C%1$s\u201D is left once your filters are applied.</string>
@@ -369,9 +374,14 @@
     <string name="reader_percent">%1$d%</string>
     <!-- The nought at the start of the progress track. -->
     <string name="reader_percent_start">0</string>
+    <string name="reader_opening">Opening…</string>
+    <string name="reader_reading_text">Reading text… page %1$d of %2$d</string>
 
     <!-- The contents panel. -->
     <string name="reader_chapters">Chapters</string>
+    <string name="reader_chapters_loading">Reading chapters…</string>
+    <string name="reader_chapters_unavailable">Chapters could not be read from this document.</string>
+    <string name="reader_chapters_none">This document has no chapters.</string>
     <string name="reader_collapse_all">Collapse all</string>
     <string name="reader_expand_all">Expand all</string>
     <string name="reader_show_sections_of">Show sections of %1$s</string>

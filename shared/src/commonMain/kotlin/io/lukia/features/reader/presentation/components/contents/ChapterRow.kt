@@ -88,6 +88,11 @@ private val CurrentMarkerWidth: Dp = 3.dp
 internal fun ChapterRowItem(
     row: ChapterRow,
     inset: Dp,
+    /**
+     * Whether anything in the contents folds. A flat list - most books - has no
+     * control to line titles up behind, so it keeps no empty column for one.
+     */
+    foldable: Boolean,
     isCurrent: Boolean,
     onToggle: () -> Unit,
     onClick: () -> Unit,
@@ -159,7 +164,7 @@ internal fun ChapterRowItem(
                 rowHeight = metrics.rowHeight,
                 onClick = onToggle,
             )
-        } else {
+        } else if (foldable) {
             // Kept empty rather than closed up, so titles line up down the panel
             // whether or not their row has anything to fold.
             Box(modifier = Modifier.width(DisclosureSlot))

@@ -58,6 +58,17 @@ class LibrarySearchTest {
         assertEquals(listOf("dune"), found("a novel"))
     }
 
+    /**
+     * The card shows the title the book declares, but the file name is what the
+     * reader saved it under and may remember it by, so it still finds the book.
+     */
+    @Test
+    fun theFileNameIsSearchableWhenTheCardShowsTheDeclaredTitle() {
+        val declared = library(book("stadt-am-fluss", declaredTitle = "Die Stadt am Fluss"))
+
+        assertEquals(listOf("stadt-am-fluss"), declared.matching(LibraryQuery(search = "stadt-am")).titles())
+    }
+
     @Test
     fun matchesKeepTheShelfsOrder() {
         assertEquals(listOf("Moby Dick", "The Hobbit", "dune"), found(""))

@@ -214,6 +214,7 @@
     <string name="library_close_menu">Sulje valikko</string>
     <string name="library_import_books">Tuo kirjoja</string>
     <string name="library_add_folder">Lisää kansio</string>
+    <string name="library_add_books">Lisää kirjoja</string>
     <string name="library_importing">Tuodaan…</string>
     <string name="library_importing_count">Tuodaan %1$d/%2$d…</string>
     <string name="library_import_stop">Lopeta</string>
@@ -246,6 +247,10 @@
     <string name="search_empty_message">Kirjoita nimi tai tekijä löytääksesi kirjan.</string>
 
     <string name="library_no_results_title">Ei tuloksia</string>
+    <plurals name="search_result_count">
+        <item quantity="one">1 tulos</item>
+        <item quantity="other">%1$d tulosta</item>
+    </plurals>
     <string name="library_no_matches_filtered">Mikään kirjastossasi ei vastaa kaikkia asettamiasi suodattimia.</string>
     <string name="library_no_matches_term">Haku ”%1$s” ei löytänyt kirjoja.</string>
     <string name="library_no_matches_filtered_term">Haulle ”%1$s” ei jää tuloksia, kun suodattimesi otetaan huomioon.</string>
@@ -316,8 +321,13 @@
     <string name="reader_percent_read">%1$d prosenttia luettu</string>
     <string name="reader_percent">%1$d\u00A0%</string>
     <string name="reader_percent_start">0</string>
+    <string name="reader_opening">Avataan…</string>
+    <string name="reader_reading_text">Luetaan tekstiä… sivu %1$d/%2$d</string>
 
     <string name="reader_chapters">Luvut</string>
+    <string name="reader_chapters_loading">Luetaan lukuja…</string>
+    <string name="reader_chapters_unavailable">Tämän asiakirjan lukuja ei voitu lukea.</string>
+    <string name="reader_chapters_none">Tässä asiakirjassa ei ole lukuja.</string>
     <string name="reader_collapse_all">Kutista kaikki</string>
     <string name="reader_expand_all">Laajenna kaikki</string>
     <string name="reader_show_sections_of">Näytä luvun %1$s osiot</string>
