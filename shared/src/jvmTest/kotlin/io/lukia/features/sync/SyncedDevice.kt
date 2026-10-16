@@ -82,7 +82,10 @@ class SyncedDevice(private val server: TestSyncServer) : AutoCloseable {
         cursors,
         ShelfChanges(),
     )
-    private val syncState = SyncBookStateUseCase(session, BookStateApi(http), store, cursors, ShelfChanges())
+
+    /** What this device's book-state sync tells the shelf when something here changed. */
+    val stateChanges = ShelfChanges()
+    private val syncState = SyncBookStateUseCase(session, BookStateApi(http), store, cursors, stateChanges)
     val syncSessions = SyncSessionsUseCase(session, SessionApi(http), sessionStore, HistoryChoice(settings), cursors)
 
     private val hashLibrary = HashLibraryUseCase(SqlContentHashStore(database, Dispatchers.Unconfined), analyzer)

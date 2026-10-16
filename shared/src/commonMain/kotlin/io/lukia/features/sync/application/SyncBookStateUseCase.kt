@@ -85,20 +85,33 @@ class SyncBookStateUseCase(
     /** A book this device does not have is passed over; its state waits on the account. */
     private suspend fun apply(remote: BookStateResponse): Boolean {
         val location = store.locationOf(remote.bookId) ?: return false
+        // What is here already. A device reads back every change it sends, in
+        // the same round; writing those again and telling the shelf reloaded
+        // the whole library after every page sent.
+        val local = store.stateOf(remote.bookId)
         var changed = false
 
-        remote.progress?.takeUnless { store.isPending(SyncedPart.Progress, remote.bookId) }?.let {
-            store.applyProgress(location, it.pageIndex, it.pageCount)
-            changed = true
-        }
-        remote.layout?.takeUnless { store.isPending(SyncedPart.Layout, remote.bookId) }?.let {
-            store.applyLayout(location, it.layout)
-            changed = true
-        }
-        remote.favorite?.takeUnless { store.isPending(SyncedPart.Favorite, remote.bookId) }?.let {
-            store.applyFavorite(location, it.isFavorite)
-            changed = true
-        }
+        remote.progress
+            ?.takeUnless { store.isPending(SyncedPart.Progress, remote.bookId) }
+            ?.takeUnless { it.pageIndex == local?.pageIndex && it.pageCount == local.pageCount }
+            ?.let {
+                store.applyProgress(location, it.pageIndex, it.pageCount)
+                changed = true
+            }
+        remote.layout
+            ?.takeUnless { store.isPending(SyncedPart.Layout, remote.bookId) }
+            ?.takeUnless { it.layout == local?.layout }
+            ?.let {
+                store.applyLayout(location, it.layout)
+                changed = true
+            }
+        remote.favorite
+            ?.takeUnless { store.isPending(SyncedPart.Favorite, remote.bookId) }
+            ?.takeUnless { it.isFavorite == local?.isFavorite }
+            ?.let {
+                store.applyFavorite(location, it.isFavorite)
+                changed = true
+            }
         return changed
     }
 
