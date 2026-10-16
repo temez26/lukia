@@ -57,7 +57,8 @@ internal fun SignInForm(form: AccountForm, busy: Boolean, last: LastSignIn?, act
         username.isNotBlank() &&
         password.isNotEmpty() &&
         (form != AccountForm.Invite || inviteCode.isNotBlank())
-    val submit = { if (complete && !busy) actions.onSubmit(address, username, password, inviteCode) }
+    val canSubmit = complete && !busy
+    val submit = { if (canSubmit) actions.onSubmit(address, username, password, inviteCode) }
 
     Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
         if (form is AccountForm.SetUp) {
@@ -100,7 +101,7 @@ internal fun SignInForm(form: AccountForm, busy: Boolean, last: LastSignIn?, act
             focusRequester = passwordField,
         )
 
-        SignInActions(form = form, busy = busy, complete = complete, onSubmit = submit, actions = actions)
+        SignInActions(form = form, busy = busy, canSubmit = canSubmit, onSubmit = submit, actions = actions)
     }
 }
 
@@ -155,7 +156,7 @@ internal fun PasswordField(
 private fun SignInActions(
     form: AccountForm,
     busy: Boolean,
-    complete: Boolean,
+    canSubmit: Boolean,
     onSubmit: () -> Unit,
     actions: AccountActions,
 ) {
@@ -163,7 +164,7 @@ private fun SignInActions(
         horizontalArrangement = Arrangement.spacedBy(Space.sm),
         verticalArrangement = Arrangement.spacedBy(Space.sm),
     ) {
-        SubmitButton(form = form, busy = busy, complete = complete, onClick = onSubmit)
+        SubmitButton(form = form, busy = busy, enabled = canSubmit, onClick = onSubmit)
 
         if (form !is AccountForm.SetUp) {
             LukiaButton(
@@ -180,7 +181,7 @@ private fun SignInActions(
 
 /** Signs in, or creates the account or the admin - whichever the form is for - once it is filled in. */
 @Composable
-private fun SubmitButton(form: AccountForm, busy: Boolean, complete: Boolean, onClick: () -> Unit) {
+private fun SubmitButton(form: AccountForm, busy: Boolean, enabled: Boolean, onClick: () -> Unit) {
     LukiaButton(
         label = stringResource(
             when {
@@ -191,7 +192,7 @@ private fun SubmitButton(form: AccountForm, busy: Boolean, complete: Boolean, on
             },
         ),
         onClick = onClick,
-        enabled = !busy && complete,
+        enabled = enabled,
     )
 }
 
