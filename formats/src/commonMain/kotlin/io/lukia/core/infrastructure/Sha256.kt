@@ -1,18 +1,33 @@
 package io.lukia.core.infrastructure
 
 /**
- * SHA-256, fed a piece at a time, as FIPS 180-4 defines it.
+ * SHA-256, fed a piece at a time: the platform's own where it has one - the
+ * JDK's `MessageDigest` on Android and the desktop - and [PortableSha256]
+ * where it does not.
  *
  * The hash is a book's identity across devices - see
  * docs/decisions/0002-content-hash-book-identity.md - so it has to be the same
- * hash on every platform, and the server's (`MessageDigest`) above all. Written
- * once in common code rather than bound to three platform libraries, for the
- * reason [fnv1a] is: one implementation tested once, on a function nothing
- * about which differs by platform.
+ * hash on every platform, and the server's (`MessageDigest`) above all.
+ * `Sha256AgreementTest` holds [PortableSha256] to `MessageDigest`, which is what
+ * keeps the platforms using it in step with the rest.
+ *
+ * The platform's where possible because a whole library is hashed the first
+ * time a device signs in, and the JDK's is about six times faster than the
+ * portable one on the JVM - 29 ms against 172 ms for 64 MB.
+ */
+expect class Sha256() {
+    fun update(bytes: ByteArray, offset: Int = 0, length: Int = bytes.size - offset)
+
+    fun digest(): ByteArray
+}
+
+/**
+ * SHA-256 as FIPS 180-4 defines it, in common code: one implementation tested
+ * once, for the platforms with no SHA-256 of their own to hand.
  *
  * Not constant-time and not meant to be: it names files, it guards nothing.
  */
-class Sha256 {
+class PortableSha256 {
 
     private val state = InitialState.copyOf()
     private val block = ByteArray(BlockBytes)
