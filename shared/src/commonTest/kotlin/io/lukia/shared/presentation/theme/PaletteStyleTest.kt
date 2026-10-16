@@ -55,6 +55,25 @@ class PaletteStyleTest {
         assertTrue(slate.titleMedium.letterSpacing.value < crisp.titleMedium.letterSpacing.value)
     }
 
+    /**
+     * The serif is only read for the palettes that use it, so the two answers
+     * must agree: a palette that does not use it comes out the same whatever it
+     * is handed, and one that does sets its headings in it.
+     */
+    @Test
+    fun onlyThePalettesThatSetHeadingsInSerifUseIt() {
+        AppPalette.entries.forEach { palette ->
+            val withSerif = typographyFor(palette, Serif)
+            val withoutSerif = typographyFor(palette, FontFamily.Default)
+
+            if (palette.setsHeadingsInSerif()) {
+                assertEquals(Serif, withSerif.titleMedium.fontFamily, "$palette ignored its serif")
+            } else {
+                assertEquals(withoutSerif, withSerif, "$palette reads a serif it is never loaded for")
+            }
+        }
+    }
+
     /** What is read in quantity stays in the app's sans whatever the palette. */
     @Test
     fun bodyTextAndLabelsAreTheSameInEveryPalette() {

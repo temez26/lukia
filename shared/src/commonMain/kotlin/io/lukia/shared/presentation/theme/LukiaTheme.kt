@@ -62,8 +62,7 @@ fun LukiaTheme(
         colorSchemeFor(palette, darkTheme, accent)
     }
     val glassStyle = remember { platformGlassStyle() }
-    val serif = bundledSerif()
-    val typography = remember(palette, serif) { typographyFor(palette, serif) }
+    val typography = rememberTypography(palette)
 
     // The device's own answer, which caps the reader's - see [motionFor]. Read
     // here rather than where each animation is written, because it is one

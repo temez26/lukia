@@ -2,6 +2,7 @@ package io.lukia.shared.presentation.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -171,6 +172,28 @@ internal fun typographyFor(palette: AppPalette, serif: FontFamily): Typography =
 }
 
 /**
+ * [typographyFor] for the palette in use, reading the bundled serif only for the
+ * palettes that set headings in it.
+ *
+ * Reading the font is not free: on desktop it is read from the jar, blocking, in
+ * the first composition, and on iOS it arrives later and redraws every line of
+ * text in the app when it does. Asked for unconditionally, Crisp and Slate paid
+ * both for a face they never draw.
+ */
+@Composable
+internal fun rememberTypography(palette: AppPalette): Typography {
+    val serif = if (palette.setsHeadingsInSerif()) bundledSerif() else FontFamily.Default
+
+    return remember(palette, serif) { typographyFor(palette, serif) }
+}
+
+/** Whether [typographyFor] uses the serif it is given for this palette. */
+internal fun AppPalette.setsHeadingsInSerif(): Boolean = when (this) {
+    AppPalette.Crisp, AppPalette.Slate -> false
+    AppPalette.Paper, AppPalette.Ledger -> true
+}
+
+/**
  * Noto Serif, which Paper and Ledger set their headings in.
  *
  * Bundled rather than the platform's own serif, which is not there to be had on
@@ -178,7 +201,7 @@ internal fun typographyFor(palette: AppPalette, serif: FontFamily): Typography =
  * Ledger's headings looking like Crisp's.
  */
 @Composable
-internal fun bundledSerif(): FontFamily = FontFamily(
+private fun bundledSerif(): FontFamily = FontFamily(
     Font(Res.font.noto_serif_regular, FontWeight.Normal),
     Font(Res.font.noto_serif_bold, FontWeight.Bold),
 )
