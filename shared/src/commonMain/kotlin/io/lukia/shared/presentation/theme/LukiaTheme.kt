@@ -3,6 +3,7 @@ package io.lukia.shared.presentation.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
@@ -10,7 +11,9 @@ import androidx.compose.material3.Shapes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.AppAccent
 import io.lukia.core.domain.AppMotion
@@ -51,6 +54,19 @@ private val LedgerShapes = Shapes(
     large = RoundedCornerShape(3.dp),
     extraLarge = RoundedCornerShape(4.dp),
 )
+
+/**
+ * What an icon button is clipped to: a circle, except in Ledger, where a round
+ * back or menu button among square cards was the one curve left on the page.
+ *
+ * A local rather than a slot in [Shapes], which has no "fully round" step.
+ */
+val LocalIconButtonShape = staticCompositionLocalOf<Shape> { CircleShape }
+
+internal fun iconButtonShapeFor(palette: AppPalette): Shape = when (palette) {
+    AppPalette.Crisp, AppPalette.Paper, AppPalette.Slate -> CircleShape
+    AppPalette.Ledger -> LedgerShapes.small
+}
 
 /** Only Ledger changes shape; the other palettes are colour alone. */
 internal fun shapesFor(palette: AppPalette): Shapes = when (palette) {
@@ -104,6 +120,7 @@ fun LukiaTheme(
             LocalWindowHeightClass provides heightClass,
             LocalGlassStyle provides glassStyle,
             LocalMotionStyle provides motionStyle,
+            LocalIconButtonShape provides iconButtonShapeFor(palette),
             // Material's own floor, told what this app's floor is.
             //
             // The modifier behind it expands what a control can be *hit* on

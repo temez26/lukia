@@ -22,8 +22,9 @@ No font is bundled: `FontFamily.Serif` is on every platform already.
 ## Consequences
 
 - Components that read `MaterialTheme.shapes` and `MaterialTheme.typography`
-  follow the palette for free. Hard-coded shapes do not: circular icon buttons,
-  swatches and chart bars stay round in Ledger.
+  follow the palette for free. Icon buttons, which are circles elsewhere, read
+  `LocalIconButtonShape` and are square in Ledger. Other circles - swatches,
+  selection marks, chart bars - stay round.
 - The reader keeps its own page themes (Light, Sepia, Dark) and its own chrome,
   as it already did for every palette.
 - Ledger's accent red sits near the error red, so a destructive button and a

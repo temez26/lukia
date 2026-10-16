@@ -270,6 +270,7 @@ Compose:
       - LocalWindowHeightClass
       - LocalGlassStyle
       - LocalMotionStyle
+      - LocalIconButtonShape
   ContentEmitterReturningValues:
     active: true
   DefaultsVisibility:

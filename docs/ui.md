@@ -20,8 +20,9 @@ A theme is an `AppPalette`, chosen in Settings > Appearance, in light and dark.
 - Shapes and type: `shapesFor` and `typographyFor` in `LukiaTheme.kt` and
   `Type.kt`. See [ADR 0006](decisions/0006-palettes-own-shapes-and-type.md).
 - Use `MaterialTheme.shapes` and `MaterialTheme.typography` rather than literal
-  shapes and fonts, so a palette can change them. Circles are the exception,
-  for things that are round in every theme.
+  shapes and fonts, so a palette can change them. Icon buttons read
+  `LocalIconButtonShape`: a circle, square in Ledger. Literal circles are for
+  things that are round in every theme, such as swatches and selection marks.
 - The reader's page has its own Light, Sepia and Dark themes, independent of
   the palette.
 

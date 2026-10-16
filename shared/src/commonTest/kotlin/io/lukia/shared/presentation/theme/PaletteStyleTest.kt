@@ -1,5 +1,6 @@
 package io.lukia.shared.presentation.theme
 
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.text.font.FontFamily
 import io.lukia.core.domain.AppPalette
 import kotlin.test.Test
@@ -17,6 +18,15 @@ class PaletteStyleTest {
         }
 
         assertNotEquals(LukiaShapes, shapesFor(AppPalette.Ledger))
+    }
+
+    @Test
+    fun iconButtonsAreRoundExceptInLedger() {
+        AppPalette.entries.filter { it != AppPalette.Ledger }.forEach { palette ->
+            assertEquals(CircleShape, iconButtonShapeFor(palette), "$palette squared its icon buttons")
+        }
+
+        assertNotEquals(CircleShape, iconButtonShapeFor(AppPalette.Ledger))
     }
 
     /** Headings go serif; what is read in quantity stays in the app's sans. */
