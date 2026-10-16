@@ -152,8 +152,34 @@ every device for a full round. The services now announce only when the row's
   on `seq` alone would cost every write. Worth revisiting only for a large
   shared server.
 
-### Not verified
+### Checked on a phone
 
-The fixes are tested against a real server in the JVM tests. They were not
-tried on a phone signed in to a server, and not behind a proxy that closes
-idle connections.
+The server ran on a PC on the local network (the phone reached it at its LAN
+address; sign-in went through an `adb reverse` tunnel), with a second client
+signed in to the same account standing in for another device.
+
+- A new book uploaded by the other device reached the phone the same second.
+- Three page turns on the phone reached the other device within seconds
+  (page 4 of 94); a page set on the other device reached the phone within a
+  second (53%, page 50 of 94).
+- In 5½ minutes on screen with the line open there was **no** two-minute
+  check.
+- Not tested behind a proxy that closes idle connections.
+
+### Found on the phone: open
+
+| # | Finding | Category | Location | Status |
+| --- | --- | --- | --- | --- |
+| S8 | A book left open runs 2 rounds every 20 seconds | Duplicate trigger, chatty sync | `SyncModule` (`waiting`), `SessionStore.waiting` | Open |
+| S9 | The sign-in form asked for the server's health 6 times while one address was typed | Repeated calls | `AccountViewModel` (not yet traced) | Open |
+
+**S8.** The reading session grows while a book is open, and each growth
+counts as something waiting to send; five seconds later a round sends it. Then
+sending it brings the waiting count back to zero, which counts as a change too,
+and five seconds after that an empty round runs. Measured on the phone, idle
+in the reader: a round with a session write every 20 seconds plus an empty one
+after each - about 360 rounds, some 1,250 requests, an hour. This predates this
+branch. Two parts to a fix: only a count above zero should start a round (the
+empty follow-ups go, without changing what is sent or when), and a growing
+session need not be sent more often than every few minutes (a change in how
+soon statistics reach other devices, so the user's call).
