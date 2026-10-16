@@ -207,11 +207,11 @@ because the device went away.
 
 | # | Finding | Category | Location | Status |
 | --- | --- | --- | --- | --- |
-| R1 | After every page change it sends, the phone applies its own change again and reloads the library | Duplicate trigger | `SyncBookStateUseCase.receive`, `BookStateStore.apply*` | Open |
-| R2 | The library is rebuilt twice on every load | Recomputation | `LibraryViewModel.loadDocuments` | Open |
-| R3 | Two library loads at launch; overlapping loads are not cancelled | Duplicate trigger | `LibraryViewModel.init`, `HomeScreen` | Open |
-| R4 | Content hashing uses a common-code SHA-256, about 6x slower than the platform's on the JVM | Algorithm | `formats/.../Sha256.kt`, the import analysers | Open |
-| R5 | A book's figures are fully decoded to read their size during pagination, then decoded again to draw | Unneeded work | `RememberPagination.FigureShapes` | Open |
+| R1 | After every page change it sends, the phone applies its own change again and reloads the library | Duplicate trigger | `SyncBookStateUseCase.receive`, `BookStateStore.apply*` | Fixed, e8fc015c |
+| R2 | The library is rebuilt twice on every load | Recomputation | `LibraryViewModel.loadDocuments` | Fixed, 9ffb3a72 |
+| R3 | Two library loads at launch; overlapping loads are not cancelled | Duplicate trigger | `LibraryViewModel.init`, `HomeScreen` | Won't fix |
+| R4 | Content hashing uses a common-code SHA-256, about 6x slower than the platform's on the JVM | Algorithm | `formats/.../Sha256.kt`, the import analysers | Fixed, 6c65db20 |
+| R5 | A book's figures are fully decoded to read their size during pagination, then decoded again to draw | Unneeded work | `RememberPagination.FigureShapes` | Fixed, 87e161d6 |
 | R6 | A cover shown twice at once on Home is decoded twice | Duplicate work | `CoverArtCache.artworkFor` | Won't fix |
 
 Checked and fine: search (precomputed keys, off the main thread), the page
@@ -225,3 +225,30 @@ spent about 50 s hashing a real library.
 
 **R6:** a few milliseconds the first time a book appears in two Home rows;
 sharing a decode in progress would add more than it saves.
+
+**R1.** Each part of a book's state read back from the server is applied only
+when it differs from what is stored, and the shelf is told only then.
+`BookStateSyncTest.aDevicesOwnPlaceComingBackIsNotAChange`: the sending device
+heard 1 change per page sent before, 0 after.
+
+**R2.** Documents and positions now live in one `LoadedShelf`, so a load or a
+deletion changes the shelf - and everything worked out from it - once.
+
+**R3, won't fix.** Home asks for a load just after the view model's own has
+started, and a load asked for after another started cannot reuse it without
+knowing nothing changed in between - which would take change tracking for one
+load of tens of milliseconds per launch.
+
+**R4.** `Sha256` is now an expect class: `MessageDigest` on Android and the
+desktop, `PortableSha256` (the old common implementation) on iOS, still held to
+`MessageDigest` by `Sha256AgreementTest`. Measured on the JVM as above (172 ms
+to 29 ms for 64 MB); not measured on a phone, where hashing is only redone for
+books not yet hashed.
+
+**R5.** Pagination reads a figure's size from its header (`imageSizeOrNull`:
+`BitmapFactory` bounds on Android, Skia's `Codec` on desktop and iOS).
+**Measured** on the desktop, 1600 x 2400 JPEG: about 19 ms to decode, 0.1 ms to
+read the header, per figure per book opened. One difference, for broken files
+only: a figure whose header reads but whose pixels do not keeps its space.
+
+The iOS halves of R4 and R5 were not compiled here (Windows); CI compiles them.
