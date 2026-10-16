@@ -12,3 +12,4 @@ and says so.
 | [0004](0004-shared-api-module.md) | The wire types live in a shared `:api` module |
 | [0005](0005-password-accounts.md) | Username and password accounts with rotating tokens |
 | [0006](0006-palettes-own-shapes-and-type.md) | Each palette brings its own shapes and type |
+| [0007](0007-home-continue-and-shelves.md) | Home leads with the book being read |

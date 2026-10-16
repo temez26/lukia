@@ -165,14 +165,11 @@
     <string name="sort_last_read">Zuletzt gelesen</string>
     <string name="sort_largest">Größte zuerst</string>
     <string name="home_title">Start</string>
-    <string name="home_shelf_recent">Zuletzt</string>
-    <string name="home_shelf_recently_added">Neu hinzugefügt</string>
-    <string name="home_shelf_almost_done">Fast fertig</string>
-    <string name="home_shelf_unread">Ungelesen</string>
     <string name="home_shelf_favorites">Favoriten</string>
-    <string name="home_shelf_finished">Gelesen</string>
-    <string name="home_browse_by_category">Nach Thema stöbern</string>
-    <string name="home_see_all">Alle ansehen</string>
+    <string name="home_shelf_recently_opened">Zuletzt geöffnet</string>
+    <string name="home_shelf_recently_added">Neu hinzugefügt</string>
+    <string name="home_shelf_unread">Ungelesen</string>
+    <string name="search_browse_by_category">Nach Thema stöbern</string>
     <string name="library_title">Bibliothek</string>
     <string name="library_actions">Aktionen der Bibliothek</string>
     <string name="library_close_menu">Menü schließen</string>
@@ -502,6 +499,7 @@
     <string name="figure_close">Illustration schließen</string>
     <string name="figure_illustration">Illustration</string>
     <string name="home_see_all_shelf">Alle %1$s anzeigen</string>
+    <string name="home_resume">Weiterlesen</string>
     <string name="search_for_term">Nach %1$s suchen</string>
     <string name="search_clear_recent">Letzte Suchanfragen löschen</string>
     <string name="book_open_title">%1$s öffnen</string>

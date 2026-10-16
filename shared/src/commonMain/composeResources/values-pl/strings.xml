@@ -182,14 +182,11 @@
     <string name="sort_last_read">Ostatnio czytane</string>
     <string name="sort_largest">Największe najpierw</string>
     <string name="home_title">Start</string>
-    <string name="home_shelf_recent">Ostatnie</string>
-    <string name="home_shelf_recently_added">Ostatnio dodane</string>
-    <string name="home_shelf_almost_done">Prawie skończone</string>
-    <string name="home_shelf_unread">Nieprzeczytane</string>
     <string name="home_shelf_favorites">Ulubione</string>
-    <string name="home_shelf_finished">Przeczytane</string>
-    <string name="home_browse_by_category">Przeglądaj według tematu</string>
-    <string name="home_see_all">Pokaż wszystkie</string>
+    <string name="home_shelf_recently_opened">Ostatnio otwierane</string>
+    <string name="home_shelf_recently_added">Ostatnio dodane</string>
+    <string name="home_shelf_unread">Nieprzeczytane</string>
+    <string name="search_browse_by_category">Przeglądaj według tematu</string>
     <string name="library_title">Biblioteka</string>
     <string name="library_actions">Działania biblioteki</string>
     <string name="library_close_menu">Zamknij menu</string>
@@ -535,6 +532,7 @@
     <string name="figure_close">Zamknij ilustrację</string>
     <string name="figure_illustration">Ilustracja</string>
     <string name="home_see_all_shelf">Pokaż wszystkie: %1$s</string>
+    <string name="home_resume">Wznów</string>
     <string name="search_for_term">Szukaj: %1$s</string>
     <string name="search_clear_recent">Wyczyść ostatnie wyszukiwania</string>
     <string name="book_open_title">Otwórz %1$s</string>

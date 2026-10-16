@@ -2,11 +2,9 @@ package io.lukia.features.library.presentation.model
 
 import androidx.compose.runtime.Composable
 import io.lukia.resources.Res
-import io.lukia.resources.home_shelf_almost_done
 import io.lukia.resources.home_shelf_favorites
-import io.lukia.resources.home_shelf_finished
-import io.lukia.resources.home_shelf_recent
 import io.lukia.resources.home_shelf_recently_added
+import io.lukia.resources.home_shelf_recently_opened
 import io.lukia.resources.home_shelf_unread
 import io.lukia.resources.shelf_all
 import io.lukia.resources.shelf_finished
@@ -49,10 +47,8 @@ fun LibrarySort.displayName(): String = when (this) {
 
 @Composable
 fun HomeShelf.displayTitle(): String = when (this) {
-    HomeShelf.Recent -> stringResource(Res.string.home_shelf_recent)
-    HomeShelf.RecentlyAdded -> stringResource(Res.string.home_shelf_recently_added)
-    HomeShelf.AlmostDone -> stringResource(Res.string.home_shelf_almost_done)
-    HomeShelf.Unread -> stringResource(Res.string.home_shelf_unread)
     HomeShelf.Favorites -> stringResource(Res.string.home_shelf_favorites)
-    HomeShelf.Finished -> stringResource(Res.string.home_shelf_finished)
+    HomeShelf.RecentlyOpened -> stringResource(Res.string.home_shelf_recently_opened)
+    HomeShelf.Unread -> stringResource(Res.string.home_shelf_unread)
+    HomeShelf.RecentlyAdded -> stringResource(Res.string.home_shelf_recently_added)
 }

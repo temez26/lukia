@@ -20,7 +20,6 @@ import io.lukia.resources.library_missing_files
 import io.lukia.resources.library_settings
 import io.lukia.resources.menu_select_books
 import io.lukia.resources.menu_sync_with_server
-import io.lukia.shared.presentation.components.controls.IconButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.icons.AlertGlyph
 import io.lukia.shared.presentation.components.icons.CheckGlyph
@@ -185,6 +184,9 @@ private fun UpkeepMenuRows(
  *
  * The glyph fades into a close mark while the menu is open, so the control says
  * what pressing it again would do.
+ *
+ * Plain like the statistics button beside it: the bar is already a surface, and
+ * one filled shape next to one bare glyph read as two different sets.
  */
 @Composable
 internal fun MenuButton(
@@ -202,7 +204,6 @@ internal fun MenuButton(
             if (expanded) Res.string.library_close_menu else Res.string.library_actions,
         ),
         onClick = onClick,
-        variant = IconButtonVariant.Filled,
     ) { tint, glyph ->
         // The two glyphs cross-fade in place, and the close mark turns in as it
         // arrives, so the swap reads as one control changing rather than as two

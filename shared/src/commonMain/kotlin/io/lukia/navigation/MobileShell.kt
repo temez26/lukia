@@ -27,6 +27,7 @@ import androidx.navigation.compose.rememberNavController
 import io.lukia.Routes
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.features.library.presentation.LibraryViewModel
+import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.library.presentation.screens.HomeScreen
 import io.lukia.features.library.presentation.screens.LibraryScreen
 import io.lukia.features.library.presentation.screens.SearchScreen
@@ -140,6 +141,12 @@ private fun NavGraphBuilder.tabDestinations(
     val openSettings: () -> Unit = { navController.navigate(Routes.Settings.route) }
     val openAccountSettings: () -> Unit = { navController.navigate(Routes.AccountSettings.route) }
 
+    // The home rows' titles and the search screen's subjects both land here.
+    val showInLibrary: (LibraryQuery) -> Unit = { query ->
+        library.updateQuery(query)
+        navController.switchTo(MobileTab.Library)
+    }
+
     // Filled here rather than by the library screens, which have a place on
     // their bars for it and no business knowing what the statistics screen is.
     // This shell is where the two features meet.
@@ -151,10 +158,7 @@ private fun NavGraphBuilder.tabDestinations(
         HomeScreen(
             onOpenBook = openBook,
             onShowDetails = openDetails,
-            onSeeAll = { query ->
-                library.updateQuery(query)
-                navController.switchTo(MobileTab.Library)
-            },
+            onSeeAll = showInLibrary,
             onOpenLibrary = { navController.switchTo(MobileTab.Library) },
             onSettings = openSettings,
             statsButton = statsButton,
@@ -170,6 +174,7 @@ private fun NavGraphBuilder.tabDestinations(
         SearchScreen(
             onOpenBook = openBook,
             onShowDetails = openDetails,
+            onBrowse = showInLibrary,
             viewModel = library,
         )
     }

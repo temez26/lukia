@@ -25,9 +25,11 @@ import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.components.book.BookRow
+import io.lukia.features.library.presentation.components.search.BrowseCategories
 import io.lukia.features.library.presentation.components.search.LibrarySearchField
 import io.lukia.features.library.presentation.components.search.RecentSearches
 import io.lukia.features.library.presentation.model.LibraryBook
+import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.resources.Res
 import io.lukia.resources.library_no_matches_term
 import io.lukia.resources.library_no_results_title
@@ -63,12 +65,15 @@ private val NoticeTopPadding: Dp = 64.dp
 internal fun SearchScreen(
     onOpenBook: (DocumentInfo) -> Unit,
     onShowDetails: (DocumentInfo) -> Unit,
+    /** Opens the library tab narrowed to a subject - see `MobileShell`. */
+    onBrowse: (LibraryQuery) -> Unit,
     viewModel: LibraryViewModel = koinViewModel(),
 ) {
     val search = viewModel.search
     val term by search.term.collectAsState()
     val results by search.results.collectAsState()
     val recent by search.recent.collectAsState()
+    val facets by viewModel.facets.collectAsState()
 
     SearchContent(
         term = term,
@@ -86,6 +91,8 @@ internal fun SearchScreen(
         recent = recent,
         onForgetRecent = search::forget,
         onClearRecent = search::clearRecent,
+        categories = facets.browseCategories,
+        onBrowseCategory = { category -> onBrowse(LibraryQuery(category = category)) },
     )
 }
 
@@ -107,6 +114,9 @@ internal fun SearchContent(
     recent: List<String> = emptyList(),
     onForgetRecent: (String) -> Unit = {},
     onClearRecent: () -> Unit = {},
+    /** The subjects worth browsing by, or empty where the library has none. */
+    categories: List<String> = emptyList(),
+    onBrowseCategory: (String) -> Unit = {},
 ) {
     val dimens = LocalLukiaDimens.current
 
@@ -140,6 +150,8 @@ internal fun SearchContent(
                 onSearchAgain = onTermChange,
                 onForgetRecent = onForgetRecent,
                 onClearRecent = onClearRecent,
+                categories = categories,
+                onBrowseCategory = onBrowseCategory,
             )
         }
     }
@@ -147,7 +159,8 @@ internal fun SearchContent(
 
 /**
  * What sits under the field: the results, why there are none, or - before
- * anything has been typed - the searches already made.
+ * anything has been typed - the searches already made and the subjects to
+ * browse by.
  *
  * The history earns the empty screen over a sentence explaining what searching
  * is: a reader looking at an empty field has just arrived or just cleared it,
@@ -164,6 +177,8 @@ private fun SearchBody(
     onSearchAgain: (String) -> Unit,
     onForgetRecent: (String) -> Unit,
     onClearRecent: () -> Unit,
+    categories: List<String>,
+    onBrowseCategory: (String) -> Unit,
 ) {
     when {
         term.isNotBlank() && results.isEmpty() -> SearchNotice(
@@ -178,11 +193,13 @@ private fun SearchBody(
             modifier = Modifier.fillMaxSize(),
         )
 
-        recent.isNotEmpty() -> SearchHistory(
+        recent.isNotEmpty() || categories.isNotEmpty() -> SearchStart(
             recent = recent,
             onSearch = onSearchAgain,
             onForget = onForgetRecent,
             onClear = onClearRecent,
+            categories = categories,
+            onBrowseCategory = onBrowseCategory,
             modifier = Modifier.fillMaxSize(),
         )
 
@@ -194,20 +211,22 @@ private fun SearchBody(
 }
 
 @Composable
-private fun SearchHistory(
+private fun SearchStart(
     recent: List<String>,
     onSearch: (String) -> Unit,
     onForget: (String) -> Unit,
     onClear: () -> Unit,
+    categories: List<String>,
+    onBrowseCategory: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val dimens = LocalLukiaDimens.current
 
     // Scrollable rather than lazy: the history is capped at a handful of rows -
-    // see RecentSearchesRepository - and a lazy list for eight short lines is
-    // machinery for nothing. It scrolls at all only so the keyboard cannot trap
-    // the last row underneath itself on a short screen.
-    Box(
+    // see RecentSearchesRepository - and the subjects at what divides the
+    // library, so a lazy list would be machinery for nothing.
+    Column(
+        verticalArrangement = Arrangement.spacedBy(dimens.sectionSpacing),
         modifier = modifier
             .verticalScroll(rememberScrollState())
             .padding(
@@ -216,12 +235,18 @@ private fun SearchHistory(
                 bottom = Clearance.listBottom,
             ),
     ) {
-        RecentSearches(
-            terms = recent,
-            onSearch = onSearch,
-            onForget = onForget,
-            onClear = onClear,
-        )
+        if (recent.isNotEmpty()) {
+            RecentSearches(
+                terms = recent,
+                onSearch = onSearch,
+                onForget = onForget,
+                onClear = onClear,
+            )
+        }
+
+        if (categories.isNotEmpty()) {
+            BrowseCategories(categories = categories, onSelect = onBrowseCategory)
+        }
     }
 }
 

@@ -8,58 +8,35 @@ import androidx.compose.runtime.Immutable
  * A row scrolls sideways, so this is not about what fits - it is about where a
  * row stops being worth flicking through. Past a dozen covers the answer to
  * "where was I" is somewhere off the end of the screen, and the library tab is
- * the better way to find it. Each row ends in a way through to exactly that.
+ * the better way to find it. Each row's title leads through to exactly that.
  */
 private const val ShelfLimit = 12
 
 /**
- * How far through a book has to be before it counts as nearly done.
- *
- * High enough that the row is a short list of books worth finishing this week
- * rather than a second copy of Recent. A book two thirds read is still being
- * read; one at nine tenths is one evening from the end.
- */
-private const val AlmostDoneFraction = 0.7f
-
-/**
- * The questions the home screen answers, in the order it asks them.
- *
- * Where a reader left off comes first, opening the app to carry on being the
- * commonest reason to open it. What arrived most recently comes next - a book
- * just imported is about to be started - and the rest run down the arc a book
- * takes: nearly finished, never started, kept, done.
- *
- * Every row is a sample, which is why each carries a way through to the library
- * tab showing all of it.
+ * The rows under the book being read, in the order the screen shows them:
+ * what was kept, what was opened lately, what has not been started, what just
+ * arrived. Nearly finished and done are the library tab's filters rather than
+ * rows here - see ADR 0007.
  */
 enum class HomeShelf {
-    Recent,
-    RecentlyAdded,
-    AlmostDone,
-    Unread,
     Favorites,
-    Finished,
+    RecentlyOpened,
+    Unread,
+    RecentlyAdded,
     ;
 
     /**
      * The library tab showing all of what this row is a sample of, as the query
-     * that narrows it there.
-     *
-     * Rows and the shelves behind them are defined in one place this way, so
-     * "See All" under Recent lands on Reading - what Recent samples - and cannot
-     * drift from it.
-     *
-     * [AlmostDone] lands on Reading too: there is no shelf for "nearly done" and
-     * should not be, it being a nudge rather than a category, and Reading is the
-     * smallest true shelf containing all of it.
+     * that narrows it there - so the row and the shelf behind its title cannot
+     * drift apart.
      */
     fun seeAll(): LibraryQuery = when (this) {
-        Recent -> LibraryQuery(shelf = LibraryShelf.Reading, sort = LibrarySort.LastRead)
-        RecentlyAdded -> LibraryQuery(sort = LibrarySort.RecentlyAdded)
-        AlmostDone -> LibraryQuery(shelf = LibraryShelf.Reading, sort = LibrarySort.LastRead)
-        Unread -> LibraryQuery(shelf = LibraryShelf.Unread, sort = LibrarySort.RecentlyAdded)
         Favorites -> LibraryQuery(favouritesOnly = true)
-        Finished -> LibraryQuery(shelf = LibraryShelf.Finished, sort = LibrarySort.LastRead)
+        // The whole library rather than the Reading shelf: a book finished last
+        // night was opened as recently as any.
+        RecentlyOpened -> LibraryQuery(sort = LibrarySort.LastRead)
+        Unread -> LibraryQuery(shelf = LibraryShelf.Unread, sort = LibrarySort.RecentlyAdded)
+        RecentlyAdded -> LibraryQuery(sort = LibrarySort.RecentlyAdded)
     }
 }
 
@@ -71,50 +48,58 @@ data class HomeRow(
 )
 
 /**
- * The home screen's rows, with any that would be empty left out entirely.
+ * The whole home screen: the book to carry on with, and the rows under it.
  *
- * An empty row is worse than a missing one: a heading over a blank strip teaches
- * nothing, and six of them on a fresh library looks broken rather than new.
+ * [current] is the most recently read book still being read, or null when
+ * nothing is.
+ */
+@Immutable
+data class HomeLayout(
+    val current: LibraryBook?,
+    val rows: List<HomeRow>,
+) {
+    val isEmpty: Boolean get() = current == null && rows.isEmpty()
+}
+
+/**
+ * The home screen for this library.
+ *
+ * Each book appears once, on the first place that holds it. The rows overlap by
+ * nature - the book being read is usually also the newest - and the same cover
+ * three times down one screen reads as clutter rather than emphasis.
+ *
+ * A row with nothing left on it is left out: a heading over a blank strip
+ * teaches nothing.
  *
  * The whole library goes in rather than the narrowed shelf - these rows are
  * about the library itself, and a filter left on the library tab says nothing
  * about where somebody left off reading.
  */
-fun List<LibraryBook>.homeRows(limit: Int = ShelfLimit): List<HomeRow> =
-    HomeShelf.entries.mapNotNull { shelf ->
-        val books = booksOn(shelf).take(limit)
+fun List<LibraryBook>.homeLayout(limit: Int = ShelfLimit): HomeLayout {
+    val current = filter { it.status == ReadingStatus.Reading }
+        .sortedFor(LibrarySort.LastRead)
+        .firstOrNull()
+    val shown = mutableSetOf<String>()
+    current?.let { shown += it.location }
+
+    val rows = HomeShelf.entries.mapNotNull { shelf ->
+        val books = booksOn(shelf)
+            .filter { it.location !in shown }
+            .take(limit)
+        shown += books.map { it.location }
 
         if (books.isEmpty()) null else HomeRow(shelf, books)
     }
 
-private fun List<LibraryBook>.booksOn(shelf: HomeShelf): List<LibraryBook> = when (shelf) {
-    // Everything that has been opened, not only what is unfinished: "Recent" is
-    // a record of what a reader has been doing, and a book finished last night
-    // is the truest thing on it.
-    HomeShelf.Recent -> filter { it.progress != null }.sortedFor(LibrarySort.LastRead)
-    HomeShelf.RecentlyAdded -> sortedFor(LibrarySort.RecentlyAdded)
-    // Closest to the end first, which is the only order this row can be in: it
-    // exists to answer "what can I finish", and the answer is the top of it.
-    HomeShelf.AlmostDone -> filter { it.isAlmostDone }.sortedByDescending { it.fraction }
-    HomeShelf.Unread -> filter { it.status == ReadingStatus.Unread }
-        .sortedFor(LibrarySort.RecentlyAdded)
-    // Newest first, like the row above it. A favourite marked years ago is not
-    // what somebody scrolling their home screen is looking for.
-    HomeShelf.Favorites -> filter { it.document.isFavorite }.sortedFor(LibrarySort.RecentlyAdded)
-    HomeShelf.Finished -> filter { it.status == ReadingStatus.Finished }
-        .sortedFor(LibrarySort.LastRead)
+    return HomeLayout(current, rows)
 }
 
-/** How far through, or zero for a book nobody has opened. */
-private val LibraryBook.fraction: Float
-    get() = progress?.fraction ?: 0f
-
-/**
- * A book its reader is within sight of the end of.
- *
- * Finished books are excluded rather than counted as the most nearly done of
- * all: this row is a list of things still to do, and a book already read is not
- * one of them - it has a row of its own.
- */
-private val LibraryBook.isAlmostDone: Boolean
-    get() = status == ReadingStatus.Reading && fraction >= AlmostDoneFraction
+private fun List<LibraryBook>.booksOn(shelf: HomeShelf): List<LibraryBook> = when (shelf) {
+    // Newest first: a favourite marked years ago is not what somebody
+    // scrolling their home screen is looking for.
+    HomeShelf.Favorites -> filter { it.document.isFavorite }.sortedFor(LibrarySort.RecentlyAdded)
+    HomeShelf.RecentlyOpened -> filter { it.progress != null }.sortedFor(LibrarySort.LastRead)
+    HomeShelf.Unread -> filter { it.status == ReadingStatus.Unread }
+        .sortedFor(LibrarySort.RecentlyAdded)
+    HomeShelf.RecentlyAdded -> sortedFor(LibrarySort.RecentlyAdded)
+}

@@ -171,14 +171,11 @@
     <string name="sort_last_read">Lus récemment</string>
     <string name="sort_largest">Les plus gros d\u2019abord</string>
     <string name="home_title">Accueil</string>
-    <string name="home_shelf_recent">Récents</string>
-    <string name="home_shelf_recently_added">Ajoutés récemment</string>
-    <string name="home_shelf_almost_done">Presque finis</string>
-    <string name="home_shelf_unread">Non lus</string>
     <string name="home_shelf_favorites">Favoris</string>
-    <string name="home_shelf_finished">Lus</string>
-    <string name="home_browse_by_category">Parcourir par thème</string>
-    <string name="home_see_all">Tout voir</string>
+    <string name="home_shelf_recently_opened">Ouverts récemment</string>
+    <string name="home_shelf_recently_added">Ajoutés récemment</string>
+    <string name="home_shelf_unread">Non lus</string>
+    <string name="search_browse_by_category">Parcourir par thème</string>
     <string name="library_title">Bibliothèque</string>
     <string name="library_actions">Actions de la bibliothèque</string>
     <string name="library_close_menu">Fermer le menu</string>
@@ -508,6 +505,7 @@
     <string name="figure_close">Fermer l’illustration</string>
     <string name="figure_illustration">Illustration</string>
     <string name="home_see_all_shelf">Voir tout : %1$s</string>
+    <string name="home_resume">Reprendre</string>
     <string name="search_for_term">Rechercher %1$s</string>
     <string name="search_clear_recent">Effacer les recherches récentes</string>
     <string name="book_open_title">Ouvrir %1$s</string>

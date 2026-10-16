@@ -202,14 +202,11 @@
     <string name="sort_largest">Suurin ensin</string>
 
     <string name="home_title">Koti</string>
-    <string name="home_shelf_recent">Viimeisimmät</string>
-    <string name="home_shelf_recently_added">Äskettäin lisätyt</string>
-    <string name="home_shelf_almost_done">Melkein valmiit</string>
-    <string name="home_shelf_unread">Lukematta</string>
     <string name="home_shelf_favorites">Suosikit</string>
-    <string name="home_shelf_finished">Luetut</string>
-    <string name="home_browse_by_category">Selaa aiheittain</string>
-    <string name="home_see_all">Näytä kaikki</string>
+    <string name="home_shelf_recently_opened">Äskettäin avatut</string>
+    <string name="home_shelf_recently_added">Äskettäin lisätyt</string>
+    <string name="home_shelf_unread">Lukematta</string>
+    <string name="search_browse_by_category">Selaa aiheittain</string>
 
     <string name="library_title">Kirjasto</string>
     <string name="library_actions">Kirjaston toiminnot</string>
@@ -570,6 +567,7 @@
     <string name="figure_close">Sulje kuva</string>
     <string name="figure_illustration">Kuva</string>
     <string name="home_see_all_shelf">Näytä kaikki: %1$s</string>
+    <string name="home_resume">Jatka</string>
     <string name="search_for_term">Hae: %1$s</string>
     <string name="search_clear_recent">Tyhjennä viimeisimmät haut</string>
     <string name="book_open_title">Avaa %1$s</string>

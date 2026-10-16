@@ -164,14 +164,11 @@
     <string name="sort_last_read">Nylig lest</string>
     <string name="sort_largest">Størst først</string>
     <string name="home_title">Hjem</string>
-    <string name="home_shelf_recent">Siste</string>
-    <string name="home_shelf_recently_added">Nylig lagt til</string>
-    <string name="home_shelf_almost_done">Nesten ferdige</string>
-    <string name="home_shelf_unread">Uleste</string>
     <string name="home_shelf_favorites">Favoritter</string>
-    <string name="home_shelf_finished">Leste</string>
-    <string name="home_browse_by_category">Bla etter emne</string>
-    <string name="home_see_all">Vis alle</string>
+    <string name="home_shelf_recently_opened">Nylig åpnet</string>
+    <string name="home_shelf_recently_added">Nylig lagt til</string>
+    <string name="home_shelf_unread">Uleste</string>
+    <string name="search_browse_by_category">Bla etter emne</string>
     <string name="library_title">Bibliotek</string>
     <string name="library_actions">Bibliotekets handlinger</string>
     <string name="library_close_menu">Lukk menyen</string>
@@ -501,6 +498,7 @@
     <string name="figure_close">Lukk illustrasjonen</string>
     <string name="figure_illustration">Illustrasjon</string>
     <string name="home_see_all_shelf">Se alle %1$s</string>
+    <string name="home_resume">Fortsett</string>
     <string name="search_for_term">Søk etter %1$s</string>
     <string name="search_clear_recent">Tøm nylige søk</string>
     <string name="book_open_title">Åpne %1$s</string>

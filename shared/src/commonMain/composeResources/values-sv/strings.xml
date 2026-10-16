@@ -188,14 +188,11 @@
     <string name="sort_largest">Störst först</string>
 
     <string name="home_title">Hem</string>
-    <string name="home_shelf_recent">Senaste</string>
-    <string name="home_shelf_recently_added">Nyligen tillagda</string>
-    <string name="home_shelf_almost_done">Nästan klara</string>
-    <string name="home_shelf_unread">Olästa</string>
     <string name="home_shelf_favorites">Favoriter</string>
-    <string name="home_shelf_finished">Lästa</string>
-    <string name="home_browse_by_category">Bläddra efter ämne</string>
-    <string name="home_see_all">Visa alla</string>
+    <string name="home_shelf_recently_opened">Nyligen öppnade</string>
+    <string name="home_shelf_recently_added">Nyligen tillagda</string>
+    <string name="home_shelf_unread">Olästa</string>
+    <string name="search_browse_by_category">Bläddra efter ämne</string>
 
     <string name="library_title">Bibliotek</string>
     <string name="library_actions">Bibliotekets åtgärder</string>
@@ -555,6 +552,7 @@
     <string name="figure_close">Stäng illustrationen</string>
     <string name="figure_illustration">Illustration</string>
     <string name="home_see_all_shelf">Visa alla %1$s</string>
+    <string name="home_resume">Fortsätt</string>
     <string name="search_for_term">Sök efter %1$s</string>
     <string name="search_clear_recent">Rensa senaste sökningarna</string>
     <string name="book_open_title">Öppna %1$s</string>

@@ -13,12 +13,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import io.lukia.features.library.presentation.components.home.HomeCategoryRow
+import io.lukia.features.library.presentation.components.home.HomeContinueCard
 import io.lukia.features.library.presentation.components.home.HomeShelfRow
 import io.lukia.features.library.presentation.components.toolbar.LibraryMenu
 import io.lukia.features.library.presentation.components.toolbar.MenuButton
+import io.lukia.features.library.presentation.model.HomeLayout
 import io.lukia.features.library.presentation.model.HomeMenu
-import io.lukia.features.library.presentation.model.HomeRow
 import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.features.library.presentation.sessions.LibraryShelfUi
@@ -31,12 +31,12 @@ import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 
-/** The first reveal slot belongs to the header; the rows follow it down the page. */
+/** The first reveal slot belongs to the header; the card and rows follow it down the page. */
 private const val RowRevealOffset = 1
 
 /**
- * The screen itself: its name and menu, then a row for each way the library is
- * worth sampling, then the subjects the books file themselves under.
+ * The screen itself: its name and menu, the book being read, then a row for each
+ * way the rest of the library is worth sampling.
  *
  * The header scrolls away with the rows rather than sitting in a bar over them.
  * There is no title to keep on screen once a reader is three rows down - by then
@@ -45,8 +45,7 @@ private const val RowRevealOffset = 1
  */
 @Composable
 internal fun HomeRows(
-    rows: List<HomeRow>,
-    categories: List<String>,
+    home: HomeLayout,
     actions: HomeBookActions,
     openMenu: HomeMenu?,
     onOpenMenuChange: (HomeMenu?) -> Unit,
@@ -77,8 +76,24 @@ internal fun HomeRows(
             }
         }
 
+        home.current?.let { book ->
+            item(key = "current", contentType = "current") {
+                HomeContinueCard(
+                    book = book,
+                    actions = actions,
+                    menuExpanded = openMenu == HomeMenu.Book(book.location),
+                    onMenuExpandedChange = { expanded ->
+                        onOpenMenuChange(HomeMenu.Book(book.location).takeIf { expanded })
+                    },
+                    modifier = Modifier
+                        .padding(horizontal = dimens.screenPadding)
+                        .launchReveal(reveal, index = RowRevealOffset),
+                )
+            }
+        }
+
         itemsIndexed(
-            items = rows,
+            items = home.rows,
             key = { _, row -> row.shelf.name },
             contentType = { _, _ -> "shelf" },
         ) { index, row ->
@@ -88,24 +103,8 @@ internal fun HomeRows(
                 openMenu = openMenu,
                 onOpenMenuChange = onOpenMenuChange,
                 onSeeAll = onSeeAll,
-                modifier = Modifier.launchReveal(reveal, index = index + RowRevealOffset),
+                modifier = Modifier.launchReveal(reveal, index = index + RowRevealOffset + 1),
             )
-        }
-
-        // Last, because it is the only row that leads somewhere by name rather
-        // than by showing what is there. Everything above answers "what shall I
-        // read"; this answers "what else have I got".
-        if (categories.isNotEmpty()) {
-            item(key = "categories", contentType = "categories") {
-                HomeCategoryRow(
-                    categories = categories,
-                    onSelect = { category -> onSeeAll(LibraryQuery(category = category)) },
-                    modifier = Modifier.launchReveal(
-                        reveal,
-                        index = rows.size + RowRevealOffset,
-                    ),
-                )
-            }
         }
     }
 }

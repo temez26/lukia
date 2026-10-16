@@ -164,14 +164,11 @@
     <string name="sort_last_read">Onlangs gelezen</string>
     <string name="sort_largest">Grootste eerst</string>
     <string name="home_title">Start</string>
-    <string name="home_shelf_recent">Recent</string>
-    <string name="home_shelf_recently_added">Onlangs toegevoegd</string>
-    <string name="home_shelf_almost_done">Bijna uit</string>
-    <string name="home_shelf_unread">Ongelezen</string>
     <string name="home_shelf_favorites">Favorieten</string>
-    <string name="home_shelf_finished">Gelezen</string>
-    <string name="home_browse_by_category">Bladeren op onderwerp</string>
-    <string name="home_see_all">Alles tonen</string>
+    <string name="home_shelf_recently_opened">Onlangs geopend</string>
+    <string name="home_shelf_recently_added">Onlangs toegevoegd</string>
+    <string name="home_shelf_unread">Ongelezen</string>
+    <string name="search_browse_by_category">Bladeren op onderwerp</string>
     <string name="library_title">Bibliotheek</string>
     <string name="library_actions">Acties van de bibliotheek</string>
     <string name="library_close_menu">Menu sluiten</string>
@@ -501,6 +498,7 @@
     <string name="figure_close">De illustratie sluiten</string>
     <string name="figure_illustration">Illustratie</string>
     <string name="home_see_all_shelf">Alle %1$s tonen</string>
+    <string name="home_resume">Verder lezen</string>
     <string name="search_for_term">Zoeken naar %1$s</string>
     <string name="search_clear_recent">Recente zoekopdrachten wissen</string>
     <string name="book_open_title">%1$s openen</string>
