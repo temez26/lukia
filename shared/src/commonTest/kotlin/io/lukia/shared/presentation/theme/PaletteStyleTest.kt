@@ -14,7 +14,7 @@ class PaletteStyleTest {
     fun onlyLedgerChangesShapesAndType() {
         AppPalette.entries.filter { it != AppPalette.Ledger }.forEach { palette ->
             assertEquals(LukiaShapes, shapesFor(palette), "$palette changed the shapes")
-            assertEquals(LukiaTypography, typographyFor(palette), "$palette changed the type")
+            assertEquals(LukiaTypography, typographyFor(palette, Headlines), "$palette changed the type")
         }
 
         assertNotEquals(LukiaShapes, shapesFor(AppPalette.Ledger))
@@ -32,11 +32,14 @@ class PaletteStyleTest {
     /** Headings go serif; what is read in quantity stays in the app's sans. */
     @Test
     fun ledgerSetsHeadingsInSerifAndLeavesBodyTextAlone() {
-        val ledger = typographyFor(AppPalette.Ledger)
+        val ledger = typographyFor(AppPalette.Ledger, Headlines)
 
-        assertEquals(FontFamily.Serif, ledger.displaySmall.fontFamily)
-        assertEquals(FontFamily.Serif, ledger.titleMedium.fontFamily)
+        assertEquals(Headlines, ledger.displaySmall.fontFamily)
+        assertEquals(Headlines, ledger.titleMedium.fontFamily)
         assertNull(ledger.bodyLarge.fontFamily)
         assertNull(ledger.labelSmall.fontFamily)
     }
 }
+
+/** Stands in for the bundled face, which only a composition can load. */
+private val Headlines = FontFamily.Serif

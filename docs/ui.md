@@ -13,7 +13,7 @@ A theme is an `AppPalette`, chosen in Settings > Appearance, in light and dark.
 | Crisp (default) | Apple system greys, blue accent | `LukiaShapes` (4-20dp) | `LukiaTypography`, system sans |
 | Paper | Warm paper and ink, deep blue accent | `LukiaShapes` | `LukiaTypography` |
 | Slate | Cool neutral greys, amber accent | `LukiaShapes` | `LukiaTypography` |
-| Ledger | Black on white, true black at night, red accent | `LedgerShapes` (0-4dp) | Serif bold headings, sans body |
+| Ledger | Black on white, true black at night, red accent | `LedgerShapes` (0-4dp) | Noto Serif Bold headings (bundled), sans body |
 
 - Colours: six surface roles per palette and lightness in `theme/Color.kt`.
   `ContrastTest` holds every palette to 4.5:1 for text.

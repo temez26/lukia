@@ -1,11 +1,15 @@
 package io.lukia.shared.presentation.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import io.lukia.core.domain.AppPalette
+import io.lukia.resources.Res
+import io.lukia.resources.noto_serif_bold
+import org.jetbrains.compose.resources.Font
 
 /**
  * Type scale mirroring Apple's SF text styles (Large Title / Title / Headline /
@@ -111,16 +115,17 @@ internal val LukiaTypography = Typography(
 )
 
 /**
- * Ledger's type: every heading and title in the platform's serif, set bold, as
- * a newspaper sets its headlines. Body text and labels stay in the sans the rest
- * of the app uses - small serif text on a phone reads worse, not more bookish.
+ * Ledger's type: every heading and title in a serif, set bold, as a newspaper
+ * sets its headlines. Body text and labels stay in the sans the rest of the app
+ * uses - small serif text on a phone reads worse, not more bookish.
  *
- * The system serif rather than a bundled face, for the reason [LukiaTypography]
- * bundles nothing: it is already on every device, and it is what each platform
- * renders best.
+ * Unlike [LukiaTypography] this one bundles its face (Noto Serif Bold - see
+ * [ledgerHeadlineFamily]). The platform's own serif was tried first and is not
+ * there to be had on every phone: a maker's font setting can map it to the
+ * system sans, which left Ledger's headings indistinguishable from Crisp's.
  */
-private val LedgerTypography: Typography = LukiaTypography.run {
-    fun TextStyle.headline() = copy(fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold)
+private fun ledgerTypography(headlines: FontFamily): Typography = LukiaTypography.run {
+    fun TextStyle.headline() = copy(fontFamily = headlines, fontWeight = FontWeight.Bold)
 
     copy(
         displaySmall = displaySmall.headline(),
@@ -132,8 +137,16 @@ private val LedgerTypography: Typography = LukiaTypography.run {
     )
 }
 
-/** Only Ledger changes type; the other palettes share [LukiaTypography]. */
-internal fun typographyFor(palette: AppPalette): Typography = when (palette) {
+/**
+ * Only Ledger changes type; the other palettes share [LukiaTypography].
+ * [ledgerHeadlines] is Ledger's heading face, loaded by the caller because a
+ * bundled font can only be read inside a composition.
+ */
+internal fun typographyFor(palette: AppPalette, ledgerHeadlines: FontFamily): Typography = when (palette) {
     AppPalette.Crisp, AppPalette.Paper, AppPalette.Slate -> LukiaTypography
-    AppPalette.Ledger -> LedgerTypography
+    AppPalette.Ledger -> ledgerTypography(ledgerHeadlines)
 }
+
+/** The face Ledger sets its headings in, bundled so it is the same on every device. */
+@Composable
+internal fun ledgerHeadlineFamily(): FontFamily = FontFamily(Font(Res.font.noto_serif_bold, FontWeight.Bold))

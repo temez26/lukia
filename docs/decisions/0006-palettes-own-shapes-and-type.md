@@ -17,7 +17,10 @@ on the same five steps) and the platform serif, bold, for display, headline and
 title styles. Body text and labels stay in the system sans. The other palettes
 return the shared `LukiaShapes` and `LukiaTypography`.
 
-No font is bundled: `FontFamily.Serif` is on every platform already.
+The serif is bundled: Noto Serif Bold, under the SIL Open Font License 1.1
+(about 480 KB). The platform serif was tried first, and on a OnePlus phone the
+maker's font setting mapped it to the system sans, so Ledger's headings came
+out looking like everyone else's.
 
 ## Consequences
 

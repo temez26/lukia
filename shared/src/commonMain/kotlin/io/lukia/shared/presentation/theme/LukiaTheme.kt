@@ -97,6 +97,8 @@ fun LukiaTheme(
         colorSchemeFor(palette, darkTheme, accent)
     }
     val glassStyle = remember { platformGlassStyle() }
+    val ledgerHeadlines = ledgerHeadlineFamily()
+    val typography = remember(palette, ledgerHeadlines) { typographyFor(palette, ledgerHeadlines) }
 
     // The device's own answer, which caps the reader's - see [motionFor]. Read
     // here rather than where each animation is written, because it is one
@@ -139,7 +141,7 @@ fun LukiaTheme(
         ) {
             MaterialTheme(
                 colorScheme = colorScheme,
-                typography = typographyFor(palette),
+                typography = typography,
                 shapes = shapesFor(palette),
                 content = content,
             )
