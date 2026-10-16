@@ -185,6 +185,8 @@
     <string name="home_shelf_favorites">Ulubione</string>
     <string name="home_shelf_recently_opened">Ostatnio otwierane</string>
     <string name="home_shelf_recently_added">Ostatnio dodane</string>
+    <string name="home_shelf_empty_title">Brak książek</string>
+    <string name="home_shelf_empty_message">Książki z tej półki pojawią się tutaj.</string>
     <string name="home_shelf_unread">Nieprzeczytane</string>
     <string name="search_browse_by_category">Przeglądaj według tematu</string>
     <string name="library_title">Biblioteka</string>

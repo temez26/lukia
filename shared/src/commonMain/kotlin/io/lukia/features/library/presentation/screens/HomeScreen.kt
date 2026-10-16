@@ -19,7 +19,7 @@ import io.lukia.core.presentation.UiState
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.model.HomeLayout
 import io.lukia.features.library.presentation.model.HomeMenu
-import io.lukia.features.library.presentation.model.LibraryQuery
+import io.lukia.features.library.presentation.model.HomeShelf
 import io.lukia.features.library.presentation.model.homeLayout
 import io.lukia.features.library.presentation.pickers.rememberPlatformFilePicker
 import io.lukia.features.library.presentation.pickers.rememberPlatformFolderPicker
@@ -53,7 +53,7 @@ import org.koin.compose.viewmodel.koinViewModel
 internal fun HomeScreen(
     onOpenBook: (DocumentInfo) -> Unit,
     onShowDetails: (DocumentInfo) -> Unit,
-    onSeeAll: (LibraryQuery) -> Unit,
+    onOpenShelf: (HomeShelf) -> Unit,
     onOpenLibrary: () -> Unit,
     onSettings: () -> Unit,
     /** The way to the reader's own page, supplied by the shell - see `MobileShell`. */
@@ -84,23 +84,14 @@ internal fun HomeScreen(
     // on another tab has nothing to say about where they stopped reading.
     val home = remember(library) { library.homeLayout() }
 
-    val actions = remember(homeShelf, onOpenBook, onShowDetails, viewModel) {
-        HomeBookActions(
-            onOpen = { book -> viewModel.openBook(book.document, onOpenBook) },
-            onShowDetails = { book -> onShowDetails(book.document) },
-            onToggleFavorite = { book -> viewModel.toggleFavorite(book.document) },
-            onRefresh = { book -> viewModel.refreshDocument(book.document) },
-            onDelete = { book -> viewModel.deleteDocument(book.document) },
-            onSelectBooks = homeShelf.onStart,
-        )
-    }
+    val actions = rememberHomeBookActions(viewModel, onOpenBook, onShowDetails, homeShelf.onStart)
 
     HomeContent(
         uiState = uiState,
         home = home,
         importing = rememberImportUi(viewModel),
         actions = actions,
-        onSeeAll = onSeeAll,
+        onOpenShelf = onOpenShelf,
         onImport = { filePicker.launch(viewModel::importDocuments) },
         onImportFolder = {
             folderPicker.launch { pickedFolder ->
@@ -115,6 +106,27 @@ internal fun HomeScreen(
 }
 
 /**
+ * What a press or a long press on one of Home's covers does - on Home itself
+ * and on the screen a row's title opens, which offer the same menu.
+ */
+@Composable
+internal fun rememberHomeBookActions(
+    viewModel: LibraryViewModel,
+    onOpenBook: (DocumentInfo) -> Unit,
+    onShowDetails: (DocumentInfo) -> Unit,
+    onSelectBooks: () -> Unit,
+): HomeBookActions = remember(viewModel, onOpenBook, onShowDetails, onSelectBooks) {
+    HomeBookActions(
+        onOpen = { book -> viewModel.openBook(book.document, onOpenBook) },
+        onShowDetails = { book -> onShowDetails(book.document) },
+        onToggleFavorite = { book -> viewModel.toggleFavorite(book.document) },
+        onRefresh = { book -> viewModel.refreshDocument(book.document) },
+        onDelete = { book -> viewModel.deleteDocument(book.document) },
+        onSelectBooks = onSelectBooks,
+    )
+}
+
+/**
  * [home] arrives already grouped and ordered - see `homeLayout` - so this screen
  * only ever draws what it is handed.
  */
@@ -123,7 +135,7 @@ internal fun HomeContent(
     uiState: UiState<List<DocumentInfo>>,
     home: HomeLayout,
     actions: HomeBookActions,
-    onSeeAll: (LibraryQuery) -> Unit,
+    onOpenShelf: (HomeShelf) -> Unit,
     onImport: () -> Unit,
     onImportFolder: () -> Unit,
     onRetry: () -> Unit,
@@ -170,7 +182,7 @@ internal fun HomeContent(
                     actions = actions,
                     openMenu = menuOpen,
                     onOpenMenuChange = { menuOpen = it },
-                    onSeeAll = onSeeAll,
+                    onOpenShelf = onOpenShelf,
                     reveal = reveal,
                     modifier = Modifier.fillMaxSize(),
                     header = {

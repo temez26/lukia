@@ -39,8 +39,9 @@ The mobile home screen leads with the book being read
   button. Resume is the only accent-filled control on Home.
 - Rows from `homeLayout`: Favorites, Recently Opened, Unread, Recently Added. Each book
   appears once, on its first row, and an empty row is left out.
-- A row's title is its link to the library tab (`HomeShelf.seeAll`), shown as
-  the title with a muted chevron. Don't add "See All" labels or accent-coloured
+- A row's title, shown with a muted chevron, opens that row's own screen
+  (`HomeShelfScreen`, route `shelf/{name}`): every book the row samples
+  (`onShelf`), in a cover grid, without the 12-book cap or the one-book-once rule. Don't add "See All" labels or accent-coloured
   headers.
 - Browsing by category lives on the Search tab (`BrowseCategories`), fed by
   `LibraryFacets.browseCategories`: subjects at least two books share, at most 20.

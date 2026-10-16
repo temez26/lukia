@@ -239,6 +239,8 @@
     <string name="home_shelf_favorites">Favorites</string>
     <string name="home_shelf_recently_opened">Recently Opened</string>
     <string name="home_shelf_recently_added">Recently Added</string>
+    <string name="home_shelf_empty_title">No books here</string>
+    <string name="home_shelf_empty_message">Books on this shelf will show up here.</string>
     <string name="home_shelf_unread">Unread</string>
     <string name="search_browse_by_category">Browse by Category</string>
 

@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,7 +18,6 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 import io.lukia.core.presentation.authorLine
 import io.lukia.core.presentation.bookTitle
@@ -53,15 +51,13 @@ private val CoverMonogramSize = 26.sp
  * see most, and a home row is exactly where a book turns out to be finished
  * with, or a favourite, or gone.
  *
- * [width] is set by the row rather than by the card, because the rows are not
- * all the same: where a reader left off is worth more room than what happens to
- * have arrived recently.
+ * Sized by its caller through [modifier]: a home row gives it a fixed width, a
+ * shelf screen's grid gives it a cell.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun HomeBookCard(
     book: LibraryBook,
-    width: Dp,
     actions: HomeBookActions,
     menuExpanded: Boolean,
     onMenuExpandedChange: (Boolean) -> Unit,
@@ -74,7 +70,6 @@ internal fun HomeBookCard(
 
     Column(
         modifier = modifier
-            .width(width)
             .menuGesture(
                 interactionSource = interactionSource,
                 onClick = { actions.onOpen(book) },

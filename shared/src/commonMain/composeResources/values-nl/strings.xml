@@ -167,6 +167,8 @@
     <string name="home_shelf_favorites">Favorieten</string>
     <string name="home_shelf_recently_opened">Onlangs geopend</string>
     <string name="home_shelf_recently_added">Onlangs toegevoegd</string>
+    <string name="home_shelf_empty_title">Geen boeken hier</string>
+    <string name="home_shelf_empty_message">Boeken op deze plank verschijnen hier.</string>
     <string name="home_shelf_unread">Ongelezen</string>
     <string name="search_browse_by_category">Bladeren op onderwerp</string>
     <string name="library_title">Bibliotheek</string>

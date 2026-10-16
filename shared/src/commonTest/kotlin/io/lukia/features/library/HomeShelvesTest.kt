@@ -4,6 +4,7 @@ import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.features.library.presentation.model.HomeLayout
 import io.lukia.features.library.presentation.model.HomeShelf
 import io.lukia.features.library.presentation.model.homeLayout
+import io.lukia.features.library.presentation.model.onShelf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -144,5 +145,18 @@ class HomeShelvesTest {
         val rows = rowsOf(*books, limit = 3)
 
         assertEquals(listOf("Book 5", "Book 4", "Book 3"), rows[HomeShelf.Unread])
+    }
+
+    /** A row's own screen holds all of it, including what Home shows elsewhere. */
+    @Test
+    fun aShelfHoldsEveryBookItSamples_evenThoseShownHigherOnHome() {
+        val books = library(
+            book("Kept And Current", favorite = true, progress = readAt(30)),
+            book("Kept", favorite = true),
+            book("Ordinary"),
+        )
+
+        assertEquals(listOf("Kept", "Kept And Current"), books.onShelf(HomeShelf.Favorites).titles())
+        assertEquals(listOf("Ordinary", "Kept", "Kept And Current"), books.onShelf(HomeShelf.RecentlyAdded).titles())
     }
 }

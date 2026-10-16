@@ -174,6 +174,8 @@
     <string name="home_shelf_favorites">Favoris</string>
     <string name="home_shelf_recently_opened">Ouverts récemment</string>
     <string name="home_shelf_recently_added">Ajoutés récemment</string>
+    <string name="home_shelf_empty_title">Aucun livre ici</string>
+    <string name="home_shelf_empty_message">Les livres de cette étagère apparaîtront ici.</string>
     <string name="home_shelf_unread">Non lus</string>
     <string name="search_browse_by_category">Parcourir par thème</string>
     <string name="library_title">Bibliothèque</string>

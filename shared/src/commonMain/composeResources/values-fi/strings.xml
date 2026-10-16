@@ -205,6 +205,8 @@
     <string name="home_shelf_favorites">Suosikit</string>
     <string name="home_shelf_recently_opened">Äskettäin avatut</string>
     <string name="home_shelf_recently_added">Äskettäin lisätyt</string>
+    <string name="home_shelf_empty_title">Ei kirjoja täällä</string>
+    <string name="home_shelf_empty_message">Tämän hyllyn kirjat näkyvät tässä.</string>
     <string name="home_shelf_unread">Lukematta</string>
     <string name="search_browse_by_category">Selaa aiheittain</string>
 
