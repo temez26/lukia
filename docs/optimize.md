@@ -75,3 +75,85 @@ costs some of finding 3's saving back: the same benchmark measures a median of
 Checked on a phone at 200% text: "Aussehen" now shrinks whole; "Appearance",
 "Translating" and "Übersetzen" do not fit even at the smallest size and are
 ellipsised there.
+
+# Sync: the server and the app's connection to it
+
+**Date:** 2026-10-16
+**Scope:** the sync server (`server/`, Ktor and SQLite) and the app's side of it
+(`features/sync`, `features/account`), including the live event stream.
+
+A sync round asks for three change feeds - the library, the account's book
+states and its sessions - plus one write per book or session with something to
+send. The figures below count rounds, so three requests each, for one person
+reading on a phone with a second device open.
+
+| # | Finding | Category | Location | Status |
+| --- | --- | --- | --- | --- |
+| S1 | A device was told about its own changes, and ran a round for each | Duplicate trigger | `events/ChangeEvents.kt`, `events/EventRoutes.kt` | Fixed, a1e96746 |
+| S2 | An app on screen polled every two minutes while its live line was open | Polling where push exists | `App.kt`, `SyncCoordinator` | Fixed, 659df06d |
+| S3 | Two rounds at every launch, and one per request queued during a round | Duplicate trigger | `SyncCoordinator.run`, `syncNow` | Fixed, a5091fa8 |
+| S4 | Writes that stored nothing were announced to every device | Unneeded work | `BookStateService`, `SessionService` | Fixed, 17343d6e |
+| S5 | Every hint runs the full round, whatever kind of change it names | Over-fetching | `SyncCoordinator.listenForChanges` | Won't fix |
+| S6 | One write per changed book or session rather than a batch | Chatty API | `SyncBookStateUseCase`, `SyncSessionsUseCase` | Won't fix |
+| S7 | `MAX(seq) + 1` on `book_state` and `reading_session` reads the whole `(accountId, seq)` index | Database | `BookState.sq`, `ReadingSession.sq` | Won't fix |
+
+### S1. A device was told about its own changes
+
+The server announced each change to every listening device on the account,
+the one that made it included, and that device ran a full round for a change
+it already had. Each change now carries the sign-in (auth family) that made
+it, and a device's own stream leaves it out (`Change.isFor`).
+
+**Saving (counted):** every send while reading - one every few seconds of page
+turning - cost the sending device two rounds; it now costs one.
+`LiveChangesTest.aDeviceIsNotToldOfItsOwnChange` fails without the fix.
+
+### S2. Polling while the live line was open
+
+The app ran a round every two minutes while on screen, alongside the event
+stream that already announces every change. `SyncCoordinator.keepUp` now
+catches up each time the line opens - on coming to the front and after a
+reconnect, which before waited up to two minutes for the next check - and
+checks every two minutes only while the line is down (not open within three
+seconds, or dropped).
+
+**Saving (estimated from the code, confirmed by `SyncRoundsTest`):** 30 rounds
+an hour, about 90 requests, per device on screen with a working line. Catching
+up as the line opens also closes a gap in which a change made between the
+resume round and the line opening went unheard until the next check.
+
+### S3. Overlapping rounds
+
+At launch both the sign-in watcher and the app reaching the foreground ran a
+round; the watcher now runs one only for an actual sign-in. And each request
+made during a round queued a round of its own; a request is now answered by
+any round that started after it was made.
+
+**Counted at a real server (`SyncRoundsTest`):** a launch while signed in runs
+1 round, not 2; three requests during a round run 2 rounds, not 4. Signing in
+while the app is open still runs one.
+
+### S4. Announcing writes that stored nothing
+
+A book state or session sent again, or older than what was stored, still woke
+every device for a full round. The services now announce only when the row's
+`seq` moved. `ChangeAnnouncementsTest` counts 2 announcements where there were 4.
+
+### Not fixed
+
+- **S5.** A round per kind of change would save two requests per hint, but a
+  state-only round after a missed library hint would skip a book it does not
+  know yet and move its cursor past it for good. The full round's order is
+  what makes it safe.
+- **S6.** Rarely more than one book or session changes between rounds, so a
+  batch endpoint would add API surface for little.
+- **S7.** Each write scans the account-first index for the highest `seq`. On a
+  self-hosted server's data (thousands of rows) this is microseconds; an index
+  on `seq` alone would cost every write. Worth revisiting only for a large
+  shared server.
+
+### Not verified
+
+The fixes are tested against a real server in the JVM tests. They were not
+tried on a phone signed in to a server, and not behind a proxy that closes
+idle connections.
