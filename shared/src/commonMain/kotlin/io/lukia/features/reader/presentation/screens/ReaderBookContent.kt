@@ -41,6 +41,7 @@ import io.lukia.features.reader.presentation.screens.translation.ReaderTranslati
 import io.lukia.features.reader.presentation.screens.translation.ReaderTranslationPreferences
 import io.lukia.features.reader.presentation.screens.translation.ReaderTranslationSettings
 import io.lukia.features.reader.presentation.screens.translation.ReaderTranslationUi
+import io.lukia.features.reader.presentation.theme.ReaderPageTheming
 import io.lukia.features.reader.presentation.theme.ReaderTheming
 import io.lukia.features.reader.presentation.theme.readerPageStyle
 import io.lukia.features.reader.presentation.translation.BookTranslations
@@ -250,43 +251,45 @@ internal fun ReaderContent(
                         onAction = onRetry,
                         modifier = Modifier.fillMaxSize(),
                     ) { openDocument ->
-                        when (val content = openDocument.content) {
-                            is PagedContent -> PageList(
-                                pages = content,
-                                listState = listState,
-                                pageScale = settings.pageScale,
-                                pageColor = pageStyle.pageColor,
-                                pageFilter = pageStyle.pageFilter,
-                                translations = translated,
-                                onToggleChrome = chrome::toggleChrome,
-                                onPageScaleChange = { onSettingsChange(settings.withPageScale(it)) },
-                                onPassageSelected = translatingActions.onPassageSelected,
-                                onPassageHold = translatingActions.onPassageHold,
-                                onPassageInquiry = translatingActions.onPassageInquiry,
-                                onPassagesRequested = translatingActions.onPassagesRequested,
-                                translateOnScreen = translating.onScreen,
-                                gestures = gesturesInForce,
-                                sentencesOnPage = sentencesOnPage,
-                                renderPage = renderPage,
-                            )
+                        ReaderPageTheming(theme = settings.theme) {
+                            when (val content = openDocument.content) {
+                                is PagedContent -> PageList(
+                                    pages = content,
+                                    listState = listState,
+                                    pageScale = settings.pageScale,
+                                    pageColor = pageStyle.pageColor,
+                                    pageFilter = pageStyle.pageFilter,
+                                    translations = translated,
+                                    onToggleChrome = chrome::toggleChrome,
+                                    onPageScaleChange = { onSettingsChange(settings.withPageScale(it)) },
+                                    onPassageSelected = translatingActions.onPassageSelected,
+                                    onPassageHold = translatingActions.onPassageHold,
+                                    onPassageInquiry = translatingActions.onPassageInquiry,
+                                    onPassagesRequested = translatingActions.onPassagesRequested,
+                                    translateOnScreen = translating.onScreen,
+                                    gestures = gesturesInForce,
+                                    sentencesOnPage = sentencesOnPage,
+                                    renderPage = renderPage,
+                                )
 
-                            is ReflowableContent -> TextPageList(
-                                sections = content.sections,
-                                listState = listState,
-                                settings = settings,
-                                pageColor = pageStyle.pageColor,
-                                translations = translated,
-                                onToggleChrome = chrome::toggleChrome,
-                                onSettingsChange = onSettingsChange,
-                                onPassageSelected = translatingActions.onPassageSelected,
-                                onPassageHold = translatingActions.onPassageHold,
-                                onPassageInquiry = translatingActions.onPassageInquiry,
-                                onPassagesRequested = translatingActions.onPassagesRequested,
-                                onPagesChange = { paginated = it },
-                                translateOnScreen = translating.onScreen,
-                                gestures = gesturesInForce,
-                                openedAt = initialPosition,
-                            )
+                                is ReflowableContent -> TextPageList(
+                                    sections = content.sections,
+                                    listState = listState,
+                                    settings = settings,
+                                    pageColor = pageStyle.pageColor,
+                                    translations = translated,
+                                    onToggleChrome = chrome::toggleChrome,
+                                    onSettingsChange = onSettingsChange,
+                                    onPassageSelected = translatingActions.onPassageSelected,
+                                    onPassageHold = translatingActions.onPassageHold,
+                                    onPassageInquiry = translatingActions.onPassageInquiry,
+                                    onPassagesRequested = translatingActions.onPassagesRequested,
+                                    onPagesChange = { paginated = it },
+                                    translateOnScreen = translating.onScreen,
+                                    gestures = gesturesInForce,
+                                    openedAt = initialPosition,
+                                )
+                            }
                         }
                     }
 

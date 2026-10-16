@@ -88,6 +88,7 @@ fun LukiaTheme(
             LocalGlassStyle provides glassStyle,
             LocalMotionStyle provides motionStyle,
             LocalIconButtonShape provides iconButtonShapeFor(palette),
+            LocalThemeChoice provides ThemeChoice(palette, accent),
             // Material's own floor, told what this app's floor is.
             //
             // The modifier behind it expands what a control can be *hit* on

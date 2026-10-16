@@ -36,8 +36,10 @@ Ledger's headings came out looking like everyone else's.
   follow the palette for free. Icon buttons, which are circles elsewhere, read
   `LocalIconButtonShape`. Other circles - swatches,
   selection marks, chart bars - stay round.
-- The reader keeps its own page themes (Light, Sepia, Dark) and its own chrome,
-  as it already did for every palette.
+- The reader's toolbar and panels wear the chosen palette and accent at the
+  reader's own lightness (Light or Dark), through `LocalThemeChoice`. The page
+  itself - its paper, ink and the fills of quotations and passage marks - stays
+  fixed per reader theme in every palette, and Sepia keeps its own chrome.
 - Ledger's accent red sits near the error red, so a destructive button and a
   primary one are close in colour. Destructive actions are still confirmed in a
   dialog that names them.

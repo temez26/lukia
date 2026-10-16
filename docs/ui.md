@@ -25,8 +25,10 @@ Body text and labels are the system sans in every palette.
   shapes and fonts, so a palette can change them. Icon buttons read
   `LocalIconButtonShape`: a circle, square in Ledger. Literal circles are for
   things that are round in every theme, such as swatches and selection marks.
-- The reader's page has its own Light, Sepia and Dark themes, independent of
-  the palette.
+- The reader has its own Light, Sepia and Dark themes. In Light and Dark its
+  chrome is the chosen palette and accent at that lightness (`LocalThemeChoice`,
+  `readerChromeColorScheme`); the page itself is fixed per reader theme
+  (`ReaderPageTheming`) and Sepia keeps its own chrome.
 
 ## Adding a palette
 

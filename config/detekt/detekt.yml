@@ -271,6 +271,7 @@ Compose:
       - LocalGlassStyle
       - LocalMotionStyle
       - LocalIconButtonShape
+      - LocalThemeChoice
   ContentEmitterReturningValues:
     active: true
   DefaultsVisibility:

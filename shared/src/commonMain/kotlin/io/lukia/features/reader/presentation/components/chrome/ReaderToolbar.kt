@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,6 +44,7 @@ import io.lukia.shared.presentation.components.controls.pressable
 import io.lukia.shared.presentation.components.icons.BackChevron
 import io.lukia.shared.presentation.components.icons.DisclosureChevron
 import io.lukia.shared.presentation.components.surface.GlassSurface
+import io.lukia.shared.presentation.theme.LocalIconButtonShape
 import io.lukia.shared.presentation.theme.LocalLukiaMetrics
 import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.Space
@@ -241,11 +241,12 @@ internal fun PageIndicatorButton(
     val interactionSource = remember { MutableInteractionSource() }
     val metrics = LocalLukiaMetrics.current
 
-    // A capsule rather than the rounded rect a control in a layout gets. This
+    // The icon buttons' shape rather than the rounded rect a control in a layout
+    // gets: a capsule where they are round, square where the palette is. This
     // one sits inside the toolbar's own capsule with a couple of points either
     // side of it, and two different corner radii that close together read as a
     // mistake rather than as a hierarchy.
-    val shape = CircleShape
+    val shape = LocalIconButtonShape.current
 
     // Read before the modifier chain: `semantics` is not a composable scope.
     val openContents = stringResource(Res.string.reader_open_contents)
