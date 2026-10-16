@@ -3,7 +3,9 @@ package io.lukia.features.library.presentation.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,9 +24,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.components.home.HomeBookCard
@@ -36,7 +41,7 @@ import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.resources.Res
 import io.lukia.resources.home_shelf_empty_message
 import io.lukia.resources.home_shelf_empty_title
-import io.lukia.shared.presentation.components.controls.FloatingBackButton
+import io.lukia.shared.presentation.components.controls.BackButton
 import io.lukia.shared.presentation.components.menu.ActionMenuScrim
 import io.lukia.shared.presentation.components.surface.EmptyState
 import io.lukia.shared.presentation.theme.Clearance
@@ -81,8 +86,9 @@ internal fun HomeShelfScreen(
 }
 
 /**
- * Full-bleed like the statistics and settings screens, so the covers pass under
- * the floating back control rather than starting below a bar.
+ * A bar with the way back and the row's name, held still while the covers
+ * scroll under it: a long shelf is browsed far down, and its name and the way
+ * out should not leave with the first screenful.
  */
 @Composable
 internal fun HomeShelfContent(
@@ -106,15 +112,17 @@ internal fun HomeShelfContent(
                 .fillMaxSize()
                 .windowInsetsPadding(WindowInsets.safeDrawing),
         ) {
-            ShelfGrid(
-                title = title,
-                books = books,
-                actions = actions,
-                openMenu = openMenu,
-                onOpenMenuChange = { openMenu = it },
-            )
+            Column(modifier = Modifier.fillMaxSize()) {
+                ShelfBar(title = title, onBack = onBack)
 
-            FloatingBackButton(onBack = onBack)
+                ShelfGrid(
+                    books = books,
+                    actions = actions,
+                    openMenu = openMenu,
+                    onOpenMenuChange = { openMenu = it },
+                    modifier = Modifier.weight(1f),
+                )
+            }
 
             // The menus are non-focusable popups, so the press that dismisses
             // one has to be caught here - as on Home.
@@ -125,11 +133,11 @@ internal fun HomeShelfContent(
 
 @Composable
 private fun ShelfGrid(
-    title: String,
     books: List<LibraryBook>,
     actions: HomeBookActions,
     openMenu: String?,
     onOpenMenuChange: (String?) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val dimens = LocalLukiaDimens.current
 
@@ -138,24 +146,13 @@ private fun ShelfGrid(
         contentPadding = PaddingValues(
             start = dimens.screenPadding,
             end = dimens.screenPadding,
-            top = Clearance.topChrome,
+            top = Space.md,
             bottom = Clearance.listBottom,
         ),
         horizontalArrangement = Arrangement.spacedBy(dimens.gridSpacing),
         verticalArrangement = Arrangement.spacedBy(dimens.gridRowSpacing),
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
     ) {
-        item(span = { GridItemSpan(maxLineSpan) }, key = "title", contentType = "title") {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.displaySmall,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier
-                    .padding(bottom = Space.md)
-                    .semantics { heading() },
-            )
-        }
-
         // Reached by emptying the shelf while looking at it - the last
         // favourite un-favourited - since Home offers no title to an
         // empty row.
@@ -180,5 +177,34 @@ private fun ShelfGrid(
                 modifier = Modifier.animateItem(),
             )
         }
+    }
+}
+
+@Composable
+private fun ShelfBar(
+    title: String,
+    onBack: () -> Unit,
+) {
+    val dimens = LocalLukiaDimens.current
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = dimens.screenPadding, end = dimens.screenPadding, top = Space.lg, bottom = Space.sm),
+    ) {
+        BackButton(onBack = onBack)
+
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onBackground,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .padding(start = Space.lg)
+                .semantics { heading() },
+        )
     }
 }

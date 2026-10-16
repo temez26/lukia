@@ -25,12 +25,24 @@ fun BoxScope.FloatingBackButton(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LukiaIconButton(
-        label = stringResource(Res.string.action_go_back),
-        onClick = onBack,
+    BackButton(
+        onBack = onBack,
         modifier = modifier
             .align(Alignment.TopStart)
             .padding(start = LocalLukiaDimens.current.screenPadding, top = Space.lg),
+    )
+}
+
+/** The same control, for a screen that sets it in a bar of its own rather than floating it. */
+@Composable
+fun BackButton(
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LukiaIconButton(
+        label = stringResource(Res.string.action_go_back),
+        onClick = onBack,
+        modifier = modifier,
         variant = IconButtonVariant.Glass,
     ) { tint, glyph ->
         BackChevron(tint = tint, modifier = glyph)
