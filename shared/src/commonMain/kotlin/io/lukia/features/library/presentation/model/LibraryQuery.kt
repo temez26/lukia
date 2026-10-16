@@ -79,7 +79,7 @@ data class LibraryQuery(
         favouritesOnly = favouritesOnly && facets.hasFavourites,
         deviceOnly = deviceOnly && facets.hasDeviceOnly,
         format = format?.takeIf { it in facets.formats },
-        category = category?.takeIf { facets.categories.holds(it) },
+        category = category?.takeIf { facets.categories.filesUnder(it) },
         author = author?.takeIf { facets.authors.holds(it) },
         language = language?.takeIf { it in facets.languages },
     )
@@ -108,7 +108,7 @@ private fun LibraryQuery.refinesTo(book: LibraryBook): Boolean =
     (!favouritesOnly || book.document.isFavorite) &&
         (!deviceOnly || book.isDeviceOnly) &&
         (format == null || book.document.type == format) &&
-        (category == null || book.categories.holds(category)) &&
+        (category == null || book.categories.filesUnder(category)) &&
         (author == null || book.authors.holds(author)) &&
         (language == null || book.language == language)
 

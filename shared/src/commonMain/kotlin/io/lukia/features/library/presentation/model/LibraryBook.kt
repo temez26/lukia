@@ -105,7 +105,7 @@ fun List<DocumentInfo>.asLibrary(
             sortTitle = title.lowercase(),
             sortAuthor = metadata?.authors?.firstOrNull()?.trim()?.lowercase().orEmpty(),
             authors = metadata?.authors.orEmpty().trimmedValues(),
-            categories = metadata?.subjects.orEmpty().trimmedValues(),
+            categories = metadata?.subjects.orEmpty().categoryValues(),
             language = metadata?.language
                 ?.substringBefore('-')
                 ?.substringBefore('_')
@@ -118,6 +118,41 @@ fun List<DocumentInfo>.asLibrary(
 /** Blank entries dropped and the rest tidied, for a list a filter offers as choices. */
 private fun List<String>.trimmedValues(): List<String> =
     mapNotNull { it.trim().takeIf(String::isNotEmpty) }
+
+/**
+ * Subjects as a reader would file them.
+ *
+ * Split on semicolons, because some files pack every keyword into one subject
+ * ("Sapkowski; Witcher; Sword"), and with anything that has no letters dropped:
+ * a bare number is a catalogue code, not a subject anybody browses by.
+ */
+private fun List<String>.categoryValues(): List<String> =
+    flatMap { it.split(';') }
+        .trimmedValues()
+        .filter { value -> value.any(Char::isLetter) }
+        // Capitalised only when written all in lower case, so "cryptography"
+        // sits beside "Computer Science" without "iOS" becoming "IOS".
+        .map { value -> if (value == value.lowercase()) value.replaceFirstChar(Char::titlecase) else value }
+
+/**
+ * What two spellings of one category have in common: case, apostrophes and
+ * stray spacing set aside, so "Artist's books" and "Artists' books" file
+ * together.
+ */
+internal fun categoryKey(value: String): String =
+    value.lowercase()
+        .filter { it.isLetterOrDigit() || it.isWhitespace() }
+        .split(Whitespace)
+        .filter(String::isNotEmpty)
+        .joinToString(" ")
+
+private val Whitespace = Regex("\\s+")
+
+/** Whether this book is filed under [category] - see [categoryKey]. */
+internal fun List<String>.filesUnder(category: String): Boolean {
+    val key = categoryKey(category)
+    return any { categoryKey(it) == key }
+}
 
 /**
  * Whether this book carries [value], without regard to case.

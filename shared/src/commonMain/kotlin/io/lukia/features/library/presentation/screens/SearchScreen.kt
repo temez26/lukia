@@ -91,7 +91,7 @@ internal fun SearchScreen(
         recent = recent,
         onForgetRecent = search::forget,
         onClearRecent = search::clearRecent,
-        categories = facets.categories,
+        categories = facets.browseCategories,
         onBrowseCategory = { category -> onBrowse(LibraryQuery(category = category)) },
     )
 }
