@@ -2,8 +2,10 @@ package io.lukia.shared.presentation.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import io.lukia.core.domain.AppPalette
 
 /**
  * Type scale mirroring Apple's SF text styles (Large Title / Title / Headline /
@@ -107,3 +109,31 @@ internal val LukiaTypography = Typography(
         letterSpacing = 0.1.sp,
     ),
 )
+
+/**
+ * Ledger's type: every heading and title in the platform's serif, set bold, as
+ * a newspaper sets its headlines. Body text and labels stay in the sans the rest
+ * of the app uses - small serif text on a phone reads worse, not more bookish.
+ *
+ * The system serif rather than a bundled face, for the reason [LukiaTypography]
+ * bundles nothing: it is already on every device, and it is what each platform
+ * renders best.
+ */
+private val LedgerTypography: Typography = LukiaTypography.run {
+    fun TextStyle.headline() = copy(fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold)
+
+    copy(
+        displaySmall = displaySmall.headline(),
+        headlineLarge = headlineLarge.headline(),
+        headlineMedium = headlineMedium.headline(),
+        headlineSmall = headlineSmall.headline(),
+        titleLarge = titleLarge.headline(),
+        titleMedium = titleMedium.headline(),
+    )
+}
+
+/** Only Ledger changes type; the other palettes share [LukiaTypography]. */
+internal fun typographyFor(palette: AppPalette): Typography = when (palette) {
+    AppPalette.Crisp, AppPalette.Paper, AppPalette.Slate -> LukiaTypography
+    AppPalette.Ledger -> LedgerTypography
+}

@@ -38,6 +38,12 @@ enum class AppPalette {
 
     /** Cool neutral greys, flatter chrome, one confident accent. */
     Slate,
+
+    /**
+     * Black on white like a printed page: serif headings, square corners and a
+     * red accent. The one palette that changes shapes and type as well as colour.
+     */
+    Ledger,
 }
 
 /**

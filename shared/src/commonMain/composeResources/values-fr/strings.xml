@@ -105,6 +105,8 @@
     <string name="palette_paper_detail">Papier chaud et encre, doux pour les yeux sur de longues séances.</string>
     <string name="palette_slate">Ardoise</string>
     <string name="palette_slate_detail">Gris neutres et froids, surfaces plates et discrètes.</string>
+    <string name="palette_ledger">Gazette</string>
+    <string name="palette_ledger_detail">Noir sur blanc comme l’imprimé, avec des titres à empattements et des angles droits.</string>
     <string name="accent_themed">Thème</string>
     <string name="accent_blue">Bleu</string>
     <string name="accent_violet">Violet</string>

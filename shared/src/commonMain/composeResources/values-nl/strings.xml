@@ -98,6 +98,8 @@
     <string name="palette_paper_detail">Warm papier en inkt, zacht voor de ogen bij lang lezen.</string>
     <string name="palette_slate">Leisteen</string>
     <string name="palette_slate_detail">Koel neutrale grijstinten en vlakke, rustige oppervlakken.</string>
+    <string name="palette_ledger">Krant</string>
+    <string name="palette_ledger_detail">Zwart op wit zoals drukwerk, met schreefkoppen en rechte hoeken.</string>
     <string name="accent_themed">Thema</string>
     <string name="accent_blue">Blauw</string>
     <string name="accent_violet">Violet</string>

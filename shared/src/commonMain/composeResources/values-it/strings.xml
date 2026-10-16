@@ -98,6 +98,8 @@
     <string name="palette_paper_detail">Carta e inchiostro caldi, riposanti per gli occhi nelle letture lunghe.</string>
     <string name="palette_slate">Ardesia</string>
     <string name="palette_slate_detail">Grigi neutri e freddi, superfici piatte e discrete.</string>
+    <string name="palette_ledger">Gazzetta</string>
+    <string name="palette_ledger_detail">Nero su bianco come la stampa, con titoli graziati e angoli vivi.</string>
     <string name="accent_themed">Tema</string>
     <string name="accent_blue">Blu</string>
     <string name="accent_violet">Viola</string>

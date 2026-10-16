@@ -98,6 +98,8 @@
     <string name="palette_paper_detail">Papel y tinta cálidos, suaves para la vista en sesiones largas.</string>
     <string name="palette_slate">Pizarra</string>
     <string name="palette_slate_detail">Grises neutros y fríos, superficies planas y discretas.</string>
+    <string name="palette_ledger">Prensa</string>
+    <string name="palette_ledger_detail">Negro sobre blanco como la imprenta, con títulos con serifa y esquinas rectas.</string>
     <string name="accent_themed">Tema</string>
     <string name="accent_blue">Azul</string>
     <string name="accent_violet">Violeta</string>

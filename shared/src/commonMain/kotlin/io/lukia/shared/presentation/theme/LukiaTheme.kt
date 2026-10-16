@@ -40,6 +40,25 @@ internal val LukiaShapes = Shapes(
 )
 
 /**
+ * Ledger's corners: square where the others are rounded, with just enough on
+ * the larger surfaces that a floating panel does not read as a hole cut in the
+ * page. The same five steps, so every component keeps its place in the family.
+ */
+private val LedgerShapes = Shapes(
+    extraSmall = RoundedCornerShape(0.dp),
+    small = RoundedCornerShape(2.dp),
+    medium = RoundedCornerShape(2.dp),
+    large = RoundedCornerShape(3.dp),
+    extraLarge = RoundedCornerShape(4.dp),
+)
+
+/** Only Ledger changes shape; the other palettes are colour alone. */
+internal fun shapesFor(palette: AppPalette): Shapes = when (palette) {
+    AppPalette.Crisp, AppPalette.Paper, AppPalette.Slate -> LukiaShapes
+    AppPalette.Ledger -> LedgerShapes
+}
+
+/**
  * [palette] and [accent] default to what the app ships with, so a preview or a
  * test composes the same colours a first run does without having to say so.
  *
@@ -103,8 +122,8 @@ fun LukiaTheme(
         ) {
             MaterialTheme(
                 colorScheme = colorScheme,
-                typography = LukiaTypography,
-                shapes = LukiaShapes,
+                typography = typographyFor(palette),
+                shapes = shapesFor(palette),
                 content = content,
             )
         }

@@ -21,6 +21,8 @@ import io.lukia.resources.motion_standard
 import io.lukia.resources.motion_standard_detail
 import io.lukia.resources.palette_crisp
 import io.lukia.resources.palette_crisp_detail
+import io.lukia.resources.palette_ledger
+import io.lukia.resources.palette_ledger_detail
 import io.lukia.resources.palette_paper
 import io.lukia.resources.palette_paper_detail
 import io.lukia.resources.palette_slate
@@ -51,6 +53,7 @@ fun AppPalette.displayName(): String = when (this) {
     AppPalette.Crisp -> stringResource(Res.string.palette_crisp)
     AppPalette.Paper -> stringResource(Res.string.palette_paper)
     AppPalette.Slate -> stringResource(Res.string.palette_slate)
+    AppPalette.Ledger -> stringResource(Res.string.palette_ledger)
 }
 
 /** The second line under a palette, which is what actually distinguishes them. */
@@ -59,6 +62,7 @@ fun AppPalette.displayDetail(): String = when (this) {
     AppPalette.Crisp -> stringResource(Res.string.palette_crisp_detail)
     AppPalette.Paper -> stringResource(Res.string.palette_paper_detail)
     AppPalette.Slate -> stringResource(Res.string.palette_slate_detail)
+    AppPalette.Ledger -> stringResource(Res.string.palette_ledger_detail)
 }
 
 @Composable

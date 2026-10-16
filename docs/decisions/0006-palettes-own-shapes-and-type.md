@@ -1,0 +1,32 @@
+# 0006: A palette may bring its own shapes and type
+
+Status: Accepted, 2026-10-16.
+
+## Context
+
+Crisp, Paper and Slate differ only in colour. A fourth theme, Ledger, was
+wanted that feels like a different app: an editorial black-and-white look with
+serif headings, square corners and a red accent. Three directions were mocked
+up (Ink, Sage, Ledger) and Ledger was chosen.
+
+## Decision
+
+`LukiaTheme` asks the palette for its `Shapes` and `Typography` as well as its
+colours (`shapesFor`, `typographyFor`). Ledger supplies square corners (0-4dp
+on the same five steps) and the platform serif, bold, for display, headline and
+title styles. Body text and labels stay in the system sans. The other palettes
+return the shared `LukiaShapes` and `LukiaTypography`.
+
+No font is bundled: `FontFamily.Serif` is on every platform already.
+
+## Consequences
+
+- Components that read `MaterialTheme.shapes` and `MaterialTheme.typography`
+  follow the palette for free. Hard-coded shapes do not: circular icon buttons,
+  swatches and chart bars stay round in Ledger.
+- The reader keeps its own page themes (Light, Sepia, Dark) and its own chrome,
+  as it already did for every palette.
+- Ledger's accent red sits near the error red, so a destructive button and a
+  primary one are close in colour. Destructive actions are still confirmed in a
+  dialog that names them.
+- A future palette can change shapes or type without touching any screen.

@@ -122,6 +122,8 @@
     <string name="palette_paper_detail">Lämmintä paperia ja mustetta, helppo silmille pitkinä lukuhetkinä.</string>
     <string name="palette_slate">Liuske</string>
     <string name="palette_slate_detail">Viileän neutraaleja harmaita ja tasaista, hillittyä pintaa.</string>
+    <string name="palette_ledger">Lehti</string>
+    <string name="palette_ledger_detail">Mustaa valkoisella kuin painettu, päätteelliset otsikot ja terävät kulmat.</string>
 
     <string name="accent_themed">Teema</string>
     <string name="accent_blue">Sininen</string>

@@ -116,6 +116,8 @@
     <string name="palette_paper_detail">Ciepły papier i atrament, łagodny dla oczu przy długim czytaniu.</string>
     <string name="palette_slate">Łupek</string>
     <string name="palette_slate_detail">Chłodne, neutralne szarości i płaskie, spokojne powierzchnie.</string>
+    <string name="palette_ledger">Gazeta</string>
+    <string name="palette_ledger_detail">Czerń na bieli jak w druku, z szeryfowymi nagłówkami i ostrymi rogami.</string>
     <string name="accent_themed">Motyw</string>
     <string name="accent_blue">Niebieski</string>
     <string name="accent_violet">Fioletowy</string>

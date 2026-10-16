@@ -110,6 +110,8 @@
     <string name="palette_paper_detail">Varmt papper och bläck, skonsamt för ögonen under långa stunder.</string>
     <string name="palette_slate">Skiffer</string>
     <string name="palette_slate_detail">Svalt neutrala gråtoner och platt, stillsam yta.</string>
+    <string name="palette_ledger">Tidning</string>
+    <string name="palette_ledger_detail">Svart på vitt som tryck, med serifrubriker och skarpa hörn.</string>
 
     <string name="accent_themed">Tema</string>
     <string name="accent_blue">Blå</string>

@@ -141,6 +141,8 @@
     <string name="palette_paper_detail">Warm paper and ink, easy on the eyes for long sittings.</string>
     <string name="palette_slate">Slate</string>
     <string name="palette_slate_detail">Cool neutral greys and flat, quiet chrome.</string>
+    <string name="palette_ledger">Ledger</string>
+    <string name="palette_ledger_detail">Black on white like print, with serif headings and square corners.</string>
 
     <string name="accent_themed">Theme</string>
     <string name="accent_blue">Blue</string>

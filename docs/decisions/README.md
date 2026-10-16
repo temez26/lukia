@@ -11,3 +11,4 @@ and says so.
 | [0003](0003-offline-first-sync.md) | Offline-first sync through an outbox |
 | [0004](0004-shared-api-module.md) | The wire types live in a shared `:api` module |
 | [0005](0005-password-accounts.md) | Username and password accounts with rotating tokens |
+| [0006](0006-palettes-own-shapes-and-type.md) | A palette may bring its own shapes and type |

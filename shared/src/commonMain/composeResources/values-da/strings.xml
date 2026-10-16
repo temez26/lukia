@@ -98,6 +98,8 @@
     <string name="palette_paper_detail">Varmt papir og blæk, nænsomt for øjnene over lange stunder.</string>
     <string name="palette_slate">Skifer</string>
     <string name="palette_slate_detail">Køligt neutrale grå og flade, rolige flader.</string>
+    <string name="palette_ledger">Avis</string>
+    <string name="palette_ledger_detail">Sort på hvidt som tryk, med serif-overskrifter og skarpe hjørner.</string>
     <string name="accent_themed">Tema</string>
     <string name="accent_blue">Blå</string>
     <string name="accent_violet">Violet</string>

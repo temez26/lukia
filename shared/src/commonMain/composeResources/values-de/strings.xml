@@ -99,6 +99,8 @@
     <string name="palette_paper_detail">Warmes Papier und Tinte, schonend für die Augen bei langen Sitzungen.</string>
     <string name="palette_slate">Schiefer</string>
     <string name="palette_slate_detail">Kühle neutrale Grautöne und flache, ruhige Flächen.</string>
+    <string name="palette_ledger">Zeitung</string>
+    <string name="palette_ledger_detail">Schwarz auf Weiß wie gedruckt, mit Serifen-Überschriften und eckigen Kanten.</string>
     <string name="accent_themed">Thema</string>
     <string name="accent_blue">Blau</string>
     <string name="accent_violet">Violett</string>
