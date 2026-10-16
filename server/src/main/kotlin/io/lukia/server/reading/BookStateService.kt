@@ -27,11 +27,18 @@ class BookStateService(
 ) {
     private val states get() = database.bookStateQueries
 
-    /** Applies whichever parts of [request] are newer than what is stored, and answers with the result. */
+    /**
+     * Applies whichever parts of [request] are newer than what is stored, and answers with the result.
+     *
+     * Devices are told only when something was actually stored: a part that
+     * lost to a newer one, or a change sent again, would otherwise send every
+     * device on the account round for nothing.
+     */
     fun apply(accountId: Long, bookId: String, request: BookStateRequest): BookStateResponse {
         validate(bookId, request)
 
-        return database.transactionWithResult {
+        val (stored, changed) = database.transactionWithResult {
+            val seqBefore = states.selectOne(accountId, bookId).executeAsOneOrNull()?.seq
             states.ensure(accountId, bookId)
             request.progress?.let {
                 states.setProgress(
@@ -46,8 +53,12 @@ class BookStateService(
             request.favorite?.let {
                 states.setFavorite(it.isFavorite, it.changedAt.notAfterNow(), accountId, bookId)
             }
-            states.selectOne(accountId, bookId).executeAsOne().toResponse()
-        }.also { events.announce(ChangeKind.BookState, accountId) }
+            val after = states.selectOne(accountId, bookId).executeAsOne()
+            after.toResponse() to (after.seq != seqBefore)
+        }
+
+        if (changed) events.announce(ChangeKind.BookState, accountId)
+        return stored
     }
 
     fun changesSince(accountId: Long, since: Long, limit: Int): ChangePage<BookStateResponse> = changePage(
