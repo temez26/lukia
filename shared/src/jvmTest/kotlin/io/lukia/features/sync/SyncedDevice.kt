@@ -43,12 +43,14 @@ import io.lukia.features.sync.infrastructure.SessionStore
 import io.lukia.features.sync.infrastructure.SyncCursors
 import io.lukia.features.sync.infrastructure.UploadChoice
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * One device signed in to [server]: its own database, shelf, reader stores and
@@ -111,17 +113,23 @@ class SyncedDevice(private val server: TestSyncServer) : AutoCloseable {
 
     /**
      * This device's coordinator, as the app wires it up, with nothing waiting to
-     * be sent. [lineRefused] stands in for a server whose line will not open -
+     * be sent unless [waiting] says otherwise. [lineRefused] stands in for a server whose line will not open -
      * a proxy that will not hold one - while every other request goes through.
      */
-    fun coordinator(checkEvery: Duration = 2.minutes, lineRefused: Boolean = false) = SyncCoordinator(
+    fun coordinator(
+        checkEvery: Duration = 2.minutes,
+        lineRefused: Boolean = false,
+        waiting: Flow<Long> = emptyFlow(),
+        sendAfter: Duration = 5.seconds,
+    ) = SyncCoordinator(
         session = session,
         round = round,
         syncSessions = syncSessions,
         forgetServer = ForgetServerUseCase(shelf, cursors, ShelfChanges()),
-        waiting = emptyFlow(),
+        waiting = waiting,
         events = ServerEvents(if (lineRefused) ServerHttp(lineRefusingClient()) else http),
         checkEvery = checkEvery,
+        sendAfter = sendAfter,
     )
 
     private fun lineRefusingClient() = serverHttpClient().apply {

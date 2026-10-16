@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -41,8 +42,9 @@ class SyncCoordinator(
     private val syncSessions: SyncSessionsUseCase,
     private val forgetServer: ForgetServerUseCase,
     /**
-     * Fires whenever what is waiting to be sent changes - a position, a
-     * favourite, a sitting growing - and not for what was waiting at launch.
+     * How many changes are waiting to be sent, whenever that changes - a
+     * position, a favourite, a sitting growing - and not for what was waiting
+     * at launch. Only a count above zero starts a round.
      * See `BookStateStore.waiting` and `SessionStore.waiting`.
      */
     private val waiting: Flow<Long>,
@@ -51,6 +53,8 @@ class SyncCoordinator(
     private val nowMillis: () -> Long = { Clock.System.now().toEpochMilliseconds() },
     /** How often to check while the line to the server is down - see [keepUp]. */
     private val checkEvery: Duration = CheckEvery,
+    /** How long after the last change to [waiting] a round sends it. */
+    private val sendAfter: Duration = SendAfter,
 ) {
     /** One round at a time: two would send the same changes twice and race over the cursors. */
     private val oneAtATime = Mutex()
@@ -102,7 +106,9 @@ class SyncCoordinator(
         // Settled for a moment rather than on every write, so a reader turning
         // pages sends one position when they pause rather than one per page.
         launch {
-            waiting.debounce(SendAfter).collect { syncNow() }
+            // Only a count with something in it: sending brings the count back to
+            // zero, and that change is the round finishing, not work for another.
+            waiting.filter { it > 0 }.debounce(sendAfter).collect { syncNow() }
         }
 
         // Latest only: a round that succeeds in the meantime, or fails again,

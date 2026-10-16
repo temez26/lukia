@@ -4,6 +4,7 @@ import io.lukia.api.ApiRoutes
 import io.lukia.features.account.TestSyncServer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -96,6 +97,29 @@ class SyncRoundsTest {
 
         assertTrue(rounds() >= 3, "only ${rounds()} rounds without a line")
         keepingUp.cancel()
+    }
+
+    /**
+     * A round sends what is waiting, and sending it brings the count back to
+     * zero - which is a change to the count, but nothing to send.
+     */
+    @Test
+    fun onlySomethingWaitingStartsARound() = runBlocking {
+        phone.signIn(setUp = true)
+        val waiting = MutableSharedFlow<Long>(extraBufferCapacity = 1)
+        val sync = phone.coordinator(waiting = waiting, sendAfter = 100.milliseconds)
+        val running = launch(Dispatchers.IO) { sync.run() }
+        delay(Settle)
+
+        waiting.emit(1)
+        delay(Settle)
+        assertEquals(1, rounds(), "something waiting was not sent")
+
+        waiting.emit(0)
+        delay(Settle)
+        assertEquals(1, rounds(), "nothing waiting started a round")
+
+        running.cancel()
     }
 
     private companion object {
