@@ -15,9 +15,9 @@ and the current rows cleaned up.
 ## Decision
 
 The continue-reading card with shelves. Home opens on one card for the book
-being read, with a Resume button, then Also reading, Recently added and Unread.
-Row titles are the links to the library; "See All" goes. A book shows once, on
-its first row. Almost Done, Finished and Favorites leave Home and stay as
+being read, with a Resume button, then Favorites, Recently Opened, Unread and
+Recently Added. Row titles are the links to the library; "See All" goes. A book
+shows once, on its first row. Almost Done and Finished leave Home and stay as
 library shelves and filters. Browse by category moves to the Search tab.
 
 The dashboard was turned down because the stats page already exists and would
@@ -26,7 +26,8 @@ gives the current book no priority.
 
 ## Consequences
 
-- Home holds at most four sections, so it fits roughly one screen.
+- Home holds at most five sections.
 - The Resume button is the only accent-filled control on Home.
-- Someone who used the Favorites row reaches it from the library's filter
-  instead, one more tap.
+- Every book is either opened or unread, so Recently Added, coming last,
+  shows only arrivals past the Unread row's dozen and is usually hidden. This
+  was chosen over letting it repeat books from the rows above.

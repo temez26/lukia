@@ -236,7 +236,8 @@
     <string name="sort_largest">Largest first</string>
 
     <string name="home_title">Home</string>
-    <string name="home_shelf_reading">Also Reading</string>
+    <string name="home_shelf_favorites">Favorites</string>
+    <string name="home_shelf_recently_opened">Recently Opened</string>
     <string name="home_shelf_recently_added">Recently Added</string>
     <string name="home_shelf_unread">Unread</string>
     <string name="search_browse_by_category">Browse by Category</string>

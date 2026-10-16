@@ -45,51 +45,82 @@ class HomeShelvesTest {
     }
 
     @Test
-    fun alsoReadingHoldsTheOtherBooksBeingRead_mostRecentlyReadFirst() {
-        val rows = rowsOf(
-            book("Oldest", progress = readAt(10)),
-            book("Newest", progress = readAt(30)),
-            book("Middle", progress = readAt(20)),
+    fun theRowsRunFavoritesRecentlyOpenedUnreadRecentlyAdded() {
+        val home = layoutOf(
+            book("Kept", favorite = true),
+            book("Current", progress = readAt(30)),
+            book("Opened", progress = readAt(10)),
+            book("Fresh"),
+            book("Overflow"),
+            limit = 1,
         )
 
-        assertEquals(listOf("Middle", "Oldest"), rows[HomeShelf.Reading])
+        assertEquals(
+            listOf(HomeShelf.Favorites, HomeShelf.RecentlyOpened, HomeShelf.Unread, HomeShelf.RecentlyAdded),
+            home.rows.map { it.shelf },
+        )
+    }
+
+    @Test
+    fun favoritesHoldOnlyWhatWasMarked_newestFirst() {
+        val rows = rowsOf(
+            book("Kept", favorite = true),
+            book("Ordinary"),
+            book("Also Kept", favorite = true),
+        )
+
+        assertEquals(listOf("Also Kept", "Kept"), rows[HomeShelf.Favorites])
+    }
+
+    /** A book finished last night was opened as recently as one still being read. */
+    @Test
+    fun recentlyOpenedHoldsEveryOpenedBook_mostRecentlyReadFirst() {
+        val rows = rowsOf(
+            book("Current", progress = readAt(40)),
+            book("Older", progress = readAt(10)),
+            book("Done", progress = ReadingProgress(99, 100, readAt = 30)),
+            book("Never Opened"),
+        )
+
+        assertEquals(listOf("Done", "Older"), rows[HomeShelf.RecentlyOpened])
     }
 
     /**
-     * The book being read is usually also the newest, and the same cover three
-     * times down one screen reads as clutter rather than emphasis.
+     * The book being read is often also a favourite and among the newest, and
+     * the same cover several times down one screen reads as clutter.
      */
     @Test
     fun eachBookAppearsOnce_onTheFirstPlaceThatHoldsIt() {
         val home = layoutOf(
-            book("Unread Old"),
+            book("Kept Unread", favorite = true),
             book("Started", progress = readAt(10)),
-            book("Unread New"),
+            book("Unread"),
         )
 
         val everyTitle = listOfNotNull(home.current).titles() + home.rows.flatMap { it.books.titles() }
 
         assertEquals(everyTitle.distinct(), everyTitle)
-        assertEquals(listOf("Unread New", "Unread Old"), rows(home)[HomeShelf.RecentlyAdded])
+        assertEquals(listOf("Kept Unread"), rows(home)[HomeShelf.Favorites])
+        assertEquals(listOf("Unread"), rows(home)[HomeShelf.Unread])
     }
 
     @Test
-    fun recentlyAddedIsTheImportOrderReversed() {
-        val rows = rowsOf(book("First"), book("Second"), book("Third"))
-
-        assertEquals(listOf("Third", "Second", "First"), rows[HomeShelf.RecentlyAdded])
-    }
-
-    @Test
-    fun unreadHoldsWhatHasNeverBeenOpenedAndIsNotAlreadyShown() {
+    fun unreadHoldsWhatHasNeverBeenOpened_newestFirst() {
         val rows = rowsOf(
-            book("Oldest Arrival"),
             book("Older Arrival"),
+            book("Started", progress = readAt(10)),
             book("Newer Arrival"),
-            limit = 2,
         )
 
-        assertEquals(listOf("Oldest Arrival"), rows[HomeShelf.Unread])
+        assertEquals(listOf("Newer Arrival", "Older Arrival"), rows[HomeShelf.Unread])
+    }
+
+    /** Last, so it holds only the arrivals no row above already shows. */
+    @Test
+    fun recentlyAddedHoldsWhatIsLeftOver_newestFirst() {
+        val rows = rowsOf(book("First"), book("Second"), book("Third"), limit = 1)
+
+        assertEquals(listOf("Second"), rows[HomeShelf.RecentlyAdded])
     }
 
     /** A heading over a blank strip teaches nothing. */
@@ -97,7 +128,7 @@ class HomeShelvesTest {
     fun aRowWithNothingOnItIsLeftOutEntirely() {
         val rows = rowsOf(book("Unread And Unloved"))
 
-        assertEquals(setOf(HomeShelf.RecentlyAdded), rows.keys)
+        assertEquals(setOf(HomeShelf.Unread), rows.keys)
     }
 
     @Test
@@ -112,6 +143,6 @@ class HomeShelvesTest {
 
         val rows = rowsOf(*books, limit = 3)
 
-        assertEquals(listOf("Book 5", "Book 4", "Book 3"), rows[HomeShelf.RecentlyAdded])
+        assertEquals(listOf("Book 5", "Book 4", "Book 3"), rows[HomeShelf.Unread])
     }
 }

@@ -171,7 +171,8 @@
     <string name="sort_last_read">Lus récemment</string>
     <string name="sort_largest">Les plus gros d\u2019abord</string>
     <string name="home_title">Accueil</string>
-    <string name="home_shelf_reading">Également en cours</string>
+    <string name="home_shelf_favorites">Favoris</string>
+    <string name="home_shelf_recently_opened">Ouverts récemment</string>
     <string name="home_shelf_recently_added">Ajoutés récemment</string>
     <string name="home_shelf_unread">Non lus</string>
     <string name="search_browse_by_category">Parcourir par thème</string>

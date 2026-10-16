@@ -37,7 +37,7 @@ The mobile home screen leads with the book being read
 
 - `HomeContinueCard`: the most recently read unfinished book, with a Resume
   button. Resume is the only accent-filled control on Home.
-- Rows from `homeLayout`: Also Reading, Recently Added, Unread. Each book
+- Rows from `homeLayout`: Favorites, Recently Opened, Unread, Recently Added. Each book
   appears once, on its first row, and an empty row is left out.
 - A row's title is its link to the library tab (`HomeShelf.seeAll`), shown as
   the title with a muted chevron. Don't add "See All" labels or accent-coloured

@@ -164,7 +164,8 @@
     <string name="sort_last_read">Leídos hace poco</string>
     <string name="sort_largest">Los más grandes primero</string>
     <string name="home_title">Inicio</string>
-    <string name="home_shelf_reading">También leyendo</string>
+    <string name="home_shelf_favorites">Favoritos</string>
+    <string name="home_shelf_recently_opened">Abiertos hace poco</string>
     <string name="home_shelf_recently_added">Añadidos hace poco</string>
     <string name="home_shelf_unread">Sin leer</string>
     <string name="search_browse_by_category">Explorar por tema</string>

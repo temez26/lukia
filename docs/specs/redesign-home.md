@@ -16,7 +16,7 @@ the app - is not given more weight than any other row.
   `HomeShelves`, `HomeCategoryRow`) and moving category browsing to the Search
   tab. Desktop, the library tab and the reader are unchanged.
 - Layout changes allowed; no new features. Every destination stays reachable:
-  Almost Done, Finished and Favorites remain library shelves and filters.
+  Almost Done and Finished remain library shelves and filters.
 - Existing theme tokens and components; no new design system.
 
 ## Direction
@@ -27,9 +27,10 @@ Continue + shelves (see [ADR 0007](../decisions/0007-home-continue-and-shelves.m
 2. **Continue reading** - one card for the most recently read book still being
    read: cover, title, author, progress bar and percentage, and a Resume button
    (the screen's one accent action). Left out when nothing is being read.
-3. **Also reading** - the other books being read.
-4. **Recently added**.
+3. **Favorites**.
+4. **Recently Opened** - every opened book, finished ones included.
 5. **Unread**.
+6. **Recently Added** - only what the rows above do not already show.
 
 Rows:
 
@@ -43,7 +44,7 @@ Rows:
 - [x] No "See All" text on the home screen; no accent colour on row headers.
 - [x] No book appears twice on the screen.
 - [x] Resuming the current book is one tap from launch.
-- [x] At most four sections below the header.
+- [x] At most five sections below the header.
 - [x] Categories are browsable from Search, not Home.
 - [x] Every string in every locale; checked at the largest font size.
 

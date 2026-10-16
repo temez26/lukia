@@ -13,16 +13,16 @@ import androidx.compose.runtime.Immutable
 private const val ShelfLimit = 12
 
 /**
- * The rows under the book being read, in the order the screen shows them.
- *
- * Only the questions worth opening the app for: what else is on the go, what
- * just arrived, what has not been started. Nearly finished, kept and done are
- * the library tab's filters rather than rows here - see ADR 0007.
+ * The rows under the book being read, in the order the screen shows them:
+ * what was kept, what was opened lately, what has not been started, what just
+ * arrived. Nearly finished and done are the library tab's filters rather than
+ * rows here - see ADR 0007.
  */
 enum class HomeShelf {
-    Reading,
-    RecentlyAdded,
+    Favorites,
+    RecentlyOpened,
     Unread,
+    RecentlyAdded,
     ;
 
     /**
@@ -31,9 +31,12 @@ enum class HomeShelf {
      * drift apart.
      */
     fun seeAll(): LibraryQuery = when (this) {
-        Reading -> LibraryQuery(shelf = LibraryShelf.Reading, sort = LibrarySort.LastRead)
-        RecentlyAdded -> LibraryQuery(sort = LibrarySort.RecentlyAdded)
+        Favorites -> LibraryQuery(favouritesOnly = true)
+        // The whole library rather than the Reading shelf: a book finished last
+        // night was opened as recently as any.
+        RecentlyOpened -> LibraryQuery(sort = LibrarySort.LastRead)
         Unread -> LibraryQuery(shelf = LibraryShelf.Unread, sort = LibrarySort.RecentlyAdded)
+        RecentlyAdded -> LibraryQuery(sort = LibrarySort.RecentlyAdded)
     }
 }
 
@@ -73,13 +76,14 @@ data class HomeLayout(
  * about where somebody left off reading.
  */
 fun List<LibraryBook>.homeLayout(limit: Int = ShelfLimit): HomeLayout {
-    val reading = filter { it.status == ReadingStatus.Reading }.sortedFor(LibrarySort.LastRead)
-    val current = reading.firstOrNull()
+    val current = filter { it.status == ReadingStatus.Reading }
+        .sortedFor(LibrarySort.LastRead)
+        .firstOrNull()
     val shown = mutableSetOf<String>()
     current?.let { shown += it.location }
 
     val rows = HomeShelf.entries.mapNotNull { shelf ->
-        val books = booksOn(shelf, reading)
+        val books = booksOn(shelf)
             .filter { it.location !in shown }
             .take(limit)
         shown += books.map { it.location }
@@ -90,12 +94,12 @@ fun List<LibraryBook>.homeLayout(limit: Int = ShelfLimit): HomeLayout {
     return HomeLayout(current, rows)
 }
 
-private fun List<LibraryBook>.booksOn(
-    shelf: HomeShelf,
-    reading: List<LibraryBook>,
-): List<LibraryBook> = when (shelf) {
-    HomeShelf.Reading -> reading
-    HomeShelf.RecentlyAdded -> sortedFor(LibrarySort.RecentlyAdded)
+private fun List<LibraryBook>.booksOn(shelf: HomeShelf): List<LibraryBook> = when (shelf) {
+    // Newest first: a favourite marked years ago is not what somebody
+    // scrolling their home screen is looking for.
+    HomeShelf.Favorites -> filter { it.document.isFavorite }.sortedFor(LibrarySort.RecentlyAdded)
+    HomeShelf.RecentlyOpened -> filter { it.progress != null }.sortedFor(LibrarySort.LastRead)
     HomeShelf.Unread -> filter { it.status == ReadingStatus.Unread }
         .sortedFor(LibrarySort.RecentlyAdded)
+    HomeShelf.RecentlyAdded -> sortedFor(LibrarySort.RecentlyAdded)
 }

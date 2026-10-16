@@ -164,7 +164,8 @@
     <string name="sort_last_read">Onlangs gelezen</string>
     <string name="sort_largest">Grootste eerst</string>
     <string name="home_title">Start</string>
-    <string name="home_shelf_reading">Ook bezig</string>
+    <string name="home_shelf_favorites">Favorieten</string>
+    <string name="home_shelf_recently_opened">Onlangs geopend</string>
     <string name="home_shelf_recently_added">Onlangs toegevoegd</string>
     <string name="home_shelf_unread">Ongelezen</string>
     <string name="search_browse_by_category">Bladeren op onderwerp</string>

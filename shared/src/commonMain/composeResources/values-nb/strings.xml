@@ -164,7 +164,8 @@
     <string name="sort_last_read">Nylig lest</string>
     <string name="sort_largest">Størst først</string>
     <string name="home_title">Hjem</string>
-    <string name="home_shelf_reading">Også i gang</string>
+    <string name="home_shelf_favorites">Favoritter</string>
+    <string name="home_shelf_recently_opened">Nylig åpnet</string>
     <string name="home_shelf_recently_added">Nylig lagt til</string>
     <string name="home_shelf_unread">Uleste</string>
     <string name="search_browse_by_category">Bla etter emne</string>

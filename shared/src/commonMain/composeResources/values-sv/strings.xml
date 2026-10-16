@@ -188,7 +188,8 @@
     <string name="sort_largest">Störst först</string>
 
     <string name="home_title">Hem</string>
-    <string name="home_shelf_reading">Också påbörjade</string>
+    <string name="home_shelf_favorites">Favoriter</string>
+    <string name="home_shelf_recently_opened">Nyligen öppnade</string>
     <string name="home_shelf_recently_added">Nyligen tillagda</string>
     <string name="home_shelf_unread">Olästa</string>
     <string name="search_browse_by_category">Bläddra efter ämne</string>
