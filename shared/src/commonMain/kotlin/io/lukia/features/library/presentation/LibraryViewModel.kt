@@ -29,7 +29,9 @@ import io.lukia.features.library.presentation.model.LibraryFacets
 import io.lukia.features.library.presentation.model.LibraryMessage
 import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.library.presentation.model.LibraryUpkeep
+import io.lukia.features.library.presentation.model.LoadedShelf
 import io.lukia.features.library.presentation.model.asLibrary
+import io.lukia.features.library.presentation.model.editedIfLoaded
 import io.lukia.features.library.presentation.model.facets
 import io.lukia.features.library.presentation.model.matching
 import io.lukia.features.library.presentation.model.upkeep
@@ -93,21 +95,17 @@ class LibraryViewModel(
         scope = viewModelScope,
     )
 
-    private val _uiState = MutableStateFlow<UiState<List<DocumentInfo>>>(UiState.Loading)
-    val uiState: StateFlow<UiState<List<DocumentInfo>>> = _uiState.asStateFlow()
+    /** Documents and positions as one value, so a load changes [library] once rather than twice. */
+    private val shelf = MutableStateFlow(LoadedShelf(UiState.Loading, emptyMap()))
 
-    /**
-     * How far through each book its reader is, for the bars the grid draws on
-     * its covers. Keyed by location, and holding only the books that have
-     * actually been opened.
-     *
-     * Apart from [uiState] rather than folded into each [DocumentInfo]: read
-     * from a different store, changing for a different reason, and a failure to
-     * read it must not take the library off the screen. A grid with no bars is a
-     * small loss; a grid with no books is the whole app.
-     */
-    private val _readingProgress = MutableStateFlow<Map<String, ReadingProgress>>(emptyMap())
-    val readingProgress: StateFlow<Map<String, ReadingProgress>> = _readingProgress.asStateFlow()
+    val uiState: StateFlow<UiState<List<DocumentInfo>>> = shelf
+        .map { it.documents }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, UiState.Loading)
+
+    /** How far through each opened book its reader is, by location - see [LoadedShelf]. */
+    val readingProgress: StateFlow<Map<String, ReadingProgress>> = shelf
+        .map { it.progress }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
 
     /**
      * Transient notice for the snackbar - a failed import, a folder that came in
@@ -153,8 +151,8 @@ class LibraryViewModel(
      * keystroke, which is the whole point of it existing.
      */
     val library: StateFlow<List<LibraryBook>> =
-        combine(_uiState, _readingProgress) { state, progress ->
-            withContext(dispatcher) { state.dataOrNull.orEmpty().asLibrary(progress, ::coverOf) }
+        shelf.map { (documents, progress) ->
+            withContext(dispatcher) { documents.dataOrNull.orEmpty().asLibrary(progress, ::coverOf) }
         }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     /**
@@ -240,7 +238,7 @@ class LibraryViewModel(
 
     private fun loadDocuments() {
         viewModelScope.launch {
-            _uiState.value = runCatchingApp { getLibraryDocumentsUseCase() }
+            val documents = runCatchingApp { getLibraryDocumentsUseCase() }
                 .fold(
                     onSuccess = { UiState.Success(it) },
                     onFailure = { UiState.Failure(it.toAppError()) },
@@ -250,8 +248,10 @@ class LibraryViewModel(
             // screen is for, and the bars on them are a decoration on top. A
             // store that cannot be read leaves the grid without bars rather
             // than without books.
-            _readingProgress.value = runCatching { readingProgressRepository.allProgress() }
+            val progress = runCatching { readingProgressRepository.allProgress() }
                 .getOrDefault(emptyMap())
+
+            shelf.value = LoadedShelf(documents, progress)
         }
     }
 
@@ -338,13 +338,16 @@ class LibraryViewModel(
 
             // Dropped from the list for the same reason favouriting patches it:
             // one row leaving is not a reason to re-read the rest.
-            updateLoadedDocuments { documents ->
-                documents.filterNot { it.document.location == location }
+            // The use case forgets the stored position too, so the bar goes with
+            // the book rather than lingering until the next full read.
+            shelf.update { loaded ->
+                LoadedShelf(
+                    documents = loaded.documents.editedIfLoaded { documents ->
+                        documents.filterNot { it.document.location == location }
+                    },
+                    progress = loaded.progress - location,
+                )
             }
-
-            // The use case forgets the stored position too, so the bar has to go
-            // with the book rather than linger until the next full read.
-            _readingProgress.update { it - location }
         }
     }
 
@@ -358,17 +361,9 @@ class LibraryViewModel(
             .onFailure { _message.value = LibraryMessage.Failed(it.toAppError()) }
             .isSuccess
 
-    /**
-     * Edits the library already on screen, when there is one.
-     *
-     * A library that failed to load or is still loading has nothing to edit, and
-     * inventing a Success state from a local change would put books on screen
-     * that were never read.
-     */
+    /** Edits the library already on screen, when there is one - see [editedIfLoaded]. */
     private fun updateLoadedDocuments(transform: (List<DocumentInfo>) -> List<DocumentInfo>) {
-        _uiState.update { state ->
-            if (state is UiState.Success) UiState.Success(transform(state.data)) else state
-        }
+        shelf.update { it.copy(documents = it.documents.editedIfLoaded(transform)) }
     }
 
     /**
