@@ -53,5 +53,6 @@ Rows:
 - [x] Home: continue-reading card
 - [x] Home: row model (dedupe, fewer rows)
 - [x] Search: browse by category
-- [ ] Home: header buttons match
-- [ ] Polish pass, before/after screenshots, update `docs/ui.md`
+- [x] Home: header buttons match (menu button plain, on Home and the library tab)
+- [x] Update `docs/ui.md`
+- [ ] Polish pass, before/after screenshots

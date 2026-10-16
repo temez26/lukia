@@ -30,6 +30,21 @@ Body text and labels are the system sans in every palette.
   `readerChromeColorScheme`); the page itself is fixed per reader theme
   (`ReaderPageTheming`) and Sepia keeps its own chrome.
 
+## Home screen
+
+The mobile home screen leads with the book being read
+([ADR 0007](decisions/0007-home-continue-and-shelves.md)):
+
+- `HomeContinueCard`: the most recently read unfinished book, with a Resume
+  button. Resume is the only accent-filled control on Home.
+- Rows from `homeLayout`: Also Reading, Recently Added, Unread. Each book
+  appears once, on its first row, and an empty row is left out.
+- A row's title is its link to the library tab (`HomeShelf.seeAll`), shown as
+  the title with a muted chevron. Don't add "See All" labels or accent-coloured
+  headers.
+- Browsing by category lives on the Search tab (`BrowseCategories`), fed by
+  `LibraryFacets.browseCategories`: subjects at least two books share, at most 20.
+
 ## Adding a palette
 
 1. Add the entry to `AppPalette` with a KDoc saying what it is.
