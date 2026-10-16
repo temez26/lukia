@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import io.lukia.features.library.presentation.components.toolbar.ImportMenuRows
 import io.lukia.resources.Res
+import io.lukia.resources.library_add_books
 import io.lukia.resources.library_import_books
 import io.lukia.shared.presentation.components.controls.pressable
 import io.lukia.shared.presentation.components.controls.rememberHoverFraction
@@ -52,7 +53,7 @@ internal fun ImportBookRow(
     reveal: LaunchReveal,
     revealIndex: Int,
     modifier: Modifier = Modifier,
-    label: String = "Add Books",
+    label: String = stringResource(Res.string.library_add_books),
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val hover = rememberHoverFraction(interactionSource)

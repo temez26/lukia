@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.lukia.core.domain.reading.ReadingProgress
-import io.lukia.core.presentation.displayTitle
+import io.lukia.core.presentation.bookTitle
 import io.lukia.features.stats.domain.ReadingActivity
 import io.lukia.resources.Res
 import io.lukia.resources.book_open_title
@@ -76,7 +76,7 @@ private fun ActivityRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val title = entry.document.displayTitle()
+    val title = entry.document.bookTitle()
     val interactionSource = remember { MutableInteractionSource() }
     val shape = MaterialTheme.shapes.medium
 

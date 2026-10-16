@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.luminance
 import io.lukia.features.reader.domain.ReaderTheme
+import io.lukia.shared.presentation.theme.LocalThemeChoice
 import io.lukia.shared.presentation.theme.LukiaDarkColorScheme
 import io.lukia.shared.presentation.theme.LukiaLightColorScheme
 import io.lukia.shared.presentation.theme.SystemBarIcons
@@ -39,12 +40,12 @@ private val SepiaAccent = Color(0xFF9A6434)
 private val DarkPage = Color(0xFF121212)
 
 /**
- * The chrome's colours for [theme]. Provided to the reader as a Material scheme
- * so every control already in the design system - the glass surfaces, the type,
- * the buttons - follows the reading theme without being told about it.
+ * The page's colours for [theme]: the ink, and the fills of quotations, code and
+ * passage marks. Fixed whatever palette is chosen, so a page reads the same in
+ * every theme - see [ReaderPageTheming].
  */
 @Composable
-internal fun readerColorScheme(theme: ReaderTheme): ColorScheme = remember(theme) {
+internal fun readerPageColorScheme(theme: ReaderTheme): ColorScheme = remember(theme) {
     when (theme) {
         ReaderTheme.Light -> LukiaLightColorScheme
         ReaderTheme.Dark -> LukiaDarkColorScheme
@@ -108,15 +109,37 @@ internal fun readerPageStyle(theme: ReaderTheme): ReaderPageStyle = remember(the
 }
 
 /**
- * Wraps the reader in its own colours. Scoped to the reader alone: the library
- * and detail screens keep following the system's light or dark setting.
+ * The chrome's colours for [theme]: the chosen palette and accent at the
+ * reader's lightness in Light and Dark, so the toolbar and panels look like the
+ * rest of the app. Sepia keeps colours of its own, which are part of what
+ * choosing it means.
+ */
+@Composable
+internal fun readerChromeColorScheme(theme: ReaderTheme): ColorScheme {
+    val choice = LocalThemeChoice.current
+    val page = readerPageColorScheme(theme)
+
+    return remember(theme, choice, page) {
+        when (theme) {
+            ReaderTheme.Light -> choice.colorScheme(darkTheme = false)
+            ReaderTheme.Dark -> choice.colorScheme(darkTheme = true)
+            ReaderTheme.Sepia -> page
+        }
+    }
+}
+
+/**
+ * Wraps the reader in its own lightness. Scoped to the reader alone: the library
+ * and detail screens keep following the system's light or dark setting. Every
+ * control already in the design system - the glass surfaces, the type, the
+ * buttons - follows it without being told about it.
  */
 @Composable
 internal fun ReaderTheming(
     theme: ReaderTheme,
     content: @Composable () -> Unit,
 ) {
-    val colors = readerColorScheme(theme)
+    val colors = readerChromeColorScheme(theme)
 
     SystemBarIcons(dark = colors.background.luminance() > LIGHT_PAGE_LUMINANCE)
 
@@ -130,3 +153,21 @@ internal fun ReaderTheming(
 
 /** Above this a page is pale enough that only dark icons show up against it. */
 private const val LIGHT_PAGE_LUMINANCE = 0.5f
+
+/**
+ * Sets the page itself in [readerPageColorScheme], inside chrome that wears the
+ * chosen palette. The page is the book, and a palette is a choice about the app
+ * around it.
+ */
+@Composable
+internal fun ReaderPageTheming(
+    theme: ReaderTheme,
+    content: @Composable () -> Unit,
+) {
+    MaterialTheme(
+        colorScheme = readerPageColorScheme(theme),
+        typography = MaterialTheme.typography,
+        shapes = MaterialTheme.shapes,
+        content = content,
+    )
+}

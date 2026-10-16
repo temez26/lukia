@@ -2,6 +2,7 @@ package io.lukia.features.sync
 
 import io.lukia.core.infrastructure.epub.MinimalEpub
 import io.lukia.features.account.TestSyncServer
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlin.test.AfterTest
 import kotlin.test.Test
@@ -77,6 +78,29 @@ class SessionSyncTest {
         phone.signIn(setUp = false)
         phone.sync()
         assertTrue(phone.readingSessions.all().isEmpty(), "nothing is sent before the answer")
+    }
+
+    /**
+     * What is waiting to go is what a round would send: reading held back for
+     * the answer is not, or the count never reaches zero and every round that
+     * sends is followed by one with nothing to send.
+     */
+    @Test
+    fun readingHeldBackForTheAnswerIsNotWaitingToGo() = runBlocking {
+        server.setUpWithBook()
+        laptop.pullLibraryAfterReading(minutes = 30)
+        laptop.sync()
+        assertEquals(0, laptop.syncSessions.waiting.first(), "held back, so not waiting")
+
+        val later = laptop.readingSessions.start(laptop.locationOfBook(), startedAt = 9_000)
+        laptop.readingSessions.extend(later, durationMs = 120_000)
+        assertEquals(1, laptop.syncSessions.waiting.first())
+
+        laptop.sync()
+        assertEquals(0, laptop.syncSessions.waiting.first(), "sent, and the held-back reading still waits")
+
+        laptop.syncSessions.answer(addToAccount = true)
+        assertEquals(1, laptop.syncSessions.waiting.first(), "added to the account, so it goes")
     }
 
     @Test

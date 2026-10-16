@@ -1,9 +1,17 @@
 package io.lukia.shared.presentation.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import io.lukia.core.domain.AppPalette
+import io.lukia.resources.Res
+import io.lukia.resources.noto_serif_bold
+import io.lukia.resources.noto_serif_regular
+import org.jetbrains.compose.resources.Font
 
 /**
  * Type scale mirroring Apple's SF text styles (Large Title / Title / Headline /
@@ -106,4 +114,94 @@ internal val LukiaTypography = Typography(
         fontWeight = FontWeight.Medium,
         letterSpacing = 0.1.sp,
     ),
+)
+
+/**
+ * Paper's type: headings in the serif at its regular weight, the way a novel
+ * sets its chapter titles - present, not loud. Body text and labels stay sans.
+ */
+private fun paperTypography(serif: FontFamily): Typography = LukiaTypography.withHeadlines {
+    copy(fontFamily = serif, fontWeight = FontWeight.Normal, letterSpacing = 0.sp)
+}
+
+/**
+ * Slate's type: the system sans, heavier and tighter in its headings, as a
+ * dashboard sets them. Nothing bundled - its character is weight, not face.
+ */
+private val SlateTypography: Typography = LukiaTypography.withHeadlines {
+    copy(
+        fontWeight = if (fontWeight == FontWeight.Bold) FontWeight.ExtraBold else FontWeight.Bold,
+        letterSpacing = (letterSpacing.value - SlateTightening).sp,
+    )
+}
+
+/** How much tighter Slate sets its headings than [LukiaTypography] does, in sp. */
+private const val SlateTightening = 0.3f
+
+/**
+ * Ledger's type: every heading in the serif, set bold, as a newspaper sets its
+ * headlines.
+ */
+private fun ledgerTypography(serif: FontFamily): Typography = LukiaTypography.withHeadlines {
+    copy(fontFamily = serif, fontWeight = FontWeight.Bold, letterSpacing = 0.sp)
+}
+
+/**
+ * The scale with [restyle] applied to its headings and titles, and its body text
+ * and labels left alone - small type in anything but the system sans reads worse
+ * on a phone, not more characterful.
+ */
+private fun Typography.withHeadlines(restyle: TextStyle.() -> TextStyle): Typography = copy(
+    displaySmall = displaySmall.restyle(),
+    headlineLarge = headlineLarge.restyle(),
+    headlineMedium = headlineMedium.restyle(),
+    headlineSmall = headlineSmall.restyle(),
+    titleLarge = titleLarge.restyle(),
+    titleMedium = titleMedium.restyle(),
+)
+
+/**
+ * Each palette's type. [serif] is the bundled serif, loaded by the caller because
+ * a bundled font can only be read inside a composition.
+ */
+internal fun typographyFor(palette: AppPalette, serif: FontFamily): Typography = when (palette) {
+    AppPalette.Crisp -> LukiaTypography
+    AppPalette.Paper -> paperTypography(serif)
+    AppPalette.Slate -> SlateTypography
+    AppPalette.Ledger -> ledgerTypography(serif)
+}
+
+/**
+ * [typographyFor] for the palette in use, reading the bundled serif only for the
+ * palettes that set headings in it.
+ *
+ * Reading the font is not free: on desktop it is read from the jar, blocking, in
+ * the first composition, and on iOS it arrives later and redraws every line of
+ * text in the app when it does. Asked for unconditionally, Crisp and Slate paid
+ * both for a face they never draw.
+ */
+@Composable
+internal fun rememberTypography(palette: AppPalette): Typography {
+    val serif = if (palette.setsHeadingsInSerif()) bundledSerif() else FontFamily.Default
+
+    return remember(palette, serif) { typographyFor(palette, serif) }
+}
+
+/** Whether [typographyFor] uses the serif it is given for this palette. */
+internal fun AppPalette.setsHeadingsInSerif(): Boolean = when (this) {
+    AppPalette.Crisp, AppPalette.Slate -> false
+    AppPalette.Paper, AppPalette.Ledger -> true
+}
+
+/**
+ * Noto Serif, which Paper and Ledger set their headings in.
+ *
+ * Bundled rather than the platform's own serif, which is not there to be had on
+ * every phone: a maker's font setting can map it to the system sans, which left
+ * Ledger's headings looking like Crisp's.
+ */
+@Composable
+private fun bundledSerif(): FontFamily = FontFamily(
+    Font(Res.font.noto_serif_regular, FontWeight.Normal),
+    Font(Res.font.noto_serif_bold, FontWeight.Bold),
 )

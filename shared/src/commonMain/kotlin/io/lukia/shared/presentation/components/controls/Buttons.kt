@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
@@ -28,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import io.lukia.shared.presentation.components.surface.GlassSurface
 import io.lukia.shared.presentation.theme.HairlineWidth
+import io.lukia.shared.presentation.theme.LocalIconButtonShape
 import io.lukia.shared.presentation.theme.LocalLukiaMetrics
 import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.Space
@@ -209,7 +209,7 @@ enum class IconButtonVariant {
     /** A bare glyph on chrome that is already a surface: a toolbar, a panel. */
     Plain,
 
-    /** A filled circle, for a control that has to be found against content. */
+    /** A filled shape, for a control that has to be found against content. */
     Filled,
 
     /** Floating over scrolling content, where it needs a surface of its own. */
@@ -245,6 +245,7 @@ fun LukiaIconButton(
 ) {
     val metrics = LocalLukiaMetrics.current
     val interactionSource = remember { MutableInteractionSource() }
+    val shape = LocalIconButtonShape.current
 
     val buttonSize = if (size == Dp.Unspecified) metrics.iconButton else size
     val resolvedGlyphSize = if (glyphSize == Dp.Unspecified) metrics.icon else glyphSize
@@ -267,7 +268,7 @@ fun LukiaIconButton(
                 // under a pointer: see where the theme provides Material's floor.
                 .minimumInteractiveComponentSize()
                 .size(buttonSize)
-                .clip(CircleShape)
+                .clip(shape)
                 .then(
                     if (variant == IconButtonVariant.Filled) {
                         // Near-opaque: this variant exists to be findable against
@@ -283,7 +284,7 @@ fun LukiaIconButton(
                 )
                 .pressable(
                     interactionSource = interactionSource,
-                    shape = CircleShape,
+                    shape = shape,
                     onClickLabel = label,
                     onClick = onClick,
                     enabled = enabled,
@@ -296,7 +297,7 @@ fun LukiaIconButton(
 
     if (variant == IconButtonVariant.Glass) {
         GlassSurface(
-            shape = CircleShape,
+            shape = shape,
             modifier = modifier.scaleOnPress(interactionSource),
             content = { target() },
         )

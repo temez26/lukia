@@ -31,7 +31,7 @@ import kotlin.time.Duration.Companion.seconds
 fun Route.eventRoutes(events: ChangeEvents, tokens: TokenService) {
     signedIn(tokens) {
         get(ApiRoutes.MyEvents) {
-            val accountId = call.account.id
+            val account = call.account
             call.response.header(HttpHeaders.CacheControl, "no-cache")
             call.response.header("X-Accel-Buffering", "no")
 
@@ -45,7 +45,7 @@ fun Route.eventRoutes(events: ChangeEvents, tokens: TokenService) {
                     val mine = Channel<Change>(Channel.CONFLATED)
                     launch {
                         events.all
-                            .filter { it.accountId == null || it.accountId == accountId }
+                            .filter { it.isFor(account) }
                             .collect { mine.send(it) }
                     }
                     while (true) {

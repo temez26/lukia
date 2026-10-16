@@ -6,9 +6,10 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * The server names a book with `MessageDigest`, and a device with [Sha256]. If
- * the two ever disagreed, a device's books would never be the server's books,
- * so they are held to each other across every length around a block boundary.
+ * The server names a book with `MessageDigest`, and an iOS device with
+ * [PortableSha256]. If the two ever disagreed, that device's books would never
+ * be the server's books, so they are held to each other across every length
+ * around a block boundary.
  */
 class Sha256AgreementTest {
 
@@ -20,7 +21,7 @@ class Sha256AgreementTest {
             val bytes = random.nextBytes(length)
             val expected = MessageDigest.getInstance("SHA-256").digest(bytes).toHex()
 
-            assertEquals(expected, Sha256().apply { update(bytes) }.digest().toHex(), "length $length")
+            assertEquals(expected, PortableSha256().apply { update(bytes) }.digest().toHex(), "length $length")
         }
     }
 }

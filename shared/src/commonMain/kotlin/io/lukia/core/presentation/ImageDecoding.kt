@@ -2,6 +2,7 @@ package io.lukia.core.presentation
 
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.decodeToImageBitmap
+import androidx.compose.ui.unit.IntSize
 
 /**
  * These bytes as a picture, or nothing where they are not one.
@@ -24,3 +25,18 @@ import androidx.compose.ui.graphics.decodeToImageBitmap
  */
 internal fun ByteArray.decodeToImageBitmapOrNull(): ImageBitmap? =
     runCatching { decodeToImageBitmap().takeIf { it.width > 0 && it.height > 0 } }.getOrNull()
+
+/**
+ * How big these bytes would be as a picture, read from the image's header
+ * without decoding its pixels; null where they are not a picture this platform
+ * reads.
+ *
+ * For a caller that wants the shape and not the image: laying a book out needs
+ * each plate's height, and decoding a plate to measure it cost about 19 ms for a
+ * 1600 by 2400 JPEG on the desktop where reading its header cost 0.1 ms - per
+ * plate, every time a book was opened.
+ *
+ * The size the picture is drawn at, so a photograph its camera marked as turned
+ * comes back turned, as [decodeToImageBitmapOrNull] would give it.
+ */
+internal expect fun ByteArray.imageSizeOrNull(): IntSize?

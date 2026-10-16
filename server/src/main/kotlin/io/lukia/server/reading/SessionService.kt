@@ -26,10 +26,11 @@ class SessionService(
      * Records the session, or lengthens it if it is already recorded. Its book,
      * start and title are the first send's: a sitting does not move.
      */
-    fun record(accountId: Long, id: String, request: SessionRequest): SessionResponse {
+    fun record(accountId: Long, id: String, request: SessionRequest, from: Long? = null): SessionResponse {
         validate(id, request)
 
-        return database.transactionWithResult {
+        val (stored, changed) = database.transactionWithResult {
+            val seqBefore = sessions.selectOne(accountId, id).executeAsOneOrNull()?.seq
             sessions.insertIfAbsent(
                 accountId,
                 id,
@@ -39,8 +40,13 @@ class SessionService(
                 request.durationMs,
             )
             sessions.extend(request.durationMs, accountId, id)
-            sessions.selectOne(accountId, id).executeAsOne().toResponse()
-        }.also { events.announce(ChangeKind.Sessions, accountId) }
+            val after = sessions.selectOne(accountId, id).executeAsOne()
+            after.toResponse() to (after.seq != seqBefore)
+        }
+
+        // As for a book's state: only a session recorded or lengthened is news.
+        if (changed) events.announce(ChangeKind.Sessions, accountId, from)
+        return stored
     }
 
     fun changesSince(accountId: Long, since: Long, limit: Int): ChangePage<SessionResponse> = changePage(

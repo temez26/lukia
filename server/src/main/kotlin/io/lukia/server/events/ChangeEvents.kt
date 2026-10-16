@@ -1,5 +1,6 @@
 package io.lukia.server.events
 
+import io.lukia.server.accounts.SignedInAccount
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -17,8 +18,21 @@ enum class ChangeKind(val wire: String) {
     Sessions("sessions"),
 }
 
-/** A change, and whose: [accountId] null is the shared library, which is everybody's. */
-data class Change(val kind: ChangeKind, val accountId: Long?)
+/**
+ * A change, and whose: [accountId] null is the shared library, which is
+ * everybody's. [from] is the sign-in - one device - that made it, when a
+ * device did.
+ */
+data class Change(val kind: ChangeKind, val accountId: Long?, val from: Long? = null)
+
+/**
+ * Whether the device signed in as [account] should hear of this change: one
+ * that is the shared library's or its account's, and that some other device
+ * made. The device that made a change already has it, and telling it anyway
+ * sent it round for a full sync for every page it turned.
+ */
+fun Change.isFor(account: SignedInAccount): Boolean =
+    (accountId == null || accountId == account.id) && from != account.familyId
 
 /**
  * Tells the devices listening that something changed, so they catch up now
@@ -39,8 +53,8 @@ class ChangeEvents {
     val all: SharedFlow<Change> = changes.asSharedFlow()
 
     /** Safe from the blocking threads the services run on: it never waits. */
-    fun announce(kind: ChangeKind, accountId: Long? = null) {
-        changes.tryEmit(Change(kind, accountId))
+    fun announce(kind: ChangeKind, accountId: Long? = null, from: Long? = null) {
+        changes.tryEmit(Change(kind, accountId, from))
     }
 
     private companion object {

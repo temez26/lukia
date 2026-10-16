@@ -22,9 +22,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 import io.lukia.core.presentation.authorLine
-import io.lukia.core.presentation.displayTitle
+import io.lukia.core.presentation.bookTitle
 import io.lukia.features.library.presentation.model.LibraryBook
 import io.lukia.features.library.presentation.sessions.HomeBookActions
+import io.lukia.resources.Res
+import io.lukia.resources.book_actions
+import io.lukia.resources.book_read_title
 import io.lukia.shared.presentation.components.controls.ReadingProgressOverlay
 import io.lukia.shared.presentation.components.controls.focusRing
 import io.lukia.shared.presentation.components.controls.menuGesture
@@ -33,6 +36,7 @@ import io.lukia.shared.presentation.components.cover.BookCover
 import io.lukia.shared.presentation.components.cover.FavoriteBadge
 import io.lukia.shared.presentation.components.menu.BookActionsMenu
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.stringResource
 
 /** Big enough to read at a glance, small enough not to be the card's subject. */
 private val CoverMonogramSize = 26.sp
@@ -64,7 +68,7 @@ internal fun HomeBookCard(
     modifier: Modifier = Modifier,
 ) {
     val document = book.document
-    val title = document.displayTitle()
+    val title = document.bookTitle()
     val interactionSource = remember { MutableInteractionSource() }
     val coverShape = MaterialTheme.shapes.medium
 
@@ -75,8 +79,8 @@ internal fun HomeBookCard(
                 interactionSource = interactionSource,
                 onClick = { actions.onOpen(book) },
                 onMenu = { onMenuExpandedChange(true) },
-                menuLabel = "Book actions",
-                clickLabel = "Read",
+                menuLabel = stringResource(Res.string.book_actions),
+                clickLabel = stringResource(Res.string.book_read_title, title),
             )
             .scaleOnPress(interactionSource, pressedScale = 0.96f)
             .pointerHoverIcon(PointerIcon.Hand)

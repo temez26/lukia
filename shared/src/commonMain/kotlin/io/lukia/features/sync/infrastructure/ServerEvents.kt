@@ -18,15 +18,20 @@ import io.lukia.features.account.infrastructure.ServerHttp
 class ServerEvents(private val http: ServerHttp) {
 
     /**
-     * Listens until the connection ends, calling [onChange] with the kind of
-     * each change as it is announced. Ends quietly when the server closes the
+     * Listens until the connection ends, calling [onOpen] once the server has
+     * accepted it and [onChange] with the kind of each change as it is announced. Ends quietly when the server closes the
      * stream, and throws when it cannot be reached or refuses the token.
      *
      * No limit on the whole request, only on silence: the server says
      * something at least twice a minute, so a minute without a word is a
      * connection that has died without saying so.
      */
-    suspend fun listen(address: String, token: String, onChange: suspend (kind: String) -> Unit) {
+    suspend fun listen(
+        address: String,
+        token: String,
+        onOpen: suspend () -> Unit = {},
+        onChange: suspend (kind: String) -> Unit,
+    ) {
         http.client.prepareGet(address + ApiRoutes.MyEvents) {
             bearerAuth(token)
             timeout {
@@ -35,6 +40,7 @@ class ServerEvents(private val http: ServerHttp) {
             }
         }.execute { response ->
             if (!response.status.isSuccess()) throw AccountFailure(http.problemIn(response))
+            onOpen()
 
             val stream = response.bodyAsChannel()
             while (true) {

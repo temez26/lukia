@@ -6,8 +6,11 @@ import io.ktor.client.request.delete
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.server.application.ApplicationCallPipeline
+import io.ktor.server.application.call
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
+import io.ktor.server.request.path
 import io.lukia.api.ApiRoutes
 import io.lukia.features.account.infrastructure.serverHttpClient
 import io.lukia.server.ServerConfig
@@ -16,6 +19,7 @@ import io.lukia.server.db.ServerDatabase
 import io.lukia.server.lukiaServer
 import kotlinx.coroutines.runBlocking
 import java.nio.file.Files
+import java.util.Collections
 import java.util.Properties
 
 /**
@@ -25,6 +29,8 @@ import java.util.Properties
 class TestSyncServer : AutoCloseable {
 
     private val dataDirectory = Files.createTempDirectory("lukia-test-server").toFile()
+
+    private val requests: MutableList<String> = Collections.synchronizedList(mutableListOf())
 
     private val server = embeddedServer(CIO, host = "127.0.0.1", port = 0) {
         lukiaServer(
@@ -38,7 +44,11 @@ class TestSyncServer : AutoCloseable {
             ),
             hasher = Argon2PasswordHasher(memoryKiB = 8, iterations = 1),
         )
+        intercept(ApplicationCallPipeline.Monitoring) { requests += call.request.path() }
     }.start(wait = false)
+
+    /** How many requests have reached [path] - a round asks for its book states exactly once. */
+    fun requestsTo(path: String): Int = synchronized(requests) { requests.count { it == path } }
 
     val address = "http://127.0.0.1:${runBlocking { server.engine.resolvedConnectors().first().port }}"
 

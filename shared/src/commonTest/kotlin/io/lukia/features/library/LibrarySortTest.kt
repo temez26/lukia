@@ -39,6 +39,18 @@ class LibrarySortTest {
         )
     }
 
+    /** By the title on the card, which is the one the book declares where it has one. */
+    @Test
+    fun titlesSortByTheDeclaredTitle() {
+        val declared = library(
+            book("b-file", declaredTitle = "Zebra"),
+            book("Apple"),
+            book("z-file", declaredTitle = "Mango"),
+        )
+
+        assertEquals(listOf("Apple", "z-file", "b-file"), declared.sortedFor(LibrarySort.Title).titles())
+    }
+
     /** A file that credits nobody cannot answer the question, so it goes last. */
     @Test
     fun booksWithNoAuthorSortToTheEnd() {

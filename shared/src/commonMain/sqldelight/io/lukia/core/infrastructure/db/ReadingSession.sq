@@ -93,7 +93,15 @@ WHERE id > :afterId AND deviceOnly = 0 AND uuid IS NOT NULL AND contentHash IS N
   AND (sentDurationMs IS NULL OR durationMs > sentDurationMs)
 ORDER BY id;
 
--- Watched by the sync engine, which sends a little after a sitting grows.
+-- What `selectUnsent` would send, counted - watched by the sync engine, which
+-- sends a little after a sitting grows. The same `afterId`, so reading held
+-- back for the reader's answer is not counted as waiting to go.
+countUnsentAfter:
+SELECT COUNT(*) FROM reading_session
+WHERE id > :afterId AND deviceOnly = 0 AND uuid IS NOT NULL AND contentHash IS NOT NULL
+  AND (sentDurationMs IS NULL OR durationMs > sentDurationMs);
+
+-- Everything not yet sent, held back or not - what the sync status reports.
 countUnsent:
 SELECT COUNT(*) FROM reading_session
 WHERE deviceOnly = 0 AND uuid IS NOT NULL AND contentHash IS NOT NULL

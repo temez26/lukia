@@ -116,6 +116,8 @@
     <string name="palette_paper_detail">Ciepły papier i atrament, łagodny dla oczu przy długim czytaniu.</string>
     <string name="palette_slate">Łupek</string>
     <string name="palette_slate_detail">Chłodne, neutralne szarości i płaskie, spokojne powierzchnie.</string>
+    <string name="palette_ledger">Gazeta</string>
+    <string name="palette_ledger_detail">Czerń na bieli jak w druku, z szeryfowymi nagłówkami i ostrymi rogami.</string>
     <string name="accent_themed">Motyw</string>
     <string name="accent_blue">Niebieski</string>
     <string name="accent_violet">Fioletowy</string>
@@ -193,6 +195,7 @@
     <string name="library_close_menu">Zamknij menu</string>
     <string name="library_import_books">Importuj książki</string>
     <string name="library_add_folder">Dodaj folder</string>
+    <string name="library_add_books">Dodaj książki</string>
     <string name="library_importing">Importowanie…</string>
     <string name="library_importing_count">Importowanie %1$d z %2$d…</string>
     <string name="library_import_stop">Zatrzymaj</string>
@@ -224,6 +227,12 @@
     <string name="search_empty_title">Szukaj w swojej bibliotece</string>
     <string name="search_empty_message">Wpisz tytuł lub autora, aby znaleźć książkę.</string>
     <string name="library_no_results_title">Brak wyników</string>
+    <plurals name="search_result_count">
+        <item quantity="one">1 wynik</item>
+        <item quantity="few">%1$d wyniki</item>
+        <item quantity="many">%1$d wyników</item>
+        <item quantity="other">%1$d wyniku</item>
+    </plurals>
     <string name="library_no_matches_filtered">Nic w Twojej bibliotece nie pasuje do wszystkich ustawionych filtrów.</string>
     <string name="library_no_matches_term">Żadna książka nie pasuje do \u201E%1$s\u201D.</string>
     <string name="library_no_matches_filtered_term">Nic pasującego do \u201E%1$s\u201D nie zostaje po zastosowaniu Twoich filtrów.</string>
@@ -289,7 +298,12 @@
     <string name="reader_percent_read">Przeczytane %1$d procent</string>
     <string name="reader_percent">%1$d%</string>
     <string name="reader_percent_start">0</string>
+    <string name="reader_opening">Otwieranie…</string>
+    <string name="reader_reading_text">Odczytywanie tekstu… strona %1$d z %2$d</string>
     <string name="reader_chapters">Rozdziały</string>
+    <string name="reader_chapters_loading">Wczytywanie rozdziałów…</string>
+    <string name="reader_chapters_unavailable">Nie udało się odczytać rozdziałów z tego dokumentu.</string>
+    <string name="reader_chapters_none">Ten dokument nie ma rozdziałów.</string>
     <string name="reader_collapse_all">Zwiń wszystkie</string>
     <string name="reader_expand_all">Rozwiń wszystkie</string>
     <string name="reader_show_sections_of">Pokaż części rozdziału %1$s</string>

@@ -1,5 +1,8 @@
 package io.lukia.features.sync
 
+import io.ktor.client.plugins.HttpSend
+import io.ktor.client.plugins.plugin
+import io.lukia.api.ApiRoutes
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.domain.document.PickedDocument
@@ -22,8 +25,10 @@ import io.lukia.features.library.infrastructure.importing.DesktopDocumentAnalyze
 import io.lukia.features.reader.infrastructure.SqlPdfLayoutRepository
 import io.lukia.features.reader.infrastructure.SqlReadingProgressRepository
 import io.lukia.features.reader.infrastructure.SqlReadingSessionRepository
+import io.lukia.features.sync.application.ForgetServerUseCase
 import io.lukia.features.sync.application.PullServerLibraryUseCase
 import io.lukia.features.sync.application.SyncBookStateUseCase
+import io.lukia.features.sync.application.SyncCoordinator
 import io.lukia.features.sync.application.SyncRoundUseCase
 import io.lukia.features.sync.application.SyncSessionsUseCase
 import io.lukia.features.sync.application.UploadNewBooksUseCase
@@ -31,14 +36,21 @@ import io.lukia.features.sync.application.UploadServerBookUseCase
 import io.lukia.features.sync.infrastructure.BookStateApi
 import io.lukia.features.sync.infrastructure.BookStateStore
 import io.lukia.features.sync.infrastructure.HistoryChoice
+import io.lukia.features.sync.infrastructure.ServerEvents
 import io.lukia.features.sync.infrastructure.ServerLibraryApi
 import io.lukia.features.sync.infrastructure.SessionApi
 import io.lukia.features.sync.infrastructure.SessionStore
 import io.lukia.features.sync.infrastructure.SyncCursors
 import io.lukia.features.sync.infrastructure.UploadChoice
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import java.io.File
+import java.io.IOException
 import java.nio.file.Files
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * One device signed in to [server]: its own database, shelf, reader stores and
@@ -70,7 +82,10 @@ class SyncedDevice(private val server: TestSyncServer) : AutoCloseable {
         cursors,
         ShelfChanges(),
     )
-    private val syncState = SyncBookStateUseCase(session, BookStateApi(http), store, cursors, ShelfChanges())
+
+    /** What this device's book-state sync tells the shelf when something here changed. */
+    val stateChanges = ShelfChanges()
+    private val syncState = SyncBookStateUseCase(session, BookStateApi(http), store, cursors, stateChanges)
     val syncSessions = SyncSessionsUseCase(session, SessionApi(http), sessionStore, HistoryChoice(settings), cursors)
 
     private val hashLibrary = HashLibraryUseCase(SqlContentHashStore(database, Dispatchers.Unconfined), analyzer)
@@ -97,6 +112,36 @@ class SyncedDevice(private val server: TestSyncServer) : AutoCloseable {
 
     suspend fun pullLibrary() {
         pull()
+    }
+
+    /**
+     * This device's coordinator, as the app wires it up, with nothing waiting to
+     * be sent unless [waiting] says otherwise. [lineRefused] stands in for a server whose line will not open -
+     * a proxy that will not hold one - while every other request goes through.
+     */
+    fun coordinator(
+        checkEvery: Duration = 2.minutes,
+        lineRefused: Boolean = false,
+        waiting: Flow<Long> = emptyFlow(),
+        sendAfter: Duration = 5.seconds,
+    ) = SyncCoordinator(
+        session = session,
+        round = round,
+        syncSessions = syncSessions,
+        forgetServer = ForgetServerUseCase(shelf, cursors, ShelfChanges()),
+        waiting = waiting,
+        events = ServerEvents(if (lineRefused) ServerHttp(lineRefusingClient()) else http),
+        checkEvery = checkEvery,
+        sendAfter = sendAfter,
+    )
+
+    private fun lineRefusingClient() = serverHttpClient().apply {
+        plugin(HttpSend).intercept { request ->
+            if (request.url.buildString().endsWith(ApiRoutes.MyEvents)) {
+                throw IOException("The line will not open")
+            }
+            execute(request)
+        }
     }
 
     /** Everything, as the coordinator runs it. */

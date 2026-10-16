@@ -27,6 +27,9 @@ import io.lukia.features.reader.presentation.collapsibleIndices
 import io.lukia.features.reader.presentation.currentEntryIndex
 import io.lukia.resources.Res
 import io.lukia.resources.reader_chapters
+import io.lukia.resources.reader_chapters_loading
+import io.lukia.resources.reader_chapters_none
+import io.lukia.resources.reader_chapters_unavailable
 import io.lukia.resources.reader_collapse_all
 import io.lukia.resources.reader_expand_all
 import io.lukia.shared.presentation.components.controls.ButtonSize
@@ -72,16 +75,17 @@ internal fun Chapters(
     )
 
     when {
-        outline is ReaderOutline.Loading -> ChaptersNotice("Reading chapters…", inset)
+        outline is ReaderOutline.Loading -> ChaptersNotice(stringResource(Res.string.reader_chapters_loading), inset)
 
         outline is ReaderOutline.Unavailable ->
-            ChaptersNotice("Chapters could not be read from this document.", inset)
+            ChaptersNotice(stringResource(Res.string.reader_chapters_unavailable), inset)
 
-        entries.isEmpty() -> ChaptersNotice("This document has no chapters.", inset)
+        entries.isEmpty() -> ChaptersNotice(stringResource(Res.string.reader_chapters_none), inset)
 
         else -> ChapterList(
             entries = entries,
             collapsed = collapsed,
+            foldable = collapsible.isNotEmpty(),
             currentPage = currentPage,
             inset = inset,
             listMaxHeight = listMaxHeight,
@@ -97,6 +101,7 @@ internal fun Chapters(
 private fun ChapterList(
     entries: List<OutlineEntry>,
     collapsed: Set<Int>,
+    foldable: Boolean,
     currentPage: Int,
     inset: Dp,
     listMaxHeight: Dp,
@@ -136,6 +141,7 @@ private fun ChapterList(
             ChapterRowItem(
                 row = row,
                 inset = inset,
+                foldable = foldable,
                 isCurrent = row.index == currentRow?.index,
                 onToggle = { onToggle(row.index) },
                 onClick = { onGoToPage(row.entry.pageIndex) },

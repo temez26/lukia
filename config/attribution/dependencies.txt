@@ -47,3 +47,4 @@ Bouncy Castle | Bouncy Castle Licence | Copyright the Legion of the Bouncy Castl
 Skia, through Skiko | BSD 3-Clause License | Copyright Google LLC |
 Logback | Eclipse Public License 1.0 | Copyright QOS.ch | ch.qos.logback
 SLF4J | MIT License | Copyright QOS.ch |
+Noto Serif | SIL Open Font License 1.1 | Copyright 2022 The Noto Project Authors |

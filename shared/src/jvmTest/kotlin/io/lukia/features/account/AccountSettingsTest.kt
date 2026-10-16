@@ -11,6 +11,7 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.unit.dp
@@ -92,6 +93,25 @@ class AccountSettingsTest {
         onNodeWithText("Sign in").performClick()
 
         assertEquals(listOf(HomeServer, "alice", "correct horse"), sent)
+    }
+
+    /** The keyboard's Go key on the password submits on the same terms the button does. */
+    @Test
+    fun goOnThePasswordSubmitsOnlyAFilledFormAndOnlyOnce() = runComposeUiTest {
+        var sent = 0
+        show(
+            AccountUiState(),
+            AccountActions(onSubmit = { _, _, _, _ -> sent++ }),
+            lastSignIn = LastSignIn(HomeServer, "alice"),
+        )
+        val password = onAllNodes(hasSetTextAction())[2]
+
+        password.performImeAction()
+        assertEquals(0, sent)
+
+        password.performTextInput("correct horse")
+        password.performImeAction()
+        assertEquals(1, sent)
     }
 
     @Test

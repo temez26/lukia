@@ -5,7 +5,16 @@ import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.core.infrastructure.SyncedPart
 import io.lukia.core.infrastructure.epub.MinimalEpub
 import io.lukia.features.account.TestSyncServer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.yield
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -140,6 +149,36 @@ class BookStateSyncTest {
         phone.sync()
 
         assertTrue(phone.store.pending().isEmpty())
+    }
+
+    /**
+     * A device sends its place, and the same round reads it back. That is what it
+     * already has: nothing is written again and the shelf is not told of a
+     * change, where before it reloaded the whole library after every page sent.
+     */
+    @Test
+    fun aDevicesOwnPlaceComingBackIsNotAChange() = runBlocking {
+        bothOnTheSameBook()
+        phone.sync()
+        laptop.sync()
+        val phoneHeard = phone.stateChanges.changes.counting(this)
+        val laptopHeard = laptop.stateChanges.changes.counting(this)
+
+        phone.progress.save(phone.locationOfBook(), ReadingProgress(pageIndex = 41, pageCount = 300))
+        phone.sync()
+        laptop.sync()
+        yield()
+
+        assertEquals(0, phoneHeard.value, "the phone was told of its own page")
+        assertEquals(1, laptopHeard.value, "the laptop was not told of the phone's page")
+        coroutineContext.cancelChildren()
+    }
+
+    /** Counts what this flow emits from now on, in [scope]. */
+    private fun Flow<Unit>.counting(scope: CoroutineScope): StateFlow<Int> {
+        val count = MutableStateFlow(0)
+        scope.launch(Dispatchers.Unconfined, start = CoroutineStart.UNDISPATCHED) { collect { count.value++ } }
+        return count
     }
 
     /** Sets the server up with the book, and both devices signed in with it on their shelves. */

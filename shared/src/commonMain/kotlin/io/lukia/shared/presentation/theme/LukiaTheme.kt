@@ -62,6 +62,7 @@ fun LukiaTheme(
         colorSchemeFor(palette, darkTheme, accent)
     }
     val glassStyle = remember { platformGlassStyle() }
+    val typography = rememberTypography(palette)
 
     // The device's own answer, which caps the reader's - see [motionFor]. Read
     // here rather than where each animation is written, because it is one
@@ -85,6 +86,8 @@ fun LukiaTheme(
             LocalWindowHeightClass provides heightClass,
             LocalGlassStyle provides glassStyle,
             LocalMotionStyle provides motionStyle,
+            LocalIconButtonShape provides iconButtonShapeFor(palette),
+            LocalThemeChoice provides ThemeChoice(palette, accent),
             // Material's own floor, told what this app's floor is.
             //
             // The modifier behind it expands what a control can be *hit* on
@@ -103,8 +106,8 @@ fun LukiaTheme(
         ) {
             MaterialTheme(
                 colorScheme = colorScheme,
-                typography = LukiaTypography,
-                shapes = LukiaShapes,
+                typography = typography,
+                shapes = shapesFor(palette),
                 content = content,
             )
         }

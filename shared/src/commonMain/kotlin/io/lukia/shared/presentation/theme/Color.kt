@@ -108,6 +108,39 @@ private val SlateDark = Surfaces(
     separator = Color(0xFF3F3F46),
 )
 
+/**
+ * Ink on newsprint: a faintly warm white page, black type, and a dark side that
+ * is true black with near-black cards. Every label is pure black or white, the
+ * highest contrast the app offers.
+ *
+ * Its shapes and type differ as well as its colours - see [shapesFor] and
+ * [typographyFor].
+ */
+private val LedgerLight = Surfaces(
+    background = Color(0xFFF6F5F1),
+    elevated = Color(0xFFFFFFFF),
+    secondary = Color(0xFFE8E6DF),
+    label = Color(0xFF0A0A0A),
+    secondaryLabel = Color(0xFF55534E),
+    separator = Color(0xFFCFCCC3),
+)
+
+private val LedgerDark = Surfaces(
+    background = Color(0xFF000000),
+    elevated = Color(0xFF111111),
+    secondary = Color(0xFF1F1F1F),
+    label = Color(0xFFFFFFFF),
+    secondaryLabel = Color(0xFFA8A6A0),
+    separator = Color(0xFF3A3936),
+)
+
+/**
+ * An editor's red. At least 4.5:1 on all three of the palette's surfaces in both
+ * lightnesses, since it is the colour of links and of the chosen row's text.
+ */
+private val LedgerAccent = Color(0xFFC42A1A)
+private val LedgerAccentDark = Color(0xFFFF6A50)
+
 /** The paper palette's blue, a shade warmer and deeper than Apple's. */
 private val PaperAccent = Color(0xFF0964BF)
 private val PaperAccentDark = Color(0xFF6FB2FF)
@@ -173,12 +206,14 @@ internal fun themedAccentColor(palette: AppPalette, darkTheme: Boolean): Color =
     AppPalette.Crisp -> if (darkTheme) Accents.BlueDark else Accents.Blue
     AppPalette.Paper -> if (darkTheme) PaperAccentDark else PaperAccent
     AppPalette.Slate -> if (darkTheme) Accents.AmberDark else Accents.Amber
+    AppPalette.Ledger -> if (darkTheme) LedgerAccentDark else LedgerAccent
 }
 
 private fun surfacesFor(palette: AppPalette, darkTheme: Boolean): Surfaces = when (palette) {
     AppPalette.Crisp -> if (darkTheme) CrispDark else CrispLight
     AppPalette.Paper -> if (darkTheme) PaperDark else PaperLight
     AppPalette.Slate -> if (darkTheme) SlateDark else SlateLight
+    AppPalette.Ledger -> if (darkTheme) LedgerDark else LedgerLight
 }
 
 /**

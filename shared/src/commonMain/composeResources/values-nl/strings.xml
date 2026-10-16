@@ -98,6 +98,8 @@
     <string name="palette_paper_detail">Warm papier en inkt, zacht voor de ogen bij lang lezen.</string>
     <string name="palette_slate">Leisteen</string>
     <string name="palette_slate_detail">Koel neutrale grijstinten en vlakke, rustige oppervlakken.</string>
+    <string name="palette_ledger">Krant</string>
+    <string name="palette_ledger_detail">Zwart op wit zoals drukwerk, met schreefkoppen en rechte hoeken.</string>
     <string name="accent_themed">Thema</string>
     <string name="accent_blue">Blauw</string>
     <string name="accent_violet">Violet</string>
@@ -175,6 +177,7 @@
     <string name="library_close_menu">Menu sluiten</string>
     <string name="library_import_books">Boeken importeren</string>
     <string name="library_add_folder">Map toevoegen</string>
+    <string name="library_add_books">Boeken toevoegen</string>
     <string name="library_importing">Importeren…</string>
     <string name="library_importing_count">%1$d van %2$d importeren…</string>
     <string name="library_import_stop">Stoppen</string>
@@ -204,6 +207,10 @@
     <string name="search_empty_title">Zoek in uw bibliotheek</string>
     <string name="search_empty_message">Typ een titel of een auteur om een boek te vinden.</string>
     <string name="library_no_results_title">Geen resultaten</string>
+    <plurals name="search_result_count">
+        <item quantity="one">1 resultaat</item>
+        <item quantity="other">%1$d resultaten</item>
+    </plurals>
     <string name="library_no_matches_filtered">Niets in uw bibliotheek voldoet aan alle filters die u hebt ingesteld.</string>
     <string name="library_no_matches_term">Geen boeken komen overeen met \u201C%1$s\u201D.</string>
     <string name="library_no_matches_filtered_term">Er blijft niets over dat overeenkomt met \u201C%1$s\u201D zodra uw filters worden toegepast.</string>
@@ -267,7 +274,12 @@
     <string name="reader_percent_read">%1$d procent gelezen</string>
     <string name="reader_percent">%1$d%</string>
     <string name="reader_percent_start">0</string>
+    <string name="reader_opening">Openen…</string>
+    <string name="reader_reading_text">Tekst lezen… pagina %1$d van %2$d</string>
     <string name="reader_chapters">Hoofdstukken</string>
+    <string name="reader_chapters_loading">Hoofdstukken lezen…</string>
+    <string name="reader_chapters_unavailable">De hoofdstukken van dit document konden niet worden gelezen.</string>
+    <string name="reader_chapters_none">Dit document heeft geen hoofdstukken.</string>
     <string name="reader_collapse_all">Alles inklappen</string>
     <string name="reader_expand_all">Alles uitklappen</string>
     <string name="reader_show_sections_of">Onderdelen van %1$s tonen</string>
@@ -367,9 +379,9 @@
     <string name="settings_as_you_read_detail">Voegt een knop toe die alles wat in beeld rolt blijft vertalen tot u hem uitzet. Dit is de dure.</string>
     <string name="settings_ai_translation">AI-vertaling</string>
     <string name="settings_use_ai">Een vertaaldienst gebruiken</string>
-    <string name="settings_use_ai_detail">Uit zoekt Lukia één woord op in een gratis woordenboek en doet verder niets: geen sleutel in te voeren, geen knoppen in de lezer. Aan kan ze hele zinnen en alinea’s vertalen via een dienst die je instelt en per passage betaalt. Uitzetten behoudt alles wat je hebt ingesteld.</string>
+    <string name="settings_use_ai_detail">Uit zoekt Lukia één woord op in een gratis woordenboek en doet verder niets: geen sleutel in te voeren, geen knoppen in de lezer. Aan kan ze hele zinnen en alinea’s vertalen via een dienst die u instelt en per passage betaalt. Uitzetten behoudt alles wat u hebt ingesteld.</string>
     <string name="settings_translation_service">Vertaaldienst</string>
-    <string name="settings_translation_service_footnote">Niets op deze pagina doet iets tot dit is ingesteld. Een woord opzoeken onder Vertalen werkt zonder; een hele zin niet: die gaat naar een model dat je per passage betaalt.</string>
+    <string name="settings_translation_service_footnote">Niets op deze pagina doet iets tot dit is ingesteld. Een woord opzoeken onder Vertalen werkt zonder; een hele zin niet: die gaat naar een model dat u per passage betaalt.</string>
     <string name="settings_address">Adres</string>
     <string name="settings_model">Model</string>
     <string name="settings_api_key">API-sleutel</string>
@@ -417,7 +429,7 @@
     <string name="stats_entry">Uw lezen</string>
     <string name="stats_title">Lezen</string>
     <string name="stats_footnote">Wordt op dit apparaat geteld, en blijft hier.</string>
-    <string name="stats_footnote_synced">Wordt geteld op elk apparaat dat met je account is aangemeld.</string>
+    <string name="stats_footnote_synced">Wordt geteld op elk apparaat dat met uw account is aangemeld.</string>
     <string name="stats_time_none">Nog niets</string>
     <string name="stats_time_under_a_minute">Minder dan een minuut</string>
     <string name="stats_time_minutes">%1$d min</string>
@@ -498,7 +510,7 @@
     <!-- Settings > Account: signing in to a sync server. -->
     <string name="account_area">Account</string>
     <string name="account_title">Synchronisatieserver</string>
-    <string name="account_footnote">Log in op een Lukia-server om je plek in elk boek en je leesstatistieken op al je apparaten bij je te hebben. Zonder server blijft alles op dit apparaat.</string>
+    <string name="account_footnote">Log in op een Lukia-server om uw plek in elk boek en uw leesstatistieken op al uw apparaten bij u te hebben. Zonder server blijft alles op dit apparaat.</string>
     <string name="account_username">Gebruikersnaam</string>
     <string name="account_password">Wachtwoord</string>
     <string name="account_invite_code">Uitnodigingscode</string>
@@ -506,21 +518,21 @@
     <string name="account_signing_in">Inloggen…</string>
     <string name="account_create">Account maken</string>
     <string name="account_create_admin">Beheerdersaccount aanmaken</string>
-    <string name="account_setup_footnote">%1$s heeft nog geen accounts. Het account dat je nu maakt, wordt de beheerder.</string>
+    <string name="account_setup_footnote">%1$s heeft nog geen accounts. Het account dat u nu maakt, wordt de beheerder.</string>
     <string name="account_use_invite">Ik heb een uitnodigingscode</string>
     <string name="account_use_password">Ik heb al een account</string>
     <string name="account_signed_in">Ingelogd op %1$s als %2$s.</string>
     <string name="account_signed_in_admin">Ingelogd op %1$s als %2$s, de beheerder.</string>
-    <string name="account_needs_sign_in">%1$s vraagt opnieuw om je wachtwoord.</string>
+    <string name="account_needs_sign_in">%1$s vraagt opnieuw om uw wachtwoord.</string>
     <string name="account_sign_out">Uitloggen</string>
     <string name="account_delete">Account verwijderen</string>
-    <string name="account_delete_title">Je account verwijderen?</string>
-    <string name="account_delete_message">Je plek in elk boek, je favorieten en je leessessies worden van %1$s verwijderd, en dit apparaat wordt afgemeld. De boeken blijven in de gedeelde bibliotheek, en alles op dit apparaat blijft hier.</string>
-    <string name="account_problem_last_admin">Je bent de enige beheerder van deze server, dus dit account kan niet worden verwijderd.</string>
+    <string name="account_delete_title">Uw account verwijderen?</string>
+    <string name="account_delete_message">Uw plek in elk boek, uw favorieten en uw leessessies worden van %1$s verwijderd, en dit apparaat wordt afgemeld. De boeken blijven in de gedeelde bibliotheek, en alles op dit apparaat blijft hier.</string>
+    <string name="account_problem_last_admin">U bent de enige beheerder van deze server, dus dit account kan niet worden verwijderd.</string>
     <string name="account_problem_invalid_address">Dat is geen serveradres.</string>
     <string name="account_problem_unreachable">Er antwoordde niets op dat adres. Controleer het, en of de server draait.</string>
     <string name="account_problem_not_lukia">Er antwoordde iets, maar het is geen Lukia-server.</string>
-    <string name="account_problem_insecure">Gebruik https:// voor een server buiten je eigen netwerk.</string>
+    <string name="account_problem_insecure">Gebruik https:// voor een server buiten uw eigen netwerk.</string>
     <string name="account_problem_rejected">Die gebruikersnaam en dat wachtwoord horen bij geen enkel account.</string>
     <string name="account_problem_too_many">Te veel pogingen. Wacht een paar minuten en probeer het opnieuw.</string>
     <string name="account_problem_invalid_username">Een gebruikersnaam bestaat uit 3 tot 32 kleine letters, cijfers, punten, streepjes of underscores.</string>
@@ -528,10 +540,10 @@
     <string name="account_problem_username_taken">Die gebruikersnaam is al bezet.</string>
     <string name="account_problem_invalid_invite">Die uitnodigingscode is onbekend, gebruikt of verlopen.</string>
     <string name="account_problem_already_set_up">Iemand heeft deze server net ingesteld. Log in plaats daarvan in.</string>
-    <string name="account_problem_session_expired">Je aanmelding is verlopen. Log opnieuw in.</string>
+    <string name="account_problem_session_expired">Uw aanmelding is verlopen. Log opnieuw in.</string>
     <string name="account_problem_server_failed">De server kon dat niet doen. Probeer het later opnieuw.</string>
     <string name="history_title">Lezen op dit apparaat</string>
-    <string name="history_question">Dit apparaat heeft leestijd vastgelegd voordat je inlogde. Toevoegen aan de statistieken van je account, of alleen op dit apparaat houden?</string>
+    <string name="history_question">Dit apparaat heeft leestijd vastgelegd voordat u inlogde. Toevoegen aan de statistieken van uw account, of alleen op dit apparaat houden?</string>
     <string name="history_add">Toevoegen aan mijn account</string>
     <string name="history_keep">Op dit apparaat houden</string>
 
@@ -547,7 +559,7 @@
     <string name="sync_retry_soon">Over minder dan een minuut opnieuw proberen.</string>
     <string name="sync_now">Nu synchroniseren</string>
     <string name="sync_auto_upload">Boeken die ik importeer aan de server toevoegen</string>
-    <string name="sync_auto_upload_detail">Boeken die na het aanmelden op dit apparaat worden toegevoegd, gaan naar de gedeelde bibliotheek voor iedereen. Boeken die je al had, worden alleen verstuurd als je ze zelf toevoegt.</string>
+    <string name="sync_auto_upload_detail">Boeken die na het aanmelden op dit apparaat worden toegevoegd, gaan naar de gedeelde bibliotheek voor iedereen. Boeken die u al had, worden alleen verstuurd als u ze zelf toevoegt.</string>
     <string name="filter_device_only">Alleen op dit apparaat</string>
     <string name="book_info_sync">Synchronisatieserver</string>
     <string name="book_sync_on_server">Op de server</string>

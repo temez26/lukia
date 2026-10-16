@@ -13,7 +13,7 @@ which the build's checkAttribution task holds against gradle/libs.versions.toml.
 The list covers every dependency the version catalogue declares that reaches a
 distribution, plus the runtimes underneath them that the app could not run
 without and that the catalogue never names - the Kotlin standard library,
-SQLite, OkHttp, Bouncy Castle and Skia.
+SQLite, OkHttp, Bouncy Castle and Skia - and the one font the app bundles.
 
 A year appears in a copyright line only where the dependency's own NOTICE states
 one. Inventing the rest would have made this file look more precise and be less
@@ -140,3 +140,16 @@ SLF4J
 Copyright QOS.ch
 
   The logging interface Ktor writes through. https://www.slf4j.org/license.html
+
+-------------------------------------------------------------------------------
+SIL Open Font License 1.1
+-------------------------------------------------------------------------------
+
+Noto Serif
+Copyright 2022 The Noto Project Authors
+
+  Regular and Bold, for the headings of the Paper and Ledger palettes. Bundled
+  unmodified as noto_serif_regular.ttf and noto_serif_bold.ttf in
+  shared/src/commonMain/composeResources/font/, from
+  https://github.com/notofonts/latin-greek-cyrillic (release NotoSerif-v2.015).
+  The licence is in config/attribution/OFL-NotoSerif.txt.

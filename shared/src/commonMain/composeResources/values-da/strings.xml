@@ -98,6 +98,8 @@
     <string name="palette_paper_detail">Varmt papir og blæk, nænsomt for øjnene over lange stunder.</string>
     <string name="palette_slate">Skifer</string>
     <string name="palette_slate_detail">Køligt neutrale grå og flade, rolige flader.</string>
+    <string name="palette_ledger">Avis</string>
+    <string name="palette_ledger_detail">Sort på hvidt som tryk, med serif-overskrifter og skarpe hjørner.</string>
     <string name="accent_themed">Tema</string>
     <string name="accent_blue">Blå</string>
     <string name="accent_violet">Violet</string>
@@ -175,6 +177,7 @@
     <string name="library_close_menu">Luk menuen</string>
     <string name="library_import_books">Importer bøger</string>
     <string name="library_add_folder">Tilføj mappe</string>
+    <string name="library_add_books">Tilføj bøger</string>
     <string name="library_importing">Importerer…</string>
     <string name="library_importing_count">Importerer %1$d af %2$d…</string>
     <string name="library_import_stop">Stop</string>
@@ -204,6 +207,10 @@
     <string name="search_empty_title">Søg i dit bibliotek</string>
     <string name="search_empty_message">Skriv en titel eller en forfatter for at finde en bog.</string>
     <string name="library_no_results_title">Ingen resultater</string>
+    <plurals name="search_result_count">
+        <item quantity="one">1 resultat</item>
+        <item quantity="other">%1$d resultater</item>
+    </plurals>
     <string name="library_no_matches_filtered">Intet i dit bibliotek passer på alle de filtre, du har sat.</string>
     <string name="library_no_matches_term">Ingen bøger passer på \u201D%1$s\u201D.</string>
     <string name="library_no_matches_filtered_term">Intet, der passer på \u201D%1$s\u201D, er tilbage, når dine filtre bruges.</string>
@@ -267,7 +274,12 @@
     <string name="reader_percent_read">%1$d procent læst</string>
     <string name="reader_percent">%1$d\u00A0%</string>
     <string name="reader_percent_start">0</string>
+    <string name="reader_opening">Åbner…</string>
+    <string name="reader_reading_text">Læser tekst… side %1$d af %2$d</string>
     <string name="reader_chapters">Kapitler</string>
+    <string name="reader_chapters_loading">Læser kapitler…</string>
+    <string name="reader_chapters_unavailable">Kapitlerne kunne ikke læses fra dette dokument.</string>
+    <string name="reader_chapters_none">Dette dokument har ingen kapitler.</string>
     <string name="reader_collapse_all">Fold alle sammen</string>
     <string name="reader_expand_all">Fold alle ud</string>
     <string name="reader_show_sections_of">Vis afsnittene i %1$s</string>

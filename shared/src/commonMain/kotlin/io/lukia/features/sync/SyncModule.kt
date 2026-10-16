@@ -75,9 +75,9 @@ val syncModule = module {
             round = get(),
             syncSessions = get(),
             forgetServer = get(),
-            // Each store's count at launch is dropped: the round at sign-in
-            // covers what was already waiting.
-            waiting = merge(get<BookStateStore>().waiting.drop(1), get<SessionStore>().waiting.drop(1)),
+            // Each store's count at launch is dropped: the round at launch or
+            // sign-in covers what was already waiting.
+            waiting = merge(get<BookStateStore>().waiting.drop(1), get<SyncSessionsUseCase>().waiting.drop(1)),
             events = ServerEvents(ServerHttp(serverHttpClient())),
         )
     }

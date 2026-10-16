@@ -26,12 +26,14 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import io.lukia.shared.presentation.components.controls.scaleOnPress
 import io.lukia.shared.presentation.theme.LukiaMotion
@@ -76,7 +78,22 @@ internal fun mobileNavBarHeight(): Dp =
 
 @Composable
 private fun barContentHeight(): Dp =
-    if (isShortWindow) ShortBarContentHeight else BarContentHeight
+    if (isShortWindow) ShortBarContentHeight else BarContentHeight + labelGrowth()
+
+/**
+ * How much taller a tab's label is than at the default text size.
+ *
+ * The bar grows by this rather than staying at its 52dp, which at the largest
+ * system text size cut the labels off along their bottom edge. Only the stacked
+ * layout grows: beside its mark, a label has the tab's full height to itself.
+ */
+@Composable
+private fun labelGrowth(): Dp {
+    val lineHeight = MaterialTheme.typography.labelSmall.lineHeight
+    val scaled = with(LocalDensity.current) { lineHeight.toDp() }
+
+    return (scaled - lineHeight.value.dp).coerceAtLeast(0.dp)
+}
 
 /**
  * The bar along the bottom of the mobile app.
@@ -168,7 +185,7 @@ private fun RowScope.TabItem(
 
     val target = Modifier
         .weight(1f)
-        .height(if (inline) MinTouchTarget else MinTouchTarget + Space.md)
+        .height(if (inline) MinTouchTarget else MinTouchTarget + Space.md + labelGrowth())
         .clickable(
             interactionSource = interactionSource,
             indication = null,

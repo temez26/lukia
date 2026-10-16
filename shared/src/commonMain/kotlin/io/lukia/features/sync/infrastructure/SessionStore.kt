@@ -8,6 +8,7 @@ import io.lukia.core.infrastructure.db.LukiaDatabase
 import io.lukia.core.infrastructure.ioDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 /** A sitting the account has not heard all of, as it will be sent. */
@@ -25,6 +26,16 @@ class SessionStore(
 
     /** How many sittings are waiting to be sent, as it changes. */
     val waiting: Flow<Long> = sessions.countUnsent().asFlow().mapToOne(dispatcher)
+
+    /**
+     * How many sittings [unsent] with the same [afterId] would return, counted
+     * again whenever the sittings change. [afterId] is asked each time, since
+     * it moves when the reader answers the history question.
+     */
+    fun waitingAfter(afterId: () -> Long): Flow<Long> =
+        sessions.maxId().asFlow().map {
+            withContext(dispatcher) { sessions.countUnsentAfter(afterId()).executeAsOne() }
+        }
 
     /** Sittings not fully sent, of those after [afterId] - all of them when it is zero. */
     suspend fun unsent(afterId: Long = 0): List<UnsentSession> = withContext(dispatcher) {

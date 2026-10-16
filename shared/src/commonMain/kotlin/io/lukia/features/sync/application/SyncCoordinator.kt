@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -41,17 +42,33 @@ class SyncCoordinator(
     private val syncSessions: SyncSessionsUseCase,
     private val forgetServer: ForgetServerUseCase,
     /**
-     * Fires whenever what is waiting to be sent changes - a position, a
-     * favourite, a sitting growing - and not for what was waiting at launch.
-     * See `BookStateStore.waiting` and `SessionStore.waiting`.
+     * How many changes are waiting to be sent, whenever that changes - a
+     * position, a favourite, a sitting growing - and not for what was waiting
+     * at launch. Only a count above zero starts a round.
+     * See `BookStateStore.waiting` and `SyncSessionsUseCase.waiting`.
      */
     private val waiting: Flow<Long>,
     /** The server's word that something changed - see [listenForChanges]. */
     private val events: ServerEvents,
     private val nowMillis: () -> Long = { Clock.System.now().toEpochMilliseconds() },
+    /** How often to check while the line to the server is down - see [keepUp]. */
+    private val checkEvery: Duration = CheckEvery,
+    /** How long after the last change to [waiting] a round sends it. */
+    private val sendAfter: Duration = SendAfter,
 ) {
     /** One round at a time: two would send the same changes twice and race over the cursors. */
     private val oneAtATime = Mutex()
+
+    /**
+     * How many rounds have started. A request that finds one started after it
+     * was made is already answered - that round asked the server for
+     * everything this one would - so a burst of requests during a round costs
+     * one more round, not one each.
+     */
+    private val roundsStarted = MutableStateFlow(0L)
+
+    /** Whether the line to the server is open, so that it, not a timer, says when to catch up. */
+    private val lineOpen = MutableStateFlow(false)
 
     /** Rounds that have failed in a row; while above zero, another is on its way. */
     private val failedRounds = MutableStateFlow(0)
@@ -64,11 +81,17 @@ class SyncCoordinator(
     @OptIn(FlowPreview::class)
     suspend fun run() = coroutineScope {
         launch {
+            // The status found at launch is not a sign-in: the app coming to the
+            // front catches up then (see `App`), and a round for it here as well
+            // was the same round twice, back to back.
+            var atLaunch = true
             session.status.collectLatest { status ->
+                val signingIn = !atLaunch
+                atLaunch = false
                 when (status) {
                     is AccountStatus.SignedIn -> {
                         syncSessions.signedIn()
-                        syncNow()
+                        if (signingIn) syncNow()
                     }
                     AccountStatus.SignedOut -> {
                         failedRounds.value = 0
@@ -83,7 +106,10 @@ class SyncCoordinator(
         // Settled for a moment rather than on every write, so a reader turning
         // pages sends one position when they pause rather than one per page.
         launch {
-            waiting.debounce(SendAfter).collect { syncNow() }
+            // Only a count that settles with something in it. Sending brings the
+            // count back to zero, and a round can move it up and down again as it
+            // goes; neither is work for another round.
+            waiting.debounce(sendAfter).filter { it > 0 }.collect { syncNow() }
         }
 
         // Latest only: a round that succeeds in the meantime, or fails again,
@@ -99,32 +125,78 @@ class SyncCoordinator(
     }
 
     /**
-     * Holds a line open to the server for as long as this is running and the
-     * device is signed in, and catches up whenever the server says something
-     * changed - a book added, or a page turned on another device - rather than
-     * at the next check. A line that drops is opened again, a little later each
-     * time it keeps dropping.
+     * Keeps the device current for as long as this runs: by the line to the
+     * server while it is open - see [listenForChanges] - and by checking every
+     * [checkEvery] while it is not.
      *
      * Meant to run only while the app is on screen: nobody needs a shelf kept
      * current behind their back, and a held connection costs a phone battery.
+     *
+     * No round of its own to start with. The line catches up as it opens, which
+     * leaves no moment between a round and the line in which a change could go
+     * unheard; a line that has not opened within [OpenWithin] is taken to be
+     * down, and the checks start.
      */
-    suspend fun listenForChanges() {
+    suspend fun keepUp(): Unit = coroutineScope {
+        launch { listenForChanges() }
+
+        lineOpen.collectLatest { open ->
+            if (open) return@collectLatest
+            delay(OpenWithin)
+            while (true) {
+                syncNow()
+                delay(checkEvery)
+            }
+        }
+    }
+
+    /**
+     * Holds a line open to the server for as long as this is running and the
+     * device is signed in. Catches up each time it opens - after a drop it may
+     * have missed anything - and whenever the server says something changed: a
+     * book added, or a page turned on another device. A line that drops is
+     * opened again, a little later each time it keeps dropping.
+     */
+    private suspend fun listenForChanges() {
         session.status.collectLatest { status ->
             if (status !is AccountStatus.SignedIn) return@collectLatest
             var drops = 0
             while (true) {
                 val outcome = runCatchingApp {
-                    session.authorized { address, token -> events.listen(address, token) { syncNow() } }
+                    session.authorized { address, token ->
+                        events.listen(
+                            address,
+                            token,
+                            onOpen = {
+                                lineOpen.value = true
+                                syncNow()
+                            },
+                        ) { syncNow() }
+                    }
                 }
+                lineOpen.value = false
                 drops = if (outcome.isSuccess) 0 else drops + 1
                 delay(reconnectAfter(drops))
             }
         }
     }
 
-    /** One round, now - see [SyncRoundUseCase]. Does nothing unless signed in. */
-    suspend fun syncNow() = oneAtATime.withLock {
-        if (session.status.value !is AccountStatus.SignedIn) return@withLock
+    /**
+     * One round, now - see [SyncRoundUseCase] - unless one has started since this
+     * was asked for. Does nothing unless signed in.
+     */
+    suspend fun syncNow() {
+        val askedAfter = roundsStarted.value
+        oneAtATime.withLock {
+            if (roundsStarted.value > askedAfter) return
+            runRound()
+        }
+    }
+
+    /** The round itself; [oneAtATime] is held. */
+    private suspend fun runRound() {
+        if (session.status.value !is AccountStatus.SignedIn) return
+        roundsStarted.value++
         _status.update { it.copy(running = true) }
 
         val failure = runCatchingApp { round() }.exceptionOrNull()
@@ -144,6 +216,15 @@ class SyncCoordinator(
 
     private companion object {
         val SendAfter = 5.seconds
+
+        /** How long a line has to open before it is taken to be down. */
+        val OpenWithin = 3.seconds
+
+        /**
+         * How often to check while the line is down - the server unreachable,
+         * or a proxy in front of it that will not hold a line open.
+         */
+        val CheckEvery = 2.minutes
     }
 }
 

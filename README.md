@@ -79,6 +79,7 @@ Rules, enforced by `ArchitectureTest`:
 | --- | --- |
 | [BUILD.md](docs/BUILD.md) | Building and signing each platform, release checks |
 | [TESTING.md](docs/TESTING.md) | What runs where, and how to run it |
+| [ui.md](docs/ui.md) | The design system and its themes |
 | [CODING_STYLE.md](docs/CODING_STYLE.md) | Style rules and the tools that enforce them |
 | [CONTRIBUTING.md](docs/CONTRIBUTING.md) | Branches and pull requests |
 | [DIAGNOSTICS.md](docs/DIAGNOSTICS.md) | What the app records, and what it never does |

@@ -27,7 +27,7 @@ fun Route.readingRoutes(bookStates: BookStateService, sessions: SessionService, 
         put(ApiRoutes.MyBook) {
             val bookId = call.parameters.getOrFail("id")
             val request = call.receive<BookStateRequest>()
-            call.respond(blocking { bookStates.apply(call.account.id, bookId, request) })
+            call.respond(blocking { bookStates.apply(call.account.id, bookId, request, from = call.account.familyId) })
         }
 
         get(ApiRoutes.MySessions) {
@@ -38,7 +38,7 @@ fun Route.readingRoutes(bookStates: BookStateService, sessions: SessionService, 
         put(ApiRoutes.MySession) {
             val id = call.parameters.getOrFail("id")
             val request = call.receive<SessionRequest>()
-            call.respond(blocking { sessions.record(call.account.id, id, request) })
+            call.respond(blocking { sessions.record(call.account.id, id, request, from = call.account.familyId) })
         }
     }
 }

@@ -1,6 +1,6 @@
 package io.lukia.features.reader.presentation.translation
 
-import io.lukia.core.presentation.displayTitle
+import io.lukia.core.presentation.bookTitle
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.outline.ReaderOutline
 import io.lukia.features.reader.domain.outline.chapterCovering
@@ -25,7 +25,7 @@ internal fun ReaderDocument.translationRequest(
     text = selection.passage,
     targetLanguage = targetLanguage,
     context = info.metadata.asTranslationContext(
-        bookTitle = info.displayTitle(),
+        bookTitle = info.bookTitle(),
         chapterTitle = selection.chapterTitle ?: outline.chapterOf(selection.anchor),
         surroundingText = selection.surroundingText,
     ),

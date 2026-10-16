@@ -40,7 +40,7 @@ class LibraryService(
      * way the app's import reads one. A book already on the shelf is answered
      * with the copy there, and the upload thrown away.
      */
-    fun add(upload: ReceivedUpload, name: UploadName, addedBy: Long): Added {
+    fun add(upload: ReceivedUpload, name: UploadName, addedBy: Long, from: Long? = null): Added {
         val fileName = name.fileName
         val type = name.type
         val existing = books.selectById(upload.id).executeAsOneOrNull()
@@ -90,7 +90,7 @@ class LibraryService(
             added
         }
 
-        if (isNew) events.announce(ChangeKind.Library)
+        if (isNew) events.announce(ChangeKind.Library, from = from)
         return Added(books.selectById(upload.id).executeAsOne().toResponse(), isNew)
     }
 
@@ -110,14 +110,14 @@ class LibraryService(
 
     fun coverOf(id: String): ByteArray = books.selectCover(id).executeAsOneOrNull() ?: throw notFound()
 
-    fun delete(id: String) {
+    fun delete(id: String, from: Long? = null) {
         database.transaction {
             books.markDeleted(id)
             if (database.accountQueries.changes().executeAsOne() == 0L) throw notFound()
             books.deleteCover(id)
         }
         files.remove(id)
-        events.announce(ChangeKind.Library)
+        events.announce(ChangeKind.Library, from = from)
     }
 
     /** What the app's desktop import does, on the calling thread: a file that will not open is a book with nothing to say. */

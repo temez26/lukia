@@ -8,7 +8,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import io.lukia.core.presentation.displayTitle
+import io.lukia.core.presentation.bookTitle
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.outline.ReaderOutline
 import io.lukia.features.reader.presentation.components.chrome.PageIndicatorButton
@@ -57,7 +57,7 @@ internal fun ReaderTopChrome(
             onBack = onBack,
             // Named only where the bar has room to say it, which is also where a
             // window has no other title of its own.
-            title = document?.info?.displayTitle(),
+            title = document?.info?.bookTitle(),
             modifier = Modifier
                 // Held to the width of the page it acts on rather than to the
                 // window's. A capsule stretched across a monitor puts its three
