@@ -18,7 +18,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -178,6 +180,11 @@ private fun Segment(
     ) {
         val style = MaterialTheme.typography.labelSmall
 
+        // Set at full size until it is seen not to fit. Shrinking to fit measures
+        // the label at several sizes on every layout, four to six times the work
+        // of setting it once, and almost every label fits.
+        var overflows by remember(text) { mutableStateOf(false) }
+
         Text(
             text = text,
             style = style,
@@ -186,7 +193,12 @@ private fun Segment(
             // Shrinks to fit before it is cut short. Five segments at the
             // largest system text size came out as "Auss…" and "Über…"; a
             // smaller whole word says what the segment is, half of one does not.
-            autoSize = TextAutoSize.StepBased(minFontSize = MinLabelSize, maxFontSize = style.fontSize),
+            autoSize = if (overflows) {
+                TextAutoSize.StepBased(minFontSize = MinLabelSize, maxFontSize = style.fontSize)
+            } else {
+                null
+            },
+            onTextLayout = { layout -> if (layout.hasVisualOverflow) overflows = true },
             overflow = TextOverflow.Ellipsis,
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
             color = MaterialTheme.colorScheme.onSurface.copy(
