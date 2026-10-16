@@ -170,7 +170,7 @@ signed in to the same account standing in for another device.
 
 | # | Finding | Category | Location | Status |
 | --- | --- | --- | --- | --- |
-| S8 | A book left open runs 2 rounds every 20 seconds | Duplicate trigger, chatty sync | `SyncModule` (`waiting`), `SessionStore.waiting` | Open |
+| S8 | A book left open runs 2 rounds every 20 seconds | Duplicate trigger, chatty sync | `SyncModule` (`waiting`), `SessionStore.waiting` | Empty rounds fixed, 85c9dca0; send interval unchanged by choice |
 | S9 | The sign-in form asked for the server's health 6 times while one address was typed | Repeated calls | `AccountViewModel` (not yet traced) | Open |
 
 **S8.** The reading session grows while a book is open, and each growth
@@ -183,3 +183,18 @@ branch. Two parts to a fix: only a count above zero should start a round (the
 empty follow-ups go, without changing what is sent or when), and a growing
 session need not be sent more often than every few minutes (a change in how
 soon statistics reach other devices, so the user's call).
+
+Fixed: the empty rounds. On the phone the cause turned out to be reading done
+before the first sign-in: held back until the reader answers the history
+question, never sent, but counted as waiting - so the count never reached
+zero. The coordinator now watches `SyncSessionsUseCase.waiting`, which counts
+only what a round would send (`countUnsentAfter`, the same cutoff as
+`selectUnsent`), and starts a round only when it settles above zero.
+**Measured on the phone**, idle in the reader for 2½ minutes: 15 rounds before
+(a send every 20 seconds and an empty round after each), 8 after (the sends
+alone). The growing session is still sent every 20 seconds, as chosen.
+
+Noticed on the way, not changed: the sync status card counts the held-back
+reading as waiting too, so it shows changes waiting that will not go until the
+reader answers; and the server logs a 500 when a device's event stream ends
+because the device went away.
