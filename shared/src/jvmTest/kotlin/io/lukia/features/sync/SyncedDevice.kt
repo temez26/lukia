@@ -1,5 +1,8 @@
 package io.lukia.features.sync
 
+import io.ktor.client.plugins.HttpSend
+import io.ktor.client.plugins.plugin
+import io.lukia.api.ApiRoutes
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.domain.document.PickedDocument
@@ -42,7 +45,10 @@ import io.lukia.features.sync.infrastructure.UploadChoice
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.emptyFlow
 import java.io.File
+import java.io.IOException
 import java.nio.file.Files
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * One device signed in to [server]: its own database, shelf, reader stores and
@@ -103,15 +109,29 @@ class SyncedDevice(private val server: TestSyncServer) : AutoCloseable {
         pull()
     }
 
-    /** This device's coordinator, as the app wires it up, with nothing waiting to be sent. */
-    fun coordinator() = SyncCoordinator(
+    /**
+     * This device's coordinator, as the app wires it up, with nothing waiting to
+     * be sent. [lineRefused] stands in for a server whose line will not open -
+     * a proxy that will not hold one - while every other request goes through.
+     */
+    fun coordinator(checkEvery: Duration = 2.minutes, lineRefused: Boolean = false) = SyncCoordinator(
         session = session,
         round = round,
         syncSessions = syncSessions,
         forgetServer = ForgetServerUseCase(shelf, cursors, ShelfChanges()),
         waiting = emptyFlow(),
-        events = ServerEvents(http),
+        events = ServerEvents(if (lineRefused) ServerHttp(lineRefusingClient()) else http),
+        checkEvery = checkEvery,
     )
+
+    private fun lineRefusingClient() = serverHttpClient().apply {
+        plugin(HttpSend).intercept { request ->
+            if (request.url.buildString().endsWith(ApiRoutes.MyEvents)) {
+                throw IOException("The line will not open")
+            }
+            execute(request)
+        }
+    }
 
     /** Everything, as the coordinator runs it. */
     suspend fun round() = round.invoke()

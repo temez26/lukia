@@ -49,6 +49,8 @@ class SyncCoordinator(
     /** The server's word that something changed - see [listenForChanges]. */
     private val events: ServerEvents,
     private val nowMillis: () -> Long = { Clock.System.now().toEpochMilliseconds() },
+    /** How often to check while the line to the server is down - see [keepUp]. */
+    private val checkEvery: Duration = CheckEvery,
 ) {
     /** One round at a time: two would send the same changes twice and race over the cursors. */
     private val oneAtATime = Mutex()
@@ -60,6 +62,9 @@ class SyncCoordinator(
      * one more round, not one each.
      */
     private val roundsStarted = MutableStateFlow(0L)
+
+    /** Whether the line to the server is open, so that it, not a timer, says when to catch up. */
+    private val lineOpen = MutableStateFlow(false)
 
     /** Rounds that have failed in a row; while above zero, another is on its way. */
     private val failedRounds = MutableStateFlow(0)
@@ -113,23 +118,56 @@ class SyncCoordinator(
     }
 
     /**
-     * Holds a line open to the server for as long as this is running and the
-     * device is signed in, and catches up whenever the server says something
-     * changed - a book added, or a page turned on another device - rather than
-     * at the next check. A line that drops is opened again, a little later each
-     * time it keeps dropping.
+     * Keeps the device current for as long as this runs: by the line to the
+     * server while it is open - see [listenForChanges] - and by checking every
+     * [checkEvery] while it is not.
      *
      * Meant to run only while the app is on screen: nobody needs a shelf kept
      * current behind their back, and a held connection costs a phone battery.
+     *
+     * No round of its own to start with. The line catches up as it opens, which
+     * leaves no moment between a round and the line in which a change could go
+     * unheard; a line that has not opened within [OpenWithin] is taken to be
+     * down, and the checks start.
      */
-    suspend fun listenForChanges() {
+    suspend fun keepUp(): Unit = coroutineScope {
+        launch { listenForChanges() }
+
+        lineOpen.collectLatest { open ->
+            if (open) return@collectLatest
+            delay(OpenWithin)
+            while (true) {
+                syncNow()
+                delay(checkEvery)
+            }
+        }
+    }
+
+    /**
+     * Holds a line open to the server for as long as this is running and the
+     * device is signed in. Catches up each time it opens - after a drop it may
+     * have missed anything - and whenever the server says something changed: a
+     * book added, or a page turned on another device. A line that drops is
+     * opened again, a little later each time it keeps dropping.
+     */
+    private suspend fun listenForChanges() {
         session.status.collectLatest { status ->
             if (status !is AccountStatus.SignedIn) return@collectLatest
             var drops = 0
             while (true) {
                 val outcome = runCatchingApp {
-                    session.authorized { address, token -> events.listen(address, token) { syncNow() } }
+                    session.authorized { address, token ->
+                        events.listen(
+                            address,
+                            token,
+                            onOpen = {
+                                lineOpen.value = true
+                                syncNow()
+                            },
+                        ) { syncNow() }
+                    }
                 }
+                lineOpen.value = false
                 drops = if (outcome.isSuccess) 0 else drops + 1
                 delay(reconnectAfter(drops))
             }
@@ -171,6 +209,15 @@ class SyncCoordinator(
 
     private companion object {
         val SendAfter = 5.seconds
+
+        /** How long a line has to open before it is taken to be down. */
+        val OpenWithin = 3.seconds
+
+        /**
+         * How often to check while the line is down - the server unreachable,
+         * or a proxy in front of it that will not hold a line open.
+         */
+        val CheckEvery = 2.minutes
     }
 }
 

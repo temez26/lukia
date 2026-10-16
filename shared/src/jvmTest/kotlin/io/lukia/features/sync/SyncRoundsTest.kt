@@ -11,6 +11,8 @@ import kotlinx.coroutines.withTimeout
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 /** How many rounds the coordinator runs for what asks it to, counted at a real server. */
@@ -67,6 +69,33 @@ class SyncRoundsTest {
         asked.forEach { it.join() }
 
         assertEquals(2, rounds())
+    }
+
+    @Test
+    fun anOpenLineCatchesUpOnceAndIsNotPolled() = runBlocking {
+        phone.signIn(setUp = true)
+        val sync = phone.coordinator(checkEvery = 100.milliseconds)
+
+        val keepingUp = launch(Dispatchers.IO) { sync.keepUp() }
+        // Past the three seconds a line has to open, with a check due every tenth
+        // of one had the line not been trusted.
+        delay(5.seconds)
+
+        assertEquals(1, rounds())
+        keepingUp.cancel()
+    }
+
+    @Test
+    fun aLineThatWillNotOpenIsMadeUpForByChecking() = runBlocking {
+        phone.signIn(setUp = true)
+        val sync = phone.coordinator(checkEvery = 500.milliseconds, lineRefused = true)
+
+        val keepingUp = launch(Dispatchers.IO) { sync.keepUp() }
+        // Three seconds for the line to open, then a check every half second.
+        delay(5.seconds)
+
+        assertTrue(rounds() >= 3, "only ${rounds()} rounds without a line")
+        keepingUp.cancel()
     }
 
     private companion object {
