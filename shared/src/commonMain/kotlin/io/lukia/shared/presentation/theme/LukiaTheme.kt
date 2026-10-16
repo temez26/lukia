@@ -3,7 +3,6 @@ package io.lukia.shared.presentation.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
@@ -11,9 +10,7 @@ import androidx.compose.material3.Shapes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.AppAccent
 import io.lukia.core.domain.AppMotion
@@ -43,38 +40,6 @@ internal val LukiaShapes = Shapes(
 )
 
 /**
- * Ledger's corners: square where the others are rounded, with just enough on
- * the larger surfaces that a floating panel does not read as a hole cut in the
- * page. The same five steps, so every component keeps its place in the family.
- */
-private val LedgerShapes = Shapes(
-    extraSmall = RoundedCornerShape(0.dp),
-    small = RoundedCornerShape(2.dp),
-    medium = RoundedCornerShape(2.dp),
-    large = RoundedCornerShape(3.dp),
-    extraLarge = RoundedCornerShape(4.dp),
-)
-
-/**
- * What an icon button is clipped to: a circle, except in Ledger, where a round
- * back or menu button among square cards was the one curve left on the page.
- *
- * A local rather than a slot in [Shapes], which has no "fully round" step.
- */
-val LocalIconButtonShape = staticCompositionLocalOf<Shape> { CircleShape }
-
-internal fun iconButtonShapeFor(palette: AppPalette): Shape = when (palette) {
-    AppPalette.Crisp, AppPalette.Paper, AppPalette.Slate -> CircleShape
-    AppPalette.Ledger -> LedgerShapes.small
-}
-
-/** Only Ledger changes shape; the other palettes are colour alone. */
-internal fun shapesFor(palette: AppPalette): Shapes = when (palette) {
-    AppPalette.Crisp, AppPalette.Paper, AppPalette.Slate -> LukiaShapes
-    AppPalette.Ledger -> LedgerShapes
-}
-
-/**
  * [palette] and [accent] default to what the app ships with, so a preview or a
  * test composes the same colours a first run does without having to say so.
  *
@@ -97,8 +62,8 @@ fun LukiaTheme(
         colorSchemeFor(palette, darkTheme, accent)
     }
     val glassStyle = remember { platformGlassStyle() }
-    val ledgerHeadlines = ledgerHeadlineFamily()
-    val typography = remember(palette, ledgerHeadlines) { typographyFor(palette, ledgerHeadlines) }
+    val serif = bundledSerif()
+    val typography = remember(palette, serif) { typographyFor(palette, serif) }
 
     // The device's own answer, which caps the reader's - see [motionFor]. Read
     // here rather than where each animation is written, because it is one

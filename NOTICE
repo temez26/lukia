@@ -148,7 +148,8 @@ SIL Open Font License 1.1
 Noto Serif
 Copyright 2022 The Noto Project Authors
 
-  Bold, for the headings of the Ledger palette. Bundled unmodified as
-  shared/src/commonMain/composeResources/font/noto_serif_bold.ttf, from
+  Regular and Bold, for the headings of the Paper and Ledger palettes. Bundled
+  unmodified as noto_serif_regular.ttf and noto_serif_bold.ttf in
+  shared/src/commonMain/composeResources/font/, from
   https://github.com/notofonts/latin-greek-cyrillic (release NotoSerif-v2.015).
   The licence is in config/attribution/OFL-NotoSerif.txt.

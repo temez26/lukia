@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.sp
 import io.lukia.core.domain.AppPalette
 import io.lukia.resources.Res
 import io.lukia.resources.noto_serif_bold
+import io.lukia.resources.noto_serif_regular
 import org.jetbrains.compose.resources.Font
 
 /**
@@ -115,38 +116,69 @@ internal val LukiaTypography = Typography(
 )
 
 /**
- * Ledger's type: every heading and title in a serif, set bold, as a newspaper
- * sets its headlines. Body text and labels stay in the sans the rest of the app
- * uses - small serif text on a phone reads worse, not more bookish.
- *
- * Unlike [LukiaTypography] this one bundles its face (Noto Serif Bold - see
- * [ledgerHeadlineFamily]). The platform's own serif was tried first and is not
- * there to be had on every phone: a maker's font setting can map it to the
- * system sans, which left Ledger's headings indistinguishable from Crisp's.
+ * Paper's type: headings in the serif at its regular weight, the way a novel
+ * sets its chapter titles - present, not loud. Body text and labels stay sans.
  */
-private fun ledgerTypography(headlines: FontFamily): Typography = LukiaTypography.run {
-    fun TextStyle.headline() = copy(fontFamily = headlines, fontWeight = FontWeight.Bold)
-
-    copy(
-        displaySmall = displaySmall.headline(),
-        headlineLarge = headlineLarge.headline(),
-        headlineMedium = headlineMedium.headline(),
-        headlineSmall = headlineSmall.headline(),
-        titleLarge = titleLarge.headline(),
-        titleMedium = titleMedium.headline(),
-    )
+private fun paperTypography(serif: FontFamily): Typography = LukiaTypography.withHeadlines {
+    copy(fontFamily = serif, fontWeight = FontWeight.Normal, letterSpacing = 0.sp)
 }
 
 /**
- * Only Ledger changes type; the other palettes share [LukiaTypography].
- * [ledgerHeadlines] is Ledger's heading face, loaded by the caller because a
- * bundled font can only be read inside a composition.
+ * Slate's type: the system sans, heavier and tighter in its headings, as a
+ * dashboard sets them. Nothing bundled - its character is weight, not face.
  */
-internal fun typographyFor(palette: AppPalette, ledgerHeadlines: FontFamily): Typography = when (palette) {
-    AppPalette.Crisp, AppPalette.Paper, AppPalette.Slate -> LukiaTypography
-    AppPalette.Ledger -> ledgerTypography(ledgerHeadlines)
+private val SlateTypography: Typography = LukiaTypography.withHeadlines {
+    copy(
+        fontWeight = if (fontWeight == FontWeight.Bold) FontWeight.ExtraBold else FontWeight.Bold,
+        letterSpacing = (letterSpacing.value - SlateTightening).sp,
+    )
 }
 
-/** The face Ledger sets its headings in, bundled so it is the same on every device. */
+/** How much tighter Slate sets its headings than [LukiaTypography] does, in sp. */
+private const val SlateTightening = 0.3f
+
+/**
+ * Ledger's type: every heading in the serif, set bold, as a newspaper sets its
+ * headlines.
+ */
+private fun ledgerTypography(serif: FontFamily): Typography = LukiaTypography.withHeadlines {
+    copy(fontFamily = serif, fontWeight = FontWeight.Bold, letterSpacing = 0.sp)
+}
+
+/**
+ * The scale with [restyle] applied to its headings and titles, and its body text
+ * and labels left alone - small type in anything but the system sans reads worse
+ * on a phone, not more characterful.
+ */
+private fun Typography.withHeadlines(restyle: TextStyle.() -> TextStyle): Typography = copy(
+    displaySmall = displaySmall.restyle(),
+    headlineLarge = headlineLarge.restyle(),
+    headlineMedium = headlineMedium.restyle(),
+    headlineSmall = headlineSmall.restyle(),
+    titleLarge = titleLarge.restyle(),
+    titleMedium = titleMedium.restyle(),
+)
+
+/**
+ * Each palette's type. [serif] is the bundled serif, loaded by the caller because
+ * a bundled font can only be read inside a composition.
+ */
+internal fun typographyFor(palette: AppPalette, serif: FontFamily): Typography = when (palette) {
+    AppPalette.Crisp -> LukiaTypography
+    AppPalette.Paper -> paperTypography(serif)
+    AppPalette.Slate -> SlateTypography
+    AppPalette.Ledger -> ledgerTypography(serif)
+}
+
+/**
+ * Noto Serif, which Paper and Ledger set their headings in.
+ *
+ * Bundled rather than the platform's own serif, which is not there to be had on
+ * every phone: a maker's font setting can map it to the system sans, which left
+ * Ledger's headings looking like Crisp's.
+ */
 @Composable
-internal fun ledgerHeadlineFamily(): FontFamily = FontFamily(Font(Res.font.noto_serif_bold, FontWeight.Bold))
+internal fun bundledSerif(): FontFamily = FontFamily(
+    Font(Res.font.noto_serif_regular, FontWeight.Normal),
+    Font(Res.font.noto_serif_bold, FontWeight.Bold),
+)

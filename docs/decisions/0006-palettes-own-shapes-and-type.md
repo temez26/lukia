@@ -1,4 +1,4 @@
-# 0006: A palette may bring its own shapes and type
+# 0006: Each palette brings its own shapes and type
 
 Status: Accepted, 2026-10-16.
 
@@ -7,26 +7,34 @@ Status: Accepted, 2026-10-16.
 Crisp, Paper and Slate differ only in colour. A fourth theme, Ledger, was
 wanted that feels like a different app: an editorial black-and-white look with
 serif headings, square corners and a red accent. Three directions were mocked
-up (Ink, Sage, Ledger) and Ledger was chosen.
+up (Ink, Sage, Ledger) and Ledger was chosen. Once Ledger had shapes and type
+of its own, the other three looked like one theme in three colours, so each was
+given an identity as well.
 
 ## Decision
 
-`LukiaTheme` asks the palette for its `Shapes` and `Typography` as well as its
-colours (`shapesFor`, `typographyFor`). Ledger supplies square corners (0-4dp
-on the same five steps) and the platform serif, bold, for display, headline and
-title styles. Body text and labels stay in the system sans. The other palettes
-return the shared `LukiaShapes` and `LukiaTypography`.
+`LukiaTheme` asks the palette for its `Shapes`, `Typography` and icon-button
+shape as well as its colours (`shapesFor`, `typographyFor`,
+`iconButtonShapeFor`). Only display, headline and title styles change; body
+text and labels stay in the system sans in every palette.
 
-The serif is bundled: Noto Serif Bold, under the SIL Open Font License 1.1
-(about 480 KB). The platform serif was tried first, and on a OnePlus phone the
-maker's font setting mapped it to the system sans, so Ledger's headings came
-out looking like everyone else's.
+| Palette | Corners | Icon buttons | Headings |
+| --- | --- | --- | --- |
+| Crisp | 4-20dp (`LukiaShapes`) | Circle | System sans, bold |
+| Paper | 6-28dp, soft | Circle | Noto Serif, regular weight |
+| Slate | 2-8dp, tight | Rounded square | System sans, heavier and tighter |
+| Ledger | 0-4dp, square | Square | Noto Serif, bold |
+
+The serif is bundled: Noto Serif Regular and Bold, under the SIL Open Font
+License 1.1 (about 960 KB together). The platform serif was tried first, and on
+a OnePlus phone the maker's font setting mapped it to the system sans, so
+Ledger's headings came out looking like everyone else's.
 
 ## Consequences
 
 - Components that read `MaterialTheme.shapes` and `MaterialTheme.typography`
   follow the palette for free. Icon buttons, which are circles elsewhere, read
-  `LocalIconButtonShape` and are square in Ledger. Other circles - swatches,
+  `LocalIconButtonShape`. Other circles - swatches,
   selection marks, chart bars - stay round.
 - The reader keeps its own page themes (Light, Sepia, Dark) and its own chrome,
   as it already did for every palette.
@@ -34,3 +42,5 @@ out looking like everyone else's.
   primary one are close in colour. Destructive actions are still confirmed in a
   dialog that names them.
 - A future palette can change shapes or type without touching any screen.
+- Slate's character leans on weight, which a phone whose font has no heavier
+  weights cannot show. There it stands apart by its corners alone.
