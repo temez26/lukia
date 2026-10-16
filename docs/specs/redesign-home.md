@@ -1,6 +1,6 @@
 # Home screen redesign
 
-Status: In progress
+Status: Done
 
 ## Why
 
@@ -45,7 +45,7 @@ Rows:
 - [x] Resuming the current book is one tap from launch.
 - [x] At most four sections below the header.
 - [x] Categories are browsable from Search, not Home.
-- [ ] Every string in every locale; checked at the largest font size.
+- [x] Every string in every locale; checked at the largest font size.
 
 ## Screens
 
@@ -55,4 +55,4 @@ Rows:
 - [x] Search: browse by category
 - [x] Home: header buttons match (menu button plain, on Home and the library tab)
 - [x] Update `docs/ui.md`
-- [ ] Polish pass, before/after screenshots
+- [x] Polish pass, before/after screenshots

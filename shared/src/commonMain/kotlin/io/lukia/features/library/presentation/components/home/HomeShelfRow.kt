@@ -19,9 +19,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.sp
 import io.lukia.features.library.presentation.model.HomeMenu
 import io.lukia.features.library.presentation.model.HomeRow
 import io.lukia.features.library.presentation.model.HomeShelf
@@ -36,8 +37,11 @@ import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 
-/** The chevron after a row's title, at the size a heading wears rather than a button. */
-private val TitleChevronSize: Dp = 18.dp
+/**
+ * The chevron after a row's title, at the size a heading wears rather than a
+ * button. In sp so it grows with the title at a large system font size.
+ */
+private val TitleChevronSize: TextUnit = 18.sp
 
 /**
  * One row of the home screen: its title, which leads through to all of it, and
@@ -113,6 +117,7 @@ private fun RowHeader(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val shape = MaterialTheme.shapes.extraSmall
+    val chevronSize = with(LocalDensity.current) { TitleChevronSize.toDp() }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -141,7 +146,7 @@ private fun RowHeader(
         DisclosureChevron(
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
-                .size(TitleChevronSize)
+                .size(chevronSize)
                 .graphicsLayer { rotationZ = -90f },
         )
     }
