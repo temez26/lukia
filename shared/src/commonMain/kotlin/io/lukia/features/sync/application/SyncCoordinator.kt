@@ -45,7 +45,7 @@ class SyncCoordinator(
      * How many changes are waiting to be sent, whenever that changes - a
      * position, a favourite, a sitting growing - and not for what was waiting
      * at launch. Only a count above zero starts a round.
-     * See `BookStateStore.waiting` and `SessionStore.waiting`.
+     * See `BookStateStore.waiting` and `SyncSessionsUseCase.waiting`.
      */
     private val waiting: Flow<Long>,
     /** The server's word that something changed - see [listenForChanges]. */
@@ -106,9 +106,10 @@ class SyncCoordinator(
         // Settled for a moment rather than on every write, so a reader turning
         // pages sends one position when they pause rather than one per page.
         launch {
-            // Only a count with something in it: sending brings the count back to
-            // zero, and that change is the round finishing, not work for another.
-            waiting.filter { it > 0 }.debounce(sendAfter).collect { syncNow() }
+            // Only a count that settles with something in it. Sending brings the
+            // count back to zero, and a round can move it up and down again as it
+            // goes; neither is work for another round.
+            waiting.debounce(sendAfter).filter { it > 0 }.collect { syncNow() }
         }
 
         // Latest only: a round that succeeds in the meantime, or fails again,

@@ -119,6 +119,13 @@ class SyncRoundsTest {
         delay(Settle)
         assertEquals(1, rounds(), "nothing waiting started a round")
 
+        // A count that is back at zero before it settles - something waiting
+        // for a moment, then sent or received - is nothing waiting either.
+        waiting.emit(1)
+        waiting.emit(0)
+        delay(Settle)
+        assertEquals(1, rounds(), "a count that settled at zero started a round")
+
         running.cancel()
     }
 

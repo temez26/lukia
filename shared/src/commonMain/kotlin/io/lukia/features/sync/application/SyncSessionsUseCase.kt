@@ -5,6 +5,7 @@ import io.lukia.features.sync.infrastructure.HistoryChoice
 import io.lukia.features.sync.infrastructure.SessionApi
 import io.lukia.features.sync.infrastructure.SessionStore
 import io.lukia.features.sync.infrastructure.SyncCursors
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,6 +31,13 @@ class SyncSessionsUseCase(
 
     /** True while the reader has history on this device and has not said whether it goes to the account. */
     val historyQuestion: StateFlow<Boolean> = _historyQuestion.asStateFlow()
+
+    /**
+     * How many sittings the next round would send, as that changes. Reading held
+     * back for the reader's answer is not counted: a count that never reached
+     * zero started a round with nothing to send after every one that sent.
+     */
+    val waiting: Flow<Long> = store.waitingAfter { if (choice.decided) 0 else choice.askedUpTo }
 
     /**
      * Marks where this device's history ends: everything recorded until now is
