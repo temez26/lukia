@@ -19,10 +19,12 @@ import io.lukia.resources.library_import_books
 import io.lukia.resources.library_missing_files
 import io.lukia.resources.library_settings
 import io.lukia.resources.menu_select_books
+import io.lukia.resources.menu_sync_with_server
 import io.lukia.shared.presentation.components.controls.IconButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.icons.AlertGlyph
 import io.lukia.shared.presentation.components.icons.CheckGlyph
+import io.lukia.shared.presentation.components.icons.CloudGlyph
 import io.lukia.shared.presentation.components.icons.CopyGlyph
 import io.lukia.shared.presentation.components.icons.EllipsisGlyph
 import io.lukia.shared.presentation.components.icons.FolderGlyph
@@ -111,6 +113,15 @@ internal fun LibraryMenu(
         MenuSeparator()
 
         UpkeepMenuRows(shelf = shelf, onDismissRequest = onDismissRequest)
+
+        MenuRow(
+            label = stringResource(Res.string.menu_sync_with_server),
+            icon = { tint, glyph -> CloudGlyph(tint = tint, modifier = glyph) },
+            onClick = {
+                onDismissRequest()
+                shelf.onSyncWithServer()
+            },
+        )
 
         MenuRow(
             label = stringResource(Res.string.library_settings),

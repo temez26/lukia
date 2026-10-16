@@ -20,6 +20,9 @@ sealed class Routes(val route: String) {
 
     data object Settings : Routes("settings")
 
+    /** Settings opened on the Account page, where syncing is reported and signed in to. */
+    data object AccountSettings : Routes("settings/account")
+
     /**
      * What the reading adds up to. A destination pushed over whatever was
      * showing, like [Settings] and for the same reason: it is about the app

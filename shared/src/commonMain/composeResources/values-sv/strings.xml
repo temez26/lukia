@@ -27,6 +27,7 @@
     <string name="menu_favourite">Lägg till i favoriter</string>
     <string name="menu_unfavourite">Ta bort från favoriter</string>
     <string name="menu_select_books">Välj böcker</string>
+    <string name="menu_sync_with_server">Synkronisera med servern</string>
     <string name="menu_refresh_details">Uppdatera uppgifter</string>
     <string name="menu_delete_from_library">Ta bort från biblioteket</string>
 
@@ -552,18 +553,16 @@
     <string name="account_area">Konto</string>
     <string name="account_title">Synkserver</string>
     <string name="account_footnote">Logga in på en Lukia-server för att ha din plats i varje bok och din lässtatistik med dig på alla dina enheter. Utan en stannar allt på den här enheten.</string>
-    <string name="account_connect">Anslut</string>
-    <string name="account_connecting">Ansluter…</string>
     <string name="account_username">Användarnamn</string>
     <string name="account_password">Lösenord</string>
     <string name="account_invite_code">Inbjudningskod</string>
     <string name="account_sign_in">Logga in</string>
     <string name="account_signing_in">Loggar in…</string>
     <string name="account_create">Skapa konto</string>
+    <string name="account_create_admin">Skapa administratörskonto</string>
     <string name="account_setup_footnote">%1$s har inga konton än. Det du skapar nu blir dess administratör.</string>
     <string name="account_use_invite">Jag har en inbjudningskod</string>
     <string name="account_use_password">Jag har redan ett konto</string>
-    <string name="account_other_server">Använd en annan server</string>
     <string name="account_signed_in">Inloggad på %1$s som %2$s.</string>
     <string name="account_signed_in_admin">Inloggad på %1$s som %2$s, dess administratör.</string>
     <string name="account_needs_sign_in">%1$s ber om ditt lösenord igen.</string>
@@ -601,6 +600,8 @@
     <string name="sync_checked_just_now">Kontrollerad nyss</string>
     <string name="sync_retry_soon">Försöker igen om mindre än en minut.</string>
     <string name="sync_now">Synkronisera nu</string>
+    <string name="sync_auto_upload">Lägg till böcker jag importerar på servern</string>
+    <string name="sync_auto_upload_detail">Böcker som läggs till på den här enheten efter inloggning hamnar i det delade biblioteket för alla. Böcker du redan hade skickas bara när du lägger till dem själv.</string>
     <string name="filter_device_only">Bara på den här enheten</string>
     <string name="book_info_sync">Synkroniseringsserver</string>
     <string name="book_sync_on_server">På servern</string>

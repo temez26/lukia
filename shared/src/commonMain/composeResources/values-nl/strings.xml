@@ -25,6 +25,7 @@
     <string name="menu_favourite">Aan favorieten toevoegen</string>
     <string name="menu_unfavourite">Uit favorieten verwijderen</string>
     <string name="menu_select_books">Boeken selecteren</string>
+    <string name="menu_sync_with_server">Synchroniseren met server</string>
     <string name="menu_refresh_details">Gegevens vernieuwen</string>
     <string name="menu_delete_from_library">Uit de bibliotheek verwijderen</string>
     <string name="library_details_refreshed">Gegevens vernieuwd</string>
@@ -498,18 +499,16 @@
     <string name="account_area">Account</string>
     <string name="account_title">Synchronisatieserver</string>
     <string name="account_footnote">Log in op een Lukia-server om je plek in elk boek en je leesstatistieken op al je apparaten bij je te hebben. Zonder server blijft alles op dit apparaat.</string>
-    <string name="account_connect">Verbinden</string>
-    <string name="account_connecting">Verbinden…</string>
     <string name="account_username">Gebruikersnaam</string>
     <string name="account_password">Wachtwoord</string>
     <string name="account_invite_code">Uitnodigingscode</string>
     <string name="account_sign_in">Inloggen</string>
     <string name="account_signing_in">Inloggen…</string>
     <string name="account_create">Account maken</string>
+    <string name="account_create_admin">Beheerdersaccount aanmaken</string>
     <string name="account_setup_footnote">%1$s heeft nog geen accounts. Het account dat je nu maakt, wordt de beheerder.</string>
     <string name="account_use_invite">Ik heb een uitnodigingscode</string>
     <string name="account_use_password">Ik heb al een account</string>
-    <string name="account_other_server">Andere server gebruiken</string>
     <string name="account_signed_in">Ingelogd op %1$s als %2$s.</string>
     <string name="account_signed_in_admin">Ingelogd op %1$s als %2$s, de beheerder.</string>
     <string name="account_needs_sign_in">%1$s vraagt opnieuw om je wachtwoord.</string>
@@ -547,6 +546,8 @@
     <string name="sync_checked_just_now">Zojuist gecontroleerd</string>
     <string name="sync_retry_soon">Over minder dan een minuut opnieuw proberen.</string>
     <string name="sync_now">Nu synchroniseren</string>
+    <string name="sync_auto_upload">Boeken die ik importeer aan de server toevoegen</string>
+    <string name="sync_auto_upload_detail">Boeken die na het aanmelden op dit apparaat worden toegevoegd, gaan naar de gedeelde bibliotheek voor iedereen. Boeken die je al had, worden alleen verstuurd als je ze zelf toevoegt.</string>
     <string name="filter_device_only">Alleen op dit apparaat</string>
     <string name="book_info_sync">Synchronisatieserver</string>
     <string name="book_sync_on_server">Op de server</string>

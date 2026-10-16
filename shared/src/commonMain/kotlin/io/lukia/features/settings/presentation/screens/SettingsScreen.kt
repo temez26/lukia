@@ -30,6 +30,8 @@ fun SettingsScreen(
     onBack: () -> Unit,
     /** The Account page - see `SettingsBody`. */
     account: AccountPage? = null,
+    /** The page it opens on. */
+    initialArea: SettingsArea = SettingsArea.Default,
     viewModel: SettingsViewModel = koinViewModel(),
 ) {
     val settings by viewModel.settings.collectAsState()
@@ -53,6 +55,7 @@ fun SettingsScreen(
         onBack = onBack,
         diagnostics = { DiagnosticsGroup() },
         account = account,
+        initialArea = initialArea,
     )
 }
 
@@ -77,6 +80,7 @@ fun SettingsContent(
     diagnostics: (@Composable () -> Unit)? = null,
     /** The Account page - see `SettingsBody`. */
     account: AccountPage? = null,
+    initialArea: SettingsArea = SettingsArea.Default,
 ) {
     Box(
         modifier = modifier
@@ -104,6 +108,7 @@ fun SettingsContent(
                 modifier = Modifier.fillMaxSize(),
                 diagnostics = diagnostics,
                 account = account,
+                initialArea = initialArea,
             )
 
             FloatingBackButton(onBack = onBack)

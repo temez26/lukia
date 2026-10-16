@@ -4,6 +4,7 @@ import io.lukia.features.account.domain.AccountFailure
 import io.lukia.features.account.domain.AccountProblem
 import io.lukia.features.account.domain.AccountStore
 import io.lukia.features.account.domain.AuthTokens
+import io.lukia.features.account.domain.LastSignIn
 import io.lukia.features.account.domain.ServerAccount
 import io.lukia.features.account.domain.ServerApi
 import io.lukia.features.account.domain.ServerInfo
@@ -95,11 +96,16 @@ internal class FakeServerApi(
 }
 
 internal class InMemoryAccountStore(private var stored: StoredAccount? = null) : AccountStore {
+    private var last: LastSignIn? = null
+
     override fun load() = stored
 
     override fun save(account: ServerAccount, tokens: AuthTokens) {
         stored = StoredAccount(account, tokens)
+        last = LastSignIn(account.address, account.username)
     }
+
+    override fun lastSignIn() = last
 
     override fun saveTokens(tokens: AuthTokens) {
         stored = stored?.copy(tokens = tokens)

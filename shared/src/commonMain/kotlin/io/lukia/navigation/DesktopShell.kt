@@ -30,6 +30,7 @@ import org.koin.compose.koinInject
 @Composable
 internal fun DesktopShell() {
     val navController = rememberNavController()
+    val startSync = rememberStartSync()
     val motion = LocalMotionStyle.current
 
     val commands: AppCommands = koinInject()
@@ -70,6 +71,8 @@ internal fun DesktopShell() {
                     StatsButton(onClick = { navController.navigate(Routes.Stats.route) })
                 },
                 accountPage = AppAccountPage,
+                onSyncWithServer = startSync,
+                onAccountSettings = { navController.navigate(Routes.AccountSettings.route) },
             )
         }
 

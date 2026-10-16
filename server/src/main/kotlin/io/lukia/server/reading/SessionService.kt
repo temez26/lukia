@@ -5,6 +5,8 @@ import io.lukia.api.SessionRequest
 import io.lukia.api.SessionResponse
 import io.lukia.server.db.Reading_session
 import io.lukia.server.db.ServerDatabase
+import io.lukia.server.events.ChangeEvents
+import io.lukia.server.events.ChangeKind
 import io.lukia.server.http.changePage
 import java.util.UUID
 import kotlin.time.Duration.Companion.hours
@@ -13,7 +15,10 @@ import kotlin.time.Duration.Companion.hours
  * One account's reading sessions - append-only, and safe to send any number of
  * times. See docs/decisions/0003-offline-first-sync.md.
  */
-class SessionService(private val database: ServerDatabase) {
+class SessionService(
+    private val database: ServerDatabase,
+    private val events: ChangeEvents = ChangeEvents(),
+) {
 
     private val sessions get() = database.readingSessionQueries
 
@@ -35,7 +40,7 @@ class SessionService(private val database: ServerDatabase) {
             )
             sessions.extend(request.durationMs, accountId, id)
             sessions.selectOne(accountId, id).executeAsOne().toResponse()
-        }
+        }.also { events.announce(ChangeKind.Sessions, accountId) }
     }
 
     fun changesSince(accountId: Long, since: Long, limit: Int): ChangePage<SessionResponse> = changePage(

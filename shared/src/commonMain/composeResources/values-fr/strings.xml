@@ -32,6 +32,7 @@
     <string name="menu_favourite">Ajouter aux favoris</string>
     <string name="menu_unfavourite">Retirer des favoris</string>
     <string name="menu_select_books">Sélectionner des livres</string>
+    <string name="menu_sync_with_server">Synchroniser avec le serveur</string>
     <string name="menu_refresh_details">Actualiser les détails</string>
     <string name="menu_delete_from_library">Supprimer de la bibliothèque</string>
     <string name="library_details_refreshed">Détails actualisés</string>
@@ -505,18 +506,16 @@
     <string name="account_area">Compte</string>
     <string name="account_title">Serveur de synchronisation</string>
     <string name="account_footnote">Connectez-vous à un serveur Lukia pour retrouver votre page dans chaque livre et vos statistiques de lecture sur tous vos appareils. Sans serveur, tout reste sur cet appareil.</string>
-    <string name="account_connect">Se connecter</string>
-    <string name="account_connecting">Connexion…</string>
     <string name="account_username">Nom d’utilisateur</string>
     <string name="account_password">Mot de passe</string>
     <string name="account_invite_code">Code d’invitation</string>
     <string name="account_sign_in">Se connecter</string>
     <string name="account_signing_in">Connexion…</string>
     <string name="account_create">Créer un compte</string>
+    <string name="account_create_admin">Créer le compte administrateur</string>
     <string name="account_setup_footnote">%1$s n’a encore aucun compte. Celui que vous créez maintenant en sera l’administrateur.</string>
     <string name="account_use_invite">J’ai un code d’invitation</string>
     <string name="account_use_password">J’ai déjà un compte</string>
-    <string name="account_other_server">Utiliser un autre serveur</string>
     <string name="account_signed_in">Connecté à %1$s en tant que %2$s.</string>
     <string name="account_signed_in_admin">Connecté à %1$s en tant que %2$s, son administrateur.</string>
     <string name="account_needs_sign_in">%1$s redemande votre mot de passe.</string>
@@ -554,6 +553,8 @@
     <string name="sync_checked_just_now">Vérifié à l’instant</string>
     <string name="sync_retry_soon">Nouvel essai dans moins d’une minute.</string>
     <string name="sync_now">Synchroniser maintenant</string>
+    <string name="sync_auto_upload">Ajouter au serveur les livres que j’importe</string>
+    <string name="sync_auto_upload_detail">Les livres ajoutés sur cet appareil après la connexion vont dans la bibliothèque partagée, pour tous. Ceux que vous aviez déjà ne sont envoyés que si vous les ajoutez vous-même.</string>
     <string name="filter_device_only">Seulement sur cet appareil</string>
     <string name="book_info_sync">Serveur de synchronisation</string>
     <string name="book_sync_on_server">Sur le serveur</string>

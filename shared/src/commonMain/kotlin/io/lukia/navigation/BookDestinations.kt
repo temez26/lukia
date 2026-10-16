@@ -12,6 +12,7 @@ import io.lukia.features.account.application.AccountSession
 import io.lukia.features.account.domain.AccountStatus
 import io.lukia.features.library.presentation.screens.BookDetailScreen
 import io.lukia.features.reader.presentation.screens.ReaderScreen
+import io.lukia.features.settings.presentation.screens.SettingsArea
 import io.lukia.features.settings.presentation.screens.SettingsScreen
 import io.lukia.features.stats.presentation.screens.StatsScreen
 import org.koin.compose.koinInject
@@ -28,6 +29,14 @@ import org.koin.compose.koinInject
 internal fun NavGraphBuilder.bookDestinations(navController: NavController) {
     composable(Routes.Settings.route) {
         SettingsScreen(onBack = { navController.popBackStack() }, account = AppAccountPage)
+    }
+
+    composable(Routes.AccountSettings.route) {
+        SettingsScreen(
+            onBack = { navController.popBackStack() },
+            account = AppAccountPage,
+            initialArea = SettingsArea.Account,
+        )
     }
 
     composable(Routes.Stats.route) {

@@ -2,6 +2,7 @@ package io.lukia.features.sync.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,7 +16,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import io.lukia.features.account.domain.AccountProblem
 import io.lukia.features.settings.presentation.screens.SettingsSection
+import io.lukia.features.settings.presentation.screens.SettingsToggle
 import io.lukia.resources.Res
+import io.lukia.resources.sync_auto_upload
+import io.lukia.resources.sync_auto_upload_detail
 import io.lukia.resources.sync_checked_hours
 import io.lukia.resources.sync_checked_just_now
 import io.lukia.resources.sync_checked_minutes
@@ -57,7 +61,7 @@ fun SyncStatusCard(groupColor: Color, modifier: Modifier = Modifier, viewModel: 
         }
     }
 
-    SyncStatusContent(state, now, viewModel::syncNow, groupColor, modifier)
+    SyncStatusContent(state, now, viewModel::syncNow, groupColor, modifier, viewModel::setAutoUpload)
 }
 
 @Composable
@@ -67,6 +71,7 @@ internal fun SyncStatusContent(
     onSyncNow: () -> Unit,
     groupColor: Color,
     modifier: Modifier = Modifier,
+    onAutoUploadChange: (Boolean) -> Unit = {},
 ) {
     val serverName = state.serverName ?: return
     val status = state.status
@@ -90,6 +95,13 @@ internal fun SyncStatusContent(
                 onClick = onSyncNow,
                 variant = ButtonVariant.Secondary,
                 enabled = !status.running,
+            )
+            SettingsToggle(
+                label = stringResource(Res.string.sync_auto_upload),
+                checked = state.autoUpload,
+                onChange = onAutoUploadChange,
+                detail = stringResource(Res.string.sync_auto_upload_detail),
+                modifier = Modifier.padding(top = Space.sm),
             )
         }
     }

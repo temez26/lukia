@@ -25,6 +25,7 @@
     <string name="menu_favourite">Føj til favoritter</string>
     <string name="menu_unfavourite">Fjern fra favoritter</string>
     <string name="menu_select_books">Vælg bøger</string>
+    <string name="menu_sync_with_server">Synkroniser med serveren</string>
     <string name="menu_refresh_details">Opdater oplysninger</string>
     <string name="menu_delete_from_library">Slet fra biblioteket</string>
     <string name="library_details_refreshed">Oplysningerne opdateret</string>
@@ -498,18 +499,16 @@
     <string name="account_area">Konto</string>
     <string name="account_title">Synkroniseringsserver</string>
     <string name="account_footnote">Log ind på en Lukia-server for at have din plads i hver bog og din læsestatistik med på alle dine enheder. Uden en bliver alt på denne enhed.</string>
-    <string name="account_connect">Forbind</string>
-    <string name="account_connecting">Forbinder…</string>
     <string name="account_username">Brugernavn</string>
     <string name="account_password">Adgangskode</string>
     <string name="account_invite_code">Invitationskode</string>
     <string name="account_sign_in">Log ind</string>
     <string name="account_signing_in">Logger ind…</string>
     <string name="account_create">Opret konto</string>
+    <string name="account_create_admin">Opret administratorkonto</string>
     <string name="account_setup_footnote">%1$s har ingen konti endnu. Den, du opretter nu, bliver dens administrator.</string>
     <string name="account_use_invite">Jeg har en invitationskode</string>
     <string name="account_use_password">Jeg har allerede en konto</string>
-    <string name="account_other_server">Brug en anden server</string>
     <string name="account_signed_in">Logget ind på %1$s som %2$s.</string>
     <string name="account_signed_in_admin">Logget ind på %1$s som %2$s, dens administrator.</string>
     <string name="account_needs_sign_in">%1$s beder om din adgangskode igen.</string>
@@ -547,6 +546,8 @@
     <string name="sync_checked_just_now">Tjekket lige nu</string>
     <string name="sync_retry_soon">Prøver igen om under et minut.</string>
     <string name="sync_now">Synkroniser nu</string>
+    <string name="sync_auto_upload">Føj bøger, jeg importerer, til serveren</string>
+    <string name="sync_auto_upload_detail">Bøger, der tilføjes på denne enhed efter login, kommer i det fælles bibliotek for alle. Bøger, du allerede havde, sendes kun, når du selv tilføjer dem.</string>
     <string name="filter_device_only">Kun på denne enhed</string>
     <string name="book_info_sync">Synkroniseringsserver</string>
     <string name="book_sync_on_server">På serveren</string>

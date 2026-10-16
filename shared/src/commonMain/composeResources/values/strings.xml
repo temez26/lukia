@@ -39,6 +39,7 @@
     <string name="menu_favourite">Add to Favourites</string>
     <string name="menu_unfavourite">Remove from Favourites</string>
     <string name="menu_select_books">Select Books</string>
+    <string name="menu_sync_with_server">Sync with server</string>
     <string name="menu_refresh_details">Refresh Details</string>
     <string name="menu_delete_from_library">Delete from Library</string>
 
@@ -684,18 +685,16 @@
     <string name="account_area">Account</string>
     <string name="account_title">Sync server</string>
     <string name="account_footnote">Sign in to a Lukia server to keep your place in each book and your reading statistics on all your devices. Without one, everything stays on this device.</string>
-    <string name="account_connect">Connect</string>
-    <string name="account_connecting">Connecting\u2026</string>
     <string name="account_username">Username</string>
     <string name="account_password">Password</string>
     <string name="account_invite_code">Invite code</string>
     <string name="account_sign_in">Sign in</string>
     <string name="account_signing_in">Signing in\u2026</string>
     <string name="account_create">Create account</string>
+    <string name="account_create_admin">Create admin account</string>
     <string name="account_setup_footnote">%1$s has no accounts yet. The one you create now is its admin.</string>
     <string name="account_use_invite">I have an invite code</string>
     <string name="account_use_password">I already have an account</string>
-    <string name="account_other_server">Use another server</string>
     <string name="account_signed_in">Signed in to %1$s as %2$s.</string>
     <string name="account_signed_in_admin">Signed in to %1$s as %2$s, its admin.</string>
     <string name="account_needs_sign_in">%1$s asks for your password again.</string>
@@ -733,6 +732,8 @@
     <string name="sync_checked_just_now">Checked just now</string>
     <string name="sync_retry_soon">Trying again in under a minute.</string>
     <string name="sync_now">Sync now</string>
+    <string name="sync_auto_upload">Add books I import to the server</string>
+    <string name="sync_auto_upload_detail">Books added on this device after signing in go to the shared library for everyone. Books you already had are only sent when you add them yourself.</string>
     <string name="filter_device_only">Only on this device</string>
     <string name="book_info_sync">Sync server</string>
     <string name="book_sync_on_server">On the server</string>

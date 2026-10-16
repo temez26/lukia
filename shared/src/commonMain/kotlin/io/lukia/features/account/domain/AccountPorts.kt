@@ -51,4 +51,13 @@ interface AccountStore {
 
     /** Forgets everything: signed out. */
     fun clear()
+
+    /**
+     * The server and username of the last sign-in, kept through signing out so
+     * signing in again asks only for the password. Null before the first.
+     */
+    fun lastSignIn(): LastSignIn?
 }
+
+/** Where, and as whom, this device last signed in. */
+data class LastSignIn(val address: String, val username: String)

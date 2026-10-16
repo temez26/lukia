@@ -35,6 +35,7 @@ import io.lukia.core.presentation.statusLabel
 import io.lukia.features.library.presentation.components.selection.CardSelection
 import io.lukia.features.library.presentation.components.selection.jiggleAngle
 import io.lukia.features.library.presentation.model.LibraryBook
+import io.lukia.features.library.presentation.screens.BookTransfer
 import io.lukia.resources.Res
 import io.lukia.resources.book_actions
 import io.lukia.resources.book_favourited
@@ -87,6 +88,8 @@ internal fun BookCard(
     modifier: Modifier = Modifier,
     /** How this card takes part in selection, or null when nothing is being selected. */
     selection: CardSelection? = null,
+    /** The book on its way down from the server, or null when it is not. */
+    transfer: BookTransfer? = null,
 ) {
     val document = book.document
     val title = document.displayTitle()
@@ -159,7 +162,7 @@ internal fun BookCard(
             )
         }
 
-        BookCardCaption(document = document, title = title)
+        BookCardCaption(document = document, title = title, transfer = transfer)
     }
 }
 
@@ -257,6 +260,7 @@ private fun BookCardCaption(
     document: DocumentInfo,
     title: String,
     modifier: Modifier = Modifier,
+    transfer: BookTransfer? = null,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
@@ -288,7 +292,7 @@ private fun BookCardCaption(
         }
 
         if (!document.exists) {
-            BookStatusBadge(document, Modifier.padding(top = Space.sm))
+            BookStatusBadge(document, Modifier.padding(top = Space.sm), transfer)
         }
     }
 }

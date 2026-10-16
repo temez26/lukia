@@ -113,6 +113,8 @@ internal fun SettingsBody(
      * leaves it off the page and its control out of the header.
      */
     account: AccountPage? = null,
+    /** The page it opens on - the Account page, when that is what was asked for. */
+    initialArea: SettingsArea = SettingsArea.Default,
 ) {
     val dimens = LocalLukiaDimens.current
     val scroll = rememberScrollState()
@@ -133,7 +135,7 @@ internal fun SettingsBody(
             // five groups, not a place to navigate around: the same control the
             // library narrows itself with switches between them, in place, with
             // nothing to go back out of.
-            var area by rememberSaveable { mutableStateOf(SettingsArea.Default) }
+            var area by rememberSaveable(initialArea) { mutableStateOf(initialArea) }
 
             SettingsHeader(area = area, onAreaChange = { area = it }, showAccount = account != null)
 

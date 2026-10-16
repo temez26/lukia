@@ -22,6 +22,7 @@ import io.lukia.shared.presentation.components.launch.LaunchSplash
 import io.lukia.shared.presentation.theme.LukiaTheme
 import io.lukia.shared.presentation.theme.SystemAppearanceEffect
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import kotlin.time.Duration.Companion.minutes
 
@@ -57,13 +58,14 @@ fun App() {
     LaunchedEffect(sync) { sync.run() }
 
     // And again whenever the app comes back to the front, which is when another
-    // device is most likely to have moved on since - then every so often for as
-    // long as it stays there, so a book added on the server, or a page turned
-    // on another device, turns up without leaving the app. Never in the
-    // background, where nobody is looking.
+    // device is most likely to have moved on since. While it stays there it
+    // listens for the server's word that something changed, and checks every
+    // so often besides, for a proxy that will not hold a line open. Never in
+    // the background, where nobody is looking.
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     LaunchedEffect(sync, lifecycle) {
         lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            launch { sync.listenForChanges() }
             while (true) {
                 sync.syncNow()
                 delay(KeepUpEvery)

@@ -26,6 +26,7 @@ import io.lukia.features.library.presentation.pickers.rememberPlatformFolderPick
 import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.features.library.presentation.sessions.LibraryImportUi
 import io.lukia.features.library.presentation.sessions.LibraryShelfUi
+import io.lukia.features.library.presentation.sessions.openBook
 import io.lukia.features.library.presentation.sessions.rememberImportUi
 import io.lukia.resources.Res
 import io.lukia.resources.action_try_again
@@ -58,6 +59,8 @@ internal fun HomeScreen(
     onSettings: () -> Unit,
     /** The way to the reader's own page, supplied by the shell - see `MobileShell`. */
     statsButton: @Composable () -> Unit = {},
+    /** Syncs with the server and opens where that is reported - see `LibraryShelfUi`. */
+    onSyncWithServer: () -> Unit = {},
     viewModel: LibraryViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -69,7 +72,7 @@ internal fun HomeScreen(
 
     // The selection bar and the row of actions that come with it live on the
     // library tab, so the menu rows that start one send the reader there first.
-    val shelf = rememberShelfUi(viewModel)
+    val shelf = rememberShelfUi(viewModel, onSyncWithServer)
     val homeShelf = remember(shelf, onOpenLibrary) { shelf.selectingOn(onOpenLibrary) }
 
     // Fires again each time the tab is re-entered from a book, which may have
@@ -85,7 +88,7 @@ internal fun HomeScreen(
 
     val actions = remember(homeShelf, onOpenBook, onShowDetails, viewModel) {
         HomeBookActions(
-            onOpen = { book -> onOpenBook(book.document) },
+            onOpen = { book -> viewModel.openBook(book.document, onOpenBook) },
             onShowDetails = { book -> onShowDetails(book.document) },
             onToggleFavorite = { book -> viewModel.toggleFavorite(book.document) },
             onRefresh = { book -> viewModel.refreshDocument(book.document) },

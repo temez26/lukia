@@ -5,6 +5,7 @@ import io.lukia.features.account.domain.AccountProblem
 import io.lukia.features.account.domain.AccountStatus
 import io.lukia.features.account.domain.AccountStore
 import io.lukia.features.account.domain.AuthTokens
+import io.lukia.features.account.domain.LastSignIn
 import io.lukia.features.account.domain.ServerAccount
 import io.lukia.features.account.domain.ServerApi
 import io.lukia.features.account.domain.ServerInfo
@@ -34,6 +35,9 @@ class AccountSession(
 
     /** One refresh at a time: two would each spend the same refresh token, and the second would end the sign-in. */
     private val refreshing = Mutex()
+
+    /** Where, and as whom, this device last signed in - for filling in the form again. */
+    fun lastSignIn(): LastSignIn? = store.lastSignIn()
 
     /** Checks what the reader typed and asks the server about itself. Answers with the address as it will be used. */
     suspend fun check(typedAddress: String): Pair<String, ServerInfo> {

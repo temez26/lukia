@@ -8,6 +8,8 @@ import io.lukia.features.sync.application.SyncCoordinator
 import io.lukia.features.sync.application.SyncStatus
 import io.lukia.features.sync.infrastructure.BookStateStore
 import io.lukia.features.sync.infrastructure.SessionStore
+import io.lukia.features.sync.infrastructure.UploadChoice
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -21,6 +23,8 @@ data class SyncStatusUi(
     val pending: Long = 0,
     /** The server's name, while signed in to one; null hides the card. */
     val serverName: String? = null,
+    /** Whether books imported here go to the server on their own - see `UploadChoice`. */
+    val autoUpload: Boolean = true,
 )
 
 class SyncStatusViewModel(
@@ -28,16 +32,30 @@ class SyncStatusViewModel(
     session: AccountSession,
     bookStates: BookStateStore,
     sessions: SessionStore,
+    private val uploads: UploadChoice,
 ) : ViewModel() {
 
+    private val autoUpload = MutableStateFlow(uploads.enabled)
+
     val state: StateFlow<SyncStatusUi> =
-        combine(coordinator.status, bookStates.waiting, sessions.waiting, session.status) { status, a, b, account ->
+        combine(
+            coordinator.status,
+            combine(bookStates.waiting, sessions.waiting) { a, b -> a + b },
+            session.status,
+            autoUpload,
+        ) { status, pending, account, upload ->
             SyncStatusUi(
                 status = status,
-                pending = a + b,
+                pending = pending,
                 serverName = (account as? AccountStatus.SignedIn)?.account?.serverName,
+                autoUpload = upload,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(StopAfterMillis), SyncStatusUi())
+
+    fun setAutoUpload(enabled: Boolean) {
+        uploads.enabled = enabled
+        autoUpload.value = enabled
+    }
 
     fun syncNow() {
         viewModelScope.launch { coordinator.syncNow() }

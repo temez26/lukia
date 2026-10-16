@@ -8,17 +8,19 @@ import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.unit.dp
 import io.lukia.features.account.domain.AccountProblem
 import io.lukia.features.account.domain.AccountStatus
+import io.lukia.features.account.domain.LastSignIn
 import io.lukia.features.account.domain.ServerAccount
-import io.lukia.features.account.domain.ServerInfo
 import io.lukia.features.account.presentation.AccountActions
+import io.lukia.features.account.presentation.AccountForm
 import io.lukia.features.account.presentation.AccountSettingsContent
-import io.lukia.features.account.presentation.AccountStep
 import io.lukia.features.account.presentation.AccountUiState
 import io.lukia.shared.presentation.theme.LukiaTheme
 import kotlin.test.Test
@@ -28,10 +30,13 @@ import kotlin.test.assertEquals
 @OptIn(ExperimentalTestApi::class)
 class AccountSettingsTest {
 
-    private val home = ServerInfo("Home shelf", "1.0.1", setupRequired = false)
     private val alice = ServerAccount(HomeServer, "Home shelf", "alice", isAdmin = false)
 
-    private fun ComposeUiTest.show(state: AccountUiState, actions: AccountActions = AccountActions()) {
+    private fun ComposeUiTest.show(
+        state: AccountUiState,
+        actions: AccountActions = AccountActions(),
+        lastSignIn: LastSignIn? = null,
+    ) {
         setContent {
             LukiaTheme(darkTheme = false) {
                 Box(modifier = Modifier.width(360.dp).padding(16.dp)) {
@@ -39,6 +44,7 @@ class AccountSettingsTest {
                         state = state,
                         actions = actions,
                         groupColor = androidx.compose.material3.MaterialTheme.colorScheme.surface,
+                        lastSignIn = lastSignIn,
                     )
                 }
             }
@@ -62,23 +68,38 @@ class AccountSettingsTest {
     }
 
     @Test
-    fun signedOutAsksForAnAddressAndConnectsOnceThereIsOne() = runComposeUiTest {
+    fun signedOutAsksForEverythingOnOneFormAndSignsInOnceItIsFilled() = runComposeUiTest {
         show(AccountUiState())
 
-        onNodeWithText("Connect").assertIsNotEnabled()
         onNodeWithText("Address").assertExists()
+        onNodeWithText("Username").assertExists()
+        onNodeWithText("Password").assertExists()
+        onNodeWithText("Sign in").assertIsNotEnabled()
+    }
+
+    @Test
+    fun theLastSignInFillsTheFormSoOnlyThePasswordIsLeft() = runComposeUiTest {
+        var sent: List<String>? = null
+        show(
+            AccountUiState(),
+            AccountActions(onSubmit = { address, username, password, _ -> sent = listOf(address, username, password) }),
+            lastSignIn = LastSignIn(HomeServer, "alice"),
+        )
+
+        onNodeWithText(HomeServer).assertExists()
+        onNodeWithText("alice").assertExists()
+        onAllNodes(hasSetTextAction())[2].performTextInput("correct horse")
+        onNodeWithText("Sign in").performClick()
+
+        assertEquals(listOf(HomeServer, "alice", "correct horse"), sent)
     }
 
     @Test
     fun aNewServerOffersToCreateItsAdmin() = runComposeUiTest {
-        show(
-            AccountUiState(
-                step = AccountStep.Credentials(HomeServer, home.copy(setupRequired = true), withInvite = false),
-            ),
-        )
+        show(AccountUiState(form = AccountForm.SetUp("Home shelf")))
 
         onNodeWithText("Home shelf has no accounts yet. The one you create now is its admin.").assertExists()
-        onNodeWithText("Create account").assertExists()
+        onNodeWithText("Create admin account").assertExists()
         // There is nobody to have invited anyone yet.
         onNodeWithText("I have an invite code").assertDoesNotExist()
     }
@@ -87,7 +108,7 @@ class AccountSettingsTest {
     fun anInviteCanBeUsedInsteadOfAPassword() = runComposeUiTest {
         var switchedTo: Boolean? = null
         show(
-            AccountUiState(step = AccountStep.Credentials(HomeServer, home, withInvite = false)),
+            AccountUiState(),
             AccountActions(onUseInvite = { switchedTo = it }),
         )
 
@@ -126,9 +147,9 @@ class AccountSettingsTest {
 
     @Test
     fun whileARequestIsOutTheButtonSaysSoAndWaits() = runComposeUiTest {
-        show(AccountUiState(step = AccountStep.Credentials(HomeServer, home, withInvite = false), busy = true))
+        show(AccountUiState(busy = true))
 
         onNodeWithText("Signing in…").assertIsNotEnabled()
-        onNodeWithText("Use another server").assertIsNotEnabled()
+        onNodeWithText("I have an invite code").assertIsNotEnabled()
     }
 }

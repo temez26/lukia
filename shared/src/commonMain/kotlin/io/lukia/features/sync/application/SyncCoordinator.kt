@@ -5,6 +5,7 @@ import io.lukia.features.account.application.AccountSession
 import io.lukia.features.account.domain.AccountFailure
 import io.lukia.features.account.domain.AccountProblem
 import io.lukia.features.account.domain.AccountStatus
+import io.lukia.features.sync.infrastructure.ServerEvents
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -45,6 +46,8 @@ class SyncCoordinator(
      * See `BookStateStore.waiting` and `SessionStore.waiting`.
      */
     private val waiting: Flow<Long>,
+    /** The server's word that something changed - see [listenForChanges]. */
+    private val events: ServerEvents,
     private val nowMillis: () -> Long = { Clock.System.now().toEpochMilliseconds() },
 ) {
     /** One round at a time: two would send the same changes twice and race over the cursors. */
@@ -95,6 +98,30 @@ class SyncCoordinator(
         }
     }
 
+    /**
+     * Holds a line open to the server for as long as this is running and the
+     * device is signed in, and catches up whenever the server says something
+     * changed - a book added, or a page turned on another device - rather than
+     * at the next check. A line that drops is opened again, a little later each
+     * time it keeps dropping.
+     *
+     * Meant to run only while the app is on screen: nobody needs a shelf kept
+     * current behind their back, and a held connection costs a phone battery.
+     */
+    suspend fun listenForChanges() {
+        session.status.collectLatest { status ->
+            if (status !is AccountStatus.SignedIn) return@collectLatest
+            var drops = 0
+            while (true) {
+                val outcome = runCatchingApp {
+                    session.authorized { address, token -> events.listen(address, token) { syncNow() } }
+                }
+                drops = if (outcome.isSuccess) 0 else drops + 1
+                delay(reconnectAfter(drops))
+            }
+        }
+    }
+
     /** One round, now - see [SyncRoundUseCase]. Does nothing unless signed in. */
     suspend fun syncNow() = oneAtATime.withLock {
         if (session.status.value !is AccountStatus.SignedIn) return@withLock
@@ -136,3 +163,20 @@ private val LongestWait = 15.minutes
 
 /** Enough doublings to pass [LongestWait]; more would only overflow. */
 private const val MaxDoublings = 5
+
+/**
+ * How long to wait before opening the line to the server again: a moment after
+ * it closed cleanly, then five seconds, doubling each time it keeps failing, up
+ * to a minute.
+ */
+internal fun reconnectAfter(drops: Int): Duration = when (drops) {
+    0 -> AfterClose
+    else -> (FirstReconnect * (1 shl (drops - 1).coerceIn(0, MaxReconnectDoublings))).coerceAtMost(LongestReconnect)
+}
+
+private val AfterClose = 1.seconds
+private val FirstReconnect = 5.seconds
+private val LongestReconnect = 1.minutes
+
+/** Enough doublings to pass [LongestReconnect]. */
+private const val MaxReconnectDoublings = 4
