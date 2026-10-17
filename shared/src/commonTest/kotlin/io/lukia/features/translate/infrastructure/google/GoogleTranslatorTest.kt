@@ -10,6 +10,7 @@ import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.HttpResponseData
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.content.TextContent
 import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
 import io.lukia.core.domain.AppError
@@ -17,6 +18,7 @@ import io.lukia.core.domain.storage.FakeSecretStore
 import io.lukia.core.domain.storage.FakeSettingsStore
 import io.lukia.core.domain.text.PassageUnit
 import io.lukia.core.domain.toAppError
+import io.lukia.features.translate.domain.TranslationContext
 import io.lukia.features.translate.domain.TranslationRequest
 import io.lukia.features.translate.domain.settings.TargetLanguage
 import io.lukia.features.translate.domain.settings.TranslationSettings
@@ -126,6 +128,59 @@ class GoogleTranslatorTest {
     }
 
     /**
+     * The language the book declared, so a word spelled alike in two languages
+     * is read as the book's - "Jeden" detected on its own is Polish "one".
+     */
+    @Test
+    fun theBooksLanguageIsTheSource() = runTest {
+        var sent: HttpRequestData? = null
+        val translator = translator(
+            answers {
+                sent = it
+                respondJson(PUBLIC_ANSWER)
+            },
+            apiKey = null,
+        )
+
+        translator.translate(request(sourceLanguage = "de-AT"))
+
+        assertTrue(sent?.url.toString().contains("sl=de&"), sent?.url.toString())
+    }
+
+    /** Left to Google to work out when the book did not say. */
+    @Test
+    fun aBookThatDeclaredNoLanguageIsDetected() = runTest {
+        var sent: HttpRequestData? = null
+        val translator = translator(
+            answers {
+                sent = it
+                respondJson(PUBLIC_ANSWER)
+            },
+            apiKey = null,
+        )
+
+        translator.translate(request())
+
+        assertTrue(sent?.url.toString().contains("sl=auto"), sent?.url.toString())
+    }
+
+    @Test
+    fun theSupportedApiIsToldTheSourceToo() = runTest {
+        var body: String? = null
+        val translator = translator(
+            answers {
+                body = (it.body as TextContent).text
+                respondJson(CLOUD_ANSWER)
+            },
+            apiKey = "google-key",
+        )
+
+        translator.translate(request(sourceLanguage = "de"))
+
+        assertTrue(body.orEmpty().contains(""""source":"de""""), body)
+    }
+
+    /**
      * The public endpoint splits what it is given and answers piece by piece.
      * Joining them is the difference between a hyphenated word and half of one.
      */
@@ -192,9 +247,10 @@ class GoogleTranslatorTest {
         return GoogleTranslator(client, settings, json = json)
     }
 
-    private fun request(text: String = "whale") = TranslationRequest(
+    private fun request(text: String = "whale", sourceLanguage: String? = null) = TranslationRequest(
         text = text,
         targetLanguage = TargetLanguage.Finnish,
+        context = TranslationContext(sourceLanguage = sourceLanguage),
         unit = PassageUnit.Word,
     )
 
