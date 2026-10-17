@@ -107,7 +107,7 @@ Then check, in order:
 | Open the app and reach the library | Koin, the database schema, Compose |
 | Change the palette, force-stop, reopen | kotlinx.serialization rules |
 | Open a PDF as pages, then as text | pdfbox-android rules |
-| Open a password-protected PDF | Bouncy Castle |
+| Open an encrypted PDF with no open password (restrictions only) as text | PDFBox decryption |
 | Open an EPUB and a DOCX | ZIP and XML readers, embedded fonts |
 | Translate a passage | Ktor rules |
 | Settings > About | The version is the one being released |
