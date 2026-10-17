@@ -147,8 +147,14 @@ internal fun ReaderContent(
         // other way round. The two are different lengths, and a list still
         // sitting on page 702 of the text was a list past the end of the file's
         // own 472 pages - which opened it at the last one and stored that.
+        //
+        // A paged book starts on the page it was left at rather than being
+        // scrolled there after its first frame, which drew page 0 for nothing -
+        // see `ReaderViewModel.open`. A reflowable one finds its place once it
+        // has been laid out - see `ReaderTextPageList`.
         val listState = rememberSaveable(document?.content is PagedContent, saver = LazyListState.Saver) {
-            LazyListState()
+            val openingPage = initialPosition?.pageIndex?.takeIf { document?.content is PagedContent }
+            LazyListState(firstVisibleItemIndex = openingPage ?: 0)
         }
 
         HideChromeWhileScrolling(listState = listState, compact = compact, chrome = chrome)

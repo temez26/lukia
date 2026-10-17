@@ -89,12 +89,16 @@ private class AndroidDocumentPages(
      *
      * Nobody waits longer now: opening already runs off the main thread - see
      * `OpenDocumentUseCase`, the only place documents are opened.
+     *
+     * Measured once per file and read back after that - see [storedPageSizes].
      */
-    override val pageSizes: List<PageSize> = List(renderer.pageCount) { index ->
-        renderer.openPage(index).use { page ->
-            PageSize(width = page.width.toFloat(), height = page.height.toFloat())
-        }
-    }
+    override val pageSizes: List<PageSize> =
+        storedPageSizes(file.path, renderer.pageCount)
+            ?: List(renderer.pageCount) { index ->
+                renderer.openPage(index).use { page ->
+                    PageSize(width = page.width.toFloat(), height = page.height.toFloat())
+                }
+            }.also { storePageSizes(file.path, it) }
 
     /** The renderer's own count, so that asking it does not measure every page. */
     override val pageCount: Int = renderer.pageCount
