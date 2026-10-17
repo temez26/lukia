@@ -9,6 +9,7 @@ import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
@@ -20,6 +21,7 @@ import io.lukia.api.Credentials
 import io.lukia.api.HealthResponse
 import io.lukia.api.RedeemInviteRequest
 import io.lukia.api.RefreshRequest
+import io.lukia.api.ServerSettings
 import io.lukia.api.TokenResponse
 import io.lukia.features.account.domain.AuthTokens
 import io.lukia.features.account.domain.ServerApi
@@ -93,6 +95,18 @@ class KtorServerApi(private val http: ServerHttp) : ServerApi {
     override suspend fun deleteAccount(address: String, accessToken: String) {
         http.send { delete(address + ApiRoutes.Me) { bearerAuth(accessToken) } }
     }
+
+    override suspend fun signUpOpen(address: String, accessToken: String): Boolean =
+        http.call<ServerSettings> { get(address + ApiRoutes.Settings) { bearerAuth(accessToken) } }.signUpOpen
+
+    override suspend fun setSignUpOpen(address: String, accessToken: String, open: Boolean): Boolean =
+        http.call<ServerSettings> {
+            put(address + ApiRoutes.Settings) {
+                contentType(ContentType.Application.Json)
+                setBody(ServerSettings(signUpOpen = open))
+                bearerAuth(accessToken)
+            }
+        }.signUpOpen
 
     override suspend fun me(address: String, accessToken: String): Pair<String, Boolean> =
         http.call<AccountResponse> { get(address + ApiRoutes.Me) { bearerAuth(accessToken) } }

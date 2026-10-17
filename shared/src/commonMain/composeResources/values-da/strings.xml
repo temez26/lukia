@@ -540,6 +540,10 @@
     <string name="account_problem_username_taken">Det brugernavn er optaget.</string>
     <string name="account_problem_invalid_invite">Den invitationskode er ukendt, brugt eller udløbet.</string>
     <string name="account_problem_sign_up_closed">Denne server tager ikke imod nye konti. Bed den, der driver den, om at åbne for dem.</string>
+    <string name="account_problem_not_admin">Kun serverens administrator kan gøre det.</string>
+    <string name="account_admin_title">Administration</string>
+    <string name="account_admin_allow_sign_up">Tillad nye konti</string>
+    <string name="account_admin_allow_sign_up_detail">Mens dette er slået til, kan alle, der kan nå denne server, oprette en konto.</string>
     <string name="account_problem_already_set_up">Nogen har lige sat denne server op. Log ind i stedet.</string>
     <string name="account_problem_session_expired">Dit login er udløbet. Log ind igen.</string>
     <string name="account_problem_server_failed">Serveren kunne ikke gøre det. Prøv igen senere.</string>

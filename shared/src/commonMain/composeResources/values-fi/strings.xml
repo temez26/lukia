@@ -609,6 +609,10 @@
     <string name="account_problem_username_taken">Käyttäjänimi on jo varattu.</string>
     <string name="account_problem_invalid_invite">Kutsukoodi on tuntematon, käytetty tai vanhentunut.</string>
     <string name="account_problem_sign_up_closed">Tämä palvelin ei ota uusia tilejä. Pyydä palvelimen ylläpitäjää avaamaan ne.</string>
+    <string name="account_problem_not_admin">Vain tämän palvelimen ylläpitäjä voi tehdä sen.</string>
+    <string name="account_admin_title">Ylläpito</string>
+    <string name="account_admin_allow_sign_up">Salli uudet tilit</string>
+    <string name="account_admin_allow_sign_up_detail">Kun tämä on päällä, kuka tahansa, joka tavoittaa tämän palvelimen, voi luoda tilin.</string>
     <string name="account_problem_already_set_up">Joku otti tämän palvelimen juuri käyttöön. Kirjaudu sen sijaan.</string>
     <string name="account_problem_session_expired">Kirjautumisesi on päättynyt. Kirjaudu uudelleen.</string>
     <string name="account_problem_server_failed">Palvelin ei pystynyt tekemään sitä. Yritä myöhemmin uudelleen.</string>

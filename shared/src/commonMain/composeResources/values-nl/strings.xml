@@ -540,6 +540,10 @@
     <string name="account_problem_username_taken">Die gebruikersnaam is al bezet.</string>
     <string name="account_problem_invalid_invite">Die uitnodigingscode is onbekend, gebruikt of verlopen.</string>
     <string name="account_problem_sign_up_closed">Deze server neemt geen nieuwe accounts aan. Vraag degene die hem beheert om ze open te zetten.</string>
+    <string name="account_problem_not_admin">Alleen de beheerder van deze server kan dat doen.</string>
+    <string name="account_admin_title">Beheer</string>
+    <string name="account_admin_allow_sign_up">Nieuwe accounts toestaan</string>
+    <string name="account_admin_allow_sign_up_detail">Zolang dit aan staat, kan iedereen die deze server kan bereiken een account aanmaken.</string>
     <string name="account_problem_already_set_up">Iemand heeft deze server net ingesteld. Log in plaats daarvan in.</string>
     <string name="account_problem_session_expired">Uw aanmelding is verlopen. Log opnieuw in.</string>
     <string name="account_problem_server_failed">De server kon dat niet doen. Probeer het later opnieuw.</string>

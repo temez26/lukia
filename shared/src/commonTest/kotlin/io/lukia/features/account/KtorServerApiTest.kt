@@ -66,6 +66,7 @@ class KtorServerApiTest {
             "username_taken" to AccountProblem.UsernameTaken,
             "invalid_invite" to AccountProblem.InvalidInvite,
             "sign_up_closed" to AccountProblem.SignUpClosed,
+            "forbidden" to AccountProblem.NotAdmin,
             "setup_done" to AccountProblem.AlreadySetUp,
             "unauthorized" to AccountProblem.SessionExpired,
             "something_new" to AccountProblem.ServerFailed,

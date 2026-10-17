@@ -574,6 +574,10 @@
     <string name="account_problem_username_taken">Ta nazwa użytkownika jest zajęta.</string>
     <string name="account_problem_invalid_invite">Ten kod zaproszenia jest nieznany, wykorzystany lub wygasł.</string>
     <string name="account_problem_sign_up_closed">Ten serwer nie przyjmuje nowych kont. Poproś osobę, która nim zarządza, o ich otwarcie.</string>
+    <string name="account_problem_not_admin">Może to zrobić tylko administrator tego serwera.</string>
+    <string name="account_admin_title">Administracja</string>
+    <string name="account_admin_allow_sign_up">Zezwalaj na nowe konta</string>
+    <string name="account_admin_allow_sign_up_detail">Gdy ta opcja jest włączona, każdy, kto może połączyć się z tym serwerem, może założyć konto.</string>
     <string name="account_problem_already_set_up">Ktoś właśnie skonfigurował ten serwer. Zamiast tego zaloguj się.</string>
     <string name="account_problem_session_expired">Twoja sesja wygasła. Zaloguj się ponownie.</string>
     <string name="account_problem_server_failed">Serwer nie mógł tego zrobić. Spróbuj później.</string>

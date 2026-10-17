@@ -29,6 +29,12 @@ interface ServerApi {
     /** Deletes the account the token belongs to, with its state and sessions; the shared library keeps its books. */
     suspend fun deleteAccount(address: String, accessToken: String)
 
+    /** Admin only: whether anyone may create an account on the server. */
+    suspend fun signUpOpen(address: String, accessToken: String): Boolean
+
+    /** Admin only: opens or closes the server to new accounts; answers with how it stands after. */
+    suspend fun setSignUpOpen(address: String, accessToken: String, open: Boolean): Boolean
+
     /** Who the token belongs to: the username and whether they are the admin. */
     suspend fun me(address: String, accessToken: String): Pair<String, Boolean>
 }

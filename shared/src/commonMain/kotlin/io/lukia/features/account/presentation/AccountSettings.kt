@@ -45,7 +45,11 @@ import org.koin.compose.viewmodel.koinViewModel
  * depends on this one.
  */
 @Composable
-fun AccountSettings(groupColor: Color, viewModel: AccountViewModel = koinViewModel()) {
+fun AccountSettings(
+    groupColor: Color,
+    modifier: Modifier = Modifier,
+    viewModel: AccountViewModel = koinViewModel(),
+) {
     val state by viewModel.state.collectAsState()
 
     AccountSettingsContent(
@@ -59,6 +63,7 @@ fun AccountSettings(groupColor: Color, viewModel: AccountViewModel = koinViewMod
             onDeleteAccount = viewModel::deleteAccount,
         ),
         groupColor = groupColor,
+        modifier = modifier,
     )
 }
 

@@ -540,6 +540,10 @@
     <string name="account_problem_username_taken">Ese nombre de usuario ya está en uso.</string>
     <string name="account_problem_invalid_invite">Ese código de invitación es desconocido, ya se usó o ha caducado.</string>
     <string name="account_problem_sign_up_closed">Este servidor no admite cuentas nuevas. Pide a quien lo gestiona que las abra.</string>
+    <string name="account_problem_not_admin">Solo el administrador de este servidor puede hacerlo.</string>
+    <string name="account_admin_title">Administración</string>
+    <string name="account_admin_allow_sign_up">Permitir cuentas nuevas</string>
+    <string name="account_admin_allow_sign_up_detail">Mientras esté activado, cualquiera que pueda acceder a este servidor puede crear una cuenta.</string>
     <string name="account_problem_already_set_up">Alguien acaba de configurar este servidor. Inicia sesión en su lugar.</string>
     <string name="account_problem_session_expired">Tu sesión ha terminado. Vuelve a iniciar sesión.</string>
     <string name="account_problem_server_failed">El servidor no pudo hacerlo. Inténtalo más tarde.</string>

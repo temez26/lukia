@@ -106,7 +106,7 @@ looks at who reads what, or removes an account or a book.
 
 - [x] 1. Server: settings table and migration, `signUpOpen` on health, sign-up endpoint, with tests.
 - [x] 2. App: Account offers Create account when sign-up is open.
-- [ ] 3. Server and app: Allow new accounts switch for admins.
+- [x] 3. Server and app: Allow new accounts switch for admins.
 - [ ] 4. Server: account list with usage, account removal; app: People list.
 - [ ] 5. App: reset password and remove account from People.
 - [ ] 6. App: Remove from server for admins.

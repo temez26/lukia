@@ -541,6 +541,10 @@
     <string name="account_problem_username_taken">Dieser Benutzername ist vergeben.</string>
     <string name="account_problem_invalid_invite">Dieser Einladungscode ist unbekannt, verbraucht oder abgelaufen.</string>
     <string name="account_problem_sign_up_closed">Dieser Server nimmt keine neuen Konten an. Bitten Sie die Person, die ihn betreibt, sie freizugeben.</string>
+    <string name="account_problem_not_admin">Das kann nur der Administrator dieses Servers.</string>
+    <string name="account_admin_title">Verwaltung</string>
+    <string name="account_admin_allow_sign_up">Neue Konten erlauben</string>
+    <string name="account_admin_allow_sign_up_detail">Solange dies eingeschaltet ist, kann jeder, der diesen Server erreicht, ein Konto anlegen.</string>
     <string name="account_problem_already_set_up">Jemand hat diesen Server gerade eingerichtet. Melden Sie sich stattdessen an.</string>
     <string name="account_problem_session_expired">Ihre Anmeldung ist abgelaufen. Melden Sie sich erneut an.</string>
     <string name="account_problem_server_failed">Der Server konnte das nicht ausführen. Versuchen Sie es später erneut.</string>

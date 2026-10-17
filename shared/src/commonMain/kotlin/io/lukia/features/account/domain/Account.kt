@@ -86,6 +86,9 @@ enum class AccountProblem {
     /** The admin has not opened the server to new accounts. */
     SignUpClosed,
 
+    /** Something only the server's admin may do, asked by somebody who is not - or no longer - its admin. */
+    NotAdmin,
+
     /** Somebody else set the server up first. */
     AlreadySetUp,
 

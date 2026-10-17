@@ -726,6 +726,10 @@
     <string name="account_problem_username_taken">That username is taken.</string>
     <string name="account_problem_invalid_invite">That invite code is unknown, used or expired.</string>
     <string name="account_problem_sign_up_closed">This server is not taking new accounts. Ask whoever runs it to open them.</string>
+    <string name="account_problem_not_admin">Only this server's admin can do that.</string>
+    <string name="account_admin_title">Administration</string>
+    <string name="account_admin_allow_sign_up">Allow new accounts</string>
+    <string name="account_admin_allow_sign_up_detail">While this is on, anyone who can reach this server can create an account.</string>
     <string name="account_problem_already_set_up">Someone has just set this server up. Sign in instead.</string>
     <string name="account_problem_session_expired">Your sign-in has ended. Sign in again.</string>
     <string name="account_problem_server_failed">The server could not do that. Try again later.</string>

@@ -547,6 +547,10 @@
     <string name="account_problem_username_taken">Ce nom d’utilisateur est déjà pris.</string>
     <string name="account_problem_invalid_invite">Ce code d’invitation est inconnu, déjà utilisé ou expiré.</string>
     <string name="account_problem_sign_up_closed">Ce serveur n’accepte pas de nouveaux comptes. Demandez à la personne qui le gère de les ouvrir.</string>
+    <string name="account_problem_not_admin">Seul l’administrateur de ce serveur peut faire cela.</string>
+    <string name="account_admin_title">Administration</string>
+    <string name="account_admin_allow_sign_up">Autoriser les nouveaux comptes</string>
+    <string name="account_admin_allow_sign_up_detail">Tant que c’est activé, toute personne pouvant joindre ce serveur peut créer un compte.</string>
     <string name="account_problem_already_set_up">Quelqu’un vient de configurer ce serveur. Connectez-vous plutôt.</string>
     <string name="account_problem_session_expired">Votre connexion a expiré. Reconnectez-vous.</string>
     <string name="account_problem_server_failed">Le serveur n’a pas pu le faire. Réessayez plus tard.</string>

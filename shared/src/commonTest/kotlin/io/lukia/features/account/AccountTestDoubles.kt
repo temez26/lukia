@@ -82,6 +82,22 @@ internal class FakeServerApi(
         deleted++
     }
 
+    var signUpSetting = false
+    var notAdmin = false
+
+    override suspend fun signUpOpen(address: String, accessToken: String): Boolean {
+        reachable()
+        if (notAdmin) throw AccountFailure(AccountProblem.NotAdmin)
+        return signUpSetting
+    }
+
+    override suspend fun setSignUpOpen(address: String, accessToken: String, open: Boolean): Boolean {
+        reachable()
+        if (notAdmin) throw AccountFailure(AccountProblem.NotAdmin)
+        signUpSetting = open
+        return signUpSetting
+    }
+
     override suspend fun me(address: String, accessToken: String): Pair<String, Boolean> {
         reachable()
         if (accessToken !in validAccess) throw AccountFailure(AccountProblem.SessionExpired)
