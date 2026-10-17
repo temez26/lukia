@@ -3,6 +3,7 @@ package io.lukia.features.library.presentation.sessions
 import androidx.compose.runtime.Stable
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.ServerBookDownloader
+import io.lukia.core.domain.document.ServerBookRemover
 import io.lukia.core.domain.document.ServerBookUploader
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.features.library.presentation.screens.BookTransfer
@@ -19,7 +20,8 @@ import kotlinx.coroutines.launch
 /**
  * Moving books between this device and the sync server: a server book fetched
  * down, or a book on the device sent up - whichever it lacks. One transfer per
- * book, any number of books at once.
+ * book, any number of books at once. And, for the server's admin, taking a book
+ * out of the shared library altogether.
  *
  * Shared by the book's own page and the library's panel, so the two cannot
  * disagree about what pressing the button does.
@@ -28,6 +30,7 @@ class BookTransfers(
     private val downloader: ServerBookDownloader,
     private val uploader: ServerBookUploader,
     private val scope: CoroutineScope,
+    private val remover: ServerBookRemover = ServerBookRemover.None,
 ) {
     private val _states = MutableStateFlow<Map<String, BookTransfer>>(emptyMap())
 
@@ -36,6 +39,12 @@ class BookTransfers(
 
     /** Whether a book on this device could be sent: there is a server, and the reader is signed in. */
     val canUpload: StateFlow<Boolean> = uploader.available.stateIn(scope, SharingStarted.Eagerly, false)
+
+    /** Whether a server book could be taken out of the shared library: true for the server's admin. */
+    val canRemove: StateFlow<Boolean> = remover.available.stateIn(scope, SharingStarted.Eagerly, false)
+
+    /** Takes the book at [location] out of the shared library; throws when the server will not. */
+    suspend fun remove(location: String) = remover.remove(location)
 
     private val jobs = mutableMapOf<String, Job>()
     private val perBook = mutableMapOf<String, MutableStateFlow<BookTransfer>>()

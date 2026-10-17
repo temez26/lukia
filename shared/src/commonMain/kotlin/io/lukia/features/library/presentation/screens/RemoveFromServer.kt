@@ -41,7 +41,7 @@ internal class ServerRemoval(private val asking: MutableState<DocumentInfo?>, ca
 
 @Composable
 internal fun rememberServerRemoval(viewModel: LibraryViewModel): ServerRemoval {
-    val canRemove by viewModel.canRemoveFromServer.collectAsState()
+    val canRemove by viewModel.transfers.canRemove.collectAsState()
     val asking = remember { mutableStateOf<DocumentInfo?>(null) }
     return remember(canRemove) { ServerRemoval(asking, canRemove) }
 }

@@ -21,10 +21,8 @@ import io.lukia.features.library.presentation.model.LibraryMessage
 import io.lukia.features.library.presentation.screens.BookTransfer
 import io.lukia.features.library.presentation.sessions.BookTransfers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class BookDetailViewModel(
@@ -41,7 +39,7 @@ class BookDetailViewModel(
     /** Sends a book on this device to the server. Defaulted for the same reason as [downloader]. */
     private val uploader: ServerBookUploader = ServerBookUploader.None,
     /** Takes a server book out of the shared library, for the admin. Defaulted for the same reason. */
-    private val remover: ServerBookRemover = ServerBookRemover.None,
+    remover: ServerBookRemover = ServerBookRemover.None,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState<BookDetails>>(UiState.Loading)
@@ -55,7 +53,7 @@ class BookDetailViewModel(
     private val _message = MutableStateFlow<LibraryMessage?>(null)
     val message: StateFlow<LibraryMessage?> = _message.asStateFlow()
 
-    private val transfers = BookTransfers(downloader, uploader, viewModelScope)
+    private val transfers = BookTransfers(downloader, uploader, viewModelScope, remover)
 
     /** How far moving this book to or from the server has got - see [BookTransfers]. */
     val transfer: StateFlow<BookTransfer> = transfers.stateOf(location)
@@ -64,8 +62,7 @@ class BookDetailViewModel(
     val canUpload: StateFlow<Boolean> = transfers.canUpload
 
     /** Whether this book can be taken out of the shared library from here: true for the server's admin. */
-    val canRemoveFromServer: StateFlow<Boolean> =
-        remover.available.stateIn(viewModelScope, SharingStarted.Eagerly, false)
+    val canRemoveFromServer: StateFlow<Boolean> = transfers.canRemove
 
     init {
         load()
@@ -158,7 +155,7 @@ class BookDetailViewModel(
         val wasOnlyOnServer = _uiState.value.dataOrNull?.document?.awaitsDownload == true
 
         viewModelScope.launch {
-            runCatchingApp { remover.remove(location) }
+            runCatchingApp { transfers.remove(location) }
                 .onSuccess { if (wasOnlyOnServer) onGone() }
                 .onFailure { _message.value = LibraryMessage.Failed(it.toAppError()) }
         }
