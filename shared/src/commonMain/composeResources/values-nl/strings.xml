@@ -544,6 +544,15 @@
     <string name="account_admin_title">Beheer</string>
     <string name="account_admin_allow_sign_up">Nieuwe accounts toestaan</string>
     <string name="account_admin_allow_sign_up_detail">Zolang dit aan staat, kan iedereen die deze server kan bereiken een account aanmaken.</string>
+    <string name="account_person_reset_password">Wachtwoord opnieuw instellen</string>
+    <string name="account_person_remove">Account verwijderen</string>
+    <string name="account_new_password">Nieuw wachtwoord</string>
+    <string name="account_reset_title">Nieuw wachtwoord voor %1$s</string>
+    <string name="account_reset_message">%1$s wordt op alle apparaten afgemeld en meldt zich voortaan aan met dit wachtwoord. Geef het nieuwe wachtwoord door.</string>
+    <string name="account_reset_done">Het wachtwoord van %1$s is gewijzigd. Geef het nieuwe wachtwoord door.</string>
+    <string name="account_remove_title">%1$s verwijderen?</string>
+    <string name="account_remove_message">%1$s kan niet meer aanmelden. De plek in elk boek, de favorieten en de leessessies worden van de server verwijderd. De toegevoegde boeken blijven in de bibliotheek.</string>
+    <string name="account_remove_confirm">Verwijderen</string>
     <string name="account_people_title">Personen</string>
     <string name="account_person_admin">Beheerder</string>
     <plurals name="account_person_books_added">

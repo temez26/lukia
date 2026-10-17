@@ -1,5 +1,7 @@
 package io.lukia.shared.presentation.components.surface
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -8,6 +10,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import io.lukia.resources.Res
 import io.lukia.resources.action_cancel
+import io.lukia.shared.presentation.theme.LukiaAlpha
+import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -22,6 +26,9 @@ import org.jetbrains.compose.resources.stringResource
  * [confirmLabel] names the action rather than agreeing with the question - a
  * button that says "Delete" tells a reader what pressing it does even if they
  * never read the sentence above it, and "Yes" does not.
+ *
+ * [content] is for what the action needs filled in, under the message; while
+ * [confirmEnabled] is false the action cannot be pressed.
  */
 @Composable
 fun ConfirmDialog(
@@ -33,6 +40,8 @@ fun ConfirmDialog(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
     destructive: Boolean = false,
+    confirmEnabled: Boolean = true,
+    content: (@Composable () -> Unit)? = null,
 ) {
     if (!visible) return
 
@@ -40,20 +49,26 @@ fun ConfirmDialog(
         modifier = modifier,
         onDismissRequest = onDismissRequest,
         title = { Text(text = title, style = MaterialTheme.typography.titleMedium) },
-        text = { Text(text = message, style = MaterialTheme.typography.bodyMedium) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(Space.md)) {
+                Text(text = message, style = MaterialTheme.typography.bodyMedium)
+                content?.invoke()
+            }
+        },
         confirmButton = {
             TextButton(
                 onClick = {
                     onDismissRequest()
                     onConfirm()
                 },
+                enabled = confirmEnabled,
             ) {
                 Text(
                     text = confirmLabel,
-                    color = if (destructive) {
-                        MaterialTheme.colorScheme.error
-                    } else {
-                        MaterialTheme.colorScheme.primary
+                    color = when {
+                        !confirmEnabled -> MaterialTheme.colorScheme.onSurface.copy(alpha = LukiaAlpha.Disabled)
+                        destructive -> MaterialTheme.colorScheme.error
+                        else -> MaterialTheme.colorScheme.primary
                     },
                 )
             }

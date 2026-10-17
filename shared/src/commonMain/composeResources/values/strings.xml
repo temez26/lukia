@@ -730,6 +730,15 @@
     <string name="account_admin_title">Administration</string>
     <string name="account_admin_allow_sign_up">Allow new accounts</string>
     <string name="account_admin_allow_sign_up_detail">While this is on, anyone who can reach this server can create an account.</string>
+    <string name="account_person_reset_password">Reset password</string>
+    <string name="account_person_remove">Remove account</string>
+    <string name="account_new_password">New password</string>
+    <string name="account_reset_title">New password for %1$s</string>
+    <string name="account_reset_message">%1$s is signed out on every device and signs in with this password from now on. Pass the new password on.</string>
+    <string name="account_reset_done">Password changed for %1$s. Pass the new password on.</string>
+    <string name="account_remove_title">Remove %1$s?</string>
+    <string name="account_remove_message">%1$s can no longer sign in, and their place in each book, favourites and reading sessions are removed from the server. The books they added stay in the library.</string>
+    <string name="account_remove_confirm">Remove</string>
     <string name="account_people_title">People</string>
     <string name="account_person_admin">Admin</string>
     <plurals name="account_person_books_added">

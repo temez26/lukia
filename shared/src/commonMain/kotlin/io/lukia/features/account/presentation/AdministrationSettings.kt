@@ -46,6 +46,10 @@ fun AdministrationSettings(
         AdministrationContent(
             state = state,
             onSignUpOpenChange = viewModel::setSignUpOpen,
+            peopleActions = PeopleActions(
+                onResetPassword = viewModel::resetPassword,
+                onRemove = viewModel::removeAccount,
+            ),
             today = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date },
             groupColor = groupColor,
             modifier = modifier,
@@ -57,6 +61,7 @@ fun AdministrationSettings(
 internal fun AdministrationContent(
     state: AdministrationUiState,
     onSignUpOpenChange: (Boolean) -> Unit,
+    peopleActions: PeopleActions,
     /** What "last read" counts back from. */
     today: LocalDate,
     groupColor: Color,
@@ -72,8 +77,10 @@ internal fun AdministrationContent(
 
         state.people?.let { people ->
             PeopleSection(
+                state = state,
                 people = people,
                 today = today,
+                actions = peopleActions,
                 groupColor = groupColor,
                 modifier = Modifier.padding(top = LocalLukiaDimens.current.sectionSpacing),
             )

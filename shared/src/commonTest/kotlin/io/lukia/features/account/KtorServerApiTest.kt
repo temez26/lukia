@@ -8,6 +8,7 @@ import io.ktor.client.engine.mock.toByteArray
 import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.HttpResponseData
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.lukia.api.ApiRoutes
@@ -57,6 +58,20 @@ class KtorServerApiTest {
             listOf(Person("bob", false, 2, 3, 1, 4, 60_000, Instant.fromEpochMilliseconds(1_000))),
             api.people(HomeServer, "token"),
         )
+    }
+
+    @Test
+    fun anAccountIsRemovedByName() = runTest {
+        var sent: HttpRequestData? = null
+        val api = apiAnswering { request ->
+            sent = request
+            respond("", HttpStatusCode.NoContent)
+        }
+
+        api.removeAccount(HomeServer, "token", "bob")
+
+        assertEquals(HttpMethod.Delete, sent?.method)
+        assertEquals("$HomeServer${ApiRoutes.account("bob")}", sent?.url.toString())
     }
 
     @Test

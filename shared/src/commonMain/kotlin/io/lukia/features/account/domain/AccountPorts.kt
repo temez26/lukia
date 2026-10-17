@@ -38,6 +38,12 @@ interface ServerApi {
     /** Admin only: everyone with an account on the server, with what each has read. */
     suspend fun people(address: String, accessToken: String): List<Person>
 
+    /** Admin only: gives [username] a new password and signs them out everywhere. */
+    suspend fun resetPassword(address: String, accessToken: String, username: String, password: String)
+
+    /** Admin only: removes [username]'s account as if they had deleted it; the books they added stay. */
+    suspend fun removeAccount(address: String, accessToken: String, username: String)
+
     /** Who the token belongs to: the username and whether they are the admin. */
     suspend fun me(address: String, accessToken: String): Pair<String, Boolean>
 }

@@ -69,4 +69,49 @@ class AdministrationViewModelTest : MainDispatcherTest() {
 
         assertEquals(listOf(bob), viewModel.state.value.people)
     }
+
+    @Test
+    fun aResetIsSentAndSaidToHaveHappened() = runTest {
+        val viewModel = signedInViewModel()
+
+        viewModel.resetPassword("bob", "a brand new password")
+
+        assertEquals(listOf("bob" to "a brand new password"), api.passwordResets)
+        assertEquals("bob", viewModel.state.value.passwordResetFor)
+        assertEquals(false, viewModel.state.value.busy)
+    }
+
+    @Test
+    fun aRemovedAccountLeavesTheList() = runTest {
+        api.people = listOf(person("alice"), person("bob"))
+        val viewModel = signedInViewModel()
+        viewModel.load()
+
+        viewModel.removeAccount("bob")
+
+        assertEquals(listOf("alice"), viewModel.state.value.people?.map { it.username })
+    }
+
+    /** Said under People, where the button was pressed, rather than under the switch. */
+    @Test
+    fun aRefusedRemovalIsSaidUnderPeople() = runTest {
+        val viewModel = signedInViewModel()
+        api.notAdmin = true
+
+        viewModel.removeAccount("bob")
+
+        assertEquals(AccountProblem.NotAdmin, viewModel.state.value.peopleProblem)
+        assertNull(viewModel.state.value.problem)
+    }
+
+    private fun person(username: String) = Person(
+        username,
+        isAdmin = false,
+        0,
+        0,
+        0,
+        0,
+        readingMs = 0,
+        lastReadAt = null,
+    )
 }

@@ -545,6 +545,15 @@
     <string name="account_admin_title">Verwaltung</string>
     <string name="account_admin_allow_sign_up">Neue Konten erlauben</string>
     <string name="account_admin_allow_sign_up_detail">Solange dies eingeschaltet ist, kann jeder, der diesen Server erreicht, ein Konto anlegen.</string>
+    <string name="account_person_reset_password">Passwort zurücksetzen</string>
+    <string name="account_person_remove">Konto entfernen</string>
+    <string name="account_new_password">Neues Passwort</string>
+    <string name="account_reset_title">Neues Passwort für %1$s</string>
+    <string name="account_reset_message">%1$s wird auf allen Geräten abgemeldet und meldet sich ab jetzt mit diesem Passwort an. Geben Sie das neue Passwort weiter.</string>
+    <string name="account_reset_done">Das Passwort für %1$s ist geändert. Geben Sie das neue Passwort weiter.</string>
+    <string name="account_remove_title">%1$s entfernen?</string>
+    <string name="account_remove_message">%1$s kann sich nicht mehr anmelden. Lesestand, Favoriten und Lesesitzungen werden vom Server entfernt. Die hinzugefügten Bücher bleiben in der Bibliothek.</string>
+    <string name="account_remove_confirm">Entfernen</string>
     <string name="account_people_title">Personen</string>
     <string name="account_person_admin">Admin</string>
     <plurals name="account_person_books_added">

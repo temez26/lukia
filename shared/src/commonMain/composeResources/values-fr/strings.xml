@@ -551,6 +551,15 @@
     <string name="account_admin_title">Administration</string>
     <string name="account_admin_allow_sign_up">Autoriser les nouveaux comptes</string>
     <string name="account_admin_allow_sign_up_detail">Tant que c’est activé, toute personne pouvant joindre ce serveur peut créer un compte.</string>
+    <string name="account_person_reset_password">Réinitialiser le mot de passe</string>
+    <string name="account_person_remove">Supprimer le compte</string>
+    <string name="account_new_password">Nouveau mot de passe</string>
+    <string name="account_reset_title">Nouveau mot de passe pour %1$s</string>
+    <string name="account_reset_message">La session de %1$s est fermée sur tous les appareils, et la connexion se fait désormais avec ce mot de passe. Transmettez le nouveau mot de passe.</string>
+    <string name="account_reset_done">Le mot de passe de %1$s a été changé. Transmettez le nouveau mot de passe.</string>
+    <string name="account_remove_title">Supprimer %1$s\u00A0?</string>
+    <string name="account_remove_message">%1$s ne pourra plus se connecter, et sa position dans chaque livre, ses favoris et ses sessions de lecture sont supprimés du serveur. Les livres ajoutés restent dans la bibliothèque.</string>
+    <string name="account_remove_confirm">Supprimer</string>
     <string name="account_people_title">Personnes</string>
     <string name="account_person_admin">Admin</string>
     <plurals name="account_person_books_added">

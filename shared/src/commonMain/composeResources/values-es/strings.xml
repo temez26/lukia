@@ -544,6 +544,15 @@
     <string name="account_admin_title">Administración</string>
     <string name="account_admin_allow_sign_up">Permitir cuentas nuevas</string>
     <string name="account_admin_allow_sign_up_detail">Mientras esté activado, cualquiera que pueda acceder a este servidor puede crear una cuenta.</string>
+    <string name="account_person_reset_password">Restablecer contraseña</string>
+    <string name="account_person_remove">Eliminar cuenta</string>
+    <string name="account_new_password">Contraseña nueva</string>
+    <string name="account_reset_title">Contraseña nueva para %1$s</string>
+    <string name="account_reset_message">Se cerrará la sesión de %1$s en todos los dispositivos y desde ahora entrará con esta contraseña. Comunica la contraseña nueva.</string>
+    <string name="account_reset_done">La contraseña de %1$s ha cambiado. Comunica la contraseña nueva.</string>
+    <string name="account_remove_title">¿Eliminar a %1$s?</string>
+    <string name="account_remove_message">%1$s ya no podrá iniciar sesión, y su posición en cada libro, sus favoritos y sus sesiones de lectura se eliminan del servidor. Los libros que añadió se quedan en la biblioteca.</string>
+    <string name="account_remove_confirm">Eliminar</string>
     <string name="account_people_title">Personas</string>
     <string name="account_person_admin">Admin</string>
     <plurals name="account_person_books_added">

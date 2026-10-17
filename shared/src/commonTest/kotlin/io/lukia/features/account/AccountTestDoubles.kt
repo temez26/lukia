@@ -107,6 +107,20 @@ internal class FakeServerApi(
         return people
     }
 
+    val passwordResets = mutableListOf<Pair<String, String>>()
+
+    override suspend fun resetPassword(address: String, accessToken: String, username: String, password: String) {
+        reachable()
+        if (notAdmin) throw AccountFailure(AccountProblem.NotAdmin)
+        passwordResets += username to password
+    }
+
+    override suspend fun removeAccount(address: String, accessToken: String, username: String) {
+        reachable()
+        if (notAdmin) throw AccountFailure(AccountProblem.NotAdmin)
+        people = people.filterNot { it.username == username }
+    }
+
     override suspend fun me(address: String, accessToken: String): Pair<String, Boolean> {
         reachable()
         if (accessToken !in validAccess) throw AccountFailure(AccountProblem.SessionExpired)

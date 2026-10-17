@@ -544,6 +544,15 @@
     <string name="account_admin_title">Administrasjon</string>
     <string name="account_admin_allow_sign_up">Tillat nye kontoer</string>
     <string name="account_admin_allow_sign_up_detail">Mens dette er på, kan alle som når denne serveren, opprette en konto.</string>
+    <string name="account_person_reset_password">Tilbakestill passord</string>
+    <string name="account_person_remove">Fjern konto</string>
+    <string name="account_new_password">Nytt passord</string>
+    <string name="account_reset_title">Nytt passord for %1$s</string>
+    <string name="account_reset_message">%1$s logges ut på alle enheter og logger heretter inn med dette passordet. Gi det nye passordet videre.</string>
+    <string name="account_reset_done">Passordet for %1$s er endret. Gi det nye passordet videre.</string>
+    <string name="account_remove_title">Fjerne %1$s?</string>
+    <string name="account_remove_message">%1$s kan ikke lenger logge inn, og plassen i hver bok, favoritter og leseøkter fjernes fra serveren. Bøkene som ble lagt til, blir i biblioteket.</string>
+    <string name="account_remove_confirm">Fjern</string>
     <string name="account_people_title">Personer</string>
     <string name="account_person_admin">Administrator</string>
     <plurals name="account_person_books_added">

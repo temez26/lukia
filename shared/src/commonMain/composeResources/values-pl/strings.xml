@@ -578,6 +578,15 @@
     <string name="account_admin_title">Administracja</string>
     <string name="account_admin_allow_sign_up">Zezwalaj na nowe konta</string>
     <string name="account_admin_allow_sign_up_detail">Gdy ta opcja jest włączona, każdy, kto może połączyć się z tym serwerem, może założyć konto.</string>
+    <string name="account_person_reset_password">Zresetuj hasło</string>
+    <string name="account_person_remove">Usuń konto</string>
+    <string name="account_new_password">Nowe hasło</string>
+    <string name="account_reset_title">Nowe hasło dla %1$s</string>
+    <string name="account_reset_message">Konto %1$s zostanie wylogowane na wszystkich urządzeniach, a od teraz logowanie odbywa się tym hasłem. Przekaż nowe hasło.</string>
+    <string name="account_reset_done">Hasło konta %1$s zostało zmienione. Przekaż nowe hasło.</string>
+    <string name="account_remove_title">Usunąć konto %1$s?</string>
+    <string name="account_remove_message">Na konto %1$s nie będzie można się zalogować, a miejsce w każdej książce, ulubione i sesje czytania zostaną usunięte z serwera. Dodane książki pozostają w bibliotece.</string>
+    <string name="account_remove_confirm">Usuń</string>
     <string name="account_people_title">Osoby</string>
     <string name="account_person_admin">Administrator</string>
     <plurals name="account_person_books_added">

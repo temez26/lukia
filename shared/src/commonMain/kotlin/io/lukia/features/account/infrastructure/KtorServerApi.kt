@@ -20,6 +20,7 @@ import io.lukia.api.AccountSummary
 import io.lukia.api.ApiRoutes
 import io.lukia.api.Credentials
 import io.lukia.api.HealthResponse
+import io.lukia.api.NewPasswordRequest
 import io.lukia.api.RedeemInviteRequest
 import io.lukia.api.RefreshRequest
 import io.lukia.api.ServerSettings
@@ -114,6 +115,20 @@ class KtorServerApi(private val http: ServerHttp) : ServerApi {
     override suspend fun people(address: String, accessToken: String): List<Person> =
         http.call<List<AccountSummary>> { get(address + ApiRoutes.Accounts) { bearerAuth(accessToken) } }
             .map { it.toPerson() }
+
+    override suspend fun resetPassword(address: String, accessToken: String, username: String, password: String) {
+        http.send {
+            put(address + ApiRoutes.accountPassword(username)) {
+                contentType(ContentType.Application.Json)
+                setBody(NewPasswordRequest(password))
+                bearerAuth(accessToken)
+            }
+        }
+    }
+
+    override suspend fun removeAccount(address: String, accessToken: String, username: String) {
+        http.send { delete(address + ApiRoutes.account(username)) { bearerAuth(accessToken) } }
+    }
 
     override suspend fun me(address: String, accessToken: String): Pair<String, Boolean> =
         http.call<AccountResponse> { get(address + ApiRoutes.Me) { bearerAuth(accessToken) } }
