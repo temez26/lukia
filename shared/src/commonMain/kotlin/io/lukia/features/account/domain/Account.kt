@@ -2,6 +2,7 @@ package io.lukia.features.account.domain
 
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.AppErrorException
+import kotlin.time.Instant
 
 /**
  * A sync server somebody is signed in to, and who as. See
@@ -108,3 +109,21 @@ enum class AccountProblem {
  * screen for the problem it is.
  */
 class AccountFailure(val problem: AccountProblem) : AppErrorException(AppError.Unexpected())
+
+/**
+ * Someone with an account on the server, as its admin sees them under People:
+ * totals of what they have done there, never which books.
+ *
+ * [booksStarted] counts the finished ones too. [lastReadAt] is when their latest
+ * reading session ended, null if they have never read.
+ */
+data class Person(
+    val username: String,
+    val isAdmin: Boolean,
+    val booksAdded: Int,
+    val booksStarted: Int,
+    val booksFinished: Int,
+    val favourites: Int,
+    val readingMs: Long,
+    val lastReadAt: Instant?,
+)

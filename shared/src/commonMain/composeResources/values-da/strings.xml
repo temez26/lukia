@@ -544,6 +544,32 @@
     <string name="account_admin_title">Administration</string>
     <string name="account_admin_allow_sign_up">Tillad nye konti</string>
     <string name="account_admin_allow_sign_up_detail">Mens dette er slået til, kan alle, der kan nå denne server, oprette en konto.</string>
+    <string name="account_people_title">Personer</string>
+    <string name="account_person_admin">Administrator</string>
+    <plurals name="account_person_books_added">
+        <item quantity="one">%1$d bog tilføjet</item>
+        <item quantity="other">%1$d bøger tilføjet</item>
+    </plurals>
+    <plurals name="account_person_started">
+        <item quantity="one">%1$d påbegyndt</item>
+        <item quantity="other">%1$d påbegyndt</item>
+    </plurals>
+    <plurals name="account_person_finished">
+        <item quantity="one">%1$d færdiglæst</item>
+        <item quantity="other">%1$d færdiglæst</item>
+    </plurals>
+    <plurals name="account_person_favourites">
+        <item quantity="one">%1$d favorit</item>
+        <item quantity="other">%1$d favoritter</item>
+    </plurals>
+    <string name="account_person_read_for">Læsetid: %1$s</string>
+    <string name="account_person_no_reading_time">Ingen læsetid endnu</string>
+    <string name="account_person_last_read_today">Læste senest i dag</string>
+    <string name="account_person_last_read_yesterday">Læste senest i går</string>
+    <plurals name="account_person_last_read_days">
+        <item quantity="one">Læste senest for %1$d dag siden</item>
+        <item quantity="other">Læste senest for %1$d dage siden</item>
+    </plurals>
     <string name="account_problem_already_set_up">Nogen har lige sat denne server op. Log ind i stedet.</string>
     <string name="account_problem_session_expired">Dit login er udløbet. Log ind igen.</string>
     <string name="account_problem_server_failed">Serveren kunne ikke gøre det. Prøv igen senere.</string>

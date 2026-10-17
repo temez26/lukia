@@ -598,6 +598,32 @@
     <string name="account_admin_title">Administration</string>
     <string name="account_admin_allow_sign_up">Tillåt nya konton</string>
     <string name="account_admin_allow_sign_up_detail">Så länge detta är på kan alla som når den här servern skapa ett konto.</string>
+    <string name="account_people_title">Personer</string>
+    <string name="account_person_admin">Admin</string>
+    <plurals name="account_person_books_added">
+        <item quantity="one">%1$d bok tillagd</item>
+        <item quantity="other">%1$d böcker tillagda</item>
+    </plurals>
+    <plurals name="account_person_started">
+        <item quantity="one">%1$d påbörjad</item>
+        <item quantity="other">%1$d påbörjade</item>
+    </plurals>
+    <plurals name="account_person_finished">
+        <item quantity="one">%1$d utläst</item>
+        <item quantity="other">%1$d utlästa</item>
+    </plurals>
+    <plurals name="account_person_favourites">
+        <item quantity="one">%1$d favorit</item>
+        <item quantity="other">%1$d favoriter</item>
+    </plurals>
+    <string name="account_person_read_for">Lästid: %1$s</string>
+    <string name="account_person_no_reading_time">Ingen lästid än</string>
+    <string name="account_person_last_read_today">Läste senast i dag</string>
+    <string name="account_person_last_read_yesterday">Läste senast i går</string>
+    <plurals name="account_person_last_read_days">
+        <item quantity="one">Läste senast för %1$d dag sedan</item>
+        <item quantity="other">Läste senast för %1$d dagar sedan</item>
+    </plurals>
     <string name="account_problem_already_set_up">Någon har just konfigurerat den här servern. Logga in i stället.</string>
     <string name="account_problem_session_expired">Din inloggning har gått ut. Logga in igen.</string>
     <string name="account_problem_server_failed">Servern kunde inte göra det. Försök igen senare.</string>

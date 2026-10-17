@@ -4,13 +4,14 @@ import io.lukia.MainDispatcherTest
 import io.lukia.features.account.application.AccountSession
 import io.lukia.features.account.application.ServerAdministration
 import io.lukia.features.account.domain.AccountProblem
+import io.lukia.features.account.domain.Person
 import io.lukia.features.account.presentation.AdministrationViewModel
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-/** The admin's switch for new accounts: read from the server, changed at once, put back if refused. */
+/** The admin's section: the switch for new accounts - read, changed at once, put back if refused - and the people. */
 class AdministrationViewModelTest : MainDispatcherTest() {
 
     private val api = FakeServerApi()
@@ -55,5 +56,17 @@ class AdministrationViewModelTest : MainDispatcherTest() {
 
         assertEquals(false, viewModel.state.value.signUpOpen)
         assertEquals(AccountProblem.NotAdmin, viewModel.state.value.problem)
+    }
+
+    @Test
+    fun everyoneIsListedOnceTheServerHasSaid() = runTest {
+        val bob = Person("bob", isAdmin = false, 2, 3, 1, 0, readingMs = 60_000, lastReadAt = null)
+        api.people = listOf(bob)
+        val viewModel = signedInViewModel()
+
+        assertNull(viewModel.state.value.people)
+        viewModel.load()
+
+        assertEquals(listOf(bob), viewModel.state.value.people)
     }
 }

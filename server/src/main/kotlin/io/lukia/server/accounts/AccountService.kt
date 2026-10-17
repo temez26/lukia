@@ -2,6 +2,7 @@ package io.lukia.server.accounts
 
 import io.ktor.http.HttpStatusCode
 import io.lukia.api.AccountRules
+import io.lukia.api.AccountSummary
 import io.lukia.api.ApiErrorCodes
 import io.lukia.api.Credentials
 import io.lukia.api.InviteResponse
@@ -132,23 +133,47 @@ class AccountService(
     }
 
     fun delete(account: SignedInAccount) {
+        database.transaction { deleteUnlessLastAdmin(account.id, account.isAdmin) }
+    }
+
+    /** The admin removing someone - as if they had deleted their own account, so their books stay. */
+    fun remove(username: String) {
         database.transaction {
-            if (account.isAdmin && accounts.countAdmins().executeAsOne() <= 1L) {
-                throw ApiException(
-                    HttpStatusCode.Conflict,
-                    ApiErrorCodes.LastAdmin,
-                    "The only admin cannot delete their account.",
-                )
-            }
-            accounts.deleteById(account.id)
+            val account = accounts.selectByUsername(username).executeAsOneOrNull() ?: throw noSuchAccount()
+            deleteUnlessLastAdmin(account.id, account.isAdmin)
         }
+    }
+
+    fun list(): List<AccountSummary> = accounts.selectWithUsage().executeAsList().map { row ->
+        AccountSummary(
+            username = row.username,
+            isAdmin = row.isAdmin,
+            createdAt = row.createdAt,
+            booksAdded = row.booksAdded.toInt(),
+            booksStarted = row.booksStarted.toInt(),
+            booksFinished = row.booksFinished.toInt(),
+            favourites = row.favourites.toInt(),
+            readingMs = row.readingMs,
+            sessions = row.sessions.toInt(),
+            lastReadAt = row.lastReadAt,
+        )
+    }
+
+    private fun deleteUnlessLastAdmin(id: Long, isAdmin: Boolean) {
+        if (isAdmin && accounts.countAdmins().executeAsOne() <= 1L) {
+            throw ApiException(
+                HttpStatusCode.Conflict,
+                ApiErrorCodes.LastAdmin,
+                "The only admin cannot delete their account.",
+            )
+        }
+        accounts.deleteById(id)
     }
 
     /** Signs the account out everywhere: whoever needed the reset may not be the only one with the old password. */
     fun resetPassword(username: String, password: String) {
         validatePassword(password)
-        val account = accounts.selectByUsername(username).executeAsOneOrNull()
-            ?: throw ApiException(HttpStatusCode.NotFound, ApiErrorCodes.NotFound, "No account by that name.")
+        val account = accounts.selectByUsername(username).executeAsOneOrNull() ?: throw noSuchAccount()
         val passwordHash = hasher.hash(password)
 
         database.transaction {
@@ -169,6 +194,9 @@ class AccountService(
             if (e.errorCode == SqliteConstraint) throw usernameTaken() else throw e
         }
     }
+
+    private fun noSuchAccount() =
+        ApiException(HttpStatusCode.NotFound, ApiErrorCodes.NotFound, "No account by that name.")
 
     private fun usernameTaken() =
         ApiException(HttpStatusCode.Conflict, ApiErrorCodes.UsernameTaken, "That username is taken.")

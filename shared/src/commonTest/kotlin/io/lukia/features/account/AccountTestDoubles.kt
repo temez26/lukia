@@ -5,6 +5,7 @@ import io.lukia.features.account.domain.AccountProblem
 import io.lukia.features.account.domain.AccountStore
 import io.lukia.features.account.domain.AuthTokens
 import io.lukia.features.account.domain.LastSignIn
+import io.lukia.features.account.domain.Person
 import io.lukia.features.account.domain.ServerAccount
 import io.lukia.features.account.domain.ServerApi
 import io.lukia.features.account.domain.ServerInfo
@@ -96,6 +97,14 @@ internal class FakeServerApi(
         if (notAdmin) throw AccountFailure(AccountProblem.NotAdmin)
         signUpSetting = open
         return signUpSetting
+    }
+
+    var people = emptyList<Person>()
+
+    override suspend fun people(address: String, accessToken: String): List<Person> {
+        reachable()
+        if (notAdmin) throw AccountFailure(AccountProblem.NotAdmin)
+        return people
     }
 
     override suspend fun me(address: String, accessToken: String): Pair<String, Boolean> {

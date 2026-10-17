@@ -730,6 +730,32 @@
     <string name="account_admin_title">Administration</string>
     <string name="account_admin_allow_sign_up">Allow new accounts</string>
     <string name="account_admin_allow_sign_up_detail">While this is on, anyone who can reach this server can create an account.</string>
+    <string name="account_people_title">People</string>
+    <string name="account_person_admin">Admin</string>
+    <plurals name="account_person_books_added">
+        <item quantity="one">%1$d book added</item>
+        <item quantity="other">%1$d books added</item>
+    </plurals>
+    <plurals name="account_person_started">
+        <item quantity="one">%1$d started</item>
+        <item quantity="other">%1$d started</item>
+    </plurals>
+    <plurals name="account_person_finished">
+        <item quantity="one">%1$d finished</item>
+        <item quantity="other">%1$d finished</item>
+    </plurals>
+    <plurals name="account_person_favourites">
+        <item quantity="one">%1$d favourite</item>
+        <item quantity="other">%1$d favourites</item>
+    </plurals>
+    <string name="account_person_read_for">Reading time: %1$s</string>
+    <string name="account_person_no_reading_time">No reading time yet</string>
+    <string name="account_person_last_read_today">Last read today</string>
+    <string name="account_person_last_read_yesterday">Last read yesterday</string>
+    <plurals name="account_person_last_read_days">
+        <item quantity="one">Last read %1$d day ago</item>
+        <item quantity="other">Last read %1$d days ago</item>
+    </plurals>
     <string name="account_problem_already_set_up">Someone has just set this server up. Sign in instead.</string>
     <string name="account_problem_session_expired">Your sign-in has ended. Sign in again.</string>
     <string name="account_problem_server_failed">The server could not do that. Try again later.</string>

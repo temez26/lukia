@@ -578,6 +578,42 @@
     <string name="account_admin_title">Administracja</string>
     <string name="account_admin_allow_sign_up">Zezwalaj na nowe konta</string>
     <string name="account_admin_allow_sign_up_detail">Gdy ta opcja jest włączona, każdy, kto może połączyć się z tym serwerem, może założyć konto.</string>
+    <string name="account_people_title">Osoby</string>
+    <string name="account_person_admin">Administrator</string>
+    <plurals name="account_person_books_added">
+        <item quantity="one">Dodane książki: %1$d</item>
+        <item quantity="few">Dodane książki: %1$d</item>
+        <item quantity="many">Dodane książki: %1$d</item>
+        <item quantity="other">Dodane książki: %1$d</item>
+    </plurals>
+    <plurals name="account_person_started">
+        <item quantity="one">Rozpoczęte: %1$d</item>
+        <item quantity="few">Rozpoczęte: %1$d</item>
+        <item quantity="many">Rozpoczęte: %1$d</item>
+        <item quantity="other">Rozpoczęte: %1$d</item>
+    </plurals>
+    <plurals name="account_person_finished">
+        <item quantity="one">Ukończone: %1$d</item>
+        <item quantity="few">Ukończone: %1$d</item>
+        <item quantity="many">Ukończone: %1$d</item>
+        <item quantity="other">Ukończone: %1$d</item>
+    </plurals>
+    <plurals name="account_person_favourites">
+        <item quantity="one">Ulubione: %1$d</item>
+        <item quantity="few">Ulubione: %1$d</item>
+        <item quantity="many">Ulubione: %1$d</item>
+        <item quantity="other">Ulubione: %1$d</item>
+    </plurals>
+    <string name="account_person_read_for">Czas czytania: %1$s</string>
+    <string name="account_person_no_reading_time">Brak czasu czytania</string>
+    <string name="account_person_last_read_today">Ostatnio czytano dziś</string>
+    <string name="account_person_last_read_yesterday">Ostatnio czytano wczoraj</string>
+    <plurals name="account_person_last_read_days">
+        <item quantity="one">Ostatnio czytano %1$d dzień temu</item>
+        <item quantity="few">Ostatnio czytano %1$d dni temu</item>
+        <item quantity="many">Ostatnio czytano %1$d dni temu</item>
+        <item quantity="other">Ostatnio czytano %1$d dnia temu</item>
+    </plurals>
     <string name="account_problem_already_set_up">Ktoś właśnie skonfigurował ten serwer. Zamiast tego zaloguj się.</string>
     <string name="account_problem_session_expired">Twoja sesja wygasła. Zaloguj się ponownie.</string>
     <string name="account_problem_server_failed">Serwer nie mógł tego zrobić. Spróbuj później.</string>

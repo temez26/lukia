@@ -613,6 +613,32 @@
     <string name="account_admin_title">Ylläpito</string>
     <string name="account_admin_allow_sign_up">Salli uudet tilit</string>
     <string name="account_admin_allow_sign_up_detail">Kun tämä on päällä, kuka tahansa, joka tavoittaa tämän palvelimen, voi luoda tilin.</string>
+    <string name="account_people_title">Käyttäjät</string>
+    <string name="account_person_admin">Ylläpitäjä</string>
+    <plurals name="account_person_books_added">
+        <item quantity="one">%1$d kirja lisätty</item>
+        <item quantity="other">%1$d kirjaa lisätty</item>
+    </plurals>
+    <plurals name="account_person_started">
+        <item quantity="one">%1$d aloitettu</item>
+        <item quantity="other">%1$d aloitettu</item>
+    </plurals>
+    <plurals name="account_person_finished">
+        <item quantity="one">%1$d luettu loppuun</item>
+        <item quantity="other">%1$d luettu loppuun</item>
+    </plurals>
+    <plurals name="account_person_favourites">
+        <item quantity="one">%1$d suosikki</item>
+        <item quantity="other">%1$d suosikkia</item>
+    </plurals>
+    <string name="account_person_read_for">Lukuaika: %1$s</string>
+    <string name="account_person_no_reading_time">Ei vielä lukuaikaa</string>
+    <string name="account_person_last_read_today">Luki viimeksi tänään</string>
+    <string name="account_person_last_read_yesterday">Luki viimeksi eilen</string>
+    <plurals name="account_person_last_read_days">
+        <item quantity="one">Luki viimeksi %1$d päivä sitten</item>
+        <item quantity="other">Luki viimeksi %1$d päivää sitten</item>
+    </plurals>
     <string name="account_problem_already_set_up">Joku otti tämän palvelimen juuri käyttöön. Kirjaudu sen sijaan.</string>
     <string name="account_problem_session_expired">Kirjautumisesi on päättynyt. Kirjaudu uudelleen.</string>
     <string name="account_problem_server_failed">Palvelin ei pystynyt tekemään sitä. Yritä myöhemmin uudelleen.</string>

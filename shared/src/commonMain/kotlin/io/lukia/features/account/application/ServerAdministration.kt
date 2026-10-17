@@ -1,6 +1,7 @@
 package io.lukia.features.account.application
 
 import io.lukia.features.account.domain.AccountStatus
+import io.lukia.features.account.domain.Person
 import io.lukia.features.account.domain.ServerApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -25,4 +26,6 @@ class ServerAdministration(
 
     suspend fun setSignUpOpen(open: Boolean): Boolean =
         session.authorized { address, token -> api.setSignUpOpen(address, token, open) }
+
+    suspend fun people(): List<Person> = session.authorized { address, token -> api.people(address, token) }
 }

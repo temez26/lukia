@@ -14,6 +14,7 @@ import io.lukia.api.ApiRoutes
 import io.lukia.features.account.domain.AccountFailure
 import io.lukia.features.account.domain.AccountProblem
 import io.lukia.features.account.domain.AuthTokens
+import io.lukia.features.account.domain.Person
 import io.lukia.features.account.domain.ServerInfo
 import io.lukia.features.account.infrastructure.KtorServerApi
 import io.lukia.features.account.infrastructure.serverHttpClient
@@ -22,6 +23,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
+import kotlin.time.Instant
 
 /** The app's half of the wire: what it sends, and what it makes of each answer the server can give. */
 class KtorServerApiTest {
@@ -40,6 +42,21 @@ class KtorServerApiTest {
         }
 
         assertEquals(true, api.health(HomeServer).signUpOpen)
+    }
+
+    @Test
+    fun peopleAreReadWithTheirUsage() = runTest {
+        val api = apiAnswering {
+            json(
+                """[{"username":"bob","isAdmin":false,"createdAt":1,"booksAdded":2,"booksStarted":3,""" +
+                    """"booksFinished":1,"favourites":4,"readingMs":60000,"sessions":5,"lastReadAt":1000}]""",
+            )
+        }
+
+        assertEquals(
+            listOf(Person("bob", false, 2, 3, 1, 4, 60_000, Instant.fromEpochMilliseconds(1_000))),
+            api.people(HomeServer, "token"),
+        )
     }
 
     @Test

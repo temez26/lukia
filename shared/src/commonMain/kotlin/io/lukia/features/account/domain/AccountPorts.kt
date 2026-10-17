@@ -35,6 +35,9 @@ interface ServerApi {
     /** Admin only: opens or closes the server to new accounts; answers with how it stands after. */
     suspend fun setSignUpOpen(address: String, accessToken: String, open: Boolean): Boolean
 
+    /** Admin only: everyone with an account on the server, with what each has read. */
+    suspend fun people(address: String, accessToken: String): List<Person>
+
     /** Who the token belongs to: the username and whether they are the admin. */
     suspend fun me(address: String, accessToken: String): Pair<String, Boolean>
 }

@@ -97,7 +97,7 @@ looks at who reads what, or removes an account or a book.
 | Contracts | Additive, in `api/`: `signUpOpen` on the health response, sign-up, settings, account list with usage, account removal. Nothing renamed or removed; older apps keep working. |
 | Data | A `server_setting` table, added by the server's first SQLDelight migration (`1.sqm`). Usage is counted from tables already there (`book.addedBy`, `book_state`, `reading_session`); no new columns. |
 | Security | Sign-up closed by default. Every admin endpoint checks `isAdmin` on the server. Sign-up counts towards the per-address sign-in limit. Removing the web page removes its HTML, script and CSP surface. Last-admin rule enforced on the server. |
-| Performance | The account list is one query per measure across all accounts, grouped by account; fine for a household-sized server. |
+| Performance | The account list is one query, each measure a subquery over that account's rows; fine for a household-sized server. |
 | UI | New Account sections built from the existing settings components (`SettingsToggle`, groups, `ConfirmDialog`). New strings in 11 locales. |
 | Docs | `SERVER.md` set-up section rewritten around the app; admin page and invite instructions removed; the curl password reset kept as a fallback. |
 | Rollout | Server and app ship together as 1.5.0. A 1.5.0 app against a 1.4.0 server falls back to the invite flow (criterion 9). |
@@ -107,7 +107,7 @@ looks at who reads what, or removes an account or a book.
 - [x] 1. Server: settings table and migration, `signUpOpen` on health, sign-up endpoint, with tests.
 - [x] 2. App: Account offers Create account when sign-up is open.
 - [x] 3. Server and app: Allow new accounts switch for admins.
-- [ ] 4. Server: account list with usage, account removal; app: People list.
+- [x] 4. Server: account list with usage, account removal; app: People list.
 - [ ] 5. App: reset password and remove account from People.
 - [ ] 6. App: Remove from server for admins.
 - [ ] 7. Server: remove the web admin page; docs.

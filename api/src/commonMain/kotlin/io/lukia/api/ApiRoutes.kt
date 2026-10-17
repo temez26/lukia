@@ -33,6 +33,14 @@ object ApiRoutes {
     /** The signed-in account: GET to see it, DELETE to delete it. */
     const val Me = "$Prefix/me"
 
+    /** Admin only: GET every account with its usage, as [AccountSummary]s. */
+    const val Accounts = "$Prefix/accounts"
+
+    /** DELETE, admin only: removes the account named by `{username}`. The books it added stay. */
+    const val Account = "$Prefix/accounts/{username}"
+
+    fun account(username: String) = Account.replace("{username}", username)
+
     /** Admin only: sets the password of the account named by `{username}`. */
     const val AccountPassword = "$Prefix/accounts/{username}/password"
 

@@ -16,6 +16,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import io.lukia.api.AccountResponse
+import io.lukia.api.AccountSummary
 import io.lukia.api.ApiRoutes
 import io.lukia.api.Credentials
 import io.lukia.api.HealthResponse
@@ -24,9 +25,11 @@ import io.lukia.api.RefreshRequest
 import io.lukia.api.ServerSettings
 import io.lukia.api.TokenResponse
 import io.lukia.features.account.domain.AuthTokens
+import io.lukia.features.account.domain.Person
 import io.lukia.features.account.domain.ServerApi
 import io.lukia.features.account.domain.ServerInfo
 import kotlinx.serialization.json.Json
+import kotlin.time.Instant
 
 /**
  * The client the sync server is spoken to with.
@@ -108,6 +111,10 @@ class KtorServerApi(private val http: ServerHttp) : ServerApi {
             }
         }.signUpOpen
 
+    override suspend fun people(address: String, accessToken: String): List<Person> =
+        http.call<List<AccountSummary>> { get(address + ApiRoutes.Accounts) { bearerAuth(accessToken) } }
+            .map { it.toPerson() }
+
     override suspend fun me(address: String, accessToken: String): Pair<String, Boolean> =
         http.call<AccountResponse> { get(address + ApiRoutes.Me) { bearerAuth(accessToken) } }
             .let { it.username to it.isAdmin }
@@ -122,3 +129,14 @@ class KtorServerApi(private val http: ServerHttp) : ServerApi {
             AuthTokens(it.accessToken, it.accessExpiresAt, it.refreshToken, it.refreshExpiresAt)
         }
 }
+
+private fun AccountSummary.toPerson() = Person(
+    username = username,
+    isAdmin = isAdmin,
+    booksAdded = booksAdded,
+    booksStarted = booksStarted,
+    booksFinished = booksFinished,
+    favourites = favourites,
+    readingMs = readingMs,
+    lastReadAt = lastReadAt?.let(Instant::fromEpochMilliseconds),
+)

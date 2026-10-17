@@ -544,6 +544,32 @@
     <string name="account_admin_title">Beheer</string>
     <string name="account_admin_allow_sign_up">Nieuwe accounts toestaan</string>
     <string name="account_admin_allow_sign_up_detail">Zolang dit aan staat, kan iedereen die deze server kan bereiken een account aanmaken.</string>
+    <string name="account_people_title">Personen</string>
+    <string name="account_person_admin">Beheerder</string>
+    <plurals name="account_person_books_added">
+        <item quantity="one">%1$d boek toegevoegd</item>
+        <item quantity="other">%1$d boeken toegevoegd</item>
+    </plurals>
+    <plurals name="account_person_started">
+        <item quantity="one">%1$d begonnen</item>
+        <item quantity="other">%1$d begonnen</item>
+    </plurals>
+    <plurals name="account_person_finished">
+        <item quantity="one">%1$d uitgelezen</item>
+        <item quantity="other">%1$d uitgelezen</item>
+    </plurals>
+    <plurals name="account_person_favourites">
+        <item quantity="one">%1$d favoriet</item>
+        <item quantity="other">%1$d favorieten</item>
+    </plurals>
+    <string name="account_person_read_for">Leestijd: %1$s</string>
+    <string name="account_person_no_reading_time">Nog geen leestijd</string>
+    <string name="account_person_last_read_today">Laatst gelezen: vandaag</string>
+    <string name="account_person_last_read_yesterday">Laatst gelezen: gisteren</string>
+    <plurals name="account_person_last_read_days">
+        <item quantity="one">Laatst gelezen: %1$d dag geleden</item>
+        <item quantity="other">Laatst gelezen: %1$d dagen geleden</item>
+    </plurals>
     <string name="account_problem_already_set_up">Iemand heeft deze server net ingesteld. Log in plaats daarvan in.</string>
     <string name="account_problem_session_expired">Uw aanmelding is verlopen. Log opnieuw in.</string>
     <string name="account_problem_server_failed">De server kon dat niet doen. Probeer het later opnieuw.</string>

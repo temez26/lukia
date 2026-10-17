@@ -551,6 +551,32 @@
     <string name="account_admin_title">Administration</string>
     <string name="account_admin_allow_sign_up">Autoriser les nouveaux comptes</string>
     <string name="account_admin_allow_sign_up_detail">Tant que c’est activé, toute personne pouvant joindre ce serveur peut créer un compte.</string>
+    <string name="account_people_title">Personnes</string>
+    <string name="account_person_admin">Admin</string>
+    <plurals name="account_person_books_added">
+        <item quantity="one">%1$d livre ajouté</item>
+        <item quantity="other">%1$d livres ajoutés</item>
+    </plurals>
+    <plurals name="account_person_started">
+        <item quantity="one">%1$d commencé</item>
+        <item quantity="other">%1$d commencés</item>
+    </plurals>
+    <plurals name="account_person_finished">
+        <item quantity="one">%1$d terminé</item>
+        <item quantity="other">%1$d terminés</item>
+    </plurals>
+    <plurals name="account_person_favourites">
+        <item quantity="one">%1$d favori</item>
+        <item quantity="other">%1$d favoris</item>
+    </plurals>
+    <string name="account_person_read_for">Temps de lecture\u00A0: %1$s</string>
+    <string name="account_person_no_reading_time">Pas encore de temps de lecture</string>
+    <string name="account_person_last_read_today">Lu pour la dernière fois aujourd’hui</string>
+    <string name="account_person_last_read_yesterday">Lu pour la dernière fois hier</string>
+    <plurals name="account_person_last_read_days">
+        <item quantity="one">Lu pour la dernière fois il y a %1$d jour</item>
+        <item quantity="other">Lu pour la dernière fois il y a %1$d jours</item>
+    </plurals>
     <string name="account_problem_already_set_up">Quelqu’un vient de configurer ce serveur. Connectez-vous plutôt.</string>
     <string name="account_problem_session_expired">Votre connexion a expiré. Reconnectez-vous.</string>
     <string name="account_problem_server_failed">Le serveur n’a pas pu le faire. Réessayez plus tard.</string>

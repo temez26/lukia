@@ -544,6 +544,32 @@
     <string name="account_admin_title">Administración</string>
     <string name="account_admin_allow_sign_up">Permitir cuentas nuevas</string>
     <string name="account_admin_allow_sign_up_detail">Mientras esté activado, cualquiera que pueda acceder a este servidor puede crear una cuenta.</string>
+    <string name="account_people_title">Personas</string>
+    <string name="account_person_admin">Admin</string>
+    <plurals name="account_person_books_added">
+        <item quantity="one">%1$d libro añadido</item>
+        <item quantity="other">%1$d libros añadidos</item>
+    </plurals>
+    <plurals name="account_person_started">
+        <item quantity="one">%1$d empezado</item>
+        <item quantity="other">%1$d empezados</item>
+    </plurals>
+    <plurals name="account_person_finished">
+        <item quantity="one">%1$d terminado</item>
+        <item quantity="other">%1$d terminados</item>
+    </plurals>
+    <plurals name="account_person_favourites">
+        <item quantity="one">%1$d favorito</item>
+        <item quantity="other">%1$d favoritos</item>
+    </plurals>
+    <string name="account_person_read_for">Tiempo de lectura: %1$s</string>
+    <string name="account_person_no_reading_time">Aún sin tiempo de lectura</string>
+    <string name="account_person_last_read_today">Leyó por última vez hoy</string>
+    <string name="account_person_last_read_yesterday">Leyó por última vez ayer</string>
+    <plurals name="account_person_last_read_days">
+        <item quantity="one">Leyó por última vez hace %1$d día</item>
+        <item quantity="other">Leyó por última vez hace %1$d días</item>
+    </plurals>
     <string name="account_problem_already_set_up">Alguien acaba de configurar este servidor. Inicia sesión en su lugar.</string>
     <string name="account_problem_session_expired">Tu sesión ha terminado. Vuelve a iniciar sesión.</string>
     <string name="account_problem_server_failed">El servidor no pudo hacerlo. Inténtalo más tarde.</string>
