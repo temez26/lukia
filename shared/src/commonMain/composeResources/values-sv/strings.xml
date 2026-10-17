@@ -30,6 +30,10 @@
     <string name="menu_sync_with_server">Synkronisera med servern</string>
     <string name="menu_refresh_details">Uppdatera uppgifter</string>
     <string name="menu_delete_from_library">Ta bort från biblioteket</string>
+    <string name="menu_remove_from_server">Ta bort från servern</string>
+    <string name="book_remove_from_server_title">Ta bort från servern?</string>
+    <string name="book_remove_from_server_message">%1$s försvinner ur det delade biblioteket för alla. Enheter som aldrig laddat ner den tar bort den vid nästa synkronisering; en nedladdad kopia blir kvar som en bok på sin enhet.</string>
+    <string name="book_remove_from_server_confirm">Ta bort</string>
 
     <string name="library_details_refreshed">Uppgifterna uppdaterade</string>
 

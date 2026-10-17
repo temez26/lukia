@@ -68,6 +68,7 @@ fun LibraryScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val settings = rememberSettingsPanel(onSettings, onAccountSettings)
     val requests = rememberLibraryRequests(viewModel, settings, onSyncWithServer)
+    val removal = rememberServerRemoval(viewModel)
 
     LibraryEffects(
         message = message,
@@ -101,7 +102,7 @@ fun LibraryScreen(
                 onToggleFavorite = viewModel::toggleFavorite,
                 onRefresh = viewModel::refreshDocument,
                 shelf = rememberShelfUi(viewModel, requests.syncWithServer),
-                transfers = rememberTransferUi(viewModel),
+                transfers = rememberTransferUi(viewModel, removal),
                 onDelete = viewModel::deleteDocument,
                 onRetry = viewModel::refresh,
                 importing = rememberImportUi(viewModel),
@@ -111,6 +112,8 @@ fun LibraryScreen(
                 statsButton = statsButton,
             )
         }
+
+        RemoveFromServerDialog(removal, onRemove = viewModel::removeFromServer)
 
         // Over the library and its own overlays both, since it is opened from the
         // bar that floats above them.

@@ -10,8 +10,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -29,6 +31,7 @@ import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.library.presentation.model.asLibrary
 import io.lukia.features.library.presentation.model.facets
 import io.lukia.features.library.presentation.model.matching
+import io.lukia.features.library.presentation.sessions.BookTransferUi
 import io.lukia.shared.presentation.theme.LukiaTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -41,6 +44,7 @@ class LibraryContentTest {
         title: String,
         type: DocumentType = DocumentType.PDF,
         favorite: Boolean = false,
+        onServer: Boolean = false,
     ): DocumentInfo {
         val extension = if (type == DocumentType.EPUB) "epub" else "pdf"
 
@@ -54,6 +58,7 @@ class LibraryContentTest {
             exists = true,
             sizeBytes = 1024L,
             isFavorite = favorite,
+            onServer = onServer,
         )
     }
 
@@ -72,6 +77,7 @@ class LibraryContentTest {
         width: Dp = 1000.dp,
         progress: Map<String, ReadingProgress> = emptyMap(),
         onDocumentDetails: (DocumentInfo) -> Unit = {},
+        transfers: BookTransferUi = BookTransferUi.None,
     ) {
         setContent {
             // The query is the ViewModel's in the app, so the test plays that
@@ -102,6 +108,7 @@ class LibraryContentTest {
                         onRefresh = {},
                         onDelete = {},
                         onRetry = {},
+                        transfers = transfers,
                     )
                 }
             }
@@ -260,5 +267,54 @@ class LibraryContentTest {
 
         onNodeWithText("Information").assertDoesNotExist()
         onNodeWithText("Add Books").assertIsDisplayed()
+    }
+
+    /** Only the admin is offered it, and only on a book the server has. */
+    @Test
+    fun removeFromServerIsOfferedToTheAdminOnServerBooks() = runComposeUiTest {
+        val removal = ServerRemoval(mutableStateOf(null), canRemove = true)
+        setLibrary(
+            documents = listOf(book("Moby Dick", onServer = true), book("The Hobbit", DocumentType.EPUB)),
+            transfers = BookTransferUi(removeFromServer = removal::rowFor),
+        )
+
+        openBookMenu("Moby Dick")
+        press("Remove from Server")
+        assertEquals("Moby Dick.pdf", removal.pending?.document?.fileName)
+
+        openBookMenu("The Hobbit")
+        onNodeWithText("Remove from Server").assertDoesNotExist()
+    }
+
+    @Test
+    fun anyoneButTheAdminIsNotOfferedRemoveFromServer() = runComposeUiTest {
+        val removal = ServerRemoval(mutableStateOf(null), canRemove = false)
+        setLibrary(
+            documents = listOf(book("Moby Dick", onServer = true)),
+            transfers = BookTransferUi(removeFromServer = removal::rowFor),
+        )
+
+        openBookMenu("Moby Dick")
+
+        onNodeWithText("Delete from Library").assertExists()
+        onNodeWithText("Remove from Server").assertDoesNotExist()
+    }
+
+    @Test
+    fun removingFromTheServerIsAskedFirst() = runComposeUiTest {
+        val moby = book("Moby Dick", onServer = true)
+        val removal = ServerRemoval(mutableStateOf(moby), canRemove = true)
+        var removed: DocumentInfo? = null
+        setContent {
+            LukiaTheme(darkTheme = false) {
+                RemoveFromServerDialog(removal, onRemove = { removed = it })
+            }
+        }
+
+        onNodeWithText("Remove from the server?").assertExists()
+        onNode(hasText("Remove") and hasAnyAncestor(isDialog())).performClick()
+
+        assertEquals(moby, removed)
+        assertNull(removal.pending)
     }
 }

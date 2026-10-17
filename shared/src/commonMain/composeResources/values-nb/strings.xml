@@ -28,6 +28,10 @@
     <string name="menu_sync_with_server">Synkroniser med serveren</string>
     <string name="menu_refresh_details">Oppdater detaljer</string>
     <string name="menu_delete_from_library">Slett fra biblioteket</string>
+    <string name="menu_remove_from_server">Fjern fra serveren</string>
+    <string name="book_remove_from_server_title">Fjerne fra serveren?</string>
+    <string name="book_remove_from_server_message">%1$s forsvinner fra det delte biblioteket for alle. Enheter som aldri lastet den ned, fjerner den ved neste synkronisering; en nedlastet kopi blir værende som en bok på sin enhet.</string>
+    <string name="book_remove_from_server_confirm">Fjern</string>
     <string name="library_details_refreshed">Detaljene oppdatert</string>
     <plurals name="library_already_in_library">
         <item quantity="one">Allerede i biblioteket ditt</item>

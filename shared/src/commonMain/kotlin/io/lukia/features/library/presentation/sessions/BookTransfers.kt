@@ -87,6 +87,8 @@ class BookTransferUi(
     val canUpload: Boolean = false,
     val onStart: (DocumentInfo) -> Unit = {},
     val onCancel: (location: String) -> Unit = {},
+    /** The admin's Remove from server row for a book, or null where it has none - see `ServerRemoval`. */
+    val removeFromServer: (DocumentInfo) -> (() -> Unit)? = { null },
 ) {
     fun stateOf(location: String): BookTransfer = states[location] ?: BookTransfer.Idle
 

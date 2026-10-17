@@ -42,6 +42,10 @@
     <string name="menu_sync_with_server">Sync with Server</string>
     <string name="menu_refresh_details">Refresh Details</string>
     <string name="menu_delete_from_library">Delete from Library</string>
+    <string name="menu_remove_from_server">Remove from Server</string>
+    <string name="book_remove_from_server_title">Remove from the server?</string>
+    <string name="book_remove_from_server_message">%1$s leaves the shared library for everyone. Devices that never downloaded it drop it on their next sync; a downloaded copy stays as a book on its device.</string>
+    <string name="book_remove_from_server_confirm">Remove</string>
 
     <!--
         The library's own notices. Every one is a whole sentence: the counts are

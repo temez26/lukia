@@ -35,6 +35,10 @@
     <string name="menu_sync_with_server">Synchroniser avec le serveur</string>
     <string name="menu_refresh_details">Actualiser les détails</string>
     <string name="menu_delete_from_library">Supprimer de la bibliothèque</string>
+    <string name="menu_remove_from_server">Retirer du serveur</string>
+    <string name="book_remove_from_server_title">Retirer du serveur\u00A0?</string>
+    <string name="book_remove_from_server_message">%1$s quitte la bibliothèque partagée pour tout le monde. Les appareils qui ne l’ont jamais téléchargé le retirent à leur prochaine synchronisation\u00A0; une copie téléchargée reste un livre sur son appareil.</string>
+    <string name="book_remove_from_server_confirm">Retirer</string>
     <string name="library_details_refreshed">Détails actualisés</string>
     <plurals name="library_already_in_library">
         <item quantity="one">Déjà dans votre bibliothèque</item>

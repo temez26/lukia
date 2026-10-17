@@ -6,6 +6,7 @@ import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.PickedDocument
 import io.lukia.core.domain.document.PickedFolder
 import io.lukia.core.domain.document.ServerBookDownloader
+import io.lukia.core.domain.document.ServerBookRemover
 import io.lukia.core.domain.document.ServerBookUploader
 import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.core.domain.reading.ReadingProgressRepository
@@ -74,7 +75,13 @@ class LibraryViewModel(
     internal val uploader: ServerBookUploader = ServerBookUploader.None,
     /** Fetches server books onto the device, for the panel's download row. */
     downloader: ServerBookDownloader = ServerBookDownloader { _, _ -> },
+    /** Takes server books out of the shared library, for the server's admin. */
+    private val remover: ServerBookRemover = ServerBookRemover.None,
 ) : ViewModel() {
+
+    /** Whether server books can be taken out of the shared library from here: true for the server's admin. */
+    val canRemoveFromServer: StateFlow<Boolean> =
+        remover.available.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     /** Books moving to or from the server from the panel - see [BookTransfers]. */
     internal val transfers = BookTransfers(downloader, uploader, viewModelScope)
@@ -349,6 +356,11 @@ class LibraryViewModel(
                 )
             }
         }
+    }
+
+    /** The shelf follows by itself - see [ServerBookRemover] - so there is nothing to patch here. */
+    fun removeFromServer(document: DocumentInfo) {
+        viewModelScope.launch { reported { remover.remove(document.document.location) } }
     }
 
     /**

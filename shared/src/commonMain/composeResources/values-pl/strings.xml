@@ -30,6 +30,10 @@
     <string name="menu_sync_with_server">Synchronizuj z serwerem</string>
     <string name="menu_refresh_details">Odśwież szczegóły</string>
     <string name="menu_delete_from_library">Usuń z biblioteki</string>
+    <string name="menu_remove_from_server">Usuń z serwera</string>
+    <string name="book_remove_from_server_title">Usunąć z serwera?</string>
+    <string name="book_remove_from_server_message">„%1$s” znika ze wspólnej biblioteki dla wszystkich. Urządzenia, które nigdy jej nie pobrały, usuną ją przy następnej synchronizacji; pobrana kopia zostaje jako książka na swoim urządzeniu.</string>
+    <string name="book_remove_from_server_confirm">Usuń</string>
     <string name="library_details_refreshed">Szczegóły odświeżone</string>
     <plurals name="library_already_in_library">
         <item quantity="one">Już w Twojej bibliotece</item>

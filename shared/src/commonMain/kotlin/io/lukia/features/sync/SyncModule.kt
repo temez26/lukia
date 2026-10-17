@@ -1,12 +1,14 @@
 package io.lukia.features.sync
 
 import io.lukia.core.domain.document.ServerBookDownloader
+import io.lukia.core.domain.document.ServerBookRemover
 import io.lukia.core.domain.document.ServerBookUploader
 import io.lukia.features.account.infrastructure.ServerHttp
 import io.lukia.features.account.infrastructure.serverHttpClient
 import io.lukia.features.sync.application.DownloadServerBookUseCase
 import io.lukia.features.sync.application.ForgetServerUseCase
 import io.lukia.features.sync.application.PullServerLibraryUseCase
+import io.lukia.features.sync.application.RemoveServerBookUseCase
 import io.lukia.features.sync.application.SyncBookStateUseCase
 import io.lukia.features.sync.application.SyncCoordinator
 import io.lukia.features.sync.application.SyncRoundUseCase
@@ -42,6 +44,8 @@ val syncModule = module {
     single<ServerBookUploader> {
         UploadServerBookUseCase(get(), get(), get(), get(), get(), get())
     }
+
+    single<ServerBookRemover> { RemoveServerBookUseCase(get(), get(), get(), get()) }
 
     single { BookStateApi(ServerHttp(serverHttpClient())) }
 

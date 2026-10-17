@@ -38,6 +38,10 @@
     <string name="menu_sync_with_server">Synkronoi palvelimen kanssa</string>
     <string name="menu_refresh_details">Päivitä tiedot</string>
     <string name="menu_delete_from_library">Poista kirjastosta</string>
+    <string name="menu_remove_from_server">Poista palvelimelta</string>
+    <string name="book_remove_from_server_title">Poistetaanko palvelimelta?</string>
+    <string name="book_remove_from_server_message">%1$s poistuu jaetusta kirjastosta kaikilta. Laitteet, jotka eivät koskaan ladanneet sitä, poistavat sen seuraavassa synkronoinnissa; ladattu kopio jää kirjaksi omaan laitteeseensa.</string>
+    <string name="book_remove_from_server_confirm">Poista</string>
 
     <string name="library_details_refreshed">Tiedot päivitetty</string>
 

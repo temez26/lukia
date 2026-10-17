@@ -28,6 +28,10 @@
     <string name="menu_sync_with_server">Synchroniseren met server</string>
     <string name="menu_refresh_details">Gegevens vernieuwen</string>
     <string name="menu_delete_from_library">Uit de bibliotheek verwijderen</string>
+    <string name="menu_remove_from_server">Van de server verwijderen</string>
+    <string name="book_remove_from_server_title">Van de server verwijderen?</string>
+    <string name="book_remove_from_server_message">%1$s verdwijnt voor iedereen uit de gedeelde bibliotheek. Apparaten die het nooit hebben gedownload, verwijderen het bij de volgende synchronisatie; een gedownloade kopie blijft als boek op dat apparaat.</string>
+    <string name="book_remove_from_server_confirm">Verwijderen</string>
     <string name="library_details_refreshed">Gegevens vernieuwd</string>
     <plurals name="library_already_in_library">
         <item quantity="one">Staat al in uw bibliotheek</item>

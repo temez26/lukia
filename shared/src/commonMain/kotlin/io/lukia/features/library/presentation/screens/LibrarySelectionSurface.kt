@@ -78,16 +78,17 @@ internal fun rememberShelfUi(viewModel: LibraryViewModel, onSyncWithServer: () -
 
 /** The panel's books moving to or from the server, wired to the view model's transfers. */
 @Composable
-internal fun rememberTransferUi(viewModel: LibraryViewModel): BookTransferUi {
+internal fun rememberTransferUi(viewModel: LibraryViewModel, removal: ServerRemoval? = null): BookTransferUi {
     val states by viewModel.transfers.states.collectAsState()
     val canUpload by viewModel.transfers.canUpload.collectAsState()
 
-    return remember(viewModel, states, canUpload) {
+    return remember(viewModel, states, canUpload, removal) {
         BookTransferUi(
             states = states,
             canUpload = canUpload,
             onStart = { viewModel.transfers.start(it) },
             onCancel = viewModel.transfers::cancel,
+            removeFromServer = { document -> removal?.rowFor(document) },
         )
     }
 }

@@ -56,7 +56,9 @@ App
       on your own row where it would leave the server without an admin.
 11. An admin sees **Remove from server** in a server book's menu (Book Details
     and the library's long-press menu). After confirming, the book leaves the
-    library on every device on its next sync. Non-admins don't see it.
+    shared library: this device's shelf follows at once, other devices on their
+    next sync, and a copy already downloaded stays on its device as an ordinary
+    book. Non-admins don't see it.
 12. Signed out, or never signed in, the app behaves exactly as it does now.
 13. Every new string is in all 11 locales, German and Dutch formal.
 
@@ -109,7 +111,7 @@ looks at who reads what, or removes an account or a book.
 - [x] 3. Server and app: Allow new accounts switch for admins.
 - [x] 4. Server: account list with usage, account removal; app: People list.
 - [x] 5. App: reset password and remove account from People.
-- [ ] 6. App: Remove from server for admins.
+- [x] 6. App: Remove from server for admins.
 - [ ] 7. Server: remove the web admin page; docs.
 
 ## Decisions
