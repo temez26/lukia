@@ -52,7 +52,7 @@ class TestSyncServer : AutoCloseable {
 
     val address = "http://127.0.0.1:${runBlocking { server.engine.resolvedConnectors().first().port }}"
 
-    /** Uploads a book as the account [accessToken] belongs to, the way the admin page does. */
+    /** Uploads a book as the account [accessToken] belongs to, the way the app does. */
     suspend fun upload(accessToken: String, fileName: String, bytes: ByteArray) {
         serverHttpClient().post(address + ApiRoutes.Books) {
             parameter("fileName", fileName)

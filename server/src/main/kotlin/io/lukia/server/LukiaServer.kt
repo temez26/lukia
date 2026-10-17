@@ -4,7 +4,6 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
-import io.ktor.server.http.content.staticResources
 import io.ktor.server.plugins.BadRequestException
 import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
@@ -97,8 +96,5 @@ fun Application.lukiaServer(
         libraryRoutes(library, files, tokens, config.maxUploadBytes)
         readingRoutes(bookStates, sessions, tokens)
         eventRoutes(events, tokens)
-
-        // The admin page: the only HTML the server serves. See resources/admin.
-        staticResources("/", "admin")
     }
 }

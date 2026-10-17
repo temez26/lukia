@@ -1,6 +1,6 @@
 # Running a server from the app
 
-Status: In progress
+Status: Done
 
 ## Goal
 
@@ -112,7 +112,7 @@ looks at who reads what, or removes an account or a book.
 - [x] 4. Server: account list with usage, account removal; app: People list.
 - [x] 5. App: reset password and remove account from People.
 - [x] 6. App: Remove from server for admins.
-- [ ] 7. Server: remove the web admin page; docs.
+- [x] 7. Server: remove the web admin page; docs.
 
 ## Decisions
 

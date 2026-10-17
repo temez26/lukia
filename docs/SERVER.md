@@ -34,7 +34,7 @@ docker build -t lukia-server server
 
 | Variable | Default | |
 | --- | --- | --- |
-| `LUKIA_SERVER_NAME` | `Lukia` | What the app and the admin page call this server |
+| `LUKIA_SERVER_NAME` | `Lukia` | What the app calls this server |
 | `LUKIA_PORT` | `8080` | |
 | `LUKIA_DATA_DIR` | `/data` in the image | Where the database and the books live |
 | `LUKIA_MAX_UPLOAD_MB` | `200` | The largest book an upload may be |
@@ -44,24 +44,41 @@ quietly using a default.
 
 ## Setting it up
 
-1. Open the server's address in a browser. With no accounts yet, the page asks
-   you to create the admin account.
-2. Add books on the same page - files, or a whole folder at once, of which
-   only the books are taken. The server reads each book's title, authors and
-   cover, and names it by a fingerprint of its bytes, so uploading a file twice
-   adds it once.
+Everything is done from the app; the server has no web page.
 
-   Anyone signed in can also add books from the app: Add to server on a book's
-   page, or select several in the library and add them together.
-3. Make an invite code for each person who should have an account. A code
-   works once, for seven days.
-4. In the app, open Settings, then Account, and type the server's address.
+1. In the app, open Settings, then Account, type the server's address, and
+   choose Create account. On a server with no accounts yet this creates the
+   admin.
+2. Add books: Add to server on a book's page, or select several in the
+   library and add them together. The server reads each book's title, authors
+   and cover, and names it by a fingerprint of its bytes, so adding a file
+   twice adds it once.
+3. Under Administration at the end of the same page, switch on Allow new
+   accounts and tell people the server's address. They install the app and
+   choose Create account. Switch it off again once everyone is in; while it is
+   off, Create account tells people to ask whoever runs the server.
 
 Books can also be uploaded with `curl`, using an access token from signing in:
 
 ```bash
 curl -X POST "https://books.example.com/api/v1/books?fileName=Moby%20Dick.epub" -H "Authorization: Bearer $TOKEN" --data-binary @"Moby Dick.epub"
 ```
+
+## Looking after it
+
+The admin sees an Administration section at the end of Account:
+
+- **Allow new accounts:** whether anyone who can reach the server may create
+  an account. Off until the admin turns it on.
+- **People:** each account with how many books it added, started and
+  finished, its favourites, its reading time and when it last read - totals
+  only, never which books. Reset password gives someone a new password and
+  signs them out everywhere; Remove account removes them as if they had
+  deleted their own account, and the books they added stay. Neither is offered
+  on your own row.
+- **Remove from Server**, in a book's menu: takes the book out of the shared
+  library. Devices that never downloaded it drop it on their next sync; a copy
+  already downloaded stays on its device as an ordinary book.
 
 ## HTTPS
 
@@ -157,9 +174,9 @@ versioned by path, and fields are only ever added.
 
 ## Forgotten passwords
 
-There is no email reset. The admin sets a new password on the admin page,
-under Reset a password, which also signs that account out everywhere. The same
-from a shell:
+There is no email reset. The admin sets a new password from People - see
+[Looking after it](#looking-after-it) - which also signs that account out
+everywhere. The same from a shell, with an admin's access token:
 
 ```bash
 curl -X PUT "https://books.example.com/api/v1/accounts/alice/password" -H "Authorization: Bearer $ADMIN_TOKEN" -H "Content-Type: application/json" -d '{"password":"a new long password"}'
