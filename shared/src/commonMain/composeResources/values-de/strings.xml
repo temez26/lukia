@@ -168,6 +168,8 @@
     <string name="home_shelf_favorites">Favoriten</string>
     <string name="home_shelf_recently_opened">Zuletzt geöffnet</string>
     <string name="home_shelf_recently_added">Neu hinzugefügt</string>
+    <string name="home_shelf_empty_title">Keine Bücher hier</string>
+    <string name="home_shelf_empty_message">Bücher in diesem Regal erscheinen hier.</string>
     <string name="home_shelf_unread">Ungelesen</string>
     <string name="search_browse_by_category">Nach Thema stöbern</string>
     <string name="library_title">Bibliothek</string>

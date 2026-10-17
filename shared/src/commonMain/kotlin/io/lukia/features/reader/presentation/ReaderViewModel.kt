@@ -155,6 +155,12 @@ class ReaderViewModel(
                 onFailure = { UiState.Failure(it.toAppError()) },
             )
 
+            // Where the book was left off is found before the book is shown,
+            // so a paged book's list starts on that page. Shown first, it sat on
+            // page 0 for a frame and asked for it to be drawn - on a long PDF a
+            // render that held up the page the reader actually came back to.
+            if (state is UiState.Success) record.restore(state.data)
+
             // Cancelled between the file being opened and this line, which is
             // the one window the suspension points cannot cover. What was
             // opened is handed straight back rather than left holding the file.
@@ -167,7 +173,6 @@ class ReaderViewModel(
 
             if (state is UiState.Success) {
                 layoutChoice.settle(state.data, openedAs = layout)
-                record.restore(state.data)
                 loadOutline(state.data)
 
                 record.begin()

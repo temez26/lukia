@@ -66,7 +66,7 @@ fun List<LibraryBook>.facets(): LibraryFacets {
             .map { it.spelling }
             .sortedBy { it.lowercase() },
         authors = dividingValues { it.authors }.map { it.spelling },
-        languages = dividingValues { listOfNotNull(it.language) }.map { it.spelling },
+        languages = dividingValues(key = ::languageKey) { listOfNotNull(it.language) }.map { it.spelling },
         hasFavourites = divides { it.document.isFavorite },
         hasDeviceOnly = any { it.document.onServer } && divides { it.document.exists && !it.document.onServer },
     )

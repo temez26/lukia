@@ -12,9 +12,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -143,11 +146,20 @@ fun MenuRow(
 ) {
     val metrics = LocalLukiaMetrics.current
     val interactionSource = remember { MutableInteractionSource() }
+    val bringIntoView = remember { BringIntoViewRequester() }
+
+    // A long menu of choices - every category in the library - scrolls, and
+    // opened at its top it hid the one that is ticked. Shown on opening instead,
+    // so the menu says what is chosen before anything is pressed.
+    if (selected) {
+        LaunchedEffect(Unit) { bringIntoView.bringIntoView() }
+    }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
+            .bringIntoViewRequester(bringIntoView)
             // Square, because the row runs the full width of the menu and a
             // rounded highlight inside a square menu leaves gaps at the corners.
             .pressable(

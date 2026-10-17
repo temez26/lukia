@@ -18,6 +18,14 @@ sealed class Routes(val route: String) {
 
     data object Library : Routes("library")
 
+    /**
+     * All of one home row, pushed over the tabs. Addressed by the row's name -
+     * `HomeShelf.name` - so this file needs nothing from the library feature.
+     */
+    data object HomeShelf : Routes("shelf/{$ARG_SHELF}") {
+        fun createRoute(shelf: String): String = "shelf/$shelf"
+    }
+
     data object Settings : Routes("settings")
 
     /** Settings opened on the Account page, where syncing is reported and signed in to. */
@@ -55,4 +63,8 @@ sealed class Routes(val route: String) {
     data object Detail : DocumentRoute("detail")
 
     data object Reader : DocumentRoute("reader")
+
+    companion object {
+        const val ARG_SHELF = "shelf"
+    }
 }

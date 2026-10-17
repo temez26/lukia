@@ -24,11 +24,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.savedstate.read
 import io.lukia.Routes
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.features.library.presentation.LibraryViewModel
+import io.lukia.features.library.presentation.model.HomeShelf
 import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.library.presentation.screens.HomeScreen
+import io.lukia.features.library.presentation.screens.HomeShelfScreen
 import io.lukia.features.library.presentation.screens.LibraryScreen
 import io.lukia.features.library.presentation.screens.SearchScreen
 import io.lukia.features.stats.presentation.StatsButton
@@ -46,7 +49,7 @@ import org.koin.compose.viewmodel.koinViewModel
  * They are three views of one library - where you left off, what you searched
  * for, the shelf itself - and three ViewModels would be three reads of a
  * database whose every row carries a cover image, kept in step by hope. Sharing
- * it also lets "See All" put the library tab into the state its row samples.
+ * it also lets a home row's own screen show the same books its row does.
  */
 @Composable
 internal fun MobileShell(library: LibraryViewModel = koinViewModel()) {
@@ -141,7 +144,7 @@ private fun NavGraphBuilder.tabDestinations(
     val openSettings: () -> Unit = { navController.navigate(Routes.Settings.route) }
     val openAccountSettings: () -> Unit = { navController.navigate(Routes.AccountSettings.route) }
 
-    // The home rows' titles and the search screen's subjects both land here.
+    // The search screen's subjects land on the library narrowed to one.
     val showInLibrary: (LibraryQuery) -> Unit = { query ->
         library.updateQuery(query)
         navController.switchTo(MobileTab.Library)
@@ -158,7 +161,7 @@ private fun NavGraphBuilder.tabDestinations(
         HomeScreen(
             onOpenBook = openBook,
             onShowDetails = openDetails,
-            onSeeAll = showInLibrary,
+            onOpenShelf = { shelf -> navController.navigate(Routes.HomeShelf.createRoute(shelf.name)) },
             onOpenLibrary = { navController.switchTo(MobileTab.Library) },
             onSettings = openSettings,
             statsButton = statsButton,
@@ -195,6 +198,8 @@ private fun NavGraphBuilder.tabDestinations(
             showSearch = false,
         )
     }
+
+    homeShelfDestination(navController, library, openBook, openDetails)
 }
 
 /**
@@ -251,6 +256,42 @@ private fun BottomBar(
         modifier = modifier,
     ) {
         MobileNavigationBar(selected = selected, onSelect = onSelect)
+    }
+}
+
+/**
+ * All of one home row, pushed over the tabs rather than one of them, so the bar
+ * steps aside - see [MobileTab.forRoute].
+ */
+private fun NavGraphBuilder.homeShelfDestination(
+    navController: NavController,
+    library: LibraryViewModel,
+    openBook: (DocumentInfo) -> Unit,
+    openDetails: (DocumentInfo) -> Unit,
+) {
+    composable(Routes.HomeShelf.route) { entry ->
+        val name = entry.arguments?.read { getStringOrNull(Routes.ARG_SHELF) }
+        val shelf = HomeShelf.entries.firstOrNull { it.name == name }
+
+        // Only a route written by hand could name no row; there is nothing to show.
+        if (shelf == null) {
+            LaunchedEffect(Unit) { navController.popBackStack() }
+            return@composable
+        }
+
+        HomeShelfScreen(
+            shelf = shelf,
+            onBack = { navController.popBackStack() },
+            onOpenBook = openBook,
+            onShowDetails = openDetails,
+            // Off this screen first, so the library tab is not left with it
+            // saved on top of Home's stack.
+            onOpenLibrary = {
+                navController.popBackStack()
+                navController.switchTo(MobileTab.Library)
+            },
+            viewModel = library,
+        )
     }
 }
 

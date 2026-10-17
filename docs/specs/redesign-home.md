@@ -34,7 +34,7 @@ Continue + shelves (see [ADR 0007](../decisions/0007-home-continue-and-shelves.m
 
 Rows:
 
-- The title is the link to the library tab, shown as `Title ›` with a muted
+- The title opens the row's own screen (originally the filtered library tab), shown as `Title ›` with a muted
   chevron. No "See All" label.
 - A book appears once on the screen, on the first row that holds it.
 - A row with no books is left out.

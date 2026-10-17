@@ -16,7 +16,7 @@ and the current rows cleaned up.
 
 The continue-reading card with shelves. Home opens on one card for the book
 being read, with a Resume button, then Favorites, Recently Opened, Unread and
-Recently Added. Row titles are the links to the library; "See All" goes. A book
+Recently Added. Row titles open a screen holding all of that row; "See All" goes. A book
 shows once, on its first row. Almost Done and Finished leave Home and stay as
 library shelves and filters. Browse by category moves to the Search tab.
 

@@ -19,7 +19,7 @@ import io.lukia.features.library.presentation.components.toolbar.LibraryMenu
 import io.lukia.features.library.presentation.components.toolbar.MenuButton
 import io.lukia.features.library.presentation.model.HomeLayout
 import io.lukia.features.library.presentation.model.HomeMenu
-import io.lukia.features.library.presentation.model.LibraryQuery
+import io.lukia.features.library.presentation.model.HomeShelf
 import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.features.library.presentation.sessions.LibraryShelfUi
 import io.lukia.resources.Res
@@ -49,7 +49,7 @@ internal fun HomeRows(
     actions: HomeBookActions,
     openMenu: HomeMenu?,
     onOpenMenuChange: (HomeMenu?) -> Unit,
-    onSeeAll: (LibraryQuery) -> Unit,
+    onOpenShelf: (HomeShelf) -> Unit,
     modifier: Modifier = Modifier,
     /**
      * The app's opening, which this screen is what is opened onto - see
@@ -102,7 +102,7 @@ internal fun HomeRows(
                 actions = actions,
                 openMenu = openMenu,
                 onOpenMenuChange = onOpenMenuChange,
-                onSeeAll = onSeeAll,
+                onOpenShelf = onOpenShelf,
                 modifier = Modifier.launchReveal(reveal, index = index + RowRevealOffset + 1),
             )
         }

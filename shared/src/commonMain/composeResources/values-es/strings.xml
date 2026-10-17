@@ -167,6 +167,8 @@
     <string name="home_shelf_favorites">Favoritos</string>
     <string name="home_shelf_recently_opened">Abiertos hace poco</string>
     <string name="home_shelf_recently_added">Añadidos hace poco</string>
+    <string name="home_shelf_empty_title">No hay libros aquí</string>
+    <string name="home_shelf_empty_message">Los libros de esta estantería aparecerán aquí.</string>
     <string name="home_shelf_unread">Sin leer</string>
     <string name="search_browse_by_category">Explorar por tema</string>
     <string name="library_title">Biblioteca</string>

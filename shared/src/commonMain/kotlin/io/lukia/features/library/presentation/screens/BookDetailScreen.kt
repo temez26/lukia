@@ -2,9 +2,10 @@ package io.lukia.features.library.presentation.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
@@ -29,15 +30,13 @@ import io.lukia.features.library.presentation.model.displayText
 import io.lukia.resources.Res
 import io.lukia.resources.action_try_again
 import io.lukia.resources.book_actions
-import io.lukia.shared.presentation.components.controls.FloatingBackButton
+import io.lukia.shared.presentation.components.controls.BackBar
 import io.lukia.shared.presentation.components.controls.IconButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.icons.EllipsisGlyph
 import io.lukia.shared.presentation.components.menu.ActionMenuScrim
 import io.lukia.shared.presentation.components.menu.BookActionsMenu
 import io.lukia.shared.presentation.components.state.UiStateContent
-import io.lukia.shared.presentation.theme.LocalLukiaDimens
-import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -109,7 +108,6 @@ fun BookDetailContent(
     transferActions: BookTransferActions = BookTransferActions(),
     canUpload: Boolean = false,
 ) {
-    val dimens = LocalLukiaDimens.current
     var menuExpanded by remember { mutableStateOf(false) }
     // The actions chrome is only meaningful once there is a book behind it.
     val currentDocument = uiState.dataOrNull?.document
@@ -119,10 +117,9 @@ fun BookDetailContent(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
     ) {
-        // This screen has no Scaffold - it is deliberately full-bleed so
-        // content passes under the floating back button - so window insets have
-        // to be applied by hand. Without this the back control and the cover
-        // sit underneath the status bar clock on phones.
+        // This screen has no Scaffold, so window insets have to be applied by
+        // hand. Without this the back control and the cover sit underneath the
+        // status bar clock on phones.
         //
         // The background above stays outside the inset so colour still reaches
         // the screen edges. Resolves to zero on desktop.
@@ -131,69 +128,65 @@ fun BookDetailContent(
                 .fillMaxSize()
                 .windowInsetsPadding(WindowInsets.safeDrawing),
         ) {
-            UiStateContent(
-                state = uiState,
-                // A document that failed to load may simply have been removed,
-                // but a read that blew up can be worth a second attempt - so the
-                // way out of the failure is a retry rather than a way back.
-                actionLabel = stringResource(Res.string.action_try_again),
-                onAction = onRetry,
-                modifier = Modifier.fillMaxSize(),
-            ) { details ->
-                BookDetailBody(
-                    details = details,
-                    onRead = onRead,
-                    onLongPress = { menuExpanded = true },
-                    transfer = transfer,
-                    transferActions = transferActions,
-                    canUpload = canUpload,
-                    modifier = Modifier.fillMaxSize(),
-                )
+            Column(modifier = Modifier.fillMaxSize()) {
+                BackBar(onBack = onBack) {
+                    // Only once there is a book for the actions to act on. One
+                    // book here, with room to show its actions outright rather
+                    // than revealing them on hover as a card does.
+                    if (currentDocument != null) {
+                        Box {
+                            LukiaIconButton(
+                                label = stringResource(Res.string.book_actions),
+                                onClick = { menuExpanded = true },
+                                variant = IconButtonVariant.Glass,
+                            ) { tint, glyph ->
+                                EllipsisGlyph(tint = tint, modifier = glyph)
+                            }
+
+                            BookActionsMenu(
+                                expanded = menuExpanded,
+                                isFavorite = currentDocument.isFavorite,
+                                onToggleFavorite = onToggleFavorite,
+                                onRefresh = onRefresh,
+                                onDelete = onDelete,
+                                onDismissRequest = { menuExpanded = false },
+                            )
+                        }
+                    }
+                }
+
+                UiStateContent(
+                    state = uiState,
+                    // A document that failed to load may simply have been removed,
+                    // but a read that blew up can be worth a second attempt - so the
+                    // way out of the failure is a retry rather than a way back.
+                    actionLabel = stringResource(Res.string.action_try_again),
+                    onAction = onRetry,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                ) { details ->
+                    BookDetailBody(
+                        details = details,
+                        onRead = onRead,
+                        onLongPress = { menuExpanded = true },
+                        transfer = transfer,
+                        transferActions = transferActions,
+                        canUpload = canUpload,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
             }
 
             // Tap-outside-to-dismiss for the actions menu, which is a
-            // non-focusable Popup and so cannot catch the press itself. Above
-            // the content but below both floating controls.
+            // non-focusable Popup and so cannot catch the press itself.
             ActionMenuScrim(
                 visible = menuExpanded,
                 onDismiss = { menuExpanded = false },
             )
 
-            // Floats above the scrolling content: this is the piece that most
-            // wants the glass treatment, since content passes underneath it.
-            FloatingBackButton(onBack = onBack)
-
-            // Mirrors the back control across the top of the screen. Always
-            // visible rather than hover-revealed as on a card: there is one book
-            // here and room to show its actions outright.
-            if (currentDocument != null) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(end = dimens.screenPadding, top = Space.lg),
-                ) {
-                    LukiaIconButton(
-                        label = stringResource(Res.string.book_actions),
-                        onClick = { menuExpanded = true },
-                        variant = IconButtonVariant.Glass,
-                    ) { tint, glyph ->
-                        EllipsisGlyph(tint = tint, modifier = glyph)
-                    }
-
-                    BookActionsMenu(
-                        expanded = menuExpanded,
-                        isFavorite = currentDocument.isFavorite,
-                        onToggleFavorite = onToggleFavorite,
-                        onRefresh = onRefresh,
-                        onDelete = onDelete,
-                        onDismissRequest = { menuExpanded = false },
-                    )
-                }
-            }
-
-            // By hand rather than through a Scaffold: this screen is full-bleed
-            // on purpose, and wrapping it in one to carry a notice would put the
-            // content back inside the insets it deliberately passes under.
+            // By hand rather than through a Scaffold, which would apply the
+            // insets this screen already applies itself a second time.
             SnackbarHost(
                 hostState = snackbarHostState,
                 modifier = Modifier.align(Alignment.BottomCenter),

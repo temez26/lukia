@@ -2,8 +2,10 @@ package io.lukia.features.stats.presentation.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
@@ -16,7 +18,7 @@ import androidx.compose.ui.Modifier
 import io.lukia.core.presentation.UiState
 import io.lukia.features.stats.domain.ReadingSummary
 import io.lukia.features.stats.presentation.StatsViewModel
-import io.lukia.shared.presentation.components.controls.FloatingBackButton
+import io.lukia.shared.presentation.components.controls.BackBar
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -54,10 +56,7 @@ fun StatsScreen(
     )
 }
 
-/**
- * Full-bleed like the settings and detail screens, so the page passes under the
- * floating back control rather than starting below a bar.
- */
+/** The way back held still in a bar, and the page scrolling under it - see `BackBar`. */
 @Composable
 internal fun StatsContent(
     summary: UiState<ReadingSummary>,
@@ -74,19 +73,21 @@ internal fun StatsContent(
         // The background stays outside the inset so colour still reaches the
         // screen edges; the content inside it does not. Resolves to zero on
         // desktop.
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .windowInsetsPadding(WindowInsets.safeDrawing),
         ) {
+            BackBar(onBack = onBack)
+
             StatsBody(
                 summary = summary,
                 actions = actions,
                 syncedWithAccount = syncedWithAccount,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
             )
-
-            FloatingBackButton(onBack = onBack)
         }
     }
 }

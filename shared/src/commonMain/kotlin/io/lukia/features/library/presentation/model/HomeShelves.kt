@@ -8,7 +8,8 @@ import androidx.compose.runtime.Immutable
  * A row scrolls sideways, so this is not about what fits - it is about where a
  * row stops being worth flicking through. Past a dozen covers the answer to
  * "where was I" is somewhere off the end of the screen, and the library tab is
- * the better way to find it. Each row's title leads through to exactly that.
+ * the better way to find it. Each row's title opens the whole of it - see
+ * [onShelf].
  */
 private const val ShelfLimit = 12
 
@@ -23,21 +24,6 @@ enum class HomeShelf {
     RecentlyOpened,
     Unread,
     RecentlyAdded,
-    ;
-
-    /**
-     * The library tab showing all of what this row is a sample of, as the query
-     * that narrows it there - so the row and the shelf behind its title cannot
-     * drift apart.
-     */
-    fun seeAll(): LibraryQuery = when (this) {
-        Favorites -> LibraryQuery(favouritesOnly = true)
-        // The whole library rather than the Reading shelf: a book finished last
-        // night was opened as recently as any.
-        RecentlyOpened -> LibraryQuery(sort = LibrarySort.LastRead)
-        Unread -> LibraryQuery(shelf = LibraryShelf.Unread, sort = LibrarySort.RecentlyAdded)
-        RecentlyAdded -> LibraryQuery(sort = LibrarySort.RecentlyAdded)
-    }
 }
 
 /** One row of the home screen: what it is called, and the books on it. */
@@ -83,7 +69,7 @@ fun List<LibraryBook>.homeLayout(limit: Int = ShelfLimit): HomeLayout {
     current?.let { shown += it.location }
 
     val rows = HomeShelf.entries.mapNotNull { shelf ->
-        val books = booksOn(shelf)
+        val books = onShelf(shelf)
             .filter { it.location !in shown }
             .take(limit)
         shown += books.map { it.location }
@@ -94,7 +80,12 @@ fun List<LibraryBook>.homeLayout(limit: Int = ShelfLimit): HomeLayout {
     return HomeLayout(current, rows)
 }
 
-private fun List<LibraryBook>.booksOn(shelf: HomeShelf): List<LibraryBook> = when (shelf) {
+/**
+ * Every book [shelf] holds, in the order its row shows them: the whole of what
+ * a home row samples, for the screen its title opens. Unlike the row, nothing
+ * is left out for appearing elsewhere on Home.
+ */
+fun List<LibraryBook>.onShelf(shelf: HomeShelf): List<LibraryBook> = when (shelf) {
     // Newest first: a favourite marked years ago is not what somebody
     // scrolling their home screen is looking for.
     HomeShelf.Favorites -> filter { it.document.isFavorite }.sortedFor(LibrarySort.RecentlyAdded)

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
@@ -26,7 +27,6 @@ import androidx.compose.ui.unit.sp
 import io.lukia.features.library.presentation.model.HomeMenu
 import io.lukia.features.library.presentation.model.HomeRow
 import io.lukia.features.library.presentation.model.HomeShelf
-import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.library.presentation.model.displayTitle
 import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.resources.Res
@@ -58,7 +58,7 @@ internal fun HomeShelfRow(
     actions: HomeBookActions,
     openMenu: HomeMenu?,
     onOpenMenuChange: (HomeMenu?) -> Unit,
-    onSeeAll: (LibraryQuery) -> Unit,
+    onOpenShelf: (HomeShelf) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val dimens = LocalLukiaDimens.current
@@ -66,7 +66,7 @@ internal fun HomeShelfRow(
     Column(modifier = modifier.fillMaxWidth()) {
         RowHeader(
             title = row.shelf.displayTitle(),
-            onSeeAll = { onSeeAll(row.shelf.seeAll()) },
+            onOpen = { onOpenShelf(row.shelf) },
             modifier = Modifier.padding(horizontal = dimens.screenPadding),
         )
 
@@ -87,14 +87,14 @@ internal fun HomeShelfRow(
             ) { book ->
                 HomeBookCard(
                     book = book,
-                    // Off the measurement the library grid sizes its cells
-                    // from, so both screens agree how big a book is.
-                    width = dimens.bookCellMinWidth,
                     actions = actions,
                     menuExpanded = openMenu == HomeMenu.Book(book.location),
                     onMenuExpandedChange = { expanded ->
                         onOpenMenuChange(HomeMenu.Book(book.location).takeIf { expanded })
                     },
+                    // Off the measurement the library grid sizes its cells
+                    // from, so both screens agree how big a book is.
+                    modifier = Modifier.width(dimens.bookCellMinWidth),
                 )
             }
         }
@@ -107,12 +107,12 @@ internal fun HomeShelfRow(
  * The title itself is the link, with a quiet chevron after it, rather than a
  * "See All" label beside it: one per row put the accent colour down the screen
  * six times, competing with the covers it was meant to lead past. The press
- * lands on the library tab already narrowed to this row - see [HomeShelf.seeAll].
+ * opens a screen holding the whole of what the row samples.
  */
 @Composable
 private fun RowHeader(
     title: String,
-    onSeeAll: () -> Unit,
+    onOpen: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -127,7 +127,7 @@ private fun RowHeader(
                 interactionSource = interactionSource,
                 shape = shape,
                 onClickLabel = stringResource(Res.string.home_see_all_shelf, title),
-                onClick = onSeeAll,
+                onClick = onOpen,
             )
             .padding(vertical = Space.xxs),
     ) {

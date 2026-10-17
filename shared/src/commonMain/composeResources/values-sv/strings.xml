@@ -191,6 +191,8 @@
     <string name="home_shelf_favorites">Favoriter</string>
     <string name="home_shelf_recently_opened">Nyligen öppnade</string>
     <string name="home_shelf_recently_added">Nyligen tillagda</string>
+    <string name="home_shelf_empty_title">Inga böcker här</string>
+    <string name="home_shelf_empty_message">Böcker på den här hyllan visas här.</string>
     <string name="home_shelf_unread">Olästa</string>
     <string name="search_browse_by_category">Bläddra efter ämne</string>
 
