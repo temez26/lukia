@@ -60,7 +60,7 @@ private class AndroidDocumentPages(
     /**
      * Whether the book has been given back.
      *
-     * Read inside [renderLock], which is what makes it worth having: pages queue
+     * Read inside [renderLock] by drawing, which is what makes it worth having: pages queue
      * as the reader scrolls, so one waiting its turn when the reader leaves the
      * book would otherwise reach a renderer closed while it waited. Leaving the
      * book with pages ahead still being drawn is the common way there.
@@ -127,28 +127,26 @@ private class AndroidDocumentPages(
      */
     private val content = lazy { AndroidPageContent(file) }
 
-    // Serialised with drawing for the reason drawing is serialised with itself:
-    // this opens its own handle on the same file, so a page read while another
-    // is drawn is contention over one document. The content keeps its own lock
-    // too, for the documents a conversion opens with no renderer to contend
-    // with.
+    // Not serialised with drawing. The content is a second library reading the
+    // file through its own handle - two readers of one file, as with [outline],
+    // rather than two users of one document - and it keeps its own lock against
+    // itself. Taking the renderer's lock as well made the first question asked
+    // of a book wait for that library to parse the whole file, and every page
+    // queued behind it: a 54 MB textbook stayed blank for a second and a half
+    // with its first pages ready to draw in a tenth of one.
     //
     // Off the main thread before touching [content], as drawing already is: the
-    // lock only suspends, but the first caller through here also opens the file
-    // a second time with a library that can read it, and a PDF parsed where it
-    // was asked for is a PDF parsed on the thread that draws.
+    // first caller through here opens the file a second time with a library
+    // that can read it, and a PDF parsed where it was asked for is a PDF parsed
+    // on the thread that draws.
     override suspend fun pageText(index: Int): List<PageGlyph>? =
         withContext(Dispatchers.IO) {
-            renderLock.withLock {
-                if (closed) null else content.value.pageText(index)
-            }
+            if (closed) null else content.value.pageText(index)
         }
 
     override suspend fun pageImages(index: Int): List<PageImage> =
         withContext(Dispatchers.IO) {
-            renderLock.withLock {
-                if (closed) emptyList() else content.value.pageImages(index)
-            }
+            if (closed) emptyList() else content.value.pageImages(index)
         }
 
     override suspend fun renderPage(index: Int, targetWidthPx: Int): ImageBitmap? =
