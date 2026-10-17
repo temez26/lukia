@@ -27,7 +27,9 @@ import io.lukia.core.presentation.formattedSize
 import io.lukia.core.presentation.languageName
 import io.lukia.core.presentation.publishedYear
 import io.lukia.features.library.application.BookDetails
+import io.lukia.features.library.presentation.model.isbnOrNull
 import io.lukia.features.library.presentation.model.lengthLabel
+import io.lukia.features.library.presentation.model.readableLocation
 import io.lukia.resources.Res
 import io.lukia.resources.book_about
 import io.lukia.resources.book_format
@@ -150,7 +152,7 @@ internal fun InformationCard(
         details.lengthLabel()?.let { add(stringResource(Res.string.book_length) to it) }
         add(stringResource(Res.string.book_format) to document.displayType())
         add(stringResource(Res.string.book_size) to document.formattedSize())
-        metadata?.identifier?.let { add(stringResource(Res.string.book_isbn) to it) }
+        metadata?.identifier?.let(::isbnOrNull)?.let { add(stringResource(Res.string.book_isbn) to it) }
         if (showServer || document.onServer) {
             add(stringResource(Res.string.book_info_sync) to stringResource(document.serverStanding()))
         }
@@ -173,7 +175,7 @@ internal fun InformationCard(
         }
 
         Text(
-            text = document.document.location,
+            text = readableLocation(document.document.location),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(start = Space.xs, top = Space.sm),
@@ -210,7 +212,11 @@ private fun InfoRow(label: String, value: String) {
             maxLines = 2,
             textAlign = TextAlign.End,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(start = InfoRowInset),
+            // Weighted as well, so a long value cannot squeeze its label out of
+            // the row: unweighted, it was measured first and took all of it.
+            modifier = Modifier
+                .weight(1f, fill = false)
+                .padding(start = InfoRowInset),
         )
     }
 }
