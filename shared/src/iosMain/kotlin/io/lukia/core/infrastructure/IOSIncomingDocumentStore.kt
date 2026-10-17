@@ -11,6 +11,7 @@ import platform.Foundation.NSApplicationSupportDirectory
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSSearchPathForDirectoriesInDomains
 import platform.Foundation.NSURL
+import platform.Foundation.NSUUID
 import platform.Foundation.NSUserDomainMask
 import platform.Foundation.writeToFile
 
@@ -23,8 +24,8 @@ import platform.Foundation.writeToFile
  * publishes - see `Info.plist` - and a reader looking into it should find the
  * books they put there, not a hashed-name copy of everything ever shared in.
  *
- * The location handed back is a `file://` URL, which is what the picker stores
- * too, so the analyser and the workspace meet the same shape either way.
+ * The location handed back is a `file://` URL, the same shape a scanned folder's
+ * books have, so the analyser and the workspace meet one shape either way.
  */
 @OptIn(ExperimentalForeignApi::class)
 class IOSIncomingDocumentStore : IncomingDocumentStore {
@@ -68,9 +69,41 @@ class IOSIncomingDocumentStore : IncomingDocumentStore {
         }
 
     /**
-     * Only inside this directory. A picked book is a `file://` URL to somewhere
-     * in the Files app, and without the check this would delete the reader's own
-     * copy of it rather than the app's.
+     * Takes over a file the document picker copied for the app, or returns null
+     * when it could not be moved.
+     *
+     * The picker's copy sits in `tmp/<bundle>-Inbox`, which the system empties
+     * within minutes, so a library row pointing there opens once at best. Moved
+     * rather than copied: the file is already the app's, in the same sandbox, so
+     * this is a rename however large the book.
+     */
+    fun adopt(url: NSURL): PickedDocument? {
+        val source = url.path ?: return null
+        val fileName = url.lastPathComponent ?: return null
+        val extension = url.pathExtension.orEmpty()
+        val target = "$directory/" +
+            IncomingDocumentNaming.pickedName(NSUUID().UUIDString(), extension)
+
+        fileManager.createDirectoryAtPath(
+            path = directory,
+            withIntermediateDirectories = true,
+            attributes = null,
+            error = null,
+        )
+
+        if (!fileManager.moveItemAtPath(source, toPath = target, error = null)) return null
+
+        return PickedDocument(
+            fileName = fileName,
+            extension = extension,
+            location = NSURL.fileURLWithPath(target).absoluteString.orEmpty(),
+        )
+    }
+
+    /**
+     * Only inside this directory. A book from a scanned folder is a `file://`
+     * URL to somewhere in the Files app, and without the check this would delete
+     * the reader's own copy of it rather than the app's.
      */
     override suspend fun discard(location: String) {
         withContext(Dispatchers.IO) {

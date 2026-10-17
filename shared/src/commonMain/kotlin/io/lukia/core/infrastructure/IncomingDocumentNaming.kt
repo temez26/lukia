@@ -13,21 +13,27 @@ package io.lukia.core.infrastructure
  */
 internal object IncomingDocumentNaming {
 
-    fun fileName(bytes: ByteArray, extension: String): String {
-        val suffix = extension.filter { it.isLetterOrDigit() }.lowercase().take(MAX_EXTENSION_LENGTH)
-        val prefix = "in-${fnv1aHex(bytes)}"
+    fun fileName(bytes: ByteArray, extension: String): String =
+        named("in-${fnv1aHex(bytes)}", extension)
 
-        return if (suffix.isEmpty()) prefix else "$prefix.$suffix"
-    }
+    /**
+     * A book the reader picked that arrived as a copy the system will not keep,
+     * named by [id] rather than its bytes so it can be moved into place without
+     * being read - see `IOSIncomingDocumentStore.adopt`.
+     */
+    fun pickedName(id: String, extension: String): String =
+        named("pick-${id.filter { it.isLetterOrDigit() }.lowercase()}", extension)
 
     /**
      * A book downloaded from the sync server, named by its content hash so the
      * name is known before the download starts - see `BookFileStore`. The
      * prefix keeps it from ever meeting a shared copy's name.
      */
-    fun serverBookName(contentHash: String, extension: String): String {
+    fun serverBookName(contentHash: String, extension: String): String =
+        named("srv-${contentHash.filter { it.isLetterOrDigit() }}", extension)
+
+    private fun named(prefix: String, extension: String): String {
         val suffix = extension.filter { it.isLetterOrDigit() }.lowercase().take(MAX_EXTENSION_LENGTH)
-        val prefix = "srv-${contentHash.filter { it.isLetterOrDigit() }}"
 
         return if (suffix.isEmpty()) prefix else "$prefix.$suffix"
     }
