@@ -89,7 +89,7 @@ internal fun SettingsBody(
     translatingActions: TranslatingActions,
     providerActions: ProviderActions,
     modifier: Modifier = Modifier,
-    topClearance: Dp = Clearance.topChrome,
+    topClearance: Dp = Space.sm,
     bottomClearance: Dp = Clearance.pageBottom,
     /**
      * What a group sits in. It has to contrast with whatever is behind this body,

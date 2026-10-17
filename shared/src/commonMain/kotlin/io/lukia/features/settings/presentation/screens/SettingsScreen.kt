@@ -2,8 +2,10 @@ package io.lukia.features.settings.presentation.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
@@ -22,7 +24,7 @@ import io.lukia.features.settings.presentation.TranslatingActions
 import io.lukia.features.settings.presentation.rememberProviderActions
 import io.lukia.features.settings.presentation.rememberTranslatingActions
 import io.lukia.features.translate.domain.settings.TranslationSettings
-import io.lukia.shared.presentation.components.controls.FloatingBackButton
+import io.lukia.shared.presentation.components.controls.BackBar
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -87,15 +89,16 @@ fun SettingsContent(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
     ) {
-        // Full-bleed like the detail screen, so content passes under the floating
-        // back button - which means window insets are applied by hand. The
+        // Window insets by hand, since this screen has no Scaffold. The
         // background above stays outside the inset so colour still reaches the
         // screen edges. Resolves to zero on desktop.
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .windowInsetsPadding(WindowInsets.safeDrawing),
         ) {
+            BackBar(onBack = onBack)
+
             SettingsBody(
                 settings = settings,
                 reader = reader,
@@ -105,13 +108,13 @@ fun SettingsContent(
                 onReaderChange = onReaderChange,
                 translatingActions = translatingActions,
                 providerActions = providerActions,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
                 diagnostics = diagnostics,
                 account = account,
                 initialArea = initialArea,
             )
-
-            FloatingBackButton(onBack = onBack)
         }
     }
 }

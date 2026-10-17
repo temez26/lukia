@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,19 +16,13 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.components.home.HomeBookCard
@@ -41,7 +34,7 @@ import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.resources.Res
 import io.lukia.resources.home_shelf_empty_message
 import io.lukia.resources.home_shelf_empty_title
-import io.lukia.shared.presentation.components.controls.BackButton
+import io.lukia.shared.presentation.components.controls.BackBar
 import io.lukia.shared.presentation.components.menu.ActionMenuScrim
 import io.lukia.shared.presentation.components.surface.EmptyState
 import io.lukia.shared.presentation.theme.Clearance
@@ -113,7 +106,7 @@ internal fun HomeShelfContent(
                 .windowInsetsPadding(WindowInsets.safeDrawing),
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
-                ShelfBar(title = title, onBack = onBack)
+                BackBar(onBack = onBack, title = title)
 
                 ShelfGrid(
                     books = books,
@@ -177,34 +170,5 @@ private fun ShelfGrid(
                 modifier = Modifier.animateItem(),
             )
         }
-    }
-}
-
-@Composable
-private fun ShelfBar(
-    title: String,
-    onBack: () -> Unit,
-) {
-    val dimens = LocalLukiaDimens.current
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = dimens.screenPadding, end = dimens.screenPadding, top = Space.lg, bottom = Space.sm),
-    ) {
-        BackButton(onBack = onBack)
-
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onBackground,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .padding(start = Space.lg)
-                .semantics { heading() },
-        )
     }
 }

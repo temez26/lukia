@@ -30,6 +30,13 @@ Body text and labels are the system sans in every palette.
   `readerChromeColorScheme`); the page itself is fixed per reader theme
   (`ReaderPageTheming`) and Sepia keeps its own chrome.
 
+## Pushed screens
+
+Screens pushed over the app (settings, statistics, book details, a home row's
+shelf) start with `BackBar`: the back button, an optional title and the screen's
+own actions, held still while the content scrolls below it. Don't float a back
+button over scrolling content; headings slide under it.
+
 ## Home screen
 
 The mobile home screen leads with the book being read

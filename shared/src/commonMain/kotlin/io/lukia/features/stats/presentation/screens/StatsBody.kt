@@ -68,7 +68,7 @@ internal fun StatsBody(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.verticalScroll(rememberScrollState()),
     ) {
-        Spacer(modifier = Modifier.height(Clearance.topChrome))
+        Spacer(modifier = Modifier.height(Space.sm))
 
         Column(
             modifier = Modifier

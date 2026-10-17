@@ -61,7 +61,7 @@ internal fun BookDetailBody(
     onRead: () -> Unit,
     onLongPress: () -> Unit,
     modifier: Modifier = Modifier,
-    topClearance: Dp = Clearance.topChrome,
+    topClearance: Dp = Space.sm,
     bottomClearance: Dp = Clearance.pageBottom,
     coverWidth: Dp = Dp.Unspecified,
     /**

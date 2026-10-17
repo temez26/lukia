@@ -104,9 +104,6 @@ object LukiaElevation {
  */
 object Clearance {
 
-    /** Under the floating back control, before a screen's first content. */
-    val topChrome: Dp = 68.dp
-
     /** Past the last group of a scrolling column. */
     val pageBottom: Dp = 32.dp
 
