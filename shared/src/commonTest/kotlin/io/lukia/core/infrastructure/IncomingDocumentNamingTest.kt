@@ -48,4 +48,12 @@ class IncomingDocumentNamingTest {
         assertTrue(!name.contains('.'), name)
         assertTrue(!name.contains('/'), name)
     }
+
+    /** A picked book's name never reaches outside the directory, whatever the id holds. */
+    @Test
+    fun aPickedNameKeepsOnlyTheIdsLettersAndDigits() {
+        val name = IncomingDocumentNaming.pickedName("../AB-12", "EPUB")
+
+        assertEquals("pick-ab12.epub", name)
+    }
 }

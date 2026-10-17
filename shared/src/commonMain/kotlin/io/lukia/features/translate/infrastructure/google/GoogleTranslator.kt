@@ -19,6 +19,8 @@ import io.lukia.features.translate.domain.Translator
 import io.lukia.features.translate.domain.settings.TranslationSettingsRepository
 import io.lukia.features.translate.infrastructure.translating
 import io.lukia.features.translate.infrastructure.translationTimeouts
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -51,8 +53,12 @@ private const val PUBLIC_ENDPOINT = "https://translate.googleapis.com/translate_
  * answering in a tenth of a second rather than in two seconds by a model.
  *
  * Which endpoint is used follows from whether the reader has given a key. Both
- * answer the same question and neither is told anything about the book, so
- * nothing above this line changes with the choice.
+ * answer the same question, so nothing above this line changes with the choice.
+ *
+ * The one thing either is told about the book is the language it declared. A
+ * word on its own is where guessing fails most - "Jeden" detected as Polish is
+ * "one", where the German book meant "every" - so the guess is left to Google
+ * only when the book said nothing.
  */
 class GoogleTranslator(
     private val client: HttpClient,
@@ -95,6 +101,7 @@ class GoogleTranslator(
                 CloudRequest(
                     q = listOf(request.text),
                     target = request.targetLanguage.tag,
+                    source = request.googleSourceLanguage(),
                     format = "text",
                 ),
             )
@@ -132,7 +139,7 @@ class GoogleTranslator(
         val response = client.get(PUBLIC_ENDPOINT) {
             translationTimeouts(settings.settings.value)
             parameter("client", "gtx")
-            parameter("sl", "auto")
+            parameter("sl", request.googleSourceLanguage() ?: AUTO_DETECT)
             parameter("tl", request.targetLanguage.tag)
             parameter("dt", "t")
             parameter("q", request.text)
@@ -163,10 +170,31 @@ class GoogleTranslator(
     }.getOrNull()
 }
 
+/**
+ * The book's language as Google names it, or null when the book declared none.
+ *
+ * The language without its region or script: Google takes `de` and turns down
+ * `de-AT`, and a tag with a subtag is the ordinary case in an EPUB. Written with
+ * an underscore by some producers, so that is cut at too.
+ */
+private fun TranslationRequest.googleSourceLanguage(): String? =
+    context.sourceLanguage
+        ?.trim()
+        ?.substringBefore('-')
+        ?.substringBefore('_')
+        ?.lowercase()
+        ?.takeIf { it.isNotEmpty() && it.all(Char::isLetter) }
+
+/** What the public endpoint is told when the book declared no language. */
+private const val AUTO_DETECT = "auto"
+
+/** [source] left out rather than sent as null when unknown, which is how Google detects. */
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 private data class CloudRequest(
     val q: List<String>,
     val target: String,
+    @EncodeDefault(EncodeDefault.Mode.NEVER) val source: String? = null,
     val format: String,
 )
 

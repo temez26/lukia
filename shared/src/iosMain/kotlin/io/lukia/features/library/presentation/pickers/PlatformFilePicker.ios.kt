@@ -3,6 +3,7 @@ package io.lukia.features.library.presentation.pickers
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import io.lukia.core.domain.document.PickedDocument
+import io.lukia.core.infrastructure.IOSIncomingDocumentStore
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSURL
 import platform.UIKit.UIDocumentPickerDelegateProtocol
@@ -32,59 +33,58 @@ private fun supportedContentTypes(): List<UTType> = listOfNotNull(
 
 @OptIn(ExperimentalForeignApi::class)
 @Composable
-actual fun rememberPlatformFilePicker(): PlatformFilePickerState {
-    return remember {
-        object : PlatformFilePickerState {
+actual fun rememberPlatformFilePicker(): PlatformFilePickerState = remember {
+    object : PlatformFilePickerState {
 
-            private var delegate: UIDocumentPickerDelegateProtocol? = null
+        // Its own rather than the one in the graph, which is bound as the
+        // shared contract - and the store holds nothing but a directory.
+        private val store = IOSIncomingDocumentStore()
 
-            override fun launch(
-                onPicked: (List<PickedDocument>) -> Unit,
-            ) {
-                val contentTypes = supportedContentTypes()
+        private var delegate: UIDocumentPickerDelegateProtocol? = null
 
-                val picker = UIDocumentPickerViewController(
-                    forOpeningContentTypes = contentTypes,
-                    asCopy = true,
-                )
+        override fun launch(
+            onPicked: (List<PickedDocument>) -> Unit,
+        ) {
+            val contentTypes = supportedContentTypes()
 
-                // A reader adding books has usually just saved several, and one
-                // trip through Files should be enough for all of them.
-                picker.allowsMultipleSelection = true
+            // A copy rather than the file in place, which would need a
+            // security-scoped bookmark kept for every book. The copy is
+            // temporary - see [IOSIncomingDocumentStore.adopt].
+            val picker = UIDocumentPickerViewController(
+                forOpeningContentTypes = contentTypes,
+                asCopy = true,
+            )
 
-                val pickerDelegate = object :
-                    NSObject(),
-                    UIDocumentPickerDelegateProtocol {
+            // A reader adding books has usually just saved several, and one
+            // trip through Files should be enough for all of them.
+            picker.allowsMultipleSelection = true
 
-                    override fun documentPicker(
-                        controller: UIDocumentPickerViewController,
-                        didPickDocumentsAtURLs: List<*>,
-                    ) {
-                        onPicked(
-                            didPickDocumentsAtURLs
-                                .filterIsInstance<NSURL>()
-                                .mapNotNull { url ->
-                                    PickedDocument(
-                                        fileName = url.lastPathComponent ?: return@mapNotNull null,
-                                        extension = url.pathExtension ?: "",
-                                        location = url.absoluteString ?: return@mapNotNull null,
-                                    )
-                                },
-                        )
-                    }
+            val pickerDelegate = object :
+                NSObject(),
+                UIDocumentPickerDelegateProtocol {
 
-                    override fun documentPickerWasCancelled(
-                        controller: UIDocumentPickerViewController,
-                    ) {
-                        onPicked(emptyList())
-                    }
+                override fun documentPicker(
+                    controller: UIDocumentPickerViewController,
+                    didPickDocumentsAtURLs: List<*>,
+                ) {
+                    onPicked(
+                        didPickDocumentsAtURLs
+                            .filterIsInstance<NSURL>()
+                            .mapNotNull(store::adopt),
+                    )
                 }
 
-                delegate = pickerDelegate
-                picker.delegate = pickerDelegate
-
-                presentOverApp(picker)
+                override fun documentPickerWasCancelled(
+                    controller: UIDocumentPickerViewController,
+                ) {
+                    onPicked(emptyList())
+                }
             }
+
+            delegate = pickerDelegate
+            picker.delegate = pickerDelegate
+
+            presentOverApp(picker)
         }
     }
 }
