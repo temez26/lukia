@@ -22,7 +22,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.presentation.UiState
+import io.lukia.core.presentation.bookTitle
 import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.library.application.BookDetails
 import io.lukia.features.library.presentation.BookDetailViewModel
@@ -52,6 +54,7 @@ fun BookDetailScreen(
     val message by viewModel.message.collectAsState()
     val transfer by viewModel.transfer.collectAsState()
     val canUpload by viewModel.canUpload.collectAsState()
+    val canRemoveFromServer by viewModel.canRemoveFromServer.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Read in the composition, shown from the effect - a string resource needs
@@ -86,6 +89,11 @@ fun BookDetailScreen(
             viewModel.deleteDocument()
             onBack()
         },
+        onRemoveFromServer = if (canRemoveFromServer) {
+            { viewModel.removeFromServer(onGone = onBack) }
+        } else {
+            null
+        },
     )
 }
 
@@ -107,6 +115,8 @@ fun BookDetailContent(
     transfer: BookTransfer = BookTransfer.Idle,
     transferActions: BookTransferActions = BookTransferActions(),
     canUpload: Boolean = false,
+    /** Takes the book out of the shared library, asked about first; null for anyone but the server's admin. */
+    onRemoveFromServer: (() -> Unit)? = null,
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
     // The actions chrome is only meaningful once there is a book behind it.
@@ -134,24 +144,15 @@ fun BookDetailContent(
                     // book here, with room to show its actions outright rather
                     // than revealing them on hover as a card does.
                     if (currentDocument != null) {
-                        Box {
-                            LukiaIconButton(
-                                label = stringResource(Res.string.book_actions),
-                                onClick = { menuExpanded = true },
-                                variant = IconButtonVariant.Glass,
-                            ) { tint, glyph ->
-                                EllipsisGlyph(tint = tint, modifier = glyph)
-                            }
-
-                            BookActionsMenu(
-                                expanded = menuExpanded,
-                                isFavorite = currentDocument.isFavorite,
-                                onToggleFavorite = onToggleFavorite,
-                                onRefresh = onRefresh,
-                                onDelete = onDelete,
-                                onDismissRequest = { menuExpanded = false },
-                            )
-                        }
+                        BookDetailActions(
+                            document = currentDocument,
+                            menuExpanded = menuExpanded,
+                            onMenuExpandedChange = { menuExpanded = it },
+                            onToggleFavorite = onToggleFavorite,
+                            onRefresh = onRefresh,
+                            onDelete = onDelete,
+                            onRemoveFromServer = onRemoveFromServer,
+                        )
                     }
                 }
 
@@ -192,5 +193,48 @@ fun BookDetailContent(
                 modifier = Modifier.align(Alignment.BottomCenter),
             )
         }
+    }
+}
+
+/** The book's actions button, the menu it opens, and the question Remove from server asks first. */
+@Composable
+private fun BookDetailActions(
+    document: DocumentInfo,
+    menuExpanded: Boolean,
+    onMenuExpandedChange: (Boolean) -> Unit,
+    onToggleFavorite: () -> Unit,
+    onRefresh: () -> Unit,
+    onDelete: () -> Unit,
+    /** Remove from server, once confirmed; the row shows only on a book the server has. */
+    onRemoveFromServer: (() -> Unit)? = null,
+) {
+    var confirmingRemoval by remember { mutableStateOf(false) }
+
+    Box {
+        LukiaIconButton(
+            label = stringResource(Res.string.book_actions),
+            onClick = { onMenuExpandedChange(true) },
+            variant = IconButtonVariant.Glass,
+        ) { tint, glyph ->
+            EllipsisGlyph(tint = tint, modifier = glyph)
+        }
+
+        BookActionsMenu(
+            expanded = menuExpanded,
+            isFavorite = document.isFavorite,
+            onToggleFavorite = onToggleFavorite,
+            onRefresh = onRefresh,
+            onDelete = onDelete,
+            onDismissRequest = { onMenuExpandedChange(false) },
+            onRemoveFromServer = onRemoveFromServer?.takeIf { document.onServer }?.let { { confirmingRemoval = true } },
+        )
+    }
+
+    if (confirmingRemoval && onRemoveFromServer != null) {
+        RemoveFromServerQuestion(
+            title = document.bookTitle(),
+            onConfirm = onRemoveFromServer,
+            onDismissRequest = { confirmingRemoval = false },
+        )
     }
 }

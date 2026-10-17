@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import io.lukia.core.domain.AppError
 import io.lukia.core.domain.AppErrorException
 import io.lukia.core.domain.document.ServerBookDownloader
+import io.lukia.core.domain.document.ServerBookRemover
 import io.lukia.core.domain.document.ServerBookUploader
 import io.lukia.core.domain.document.ShelfChanges
 import io.lukia.core.domain.runCatchingApp
@@ -37,6 +38,8 @@ class BookDetailViewModel(
     shelfChanges: ShelfChanges = ShelfChanges(),
     /** Sends a book on this device to the server. Defaulted for the same reason as [downloader]. */
     private val uploader: ServerBookUploader = ServerBookUploader.None,
+    /** Takes a server book out of the shared library, for the admin. Defaulted for the same reason. */
+    remover: ServerBookRemover = ServerBookRemover.None,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState<BookDetails>>(UiState.Loading)
@@ -50,13 +53,16 @@ class BookDetailViewModel(
     private val _message = MutableStateFlow<LibraryMessage?>(null)
     val message: StateFlow<LibraryMessage?> = _message.asStateFlow()
 
-    private val transfers = BookTransfers(downloader, uploader, viewModelScope)
+    private val transfers = BookTransfers(downloader, uploader, viewModelScope, remover)
 
     /** How far moving this book to or from the server has got - see [BookTransfers]. */
     val transfer: StateFlow<BookTransfer> = transfers.stateOf(location)
 
     /** Whether a book here could be added to the server: there is one, and the reader is signed in to it. */
     val canUpload: StateFlow<Boolean> = transfers.canUpload
+
+    /** Whether this book can be taken out of the shared library from here: true for the server's admin. */
+    val canRemoveFromServer: StateFlow<Boolean> = transfers.canRemove
 
     init {
         load()
@@ -140,6 +146,21 @@ class BookDetailViewModel(
      * The screen navigates away rather than reloading - there is nothing left
      * here to show once the entry is gone.
      */
+
+    /**
+     * [onGone] when the book has left this shelf with it - one never downloaded
+     * has nothing left here to show. A downloaded copy stays, and so does the page.
+     */
+    fun removeFromServer(onGone: () -> Unit) {
+        val wasOnlyOnServer = _uiState.value.dataOrNull?.document?.awaitsDownload == true
+
+        viewModelScope.launch {
+            runCatchingApp { transfers.remove(location) }
+                .onSuccess { if (wasOnlyOnServer) onGone() }
+                .onFailure { _message.value = LibraryMessage.Failed(it.toAppError()) }
+        }
+    }
+
     fun deleteDocument() {
         viewModelScope.launch {
             removeDocumentUseCase(location)

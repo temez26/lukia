@@ -21,10 +21,12 @@ import io.lukia.features.library.infrastructure.SqlServerShelf
 import io.lukia.features.library.infrastructure.importing.DesktopDocumentAnalyzer
 import io.lukia.features.sync.application.DownloadServerBookUseCase
 import io.lukia.features.sync.application.PullServerLibraryUseCase
+import io.lukia.features.sync.application.RemoveServerBookUseCase
 import io.lukia.features.sync.application.UploadServerBookUseCase
 import io.lukia.features.sync.infrastructure.ServerLibraryApi
 import io.lukia.features.sync.infrastructure.SyncCursors
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.nio.file.Files
@@ -138,6 +140,29 @@ class ServerLibrarySyncTest {
         assertEquals("notes.txt", left.document.fileName)
         assertTrue(left.exists)
         assertFalse(left.onServer)
+    }
+
+    /** The admin's Remove from server: this shelf follows at once, without waiting for a catch-up. */
+    @Test
+    fun theAdminRemovesABookFromTheServerAndTheShelfFollowsAtOnce() = runBlocking {
+        val remove = RemoveServerBookUseCase(session, api, shelf, changes)
+        signInAndUpload("moby-dick.epub" to epub, "notes.txt" to "Call me Ishmael.".toByteArray())
+        pull()
+        val books = library.getDocuments()
+        val epubAt = books.first { it.document.fileName == "moby-dick.epub" }.document.location
+        val notes = books.first { it.document.fileName == "notes.txt" }.document.location
+        download.download(notes) {}
+
+        assertTrue(remove.available.first())
+        remove.remove(epubAt)
+        remove.remove(notes)
+
+        val left = library.getDocuments().single()
+        assertEquals("notes.txt", left.document.fileName)
+        assertTrue(left.exists)
+        assertFalse(left.onServer)
+        val onServer = session.authorized { address, token -> api.changes(address, token, 0) }.items
+        assertTrue(onServer.all { it.deleted })
     }
 
     @Test

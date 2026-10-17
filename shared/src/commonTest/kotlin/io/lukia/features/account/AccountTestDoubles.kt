@@ -5,6 +5,7 @@ import io.lukia.features.account.domain.AccountProblem
 import io.lukia.features.account.domain.AccountStore
 import io.lukia.features.account.domain.AuthTokens
 import io.lukia.features.account.domain.LastSignIn
+import io.lukia.features.account.domain.Person
 import io.lukia.features.account.domain.ServerAccount
 import io.lukia.features.account.domain.ServerApi
 import io.lukia.features.account.domain.ServerInfo
@@ -45,6 +46,15 @@ internal class FakeServerApi(
         return issue()
     }
 
+    var signUps = 0
+
+    override suspend fun signUp(address: String, username: String, password: String): AuthTokens {
+        reachable()
+        if (info.signUpOpen != true) throw AccountFailure(AccountProblem.SignUpClosed)
+        signUps++
+        return issue()
+    }
+
     override suspend fun redeem(address: String, code: String, username: String, password: String): AuthTokens {
         reachable()
         if (code != "invite") throw AccountFailure(AccountProblem.InvalidInvite)
@@ -71,6 +81,44 @@ internal class FakeServerApi(
         if (accessToken !in validAccess) throw AccountFailure(AccountProblem.SessionExpired)
         if (onlyAdmin) throw AccountFailure(AccountProblem.LastAdmin)
         deleted++
+    }
+
+    var signUpSetting = false
+    var notAdmin = false
+
+    override suspend fun signUpOpen(address: String, accessToken: String): Boolean {
+        reachable()
+        if (notAdmin) throw AccountFailure(AccountProblem.NotAdmin)
+        return signUpSetting
+    }
+
+    override suspend fun setSignUpOpen(address: String, accessToken: String, open: Boolean): Boolean {
+        reachable()
+        if (notAdmin) throw AccountFailure(AccountProblem.NotAdmin)
+        signUpSetting = open
+        return signUpSetting
+    }
+
+    var people = emptyList<Person>()
+
+    override suspend fun people(address: String, accessToken: String): List<Person> {
+        reachable()
+        if (notAdmin) throw AccountFailure(AccountProblem.NotAdmin)
+        return people
+    }
+
+    val passwordResets = mutableListOf<Pair<String, String>>()
+
+    override suspend fun resetPassword(address: String, accessToken: String, username: String, password: String) {
+        reachable()
+        if (notAdmin) throw AccountFailure(AccountProblem.NotAdmin)
+        passwordResets += username to password
+    }
+
+    override suspend fun removeAccount(address: String, accessToken: String, username: String) {
+        reachable()
+        if (notAdmin) throw AccountFailure(AccountProblem.NotAdmin)
+        people = people.filterNot { it.username == username }
     }
 
     override suspend fun me(address: String, accessToken: String): Pair<String, Boolean> {

@@ -60,6 +60,7 @@ val libraryModule = module {
             get(),
             uploader = get(),
             downloader = get(),
+            remover = get(),
         )
     }
 
@@ -109,6 +110,6 @@ val libraryModule = module {
     }
 
     viewModel { (location: String) ->
-        BookDetailViewModel(location, get(), get(), get(), get(), get(), get(), get())
+        BookDetailViewModel(location, get(), get(), get(), get(), get(), get(), get(), remover = get())
     }
 }

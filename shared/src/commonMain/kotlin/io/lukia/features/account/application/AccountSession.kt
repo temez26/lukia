@@ -52,6 +52,10 @@ class AccountSession(
     suspend fun setUp(address: String, username: String, password: String) =
         complete(address, api.setUp(address, username.trim(), password))
 
+    /** Creates an ordinary account, on a server whose admin has new accounts open. */
+    suspend fun signUp(address: String, username: String, password: String) =
+        complete(address, api.signUp(address, username.trim(), password))
+
     suspend fun redeem(address: String, code: String, username: String, password: String) =
         complete(address, api.redeem(address, code.trim(), username.trim(), password))
 

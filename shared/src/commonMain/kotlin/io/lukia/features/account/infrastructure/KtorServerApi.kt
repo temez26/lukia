@@ -9,22 +9,28 @@ import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import io.lukia.api.AccountResponse
+import io.lukia.api.AccountSummary
 import io.lukia.api.ApiRoutes
 import io.lukia.api.Credentials
 import io.lukia.api.HealthResponse
+import io.lukia.api.NewPasswordRequest
 import io.lukia.api.RedeemInviteRequest
 import io.lukia.api.RefreshRequest
+import io.lukia.api.ServerSettings
 import io.lukia.api.TokenResponse
 import io.lukia.features.account.domain.AuthTokens
+import io.lukia.features.account.domain.Person
 import io.lukia.features.account.domain.ServerApi
 import io.lukia.features.account.domain.ServerInfo
 import kotlinx.serialization.json.Json
+import kotlin.time.Instant
 
 /**
  * The client the sync server is spoken to with.
@@ -69,13 +75,16 @@ class KtorServerApi(private val http: ServerHttp) : ServerApi {
 
     override suspend fun health(address: String): ServerInfo =
         http.call<HealthResponse> { get(address + ApiRoutes.Health) }
-            .let { ServerInfo(it.name, it.version, it.setupRequired) }
+            .let { ServerInfo(it.name, it.version, it.setupRequired, it.signUpOpen) }
 
     override suspend fun setUp(address: String, username: String, password: String) =
         tokens { postJson(address + ApiRoutes.Setup, Credentials(username, password)) }
 
     override suspend fun signIn(address: String, username: String, password: String) =
         tokens { postJson(address + ApiRoutes.SignIn, Credentials(username, password)) }
+
+    override suspend fun signUp(address: String, username: String, password: String) =
+        tokens { postJson(address + ApiRoutes.SignUp, Credentials(username, password)) }
 
     override suspend fun redeem(address: String, code: String, username: String, password: String) =
         tokens { postJson(address + ApiRoutes.Redeem, RedeemInviteRequest(code, username, password)) }
@@ -89,6 +98,36 @@ class KtorServerApi(private val http: ServerHttp) : ServerApi {
 
     override suspend fun deleteAccount(address: String, accessToken: String) {
         http.send { delete(address + ApiRoutes.Me) { bearerAuth(accessToken) } }
+    }
+
+    override suspend fun signUpOpen(address: String, accessToken: String): Boolean =
+        http.call<ServerSettings> { get(address + ApiRoutes.Settings) { bearerAuth(accessToken) } }.signUpOpen
+
+    override suspend fun setSignUpOpen(address: String, accessToken: String, open: Boolean): Boolean =
+        http.call<ServerSettings> {
+            put(address + ApiRoutes.Settings) {
+                contentType(ContentType.Application.Json)
+                setBody(ServerSettings(signUpOpen = open))
+                bearerAuth(accessToken)
+            }
+        }.signUpOpen
+
+    override suspend fun people(address: String, accessToken: String): List<Person> =
+        http.call<List<AccountSummary>> { get(address + ApiRoutes.Accounts) { bearerAuth(accessToken) } }
+            .map { it.toPerson() }
+
+    override suspend fun resetPassword(address: String, accessToken: String, username: String, password: String) {
+        http.send {
+            put(address + ApiRoutes.accountPassword(username)) {
+                contentType(ContentType.Application.Json)
+                setBody(NewPasswordRequest(password))
+                bearerAuth(accessToken)
+            }
+        }
+    }
+
+    override suspend fun removeAccount(address: String, accessToken: String, username: String) {
+        http.send { delete(address + ApiRoutes.account(username)) { bearerAuth(accessToken) } }
     }
 
     override suspend fun me(address: String, accessToken: String): Pair<String, Boolean> =
@@ -105,3 +144,14 @@ class KtorServerApi(private val http: ServerHttp) : ServerApi {
             AuthTokens(it.accessToken, it.accessExpiresAt, it.refreshToken, it.refreshExpiresAt)
         }
 }
+
+private fun AccountSummary.toPerson() = Person(
+    username = username,
+    isAdmin = isAdmin,
+    booksAdded = booksAdded,
+    booksStarted = booksStarted,
+    booksFinished = booksFinished,
+    favourites = favourites,
+    readingMs = readingMs,
+    lastReadAt = lastReadAt?.let(Instant::fromEpochMilliseconds),
+)

@@ -21,11 +21,11 @@ import io.lukia.resources.Res
 import io.lukia.resources.account_create
 import io.lukia.resources.account_create_admin
 import io.lukia.resources.account_invite_code
+import io.lukia.resources.account_invite_footnote
 import io.lukia.resources.account_password
 import io.lukia.resources.account_setup_footnote
 import io.lukia.resources.account_sign_in
 import io.lukia.resources.account_signing_in
-import io.lukia.resources.account_use_invite
 import io.lukia.resources.account_use_password
 import io.lukia.resources.account_username
 import io.lukia.resources.settings_address
@@ -61,12 +61,7 @@ internal fun SignInForm(form: AccountForm, busy: Boolean, last: LastSignIn?, act
     val submit = { if (canSubmit) actions.onSubmit(address, username, password, inviteCode) }
 
     Column(verticalArrangement = Arrangement.spacedBy(Space.lg)) {
-        if (form is AccountForm.SetUp) {
-            Text(
-                text = stringResource(Res.string.account_setup_footnote, form.serverName),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
+        FormIntro(form)
         LeadingField(
             label = stringResource(Res.string.settings_address),
             value = address,
@@ -103,6 +98,20 @@ internal fun SignInForm(form: AccountForm, busy: Boolean, last: LastSignIn?, act
 
         SignInActions(form = form, busy = busy, canSubmit = canSubmit, onSubmit = submit, actions = actions)
     }
+}
+
+/** What a form that is not plain signing in has to say first: whose admin is being made, or why a code is asked for. */
+@Composable
+private fun FormIntro(form: AccountForm) {
+    val text = when (form) {
+        is AccountForm.SetUp -> stringResource(Res.string.account_setup_footnote, form.serverName)
+        // Only reached from Create account, on a server too old to have sign-up:
+        // the reader asked for an account and has to be told why a code appeared.
+        AccountForm.Invite -> stringResource(Res.string.account_invite_footnote)
+        AccountForm.SignIn, AccountForm.SignUp -> return
+    }
+
+    Text(text = text, style = MaterialTheme.typography.bodyMedium)
 }
 
 /** A field with another after it, which the keyboard's action key moves on to. */
@@ -167,11 +176,10 @@ private fun SignInActions(
         SubmitButton(form = form, busy = busy, enabled = canSubmit, onClick = onSubmit)
 
         if (form !is AccountForm.SetUp) {
+            val creating = form != AccountForm.SignIn
             LukiaButton(
-                label = stringResource(
-                    if (form == AccountForm.Invite) Res.string.account_use_password else Res.string.account_use_invite,
-                ),
-                onClick = { actions.onUseInvite(form != AccountForm.Invite) },
+                label = stringResource(if (creating) Res.string.account_use_password else Res.string.account_create),
+                onClick = { actions.onCreateAccount(!creating) },
                 variant = ButtonVariant.Ghost,
                 enabled = !busy,
             )
@@ -187,7 +195,7 @@ private fun SubmitButton(form: AccountForm, busy: Boolean, enabled: Boolean, onC
             when {
                 busy -> Res.string.account_signing_in
                 form is AccountForm.SetUp -> Res.string.account_create_admin
-                form == AccountForm.Invite -> Res.string.account_create
+                form == AccountForm.SignUp || form == AccountForm.Invite -> Res.string.account_create
                 else -> Res.string.account_sign_in
             },
         ),

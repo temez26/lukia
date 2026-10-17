@@ -28,6 +28,10 @@
     <string name="menu_sync_with_server">Sincronizza con il server</string>
     <string name="menu_refresh_details">Aggiorna i dettagli</string>
     <string name="menu_delete_from_library">Elimina dalla libreria</string>
+    <string name="menu_remove_from_server">Rimuovi dal server</string>
+    <string name="book_remove_from_server_title">Rimuovere dal server?</string>
+    <string name="book_remove_from_server_message">%1$s esce dalla libreria condivisa per tutti. I dispositivi che non l’hanno mai scaricato lo tolgono alla prossima sincronizzazione; una copia scaricata resta un libro sul suo dispositivo.</string>
+    <string name="book_remove_from_server_confirm">Rimuovi</string>
     <string name="library_details_refreshed">Dettagli aggiornati</string>
     <plurals name="library_already_in_library">
         <item quantity="one">Già nella tua libreria</item>
@@ -519,7 +523,7 @@
     <string name="account_create">Crea account</string>
     <string name="account_create_admin">Crea account amministratore</string>
     <string name="account_setup_footnote">%1$s non ha ancora account. Quello che crei ora ne sarà l’amministratore.</string>
-    <string name="account_use_invite">Ho un codice di invito</string>
+    <string name="account_invite_footnote">Questo server crea i nuovi account con un codice di invito. Chiedine uno a chi lo gestisce.</string>
     <string name="account_use_password">Ho già un account</string>
     <string name="account_signed_in">Accesso a %1$s come %2$s.</string>
     <string name="account_signed_in_admin">Accesso a %1$s come %2$s, il suo amministratore.</string>
@@ -539,6 +543,46 @@
     <string name="account_problem_invalid_password">Una password deve avere almeno 10 caratteri.</string>
     <string name="account_problem_username_taken">Questo nome utente è già in uso.</string>
     <string name="account_problem_invalid_invite">Questo codice di invito è sconosciuto, già usato o scaduto.</string>
+    <string name="account_problem_sign_up_closed">Questo server non accetta nuovi account. Chiedi a chi lo gestisce di aprirli.</string>
+    <string name="account_problem_not_admin">Solo l’amministratore di questo server può farlo.</string>
+    <string name="account_admin_title">Amministrazione</string>
+    <string name="account_admin_allow_sign_up">Consenti nuovi account</string>
+    <string name="account_admin_allow_sign_up_detail">Finché è attivo, chiunque raggiunga questo server può creare un account.</string>
+    <string name="account_person_reset_password">Reimposta password</string>
+    <string name="account_person_remove">Rimuovi account</string>
+    <string name="account_new_password">Nuova password</string>
+    <string name="account_reset_title">Nuova password per %1$s</string>
+    <string name="account_reset_message">La sessione di %1$s viene chiusa su tutti i dispositivi e d’ora in poi si accede con questa password. Comunica la nuova password.</string>
+    <string name="account_reset_done">La password di %1$s è stata cambiata. Comunica la nuova password.</string>
+    <string name="account_remove_title">Rimuovere %1$s?</string>
+    <string name="account_remove_message">%1$s non potrà più accedere, e la posizione in ogni libro, i preferiti e le sessioni di lettura vengono rimossi dal server. I libri aggiunti restano nella libreria.</string>
+    <string name="account_remove_confirm">Rimuovi</string>
+    <string name="account_people_title">Persone</string>
+    <string name="account_person_admin">Admin</string>
+    <plurals name="account_person_books_added">
+        <item quantity="one">%1$d libro aggiunto</item>
+        <item quantity="other">%1$d libri aggiunti</item>
+    </plurals>
+    <plurals name="account_person_started">
+        <item quantity="one">%1$d iniziato</item>
+        <item quantity="other">%1$d iniziati</item>
+    </plurals>
+    <plurals name="account_person_finished">
+        <item quantity="one">%1$d finito</item>
+        <item quantity="other">%1$d finiti</item>
+    </plurals>
+    <plurals name="account_person_favourites">
+        <item quantity="one">%1$d preferito</item>
+        <item quantity="other">%1$d preferiti</item>
+    </plurals>
+    <string name="account_person_read_for">Tempo di lettura: %1$s</string>
+    <string name="account_person_no_reading_time">Ancora nessun tempo di lettura</string>
+    <string name="account_person_last_read_today">Ultima lettura oggi</string>
+    <string name="account_person_last_read_yesterday">Ultima lettura ieri</string>
+    <plurals name="account_person_last_read_days">
+        <item quantity="one">Ultima lettura %1$d giorno fa</item>
+        <item quantity="other">Ultima lettura %1$d giorni fa</item>
+    </plurals>
     <string name="account_problem_already_set_up">Qualcuno ha appena configurato questo server. Accedi invece.</string>
     <string name="account_problem_session_expired">Il tuo accesso è scaduto. Accedi di nuovo.</string>
     <string name="account_problem_server_failed">Il server non è riuscito a farlo. Riprova più tardi.</string>

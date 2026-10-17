@@ -54,3 +54,24 @@ SELECT last_insert_rowid();
 -- inside the same transaction, which is what keeps it on the same connection.
 changes:
 SELECT changes();
+
+-- Every account with what it has done here, for the admin's list of people.
+-- "Finished" is the app's own rule (`ReadingProgress.isFinished`): on the last
+-- page. Books added count only while they are still in the library.
+selectWithUsage:
+SELECT
+    a.username,
+    a.isAdmin,
+    a.createdAt,
+    (SELECT COUNT(*) FROM book b WHERE b.addedBy = a.id AND b.deleted = 0) AS booksAdded,
+    (SELECT COUNT(*) FROM book_state s WHERE s.accountId = a.id AND s.pageIndex IS NOT NULL) AS booksStarted,
+    (
+        SELECT COUNT(*) FROM book_state s
+        WHERE s.accountId = a.id AND s.pageCount > 0 AND s.pageIndex + 1 >= s.pageCount
+    ) AS booksFinished,
+    (SELECT COUNT(*) FROM book_state s WHERE s.accountId = a.id AND s.isFavorite = 1) AS favourites,
+    (SELECT COALESCE(SUM(r.durationMs), 0) FROM reading_session r WHERE r.accountId = a.id) AS readingMs,
+    (SELECT COUNT(*) FROM reading_session r WHERE r.accountId = a.id) AS sessions,
+    (SELECT MAX(r.startedAt + r.durationMs) FROM reading_session r WHERE r.accountId = a.id) AS lastReadAt
+FROM account a
+ORDER BY a.username;

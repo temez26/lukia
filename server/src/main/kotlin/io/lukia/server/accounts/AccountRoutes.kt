@@ -16,9 +16,11 @@ import io.lukia.api.Credentials
 import io.lukia.api.NewPasswordRequest
 import io.lukia.api.RedeemInviteRequest
 import io.lukia.api.RefreshRequest
+import io.lukia.api.ServerSettings
 import io.lukia.server.http.blocking
+import io.lukia.server.settings.ServerSettingsService
 
-fun Route.accountRoutes(accounts: AccountService, tokens: TokenService) {
+fun Route.accountRoutes(accounts: AccountService, tokens: TokenService, settings: ServerSettingsService) {
     post(ApiRoutes.Setup) {
         val credentials = call.receive<Credentials>()
         call.respond(HttpStatusCode.Created, blocking { accounts.setup(credentials) })
@@ -40,6 +42,12 @@ fun Route.accountRoutes(accounts: AccountService, tokens: TokenService) {
         call.respond(HttpStatusCode.Created, blocking { accounts.redeem(request) })
     }
 
+    post(ApiRoutes.SignUp) {
+        val credentials = call.receive<Credentials>()
+        val address = call.request.origin.remoteAddress
+        call.respond(HttpStatusCode.Created, blocking { accounts.signUp(credentials, address) })
+    }
+
     signedIn(tokens) {
         post(ApiRoutes.SignOut) {
             blocking { tokens.revoke(call.account.familyId) }
@@ -55,17 +63,45 @@ fun Route.accountRoutes(accounts: AccountService, tokens: TokenService) {
             call.respond(HttpStatusCode.NoContent)
         }
 
-        post(ApiRoutes.Invites) {
-            call.requireAdmin()
-            call.respond(HttpStatusCode.Created, blocking { accounts.createInvite(call.account) })
-        }
+        adminRoutes(accounts, settings)
+    }
+}
 
-        put(ApiRoutes.AccountPassword) {
-            call.requireAdmin()
-            val username = call.parameters.getOrFail("username")
-            val request = call.receive<NewPasswordRequest>()
-            blocking { accounts.resetPassword(username, request.password) }
-            call.respond(HttpStatusCode.NoContent)
-        }
+/** Everything only the admin may do; each route checks, since the token alone says nothing about rank. */
+private fun Route.adminRoutes(accounts: AccountService, settings: ServerSettingsService) {
+    post(ApiRoutes.Invites) {
+        call.requireAdmin()
+        call.respond(HttpStatusCode.Created, blocking { accounts.createInvite(call.account) })
+    }
+
+    get(ApiRoutes.Settings) {
+        call.requireAdmin()
+        call.respond(blocking { settings.current() })
+    }
+
+    put(ApiRoutes.Settings) {
+        call.requireAdmin()
+        val changed = call.receive<ServerSettings>()
+        call.respond(blocking { settings.update(changed) })
+    }
+
+    get(ApiRoutes.Accounts) {
+        call.requireAdmin()
+        call.respond(blocking { accounts.list() })
+    }
+
+    delete(ApiRoutes.Account) {
+        call.requireAdmin()
+        val username = call.parameters.getOrFail("username")
+        blocking { accounts.remove(username) }
+        call.respond(HttpStatusCode.NoContent)
+    }
+
+    put(ApiRoutes.AccountPassword) {
+        call.requireAdmin()
+        val username = call.parameters.getOrFail("username")
+        val request = call.receive<NewPasswordRequest>()
+        blocking { accounts.resetPassword(username, request.password) }
+        call.respond(HttpStatusCode.NoContent)
     }
 }

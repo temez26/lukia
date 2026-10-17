@@ -51,6 +51,8 @@ class ServerHttp(val client: HttpClient) {
         ApiErrorCodes.InvalidPassword -> AccountProblem.InvalidPassword
         ApiErrorCodes.UsernameTaken -> AccountProblem.UsernameTaken
         ApiErrorCodes.InvalidInvite -> AccountProblem.InvalidInvite
+        ApiErrorCodes.SignUpClosed -> AccountProblem.SignUpClosed
+        ApiErrorCodes.Forbidden -> AccountProblem.NotAdmin
         ApiErrorCodes.SetupDone -> AccountProblem.AlreadySetUp
         ApiErrorCodes.LastAdmin -> AccountProblem.LastAdmin
         else -> AccountProblem.ServerFailed

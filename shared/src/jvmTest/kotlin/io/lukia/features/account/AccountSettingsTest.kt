@@ -120,22 +120,43 @@ class AccountSettingsTest {
 
         onNodeWithText("Home shelf has no accounts yet. The one you create now is its admin.").assertExists()
         onNodeWithText("Create admin account").assertExists()
-        // There is nobody to have invited anyone yet.
-        onNodeWithText("I have an invite code").assertDoesNotExist()
+        // There is nobody else to make an account for yet.
+        onNodeWithText("Create account").assertDoesNotExist()
     }
 
     @Test
-    fun anInviteCanBeUsedInsteadOfAPassword() = runComposeUiTest {
+    fun anAccountCanBeCreatedInsteadOfSigningIn() = runComposeUiTest {
         var switchedTo: Boolean? = null
         show(
             AccountUiState(),
-            AccountActions(onUseInvite = { switchedTo = it }),
+            AccountActions(onCreateAccount = { switchedTo = it }),
         )
 
         onNodeWithText("Sign in").assertExists()
-        onNodeWithText("I have an invite code").performClick()
+        onNodeWithText("Create account").performClick()
 
         assertEquals(true, switchedTo)
+    }
+
+    @Test
+    fun creatingAnAccountOffersTheWayBackToSigningIn() = runComposeUiTest {
+        var switchedTo: Boolean? = null
+        show(AccountUiState(form = AccountForm.SignUp), AccountActions(onCreateAccount = { switchedTo = it }))
+
+        onNodeWithText("Create account").assertExists()
+        onNodeWithText("Invite code").assertDoesNotExist()
+        onNodeWithText("I already have an account").performClick()
+
+        assertEquals(false, switchedTo)
+    }
+
+    /** Reached only from Create account on a server too old for sign-up: the code has to be explained. */
+    @Test
+    fun anInviteFormSaysWhyItAsksForACode() = runComposeUiTest {
+        show(AccountUiState(form = AccountForm.Invite))
+
+        onNodeWithText("Invite code").assertExists()
+        onNodeWithText("This server takes new accounts by invite code. Ask whoever runs it for one.").assertExists()
     }
 
     @Test
@@ -170,6 +191,6 @@ class AccountSettingsTest {
         show(AccountUiState(busy = true))
 
         onNodeWithText("Signing in…").assertIsNotEnabled()
-        onNodeWithText("I have an invite code").assertIsNotEnabled()
+        onNodeWithText("Create account").assertIsNotEnabled()
     }
 }

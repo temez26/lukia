@@ -6,6 +6,7 @@ import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.PickedDocument
 import io.lukia.core.domain.document.PickedFolder
 import io.lukia.core.domain.document.ServerBookDownloader
+import io.lukia.core.domain.document.ServerBookRemover
 import io.lukia.core.domain.document.ServerBookUploader
 import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.core.domain.reading.ReadingProgressRepository
@@ -28,13 +29,11 @@ import io.lukia.features.library.presentation.model.LibraryBook
 import io.lukia.features.library.presentation.model.LibraryFacets
 import io.lukia.features.library.presentation.model.LibraryMessage
 import io.lukia.features.library.presentation.model.LibraryQuery
-import io.lukia.features.library.presentation.model.LibraryUpkeep
 import io.lukia.features.library.presentation.model.LoadedShelf
 import io.lukia.features.library.presentation.model.asLibrary
 import io.lukia.features.library.presentation.model.editedIfLoaded
 import io.lukia.features.library.presentation.model.facets
 import io.lukia.features.library.presentation.model.matching
-import io.lukia.features.library.presentation.model.upkeep
 import io.lukia.features.library.presentation.sessions.BookTransfers
 import io.lukia.features.library.presentation.sessions.LibraryImportSession
 import io.lukia.features.library.presentation.sessions.LibrarySearchSession
@@ -74,13 +73,12 @@ class LibraryViewModel(
     internal val uploader: ServerBookUploader = ServerBookUploader.None,
     /** Fetches server books onto the device, for the panel's download row. */
     downloader: ServerBookDownloader = ServerBookDownloader { _, _ -> },
+    /** Takes server books out of the shared library, for the server's admin. */
+    remover: ServerBookRemover = ServerBookRemover.None,
 ) : ViewModel() {
 
-    /** Books moving to or from the server from the panel - see [BookTransfers]. */
-    internal val transfers = BookTransfers(downloader, uploader, viewModelScope)
-
-    /** Whether selected books could be added to the server: true while signed in to one. */
-    val canUpload: StateFlow<Boolean> get() = transfers.canUpload
+    /** Books moving to or from the server, and leaving it - see [BookTransfers]. */
+    internal val transfers = BookTransfers(downloader, uploader, viewModelScope, remover)
 
     /**
      * Selecting several books at once. Held apart rather than added to this -
@@ -351,6 +349,11 @@ class LibraryViewModel(
         }
     }
 
+    /** The shelf follows by itself - see [ServerBookRemover] - so there is nothing to patch here. */
+    fun removeFromServer(document: DocumentInfo) {
+        viewModelScope.launch { reported { transfers.remove(document.document.location) } }
+    }
+
     /**
      * Runs a write to the library and says whether it happened, telling the
      * reader when it did not - a store that cannot be written is not a reason
@@ -365,14 +368,6 @@ class LibraryViewModel(
     private fun updateLoadedDocuments(transform: (List<DocumentInfo>) -> List<DocumentInfo>) {
         shelf.update { it.copy(documents = it.documents.editedIfLoaded(transform)) }
     }
-
-    /**
-     * What is worth tidying on the shelf as it is currently narrowed, so that
-     * the menu can say how much there is before anyone presses anything.
-     */
-    val upkeep: StateFlow<LibraryUpkeep> = books
-        .map { it.upkeep() }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LibraryUpkeep.None)
 
     /**
      * The library is read again rather than patched after a bulk action.

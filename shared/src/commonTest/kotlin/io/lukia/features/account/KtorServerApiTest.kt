@@ -8,12 +8,14 @@ import io.ktor.client.engine.mock.toByteArray
 import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.HttpResponseData
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.lukia.api.ApiRoutes
 import io.lukia.features.account.domain.AccountFailure
 import io.lukia.features.account.domain.AccountProblem
 import io.lukia.features.account.domain.AuthTokens
+import io.lukia.features.account.domain.Person
 import io.lukia.features.account.domain.ServerInfo
 import io.lukia.features.account.infrastructure.KtorServerApi
 import io.lukia.features.account.infrastructure.serverHttpClient
@@ -22,6 +24,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
+import kotlin.time.Instant
 
 /** The app's half of the wire: what it sends, and what it makes of each answer the server can give. */
 class KtorServerApiTest {
@@ -31,6 +34,44 @@ class KtorServerApiTest {
         val api = apiAnswering { json("""{"name":"Home shelf","version":"1.2.0","setupRequired":true,"motd":"hi"}""") }
 
         assertEquals(ServerInfo("Home shelf", "1.2.0", setupRequired = true), api.health(HomeServer))
+    }
+
+    @Test
+    fun aNewerServerSaysWhetherItTakesNewAccounts() = runTest {
+        val api = apiAnswering {
+            json("""{"name":"Home shelf","version":"1.5.0","setupRequired":false,"signUpOpen":true}""")
+        }
+
+        assertEquals(true, api.health(HomeServer).signUpOpen)
+    }
+
+    @Test
+    fun peopleAreReadWithTheirUsage() = runTest {
+        val api = apiAnswering {
+            json(
+                """[{"username":"bob","isAdmin":false,"createdAt":1,"booksAdded":2,"booksStarted":3,""" +
+                    """"booksFinished":1,"favourites":4,"readingMs":60000,"sessions":5,"lastReadAt":1000}]""",
+            )
+        }
+
+        assertEquals(
+            listOf(Person("bob", false, 2, 3, 1, 4, 60_000, Instant.fromEpochMilliseconds(1_000))),
+            api.people(HomeServer, "token"),
+        )
+    }
+
+    @Test
+    fun anAccountIsRemovedByName() = runTest {
+        var sent: HttpRequestData? = null
+        val api = apiAnswering { request ->
+            sent = request
+            respond("", HttpStatusCode.NoContent)
+        }
+
+        api.removeAccount(HomeServer, "token", "bob")
+
+        assertEquals(HttpMethod.Delete, sent?.method)
+        assertEquals("$HomeServer${ApiRoutes.account("bob")}", sent?.url.toString())
     }
 
     @Test
@@ -56,6 +97,8 @@ class KtorServerApiTest {
             "too_many_attempts" to AccountProblem.TooManyAttempts,
             "username_taken" to AccountProblem.UsernameTaken,
             "invalid_invite" to AccountProblem.InvalidInvite,
+            "sign_up_closed" to AccountProblem.SignUpClosed,
+            "forbidden" to AccountProblem.NotAdmin,
             "setup_done" to AccountProblem.AlreadySetUp,
             "unauthorized" to AccountProblem.SessionExpired,
             "something_new" to AccountProblem.ServerFailed,

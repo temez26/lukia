@@ -21,11 +21,25 @@ object ApiRoutes {
     /** Creates an account with an invite code, signed in. */
     const val Redeem = "$Prefix/auth/redeem"
 
+    /** Creates an ordinary account, signed in, while the admin has new accounts open. */
+    const val SignUp = "$Prefix/auth/signup"
+
+    /** Admin only: GET or PUT the server's [ServerSettings]. */
+    const val Settings = "$Prefix/settings"
+
     /** Admin only: makes an invite code. */
     const val Invites = "$Prefix/invites"
 
     /** The signed-in account: GET to see it, DELETE to delete it. */
     const val Me = "$Prefix/me"
+
+    /** Admin only: GET every account with its usage, as [AccountSummary]s. */
+    const val Accounts = "$Prefix/accounts"
+
+    /** DELETE, admin only: removes the account named by `{username}`. The books it added stay. */
+    const val Account = "$Prefix/accounts/{username}"
+
+    fun account(username: String) = Account.replace("{username}", username)
 
     /** Admin only: sets the password of the account named by `{username}`. */
     const val AccountPassword = "$Prefix/accounts/{username}/password"

@@ -21,7 +21,10 @@ sealed interface AccountForm {
     /** An account that exists. */
     data object SignIn : AccountForm
 
-    /** A new account, with a code the admin handed out. */
+    /** A new account, on a server whose admin lets anyone create one. */
+    data object SignUp : AccountForm
+
+    /** A new account, with a code the admin handed out - for a server older than [SignUp]. */
     data object Invite : AccountForm
 
     /** The first account on a server nobody has set up yet, named [serverName]; it becomes the admin. */
@@ -63,16 +66,21 @@ class AccountViewModel(private val session: AccountSession) : ViewModel() {
     /** The server and username to fill the form with, from the last sign-in on this device. */
     val lastSignIn: LastSignIn? = session.lastSignIn()
 
-    /** Switches between signing in and creating an account with an invite. */
-    fun useInvite(withInvite: Boolean) {
-        form.value = if (withInvite) AccountForm.Invite else AccountForm.SignIn
+    /** Switches between signing in and creating an account. */
+    fun createAccount(creating: Boolean) {
+        form.value = if (creating) AccountForm.SignUp else AccountForm.SignIn
         problem.value = null
     }
 
     /**
-     * Sends the form: signs in, redeems the invite, or creates the admin -
+     * Sends the form: signs in, creates the account, or creates the admin -
      * whichever it is for. A server found to have no accounts yet is not set up
      * unasked: the form says so and turns into the one that does it.
+     *
+     * Creating an account depends on the server, which is only asked now: one
+     * whose admin has new accounts closed is said to be closed before anything
+     * is sent, and one too old to have sign-up turns the form into its invite
+     * form, since an invite code is the only way such a server takes anybody.
      */
     fun submit(address: String, username: String, password: String, inviteCode: String = "") = perform {
         val (checked, server) = session.check(address)
@@ -84,6 +92,15 @@ class AccountViewModel(private val session: AccountSession) : ViewModel() {
                 return@perform
             }
             server.setupRequired -> session.setUp(checked, username, password)
+            current == AccountForm.SignUp && server.signUpOpen == null -> {
+                form.value = AccountForm.Invite
+                return@perform
+            }
+            current == AccountForm.SignUp && server.signUpOpen == false -> {
+                problem.value = AccountProblem.SignUpClosed
+                return@perform
+            }
+            current == AccountForm.SignUp -> session.signUp(checked, username, password)
             current == AccountForm.Invite -> session.redeem(checked, inviteCode, username, password)
             else -> session.signIn(checked, username, password)
         }

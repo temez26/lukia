@@ -28,6 +28,10 @@
     <string name="menu_sync_with_server">Synkroniser med serveren</string>
     <string name="menu_refresh_details">Opdater oplysninger</string>
     <string name="menu_delete_from_library">Slet fra biblioteket</string>
+    <string name="menu_remove_from_server">Fjern fra serveren</string>
+    <string name="book_remove_from_server_title">Fjern fra serveren?</string>
+    <string name="book_remove_from_server_message">%1$s forsvinder fra det delte bibliotek for alle. Enheder, der aldrig har hentet den, fjerner den ved næste synkronisering; en hentet kopi bliver som en bog på sin enhed.</string>
+    <string name="book_remove_from_server_confirm">Fjern</string>
     <string name="library_details_refreshed">Oplysningerne opdateret</string>
     <plurals name="library_already_in_library">
         <item quantity="one">Allerede i dit bibliotek</item>
@@ -519,7 +523,7 @@
     <string name="account_create">Opret konto</string>
     <string name="account_create_admin">Opret administratorkonto</string>
     <string name="account_setup_footnote">%1$s har ingen konti endnu. Den, du opretter nu, bliver dens administrator.</string>
-    <string name="account_use_invite">Jeg har en invitationskode</string>
+    <string name="account_invite_footnote">Denne server opretter nye konti med en invitationskode. Bed den, der driver den, om en.</string>
     <string name="account_use_password">Jeg har allerede en konto</string>
     <string name="account_signed_in">Logget ind på %1$s som %2$s.</string>
     <string name="account_signed_in_admin">Logget ind på %1$s som %2$s, dens administrator.</string>
@@ -539,6 +543,46 @@
     <string name="account_problem_invalid_password">En adgangskode skal være på mindst 10 tegn.</string>
     <string name="account_problem_username_taken">Det brugernavn er optaget.</string>
     <string name="account_problem_invalid_invite">Den invitationskode er ukendt, brugt eller udløbet.</string>
+    <string name="account_problem_sign_up_closed">Denne server tager ikke imod nye konti. Bed den, der driver den, om at åbne for dem.</string>
+    <string name="account_problem_not_admin">Kun serverens administrator kan gøre det.</string>
+    <string name="account_admin_title">Administration</string>
+    <string name="account_admin_allow_sign_up">Tillad nye konti</string>
+    <string name="account_admin_allow_sign_up_detail">Mens dette er slået til, kan alle, der kan nå denne server, oprette en konto.</string>
+    <string name="account_person_reset_password">Nulstil adgangskode</string>
+    <string name="account_person_remove">Fjern konto</string>
+    <string name="account_new_password">Ny adgangskode</string>
+    <string name="account_reset_title">Ny adgangskode til %1$s</string>
+    <string name="account_reset_message">%1$s logges ud på alle enheder og logger fremover ind med denne adgangskode. Giv den nye adgangskode videre.</string>
+    <string name="account_reset_done">Adgangskoden til %1$s er ændret. Giv den nye adgangskode videre.</string>
+    <string name="account_remove_title">Fjern %1$s?</string>
+    <string name="account_remove_message">%1$s kan ikke længere logge ind, og pladsen i hver bog, favoritter og læsesessioner fjernes fra serveren. Bøgerne, der er tilføjet, bliver i biblioteket.</string>
+    <string name="account_remove_confirm">Fjern</string>
+    <string name="account_people_title">Personer</string>
+    <string name="account_person_admin">Administrator</string>
+    <plurals name="account_person_books_added">
+        <item quantity="one">%1$d bog tilføjet</item>
+        <item quantity="other">%1$d bøger tilføjet</item>
+    </plurals>
+    <plurals name="account_person_started">
+        <item quantity="one">%1$d påbegyndt</item>
+        <item quantity="other">%1$d påbegyndt</item>
+    </plurals>
+    <plurals name="account_person_finished">
+        <item quantity="one">%1$d færdiglæst</item>
+        <item quantity="other">%1$d færdiglæst</item>
+    </plurals>
+    <plurals name="account_person_favourites">
+        <item quantity="one">%1$d favorit</item>
+        <item quantity="other">%1$d favoritter</item>
+    </plurals>
+    <string name="account_person_read_for">Læsetid: %1$s</string>
+    <string name="account_person_no_reading_time">Ingen læsetid endnu</string>
+    <string name="account_person_last_read_today">Læste senest i dag</string>
+    <string name="account_person_last_read_yesterday">Læste senest i går</string>
+    <plurals name="account_person_last_read_days">
+        <item quantity="one">Læste senest for %1$d dag siden</item>
+        <item quantity="other">Læste senest for %1$d dage siden</item>
+    </plurals>
     <string name="account_problem_already_set_up">Nogen har lige sat denne server op. Log ind i stedet.</string>
     <string name="account_problem_session_expired">Dit login er udløbet. Log ind igen.</string>
     <string name="account_problem_server_failed">Serveren kunne ikke gøre det. Prøv igen senere.</string>

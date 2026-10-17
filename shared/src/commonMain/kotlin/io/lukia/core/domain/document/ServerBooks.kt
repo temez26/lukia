@@ -77,6 +77,26 @@ interface ServerBookUploader {
 }
 
 /**
+ * Takes a server book out of the shared library, for every account - something
+ * only the server's admin may do. This device's shelf follows at once; the
+ * others on their next sync. A downloaded copy stays as a book on its device.
+ */
+interface ServerBookRemover {
+
+    /** Whether this device may offer it - true while signed in as the server's admin. */
+    val available: Flow<Boolean>
+
+    suspend fun remove(location: String)
+
+    /** For the screens and tests that never meet a server. */
+    object None : ServerBookRemover {
+        override val available: Flow<Boolean> = flowOf(false)
+
+        override suspend fun remove(location: String) = throw AppErrorException(AppError.DocumentNotFound)
+    }
+}
+
+/**
  * Says that the shelf changed behind the screen showing it - books arrived from
  * or left with the sync server - so the screen reads it again.
  */
