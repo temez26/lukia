@@ -5,6 +5,7 @@ import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.core.presentation.bookTitle
 import io.lukia.core.presentation.displayTitle
+import io.lukia.core.presentation.languageName
 import io.lukia.shared.presentation.components.cover.CoverArtSource
 
 /** Where a book stands with its reader, which is what the shelves are made of. */
@@ -106,18 +107,38 @@ fun List<DocumentInfo>.asLibrary(
             sortAuthor = metadata?.authors?.firstOrNull()?.trim()?.lowercase().orEmpty(),
             authors = metadata?.authors.orEmpty().trimmedValues(),
             categories = metadata?.subjects.orEmpty().categoryValues(),
-            language = metadata?.language
-                ?.substringBefore('-')
-                ?.substringBefore('_')
-                ?.trim()
-                ?.lowercase()
-                ?.takeIf { it.isNotEmpty() },
+            language = metadata?.language?.let(::primaryLanguage),
         )
     }
 
 /** Blank entries dropped and the rest tidied, for a list a filter offers as choices. */
 private fun List<String>.trimmedValues(): List<String> =
     mapNotNull { it.trim().takeIf(String::isNotEmpty) }
+
+/**
+ * The primary subtag of a language tag, or null for anything that is not one.
+ *
+ * Files carry whatever their tools wrote, and some of that is bytes rather than
+ * a tag: a filter listing `¾£AB` beside English offers nothing. A subtag is two
+ * or three letters, and `und`, `mul`, `zxx` and `mis` say there is no one
+ * language to filter by.
+ */
+private fun primaryLanguage(tag: String): String? =
+    tag.substringBefore('-')
+        .substringBefore('_')
+        .trim()
+        .lowercase()
+        .takeIf { it.matches(LanguageSubtag) && it !in NoSingleLanguage }
+
+private val LanguageSubtag = Regex("[a-z]{2,3}")
+private val NoSingleLanguage = setOf("und", "mul", "zxx", "mis")
+
+/**
+ * What two tags for one language have in common: its name. `en` and the
+ * three-letter `eng` both name English, and a filter offering English twice puts
+ * half the English books behind each.
+ */
+internal fun languageKey(tag: String): String = languageName(tag) ?: tag
 
 /**
  * Subjects as a reader would file them.

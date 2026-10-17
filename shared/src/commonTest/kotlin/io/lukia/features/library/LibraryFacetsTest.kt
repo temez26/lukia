@@ -212,4 +212,34 @@ class LibraryFacetsTest {
 
         assertEquals((6..25).map { subject(it) }, books.facets().browseCategories)
     }
+
+    /** Bytes in a file's language field are not a language a filter can offer. */
+    @Test
+    fun aLanguageThatIsNotATagIsNotOffered() {
+        val books = library(
+            book("Garbled", language = "¾£AB"),
+            book("Blank", language = " "),
+            book("Undetermined", language = "und"),
+            book("Dune", language = "en"),
+            book("Solaris", language = "pl"),
+        )
+
+        assertEquals(listOf("en", "pl"), books.facets().languages)
+    }
+
+    /** `en` and `eng` both name English: one entry, and choosing it finds both. */
+    @Test
+    fun twoTagsForOneLanguageAreFiledOnce() {
+        val books = library(
+            book("Dune", language = "en"),
+            book("Neuromancer", language = "eng"),
+            book("Solaris", language = "pl"),
+        )
+
+        assertEquals(listOf("en", "pl"), books.facets().languages)
+        assertEquals(
+            listOf("Dune", "Neuromancer"),
+            books.matching(LibraryQuery(language = "en")).titles().sorted(),
+        )
+    }
 }

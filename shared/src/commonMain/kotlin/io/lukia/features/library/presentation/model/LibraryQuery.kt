@@ -81,7 +81,7 @@ data class LibraryQuery(
         format = format?.takeIf { it in facets.formats },
         category = category?.takeIf { facets.categories.filesUnder(it) },
         author = author?.takeIf { facets.authors.holds(it) },
-        language = language?.takeIf { it in facets.languages },
+        language = language?.takeIf { wanted -> facets.languages.any { languageKey(it) == languageKey(wanted) } },
     )
 }
 
@@ -110,7 +110,7 @@ private fun LibraryQuery.refinesTo(book: LibraryBook): Boolean =
         (format == null || book.document.type == format) &&
         (category == null || book.categories.filesUnder(category)) &&
         (author == null || book.authors.holds(author)) &&
-        (language == null || book.language == language)
+        (language == null || book.language?.let(::languageKey) == languageKey(language))
 
 /**
  * What the search screen finds for [term]: the whole library, and nothing the
