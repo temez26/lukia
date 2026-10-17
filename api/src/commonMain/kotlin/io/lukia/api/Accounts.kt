@@ -49,6 +49,34 @@ data class InviteResponse(
     val expiresAt: Long,
 )
 
+/** What the admin decides about this server. */
+@Serializable
+data class ServerSettings(
+    /** Whether anyone who can reach the server may create an account. Closed until the admin opens it. */
+    val signUpOpen: Boolean,
+)
+
+/**
+ * One account as the admin sees it in the list of people: who it is and how
+ * much it reads here. Totals only - never which books.
+ */
+@Serializable
+data class AccountSummary(
+    val username: String,
+    val isAdmin: Boolean,
+    val createdAt: Long,
+    /** Books this account uploaded that are still in the library. */
+    val booksAdded: Int,
+    /** Books it has opened, finished ones included. */
+    val booksStarted: Int,
+    val booksFinished: Int,
+    val favourites: Int,
+    val readingMs: Long,
+    val sessions: Int,
+    /** When its latest reading session ended; null if it has never read. */
+    val lastReadAt: Long? = null,
+)
+
 /** What a username and a password must look like, checked by the server and shown by the app. */
 object AccountRules {
     const val UsernamePattern = "^[a-z0-9_.-]{3,32}$"

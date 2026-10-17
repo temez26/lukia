@@ -90,6 +90,8 @@ internal fun BookCard(
     selection: CardSelection? = null,
     /** The book on its way down from the server, or null when it is not. */
     transfer: BookTransfer? = null,
+    /** The admin's Remove from server, or null where the menu has no such row. */
+    onRemoveFromServer: (() -> Unit)? = null,
 ) {
     val document = book.document
     val title = document.bookTitle()
@@ -159,6 +161,7 @@ internal fun BookCard(
                 onDelete = onDelete,
                 onShowDetails = onShowDetails,
                 onSelectBooks = onSelectBooks,
+                onRemoveFromServer = onRemoveFromServer,
             )
         }
 

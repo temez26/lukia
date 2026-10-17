@@ -30,6 +30,10 @@
     <string name="menu_sync_with_server">Synkronisera med servern</string>
     <string name="menu_refresh_details">Uppdatera uppgifter</string>
     <string name="menu_delete_from_library">Ta bort från biblioteket</string>
+    <string name="menu_remove_from_server">Ta bort från servern</string>
+    <string name="book_remove_from_server_title">Ta bort från servern?</string>
+    <string name="book_remove_from_server_message">%1$s försvinner ur det delade biblioteket för alla. Enheter som aldrig laddat ner den tar bort den vid nästa synkronisering; en nedladdad kopia blir kvar som en bok på sin enhet.</string>
+    <string name="book_remove_from_server_confirm">Ta bort</string>
 
     <string name="library_details_refreshed">Uppgifterna uppdaterade</string>
 
@@ -573,7 +577,7 @@
     <string name="account_create">Skapa konto</string>
     <string name="account_create_admin">Skapa administratörskonto</string>
     <string name="account_setup_footnote">%1$s har inga konton än. Det du skapar nu blir dess administratör.</string>
-    <string name="account_use_invite">Jag har en inbjudningskod</string>
+    <string name="account_invite_footnote">Den här servern skapar nya konton med en inbjudningskod. Be den som driver den om en.</string>
     <string name="account_use_password">Jag har redan ett konto</string>
     <string name="account_signed_in">Inloggad på %1$s som %2$s.</string>
     <string name="account_signed_in_admin">Inloggad på %1$s som %2$s, dess administratör.</string>
@@ -593,6 +597,46 @@
     <string name="account_problem_invalid_password">Ett lösenord behöver minst 10 tecken.</string>
     <string name="account_problem_username_taken">Det användarnamnet är upptaget.</string>
     <string name="account_problem_invalid_invite">Den inbjudningskoden är okänd, använd eller har gått ut.</string>
+    <string name="account_problem_sign_up_closed">Den här servern tar inte emot nya konton. Be den som driver den att öppna för dem.</string>
+    <string name="account_problem_not_admin">Bara serverns administratör kan göra det.</string>
+    <string name="account_admin_title">Administration</string>
+    <string name="account_admin_allow_sign_up">Tillåt nya konton</string>
+    <string name="account_admin_allow_sign_up_detail">Så länge detta är på kan alla som når den här servern skapa ett konto.</string>
+    <string name="account_person_reset_password">Återställ lösenord</string>
+    <string name="account_person_remove">Ta bort konto</string>
+    <string name="account_new_password">Nytt lösenord</string>
+    <string name="account_reset_title">Nytt lösenord för %1$s</string>
+    <string name="account_reset_message">%1$s loggas ut på alla enheter och loggar hädanefter in med det här lösenordet. Ge det nya lösenordet vidare.</string>
+    <string name="account_reset_done">Lösenordet för %1$s är ändrat. Ge det nya lösenordet vidare.</string>
+    <string name="account_remove_title">Ta bort %1$s?</string>
+    <string name="account_remove_message">%1$s kan inte längre logga in, och platsen i varje bok, favoriter och lässessioner tas bort från servern. Böckerna som lagts till stannar i biblioteket.</string>
+    <string name="account_remove_confirm">Ta bort</string>
+    <string name="account_people_title">Personer</string>
+    <string name="account_person_admin">Admin</string>
+    <plurals name="account_person_books_added">
+        <item quantity="one">%1$d bok tillagd</item>
+        <item quantity="other">%1$d böcker tillagda</item>
+    </plurals>
+    <plurals name="account_person_started">
+        <item quantity="one">%1$d påbörjad</item>
+        <item quantity="other">%1$d påbörjade</item>
+    </plurals>
+    <plurals name="account_person_finished">
+        <item quantity="one">%1$d utläst</item>
+        <item quantity="other">%1$d utlästa</item>
+    </plurals>
+    <plurals name="account_person_favourites">
+        <item quantity="one">%1$d favorit</item>
+        <item quantity="other">%1$d favoriter</item>
+    </plurals>
+    <string name="account_person_read_for">Lästid: %1$s</string>
+    <string name="account_person_no_reading_time">Ingen lästid än</string>
+    <string name="account_person_last_read_today">Läste senast i dag</string>
+    <string name="account_person_last_read_yesterday">Läste senast i går</string>
+    <plurals name="account_person_last_read_days">
+        <item quantity="one">Läste senast för %1$d dag sedan</item>
+        <item quantity="other">Läste senast för %1$d dagar sedan</item>
+    </plurals>
     <string name="account_problem_already_set_up">Någon har just konfigurerat den här servern. Logga in i stället.</string>
     <string name="account_problem_session_expired">Din inloggning har gått ut. Logga in igen.</string>
     <string name="account_problem_server_failed">Servern kunde inte göra det. Försök igen senare.</string>

@@ -84,7 +84,8 @@ internal fun HomeScreen(
     // on another tab has nothing to say about where they stopped reading.
     val home = remember(library) { library.homeLayout() }
 
-    val actions = rememberHomeBookActions(viewModel, onOpenBook, onShowDetails, homeShelf.onStart)
+    val removal = rememberServerRemoval(viewModel)
+    val actions = rememberHomeBookActions(viewModel, onOpenBook, onShowDetails, homeShelf.onStart, removal)
 
     HomeContent(
         uiState = uiState,
@@ -104,6 +105,8 @@ internal fun HomeScreen(
         onSettings = onSettings,
         statsButton = statsButton,
     )
+
+    RemoveFromServerDialog(removal, onRemove = viewModel::removeFromServer)
 }
 
 /**
@@ -116,7 +119,8 @@ internal fun rememberHomeBookActions(
     onOpenBook: (DocumentInfo) -> Unit,
     onShowDetails: (DocumentInfo) -> Unit,
     onSelectBooks: () -> Unit,
-): HomeBookActions = remember(viewModel, onOpenBook, onShowDetails, onSelectBooks) {
+    removal: ServerRemoval? = null,
+): HomeBookActions = remember(viewModel, onOpenBook, onShowDetails, onSelectBooks, removal) {
     HomeBookActions(
         onOpen = { book -> viewModel.openBook(book.document, onOpenBook) },
         onShowDetails = { book -> onShowDetails(book.document) },
@@ -124,6 +128,7 @@ internal fun rememberHomeBookActions(
         onRefresh = { book -> viewModel.refreshDocument(book.document) },
         onDelete = { book -> viewModel.deleteDocument(book.document) },
         onSelectBooks = onSelectBooks,
+        removeFromServer = { document -> removal?.rowFor(document) },
     )
 }
 

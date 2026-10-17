@@ -42,6 +42,10 @@
     <string name="menu_sync_with_server">Sync with Server</string>
     <string name="menu_refresh_details">Refresh Details</string>
     <string name="menu_delete_from_library">Delete from Library</string>
+    <string name="menu_remove_from_server">Remove from Server</string>
+    <string name="book_remove_from_server_title">Remove from the server?</string>
+    <string name="book_remove_from_server_message">%1$s leaves the shared library for everyone. Devices that never downloaded it drop it on their next sync; a downloaded copy stays as a book on its device.</string>
+    <string name="book_remove_from_server_confirm">Remove</string>
 
     <!--
         The library's own notices. Every one is a whole sentence: the counts are
@@ -705,7 +709,7 @@
     <string name="account_create">Create account</string>
     <string name="account_create_admin">Create admin account</string>
     <string name="account_setup_footnote">%1$s has no accounts yet. The one you create now is its admin.</string>
-    <string name="account_use_invite">I have an invite code</string>
+    <string name="account_invite_footnote">This server takes new accounts by invite code. Ask whoever runs it for one.</string>
     <string name="account_use_password">I already have an account</string>
     <string name="account_signed_in">Signed in to %1$s as %2$s.</string>
     <string name="account_signed_in_admin">Signed in to %1$s as %2$s, its admin.</string>
@@ -725,6 +729,46 @@
     <string name="account_problem_invalid_password">A password needs at least 10 characters.</string>
     <string name="account_problem_username_taken">That username is taken.</string>
     <string name="account_problem_invalid_invite">That invite code is unknown, used or expired.</string>
+    <string name="account_problem_sign_up_closed">This server is not taking new accounts. Ask whoever runs it to open them.</string>
+    <string name="account_problem_not_admin">Only this server's admin can do that.</string>
+    <string name="account_admin_title">Administration</string>
+    <string name="account_admin_allow_sign_up">Allow new accounts</string>
+    <string name="account_admin_allow_sign_up_detail">While this is on, anyone who can reach this server can create an account.</string>
+    <string name="account_person_reset_password">Reset password</string>
+    <string name="account_person_remove">Remove account</string>
+    <string name="account_new_password">New password</string>
+    <string name="account_reset_title">New password for %1$s</string>
+    <string name="account_reset_message">%1$s is signed out on every device and signs in with this password from now on. Pass the new password on.</string>
+    <string name="account_reset_done">Password changed for %1$s. Pass the new password on.</string>
+    <string name="account_remove_title">Remove %1$s?</string>
+    <string name="account_remove_message">%1$s can no longer sign in, and their place in each book, favourites and reading sessions are removed from the server. The books they added stay in the library.</string>
+    <string name="account_remove_confirm">Remove</string>
+    <string name="account_people_title">People</string>
+    <string name="account_person_admin">Admin</string>
+    <plurals name="account_person_books_added">
+        <item quantity="one">%1$d book added</item>
+        <item quantity="other">%1$d books added</item>
+    </plurals>
+    <plurals name="account_person_started">
+        <item quantity="one">%1$d started</item>
+        <item quantity="other">%1$d started</item>
+    </plurals>
+    <plurals name="account_person_finished">
+        <item quantity="one">%1$d finished</item>
+        <item quantity="other">%1$d finished</item>
+    </plurals>
+    <plurals name="account_person_favourites">
+        <item quantity="one">%1$d favourite</item>
+        <item quantity="other">%1$d favourites</item>
+    </plurals>
+    <string name="account_person_read_for">Reading time: %1$s</string>
+    <string name="account_person_no_reading_time">No reading time yet</string>
+    <string name="account_person_last_read_today">Last read today</string>
+    <string name="account_person_last_read_yesterday">Last read yesterday</string>
+    <plurals name="account_person_last_read_days">
+        <item quantity="one">Last read %1$d day ago</item>
+        <item quantity="other">Last read %1$d days ago</item>
+    </plurals>
     <string name="account_problem_already_set_up">Someone has just set this server up. Sign in instead.</string>
     <string name="account_problem_session_expired">Your sign-in has ended. Sign in again.</string>
     <string name="account_problem_server_failed">The server could not do that. Try again later.</string>

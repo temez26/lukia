@@ -8,6 +8,7 @@ import io.lukia.resources.menu_book_details
 import io.lukia.resources.menu_delete_from_library
 import io.lukia.resources.menu_favourite
 import io.lukia.resources.menu_refresh_details
+import io.lukia.resources.menu_remove_from_server
 import io.lukia.resources.menu_select_books
 import io.lukia.resources.menu_unfavourite
 import io.lukia.shared.presentation.components.icons.CheckGlyph
@@ -28,7 +29,8 @@ import org.jetbrains.compose.resources.stringResource
  *
  * [onShowDetails] and [onSelectBooks] are left out where they have nowhere to
  * go: the details when they are already on screen, and selecting when the menu
- * was opened from somewhere that has no shelf to select from.
+ * was opened from somewhere that has no shelf to select from. [onRemoveFromServer]
+ * is there only for the server's admin, and only on a book the server has.
  *
  * Every row closes the menu before acting, so it is never left hanging over the
  * card it just changed.
@@ -44,6 +46,7 @@ fun BookActionsMenu(
     modifier: Modifier = Modifier,
     onShowDetails: (() -> Unit)? = null,
     onSelectBooks: (() -> Unit)? = null,
+    onRemoveFromServer: (() -> Unit)? = null,
 ) {
     AnchoredMenu(
         expanded = expanded,
@@ -104,14 +107,28 @@ fun BookActionsMenu(
 
         MenuSeparator()
 
-        MenuRow(
-            label = stringResource(Res.string.menu_delete_from_library),
-            tint = MaterialTheme.colorScheme.error,
-            icon = { tint, glyph -> TrashGlyph(tint = tint, modifier = glyph) },
-            onClick = {
-                onDismissRequest()
-                onDelete()
-            },
-        )
+        RemovingRow(stringResource(Res.string.menu_delete_from_library), onDismissRequest, onDelete)
+
+        // Last and apart from Delete: Delete is about this device, this is
+        // about everyone's library.
+        if (onRemoveFromServer != null) {
+            MenuSeparator()
+
+            RemovingRow(stringResource(Res.string.menu_remove_from_server), onDismissRequest, onRemoveFromServer)
+        }
     }
+}
+
+/** A row that takes the book away from somewhere: red, with a bin. */
+@Composable
+private fun RemovingRow(label: String, onDismissRequest: () -> Unit, onClick: () -> Unit) {
+    MenuRow(
+        label = label,
+        tint = MaterialTheme.colorScheme.error,
+        icon = { tint, glyph -> TrashGlyph(tint = tint, modifier = glyph) },
+        onClick = {
+            onDismissRequest()
+            onClick()
+        },
+    )
 }

@@ -1,6 +1,7 @@
 package io.lukia.features.library.presentation.sessions
 
 import androidx.compose.runtime.Stable
+import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.features.library.presentation.model.LibraryBook
 
 /**
@@ -23,6 +24,8 @@ class HomeBookActions(
     val onRefresh: (LibraryBook) -> Unit = {},
     val onDelete: (LibraryBook) -> Unit = {},
     val onSelectBooks: () -> Unit = {},
+    /** The admin's Remove from server row for a book, or null where it has none - see `ServerRemoval`. */
+    val removeFromServer: (DocumentInfo) -> (() -> Unit)? = { null },
 ) {
     companion object {
         val None = HomeBookActions()

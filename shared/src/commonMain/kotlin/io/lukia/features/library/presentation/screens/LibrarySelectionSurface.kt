@@ -14,6 +14,7 @@ import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.components.selection.LibrarySelectionActions
 import io.lukia.features.library.presentation.components.selection.LibrarySelectionBar
 import io.lukia.features.library.presentation.model.LibraryBook
+import io.lukia.features.library.presentation.model.upkeep
 import io.lukia.features.library.presentation.sessions.BookTransferUi
 import io.lukia.features.library.presentation.sessions.LibraryShelfUi
 import io.lukia.features.library.presentation.sessions.bulkAction
@@ -48,9 +49,12 @@ import org.jetbrains.compose.resources.stringResource
 internal fun rememberShelfUi(viewModel: LibraryViewModel, onSyncWithServer: () -> Unit = {}): LibraryShelfUi {
     val selection by viewModel.selection.collectAsState()
     val running by viewModel.bulkAction.collectAsState()
-    val upkeep by viewModel.upkeep.collectAsState()
+    // What is worth tidying on the shelf as it is narrowed, so the menu can say
+    // how much there is before anyone presses anything.
+    val books by viewModel.books.collectAsState()
+    val upkeep = remember(books) { books.upkeep() }
     val layout by viewModel.layout.collectAsState()
-    val canUpload by viewModel.canUpload.collectAsState()
+    val canUpload by viewModel.transfers.canUpload.collectAsState()
 
     return remember(viewModel, selection, running, upkeep, layout, canUpload, onSyncWithServer) {
         LibraryShelfUi(
@@ -78,16 +82,17 @@ internal fun rememberShelfUi(viewModel: LibraryViewModel, onSyncWithServer: () -
 
 /** The panel's books moving to or from the server, wired to the view model's transfers. */
 @Composable
-internal fun rememberTransferUi(viewModel: LibraryViewModel): BookTransferUi {
+internal fun rememberTransferUi(viewModel: LibraryViewModel, removal: ServerRemoval? = null): BookTransferUi {
     val states by viewModel.transfers.states.collectAsState()
     val canUpload by viewModel.transfers.canUpload.collectAsState()
 
-    return remember(viewModel, states, canUpload) {
+    return remember(viewModel, states, canUpload, removal) {
         BookTransferUi(
             states = states,
             canUpload = canUpload,
             onStart = { viewModel.transfers.start(it) },
             onCancel = viewModel.transfers::cancel,
+            removeFromServer = { document -> removal?.rowFor(document) },
         )
     }
 }

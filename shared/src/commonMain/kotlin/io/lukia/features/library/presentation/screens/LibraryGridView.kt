@@ -168,6 +168,7 @@ internal fun LibraryGrid(
                 onDelete = { onDelete(book.document) },
                 onShowDetails = { onDocumentDetails(book.document) },
                 onSelectBooks = onStartSelecting,
+                onRemoveFromServer = transfers.removeFromServer(book.document),
             )
         }
 
@@ -267,6 +268,7 @@ private fun LazyGridItemScope.ShelfItem(
     onShowDetails: () -> Unit,
     onSelectBooks: () -> Unit,
     transfer: BookTransfer? = null,
+    onRemoveFromServer: (() -> Unit)? = null,
 ) {
     when (layout) {
         LibraryLayout.Grid -> BookCard(
@@ -285,6 +287,7 @@ private fun LazyGridItemScope.ShelfItem(
             modifier = Modifier.animateItem(),
             selection = selection,
             transfer = transfer,
+            onRemoveFromServer = onRemoveFromServer,
         )
 
         LibraryLayout.List -> Box {
@@ -308,6 +311,7 @@ private fun LazyGridItemScope.ShelfItem(
                 onDismissRequest = { onMenuExpandedChange(false) },
                 onShowDetails = onShowDetails,
                 onSelectBooks = onSelectBooks,
+                onRemoveFromServer = onRemoveFromServer,
             )
         }
     }

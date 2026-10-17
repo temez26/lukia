@@ -4,6 +4,7 @@ import io.ktor.client.call.body
 import io.ktor.client.plugins.HttpTimeoutConfig
 import io.ktor.client.plugins.timeout
 import io.ktor.client.request.bearerAuth
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.prepareGet
@@ -105,6 +106,11 @@ class ServerLibraryApi(private val http: ServerHttp) {
             }
             setBody(WindowedBody(book.size, book.read, onProgress))
         }
+    }
+
+    /** Admin only: takes the book out of the shared library, for every account. */
+    suspend fun remove(address: String, token: String, id: String) {
+        http.send { delete(address + ApiRoutes.book(id)) { bearerAuth(token) } }
     }
 
     private suspend fun stream(

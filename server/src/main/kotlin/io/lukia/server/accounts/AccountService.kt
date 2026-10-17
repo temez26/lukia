@@ -2,6 +2,7 @@ package io.lukia.server.accounts
 
 import io.ktor.http.HttpStatusCode
 import io.lukia.api.AccountRules
+import io.lukia.api.AccountSummary
 import io.lukia.api.ApiErrorCodes
 import io.lukia.api.Credentials
 import io.lukia.api.InviteResponse
@@ -9,6 +10,7 @@ import io.lukia.api.RedeemInviteRequest
 import io.lukia.api.TokenResponse
 import io.lukia.server.db.ServerDatabase
 import io.lukia.server.http.ApiException
+import io.lukia.server.settings.ServerSettingsService
 import java.sql.SQLException
 import java.time.Clock
 import kotlin.time.Duration.Companion.days
@@ -28,6 +30,9 @@ class AccountService(
     private val clock: Clock,
 ) {
     private val accounts get() = database.accountQueries
+
+    /** Read from the same database rather than handed in: it is a view of it, holding nothing of its own. */
+    private val settings = ServerSettingsService(database)
 
     /**
      * A hash of no real password, verified against when the username is unknown
@@ -100,24 +105,75 @@ class AccountService(
         }
     }
 
-    fun delete(account: SignedInAccount) {
-        database.transaction {
-            if (account.isAdmin && accounts.countAdmins().executeAsOne() <= 1L) {
-                throw ApiException(
-                    HttpStatusCode.Conflict,
-                    ApiErrorCodes.LastAdmin,
-                    "The only admin cannot delete their account.",
-                )
-            }
-            accounts.deleteById(account.id)
+    /**
+     * An ordinary account, signed in, for anyone - while the admin has new
+     * accounts open, and refused with nothing created while they do not.
+     *
+     * Counted against the sign-in limit like a sign-in, so the endpoint cannot
+     * be used to make accounts, or to learn which names are taken, at speed.
+     */
+    fun signUp(credentials: Credentials, address: String): TokenResponse {
+        if (!settings.signUpOpen()) {
+            throw ApiException(
+                HttpStatusCode.Forbidden,
+                ApiErrorCodes.SignUpClosed,
+                "This server is not taking new accounts. Ask whoever runs it to open them.",
+            )
         }
+
+        throttle.begin(credentials.username, address)
+        validate(credentials.username, credentials.password)
+        requireFree(credentials.username)
+        val passwordHash = hasher.hash(credentials.password)
+
+        return database.transactionWithResult {
+            insertAccount(credentials.username, passwordHash, clock.millis())
+            tokens.issue(accounts.lastInsertId().executeAsOne())
+        }.also { throttle.succeeded(credentials.username, address) }
+    }
+
+    fun delete(account: SignedInAccount) {
+        database.transaction { deleteUnlessLastAdmin(account.id, account.isAdmin) }
+    }
+
+    /** The admin removing someone - as if they had deleted their own account, so their books stay. */
+    fun remove(username: String) {
+        database.transaction {
+            val account = accounts.selectByUsername(username).executeAsOneOrNull() ?: throw noSuchAccount()
+            deleteUnlessLastAdmin(account.id, account.isAdmin)
+        }
+    }
+
+    fun list(): List<AccountSummary> = accounts.selectWithUsage().executeAsList().map { row ->
+        AccountSummary(
+            username = row.username,
+            isAdmin = row.isAdmin,
+            createdAt = row.createdAt,
+            booksAdded = row.booksAdded.toInt(),
+            booksStarted = row.booksStarted.toInt(),
+            booksFinished = row.booksFinished.toInt(),
+            favourites = row.favourites.toInt(),
+            readingMs = row.readingMs,
+            sessions = row.sessions.toInt(),
+            lastReadAt = row.lastReadAt,
+        )
+    }
+
+    private fun deleteUnlessLastAdmin(id: Long, isAdmin: Boolean) {
+        if (isAdmin && accounts.countAdmins().executeAsOne() <= 1L) {
+            throw ApiException(
+                HttpStatusCode.Conflict,
+                ApiErrorCodes.LastAdmin,
+                "The only admin cannot delete their account.",
+            )
+        }
+        accounts.deleteById(id)
     }
 
     /** Signs the account out everywhere: whoever needed the reset may not be the only one with the old password. */
     fun resetPassword(username: String, password: String) {
         validatePassword(password)
-        val account = accounts.selectByUsername(username).executeAsOneOrNull()
-            ?: throw ApiException(HttpStatusCode.NotFound, ApiErrorCodes.NotFound, "No account by that name.")
+        val account = accounts.selectByUsername(username).executeAsOneOrNull() ?: throw noSuchAccount()
         val passwordHash = hasher.hash(password)
 
         database.transaction {
@@ -138,6 +194,9 @@ class AccountService(
             if (e.errorCode == SqliteConstraint) throw usernameTaken() else throw e
         }
     }
+
+    private fun noSuchAccount() =
+        ApiException(HttpStatusCode.NotFound, ApiErrorCodes.NotFound, "No account by that name.")
 
     private fun usernameTaken() =
         ApiException(HttpStatusCode.Conflict, ApiErrorCodes.UsernameTaken, "That username is taken.")

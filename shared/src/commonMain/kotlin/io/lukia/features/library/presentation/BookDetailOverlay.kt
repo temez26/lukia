@@ -93,6 +93,7 @@ fun BookDetailOverlay(
                     onRefresh = { onRefresh(shown) },
                     onDelete = { onDelete(shown) },
                     onDismissRequest = { menuExpanded = false },
+                    onRemoveFromServer = transfers.removeFromServer(shown),
                 )
             },
         ) {

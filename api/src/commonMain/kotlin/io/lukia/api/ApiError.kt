@@ -45,6 +45,9 @@ object ApiErrorCodes {
     /** The last admin may not delete their account: nobody could invite anyone again. */
     const val LastAdmin = "last_admin"
 
+    /** The admin has not opened this server to new accounts. */
+    const val SignUpClosed = "sign_up_closed"
+
     /** The upload is larger than the server accepts. */
     const val TooLarge = "too_large"
 

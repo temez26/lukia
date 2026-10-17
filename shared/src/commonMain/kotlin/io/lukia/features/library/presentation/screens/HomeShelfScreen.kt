@@ -70,13 +70,17 @@ internal fun HomeShelfScreen(
     val selecting = rememberShelfUi(viewModel)
     val onSelectBooks = remember(selecting, onOpenLibrary) { selecting.selectingOn(onOpenLibrary).onStart }
 
+    val removal = rememberServerRemoval(viewModel)
+
     HomeShelfContent(
         title = shelf.displayTitle(),
         books = books,
-        actions = rememberHomeBookActions(viewModel, onOpenBook, onShowDetails, onSelectBooks),
+        actions = rememberHomeBookActions(viewModel, onOpenBook, onShowDetails, onSelectBooks, removal),
         transfers = rememberTransferUi(viewModel).states,
         onBack = onBack,
     )
+
+    RemoveFromServerDialog(removal, onRemove = viewModel::removeFromServer)
 }
 
 /**

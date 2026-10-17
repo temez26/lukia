@@ -161,6 +161,7 @@ private fun ContinueCover(
             onDismissRequest = { onMenuExpandedChange(false) },
             onShowDetails = { actions.onShowDetails(book) },
             onSelectBooks = actions.onSelectBooks,
+            onRemoveFromServer = actions.removeFromServer(book.document),
         )
     }
 }
