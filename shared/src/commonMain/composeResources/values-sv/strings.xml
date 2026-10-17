@@ -573,7 +573,7 @@
     <string name="account_create">Skapa konto</string>
     <string name="account_create_admin">Skapa administratörskonto</string>
     <string name="account_setup_footnote">%1$s har inga konton än. Det du skapar nu blir dess administratör.</string>
-    <string name="account_use_invite">Jag har en inbjudningskod</string>
+    <string name="account_invite_footnote">Den här servern skapar nya konton med en inbjudningskod. Be den som driver den om en.</string>
     <string name="account_use_password">Jag har redan ett konto</string>
     <string name="account_signed_in">Inloggad på %1$s som %2$s.</string>
     <string name="account_signed_in_admin">Inloggad på %1$s som %2$s, dess administratör.</string>
@@ -593,6 +593,7 @@
     <string name="account_problem_invalid_password">Ett lösenord behöver minst 10 tecken.</string>
     <string name="account_problem_username_taken">Det användarnamnet är upptaget.</string>
     <string name="account_problem_invalid_invite">Den inbjudningskoden är okänd, använd eller har gått ut.</string>
+    <string name="account_problem_sign_up_closed">Den här servern tar inte emot nya konton. Be den som driver den att öppna för dem.</string>
     <string name="account_problem_already_set_up">Någon har just konfigurerat den här servern. Logga in i stället.</string>
     <string name="account_problem_session_expired">Din inloggning har gått ut. Logga in igen.</string>
     <string name="account_problem_server_failed">Servern kunde inte göra det. Försök igen senare.</string>

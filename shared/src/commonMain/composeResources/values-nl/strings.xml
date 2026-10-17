@@ -519,7 +519,7 @@
     <string name="account_create">Account maken</string>
     <string name="account_create_admin">Beheerdersaccount aanmaken</string>
     <string name="account_setup_footnote">%1$s heeft nog geen accounts. Het account dat u nu maakt, wordt de beheerder.</string>
-    <string name="account_use_invite">Ik heb een uitnodigingscode</string>
+    <string name="account_invite_footnote">Deze server maakt nieuwe accounts aan met een uitnodigingscode. Vraag degene die hem beheert om een code.</string>
     <string name="account_use_password">Ik heb al een account</string>
     <string name="account_signed_in">Ingelogd op %1$s als %2$s.</string>
     <string name="account_signed_in_admin">Ingelogd op %1$s als %2$s, de beheerder.</string>
@@ -539,6 +539,7 @@
     <string name="account_problem_invalid_password">Een wachtwoord heeft minstens 10 tekens nodig.</string>
     <string name="account_problem_username_taken">Die gebruikersnaam is al bezet.</string>
     <string name="account_problem_invalid_invite">Die uitnodigingscode is onbekend, gebruikt of verlopen.</string>
+    <string name="account_problem_sign_up_closed">Deze server neemt geen nieuwe accounts aan. Vraag degene die hem beheert om ze open te zetten.</string>
     <string name="account_problem_already_set_up">Iemand heeft deze server net ingesteld. Log in plaats daarvan in.</string>
     <string name="account_problem_session_expired">Uw aanmelding is verlopen. Log opnieuw in.</string>
     <string name="account_problem_server_failed">De server kon dat niet doen. Probeer het later opnieuw.</string>

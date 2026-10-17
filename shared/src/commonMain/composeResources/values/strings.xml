@@ -705,7 +705,7 @@
     <string name="account_create">Create account</string>
     <string name="account_create_admin">Create admin account</string>
     <string name="account_setup_footnote">%1$s has no accounts yet. The one you create now is its admin.</string>
-    <string name="account_use_invite">I have an invite code</string>
+    <string name="account_invite_footnote">This server takes new accounts by invite code. Ask whoever runs it for one.</string>
     <string name="account_use_password">I already have an account</string>
     <string name="account_signed_in">Signed in to %1$s as %2$s.</string>
     <string name="account_signed_in_admin">Signed in to %1$s as %2$s, its admin.</string>
@@ -725,6 +725,7 @@
     <string name="account_problem_invalid_password">A password needs at least 10 characters.</string>
     <string name="account_problem_username_taken">That username is taken.</string>
     <string name="account_problem_invalid_invite">That invite code is unknown, used or expired.</string>
+    <string name="account_problem_sign_up_closed">This server is not taking new accounts. Ask whoever runs it to open them.</string>
     <string name="account_problem_already_set_up">Someone has just set this server up. Sign in instead.</string>
     <string name="account_problem_session_expired">Your sign-in has ended. Sign in again.</string>
     <string name="account_problem_server_failed">The server could not do that. Try again later.</string>

@@ -519,7 +519,7 @@
     <string name="account_create">Opret konto</string>
     <string name="account_create_admin">Opret administratorkonto</string>
     <string name="account_setup_footnote">%1$s har ingen konti endnu. Den, du opretter nu, bliver dens administrator.</string>
-    <string name="account_use_invite">Jeg har en invitationskode</string>
+    <string name="account_invite_footnote">Denne server opretter nye konti med en invitationskode. Bed den, der driver den, om en.</string>
     <string name="account_use_password">Jeg har allerede en konto</string>
     <string name="account_signed_in">Logget ind på %1$s som %2$s.</string>
     <string name="account_signed_in_admin">Logget ind på %1$s som %2$s, dens administrator.</string>
@@ -539,6 +539,7 @@
     <string name="account_problem_invalid_password">En adgangskode skal være på mindst 10 tegn.</string>
     <string name="account_problem_username_taken">Det brugernavn er optaget.</string>
     <string name="account_problem_invalid_invite">Den invitationskode er ukendt, brugt eller udløbet.</string>
+    <string name="account_problem_sign_up_closed">Denne server tager ikke imod nye konti. Bed den, der driver den, om at åbne for dem.</string>
     <string name="account_problem_already_set_up">Nogen har lige sat denne server op. Log ind i stedet.</string>
     <string name="account_problem_session_expired">Dit login er udløbet. Log ind igen.</string>
     <string name="account_problem_server_failed">Serveren kunne ikke gøre det. Prøv igen senere.</string>

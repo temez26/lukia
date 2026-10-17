@@ -69,13 +69,16 @@ class KtorServerApi(private val http: ServerHttp) : ServerApi {
 
     override suspend fun health(address: String): ServerInfo =
         http.call<HealthResponse> { get(address + ApiRoutes.Health) }
-            .let { ServerInfo(it.name, it.version, it.setupRequired) }
+            .let { ServerInfo(it.name, it.version, it.setupRequired, it.signUpOpen) }
 
     override suspend fun setUp(address: String, username: String, password: String) =
         tokens { postJson(address + ApiRoutes.Setup, Credentials(username, password)) }
 
     override suspend fun signIn(address: String, username: String, password: String) =
         tokens { postJson(address + ApiRoutes.SignIn, Credentials(username, password)) }
+
+    override suspend fun signUp(address: String, username: String, password: String) =
+        tokens { postJson(address + ApiRoutes.SignUp, Credentials(username, password)) }
 
     override suspend fun redeem(address: String, code: String, username: String, password: String) =
         tokens { postJson(address + ApiRoutes.Redeem, RedeemInviteRequest(code, username, password)) }

@@ -553,7 +553,7 @@
     <string name="account_create">Utwórz konto</string>
     <string name="account_create_admin">Utwórz konto administratora</string>
     <string name="account_setup_footnote">%1$s nie ma jeszcze kont. Konto, które teraz utworzysz, będzie jego administratorem.</string>
-    <string name="account_use_invite">Mam kod zaproszenia</string>
+    <string name="account_invite_footnote">Ten serwer tworzy nowe konta za pomocą kodu zaproszenia. Poproś o niego osobę, która nim zarządza.</string>
     <string name="account_use_password">Mam już konto</string>
     <string name="account_signed_in">Zalogowano na %1$s jako %2$s.</string>
     <string name="account_signed_in_admin">Zalogowano na %1$s jako %2$s, administrator.</string>
@@ -573,6 +573,7 @@
     <string name="account_problem_invalid_password">Hasło musi mieć co najmniej 10 znaków.</string>
     <string name="account_problem_username_taken">Ta nazwa użytkownika jest zajęta.</string>
     <string name="account_problem_invalid_invite">Ten kod zaproszenia jest nieznany, wykorzystany lub wygasł.</string>
+    <string name="account_problem_sign_up_closed">Ten serwer nie przyjmuje nowych kont. Poproś osobę, która nim zarządza, o ich otwarcie.</string>
     <string name="account_problem_already_set_up">Ktoś właśnie skonfigurował ten serwer. Zamiast tego zaloguj się.</string>
     <string name="account_problem_session_expired">Twoja sesja wygasła. Zaloguj się ponownie.</string>
     <string name="account_problem_server_failed">Serwer nie mógł tego zrobić. Spróbuj później.</string>

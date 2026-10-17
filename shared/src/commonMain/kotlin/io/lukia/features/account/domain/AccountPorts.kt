@@ -15,6 +15,9 @@ interface ServerApi {
 
     suspend fun signIn(address: String, username: String, password: String): AuthTokens
 
+    /** Creates an ordinary account, while the admin has new accounts open. */
+    suspend fun signUp(address: String, username: String, password: String): AuthTokens
+
     /** Creates an account with an invite code. */
     suspend fun redeem(address: String, code: String, username: String, password: String): AuthTokens
 

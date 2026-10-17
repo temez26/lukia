@@ -34,6 +34,15 @@ class KtorServerApiTest {
     }
 
     @Test
+    fun aNewerServerSaysWhetherItTakesNewAccounts() = runTest {
+        val api = apiAnswering {
+            json("""{"name":"Home shelf","version":"1.5.0","setupRequired":false,"signUpOpen":true}""")
+        }
+
+        assertEquals(true, api.health(HomeServer).signUpOpen)
+    }
+
+    @Test
     fun signingInSendsTheCredentialsAndReadsTheTokens() = runTest {
         var sent: HttpRequestData? = null
         val api = apiAnswering { request ->
@@ -56,6 +65,7 @@ class KtorServerApiTest {
             "too_many_attempts" to AccountProblem.TooManyAttempts,
             "username_taken" to AccountProblem.UsernameTaken,
             "invalid_invite" to AccountProblem.InvalidInvite,
+            "sign_up_closed" to AccountProblem.SignUpClosed,
             "setup_done" to AccountProblem.AlreadySetUp,
             "unauthorized" to AccountProblem.SessionExpired,
             "something_new" to AccountProblem.ServerFailed,

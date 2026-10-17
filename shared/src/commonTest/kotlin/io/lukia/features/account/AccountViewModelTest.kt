@@ -2,6 +2,7 @@ package io.lukia.features.account
 
 import io.lukia.MainDispatcherTest
 import io.lukia.features.account.application.AccountSession
+import io.lukia.features.account.domain.AccountProblem
 import io.lukia.features.account.domain.AccountStatus
 import io.lukia.features.account.presentation.AccountForm
 import io.lukia.features.account.presentation.AccountViewModel
@@ -52,5 +53,58 @@ class AccountViewModelTest : MainDispatcherTest() {
 
         assertEquals(HomeServer, viewModel().lastSignIn?.address)
         assertEquals("alice", viewModel().lastSignIn?.username)
+    }
+
+    @Test
+    fun anOpenServerMakesTheAccountAtOnce() = runTest {
+        api.info = api.info.copy(signUpOpen = true)
+        val viewModel = viewModel()
+
+        viewModel.createAccount(creating = true)
+        viewModel.submit(HomeServer, "bob", "a long new password")
+
+        assertIs<AccountStatus.SignedIn>(viewModel.state.value.status)
+        assertEquals(1, api.signUps)
+        assertEquals(AccountForm.SignIn, viewModel.state.value.form)
+    }
+
+    /** Said before anything is sent, so a closed server is not asked to make an account it will refuse. */
+    @Test
+    fun aClosedServerSaysSoAndMakesNothing() = runTest {
+        api.info = api.info.copy(signUpOpen = false)
+        val viewModel = viewModel()
+
+        viewModel.createAccount(creating = true)
+        viewModel.submit(HomeServer, "bob", "a long new password")
+
+        assertEquals(AccountProblem.SignUpClosed, viewModel.state.value.problem)
+        assertEquals(AccountStatus.SignedOut, viewModel.state.value.status)
+        assertEquals(AccountForm.SignUp, viewModel.state.value.form)
+        assertEquals(0, api.signUps)
+    }
+
+    /** A server from before sign-up takes accounts only by invite, so the form asks for a code. */
+    @Test
+    fun anOlderServerTurnsTheFormIntoItsInviteForm() = runTest {
+        api.info = api.info.copy(signUpOpen = null)
+        val viewModel = viewModel()
+
+        viewModel.createAccount(creating = true)
+        viewModel.submit(HomeServer, "bob", "a long new password")
+
+        assertEquals(AccountForm.Invite, viewModel.state.value.form)
+        assertNull(viewModel.state.value.problem)
+        assertEquals(0, api.signUps)
+    }
+
+    @Test
+    fun aServerWithNoAccountsStillMakesTheAdminFromCreateAccount() = runTest {
+        api.info = api.info.copy(setupRequired = true, signUpOpen = false)
+        val viewModel = viewModel()
+
+        viewModel.createAccount(creating = true)
+        viewModel.submit(HomeServer, "alice", "correct horse")
+
+        assertEquals(AccountForm.SetUp("Home shelf"), viewModel.state.value.form)
     }
 }

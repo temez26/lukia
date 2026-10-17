@@ -588,7 +588,7 @@
     <string name="account_create">Luo tili</string>
     <string name="account_create_admin">Luo ylläpitäjän tili</string>
     <string name="account_setup_footnote">Palvelimella %1$s ei ole vielä tilejä. Nyt luomastasi tulee sen ylläpitäjä.</string>
-    <string name="account_use_invite">Minulla on kutsukoodi</string>
+    <string name="account_invite_footnote">Tämä palvelin luo uudet tilit kutsukoodilla. Pyydä koodi palvelimen ylläpitäjältä.</string>
     <string name="account_use_password">Minulla on jo tili</string>
     <string name="account_signed_in">Kirjautunut palvelimeen %1$s käyttäjänä %2$s.</string>
     <string name="account_signed_in_admin">Kirjautunut palvelimeen %1$s käyttäjänä %2$s, ylläpitäjänä.</string>
@@ -608,6 +608,7 @@
     <string name="account_problem_invalid_password">Salasanassa on oltava vähintään 10 merkkiä.</string>
     <string name="account_problem_username_taken">Käyttäjänimi on jo varattu.</string>
     <string name="account_problem_invalid_invite">Kutsukoodi on tuntematon, käytetty tai vanhentunut.</string>
+    <string name="account_problem_sign_up_closed">Tämä palvelin ei ota uusia tilejä. Pyydä palvelimen ylläpitäjää avaamaan ne.</string>
     <string name="account_problem_already_set_up">Joku otti tämän palvelimen juuri käyttöön. Kirjaudu sen sijaan.</string>
     <string name="account_problem_session_expired">Kirjautumisesi on päättynyt. Kirjaudu uudelleen.</string>
     <string name="account_problem_server_failed">Palvelin ei pystynyt tekemään sitä. Yritä myöhemmin uudelleen.</string>

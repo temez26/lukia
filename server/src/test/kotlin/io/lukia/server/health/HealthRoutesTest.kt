@@ -20,7 +20,10 @@ class HealthRoutesTest {
         val response = client.get(ApiRoutes.Health)
 
         assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals(HealthResponse("Test shelf", ServerVersion, setupRequired = true), response.body())
+        assertEquals(
+            HealthResponse("Test shelf", ServerVersion, setupRequired = true, signUpOpen = false),
+            response.body(),
+        )
     }
 
     @Test

@@ -40,12 +40,14 @@ Server
 
 App
 
-9. Signed out, Account offers, depending on what the server reports:
-   - **set-up required:** create the admin account (as today);
-   - **sign-up open:** sign in, or create an account;
-   - **sign-up closed:** sign in only, with a line asking the reader to ask
-     whoever runs the server to open new accounts;
-   - **a server older than this:** sign in, or redeem an invite code, as now.
+9. Signed out, Account offers Sign in and Create account. The server is asked
+   about itself when the form is sent, as it already is for setting up:
+   - **set-up required:** the form becomes the one that creates the admin;
+   - **sign-up open:** the account is created and signed in;
+   - **sign-up closed:** nothing is sent, and the form says to ask whoever runs
+     the server to open new accounts;
+   - **a server older than this** (no `signUpOpen` in `/health`): the form
+     becomes the invite-code form, with a line saying why.
 10. Signed in as an admin, Account shows an **Administration** section:
     - an "Allow new accounts" switch, saved on the server;
     - **People**: each account with its usage (books added, started,
@@ -103,7 +105,7 @@ looks at who reads what, or removes an account or a book.
 ## Slices
 
 - [x] 1. Server: settings table and migration, `signUpOpen` on health, sign-up endpoint, with tests.
-- [ ] 2. App: Account offers Create account when sign-up is open.
+- [x] 2. App: Account offers Create account when sign-up is open.
 - [ ] 3. Server and app: Allow new accounts switch for admins.
 - [ ] 4. Server: account list with usage, account removal; app: People list.
 - [ ] 5. App: reset password and remove account from People.

@@ -53,7 +53,7 @@ fun AccountSettings(groupColor: Color, viewModel: AccountViewModel = koinViewMod
         lastSignIn = viewModel.lastSignIn,
         actions = AccountActions(
             onSubmit = viewModel::submit,
-            onUseInvite = viewModel::useInvite,
+            onCreateAccount = viewModel::createAccount,
             onSignInAgain = viewModel::signInAgain,
             onSignOut = viewModel::signOut,
             onDeleteAccount = viewModel::deleteAccount,
@@ -66,7 +66,8 @@ fun AccountSettings(groupColor: Color, viewModel: AccountViewModel = koinViewMod
 class AccountActions(
     val onSubmit: (address: String, username: String, password: String, inviteCode: String) -> Unit =
         { _, _, _, _ -> },
-    val onUseInvite: (Boolean) -> Unit = {},
+    /** True to the form that creates an account, false back to signing in. */
+    val onCreateAccount: (Boolean) -> Unit = {},
     val onSignInAgain: (password: String) -> Unit = {},
     val onSignOut: () -> Unit = {},
     val onDeleteAccount: () -> Unit = {},

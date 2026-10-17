@@ -520,7 +520,7 @@
     <string name="account_create">Konto erstellen</string>
     <string name="account_create_admin">Admin-Konto erstellen</string>
     <string name="account_setup_footnote">%1$s hat noch keine Konten. Das Konto, das Sie jetzt erstellen, verwaltet den Server.</string>
-    <string name="account_use_invite">Ich habe einen Einladungscode</string>
+    <string name="account_invite_footnote">Dieser Server legt neue Konten nur mit einem Einladungscode an. Bitten Sie die Person, die ihn betreibt, um einen.</string>
     <string name="account_use_password">Ich habe schon ein Konto</string>
     <string name="account_signed_in">Bei %1$s angemeldet als %2$s.</string>
     <string name="account_signed_in_admin">Bei %1$s angemeldet als %2$s, Verwaltung.</string>
@@ -540,6 +540,7 @@
     <string name="account_problem_invalid_password">Ein Passwort braucht mindestens 10 Zeichen.</string>
     <string name="account_problem_username_taken">Dieser Benutzername ist vergeben.</string>
     <string name="account_problem_invalid_invite">Dieser Einladungscode ist unbekannt, verbraucht oder abgelaufen.</string>
+    <string name="account_problem_sign_up_closed">Dieser Server nimmt keine neuen Konten an. Bitten Sie die Person, die ihn betreibt, sie freizugeben.</string>
     <string name="account_problem_already_set_up">Jemand hat diesen Server gerade eingerichtet. Melden Sie sich stattdessen an.</string>
     <string name="account_problem_session_expired">Ihre Anmeldung ist abgelaufen. Melden Sie sich erneut an.</string>
     <string name="account_problem_server_failed">Der Server konnte das nicht ausführen. Versuchen Sie es später erneut.</string>

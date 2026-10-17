@@ -40,6 +40,8 @@ data class ServerInfo(
     val version: String,
     /** True until the server's first account exists; the reader is then offered to create the admin. */
     val setupRequired: Boolean,
+    /** Whether the admin lets anyone create an account; null from a server too old to say, which takes invite codes. */
+    val signUpOpen: Boolean? = null,
 )
 
 /** A sign-in's tokens. Times are epoch milliseconds on the server's clock. */
@@ -80,6 +82,9 @@ enum class AccountProblem {
 
     /** The invite code is unknown, used or expired. */
     InvalidInvite,
+
+    /** The admin has not opened the server to new accounts. */
+    SignUpClosed,
 
     /** Somebody else set the server up first. */
     AlreadySetUp,

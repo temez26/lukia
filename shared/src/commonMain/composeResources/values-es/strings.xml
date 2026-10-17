@@ -519,7 +519,7 @@
     <string name="account_create">Crear cuenta</string>
     <string name="account_create_admin">Crear cuenta de administrador</string>
     <string name="account_setup_footnote">%1$s aún no tiene cuentas. La que crees ahora será su administradora.</string>
-    <string name="account_use_invite">Tengo un código de invitación</string>
+    <string name="account_invite_footnote">Este servidor crea cuentas nuevas con un código de invitación. Pide uno a quien lo gestiona.</string>
     <string name="account_use_password">Ya tengo una cuenta</string>
     <string name="account_signed_in">Sesión iniciada en %1$s como %2$s.</string>
     <string name="account_signed_in_admin">Sesión iniciada en %1$s como %2$s, su administrador.</string>
@@ -539,6 +539,7 @@
     <string name="account_problem_invalid_password">Una contraseña necesita al menos 10 caracteres.</string>
     <string name="account_problem_username_taken">Ese nombre de usuario ya está en uso.</string>
     <string name="account_problem_invalid_invite">Ese código de invitación es desconocido, ya se usó o ha caducado.</string>
+    <string name="account_problem_sign_up_closed">Este servidor no admite cuentas nuevas. Pide a quien lo gestiona que las abra.</string>
     <string name="account_problem_already_set_up">Alguien acaba de configurar este servidor. Inicia sesión en su lugar.</string>
     <string name="account_problem_session_expired">Tu sesión ha terminado. Vuelve a iniciar sesión.</string>
     <string name="account_problem_server_failed">El servidor no pudo hacerlo. Inténtalo más tarde.</string>

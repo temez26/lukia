@@ -45,6 +45,15 @@ internal class FakeServerApi(
         return issue()
     }
 
+    var signUps = 0
+
+    override suspend fun signUp(address: String, username: String, password: String): AuthTokens {
+        reachable()
+        if (info.signUpOpen != true) throw AccountFailure(AccountProblem.SignUpClosed)
+        signUps++
+        return issue()
+    }
+
     override suspend fun redeem(address: String, code: String, username: String, password: String): AuthTokens {
         reachable()
         if (code != "invite") throw AccountFailure(AccountProblem.InvalidInvite)

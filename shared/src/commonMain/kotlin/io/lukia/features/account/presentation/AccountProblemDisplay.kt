@@ -14,6 +14,7 @@ import io.lukia.resources.account_problem_not_lukia
 import io.lukia.resources.account_problem_rejected
 import io.lukia.resources.account_problem_server_failed
 import io.lukia.resources.account_problem_session_expired
+import io.lukia.resources.account_problem_sign_up_closed
 import io.lukia.resources.account_problem_too_many
 import io.lukia.resources.account_problem_unreachable
 import io.lukia.resources.account_problem_username_taken
@@ -35,6 +36,7 @@ private fun AccountProblem.message(): StringResource = when (this) {
     AccountProblem.InvalidPassword -> Res.string.account_problem_invalid_password
     AccountProblem.UsernameTaken -> Res.string.account_problem_username_taken
     AccountProblem.InvalidInvite -> Res.string.account_problem_invalid_invite
+    AccountProblem.SignUpClosed -> Res.string.account_problem_sign_up_closed
     AccountProblem.AlreadySetUp -> Res.string.account_problem_already_set_up
     AccountProblem.LastAdmin -> Res.string.account_problem_last_admin
     AccountProblem.SessionExpired -> Res.string.account_problem_session_expired

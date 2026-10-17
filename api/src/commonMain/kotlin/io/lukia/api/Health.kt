@@ -13,8 +13,8 @@ data class HealthResponse(
     /** True until the first account exists; the app then offers to create the admin. */
     val setupRequired: Boolean,
     /**
-     * Whether anyone may create an account here - see [ApiRoutes.SignUp]. False
+     * Whether anyone may create an account here - see [ApiRoutes.SignUp]. Null
      * from a server older than this field, which takes invite codes instead.
      */
-    val signUpOpen: Boolean = false,
+    val signUpOpen: Boolean? = null,
 )
