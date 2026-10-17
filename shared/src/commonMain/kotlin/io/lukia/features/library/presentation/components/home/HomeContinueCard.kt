@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
@@ -26,7 +27,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.lukia.core.presentation.authorLine
 import io.lukia.core.presentation.bookTitle
+import io.lukia.features.library.presentation.components.book.CoverTransferOverlay
 import io.lukia.features.library.presentation.model.LibraryBook
+import io.lukia.features.library.presentation.screens.BookTransfer
 import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.resources.Res
 import io.lukia.resources.book_actions
@@ -70,6 +73,8 @@ internal fun HomeContinueCard(
     menuExpanded: Boolean,
     onMenuExpandedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    /** How a download of this book is going, if one is - see [CoverTransferOverlay]. */
+    transfer: BookTransfer? = null,
 ) {
     val document = book.document
     val title = document.bookTitle()
@@ -92,31 +97,16 @@ internal fun HomeContinueCard(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(Space.lg),
         ) {
-            Box(modifier = Modifier.width(dimens.bookCellMinWidth * CoverScale)) {
-                BookCover(
-                    cover = book.cover,
-                    title = title,
-                    shape = coverShape,
-                    monogramFontSize = CoverMonogramSize,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-
-                FavoriteBadge(
-                    visible = document.isFavorite,
-                    modifier = Modifier.padding(Space.sm),
-                )
-
-                BookActionsMenu(
-                    expanded = menuExpanded,
-                    isFavorite = document.isFavorite,
-                    onToggleFavorite = { actions.onToggleFavorite(book) },
-                    onRefresh = { actions.onRefresh(book) },
-                    onDelete = { actions.onDelete(book) },
-                    onDismissRequest = { onMenuExpandedChange(false) },
-                    onShowDetails = { actions.onShowDetails(book) },
-                    onSelectBooks = actions.onSelectBooks,
-                )
-            }
+            ContinueCover(
+                book = book,
+                title = title,
+                shape = coverShape,
+                actions = actions,
+                menuExpanded = menuExpanded,
+                onMenuExpandedChange = onMenuExpandedChange,
+                transfer = transfer,
+                modifier = Modifier.width(dimens.bookCellMinWidth * CoverScale),
+            )
 
             Details(
                 book = book,
@@ -127,6 +117,51 @@ internal fun HomeContinueCard(
                     .padding(start = Space.lg),
             )
         }
+    }
+}
+
+/** The cover, with what is drawn over it and the menu a long press opens under it. */
+@Composable
+private fun ContinueCover(
+    book: LibraryBook,
+    title: String,
+    shape: Shape,
+    actions: HomeBookActions,
+    menuExpanded: Boolean,
+    onMenuExpandedChange: (Boolean) -> Unit,
+    transfer: BookTransfer?,
+    modifier: Modifier = Modifier,
+) {
+    Box(modifier = modifier) {
+        BookCover(
+            cover = book.cover,
+            title = title,
+            shape = shape,
+            monogramFontSize = CoverMonogramSize,
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        FavoriteBadge(
+            visible = book.document.isFavorite,
+            modifier = Modifier.padding(Space.sm),
+        )
+
+        CoverTransferOverlay(
+            document = book.document,
+            transfer = transfer,
+            modifier = Modifier.matchParentSize().clip(shape),
+        )
+
+        BookActionsMenu(
+            expanded = menuExpanded,
+            isFavorite = book.document.isFavorite,
+            onToggleFavorite = { actions.onToggleFavorite(book) },
+            onRefresh = { actions.onRefresh(book) },
+            onDelete = { actions.onDelete(book) },
+            onDismissRequest = { onMenuExpandedChange(false) },
+            onShowDetails = { actions.onShowDetails(book) },
+            onSelectBooks = actions.onSelectBooks,
+        )
     }
 }
 

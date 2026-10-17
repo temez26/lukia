@@ -28,6 +28,7 @@ import io.lukia.features.library.presentation.model.HomeMenu
 import io.lukia.features.library.presentation.model.HomeRow
 import io.lukia.features.library.presentation.model.HomeShelf
 import io.lukia.features.library.presentation.model.displayTitle
+import io.lukia.features.library.presentation.screens.BookTransfer
 import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.resources.Res
 import io.lukia.resources.home_see_all_shelf
@@ -60,6 +61,8 @@ internal fun HomeShelfRow(
     onOpenMenuChange: (HomeMenu?) -> Unit,
     onOpenShelf: (HomeShelf) -> Unit,
     modifier: Modifier = Modifier,
+    /** Downloads under way, by book location - see `BookTransfers`. */
+    transfers: Map<String, BookTransfer> = emptyMap(),
 ) {
     val dimens = LocalLukiaDimens.current
 
@@ -95,6 +98,7 @@ internal fun HomeShelfRow(
                     // Off the measurement the library grid sizes its cells
                     // from, so both screens agree how big a book is.
                     modifier = Modifier.width(dimens.bookCellMinWidth),
+                    transfer = transfers[book.location],
                 )
             }
         }

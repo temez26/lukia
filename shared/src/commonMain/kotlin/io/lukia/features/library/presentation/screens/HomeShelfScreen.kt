@@ -74,6 +74,7 @@ internal fun HomeShelfScreen(
         title = shelf.displayTitle(),
         books = books,
         actions = rememberHomeBookActions(viewModel, onOpenBook, onShowDetails, onSelectBooks),
+        transfers = rememberTransferUi(viewModel).states,
         onBack = onBack,
     )
 }
@@ -90,6 +91,8 @@ internal fun HomeShelfContent(
     actions: HomeBookActions,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Downloads under way, by book location - see `BookTransfers`. */
+    transfers: Map<String, BookTransfer> = emptyMap(),
 ) {
     // The location of the book whose menu is open, if any: one slot, so at most
     // one menu can be.
@@ -110,6 +113,7 @@ internal fun HomeShelfContent(
 
                 ShelfGrid(
                     books = books,
+                    transfers = transfers,
                     actions = actions,
                     openMenu = openMenu,
                     onOpenMenuChange = { openMenu = it },
@@ -131,6 +135,7 @@ private fun ShelfGrid(
     openMenu: String?,
     onOpenMenuChange: (String?) -> Unit,
     modifier: Modifier = Modifier,
+    transfers: Map<String, BookTransfer> = emptyMap(),
 ) {
     val dimens = LocalLukiaDimens.current
 
@@ -168,6 +173,7 @@ private fun ShelfGrid(
                 menuExpanded = openMenu == book.location,
                 onMenuExpandedChange = { expanded -> onOpenMenuChange(book.location.takeIf { expanded }) },
                 modifier = Modifier.animateItem(),
+                transfer = transfers[book.location],
             )
         }
     }

@@ -90,6 +90,7 @@ internal fun HomeScreen(
         uiState = uiState,
         home = home,
         importing = rememberImportUi(viewModel),
+        transfers = rememberTransferUi(viewModel).states,
         actions = actions,
         onOpenShelf = onOpenShelf,
         onImport = { filePicker.launch(viewModel::importDocuments) },
@@ -146,6 +147,8 @@ internal fun HomeContent(
      * without a ViewModel behind it, which is how it is tested and previewed.
      */
     importing: LibraryImportUi = LibraryImportUi.None,
+    /** Downloads under way, by book location - see `BookTransfers`. */
+    transfers: Map<String, BookTransfer> = emptyMap(),
     /** What the corner menu offers, which is what the library's own bar offers. */
     shelf: LibraryShelfUi = LibraryShelfUi.None,
     onSettings: () -> Unit = {},
@@ -184,6 +187,7 @@ internal fun HomeContent(
                     onOpenMenuChange = { menuOpen = it },
                     onOpenShelf = onOpenShelf,
                     reveal = reveal,
+                    transfers = transfers,
                     modifier = Modifier.fillMaxSize(),
                     header = {
                         HomeHeader(
