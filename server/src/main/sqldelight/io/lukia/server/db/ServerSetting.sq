@@ -1,0 +1,15 @@
+-- What the admin decides about the server, one row per setting. A missing row
+-- is the setting's default, so a server upgraded from before this table needs
+-- nothing written to behave as it did.
+CREATE TABLE server_setting (
+    key TEXT NOT NULL PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
+selectValue:
+SELECT value FROM server_setting WHERE key = ?;
+
+-- INSERT OR REPLACE rather than an upsert, for the app's reason (SQLite 3.9 on
+-- old Android); the server shares the habit so both read the same.
+setValue:
+INSERT OR REPLACE INTO server_setting(key, value) VALUES (?, ?);

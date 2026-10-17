@@ -34,6 +34,7 @@ import io.lukia.server.library.libraryRoutes
 import io.lukia.server.reading.BookStateService
 import io.lukia.server.reading.SessionService
 import io.lukia.server.reading.readingRoutes
+import io.lukia.server.settings.ServerSettingsService
 import org.slf4j.event.Level
 import java.time.Clock
 
@@ -50,6 +51,7 @@ fun Application.lukiaServer(
 ) {
     val secrets = SecretTokens()
     val tokens = TokenService(database, secrets, clock)
+    val settings = ServerSettingsService(database)
     val accounts = AccountService(database, hasher, tokens, secrets, SignInThrottle(clock), clock)
     val files = BookFiles(config.dataDirectory)
     val events = ChangeEvents()
@@ -90,8 +92,8 @@ fun Application.lukiaServer(
     }
 
     routing {
-        healthRoutes(config, database)
-        accountRoutes(accounts, tokens)
+        healthRoutes(config, database, settings)
+        accountRoutes(accounts, tokens, settings)
         libraryRoutes(library, files, tokens, config.maxUploadBytes)
         readingRoutes(bookStates, sessions, tokens)
         eventRoutes(events, tokens)

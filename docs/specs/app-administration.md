@@ -1,6 +1,6 @@
 # Running a server from the app
 
-Status: Draft
+Status: In progress
 
 ## Goal
 
@@ -43,8 +43,8 @@ App
 9. Signed out, Account offers, depending on what the server reports:
    - **set-up required:** create the admin account (as today);
    - **sign-up open:** sign in, or create an account;
-   - **sign-up closed:** sign in only, with a line saying the admin can open
-     sign-up;
+   - **sign-up closed:** sign in only, with a line asking the reader to ask
+     whoever runs the server to open new accounts;
    - **a server older than this:** sign in, or redeem an invite code, as now.
 10. Signed in as an admin, Account shows an **Administration** section:
     - an "Allow new accounts" switch, saved on the server;
@@ -102,7 +102,7 @@ looks at who reads what, or removes an account or a book.
 
 ## Slices
 
-- [ ] 1. Server: settings table and migration, `signUpOpen` on health, sign-up endpoint, with tests.
+- [x] 1. Server: settings table and migration, `signUpOpen` on health, sign-up endpoint, with tests.
 - [ ] 2. App: Account offers Create account when sign-up is open.
 - [ ] 3. Server and app: Allow new accounts switch for admins.
 - [ ] 4. Server: account list with usage, account removal; app: People list.
@@ -110,8 +110,7 @@ looks at who reads what, or removes an account or a book.
 - [ ] 6. App: Remove from server for admins.
 - [ ] 7. Server: remove the web admin page; docs.
 
-## Open Questions
+## Decisions
 
-- Should "sign-up closed" tell people who to ask, or only that sign-up is closed?
-- Should removing an account also remove the books it added? (Proposed: no, as
-  with deleting your own.)
+- Sign-up closed says to ask whoever runs the server to open new accounts.
+- Removing an account keeps the books it added, as deleting your own does.

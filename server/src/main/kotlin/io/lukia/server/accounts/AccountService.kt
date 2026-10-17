@@ -9,6 +9,7 @@ import io.lukia.api.RedeemInviteRequest
 import io.lukia.api.TokenResponse
 import io.lukia.server.db.ServerDatabase
 import io.lukia.server.http.ApiException
+import io.lukia.server.settings.ServerSettingsService
 import java.sql.SQLException
 import java.time.Clock
 import kotlin.time.Duration.Companion.days
@@ -28,6 +29,9 @@ class AccountService(
     private val clock: Clock,
 ) {
     private val accounts get() = database.accountQueries
+
+    /** Read from the same database rather than handed in: it is a view of it, holding nothing of its own. */
+    private val settings = ServerSettingsService(database)
 
     /**
      * A hash of no real password, verified against when the username is unknown
@@ -98,6 +102,33 @@ class AccountService(
             insertAccount(request.username, passwordHash, now)
             tokens.issue(accounts.lastInsertId().executeAsOne())
         }
+    }
+
+    /**
+     * An ordinary account, signed in, for anyone - while the admin has new
+     * accounts open, and refused with nothing created while they do not.
+     *
+     * Counted against the sign-in limit like a sign-in, so the endpoint cannot
+     * be used to make accounts, or to learn which names are taken, at speed.
+     */
+    fun signUp(credentials: Credentials, address: String): TokenResponse {
+        if (!settings.signUpOpen()) {
+            throw ApiException(
+                HttpStatusCode.Forbidden,
+                ApiErrorCodes.SignUpClosed,
+                "This server is not taking new accounts. Ask whoever runs it to open them.",
+            )
+        }
+
+        throttle.begin(credentials.username, address)
+        validate(credentials.username, credentials.password)
+        requireFree(credentials.username)
+        val passwordHash = hasher.hash(credentials.password)
+
+        return database.transactionWithResult {
+            insertAccount(credentials.username, passwordHash, clock.millis())
+            tokens.issue(accounts.lastInsertId().executeAsOne())
+        }.also { throttle.succeeded(credentials.username, address) }
     }
 
     fun delete(account: SignedInAccount) {
