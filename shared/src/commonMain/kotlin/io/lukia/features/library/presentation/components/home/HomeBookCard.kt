@@ -21,7 +21,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import io.lukia.core.presentation.authorLine
 import io.lukia.core.presentation.bookTitle
+import io.lukia.features.library.presentation.components.book.CoverTransferOverlay
 import io.lukia.features.library.presentation.model.LibraryBook
+import io.lukia.features.library.presentation.screens.BookTransfer
 import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.resources.Res
 import io.lukia.resources.book_actions
@@ -62,6 +64,8 @@ internal fun HomeBookCard(
     menuExpanded: Boolean,
     onMenuExpandedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    /** How a download of this book is going, if one is - see [CoverTransferOverlay]. */
+    transfer: BookTransfer? = null,
 ) {
     val document = book.document
     val title = document.bookTitle()
@@ -89,6 +93,7 @@ internal fun HomeBookCard(
             menuExpanded = menuExpanded,
             actions = actions,
             onMenuExpandedChange = onMenuExpandedChange,
+            transfer = transfer,
         )
 
         Text(
@@ -135,6 +140,7 @@ private fun Cover(
     actions: HomeBookActions,
     onMenuExpandedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    transfer: BookTransfer? = null,
 ) {
     Box(modifier = modifier.fillMaxWidth()) {
         BookCover(
@@ -160,6 +166,12 @@ private fun Cover(
         FavoriteBadge(
             visible = book.document.isFavorite,
             modifier = Modifier.padding(Space.sm),
+        )
+
+        CoverTransferOverlay(
+            document = book.document,
+            transfer = transfer,
+            modifier = Modifier.matchParentSize().clip(shape),
         )
 
         BookActionsMenu(

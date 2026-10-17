@@ -57,6 +57,8 @@ internal fun HomeRows(
      * page settles from the top rather than all at once.
      */
     reveal: LaunchReveal = LaunchReveal.Finished,
+    /** Downloads under way, by book location - see `BookTransfers`. */
+    transfers: Map<String, BookTransfer> = emptyMap(),
     header: @Composable () -> Unit,
 ) {
     val dimens = LocalLukiaDimens.current
@@ -88,6 +90,7 @@ internal fun HomeRows(
                     modifier = Modifier
                         .padding(horizontal = dimens.screenPadding)
                         .launchReveal(reveal, index = RowRevealOffset),
+                    transfer = transfers[book.location],
                 )
             }
         }
@@ -104,6 +107,7 @@ internal fun HomeRows(
                 onOpenMenuChange = onOpenMenuChange,
                 onOpenShelf = onOpenShelf,
                 modifier = Modifier.launchReveal(reveal, index = index + RowRevealOffset + 1),
+                transfers = transfers,
             )
         }
     }
