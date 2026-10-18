@@ -8,6 +8,8 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import io.lukia.core.presentation.bookTitle
 import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.outline.ReaderOutline
@@ -22,6 +24,7 @@ import io.lukia.resources.reader_reading_settings
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.controls.ShortcutTooltip
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import io.lukia.shared.presentation.theme.isWideWindow
 import io.lukia.shared.presentation.theme.topChromeIn
 import io.lukia.shared.presentation.theme.topChromeOut
 import org.jetbrains.compose.resources.stringResource
@@ -46,6 +49,7 @@ internal fun ReaderTopChrome(
     modifier: Modifier = Modifier,
 ) {
     val dimens = LocalLukiaDimens.current
+    val density = LocalDensity.current
 
     AnimatedVisibility(
         visible = chrome.chromeShown,
@@ -55,6 +59,9 @@ internal fun ReaderTopChrome(
     ) {
         ReaderToolbar(
             onBack = onBack,
+            // On a phone the contents open out of the bar as one block - see
+            // ReaderContentsPanel. A wide window keeps them a popover under it.
+            merged = chrome.contentsExpanded && !isWideWindow,
             // Named only where the bar has room to say it, which is also where a
             // window has no other title of its own.
             title = document?.info?.bookTitle(),
@@ -69,7 +76,8 @@ internal fun ReaderTopChrome(
                     end = dimens.screenPadding,
                     top = ChromeVerticalPadding,
                     bottom = ChromeVerticalPadding,
-                ),
+                )
+                .onSizeChanged { chrome.barHeight = with(density) { it.height.toDp() } },
             centerControl = {
                 // Only once there is a book to be somewhere in.
                 if (document != null && pageCount > 0) {
@@ -81,38 +89,42 @@ internal fun ReaderTopChrome(
                     )
                 }
             },
-            endControl = {
-                // One child rather than several, because on a narrow window the
-                // bar spaces its children evenly - and three controls drifting
-                // apart across half a phone is not a group of related buttons.
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    // A phone's bar has no room for three more glyphs, so there
-                    // they are rows in the settings panel instead - which is
-                    // also where there is room to say what each one does.
-                    if (translation.inToolbar) {
-                        TranslationControls(
-                            continuous = translation.onScreen.continuous,
-                            shown = translation.shown,
-                            offered = translation.offered,
-                            onTranslateOnScreen = translation.onTranslateOnScreen,
-                            onContinuousChange = translation.onContinuousChange,
-                            onVisibleChange = translation.onVisibleChange,
-                        )
-                    }
-
-                    ShortcutTooltip(
-                        description = stringResource(Res.string.reader_reading_settings),
-                        shortcut = "T",
-                    ) {
-                        LukiaIconButton(
-                            label = stringResource(Res.string.reader_reading_settings),
-                            onClick = chrome::toggleSettings,
-                        ) { tint, glyph ->
-                            TextSettingsGlyph(tint = tint, modifier = glyph)
-                        }
-                    }
-                }
-            },
+            endControl = { BarEndControls(translation = translation, onOpenSettings = chrome::toggleSettings) },
         )
+    }
+}
+
+/** Translation, where the bar has room for it, and the reading settings. */
+@Composable
+private fun BarEndControls(translation: ReaderTranslationUi, onOpenSettings: () -> Unit) {
+    // One child rather than several, because on a narrow window the
+    // bar spaces its children evenly - and three controls drifting
+    // apart across half a phone is not a group of related buttons.
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        // A phone's bar has no room for three more glyphs, so there
+        // they are rows in the settings panel instead - which is
+        // also where there is room to say what each one does.
+        if (translation.inToolbar) {
+            TranslationControls(
+                continuous = translation.onScreen.continuous,
+                shown = translation.shown,
+                offered = translation.offered,
+                onTranslateOnScreen = translation.onTranslateOnScreen,
+                onContinuousChange = translation.onContinuousChange,
+                onVisibleChange = translation.onVisibleChange,
+            )
+        }
+
+        ShortcutTooltip(
+            description = stringResource(Res.string.reader_reading_settings),
+            shortcut = "T",
+        ) {
+            LukiaIconButton(
+                label = stringResource(Res.string.reader_reading_settings),
+                onClick = onOpenSettings,
+            ) { tint, glyph ->
+                TextSettingsGlyph(tint = tint, modifier = glyph)
+            }
+        }
     }
 }

@@ -1,6 +1,7 @@
 package io.lukia.features.reader.presentation.screens
 
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithText
@@ -8,6 +9,8 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
+import androidx.compose.ui.unit.dp
+import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.features.reader.domain.outline.OutlineEntry
 import io.lukia.features.reader.domain.outline.ReaderOutline
 import kotlin.test.Test
@@ -25,9 +28,9 @@ class ReaderContentsPanelTest {
         onNodeWithText("Chapters").assertExists()
         onNodeWithText("The Middle").assertExists()
 
-        // Twice: the chapter the reader is in is named in the bar as well as
-        // listed in the panel, which is what the bar is now for.
-        assertEquals(2, onAllNodesWithText("Introduction").fetchSemanticsNodes().size)
+        // Three times: the chapter the reader is in is named in the bar, over
+        // the panel's scrubber, and in the list.
+        assertEquals(3, onAllNodesWithText("Introduction").fetchSemanticsNodes().size)
     }
 
     /** Tapping a chapter is the whole point: it has to move the book. */
@@ -57,8 +60,78 @@ class ReaderContentsPanelTest {
         setReader(pageCount = 348, outline = chapters)
 
         openContents(pageCount = 348)
+        onNodeWithContentDescription("Show sections of The Middle").performClick()
 
         onNodeWithContentDescription("A Section, page 130").assertExists()
+    }
+
+    /**
+     * Folded but for the chapter being read: a long book's sections are in the
+     * way of every other chapter, and the reader's own are the ones they want.
+     */
+    @Test
+    fun theContentsOpenWithOnlyTheReadersChapterUnfolded() = runComposeUiTest {
+        setReader(pageCount = 348, outline = chapters)
+
+        openContents(pageCount = 348)
+
+        assertEquals(
+            0,
+            onAllNodes(hasContentDescription("A Section, page 130")).fetchSemanticsNodes().size,
+        )
+    }
+
+    @Test
+    fun theChapterBeingReadHasItsSectionsShown() = runComposeUiTest {
+        setReader(
+            pageCount = 348,
+            outline = chapters,
+            initialPosition = ReadingProgress(pageIndex = 129, pageCount = 348),
+        )
+
+        onNode(hasContentDescription("Page 130 of 348", substring = true) and hasClickAction())
+            .performClick()
+
+        onNodeWithContentDescription("A Section, page 130").assertExists()
+        onNodeWithContentDescription("Hide sections of The Middle").assertExists()
+    }
+
+    /** What the scrubber would land in, by name, and how much of it is left. */
+    @Test
+    fun theScrubberNamesTheChapterAndWhatIsLeftOfIt() = runComposeUiTest {
+        setReader(pageCount = 348, outline = chapters)
+
+        openContents(pageCount = 348)
+
+        onNode(
+            hasContentDescription("Introduction. Page 1 of 348", substring = true) and
+                hasContentDescription("119 pages left in this chapter", substring = true),
+        ).assertExists()
+    }
+
+    /**
+     * A chapter the layout has not reached has no page yet. Showing the last page
+     * laid out so far put the same wrong number against every later chapter.
+     */
+    @Test
+    fun aChapterNotLaidOutYetShowsNoPage() = runComposeUiTest {
+        setReader(
+            pageCount = 348,
+            outline = ReaderOutline.Chapters(
+                listOf(
+                    OutlineEntry(title = "Introduction", pageIndex = 0, level = 0),
+                    OutlineEntry(title = "Later", pageIndex = 347, level = 0, placed = false),
+                ),
+            ),
+        )
+
+        openContents(pageCount = 348)
+
+        onNodeWithContentDescription("Later").assertExists()
+        assertEquals(
+            0,
+            onAllNodes(hasContentDescription("Later, page 348")).fetchSemanticsNodes().size,
+        )
     }
 
     /**
@@ -72,10 +145,10 @@ class ReaderContentsPanelTest {
 
         openContents(pageCount = 348)
 
-        onNodeWithContentDescription("Hide sections of The Middle").assertExists()
+        onNodeWithContentDescription("Show sections of The Middle").assertExists()
         assertEquals(
             0,
-            onAllNodes(hasContentDescription("Hide sections of Introduction"))
+            onAllNodes(hasContentDescription("Show sections of Introduction"))
                 .fetchSemanticsNodes().size,
         )
     }
@@ -85,16 +158,16 @@ class ReaderContentsPanelTest {
         setReader(pageCount = 348, outline = chapters)
 
         openContents(pageCount = 348)
+        onNodeWithContentDescription("Show sections of The Middle").performClick()
+
+        onNodeWithContentDescription("A Section, page 130").assertExists()
+
         onNodeWithContentDescription("Hide sections of The Middle").performClick()
 
         assertEquals(
             0,
             onAllNodes(hasContentDescription("A Section, page 130")).fetchSemanticsNodes().size,
         )
-
-        onNodeWithContentDescription("Show sections of The Middle").performClick()
-
-        onNodeWithContentDescription("A Section, page 130").assertExists()
     }
 
     /** The chapter itself stays reachable while its sections are folded away. */
@@ -103,7 +176,6 @@ class ReaderContentsPanelTest {
         setReader(pageCount = 348, outline = chapters)
 
         openContents(pageCount = 348)
-        onNodeWithContentDescription("Hide sections of The Middle").performClick()
         onNodeWithContentDescription("The Middle, page 120").performClick()
 
         onNodeWithText("120 / 348").assertExists()
@@ -114,16 +186,52 @@ class ReaderContentsPanelTest {
         setReader(pageCount = 348, outline = chapters)
 
         openContents(pageCount = 348)
+        onNodeWithContentDescription("Expand all").performClick()
+
+        onNodeWithContentDescription("A Section, page 130").assertExists()
+
         onNodeWithContentDescription("Collapse all").performClick()
 
         assertEquals(
             0,
             onAllNodes(hasContentDescription("A Section, page 130")).fetchSemanticsNodes().size,
         )
+    }
 
-        onNodeWithContentDescription("Expand all").performClick()
+    /** A phone's contents rise from the bottom, and the handle puts them away. */
+    @Test
+    fun onAPhoneTheContentsAreASheetItsHandleCloses() = runComposeUiTest {
+        setReader(pageCount = 348, outline = chapters, windowWidth = 390.dp)
 
-        onNodeWithContentDescription("A Section, page 130").assertExists()
+        openContents(pageCount = 348)
+        onNodeWithText("Chapters").assertExists()
+
+        onNodeWithContentDescription("Close this panel").performClick()
+
+        assertEquals(0, onAllNodes(hasText("Chapters")).fetchSemanticsNodes().size)
+    }
+
+    /** Which book this is heads the contents, as every reader's does. */
+    @Test
+    fun theContentsNameTheBook() = runComposeUiTest {
+        setReader(pageCount = 348, outline = chapters)
+        // A wide window's bar names the book already; the panel names it again.
+        val before = onAllNodesWithText("book").fetchSemanticsNodes().size
+
+        openContents(pageCount = 348)
+
+        assertEquals(before + 1, onAllNodesWithText("book").fetchSemanticsNodes().size)
+    }
+
+    /** How long each chapter is, sections included, as Kobo shows it. */
+    @Test
+    fun eachChapterSaysHowLongItIs() = runComposeUiTest {
+        setReader(pageCount = 348, outline = chapters)
+
+        openContents(pageCount = 348)
+
+        onNodeWithText("119 pages").assertExists()
+        onNodeWithText("229 pages").assertExists()
     }
 
     /** With nothing nested there is nothing to fold, so nothing is offered. */
@@ -140,7 +248,7 @@ class ReaderContentsPanelTest {
 
         assertEquals(
             0,
-            onAllNodes(hasContentDescription("Collapse all")).fetchSemanticsNodes().size,
+            onAllNodes(hasContentDescription("Expand all")).fetchSemanticsNodes().size,
         )
     }
 
@@ -158,7 +266,8 @@ class ReaderContentsPanelTest {
 
         openContents(pageCount = 100)
 
-        onNodeWithContentDescription("Page 1 of 100, 1 percent through").assertExists()
+        onNode(hasContentDescription("Page 1 of 100, 1 percent through", substring = true))
+            .assertExists()
     }
 
     @Test

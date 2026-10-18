@@ -53,6 +53,33 @@ The mobile home screen leads with the book being read
 - Browsing by category lives on the Search tab (`BrowseCategories`), fed by
   `LibraryFacets.browseCategories`: subjects at least two books share, at most 20.
 
+## Reader contents panel
+
+`ReaderContentsPanel` is a `TopSheet` on a phone and a popover hanging from
+the page indicator on a wider window. On a phone the reader's bar is the
+sheet's top row (`ReaderToolbar(merged = true)` drops its own capsule), so bar
+and contents are one block. Under the bar: the book (cover, title, author), the
+scrubber, then the book's contents.
+
+- Over the scrubber: the chapter at the thumb (it follows a drag), the page and,
+  when it is known, how many pages are left in this chapter.
+- The list is as tall as the window allows and no taller than its rows. Don't
+  give it a fixed height.
+- "Pages left in this chapter" counts to the end of the top-level chapter.
+- It opens with every chapter folded except the one being read, scrolled so a
+  couple of rows above that chapter are visible.
+- Chapters already read are in the muted colour. Each chapter shows its length
+  in pages, and the row being read has a progress bar under its title.
+- A chapter the layout hasn't reached yet (`OutlineEntry.placed == false`)
+  shows no page number. Choosing it goes there once the layout reaches it.
+
+`TopSheet` (`components/surface/`) drops from the top and leaves
+`topClearance` empty for the bar drawn over it. It is in-window rather than a
+popup, so a keyboard and a switch control can reach into it. The handle at its
+foot closes it when dragged up or pressed. It is opaque under the glass, because
+a sheet tall enough to cover the page would otherwise be read over the page's
+text.
+
 ## Adding a palette
 
 1. Add the entry to `AppPalette` with a KDoc saying what it is.

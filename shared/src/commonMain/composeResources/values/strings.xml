@@ -374,6 +374,10 @@
     <!-- The page indicator: the page in hand, and how many there are. -->
     <string name="reader_page_of_count">%1$d / %2$d</string>
     <string name="reader_page_x_of_y">Page %1$d of %2$d</string>
+    <plurals name="reader_pages_left_in_chapter">
+        <item quantity="one">1 page left in this chapter</item>
+        <item quantity="other">%1$d pages left in this chapter</item>
+    </plurals>
     <string name="reader_page_x_of_y_percent">Page %1$d of %2$d, %3$d percent through</string>
     <string name="reader_percent_read">%1$d percent read</string>
     <string name="reader_percent">%1$d%</string>

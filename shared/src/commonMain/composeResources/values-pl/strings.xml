@@ -297,6 +297,12 @@
     <string name="reader_reading_settings">Ustawienia czytania</string>
     <string name="reader_page_of_count">%1$d / %2$d</string>
     <string name="reader_page_x_of_y">Strona %1$d z %2$d</string>
+    <plurals name="reader_pages_left_in_chapter">
+        <item quantity="one">Jeszcze 1 strona w tym rozdziale</item>
+        <item quantity="few">Jeszcze %1$d strony w tym rozdziale</item>
+        <item quantity="many">Jeszcze %1$d stron w tym rozdziale</item>
+        <item quantity="other">Jeszcze %1$d strony w tym rozdziale</item>
+    </plurals>
     <string name="reader_page_x_of_y_percent">Strona %1$d z %2$d, przeczytane %3$d procent</string>
     <string name="reader_percent_read">Przeczytane %1$d procent</string>
     <string name="reader_percent">%1$d%</string>

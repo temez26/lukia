@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.unit.dp
 
 /**
  * What the reader has open on top of the book, and whether the chrome is showing.
@@ -28,6 +29,12 @@ internal class ReaderChromeState {
         private set
 
     val panelOpen: Boolean get() = settingsExpanded || contentsExpanded
+
+    /**
+     * How tall the bar is drawn, which the contents sheet leaves room for at its
+     * top. Measured rather than assumed: the bar grows with the system font size.
+     */
+    var barHeight by mutableStateOf(0.dp)
 
     /** A panel hangs off the toolbar, so the toolbar cannot leave while one is open. */
     val chromeShown: Boolean get() = chromeVisible || panelOpen

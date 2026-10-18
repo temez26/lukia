@@ -2,12 +2,15 @@
 
 package io.lukia.features.reader.presentation.screens
 
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.Dp
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.document.DocumentType
 import io.lukia.core.domain.document.PickedDocument
@@ -46,9 +49,11 @@ internal fun ComposeUiTest.setReader(
     onBack: () -> Unit = {},
     onSettingsChange: (ReaderSettings) -> Unit = {},
     onPageSettled: (Int, Int) -> Unit = { _, _ -> },
+    /** A phone's width, for what the reader lays out differently on one. */
+    windowWidth: Dp = Dp.Unspecified,
 ) {
     setContent {
-        LukiaTheme {
+        LukiaTheme(modifier = if (windowWidth == Dp.Unspecified) Modifier else Modifier.width(windowWidth)) {
             ReaderContent(
                 uiState = uiState ?: UiState.Success(readerDocument(pageCount)),
                 settings = settings,

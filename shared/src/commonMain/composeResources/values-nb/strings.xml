@@ -273,6 +273,10 @@
     <string name="reader_reading_settings">Leseinnstillinger</string>
     <string name="reader_page_of_count">%1$d / %2$d</string>
     <string name="reader_page_x_of_y">Side %1$d av %2$d</string>
+    <plurals name="reader_pages_left_in_chapter">
+        <item quantity="one">1 side igjen i dette kapittelet</item>
+        <item quantity="other">%1$d sider igjen i dette kapittelet</item>
+    </plurals>
     <string name="reader_page_x_of_y_percent">Side %1$d av %2$d, %3$d prosent gjennom</string>
     <string name="reader_percent_read">%1$d prosent lest</string>
     <string name="reader_percent">%1$d\u00A0%</string>

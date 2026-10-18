@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -85,6 +86,12 @@ internal fun ReaderToolbar(
     onBack: () -> Unit,
     title: String?,
     modifier: Modifier = Modifier,
+    /**
+     * Whether the bar is the top row of a panel that has opened out of it - see
+     * `TopSheet`. The panel's surface is the bar's then, and a capsule of its own
+     * drawn on top would split the one block back into two.
+     */
+    merged: Boolean = false,
     centerControl: @Composable () -> Unit,
     endControl: @Composable () -> Unit,
 ) {
@@ -98,12 +105,7 @@ internal fun ReaderToolbar(
     val center = remember(centerControl) { movableContentOf(centerControl) }
     val end = remember(endControl) { movableContentOf(endControl) }
 
-    GlassSurface(
-        // A capsule, because this is the one piece of chrome in the app that
-        // genuinely floats free of everything around it.
-        shape = MaterialTheme.shapes.large,
-        modifier = modifier.fillMaxWidth(),
-    ) {
+    BarSurface(merged = merged, modifier = modifier.fillMaxWidth()) {
         BoxWithConstraints {
             // What the middle of the bar may take, whatever is written in it.
             //
@@ -154,6 +156,24 @@ internal fun ReaderToolbar(
                 }
             }
         }
+    }
+}
+
+/**
+ * A capsule, because this is the one piece of chrome in the app that genuinely
+ * floats free of everything around it - unless it is [merged] into the panel it
+ * opened, which draws the surface for both.
+ */
+@Composable
+private fun BarSurface(
+    merged: Boolean,
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    if (merged) {
+        Box(modifier = modifier, content = content)
+    } else {
+        GlassSurface(shape = MaterialTheme.shapes.large, modifier = modifier, content = content)
     }
 }
 

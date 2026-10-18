@@ -25,7 +25,12 @@ internal fun ReaderOutline.onPages(book: PaginatedBook, reflowable: Boolean): Re
 
     return ReaderOutline.Chapters(
         entries.map { entry ->
-            entry.copy(pageIndex = book.pageOf(entry.pageIndex, entry.blockIndex))
+            entry.copy(
+                pageIndex = book.pageOf(entry.pageIndex, entry.blockIndex),
+                // Clamped to the last page laid out so far, which is right for
+                // nothing a reader sees - see [OutlineEntry.placed].
+                placed = book.holds(BookPlace(entry.pageIndex, entry.blockIndex)),
+            )
         },
     )
 }

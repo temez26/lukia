@@ -26,4 +26,10 @@ data class OutlineEntry(
      * at a page, and there is nothing finer to say.
      */
     val blockIndex: Int = 0,
+    /**
+     * False while the reader is still laying out the part of the book this entry
+     * is in. [pageIndex] is then only how far the layout has got: not a page
+     * number to show, nor somewhere to count the reader as being.
+     */
+    val placed: Boolean = true,
 )
