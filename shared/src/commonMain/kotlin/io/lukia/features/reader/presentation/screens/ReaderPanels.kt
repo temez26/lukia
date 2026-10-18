@@ -4,7 +4,13 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -12,10 +18,12 @@ import io.lukia.features.reader.domain.ReaderDocument
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.ReflowableContent
 import io.lukia.features.reader.domain.outline.ReaderOutline
+import io.lukia.features.reader.presentation.components.contents.ContentsActions
 import io.lukia.features.reader.presentation.components.contents.ReaderContentsPanel
 import io.lukia.features.reader.presentation.components.settings.ReaderSettingsPanel
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.isWideWindow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -32,6 +40,8 @@ internal fun BoxScope.ReaderPanels(
     document: ReaderDocument?,
     /** How long the book is in pages, which is what the contents counts against. */
     pageCount: Int,
+    /** False while a reflowable book is still being laid out and [pageCount] climbs. */
+    pageCountFinal: Boolean,
     outline: ReaderOutline,
     listState: LazyListState,
     settings: ReaderSettings,
@@ -57,18 +67,28 @@ internal fun BoxScope.ReaderPanels(
     // floating over the book. The same gutter the chrome above them uses.
     val bottomPadding = ChromeVerticalPadding
 
+    val goToChapter = rememberGoToChapter(document, outline, listState)
+
     if (document != null) {
         ReaderContentsPanel(
             expanded = chrome.contentsExpanded,
             listState = listState,
             pageCount = pageCount,
+            pageCountFinal = pageCountFinal,
             outline = outline,
-            onGoToPage = { pageIndex -> scope.launch { listState.scrollToItem(pageIndex) } },
-            onDismissRequest = chrome::closePanels,
+            book = document.info,
+            actions = ContentsActions(
+                onGoToPage = { pageIndex -> scope.launch { listState.scrollToItem(pageIndex) } },
+                onGoToChapter = goToChapter,
+                onDismiss = chrome::closePanels,
+            ),
+            barHeight = chrome.barHeight,
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(
-                    top = chromeHeight,
+                    // A phone's contents open out of the bar, so they start where
+                    // it does - see ReaderContentsPanel.
+                    top = if (wide) chromeHeight else ChromeVerticalPadding,
                     bottom = bottomPadding,
                     start = sidePadding,
                     end = sidePadding,
@@ -99,4 +119,39 @@ internal fun BoxScope.ReaderPanels(
             ),
         translationSection = translationSection,
     )
+}
+
+/**
+ * Goes to an entry of [outline] by its index, now or once the layout reaches it.
+ *
+ * A chapter chosen before the layout got there used to be sent to the last page
+ * laid out so far, so the reader landed somewhere the contents never said and
+ * had to go back to the panel to try again.
+ */
+@Composable
+private fun rememberGoToChapter(
+    document: ReaderDocument?,
+    outline: ReaderOutline,
+    listState: LazyListState,
+): (entryIndex: Int) -> Unit {
+    var awaited by remember(document) { mutableStateOf<Int?>(null) }
+    val entries = (outline as? ReaderOutline.Chapters)?.entries
+
+    LaunchedEffect(awaited, entries) {
+        val entry = awaited?.let { entries?.getOrNull(it) } ?: return@LaunchedEffect
+
+        if (entry.placed) {
+            awaited = null
+            listState.scrollToItem(entry.pageIndex)
+        }
+    }
+
+    // Turning the page by hand while waiting is a change of mind.
+    LaunchedEffect(awaited) {
+        if (awaited == null) return@LaunchedEffect
+        snapshotFlow { listState.isScrollInProgress }.first { it }
+        awaited = null
+    }
+
+    return { index -> awaited = index }
 }

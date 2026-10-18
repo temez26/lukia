@@ -23,6 +23,7 @@
     <string name="state_loading">Caricamento</string>
     <string name="menu_book_details">Dettagli del libro</string>
     <string name="menu_favourite">Aggiungi ai preferiti</string>
+    <string name="menu_mark_unread">Segna come non letto</string>
     <string name="menu_unfavourite">Togli dai preferiti</string>
     <string name="menu_select_books">Seleziona libri</string>
     <string name="menu_sync_with_server">Sincronizza con il server</string>
@@ -168,6 +169,14 @@
     <string name="sort_last_read">Letti di recente</string>
     <string name="sort_largest">Prima i più grandi</string>
     <string name="home_title">Inizio</string>
+    <plurals name="home_book_count">
+        <item quantity="one">1 libro</item>
+        <item quantity="other">%1$d libri</item>
+    </plurals>
+    <plurals name="home_reading_count">
+        <item quantity="one">1 in corso</item>
+        <item quantity="other">%1$d in corso</item>
+    </plurals>
     <string name="home_shelf_favorites">Preferiti</string>
     <string name="home_shelf_recently_opened">Aperti di recente</string>
     <string name="home_shelf_recently_added">Aggiunti di recente</string>
@@ -273,10 +282,13 @@
     <string name="reader_reading_settings">Impostazioni di lettura</string>
     <string name="reader_page_of_count">%1$d / %2$d</string>
     <string name="reader_page_x_of_y">Pagina %1$d di %2$d</string>
+    <plurals name="reader_pages_left_in_chapter">
+        <item quantity="one">Ancora 1 pagina in questo capitolo</item>
+        <item quantity="other">Ancora %1$d pagine in questo capitolo</item>
+    </plurals>
     <string name="reader_page_x_of_y_percent">Pagina %1$d di %2$d, %3$d per cento percorso</string>
     <string name="reader_percent_read">%1$d per cento letto</string>
     <string name="reader_percent">%1$d%</string>
-    <string name="reader_percent_start">0</string>
     <string name="reader_opening">Apertura…</string>
     <string name="reader_reading_text">Lettura del testo… pagina %1$d di %2$d</string>
     <string name="reader_chapters">Capitoli</string>

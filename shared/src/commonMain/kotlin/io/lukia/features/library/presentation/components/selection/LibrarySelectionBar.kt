@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import io.lukia.features.library.presentation.components.toolbar.libraryNavBarHeight
 import io.lukia.features.library.presentation.model.BulkAction
@@ -22,9 +23,9 @@ import io.lukia.resources.library_deselect_all
 import io.lukia.resources.library_select_all
 import io.lukia.resources.library_select_books
 import io.lukia.resources.library_selected_count
-import io.lukia.shared.presentation.components.controls.ButtonSize
-import io.lukia.shared.presentation.components.controls.ButtonVariant
-import io.lukia.shared.presentation.components.controls.LukiaButton
+import io.lukia.shared.presentation.components.controls.LukiaIconButton
+import io.lukia.shared.presentation.components.icons.PlusGlyph
+import io.lukia.shared.presentation.components.icons.SelectAllGlyph
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
@@ -60,14 +61,16 @@ internal fun LibrarySelectionBar(
             .heightIn(min = libraryNavBarHeight())
             .padding(horizontal = dimens.screenPadding),
     ) {
-        LukiaButton(
-            label = stringResource(
-                if (allSelected) Res.string.library_deselect_all else Res.string.library_select_all,
-            ),
-            onClick = onToggleAll,
-            variant = ButtonVariant.Ghost,
-            size = ButtonSize.Compact,
-        )
+        // Leaving the mode first, where a back control is: ending a selection is
+        // going back to the shelf. Drawn as the app's close mark rather than
+        // spelled out, as the photo and file apps set their selection bars.
+        LukiaIconButton(
+            label = stringResource(Res.string.action_done),
+            onClick = onFinish,
+            enabled = running == null,
+        ) { tint, glyph ->
+            PlusGlyph(tint = tint, modifier = glyph.graphicsLayer { rotationZ = 45f })
+        }
 
         Text(
             // While something is running the count is not the news - how far
@@ -79,13 +82,14 @@ internal fun LibrarySelectionBar(
             modifier = Modifier.padding(horizontal = Space.sm),
         )
 
-        LukiaButton(
-            label = stringResource(Res.string.action_done),
-            onClick = onFinish,
-            variant = ButtonVariant.Ghost,
-            size = ButtonSize.Compact,
-            enabled = running == null,
-        )
+        LukiaIconButton(
+            label = stringResource(
+                if (allSelected) Res.string.library_deselect_all else Res.string.library_select_all,
+            ),
+            onClick = onToggleAll,
+        ) { tint, glyph ->
+            SelectAllGlyph(tint = tint, all = allSelected, modifier = glyph)
+        }
     }
 }
 

@@ -6,6 +6,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import io.lukia.features.reader.domain.ReaderSettings
 import io.lukia.features.reader.domain.TextAlignment
+import io.lukia.features.reader.domain.text.TextBlock
 import io.lukia.shared.presentation.theme.LukiaTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -50,8 +51,8 @@ class ReaderTextStyleTest {
     fun aHeadingIsNeverJustifiedWhateverTheProseIsSetTo() {
         val prose = styleFor(ReaderSettings(alignment = TextAlignment.Justified))
 
-        assertEquals(TextAlign.Start, headingStyle(prose, level = 1).textAlign)
-        assertEquals(TextAlign.Start, headingStyle(prose, level = 3).textAlign)
+        assertEquals(TextAlign.Start, headingStyle(prose, TextBlock.Heading(emptyList(), level = 1)).textAlign)
+        assertEquals(TextAlign.Start, headingStyle(prose, TextBlock.Heading(emptyList(), level = 3)).textAlign)
     }
 
     /**
@@ -84,6 +85,6 @@ class ReaderTextStyleTest {
     fun aHeadingTheBookCentredStaysCentred() {
         val centred = styleFor(ReaderSettings()).copy(textAlign = TextAlign.Center)
 
-        assertEquals(TextAlign.Center, headingStyle(centred, level = 1).textAlign)
+        assertEquals(TextAlign.Center, headingStyle(centred, TextBlock.Heading(emptyList(), level = 1)).textAlign)
     }
 }

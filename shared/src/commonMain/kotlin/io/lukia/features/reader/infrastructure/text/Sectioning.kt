@@ -98,7 +98,7 @@ internal fun sectionText(blocks: List<TextBlock>): SectionedText {
                 ?.plainText()
                 ?.trim()
                 ?.ifEmpty { null },
-            blocks = blocks.subList(start, starts.getOrElse(index + 1) { blocks.size }).toList(),
+            blocks = blocks.subList(start, starts.getOrElse(index + 1) { blocks.size }).withChapterOpening(),
         )
     }
 
@@ -146,3 +146,58 @@ private fun outlineOf(sections: List<TextSection>, topLevel: Int?): List<Outline
         }
     }
 }
+
+/**
+ * These blocks with the headings a chapter opens with marked as such - see
+ * [TextBlock.Heading.chapter].
+ *
+ * The headings at the head of a section, before anything has been said: a
+ * picture or a scene break may come first, a paragraph may not. A heading after
+ * prose is one inside the chapter, whatever its level.
+ *
+ * Many books open a chapter with two: "CHAPTER 5:" and then its name. Short
+ * headings ahead of the title are set as its label rather than as two titles;
+ * the first that reads as a name is the title, and any after it are sections.
+ */
+internal fun List<TextBlock>.withChapterOpening(): List<TextBlock> {
+    val firstProse = indexOfFirst { it.isProse() }.let { if (it == -1) size else it }
+    val leading = (0 until firstProse).filter { this[it] is TextBlock.Heading }
+    if (leading.isEmpty()) return toList()
+
+    val titleAt = leading.firstOrNull { !(this[it] as TextBlock.Heading).readsAsLabel() } ?: leading.last()
+    val labelled = leading.first() != titleAt
+
+    return mapIndexed { index, block ->
+        val heading = block as? TextBlock.Heading
+        when {
+            heading == null || index !in leading -> block
+            index < titleAt -> heading.copy(chapter = TextBlock.ChapterRole.Label)
+            index == titleAt -> heading.copy(
+                chapter = if (labelled) TextBlock.ChapterRole.TitleUnderLabel else TextBlock.ChapterRole.Title,
+            )
+            else -> block
+        }
+    }
+}
+
+/** Longest a chapter label runs to: "Chapter Twenty-Three", "PART IV:". */
+private const val LABEL_MAX_WORDS = 3
+private const val LABEL_MAX_LENGTH = 24
+
+/** A Roman numeral standing as a word of its own: "Part IV", "XII". */
+private val RomanNumeral = Regex("""\b[IVXLC]+\b""")
+
+/**
+ * A "Chapter 5" or a "PART IV:" rather than a name: short, and numbered. Short
+ * alone is not enough - "Introduction" followed by a heading of its own is a
+ * title with a section under it, not a label over one.
+ */
+private fun TextBlock.Heading.readsAsLabel(): Boolean {
+    val words = text.plainText().trim()
+    val short = words.length <= LABEL_MAX_LENGTH && words.split(' ').size <= LABEL_MAX_WORDS
+
+    return short && (words.any { it.isDigit() } || RomanNumeral.containsMatchIn(words))
+}
+
+private fun TextBlock.isProse(): Boolean =
+    this is TextBlock.Paragraph || this is TextBlock.ListItem || this is TextBlock.Quote || this is TextBlock.Code

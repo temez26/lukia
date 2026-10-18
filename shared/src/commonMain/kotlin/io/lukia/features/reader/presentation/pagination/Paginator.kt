@@ -180,7 +180,7 @@ private class PageBuilder(
             // A block that would fit a page of its own, but not what is left of
             // this one, ends the page here - which is what keeps a paragraph in
             // one piece wherever one can be.
-            if (height > availablePx() && height <= pageHeightPx) flush()
+            if (height > availablePx() && height <= pageHeightPx) breakPage()
 
             val cut = cutToFill(remaining, height)
 
@@ -188,7 +188,7 @@ private class PageBuilder(
                 // Either it fits, or there is nothing in it to divide - a plate,
                 // or a line of code longer than the screen. The second kind gets
                 // a page to itself and is drawn scaled down to it.
-                if (height > availablePx()) flush()
+                if (height > availablePx()) breakPage()
 
                 place(blockIndex, remaining, height, Slice(text, consumed, cut = false))
                 return
@@ -267,6 +267,34 @@ private class PageBuilder(
 
     private fun availablePx(): Int =
         pageHeightPx - usedPx - if (current.isEmpty()) 0 else sizes.spacingPx
+
+    /**
+     * Ends the page before a block that will not fit on it, carrying any
+     * headings at its foot over with that block - a heading is set with what it
+     * heads, as print does. Left at the bottom of a page, a section's title read
+     * as the end of the section before it, and a chapter's "CHAPTER 7:" was
+     * parted from its name.
+     *
+     * Not where the headings are all the page holds: moving them would leave an
+     * empty page behind, and change nothing about what follows them.
+     */
+    private fun breakPage() {
+        val trailing = current.takeLastWhile { it.block is TextBlock.Heading }
+
+        if (trailing.isEmpty() || trailing.size == current.size) {
+            flush()
+            return
+        }
+
+        repeat(trailing.size) { current.removeAt(current.lastIndex) }
+        flush()
+
+        trailing.forEach { carried ->
+            if (current.isNotEmpty()) usedPx += sizes.spacingPx
+            current += carried
+            usedPx += sizes.height(carried.block)
+        }
+    }
 
     private fun flush() {
         if (current.isEmpty()) return

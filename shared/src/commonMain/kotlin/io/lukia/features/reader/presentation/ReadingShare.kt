@@ -9,8 +9,8 @@ private const val Whole = 100
  * How far through a book a page is, as a whole percentage.
  *
  * Written once because two places have to agree: the scrubber in the contents
- * panel and the figure along the bottom of the page - see `PositionScrubber` and
- * `ReaderReadingStatus`. Two roundings of one position disagreeing by a point is
+ * panel and the figure in the reader's bar - see `PositionScrubber` and
+ * `PageIndicatorButton`. Two roundings of one position disagreeing by a point is
  * what a reader notices and cannot explain.
  *
  * [position] is one-based, so the last page of a book is all of it rather than

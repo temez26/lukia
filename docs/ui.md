@@ -53,6 +53,59 @@ The mobile home screen leads with the book being read
 - Browsing by category lives on the Search tab (`BrowseCategories`), fed by
   `LibraryFacets.browseCategories`: subjects at least two books share, at most 20.
 
+## Reader bar
+
+The reader has one bar, at the top: back, the page indicator (chapter, page,
+and how far through the book), and reading settings. The progress through the
+book is a thin line along the bar's bottom edge (`ReaderToolbar(progress = …)`).
+There is no bar along the bottom of the page.
+
+## Headings in the book
+
+Where a book is split into sections, the headings a section opens with are
+marked with a `ChapterRole` (`withChapterOpening`):
+
+- **Title:** set large and bold, with space above and a short accent rule under it.
+- **Label:** a short numbered line over the title ("CHAPTER 5:"), set small,
+  letter-spaced and in the accent colour.
+- **None:** a heading inside a chapter, set in the page theme's accent colour.
+
+Measuring (`BlockMetrics`) and drawing (`HeadingBlock`) both read
+`headingStyle` and `headingTopPadding`, so pages are cut to what is drawn.
+A `p` or `div` whose class starts with `heading` is read as a heading, which is
+how Kindle conversions write them. So is one whose class the book's stylesheet
+sets bold and at least 1.15em (`headingClasses`), up to 120 characters long.
+
+A heading never ends a page: when the block after it moves to the next page,
+the headings at the foot of the page move with it (`PageBuilder.breakPage`).
+
+## Reader contents panel
+
+`ReaderContentsPanel` is a `TopSheet` on a phone and a popover hanging from
+the page indicator on a wider window. On a phone the reader's bar is the
+sheet's top row (`ReaderToolbar(merged = true)` drops its own capsule), so bar
+and contents are one block. Under the bar: the book (cover, title, author), the
+scrubber, then the book's contents.
+
+- Over the scrubber: the chapter at the thumb (it follows a drag), the page and,
+  when it is known, how many pages are left in this chapter.
+- The list is as tall as the window allows and no taller than its rows. Don't
+  give it a fixed height.
+- "Pages left in this chapter" counts to the end of the top-level chapter.
+- It opens with every chapter folded except the one being read, scrolled so a
+  couple of rows above that chapter are visible.
+- Chapters already read are in the muted colour. Each chapter shows its length
+  in pages, and the row being read has a progress bar under its title.
+- A chapter the layout hasn't reached yet (`OutlineEntry.placed == false`)
+  shows no page number. Choosing it goes there once the layout reaches it.
+
+`TopSheet` (`components/surface/`) drops from the top and leaves
+`topClearance` empty for the bar drawn over it. It is in-window rather than a
+popup, so a keyboard and a switch control can reach into it. The handle at its
+foot closes it when dragged up or pressed. It is opaque under the glass, because
+a sheet tall enough to cover the page would otherwise be read over the page's
+text.
+
 ## Adding a palette
 
 1. Add the entry to `AppPalette` with a KDoc saying what it is.

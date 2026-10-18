@@ -59,6 +59,8 @@ fun BookDetailOverlay(
     onDelete: (DocumentInfo) -> Unit,
     modifier: Modifier = Modifier,
     transfers: BookTransferUi = BookTransferUi.None,
+    /** Puts a book back to unread; offered only for one that has been started. */
+    onMarkUnread: ((DocumentInfo) -> Unit)? = null,
 ) {
     val dimens = LocalLukiaDimens.current
 
@@ -94,6 +96,7 @@ fun BookDetailOverlay(
                     onDelete = { onDelete(shown) },
                     onDismissRequest = { menuExpanded = false },
                     onRemoveFromServer = transfers.removeFromServer(shown),
+                    onMarkUnread = onMarkUnread?.takeIf { progress != null }?.let { mark -> { mark(shown) } },
                 )
             },
         ) {

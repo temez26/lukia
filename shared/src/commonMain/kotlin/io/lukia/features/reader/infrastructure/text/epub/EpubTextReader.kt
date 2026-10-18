@@ -12,8 +12,10 @@ import io.lukia.features.reader.domain.text.plainText
 import io.lukia.features.reader.infrastructure.text.MAX_BLOCKS_PER_SECTION
 import io.lukia.features.reader.infrastructure.text.decodeText
 import io.lukia.features.reader.infrastructure.text.html.HtmlContent
+import io.lukia.features.reader.infrastructure.text.html.headingClasses
 import io.lukia.features.reader.infrastructure.text.html.htmlContent
 import io.lukia.features.reader.infrastructure.text.sectionStarts
+import io.lukia.features.reader.infrastructure.text.withChapterOpening
 import io.lukia.features.reader.infrastructure.text.withSectionHeadings
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -76,10 +78,12 @@ internal suspend fun readEpub(
      */
     val files = mutableMapOf<String, FileSections>()
 
+    val styledHeadings = epub.styledHeadings(diagnostics)
+
     val read = coroutineScope {
         epub.readingOrder
             .filter { it.mediaType in ReadableMediaTypes }
-            .map { item -> async { item to epub.contentOf(item, diagnostics) } }
+            .map { item -> async { item to epub.contentOf(item, styledHeadings, diagnostics) } }
             .awaitAll()
     }
 
@@ -94,6 +98,7 @@ internal suspend fun readEpub(
     if (sections.isEmpty()) return null
 
     val contents = epub.tableOfContents(files, diagnostics)
+        .withBackwardLinksMended(fileStarts = files.values.map { it.firstSection }.sorted())
         .ifEmpty { sections.headingOutline() }
 
     return ReflowableContent(
@@ -112,16 +117,30 @@ internal suspend fun readEpub(
  */
 private fun EpubPackage.contentOf(
     item: EpubManifestItem,
+    styledHeadings: Map<String, Int>,
     diagnostics: Diagnostics,
 ): HtmlContent? {
     val html = read(item.path)?.let { decodeText(it, diagnostics) } ?: return null
 
-    return htmlContent(html) { source -> read(resolveFrom(item.path, source)) }
+    return htmlContent(html, image = { source ->
+        read(resolveFrom(item.path, source))
+    }, styledHeadings = styledHeadings)
 }
+
+/**
+ * The classes the book's stylesheets set as headings - see [headingClasses].
+ * Read across every stylesheet at once: a converter writes one for the whole
+ * book, and a class means the same in every chapter that uses it.
+ */
+private fun EpubPackage.styledHeadings(diagnostics: Diagnostics): Map<String, Int> =
+    manifest
+        .filter { it.mediaType == "text/css" }
+        .mapNotNull { sheet -> read(sheet.path)?.let { decodeText(it, diagnostics) } }
+        .fold(emptyMap()) { classes, css -> classes + headingClasses(css) }
 
 /** Where one file of the book ended up once it was laid out as sections. */
 private class FileSections(
-    private val firstSection: Int,
+    val firstSection: Int,
     private val anchorPlaces: Map<String, OutlinePlace>,
 ) {
 
@@ -141,7 +160,7 @@ private fun MutableList<TextSection>.append(content: HtmlContent): FileSections 
 
     starts.forEachIndexed { index, start ->
         val end = starts.getOrElse(index + 1) { content.blocks.size }
-        val blocks = content.blocks.subList(start, end).toList()
+        val blocks = content.blocks.subList(start, end).withChapterOpening()
 
         add(TextSection(title = blocks.firstHeading(), blocks = blocks))
     }
@@ -227,3 +246,55 @@ private fun EpubPackage.tableOfContents(
  * it names is not.
  */
 private fun String.fragment(): String = decodePercentEncoding(substringAfter('#', ""))
+
+/**
+ * The contents with links that lead back into an earlier chapter sent forward
+ * again.
+ *
+ * Converters that renumber a book's anchors sometimes leave a later chapter
+ * pointing at an anchor an earlier entry already uses, or at one that is not
+ * there at all - one book's contents sent "Chapter 6" and "Chapter 7" to the
+ * middle of chapter 1. A book's contents run in reading order, so a link that
+ * goes backwards is broken, and the next file after the entry before it is where
+ * that chapter almost always is.
+ *
+ * Left alone where there is no next file: an entry at the very end pointing
+ * back, such as a closing "Cover", has nowhere better to go.
+ */
+internal fun List<OutlineEntry>.withBackwardLinksMended(fileStarts: List<Int>): List<OutlineEntry> {
+    val mended = toMutableList()
+
+    for (index in 1 until size) {
+        val previous = mended[index - 1]
+
+        if (this[index].placeBefore(previous)) {
+            mended[index] = mendedPlace(index, previous, fileStarts) ?: this[index]
+        }
+    }
+
+    return mended
+}
+
+/** Where the entry at [index], which leads back before [previous], should go instead. */
+private fun List<OutlineEntry>.mendedPlace(
+    index: Int,
+    previous: OutlineEntry,
+    fileStarts: List<Int>,
+): OutlineEntry? {
+    val entry = this[index]
+    val nextFile = fileStarts.firstOrNull { it > previous.pageIndex } ?: return null
+    val fileTop = entry.copy(pageIndex = nextFile, blockIndex = 0)
+
+    // Never past the next entry that is where it should be: a chapter in the
+    // same file as the one before it is still ahead of its own first section.
+    val nextSound = drop(index + 1).firstOrNull { !it.placeBefore(previous) }
+
+    return if (nextSound != null && nextSound.placeBefore(fileTop)) {
+        entry.copy(pageIndex = nextSound.pageIndex, blockIndex = nextSound.blockIndex)
+    } else {
+        fileTop
+    }
+}
+
+private fun OutlineEntry.placeBefore(other: OutlineEntry): Boolean =
+    pageIndex < other.pageIndex || (pageIndex == other.pageIndex && blockIndex < other.blockIndex)

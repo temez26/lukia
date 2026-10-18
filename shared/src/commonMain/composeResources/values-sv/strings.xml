@@ -25,6 +25,7 @@
 
     <string name="menu_book_details">Bokens uppgifter</string>
     <string name="menu_favourite">Lägg till i favoriter</string>
+    <string name="menu_mark_unread">Markera som oläst</string>
     <string name="menu_unfavourite">Ta bort från favoriter</string>
     <string name="menu_select_books">Välj böcker</string>
     <string name="menu_sync_with_server">Synkronisera med servern</string>
@@ -192,6 +193,14 @@
     <string name="sort_largest">Störst först</string>
 
     <string name="home_title">Hem</string>
+    <plurals name="home_book_count">
+        <item quantity="one">1 bok</item>
+        <item quantity="other">%1$d böcker</item>
+    </plurals>
+    <plurals name="home_reading_count">
+        <item quantity="one">1 påbörjad</item>
+        <item quantity="other">%1$d påbörjade</item>
+    </plurals>
     <string name="home_shelf_favorites">Favoriter</string>
     <string name="home_shelf_recently_opened">Nyligen öppnade</string>
     <string name="home_shelf_recently_added">Nyligen tillagda</string>
@@ -308,10 +317,13 @@
     <string name="reader_reading_settings">Läsinställningar</string>
     <string name="reader_page_of_count">%1$d / %2$d</string>
     <string name="reader_page_x_of_y">Sida %1$d av %2$d</string>
+    <plurals name="reader_pages_left_in_chapter">
+        <item quantity="one">1 sida kvar i det här kapitlet</item>
+        <item quantity="other">%1$d sidor kvar i det här kapitlet</item>
+    </plurals>
     <string name="reader_page_x_of_y_percent">Sida %1$d av %2$d, %3$d procent igenom</string>
     <string name="reader_percent_read">%1$d procent läst</string>
     <string name="reader_percent">%1$d\u00A0%</string>
-    <string name="reader_percent_start">0</string>
     <string name="reader_opening">Öppnar…</string>
     <string name="reader_reading_text">Läser text… sida %1$d av %2$d</string>
 

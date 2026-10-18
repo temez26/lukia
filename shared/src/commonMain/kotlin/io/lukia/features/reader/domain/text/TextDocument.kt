@@ -67,7 +67,33 @@ sealed interface TextBlock {
         val text: List<TextRun>,
         val level: Int,
         override val alignment: BlockAlignment? = null,
-    ) : TextBlock
+        /**
+         * The part this heading plays in opening a chapter, which the reader sets
+         * as a printed book does. Decided where the book is divided into
+         * sections; see `withChapterOpening`.
+         */
+        val chapter: ChapterRole = ChapterRole.None,
+    ) : TextBlock {
+
+        /** Whether this is the title a chapter opens with. */
+        val opensChapter: Boolean
+            get() = chapter == ChapterRole.Title || chapter == ChapterRole.TitleUnderLabel
+    }
+
+    /** What part a heading plays in opening a chapter. */
+    enum class ChapterRole {
+        /** A heading inside a chapter. */
+        None,
+
+        /** A short line set over a chapter's title, such as "Chapter 5". */
+        Label,
+
+        /** The title a chapter opens with. */
+        Title,
+
+        /** The title, under a label of its own. */
+        TitleUnderLabel,
+    }
 
     data class Paragraph(
         val text: List<TextRun>,

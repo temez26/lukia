@@ -147,4 +147,28 @@ class PaginatorTest {
         assertEquals(0, pagesOf().pageCount)
         assertEquals(0, paginate(listOf(chapter("One", filler(10))), CharacterHeights, 0).pageCount)
     }
+
+    /** A heading goes over with the text it heads rather than ending a page on its own. */
+    @Test
+    fun aHeadingIsCarriedOverWithTheBlockThatDidNotFit() {
+        val book = pagesOf(chapter(null, filler(60), heading("Section"), filler(50)))
+
+        assertEquals(listOf(listOf(0 to 0), listOf(0 to 1, 0 to 2)), book.places())
+    }
+
+    /** A chapter's label and its title travel together. */
+    @Test
+    fun severalHeadingsAtTheFootOfAPageAreCarriedTogether() {
+        val book = pagesOf(chapter(null, filler(70), heading("CH 7"), heading("Title"), filler(60)))
+
+        assertEquals(listOf(listOf(0 to 0), listOf(0 to 1, 0 to 2, 0 to 3)), book.places())
+    }
+
+    /** Headings that are all a page holds stay, rather than leave an empty page behind. */
+    @Test
+    fun aPageOfOnlyHeadingsKeepsThem() {
+        val book = pagesOf(chapter(null, heading("Title"), filler(98)))
+
+        assertEquals(listOf(listOf(0 to 0), listOf(0 to 1)), book.places())
+    }
 }

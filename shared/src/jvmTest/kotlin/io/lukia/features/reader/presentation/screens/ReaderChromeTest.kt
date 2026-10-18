@@ -50,7 +50,7 @@ class ReaderChromeTest {
         assertEquals(1, onAllNodes(hasText("1 / 348")).fetchSemanticsNodes().size)
         assertEquals(
             1,
-            onAllNodes(hasContentDescription("Page 1 of 348") and hasClickAction())
+            onAllNodes(hasContentDescription("Page 1 of 348. 0 percent read") and hasClickAction())
                 .fetchSemanticsNodes().size,
         )
     }
@@ -60,7 +60,7 @@ class ReaderChromeTest {
     fun thePageIndicatorReadsAsASentenceToAssistiveTechnology() = runComposeUiTest {
         setReader(pageCount = 348)
 
-        onNode(hasContentDescription("Page 1 of 348") and hasClickAction()).assertExists()
+        onNode(hasContentDescription("Page 1 of 348. 0 percent read") and hasClickAction()).assertExists()
     }
 
     /** The count is only useful if it follows the reader through the book. */
@@ -71,7 +71,7 @@ class ReaderChromeTest {
         onNode(hasScrollToIndexAction()).performScrollToIndex(11)
 
         onNodeWithText("12 / 348").assertExists()
-        onNode(hasContentDescription("Page 12 of 348") and hasClickAction()).assertExists()
+        onNode(hasContentDescription("Page 12 of 348. 3 percent read") and hasClickAction()).assertExists()
     }
 
     /** Every theme has to be able to draw - each brings its own page filter. */

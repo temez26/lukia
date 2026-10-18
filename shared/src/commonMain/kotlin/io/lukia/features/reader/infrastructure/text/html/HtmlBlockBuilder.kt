@@ -5,35 +5,16 @@ import io.lukia.features.reader.domain.text.BlockAlignment
 import io.lukia.features.reader.domain.text.Emphasis
 import io.lukia.features.reader.domain.text.TextBlock
 import io.lukia.features.reader.domain.text.TextRun
+import io.lukia.features.reader.domain.text.plainText
 import io.lukia.features.reader.infrastructure.text.append
 import io.lukia.features.reader.infrastructure.text.trimmedEnds
-
-/** What the innermost open element makes the text inside it. */
-private enum class BlockKind {
-    Paragraph,
-    Heading,
-    ListItem,
-    Quote,
-    Code,
-}
-
-private class OpenBlock(
-    val tag: String,
-    val kind: BlockKind,
-    /** Only meaningful for [BlockKind.Heading]. */
-    val headingLevel: Int = 0,
-    /** Only meaningful for [BlockKind.ListItem]. */
-    val marker: String = "",
-    /** What the book asked for, here or on something this sits inside. */
-    val alignment: BlockAlignment? = null,
-)
 
 /**
  * How a book asks for a paragraph to be set, out of the two ways books say it.
  *
  * The `align` attribute is far the more common in the wild - a shelf of twenty
  * books uses it for hundreds of dedications, captions and epigraphs - and an
- * inline `text-align` is the modern spelling. A stylesheet is not read: that is
+ * inline `text-align` is the modern spelling. A stylesheet's alignment is not read: that is
  * selectors and cascades rather than a property on the element, and honouring it
  * properly means bringing a CSS engine to a book reader.
  */
@@ -92,7 +73,11 @@ private val VoidElements = setOf("img", "image", "br", "hr", "meta", "link", "co
  * text depends on: what is open, what is emphasised, and how deep into lists it
  * is.
  */
-internal class HtmlBlockBuilder(private val image: (src: String) -> ByteArray?) {
+internal class HtmlBlockBuilder(
+    private val image: (src: String) -> ByteArray?,
+    /** The book's styled heading classes and their levels - see [headingClasses]. */
+    private val styledHeadings: Map<String, Int> = emptyMap(),
+) {
 
     private val blocks = mutableListOf<TextBlock>()
     private val runs = mutableListOf<TextRun>()
@@ -196,7 +181,7 @@ internal class HtmlBlockBuilder(private val image: (src: String) -> ByteArray?) 
 
             in BlockElements -> {
                 flush()
-                openBlocks += blockFor(name, event.declaredAlignment())
+                openBlocks += blockFor(name, event.declaredAlignment(), event.attributes["class"])
             }
         }
     }
@@ -206,18 +191,12 @@ internal class HtmlBlockBuilder(private val image: (src: String) -> ByteArray?) 
      * the property does: a paragraph in a centred division is centred without
      * saying so itself, which is how books set their dedications.
      */
-    private fun blockFor(name: String, alignment: BlockAlignment?): OpenBlock {
+    private fun blockFor(name: String, alignment: BlockAlignment?, classes: String?): OpenBlock {
         val asked = alignment ?: openBlocks.lastOrNull()?.alignment
 
-        return when {
-            name.length == 2 && name[0] == 'h' && name[1] in '1'..'6' ->
-                OpenBlock(
-                    tag = name,
-                    kind = BlockKind.Heading,
-                    headingLevel = name[1].digitToInt(),
-                    alignment = asked,
-                )
+        headingFor(name, classes, asked)?.let { return it }
 
+        return when {
             name == "blockquote" -> OpenBlock(tag = name, kind = BlockKind.Quote, alignment = asked)
 
             name == "li" -> OpenBlock(
@@ -230,6 +209,43 @@ internal class HtmlBlockBuilder(private val image: (src: String) -> ByteArray?) 
             else -> OpenBlock(tag = name, kind = BlockKind.Paragraph, alignment = asked)
         }
     }
+
+    /**
+     * The heading [name] opens, if it opens one: by its tag, by a class that
+     * names a heading, by a class the stylesheet sets as one, or by sitting
+     * inside one - converters wrap a title's lines in divisions of their own.
+     */
+    private fun headingFor(name: String, classes: String?, asked: BlockAlignment?): OpenBlock? {
+        fun heading(level: Int, styled: Boolean = false) =
+            OpenBlock(tag = name, kind = BlockKind.Heading, headingLevel = level, alignment = asked, styled = styled)
+
+        if (name.length == 2 && name[0] == 'h' && name[1] in '1'..'6') return heading(name[1].digitToInt())
+        if (name !in ClassHeadingElements) return null
+
+        val inside = openBlocks.lastOrNull()?.takeIf { it.kind == BlockKind.Heading }
+
+        return when {
+            classes.namesAHeading() -> heading(CLASS_HEADING_LEVEL)
+            styledLevel(classes) != null -> heading(requireNotNull(styledLevel(classes)), styled = true)
+            inside != null -> heading(inside.headingLevel, styled = inside.styled)
+            else -> null
+        }
+    }
+
+    /**
+     * The heading [block] holds - unless only the stylesheet made it one and it
+     * runs to a paragraph's length, which is a styled paragraph and not a title.
+     */
+    private fun headingOf(block: OpenBlock, text: List<TextRun>): TextBlock =
+        if (block.styled && text.plainText().length > MAX_STYLED_HEADING_LENGTH) {
+            TextBlock.Paragraph(text, alignment = block.alignment)
+        } else {
+            TextBlock.Heading(text = text, level = block.headingLevel, alignment = block.alignment)
+        }
+
+    /** The level the stylesheet gives the first of [classes] it sets as a heading, if any. */
+    private fun styledLevel(classes: String?): Int? =
+        classes?.split(' ')?.firstNotNullOfOrNull { styledHeadings[it] }
 
     /**
      * The bullet or number this item shows. Numbered here rather than when the
@@ -347,11 +363,7 @@ internal class HtmlBlockBuilder(private val image: (src: String) -> ByteArray?) 
             when {
                 block == null -> TextBlock.Paragraph(text)
 
-                block.kind == BlockKind.Heading -> TextBlock.Heading(
-                    text = text,
-                    level = block.headingLevel,
-                    alignment = asked,
-                )
+                block.kind == BlockKind.Heading -> headingOf(block, text)
 
                 block.kind == BlockKind.ListItem -> TextBlock.ListItem(
                     text = text,

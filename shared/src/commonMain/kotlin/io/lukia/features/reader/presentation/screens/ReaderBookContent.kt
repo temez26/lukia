@@ -177,15 +177,17 @@ internal fun ReaderContent(
             outline.onPages(paginated, reflowable = document?.content is ReflowableContent)
         }
 
+        // A fixed-layout document is as long as it will ever be the moment it
+        // opens. A reflowable one is only as long as it has been measured so
+        // far, and [pageCount] climbs until it is done.
+        val laidOut = document?.content !is ReflowableContent || paginated.complete
+
         KeepReadingPosition(
             listState = listState,
             document = document,
             initialPosition = initialPosition,
             pageCount = pageCount,
-            // A fixed-layout document is as long as it will ever be the moment
-            // it opens. A reflowable one is only as long as it has been
-            // measured so far, and [pageCount] climbs until it is done.
-            laidOut = document?.content !is ReflowableContent || paginated.complete,
+            laidOut = laidOut,
             onPageSettled = onPageSettled,
         )
 
@@ -310,31 +312,11 @@ internal fun ReaderContent(
                         DismissLayer(onDismiss = chrome::closePanels)
                     }
 
-                    ReaderTopChrome(
-                        chrome = chrome,
-                        document = document,
-                        pageCount = pageCount,
-                        outline = pagedOutline,
-                        listState = listState,
-                        translation = translationUi,
-                        onBack = onBack,
-                        modifier = Modifier.align(Alignment.TopCenter),
-                    )
-
-                    // Under the panels and over the page: it is a fact about the
-                    // book rather than a control, and nothing it can be behind ever
-                    // reaches the bottom edge.
-                    ReaderBottomChrome(
-                        chrome = chrome,
-                        pageCount = pageCount,
-                        listState = listState,
-                        modifier = Modifier.align(Alignment.BottomCenter),
-                    )
-
                     ReaderPanels(
                         chrome = chrome,
                         document = document,
                         pageCount = pageCount,
+                        pageCountFinal = laidOut,
                         outline = pagedOutline,
                         listState = listState,
                         settings = settings,
@@ -347,6 +329,19 @@ internal fun ReaderContent(
                                 serviceConfigured = translating.serviceConfigured,
                             )
                         },
+                    )
+
+                    // Over the panels: on a phone the contents open out of the bar
+                    // as one block, and the bar is drawn as that block's top row.
+                    ReaderTopChrome(
+                        chrome = chrome,
+                        document = document,
+                        pageCount = pageCount,
+                        outline = pagedOutline,
+                        listState = listState,
+                        translation = translationUi,
+                        onBack = onBack,
+                        modifier = Modifier.align(Alignment.TopCenter),
                     )
                 }
 

@@ -18,9 +18,9 @@ import io.lukia.resources.selection_unfavourite
 import io.lukia.resources.selection_upload
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.icons.HeartGlyph
-import io.lukia.shared.presentation.components.icons.OpenBookGlyph
 import io.lukia.shared.presentation.components.icons.RefreshGlyph
 import io.lukia.shared.presentation.components.icons.TrashGlyph
+import io.lukia.shared.presentation.components.icons.UnreadBookGlyph
 import io.lukia.shared.presentation.components.icons.UploadGlyph
 import io.lukia.shared.presentation.components.surface.GlassSurface
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
@@ -84,7 +84,7 @@ internal fun LibrarySelectionActions(
                 label = stringResource(Res.string.selection_mark_unread),
                 onClick = onResetProgress,
                 enabled = enabled,
-            ) { tint, glyph -> OpenBookGlyph(tint = tint, modifier = glyph) }
+            ) { tint, glyph -> UnreadBookGlyph(tint = tint, modifier = glyph) }
 
             onUpload?.let { upload ->
                 LukiaIconButton(

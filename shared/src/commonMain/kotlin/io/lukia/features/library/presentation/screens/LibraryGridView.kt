@@ -81,6 +81,8 @@ internal fun LibraryGrid(
     selection: LibrarySelection = LibrarySelection.None,
     onStartSelecting: () -> Unit = {},
     onToggle: (location: String) -> Unit = {},
+    /** Puts a started book back to unread, from its menu. */
+    onMarkUnread: ((DocumentInfo) -> Unit)? = null,
     /** Books downloading or uploading, for the progress their cards show. */
     transfers: BookTransferUi = BookTransferUi.None,
 ) {
@@ -169,6 +171,7 @@ internal fun LibraryGrid(
                 onShowDetails = { onDocumentDetails(book.document) },
                 onSelectBooks = onStartSelecting,
                 onRemoveFromServer = transfers.removeFromServer(book.document),
+                onMarkUnread = onMarkUnread?.takeIf { book.progress != null }?.let { mark -> { mark(book.document) } },
             )
         }
 
@@ -269,6 +272,7 @@ private fun LazyGridItemScope.ShelfItem(
     onSelectBooks: () -> Unit,
     transfer: BookTransfer? = null,
     onRemoveFromServer: (() -> Unit)? = null,
+    onMarkUnread: (() -> Unit)? = null,
 ) {
     when (layout) {
         LibraryLayout.Grid -> BookCard(
@@ -288,6 +292,7 @@ private fun LazyGridItemScope.ShelfItem(
             selection = selection,
             transfer = transfer,
             onRemoveFromServer = onRemoveFromServer,
+            onMarkUnread = onMarkUnread,
         )
 
         LibraryLayout.List -> Box {
@@ -312,6 +317,7 @@ private fun LazyGridItemScope.ShelfItem(
                 onShowDetails = onShowDetails,
                 onSelectBooks = onSelectBooks,
                 onRemoveFromServer = onRemoveFromServer,
+                onMarkUnread = onMarkUnread,
             )
         }
     }

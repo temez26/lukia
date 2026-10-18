@@ -146,8 +146,9 @@ class LibrarySelectionModeTest {
         }
     }
 
+    /** By what it says or, for the bar's icon buttons, by what it is announced as. */
     private fun ComposeUiTest.press(label: String) {
-        onNode(hasText(label) and hasClickAction()).performClick()
+        onNode((hasText(label) or hasContentDescription(label)) and hasClickAction()).performClick()
     }
 
     @Test
@@ -177,7 +178,7 @@ class LibrarySelectionModeTest {
         press("Select Books")
 
         onNodeWithText("Select books").assertIsDisplayed()
-        onNodeWithText("Select All").assertIsDisplayed()
+        onNodeWithContentDescription("Select All").assertIsDisplayed()
     }
 
     /** Searching and selecting are answers to different questions. */

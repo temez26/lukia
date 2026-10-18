@@ -85,6 +85,8 @@ fun LibraryContent(
      */
     importing: LibraryImportUi = LibraryImportUi.None,
     onSettings: () -> Unit = {},
+    /** Puts a started book back to unread, from its menu. */
+    onMarkUnread: ((DocumentInfo) -> Unit)? = null,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     /**
      * How far through each book its reader is, keyed by location. Only the book
@@ -247,6 +249,7 @@ fun LibraryContent(
                                     onToggleFavorite = onToggleFavorite,
                                     onRefresh = onRefresh,
                                     onDelete = onDelete,
+                                    onMarkUnread = onMarkUnread,
                                     onImport = onImport,
                                     onImportFolder = onImportFolder,
                                     modifier = Modifier.fillMaxSize(),
@@ -309,6 +312,7 @@ fun LibraryContent(
                 onRefresh = onRefresh,
                 onDelete = onDelete,
                 transfers = transfers,
+                onMarkUnread = onMarkUnread,
             )
         }
     }

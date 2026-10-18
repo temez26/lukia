@@ -20,8 +20,12 @@ class SectionHeadingsTest {
     private fun paragraph(text: String): TextBlock =
         TextBlock.Paragraph(listOf(TextRun(text)))
 
+    /**
+     * Closed with a paragraph, as a chapter is: a section of nothing but
+     * headings is a title page, which offers no sections of its own.
+     */
     private fun section(title: String?, vararg blocks: TextBlock) =
-        TextSection(title = title, blocks = blocks.toList())
+        TextSection(title = title, blocks = blocks.toList() + paragraph("Words."))
 
     private fun chapterEntry(title: String, section: Int = 0, level: Int = 0) =
         OutlineEntry(title = title, pageIndex = section, level = level, blockIndex = 0)
@@ -173,5 +177,40 @@ class SectionHeadingsTest {
     @Test
     fun aBookWithNoContentsAtAllStaysThatWay() {
         assertTrue(emptyList<OutlineEntry>().withSectionHeadings(listOf(section("A"))).isEmpty())
+    }
+
+    /**
+     * A heading every chapter has is the book's template, not a way in: a row of
+     * "Challenges" under each of forty topics buries the topics.
+     */
+    @Test
+    fun aHeadingRepeatedInEveryChapterIsLeftOut() {
+        val sections = (1..3).map { number ->
+            section(
+                "Topic $number",
+                heading("Topic $number", 1),
+                heading("Part of topic $number", 2),
+                heading("Challenges", 2),
+            )
+        }
+        val entries = (0..2).map { chapterEntry("Topic ${it + 1}", section = it) }
+
+        val filled = entries.withSectionHeadings(sections)
+
+        assertEquals(
+            listOf("Topic 1", "Part of topic 1", "Topic 2", "Part of topic 2", "Topic 3", "Part of topic 3"),
+            filled.map { it.title },
+        )
+    }
+
+    /** A title page set line by line - author, editor, publisher - is not a contents. */
+    @Test
+    fun aPageOfNothingButHeadingsOffersNoSections() {
+        val titlePage = TextSection(title = null, blocks = listOf(heading("Title", 1), heading("Edited by", 2)))
+
+        assertEquals(
+            listOf("Title Page"),
+            listOf(chapterEntry("Title Page")).withSectionHeadings(listOf(titlePage)).map { it.title },
+        )
     }
 }

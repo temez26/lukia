@@ -45,6 +45,9 @@ object LukiaAlpha {
     /** The tint marking the row the reader is currently on. */
     const val Selected = 0.10f
 
+    /** The accent washed behind a control set on a screen's background rather than a bar. */
+    const val Tonal = 0.14f
+
     /**
      * A recessed fill - a search field, a segmented track - over a surface.
      * Slightly translucent so it picks up whatever it is laid on rather than

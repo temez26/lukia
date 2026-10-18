@@ -29,8 +29,10 @@ import io.lukia.features.library.presentation.model.progressLabel
 import io.lukia.features.library.presentation.model.readActionLabel
 import io.lukia.resources.Res
 import io.lukia.resources.book_missing_file
+import io.lukia.shared.presentation.components.controls.LukiaButton
 import io.lukia.shared.presentation.components.cover.FavoriteBadge
 import io.lukia.shared.presentation.components.cover.rememberBookCover
+import io.lukia.shared.presentation.components.icons.OpenBookGlyph
 import io.lukia.shared.presentation.components.surface.StatusBadge
 import io.lukia.shared.presentation.theme.Clearance
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
@@ -143,19 +145,28 @@ internal fun BookDetailBody(
                 )
             }
 
-            // What pressing the cover would do, and how far in the reader
-            // already is - the caption the cover cannot carry itself.
+            // How far in the reader already is.
             Text(
-                text = if (document.exists) {
-                    "${details.readActionLabel()} · ${details.progressLabel()}"
-                } else {
-                    details.progressLabel()
-                },
+                text = details.progressLabel(),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(top = Space.sm),
             )
+
+            // The way in, saying what it does - "Continue reading", "Start
+            // reading" - as the reading apps' detail pages do. An icon on the
+            // cover said "open" to nobody who had not been told.
+            if (document.exists) {
+                LukiaButton(
+                    label = details.readActionLabel(),
+                    onClick = onRead,
+                    icon = { tint, glyph -> OpenBookGlyph(tint = tint, modifier = glyph) },
+                    modifier = Modifier
+                        .padding(top = Space.lg)
+                        .widthIn(min = ReadButtonMinWidth),
+                )
+            }
 
             val direction = document.transferDirection(canUpload)
             if (direction != null) {
@@ -197,3 +208,6 @@ internal fun BookDetailBody(
         Spacer(modifier = Modifier.height(bottomClearance))
     }
 }
+
+/** Wide enough to read as the screen's one action rather than a chip. */
+private val ReadButtonMinWidth = 220.dp

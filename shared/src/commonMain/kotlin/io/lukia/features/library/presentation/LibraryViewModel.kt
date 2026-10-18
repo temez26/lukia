@@ -285,6 +285,13 @@ class LibraryViewModel(
         }
     }
 
+    /** Puts one book back to unread, as the selection's Mark as Unread does for many. */
+    fun markUnread(document: DocumentInfo) {
+        viewModelScope.launch {
+            if (reported { readingProgressRepository.forget(document.document.location) }) loadDocuments()
+        }
+    }
+
     /**
      * Reads one book's file again, for a cover or a title that came in wrong -
      * or a file that has been replaced on disk since it was imported.

@@ -3,10 +3,12 @@ package io.lukia.shared.presentation.components.menu
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import io.lukia.resources.Res
 import io.lukia.resources.menu_book_details
 import io.lukia.resources.menu_delete_from_library
 import io.lukia.resources.menu_favourite
+import io.lukia.resources.menu_mark_unread
 import io.lukia.resources.menu_refresh_details
 import io.lukia.resources.menu_remove_from_server
 import io.lukia.resources.menu_select_books
@@ -16,6 +18,7 @@ import io.lukia.shared.presentation.components.icons.HeartGlyph
 import io.lukia.shared.presentation.components.icons.InfoGlyph
 import io.lukia.shared.presentation.components.icons.RefreshGlyph
 import io.lukia.shared.presentation.components.icons.TrashGlyph
+import io.lukia.shared.presentation.components.icons.UnreadBookGlyph
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -47,24 +50,20 @@ fun BookActionsMenu(
     onShowDetails: (() -> Unit)? = null,
     onSelectBooks: (() -> Unit)? = null,
     onRemoveFromServer: (() -> Unit)? = null,
+    /** Puts the book back to unread; null, and no row, for a book not yet started. */
+    onMarkUnread: (() -> Unit)? = null,
 ) {
     AnchoredMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
         modifier = modifier,
     ) {
-        if (onShowDetails != null) {
-            MenuRow(
-                label = stringResource(Res.string.menu_book_details),
-                icon = { tint, glyph -> InfoGlyph(tint = tint, modifier = glyph) },
-                onClick = {
-                    onDismissRequest()
-                    onShowDetails()
-                },
-            )
-
-            MenuSeparator()
-        }
+        OptionalRow(
+            label = stringResource(Res.string.menu_book_details),
+            icon = { tint, glyph -> InfoGlyph(tint = tint, modifier = glyph) },
+            action = onShowDetails,
+            onDismissRequest = onDismissRequest,
+        )
 
         MenuRow(
             label = stringResource(if (isFavorite) Res.string.menu_unfavourite else Res.string.menu_favourite),
@@ -79,22 +78,25 @@ fun BookActionsMenu(
 
         MenuSeparator()
 
+        // Beside favouriting: both are things decided about this one book,
+        // and the selection bar offers the same for many at once.
+        OptionalRow(
+            label = stringResource(Res.string.menu_mark_unread),
+            icon = { tint, glyph -> UnreadBookGlyph(tint = tint, modifier = glyph) },
+            action = onMarkUnread,
+            onDismissRequest = onDismissRequest,
+        )
+
         // Above the actions rather than below them: this one changes what the
         // shelf is for rather than doing anything to this book, and a row that
         // sits among Refresh and Delete reads as a third thing done to the book
         // it was opened from.
-        if (onSelectBooks != null) {
-            MenuRow(
-                label = stringResource(Res.string.menu_select_books),
-                icon = { tint, glyph -> CheckGlyph(tint = tint, modifier = glyph) },
-                onClick = {
-                    onDismissRequest()
-                    onSelectBooks()
-                },
-            )
-
-            MenuSeparator()
-        }
+        OptionalRow(
+            label = stringResource(Res.string.menu_select_books),
+            icon = { tint, glyph -> CheckGlyph(tint = tint, modifier = glyph) },
+            action = onSelectBooks,
+            onDismissRequest = onDismissRequest,
+        )
 
         MenuRow(
             label = stringResource(Res.string.menu_refresh_details),
@@ -117,6 +119,28 @@ fun BookActionsMenu(
             RemovingRow(stringResource(Res.string.menu_remove_from_server), onDismissRequest, onRemoveFromServer)
         }
     }
+}
+
+/** A row and the hairline under it, where the caller offers [action]; nothing where it does not. */
+@Composable
+private fun OptionalRow(
+    label: String,
+    icon: @Composable (Color, Modifier) -> Unit,
+    action: (() -> Unit)?,
+    onDismissRequest: () -> Unit,
+) {
+    if (action == null) return
+
+    MenuRow(
+        label = label,
+        icon = icon,
+        onClick = {
+            onDismissRequest()
+            action()
+        },
+    )
+
+    MenuSeparator()
 }
 
 /** A row that takes the book away from somewhere: red, with a bin. */

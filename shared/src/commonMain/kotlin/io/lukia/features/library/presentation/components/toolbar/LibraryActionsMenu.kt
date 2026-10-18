@@ -30,6 +30,7 @@ import io.lukia.shared.presentation.components.icons.FolderGlyph
 import io.lukia.shared.presentation.components.icons.GearGlyph
 import io.lukia.shared.presentation.components.icons.PlusGlyph
 import io.lukia.shared.presentation.components.menu.AnchoredMenu
+import io.lukia.shared.presentation.components.menu.MenuGroupBreak
 import io.lukia.shared.presentation.components.menu.MenuRow
 import io.lukia.shared.presentation.components.menu.MenuSeparator
 import io.lukia.shared.presentation.theme.LukiaMotion
@@ -96,7 +97,7 @@ internal fun LibraryMenu(
             onImportFolder = onImportFolder,
         )
 
-        MenuSeparator()
+        MenuGroupBreak()
 
         // Also here, and not only on a book: reaching a shelf-wide mode by
         // holding down one particular book is a way in nobody finds by looking.
@@ -109,9 +110,9 @@ internal fun LibraryMenu(
             },
         )
 
-        MenuSeparator()
-
         UpkeepMenuRows(shelf = shelf, onDismissRequest = onDismissRequest)
+
+        MenuGroupBreak()
 
         MenuRow(
             label = stringResource(Res.string.menu_sync_with_server),
@@ -121,6 +122,8 @@ internal fun LibraryMenu(
                 shelf.onSyncWithServer()
             },
         )
+
+        MenuSeparator()
 
         MenuRow(
             label = stringResource(Res.string.library_settings),
@@ -148,7 +151,10 @@ private fun UpkeepMenuRows(
 ) {
     val upkeep = shelf.upkeep
 
+    // Each under a hairline of its own, in the group of what is done to books.
     if (upkeep.missing.isNotEmpty()) {
+        MenuSeparator()
+
         MenuRow(
             label = stringResource(Res.string.library_missing_files, upkeep.missing.size),
             icon = { tint, glyph -> AlertGlyph(tint = tint, modifier = glyph) },
@@ -157,11 +163,11 @@ private fun UpkeepMenuRows(
                 shelf.onSelectMissing()
             },
         )
-
-        MenuSeparator()
     }
 
     if (upkeep.duplicates.isNotEmpty()) {
+        MenuSeparator()
+
         MenuRow(
             label = stringResource(Res.string.library_duplicates, upkeep.duplicates.size),
             icon = { tint, glyph -> CopyGlyph(tint = tint, modifier = glyph) },
@@ -170,8 +176,6 @@ private fun UpkeepMenuRows(
                 shelf.onSelectDuplicates()
             },
         )
-
-        MenuSeparator()
     }
 }
 
