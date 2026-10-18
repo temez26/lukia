@@ -174,4 +174,28 @@ class SectionHeadingsTest {
     fun aBookWithNoContentsAtAllStaysThatWay() {
         assertTrue(emptyList<OutlineEntry>().withSectionHeadings(listOf(section("A"))).isEmpty())
     }
+
+    /**
+     * A heading every chapter has is the book's template, not a way in: a row of
+     * "Challenges" under each of forty topics buries the topics.
+     */
+    @Test
+    fun aHeadingRepeatedInEveryChapterIsLeftOut() {
+        val sections = (1..3).map { number ->
+            section(
+                "Topic $number",
+                heading("Topic $number", 1),
+                heading("Part of topic $number", 2),
+                heading("Challenges", 2),
+            )
+        }
+        val entries = (0..2).map { chapterEntry("Topic ${it + 1}", section = it) }
+
+        val filled = entries.withSectionHeadings(sections)
+
+        assertEquals(
+            listOf("Topic 1", "Part of topic 1", "Topic 2", "Part of topic 2", "Topic 3", "Part of topic 3"),
+            filled.map { it.title },
+        )
+    }
 }

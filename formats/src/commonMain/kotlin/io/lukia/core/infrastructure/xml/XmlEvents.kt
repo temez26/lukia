@@ -226,7 +226,14 @@ private val NamedEntities = mapOf(
 
 private val EntityPattern = Regex("""&(#[Xx]?[0-9A-Fa-f]+|\w+);""")
 
-private fun decodeEntities(source: String): String {
+/**
+ * Character references in [source] as the characters they stand for.
+ *
+ * Public for text that was escaped twice by the tool that wrote it - a contents
+ * label written as `&amp;#160;Foreword` arrives from [xmlEvents] still holding
+ * `&#160;`, and decoding it once more is the only reading a person would expect.
+ */
+fun decodeEntities(source: String): String {
     if ('&' !in source) return source
 
     return EntityPattern.replace(source) { match ->

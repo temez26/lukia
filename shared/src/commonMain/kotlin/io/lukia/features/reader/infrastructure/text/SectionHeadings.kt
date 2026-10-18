@@ -37,11 +37,11 @@ internal fun List<OutlineEntry>.withSectionHeadings(
 
     val described = map { it.pageIndex }.toSet()
 
-    return flatMap { entry ->
+    val found = map { entry ->
         // An entry speaks for a chapter only if it is the one thing the contents
         // says about it. Two entries in a section means the book has described
         // the inside of it already.
-        if (count { it.pageIndex == entry.pageIndex } > 1) return@flatMap listOf(entry)
+        if (count { it.pageIndex == entry.pageIndex } > 1) return@map emptyList()
 
         // A long chapter is laid out as several sections, and the ones after the
         // first carry no entry of their own - they are part of the same chapter
@@ -49,9 +49,32 @@ internal fun List<OutlineEntry>.withSectionHeadings(
         val end = (entry.pageIndex + 1 until sections.size).firstOrNull { it in described }
             ?: sections.size
 
-        listOf(entry) + sections.headingsUnder(entry, entry.pageIndex until end)
+        sections.headingsUnder(entry, entry.pageIndex until end)
+    }
+
+    val boilerplate = found.boilerplateTitles()
+
+    return flatMapIndexed { index, entry ->
+        listOf(entry) + found[index].filterNot { it.title.lowercase() in boilerplate }
     }
 }
+
+/**
+ * How many chapters may share a heading before it stops being a way in.
+ *
+ * "Summary", "Exercises", "Footnotes", "Related Sections Include": a book's
+ * template puts the same heading in every chapter, and a row repeated under
+ * each of them is the template rather than the book. Three, so a heading two
+ * chapters happen to share is still offered.
+ */
+private const val BOILERPLATE_CHAPTERS = 3
+
+private fun List<List<OutlineEntry>>.boilerplateTitles(): Set<String> =
+    flatMap { headings -> headings.map { it.title.lowercase() }.distinct() }
+        .groupingBy { it }
+        .eachCount()
+        .filterValues { it >= BOILERPLATE_CHAPTERS }
+        .keys
 
 /** One heading found inside a chapter, and where it sits in the book. */
 private class FoundHeading(

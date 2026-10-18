@@ -94,6 +94,7 @@ internal suspend fun readEpub(
     if (sections.isEmpty()) return null
 
     val contents = epub.tableOfContents(files, diagnostics)
+        .withBackwardLinksMended(fileStarts = files.values.map { it.firstSection }.sorted())
         .ifEmpty { sections.headingOutline() }
 
     return ReflowableContent(
@@ -121,7 +122,7 @@ private fun EpubPackage.contentOf(
 
 /** Where one file of the book ended up once it was laid out as sections. */
 private class FileSections(
-    private val firstSection: Int,
+    val firstSection: Int,
     private val anchorPlaces: Map<String, OutlinePlace>,
 ) {
 
@@ -227,3 +228,55 @@ private fun EpubPackage.tableOfContents(
  * it names is not.
  */
 private fun String.fragment(): String = decodePercentEncoding(substringAfter('#', ""))
+
+/**
+ * The contents with links that lead back into an earlier chapter sent forward
+ * again.
+ *
+ * Converters that renumber a book's anchors sometimes leave a later chapter
+ * pointing at an anchor an earlier entry already uses, or at one that is not
+ * there at all - one book's contents sent "Chapter 6" and "Chapter 7" to the
+ * middle of chapter 1. A book's contents run in reading order, so a link that
+ * goes backwards is broken, and the next file after the entry before it is where
+ * that chapter almost always is.
+ *
+ * Left alone where there is no next file: an entry at the very end pointing
+ * back, such as a closing "Cover", has nowhere better to go.
+ */
+internal fun List<OutlineEntry>.withBackwardLinksMended(fileStarts: List<Int>): List<OutlineEntry> {
+    val mended = toMutableList()
+
+    for (index in 1 until size) {
+        val previous = mended[index - 1]
+
+        if (this[index].placeBefore(previous)) {
+            mended[index] = mendedPlace(index, previous, fileStarts) ?: this[index]
+        }
+    }
+
+    return mended
+}
+
+/** Where the entry at [index], which leads back before [previous], should go instead. */
+private fun List<OutlineEntry>.mendedPlace(
+    index: Int,
+    previous: OutlineEntry,
+    fileStarts: List<Int>,
+): OutlineEntry? {
+    val entry = this[index]
+    val nextFile = fileStarts.firstOrNull { it > previous.pageIndex } ?: return null
+    val fileTop = entry.copy(pageIndex = nextFile, blockIndex = 0)
+
+    // Never past the next entry that is where it should be: a chapter in the
+    // same file as the one before it is still ahead of its own first section.
+    val nextSound = drop(index + 1).firstOrNull { !it.placeBefore(previous) }
+
+    return if (nextSound != null && nextSound.placeBefore(fileTop)) {
+        entry.copy(pageIndex = nextSound.pageIndex, blockIndex = nextSound.blockIndex)
+    } else {
+        fileTop
+    }
+}
+
+private fun OutlineEntry.placeBefore(other: OutlineEntry): Boolean =
+    pageIndex < other.pageIndex || (pageIndex == other.pageIndex && blockIndex < other.blockIndex)
