@@ -3,12 +3,17 @@ package io.lukia.shared.presentation.components.icons
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.graphicsLayer
 
 // Glyphs for the things a library holds - books, folders, and what is done to them.
 
@@ -80,15 +85,13 @@ fun HeartGlyph(
 }
 
 /**
- * An open book, for the control that turns a cover into the way into it.
+ * An open book, for the control that turns a cover into the way into it - and
+ * for what is done to a book's reading, such as marking it unread.
  *
- * A play triangle would be the obvious mark and the wrong one: it is the idiom
- * of something that runs on its own while you watch, and reading is neither.
- *
- * Drawn as two filled leaves rather than an outline. The mark appears at about
- * half the size of the disc behind it, and at that size a stroked book silts up
- * into a smudge. The gap between the leaves is the spine, showing the disc
- * through rather than a drawn line.
+ * Drawn as the reading apps draw theirs: two pages meeting at a spine, their top
+ * edges dipping into it as an open book's do, outlined at the family's weight so
+ * it sits with the other marks. A play triangle would be the obvious mark and
+ * the wrong one: it is the idiom of something that runs while you watch.
  */
 @Composable
 fun OpenBookGlyph(
@@ -98,43 +101,68 @@ fun OpenBookGlyph(
     Canvas(modifier = modifier) {
         val w = size.width
         val h = size.height
+        val spine = w * 0.5f
 
-        // Half the width of the gap down the middle, as a fraction of the glyph.
-        val spine = w * 0.05f
-
-        fun between(from: Float, to: Float, at: Float): Float = from + (to - from) * at
-
-        fun leaf(towards: Float): Path = Path().apply {
-            val outer = if (towards < 0) w * 0.05f else w * 0.95f
-            val inner = w * 0.5f + towards * spine
-
-            // Each page is tallest at the spine and falls away towards its outer
-            // edge. That taper is the whole mark: two untapered rectangles either
-            // side of a gap read as a pause button, which is the one thing this
-            // must not be mistaken for.
-            moveTo(inner, h * 0.19f)
-            cubicTo(
-                between(inner, outer, 0.45f),
-                h * 0.19f,
-                between(inner, outer, 0.78f),
-                h * 0.23f,
-                outer,
-                h * 0.31f,
-            )
-            lineTo(outer, h * 0.71f)
-            cubicTo(
-                between(outer, inner, 0.28f),
-                h * 0.72f,
-                between(outer, inner, 0.58f),
-                h * 0.83f,
-                inner,
-                h * 0.83f,
-            )
+        fun page(outer: Float): Path = Path().apply {
+            // Up the spine, out along the top edge, down the outer edge, and back
+            // along the foot - each edge sagging towards the spine, where the
+            // pages are held.
+            moveTo(spine, h * 0.30f)
+            cubicTo(spine, h * 0.30f, (spine + outer) / 2, h * 0.16f, outer, h * 0.22f)
+            lineTo(outer, h * 0.74f)
+            cubicTo((spine + outer) / 2, h * 0.75f, spine, h * 0.80f, spine, h * 0.82f)
             close()
         }
 
-        drawPath(path = leaf(towards = -1f), color = tint)
-        drawPath(path = leaf(towards = 1f), color = tint)
+        val stroke = glyphStroke(GlyphWeight.Regular)
+
+        drawPath(path = page(outer = w * 0.08f), color = tint, style = stroke)
+        drawPath(path = page(outer = w * 0.92f), color = tint, style = stroke)
+    }
+}
+
+/**
+ * A closed book wearing a dot: marking a book unread, in the mark the mail and
+ * message apps use for "unread". The open book means reading it; this is a
+ * different thing done to it, and borrowing that glyph said "open" for an
+ * action that throws the reader's place away.
+ */
+@Composable
+fun UnreadBookGlyph(
+    tint: Color,
+    modifier: Modifier = Modifier,
+) {
+    // Drawn into a layer of its own, so a ring can be cut out around the dot
+    // where it overlaps the book rather than painted in a guessed background.
+    Canvas(modifier = modifier.graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }) {
+        val w = size.width
+        val h = size.height
+        val stroke = glyphStroke(GlyphWeight.Regular)
+
+        val book = Path().apply {
+            addRoundRect(
+                RoundRect(
+                    left = w * 0.20f,
+                    top = h * 0.14f,
+                    right = w * 0.74f,
+                    bottom = h * 0.86f,
+                    cornerRadius = CornerRadius(w * 0.06f),
+                ),
+            )
+        }
+        drawPath(path = book, color = tint, style = stroke)
+
+        // The spine, a page's width in from the left edge.
+        drawLine(
+            color = tint,
+            start = Offset(w * 0.32f, h * 0.16f),
+            end = Offset(w * 0.32f, h * 0.84f),
+            strokeWidth = stroke.width,
+        )
+
+        val dot = Offset(w * 0.76f, h * 0.22f)
+        drawCircle(color = tint, radius = w * 0.20f, center = dot, blendMode = BlendMode.Clear)
+        drawCircle(color = tint, radius = w * 0.13f, center = dot)
     }
 }
 

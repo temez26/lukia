@@ -101,6 +101,7 @@ fun LibraryScreen(
                 onSettings = requests.openSettings,
                 onToggleFavorite = viewModel::toggleFavorite,
                 onRefresh = viewModel::refreshDocument,
+                onMarkUnread = viewModel::markUnread,
                 shelf = rememberShelfUi(viewModel, requests.syncWithServer),
                 transfers = rememberTransferUi(viewModel, removal),
                 onDelete = viewModel::deleteDocument,

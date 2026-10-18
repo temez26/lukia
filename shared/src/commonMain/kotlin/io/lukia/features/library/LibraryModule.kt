@@ -110,6 +110,17 @@ val libraryModule = module {
     }
 
     viewModel { (location: String) ->
-        BookDetailViewModel(location, get(), get(), get(), get(), get(), get(), get(), remover = get())
+        BookDetailViewModel(
+            location,
+            get(),
+            get(),
+            get(),
+            get(),
+            get(),
+            get(),
+            get(),
+            remover = get(),
+            progressRepository = get(),
+        )
     }
 }

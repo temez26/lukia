@@ -37,12 +37,15 @@ data class HomeRow(
  * The whole home screen: the book to carry on with, and the rows under it.
  *
  * [current] is the most recently read book still being read, or null when
- * nothing is.
+ * nothing is. [bookCount] and [readingCount] are the whole library's, for the
+ * line under the screen's title.
  */
 @Immutable
 data class HomeLayout(
     val current: LibraryBook?,
     val rows: List<HomeRow>,
+    val bookCount: Int = 0,
+    val readingCount: Int = 0,
 ) {
     val isEmpty: Boolean get() = current == null && rows.isEmpty()
 }
@@ -62,9 +65,8 @@ data class HomeLayout(
  * about where somebody left off reading.
  */
 fun List<LibraryBook>.homeLayout(limit: Int = ShelfLimit): HomeLayout {
-    val current = filter { it.status == ReadingStatus.Reading }
-        .sortedFor(LibrarySort.LastRead)
-        .firstOrNull()
+    val reading = filter { it.status == ReadingStatus.Reading }
+    val current = reading.sortedFor(LibrarySort.LastRead).firstOrNull()
     val shown = mutableSetOf<String>()
     current?.let { shown += it.location }
 
@@ -77,7 +79,7 @@ fun List<LibraryBook>.homeLayout(limit: Int = ShelfLimit): HomeLayout {
         if (books.isEmpty()) null else HomeRow(shelf, books)
     }
 
-    return HomeLayout(current, rows)
+    return HomeLayout(current, rows, bookCount = size, readingCount = reading.size)
 }
 
 /**

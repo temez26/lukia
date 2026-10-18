@@ -23,6 +23,7 @@
     <string name="state_loading">Laden</string>
     <string name="menu_book_details">Gegevens van het boek</string>
     <string name="menu_favourite">Aan favorieten toevoegen</string>
+    <string name="menu_mark_unread">Markeren als ongelezen</string>
     <string name="menu_unfavourite">Uit favorieten verwijderen</string>
     <string name="menu_select_books">Boeken selecteren</string>
     <string name="menu_sync_with_server">Synchroniseren met server</string>
@@ -168,6 +169,14 @@
     <string name="sort_last_read">Onlangs gelezen</string>
     <string name="sort_largest">Grootste eerst</string>
     <string name="home_title">Start</string>
+    <plurals name="home_book_count">
+        <item quantity="one">1 boek</item>
+        <item quantity="other">%1$d boeken</item>
+    </plurals>
+    <plurals name="home_reading_count">
+        <item quantity="one">1 bezig</item>
+        <item quantity="other">%1$d bezig</item>
+    </plurals>
     <string name="home_shelf_favorites">Favorieten</string>
     <string name="home_shelf_recently_opened">Onlangs geopend</string>
     <string name="home_shelf_recently_added">Onlangs toegevoegd</string>
@@ -280,7 +289,6 @@
     <string name="reader_page_x_of_y_percent">Pagina %1$d van %2$d, %3$d procent gelezen</string>
     <string name="reader_percent_read">%1$d procent gelezen</string>
     <string name="reader_percent">%1$d%</string>
-    <string name="reader_percent_start">0</string>
     <string name="reader_opening">Openen…</string>
     <string name="reader_reading_text">Tekst lezen… pagina %1$d van %2$d</string>
     <string name="reader_chapters">Hoofdstukken</string>

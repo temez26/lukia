@@ -8,6 +8,7 @@ import io.lukia.core.domain.document.ServerBookDownloader
 import io.lukia.core.domain.document.ServerBookRemover
 import io.lukia.core.domain.document.ServerBookUploader
 import io.lukia.core.domain.document.ShelfChanges
+import io.lukia.core.domain.reading.ReadingProgressRepository
 import io.lukia.core.domain.runCatchingApp
 import io.lukia.core.domain.toAppError
 import io.lukia.core.presentation.UiState
@@ -40,6 +41,8 @@ class BookDetailViewModel(
     private val uploader: ServerBookUploader = ServerBookUploader.None,
     /** Takes a server book out of the shared library, for the admin. Defaulted for the same reason. */
     remover: ServerBookRemover = ServerBookRemover.None,
+    /** Where the reader got to, for Mark as Unread. Null in the tests that never mark one. */
+    private val progressRepository: ReadingProgressRepository? = null,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState<BookDetails>>(UiState.Loading)
@@ -116,6 +119,17 @@ class BookDetailViewModel(
         viewModelScope.launch {
             setFavoriteUseCase(location, !current.document.isFavorite)
             load()
+        }
+    }
+
+    /** Puts the book back to unread, forgetting where its reader had got to. */
+    fun markUnread() {
+        val repository = progressRepository ?: return
+
+        viewModelScope.launch {
+            runCatchingApp { repository.forget(location) }
+                .onFailure { _message.value = LibraryMessage.Failed(it.toAppError()) }
+                .onSuccess { load() }
         }
     }
 

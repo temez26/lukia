@@ -162,6 +162,7 @@ private fun ContinueCover(
             onShowDetails = { actions.onShowDetails(book) },
             onSelectBooks = actions.onSelectBooks,
             onRemoveFromServer = actions.removeFromServer(book.document),
+            onMarkUnread = book.progress?.let { { actions.onMarkUnread(book) } },
         )
     }
 }

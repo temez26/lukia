@@ -77,6 +77,7 @@ fun BookDetailScreen(
         onRetry = viewModel::retry,
         onToggleFavorite = viewModel::toggleFavorite,
         onRefresh = viewModel::refreshDocument,
+        onMarkUnread = viewModel::markUnread,
         snackbarHostState = snackbarHostState,
         transfer = transfer,
         canUpload = canUpload,
@@ -106,6 +107,8 @@ fun BookDetailContent(
     onToggleFavorite: () -> Unit,
     onRefresh: () -> Unit,
     onDelete: () -> Unit,
+    /** Puts the book back to unread; offered only once it has been started. */
+    onMarkUnread: () -> Unit = {},
     /**
      * Defaulted so this screen still composes without a ViewModel behind it,
      * which is how it is tested and previewed.
@@ -152,6 +155,7 @@ fun BookDetailContent(
                             onRefresh = onRefresh,
                             onDelete = onDelete,
                             onRemoveFromServer = onRemoveFromServer,
+                            onMarkUnread = onMarkUnread.takeIf { uiState.dataOrNull?.progress != null },
                         )
                     }
                 }
@@ -207,6 +211,7 @@ private fun BookDetailActions(
     onDelete: () -> Unit,
     /** Remove from server, once confirmed; the row shows only on a book the server has. */
     onRemoveFromServer: (() -> Unit)? = null,
+    onMarkUnread: (() -> Unit)? = null,
 ) {
     var confirmingRemoval by remember { mutableStateOf(false) }
 
@@ -227,6 +232,7 @@ private fun BookDetailActions(
             onDelete = onDelete,
             onDismissRequest = { onMenuExpandedChange(false) },
             onRemoveFromServer = onRemoveFromServer?.takeIf { document.onServer }?.let { { confirmingRemoval = true } },
+            onMarkUnread = onMarkUnread,
         )
     }
 

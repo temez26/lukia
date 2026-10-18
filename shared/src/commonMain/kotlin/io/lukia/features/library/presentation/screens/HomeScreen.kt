@@ -1,5 +1,7 @@
 package io.lukia.features.library.presentation.screens
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -30,9 +32,12 @@ import io.lukia.features.library.presentation.sessions.openBook
 import io.lukia.features.library.presentation.sessions.rememberImportUi
 import io.lukia.resources.Res
 import io.lukia.resources.action_try_again
+import io.lukia.shared.presentation.components.launch.LaunchReveal
+import io.lukia.shared.presentation.components.launch.launchReveal
 import io.lukia.shared.presentation.components.launch.rememberLaunchReveal
 import io.lukia.shared.presentation.components.menu.ActionMenuScrim
 import io.lukia.shared.presentation.components.state.UiStateContent
+import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -129,6 +134,7 @@ internal fun rememberHomeBookActions(
         onDelete = { book -> viewModel.deleteDocument(book.document) },
         onSelectBooks = onSelectBooks,
         removeFromServer = { document -> removal?.rowFor(document) },
+        onMarkUnread = { book -> viewModel.markUnread(book.document) },
     )
 }
 
@@ -170,6 +176,19 @@ internal fun HomeContent(
     // down, because the header and the rows are one stagger and not four.
     val reveal = rememberLaunchReveal()
 
+    val header: @Composable () -> Unit = {
+        HomeHeader(
+            menuExpanded = menuOpen == HomeMenu.Bar,
+            onMenuExpandedChange = { menuOpen = if (it) HomeMenu.Bar else null },
+            onImport = onImport,
+            onImportFolder = onImportFolder,
+            shelf = shelf,
+            onSettings = onSettings,
+            statsButton = statsButton,
+            summary = homeSummary(home),
+        )
+    }
+
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.background,
@@ -194,36 +213,22 @@ internal fun HomeContent(
                     reveal = reveal,
                     transfers = transfers,
                     modifier = Modifier.fillMaxSize(),
-                    header = {
-                        HomeHeader(
-                            menuExpanded = menuOpen == HomeMenu.Bar,
-                            onMenuExpandedChange = { menuOpen = if (it) HomeMenu.Bar else null },
-                            onImport = onImport,
-                            onImportFolder = onImportFolder,
-                            shelf = shelf,
-                            onSettings = onSettings,
-                            statsButton = statsButton,
-                        )
-                    },
+                    header = header,
                 )
 
-                // A library still filling has nothing to sample yet, and a card
-                // offering to add a fourth book while three are being read in is
-                // the wrong thing to be pressing.
-                importing.isImporting -> ImportingState(
-                    importing = importing,
-                    modifier = Modifier.fillMaxSize(),
-                )
-
-                else -> LibraryEmptyState(
-                    importMenuExpanded = menuOpen == HomeMenu.Import,
-                    onImportMenuRequest = { menuOpen = HomeMenu.Import },
-                    onMenuDismiss = { menuOpen = null },
-                    onImport = onImport,
-                    onImportFolder = onImportFolder,
-                    reveal = reveal,
-                    modifier = Modifier.fillMaxSize(),
-                )
+                // The header stays with no books too. It carries settings, the
+                // reading statistics and the import menu, and with it gone a new
+                // library was a screen with no way to any of them.
+                else -> HeadedState(header = header, reveal = reveal) {
+                    NoBooksYet(
+                        importing = importing,
+                        importMenuExpanded = menuOpen == HomeMenu.Import,
+                        onImportMenuExpandedChange = { menuOpen = if (it) HomeMenu.Import else null },
+                        onImport = onImport,
+                        onImportFolder = onImportFolder,
+                        reveal = reveal,
+                    )
+                }
             }
         }
 
@@ -232,6 +237,58 @@ internal fun HomeContent(
         ActionMenuScrim(
             visible = menuOpen != null,
             onDismiss = { menuOpen = null },
+        )
+    }
+}
+
+/** Home's header over a state that fills the rest of the screen, set as it is over the shelves. */
+@Composable
+private fun HeadedState(
+    header: @Composable () -> Unit,
+    reveal: LaunchReveal,
+    content: @Composable () -> Unit,
+) {
+    val dimens = LocalLukiaDimens.current
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .padding(horizontal = dimens.screenPadding)
+                .launchReveal(reveal, index = 0),
+        ) {
+            header()
+        }
+
+        Box(modifier = Modifier.weight(1f)) { content() }
+    }
+}
+
+/**
+ * Home before its first book: what is being read in, or the way to add one.
+ *
+ * A library still filling has nothing to sample yet, and a card offering to add
+ * a fourth book while three are being read in is the wrong thing to be pressing.
+ */
+@Composable
+private fun NoBooksYet(
+    importing: LibraryImportUi,
+    importMenuExpanded: Boolean,
+    onImportMenuExpandedChange: (Boolean) -> Unit,
+    onImport: () -> Unit,
+    onImportFolder: () -> Unit,
+    reveal: LaunchReveal,
+) {
+    if (importing.isImporting) {
+        ImportingState(importing = importing, modifier = Modifier.fillMaxSize())
+    } else {
+        LibraryEmptyState(
+            importMenuExpanded = importMenuExpanded,
+            onImportMenuRequest = { onImportMenuExpandedChange(true) },
+            onMenuDismiss = { onImportMenuExpandedChange(false) },
+            onImport = onImport,
+            onImportFolder = onImportFolder,
+            reveal = reveal,
+            modifier = Modifier.fillMaxSize(),
         )
     }
 }

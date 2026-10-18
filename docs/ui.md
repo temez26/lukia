@@ -53,6 +53,32 @@ The mobile home screen leads with the book being read
 - Browsing by category lives on the Search tab (`BrowseCategories`), fed by
   `LibraryFacets.browseCategories`: subjects at least two books share, at most 20.
 
+## Reader bar
+
+The reader has one bar, at the top: back, the page indicator (chapter, page,
+and how far through the book), and reading settings. The progress through the
+book is a thin line along the bar's bottom edge (`ReaderToolbar(progress = …)`).
+There is no bar along the bottom of the page.
+
+## Headings in the book
+
+Where a book is split into sections, the headings a section opens with are
+marked with a `ChapterRole` (`withChapterOpening`):
+
+- **Title:** set large and bold, with space above and a short accent rule under it.
+- **Label:** a short numbered line over the title ("CHAPTER 5:"), set small,
+  letter-spaced and in the accent colour.
+- **None:** a heading inside a chapter, set in the page theme's accent colour.
+
+Measuring (`BlockMetrics`) and drawing (`HeadingBlock`) both read
+`headingStyle` and `headingTopPadding`, so pages are cut to what is drawn.
+A `p` or `div` whose class starts with `heading` is read as a heading, which is
+how Kindle conversions write them. So is one whose class the book's stylesheet
+sets bold and at least 1.15em (`headingClasses`), up to 120 characters long.
+
+A heading never ends a page: when the block after it moves to the next page,
+the headings at the foot of the page move with it (`PageBuilder.breakPage`).
+
 ## Reader contents panel
 
 `ReaderContentsPanel` is a `TopSheet` on a phone and a popover hanging from

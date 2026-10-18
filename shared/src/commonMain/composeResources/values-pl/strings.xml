@@ -25,6 +25,7 @@
     <string name="state_loading">Wczytywanie</string>
     <string name="menu_book_details">Szczegóły książki</string>
     <string name="menu_favourite">Dodaj do ulubionych</string>
+    <string name="menu_mark_unread">Oznacz jako nieprzeczytane</string>
     <string name="menu_unfavourite">Usuń z ulubionych</string>
     <string name="menu_select_books">Wybierz książki</string>
     <string name="menu_sync_with_server">Synchronizuj z serwerem</string>
@@ -186,6 +187,18 @@
     <string name="sort_last_read">Ostatnio czytane</string>
     <string name="sort_largest">Największe najpierw</string>
     <string name="home_title">Start</string>
+    <plurals name="home_book_count">
+        <item quantity="one">1 książka</item>
+        <item quantity="few">%1$d książki</item>
+        <item quantity="many">%1$d książek</item>
+        <item quantity="other">%1$d książki</item>
+    </plurals>
+    <plurals name="home_reading_count">
+        <item quantity="one">1 w trakcie</item>
+        <item quantity="few">%1$d w trakcie</item>
+        <item quantity="many">%1$d w trakcie</item>
+        <item quantity="other">%1$d w trakcie</item>
+    </plurals>
     <string name="home_shelf_favorites">Ulubione</string>
     <string name="home_shelf_recently_opened">Ostatnio otwierane</string>
     <string name="home_shelf_recently_added">Ostatnio dodane</string>
@@ -306,7 +319,6 @@
     <string name="reader_page_x_of_y_percent">Strona %1$d z %2$d, przeczytane %3$d procent</string>
     <string name="reader_percent_read">Przeczytane %1$d procent</string>
     <string name="reader_percent">%1$d%</string>
-    <string name="reader_percent_start">0</string>
     <string name="reader_opening">Otwieranie…</string>
     <string name="reader_reading_text">Odczytywanie tekstu… strona %1$d z %2$d</string>
     <string name="reader_chapters">Rozdziały</string>

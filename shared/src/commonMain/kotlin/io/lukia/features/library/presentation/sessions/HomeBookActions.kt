@@ -24,6 +24,8 @@ class HomeBookActions(
     val onRefresh: (LibraryBook) -> Unit = {},
     val onDelete: (LibraryBook) -> Unit = {},
     val onSelectBooks: () -> Unit = {},
+    /** Puts a started book back to unread - offered only on one that has been. */
+    val onMarkUnread: (LibraryBook) -> Unit = {},
     /** The admin's Remove from server row for a book, or null where it has none - see `ServerRemoval`. */
     val removeFromServer: (DocumentInfo) -> (() -> Unit)? = { null },
 ) {

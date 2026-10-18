@@ -1,12 +1,15 @@
 package io.lukia.shared.presentation.components.menu
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -45,6 +48,7 @@ import io.lukia.shared.presentation.components.surface.GlassSurface
 import io.lukia.shared.presentation.components.surface.GlassTone
 import io.lukia.shared.presentation.components.surface.LukiaDivider
 import io.lukia.shared.presentation.theme.LocalLukiaMetrics
+import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.Space
 
 /** Gap between the menu and the control it hangs from. */
@@ -144,6 +148,10 @@ fun MenuRow(
     selected: Boolean = false,
     icon: (@Composable (Color, Modifier) -> Unit)? = null,
 ) {
+    // The glyph in the accent where the row is an ordinary action, so a menu is
+    // scanned by its icons; in the row's own colour where that colour is the
+    // point, such as a destructive row.
+    val iconTint = if (tint == MaterialTheme.colorScheme.onSurface) MaterialTheme.colorScheme.primary else tint
     val metrics = LocalLukiaMetrics.current
     val interactionSource = remember { MutableInteractionSource() }
     val bringIntoView = remember { BringIntoViewRequester() }
@@ -176,7 +184,7 @@ fun MenuRow(
             },
     ) {
         if (icon != null) {
-            icon(tint, Modifier.size(metrics.iconSmall))
+            icon(iconTint, Modifier.size(metrics.iconSmall))
             Spacer(modifier = Modifier.width(Space.lg))
         }
 
@@ -209,6 +217,24 @@ fun MenuRow(
 @Composable
 fun MenuSeparator() {
     LukiaDivider(inset = MenuInset)
+}
+
+/** The band between groups of a menu, as iOS separates its own: wider than a row's hairline. */
+private val MenuGroupGap: Dp = 6.dp
+
+/**
+ * Between one group of rows and the next - adding books, then working on them,
+ * then the app around them. A hairline between every row made five unrelated
+ * actions read as one list of equals.
+ */
+@Composable
+fun MenuGroupBreak(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(MenuGroupGap)
+            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = LukiaAlpha.Hover)),
+    )
 }
 
 /**

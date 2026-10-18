@@ -92,6 +92,8 @@ internal fun BookCard(
     transfer: BookTransfer? = null,
     /** The admin's Remove from server, or null where the menu has no such row. */
     onRemoveFromServer: (() -> Unit)? = null,
+    /** Mark as Unread, or null for a book not yet started. */
+    onMarkUnread: (() -> Unit)? = null,
 ) {
     val document = book.document
     val title = document.bookTitle()
@@ -162,6 +164,7 @@ internal fun BookCard(
                 onShowDetails = onShowDetails,
                 onSelectBooks = onSelectBooks,
                 onRemoveFromServer = onRemoveFromServer,
+                onMarkUnread = onMarkUnread,
             )
         }
 

@@ -53,6 +53,7 @@ internal fun BoxScope.CoverOverlays(
     onShowDetails: () -> Unit,
     onSelectBooks: () -> Unit,
     onRemoveFromServer: (() -> Unit)? = null,
+    onMarkUnread: (() -> Unit)? = null,
 ) {
     FavoriteBadge(
         visible = document.isFavorite,
@@ -97,6 +98,7 @@ internal fun BoxScope.CoverOverlays(
             onShowDetails = onShowDetails,
             onSelectBooks = onSelectBooks,
             onRemoveFromServer = onRemoveFromServer,
+            onMarkUnread = onMarkUnread,
         )
     }
 }
