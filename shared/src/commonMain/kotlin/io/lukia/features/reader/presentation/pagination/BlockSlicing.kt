@@ -15,8 +15,9 @@ import io.lukia.features.reader.domain.text.splitIntoSentences
  * with no way to see the bottom of it.
  */
 internal fun TextBlock.cutAt(offset: Int): Pair<TextBlock, TextBlock>? = when (this) {
+    // The rest of a chapter title carried onto the next page opens nothing.
     is TextBlock.Heading -> text.cutAt(offset)?.let { (head, tail) ->
-        copy(text = head) to copy(text = tail)
+        copy(text = head) to copy(text = tail, chapter = TextBlock.ChapterRole.None)
     }
 
     is TextBlock.Paragraph -> text.cutAt(offset)?.let { (head, tail) ->

@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -34,6 +36,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.core.presentation.decodeToImageBitmapOrNull
@@ -41,15 +44,18 @@ import io.lukia.features.reader.domain.FigureSize
 import io.lukia.features.reader.domain.text.TextBlock
 import io.lukia.features.reader.presentation.components.passages.BlockActions
 import io.lukia.features.reader.presentation.rendering.FigureImageCache
+import io.lukia.features.reader.presentation.theme.ChapterRuleGap
+import io.lukia.features.reader.presentation.theme.ChapterRuleHeight
+import io.lukia.features.reader.presentation.theme.ChapterRuleWidth
 import io.lukia.features.reader.presentation.theme.CodePaddingHorizontal
 import io.lukia.features.reader.presentation.theme.CodePaddingVertical
-import io.lukia.features.reader.presentation.theme.HeadingTopPadding
 import io.lukia.features.reader.presentation.theme.IndentWidth
 import io.lukia.features.reader.presentation.theme.MarkerWidth
 import io.lukia.features.reader.presentation.theme.QuoteRuleWidth
 import io.lukia.features.reader.presentation.theme.SeparatorPadding
 import io.lukia.features.reader.presentation.theme.codeStyle
 import io.lukia.features.reader.presentation.theme.headingStyle
+import io.lukia.features.reader.presentation.theme.headingTopPadding
 import io.lukia.features.reader.presentation.translation.SentenceTranslations
 import io.lukia.features.reader.presentation.translation.TranslateOnScreen
 import io.lukia.features.translate.domain.settings.TranslationGestures
@@ -74,19 +80,53 @@ internal fun HeadingBlock(
     gestures: TranslationGestures,
     resizingType: Boolean,
 ) {
-    ProseText(
-        runs = block.text,
-        style = headingStyle(style, block.level),
-        translations = translations,
-        actions = actions,
-        translateOnScreen = translateOnScreen,
-        gestures = gestures,
-        resizingType = resizingType,
+    val set = headingStyle(style, block).let { heading ->
+        // A heading inside a chapter, and a chapter's label, in the page's
+        // accent, so the parts of a chapter stand out to a reader skimming for
+        // one. A chapter title keeps the ink: its size and its rule mark it.
+        if (block.opensChapter) heading else heading.copy(color = MaterialTheme.colorScheme.primary)
+    }
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = HeadingTopPadding)
-            .semantics { heading() },
-    )
+            .padding(top = headingTopPadding(block.chapter)),
+    ) {
+        ProseText(
+            runs = block.text,
+            style = set,
+            translations = translations,
+            actions = actions,
+            translateOnScreen = translateOnScreen,
+            gestures = gestures,
+            resizingType = resizingType,
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { heading() },
+        )
+
+        if (block.opensChapter) ChapterRule(alignment = set.textAlign)
+    }
+}
+
+/**
+ * The short rule closing a chapter's title, under its first letter - or under
+ * its middle, where the book centred the title.
+ */
+@Composable
+private fun ChapterRule(alignment: TextAlign) {
+    Box(
+        contentAlignment = if (alignment == TextAlign.Center) Alignment.Center else Alignment.CenterStart,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = ChapterRuleGap),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(width = ChapterRuleWidth, height = ChapterRuleHeight)
+                .background(MaterialTheme.colorScheme.primary),
+        )
+    }
 }
 
 @Composable

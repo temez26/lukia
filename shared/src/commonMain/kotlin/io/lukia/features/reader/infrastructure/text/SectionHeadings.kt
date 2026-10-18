@@ -52,10 +52,18 @@ internal fun List<OutlineEntry>.withSectionHeadings(
         sections.headingsUnder(entry, entry.pageIndex until end)
     }
 
-    val boilerplate = found.boilerplateTitles()
+    // A heading straight before where an entry begins is that entry's label -
+    // "CHAPTER 3:" over the "Employing Python" the contents points at - and was
+    // listed as a section of the chapter before it.
+    val starts = map { it.pageIndex to it.blockIndex }.toSet()
+    val unlabelled = found.map { headings ->
+        headings.filterNot { (it.pageIndex to it.blockIndex + 1) in starts }
+    }
+
+    val boilerplate = unlabelled.boilerplateTitles()
 
     return flatMapIndexed { index, entry ->
-        listOf(entry) + found[index].filterNot { it.title.lowercase() in boilerplate }
+        listOf(entry) + unlabelled[index].filterNot { it.title.lowercase() in boilerplate }
     }
 }
 
@@ -121,20 +129,25 @@ private fun List<TextSection>.headingsUnder(
  * `h1` would otherwise appear as a row nested underneath itself.
  */
 private fun TextSection?.headings(index: Int, parent: OutlineEntry): List<FoundHeading> =
-    this?.blocks?.mapIndexedNotNull { block, content ->
-        val heading = content as? TextBlock.Heading
-        val title = heading?.text?.plainText()?.trim().orEmpty()
+    // A page of nothing but headings is a title page set line by line - the
+    // author, "Edited by", the publisher - and none of it is a place to go.
+    this?.takeIf { section -> section.blocks.any { it !is TextBlock.Heading && it !is TextBlock.Figure } }
+        ?.blocks?.mapIndexedNotNull { block, content ->
+            val heading = content as? TextBlock.Heading
+            val title = heading?.text?.plainText()?.trim().orEmpty()
 
-        when {
-            title.isEmpty() -> null
-            index == parent.pageIndex && block <= parent.blockIndex -> null
-            title.equals(parent.title, ignoreCase = true) -> null
+            when {
+                title.isEmpty() -> null
+                // "Chapter 5" over a chapter's name is part of the name, not a place.
+                heading?.chapter == TextBlock.ChapterRole.Label -> null
+                index == parent.pageIndex && block <= parent.blockIndex -> null
+                title.equals(parent.title, ignoreCase = true) -> null
 
-            else -> FoundHeading(
-                section = index,
-                block = block,
-                level = requireNotNull(heading).level,
-                title = title,
-            )
-        }
-    }.orEmpty()
+                else -> FoundHeading(
+                    section = index,
+                    block = block,
+                    level = requireNotNull(heading).level,
+                    title = title,
+                )
+            }
+        }.orEmpty()

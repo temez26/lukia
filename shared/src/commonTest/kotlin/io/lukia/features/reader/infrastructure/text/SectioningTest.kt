@@ -113,4 +113,64 @@ class SectioningTest {
         TextBlock.Heading(text = listOf(TextRun(title)), level = level)
 
     private fun paragraph(text: String) = TextBlock.Paragraph(listOf(TextRun(text)))
+
+    /** A section's title is set as a chapter opening; the headings after it are not. */
+    @Test
+    fun theHeadingASectionOpensWithOpensAChapter() {
+        val sections = sectionText(
+            listOf(
+                TextBlock.Heading(listOf(TextRun("One")), level = 1),
+                TextBlock.Paragraph(listOf(TextRun("Words."))),
+                TextBlock.Heading(listOf(TextRun("A part")), level = 2),
+                TextBlock.Heading(listOf(TextRun("Two")), level = 1),
+            ),
+        ).sections
+
+        val openings = sections.flatMap { section ->
+            section.blocks.filterIsInstance<TextBlock.Heading>().map { it.text.single().text to it.opensChapter }
+        }
+
+        assertEquals(listOf("One" to true, "A part" to false, "Two" to true), openings)
+    }
+
+    /** A picture may come before the title; prose may not. */
+    @Test
+    fun onlyNothingButPicturesMayComeBeforeAChapterOpening() {
+        val afterPicture = listOf(
+            TextBlock.Separator,
+            TextBlock.Heading(listOf(TextRun("Title")), level = 1),
+        ).withChapterOpening()
+
+        val afterProse = listOf(
+            TextBlock.Paragraph(listOf(TextRun("Words."))),
+            TextBlock.Heading(listOf(TextRun("Title")), level = 1),
+        ).withChapterOpening()
+
+        assertTrue((afterPicture[1] as TextBlock.Heading).opensChapter)
+        assertEquals(false, (afterProse[1] as TextBlock.Heading).opensChapter)
+    }
+
+    /** "CHAPTER 5:" over the chapter's name is its label, not a second title. */
+    @Test
+    fun aNumberedLineOverTheTitleIsItsLabel() {
+        val roles = listOf(
+            TextBlock.Heading(listOf(TextRun("CHAPTER 5:")), level = 2),
+            TextBlock.Heading(listOf(TextRun("User's Input and Loop")), level = 2),
+            TextBlock.Paragraph(listOf(TextRun("Words."))),
+        ).withChapterOpening().filterIsInstance<TextBlock.Heading>().map { it.chapter }
+
+        assertEquals(listOf(TextBlock.ChapterRole.Label, TextBlock.ChapterRole.TitleUnderLabel), roles)
+    }
+
+    /** A short title with a heading straight under it is still the title. */
+    @Test
+    fun aShortUnnumberedTitleIsNotALabel() {
+        val roles = listOf(
+            TextBlock.Heading(listOf(TextRun("Introduction")), level = 1),
+            TextBlock.Heading(listOf(TextRun("Who is this for?")), level = 2),
+            TextBlock.Paragraph(listOf(TextRun("Words."))),
+        ).withChapterOpening().filterIsInstance<TextBlock.Heading>().map { it.chapter }
+
+        assertEquals(listOf(TextBlock.ChapterRole.Title, TextBlock.ChapterRole.None), roles)
+    }
 }

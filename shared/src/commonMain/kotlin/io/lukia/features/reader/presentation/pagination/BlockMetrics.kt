@@ -12,8 +12,9 @@ import io.lukia.features.reader.domain.text.TextBlock
 import io.lukia.features.reader.domain.text.TextRun
 import io.lukia.features.reader.presentation.components.text.spanStyle
 import io.lukia.features.reader.presentation.theme.BLOCK_SPACING
+import io.lukia.features.reader.presentation.theme.ChapterRuleGap
+import io.lukia.features.reader.presentation.theme.ChapterRuleHeight
 import io.lukia.features.reader.presentation.theme.CodePaddingVertical
-import io.lukia.features.reader.presentation.theme.HeadingTopPadding
 import io.lukia.features.reader.presentation.theme.IndentWidth
 import io.lukia.features.reader.presentation.theme.MarkerWidth
 import io.lukia.features.reader.presentation.theme.QuoteRuleWidth
@@ -21,6 +22,7 @@ import io.lukia.features.reader.presentation.theme.SeparatorPadding
 import io.lukia.features.reader.presentation.theme.SeparatorRuleHeight
 import io.lukia.features.reader.presentation.theme.codeStyle
 import io.lukia.features.reader.presentation.theme.headingStyle
+import io.lukia.features.reader.presentation.theme.headingTopPadding
 
 /**
  * How tall each block of a book comes to, and where one has to be cut to fit.
@@ -73,7 +75,10 @@ internal class BlockMetrics(
     private val indentPx = with(density) { IndentWidth.roundToPx() }
     private val markerPx = with(density) { MarkerWidth.roundToPx() }
     private val quoteRulePx = with(density) { QuoteRuleWidth.roundToPx() }
-    private val headingTopPx = with(density) { HeadingTopPadding.roundToPx() }
+    private val headingTopPx = TextBlock.ChapterRole.entries.associateWith { role ->
+        with(density) { headingTopPadding(role).roundToPx() }
+    }
+    private val chapterRulePx = with(density) { ChapterRuleGap.roundToPx() + ChapterRuleHeight.roundToPx() }
     private val codeVerticalPx = with(density) { CodePaddingVertical.roundToPx() }
     private val separatorPx = with(density) {
         SeparatorPadding.roundToPx() * 2 + SeparatorRuleHeight.roundToPx()
@@ -82,7 +87,7 @@ internal class BlockMetrics(
     override val spacingPx: Int = with(density) { (style.fontSize * BLOCK_SPACING).toPx().toInt() }
 
     override fun height(block: TextBlock): Int = when (block) {
-        is TextBlock.Heading -> headingTopPx + layout(block).size.height
+        is TextBlock.Heading -> verticalInset(block) + layout(block).size.height
         is TextBlock.Paragraph -> layout(block).size.height
         is TextBlock.ListItem -> layout(block).size.height
         is TextBlock.Quote -> layout(block).size.height
@@ -115,7 +120,7 @@ internal class BlockMetrics(
 
     /** The room a block takes over and above its text: its own padding. */
     private fun verticalInset(block: TextBlock): Int = when (block) {
-        is TextBlock.Heading -> headingTopPx
+        is TextBlock.Heading -> headingTopPx.getValue(block.chapter) + if (block.opensChapter) chapterRulePx else 0
         is TextBlock.Code -> codeVerticalPx * 2
         else -> 0
     }
@@ -161,7 +166,7 @@ internal class BlockMetrics(
     private fun laidOut(block: TextBlock): TextLayoutResult = when (block) {
         is TextBlock.Heading -> measure(
             block.text.annotated(),
-            headingStyle(style, block.level),
+            headingStyle(style, block),
             widthPx,
         )
 

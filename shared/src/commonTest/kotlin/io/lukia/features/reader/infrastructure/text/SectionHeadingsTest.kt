@@ -20,8 +20,12 @@ class SectionHeadingsTest {
     private fun paragraph(text: String): TextBlock =
         TextBlock.Paragraph(listOf(TextRun(text)))
 
+    /**
+     * Closed with a paragraph, as a chapter is: a section of nothing but
+     * headings is a title page, which offers no sections of its own.
+     */
     private fun section(title: String?, vararg blocks: TextBlock) =
-        TextSection(title = title, blocks = blocks.toList())
+        TextSection(title = title, blocks = blocks.toList() + paragraph("Words."))
 
     private fun chapterEntry(title: String, section: Int = 0, level: Int = 0) =
         OutlineEntry(title = title, pageIndex = section, level = level, blockIndex = 0)
@@ -196,6 +200,17 @@ class SectionHeadingsTest {
         assertEquals(
             listOf("Topic 1", "Part of topic 1", "Topic 2", "Part of topic 2", "Topic 3", "Part of topic 3"),
             filled.map { it.title },
+        )
+    }
+
+    /** A title page set line by line - author, editor, publisher - is not a contents. */
+    @Test
+    fun aPageOfNothingButHeadingsOffersNoSections() {
+        val titlePage = TextSection(title = null, blocks = listOf(heading("Title", 1), heading("Edited by", 2)))
+
+        assertEquals(
+            listOf("Title Page"),
+            listOf(chapterEntry("Title Page")).withSectionHeadings(listOf(titlePage)).map { it.title },
         )
     }
 }

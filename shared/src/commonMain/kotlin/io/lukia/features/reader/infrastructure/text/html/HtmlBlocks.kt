@@ -36,8 +36,10 @@ internal class HtmlContent(
 internal fun htmlContent(
     html: String,
     image: (src: String) -> ByteArray? = { null },
+    /** The book's styled heading classes - see [headingClasses]. */
+    styledHeadings: Map<String, Int> = emptyMap(),
 ): HtmlContent {
-    val builder = HtmlBlockBuilder(image)
+    val builder = HtmlBlockBuilder(image, styledHeadings)
 
     xmlEvents(html).forEach(builder::accept)
 

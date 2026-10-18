@@ -12,8 +12,10 @@ import io.lukia.features.reader.domain.text.plainText
 import io.lukia.features.reader.infrastructure.text.MAX_BLOCKS_PER_SECTION
 import io.lukia.features.reader.infrastructure.text.decodeText
 import io.lukia.features.reader.infrastructure.text.html.HtmlContent
+import io.lukia.features.reader.infrastructure.text.html.headingClasses
 import io.lukia.features.reader.infrastructure.text.html.htmlContent
 import io.lukia.features.reader.infrastructure.text.sectionStarts
+import io.lukia.features.reader.infrastructure.text.withChapterOpening
 import io.lukia.features.reader.infrastructure.text.withSectionHeadings
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -76,10 +78,12 @@ internal suspend fun readEpub(
      */
     val files = mutableMapOf<String, FileSections>()
 
+    val styledHeadings = epub.styledHeadings(diagnostics)
+
     val read = coroutineScope {
         epub.readingOrder
             .filter { it.mediaType in ReadableMediaTypes }
-            .map { item -> async { item to epub.contentOf(item, diagnostics) } }
+            .map { item -> async { item to epub.contentOf(item, styledHeadings, diagnostics) } }
             .awaitAll()
     }
 
@@ -113,12 +117,26 @@ internal suspend fun readEpub(
  */
 private fun EpubPackage.contentOf(
     item: EpubManifestItem,
+    styledHeadings: Map<String, Int>,
     diagnostics: Diagnostics,
 ): HtmlContent? {
     val html = read(item.path)?.let { decodeText(it, diagnostics) } ?: return null
 
-    return htmlContent(html) { source -> read(resolveFrom(item.path, source)) }
+    return htmlContent(html, image = { source ->
+        read(resolveFrom(item.path, source))
+    }, styledHeadings = styledHeadings)
 }
+
+/**
+ * The classes the book's stylesheets set as headings - see [headingClasses].
+ * Read across every stylesheet at once: a converter writes one for the whole
+ * book, and a class means the same in every chapter that uses it.
+ */
+private fun EpubPackage.styledHeadings(diagnostics: Diagnostics): Map<String, Int> =
+    manifest
+        .filter { it.mediaType == "text/css" }
+        .mapNotNull { sheet -> read(sheet.path)?.let { decodeText(it, diagnostics) } }
+        .fold(emptyMap()) { classes, css -> classes + headingClasses(css) }
 
 /** Where one file of the book ended up once it was laid out as sections. */
 private class FileSections(
@@ -142,7 +160,7 @@ private fun MutableList<TextSection>.append(content: HtmlContent): FileSections 
 
     starts.forEachIndexed { index, start ->
         val end = starts.getOrElse(index + 1) { content.blocks.size }
-        val blocks = content.blocks.subList(start, end).toList()
+        val blocks = content.blocks.subList(start, end).withChapterOpening()
 
         add(TextSection(title = blocks.firstHeading(), blocks = blocks))
     }

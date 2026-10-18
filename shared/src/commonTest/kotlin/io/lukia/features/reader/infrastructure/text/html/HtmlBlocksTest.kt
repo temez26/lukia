@@ -265,4 +265,23 @@ class HtmlBlocksTest {
     fun anAlignmentNobodyRecognisesIsNoAlignmentAtAll() {
         assertNull(htmlBlocks("""<p align="middle">Words.</p>""").single().alignment)
     }
+
+    /**
+     * Kindle conversions write headings as classed divisions sized by the
+     * stylesheet, with the title's lines in divisions of their own.
+     */
+    @Test
+    fun aDivisionClassedAsAHeadingIsOne() {
+        val blocks = htmlBlocks(
+            """
+            <body>
+              <div class="heading_s74-1"><div class="class_s72">Chapter 2</div></div>
+              <div class="class_s51">Words.</div>
+            </body>
+            """.trimIndent(),
+        )
+
+        assertEquals("Chapter 2", (blocks[0] as TextBlock.Heading).text.plainText())
+        assertTrue(blocks[1] is TextBlock.Paragraph)
+    }
 }
