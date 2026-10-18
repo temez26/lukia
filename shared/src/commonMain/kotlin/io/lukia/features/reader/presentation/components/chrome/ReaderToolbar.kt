@@ -1,7 +1,5 @@
 package io.lukia.features.reader.presentation.components.chrome
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -13,41 +11,33 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
-import io.lukia.features.reader.domain.outline.OutlineEntry
-import io.lukia.features.reader.presentation.currentEntryIndex
+import androidx.compose.ui.unit.dp
 import io.lukia.resources.Res
 import io.lukia.resources.reader_close_book
 import io.lukia.resources.reader_close_the_book
-import io.lukia.resources.reader_contents
-import io.lukia.resources.reader_open_contents
-import io.lukia.resources.reader_page_of_count
-import io.lukia.resources.reader_page_x_of_y
 import io.lukia.resources.shortcut_close_book_keys
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.controls.ShortcutTooltip
-import io.lukia.shared.presentation.components.controls.pressable
 import io.lukia.shared.presentation.components.icons.BackChevron
-import io.lukia.shared.presentation.components.icons.DisclosureChevron
 import io.lukia.shared.presentation.components.surface.GlassSurface
-import io.lukia.shared.presentation.theme.LocalIconButtonShape
 import io.lukia.shared.presentation.theme.LocalLukiaMetrics
-import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.isWideWindow
 import org.jetbrains.compose.resources.stringResource
@@ -92,6 +82,12 @@ internal fun ReaderToolbar(
      * drawn on top would split the one block back into two.
      */
     merged: Boolean = false,
+    /**
+     * How far through the book the reader is, drawn as a line along the bar's
+     * bottom edge; null for no line. Read when drawn, so turning a page redraws
+     * the line rather than recomposing the bar.
+     */
+    progress: (() -> Float)? = null,
     centerControl: @Composable () -> Unit,
     endControl: @Composable () -> Unit,
 ) {
@@ -105,8 +101,16 @@ internal fun ReaderToolbar(
     val center = remember(centerControl) { movableContentOf(centerControl) }
     val end = remember(endControl) { movableContentOf(endControl) }
 
+    val track = MaterialTheme.colorScheme.onSurface.copy(alpha = ProgressTrackAlpha)
+    val fill = MaterialTheme.colorScheme.primary
+
     BarSurface(merged = merged, modifier = modifier.fillMaxWidth()) {
-        BoxWithConstraints {
+        BoxWithConstraints(
+            modifier = Modifier.drawWithContent {
+                drawContent()
+                progress?.let { drawProgressLine(it(), track, fill) }
+            },
+        ) {
             // What the middle of the bar may take, whatever is written in it.
             //
             // A Row measures unweighted children first, in order, handing each
@@ -177,6 +181,41 @@ private fun BarSurface(
     }
 }
 
+/**
+ * The reading progress along the bar's foot, where the bottom bar used to state
+ * it on its own: one bar for where the reader is and how far through.
+ *
+ * Inset from the capsule's ends and rounded: run edge to edge, its start was
+ * hidden in the capsule's corner and a book a tenth read showed as a smudge.
+ */
+private fun DrawScope.drawProgressLine(fraction: Float, track: Color, fill: Color) {
+    val height = ProgressLineHeight.toPx()
+    val inset = ProgressLineInset.toPx()
+    val top = size.height - height - ProgressLineLift.toPx()
+    val width = size.width - inset * 2
+    val radius = CornerRadius(height / 2)
+
+    drawRoundRect(color = track, topLeft = Offset(inset, top), size = Size(width, height), cornerRadius = radius)
+    drawRoundRect(
+        color = fill,
+        topLeft = Offset(inset, top),
+        size = Size(width * fraction.coerceIn(0f, 1f), height),
+        cornerRadius = radius,
+    )
+}
+
+/** Thick enough to read at a glance, thin enough to stay the bar's edge. */
+private val ProgressLineHeight: Dp = 3.dp
+
+/** In from the capsule's rounded ends, so the line starts where it can be seen. */
+private val ProgressLineInset: Dp = 18.dp
+
+/** Up off the capsule's edge, so the line is inside the bar rather than its outline. */
+private val ProgressLineLift: Dp = 3.dp
+
+/** How much of the ink the unread part of the book is drawn in. */
+private const val ProgressTrackAlpha = 0.12f
+
 /** How much of the bar the page indicator may take before it starts ellipsising. */
 private const val CENTER_SHARE = 0.5f
 
@@ -225,144 +264,4 @@ private fun RowScope.TitleTrack(onBack: () -> Unit, title: String?) {
             )
         }
     }
-}
-
-/**
- * Where the reader is in the book, and the way to somewhere else in it.
- *
- * The page number is read inside this composable and nowhere else, so turning a
- * page recomposes this label rather than the bar or the pages around it. The
- * `derivedStateOf` is what keeps that to once per page instead of once per
- * scrolled pixel.
- *
- * It doubles as the contents button: it is already where the eye goes to find
- * out where it is, and costs the toolbar no width to make it the way to move too.
- */
-@Composable
-internal fun PageIndicatorButton(
-    listState: LazyListState,
-    pageCount: Int,
-    /** The book's chapters, so the bar can say which one the page is in. */
-    chapters: List<OutlineEntry>,
-    onClick: () -> Unit,
-) {
-    val current by remember(listState) {
-        derivedStateOf { listState.firstVisibleItemIndex + 1 }
-    }
-
-    // Named as well as numbered: "page 42 of 380" says how far in, and the
-    // chapter says where. Read from the outline rather than carried on the page,
-    // because a chapter is a stretch of pages and only the entries know where
-    // one stretch ends and the next begins.
-    val chapter by remember(chapters) {
-        derivedStateOf { chapters.getOrNull(currentEntryIndex(chapters, current - 1))?.title }
-    }
-
-    val interactionSource = remember { MutableInteractionSource() }
-    val metrics = LocalLukiaMetrics.current
-
-    // The icon buttons' shape rather than the rounded rect a control in a layout
-    // gets: a capsule where they are round, square where the palette is. This
-    // one sits inside the toolbar's own capsule with a couple of points either
-    // side of it, and two different corner radii that close together read as a
-    // mistake rather than as a hierarchy.
-    val shape = LocalIconButtonShape.current
-
-    // Read before the modifier chain: `semantics` is not a composable scope.
-    val openContents = stringResource(Res.string.reader_open_contents)
-    val place = stringResource(Res.string.reader_page_x_of_y, current, pageCount)
-
-    ShortcutTooltip(
-        description = stringResource(Res.string.reader_contents),
-        shortcut = "C",
-    ) {
-        // What is pressed, which is as tall as anything else in the bar - a
-        // thumb aiming at the middle of the toolbar has to land on this. What is
-        // drawn is the row inside it.
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .heightIn(min = metrics.controlHeight)
-                .clip(shape)
-                .pressable(
-                    interactionSource = interactionSource,
-                    shape = shape,
-                    onClickLabel = openContents,
-                    onClick = onClick,
-                )
-                // "12 / 348" is a clear enough label to look at and a poor one to
-                // hear, so assistive technology is given the sentence instead.
-                //
-                // Deliberately not a live region: this changes on every page, and
-                // announcing each one would talk over a reader scrolling through a
-                // long book. The pages themselves carry the position instead.
-                .semantics {
-                    contentDescription = listOfNotNull(chapter, place)
-                        .joinToString(separator = ". ")
-                },
-        ) {
-            // What is drawn, which is the label and a little air around it.
-            //
-            // The fill used to be the target: held to the same height it was a
-            // 44dp slab around one 13sp line on every device with a thumb, so
-            // most of the toolbar's inside was tinted grey and read as a
-            // background rather than something to press. Splitting the two keeps
-            // Apple's target and gives back the air that made the bar a bar.
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .clip(shape)
-                    .background(
-                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = LukiaAlpha.Fill),
-                    )
-                    .padding(horizontal = Space.md, vertical = Space.xs),
-            ) {
-                PageIndicatorLabel(chapter = chapter, current = current, pageCount = pageCount)
-
-                DisclosureChevron(
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .padding(start = Space.xs)
-                        .size(metrics.iconSmall * 0.6f),
-                )
-            }
-        }
-    }
-}
-
-/**
- * What the indicator says: the chapter in view, then how far into the book it is.
- *
- * The chapter gives way first. It is the part that can run to a whole line of a
- * title, and the part a reader can do without - the numbers are what the bar is
- * for, and they never shrink.
- */
-@Composable
-private fun RowScope.PageIndicatorLabel(chapter: String?, current: Int, pageCount: Int) {
-    if (chapter != null) {
-        Text(
-            text = chapter,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .weight(1f, fill = false)
-                .padding(end = Space.xs),
-        )
-
-        Text(
-            text = "\u00b7",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(end = Space.xs),
-        )
-    }
-
-    Text(
-        text = stringResource(Res.string.reader_page_of_count, current, pageCount),
-        style = MaterialTheme.typography.labelMedium,
-        fontWeight = FontWeight.SemiBold,
-        color = MaterialTheme.colorScheme.onSurface,
-    )
 }

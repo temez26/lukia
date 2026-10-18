@@ -155,21 +155,3 @@ fun topChromeOut(): ExitTransition = slideOutVertically(
     animationSpec = tween(LukiaMotion.ExitMillis, easing = LukiaMotion.Exit),
     targetOffsetY = { -it },
 ) + fadeOut(animationSpec = tween(LukiaMotion.ExitMillis, easing = LukiaMotion.Exit))
-
-/**
- * The same, from the bottom edge, for the chrome that sits along it.
- *
- * A pair rather than [topChromeIn] with a flag: the two are used at opposite
- * ends of the same screen and arrive together, and reading `topChromeIn()`
- * beside `bottomChromeIn()` says that at the call site in a way `topChromeIn(up
- * = false)` does not.
- */
-fun bottomChromeIn(): EnterTransition = slideInVertically(
-    animationSpec = tween(LukiaMotion.StandardMillis, easing = LukiaMotion.Standard),
-    initialOffsetY = { it },
-) + fadeIn(animationSpec = tween(LukiaMotion.StandardMillis, easing = LukiaMotion.Standard))
-
-fun bottomChromeOut(): ExitTransition = slideOutVertically(
-    animationSpec = tween(LukiaMotion.ExitMillis, easing = LukiaMotion.Exit),
-    targetOffsetY = { it },
-) + fadeOut(animationSpec = tween(LukiaMotion.ExitMillis, easing = LukiaMotion.Exit))

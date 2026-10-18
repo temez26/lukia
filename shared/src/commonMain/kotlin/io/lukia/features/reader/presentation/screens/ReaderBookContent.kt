@@ -312,16 +312,6 @@ internal fun ReaderContent(
                         DismissLayer(onDismiss = chrome::closePanels)
                     }
 
-                    // Under the panels and over the page: it is a fact about the
-                    // book rather than a control, and nothing it can be behind ever
-                    // reaches the bottom edge.
-                    ReaderBottomChrome(
-                        chrome = chrome,
-                        pageCount = pageCount,
-                        listState = listState,
-                        modifier = Modifier.align(Alignment.BottomCenter),
-                    )
-
                     ReaderPanels(
                         chrome = chrome,
                         document = document,

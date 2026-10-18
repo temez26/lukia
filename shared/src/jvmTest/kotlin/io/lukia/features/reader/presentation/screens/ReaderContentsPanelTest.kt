@@ -256,9 +256,9 @@ class ReaderContentsPanelTest {
      * How far in, which a page number on its own does not say.
      *
      * Asserted on the scrubber's own line rather than on the figure alone. The
-     * reader states the same share over the bottom edge while its chrome is
-     * showing - see `ReaderReadingStatus` - and "1%" on its own no longer picks
-     * out one of them.
+     * reader states the same share in its bar while its chrome is showing - see
+     * `PageIndicatorButton` - and "1%" on its own no longer picks out one of
+     * them.
      */
     @Test
     fun theContentsPanelShowsHowFarThroughTheBookTheReaderIs() = runComposeUiTest {

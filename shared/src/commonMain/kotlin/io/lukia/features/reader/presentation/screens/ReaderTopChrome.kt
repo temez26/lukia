@@ -50,6 +50,9 @@ internal fun ReaderTopChrome(
 ) {
     val dimens = LocalLukiaDimens.current
     val density = LocalDensity.current
+    // On a phone the contents open out of the bar as one block - see
+    // ReaderContentsPanel. A wide window keeps them a popover under it.
+    val merged = chrome.contentsExpanded && !isWideWindow
 
     AnimatedVisibility(
         visible = chrome.chromeShown,
@@ -59,9 +62,14 @@ internal fun ReaderTopChrome(
     ) {
         ReaderToolbar(
             onBack = onBack,
-            // On a phone the contents open out of the bar as one block - see
-            // ReaderContentsPanel. A wide window keeps them a popover under it.
-            merged = chrome.contentsExpanded && !isWideWindow,
+            merged = merged,
+            // Not while the contents are open out of the bar: the scrubber there
+            // says the same thing, and the line would cut the one block in two.
+            progress = if (merged || document == null || pageCount <= 0) {
+                null
+            } else {
+                { (listState.firstVisibleItemIndex + 1f) / pageCount }
+            },
             // Named only where the bar has room to say it, which is also where a
             // window has no other title of its own.
             title = document?.info?.bookTitle(),
