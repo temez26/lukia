@@ -94,6 +94,7 @@ fun BookDetailOverlay(
                     onToggleFavorite = { onToggleFavorite(shown) },
                     onRefresh = { onRefresh(shown) },
                     onDelete = { onDelete(shown) },
+                    canRemoveFromDevice = !shown.awaitsDownload,
                     onDismissRequest = { menuExpanded = false },
                     onRemoveFromServer = transfers.removeFromServer(shown),
                     onMarkUnread = onMarkUnread?.takeIf { progress != null }?.let { mark -> { mark(shown) } },

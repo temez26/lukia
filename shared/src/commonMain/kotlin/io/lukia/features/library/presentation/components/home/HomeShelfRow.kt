@@ -1,7 +1,9 @@
 package io.lukia.features.library.presentation.components.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import io.lukia.features.library.presentation.model.HomeMenu
@@ -34,7 +38,13 @@ import io.lukia.resources.Res
 import io.lukia.resources.home_see_all_shelf
 import io.lukia.shared.presentation.components.controls.pressable
 import io.lukia.shared.presentation.components.icons.DisclosureChevron
+import io.lukia.shared.presentation.components.icons.HeartGlyph
+import io.lukia.shared.presentation.components.icons.OpenBookGlyph
+import io.lukia.shared.presentation.components.icons.PlusGlyph
+import io.lukia.shared.presentation.components.icons.UnreadBookGlyph
+import io.lukia.shared.presentation.components.surface.GroupCard
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 
@@ -66,40 +76,45 @@ internal fun HomeShelfRow(
 ) {
     val dimens = LocalLukiaDimens.current
 
-    Column(modifier = modifier.fillMaxWidth()) {
-        RowHeader(
-            title = row.shelf.displayTitle(),
-            onOpen = { onOpenShelf(row.shelf) },
-            modifier = Modifier.padding(horizontal = dimens.screenPadding),
-        )
+    // On a card of its own, as the book being read above it is, so each row
+    // reads as one shelf rather than covers floating on the page.
+    GroupCard(modifier = modifier.padding(horizontal = dimens.screenPadding)) {
+        Column(modifier = Modifier.fillMaxWidth().padding(vertical = Space.lg)) {
+            RowHeader(
+                shelf = row.shelf,
+                title = row.shelf.displayTitle(),
+                onOpen = { onOpenShelf(row.shelf) },
+                modifier = Modifier.padding(horizontal = Space.lg),
+            )
 
-        LazyRow(
-            // The row runs to the window's edges while its cards start at the
-            // screen's own inset, so a book scrolled to the end of it passes off
-            // the edge rather than stopping short of one.
-            contentPadding = PaddingValues(horizontal = dimens.screenPadding),
-            horizontalArrangement = Arrangement.spacedBy(dimens.gridSpacing),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = Space.lg),
-        ) {
-            items(
-                items = row.books,
-                key = { book -> book.location },
-                contentType = { "homeBook" },
-            ) { book ->
-                HomeBookCard(
-                    book = book,
-                    actions = actions,
-                    menuExpanded = openMenu == HomeMenu.Book(book.location),
-                    onMenuExpandedChange = { expanded ->
-                        onOpenMenuChange(HomeMenu.Book(book.location).takeIf { expanded })
-                    },
-                    // Off the measurement the library grid sizes its cells
-                    // from, so both screens agree how big a book is.
-                    modifier = Modifier.width(dimens.bookCellMinWidth),
-                    transfer = transfers[book.location],
-                )
+            LazyRow(
+                // The row runs to the card's edges while its covers start at
+                // the card's own inset, so a book scrolled to the end of it
+                // passes under the edge rather than stopping short of one.
+                contentPadding = PaddingValues(horizontal = Space.lg),
+                horizontalArrangement = Arrangement.spacedBy(dimens.gridSpacing),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = Space.lg),
+            ) {
+                items(
+                    items = row.books,
+                    key = { book -> book.location },
+                    contentType = { "homeBook" },
+                ) { book ->
+                    HomeBookCard(
+                        book = book,
+                        actions = actions,
+                        menuExpanded = openMenu == HomeMenu.Book(book.location),
+                        onMenuExpandedChange = { expanded ->
+                            onOpenMenuChange(HomeMenu.Book(book.location).takeIf { expanded })
+                        },
+                        // Off the measurement the library grid sizes its cells
+                        // from, so both screens agree how big a book is.
+                        modifier = Modifier.width(dimens.bookCellMinWidth),
+                        transfer = transfers[book.location],
+                    )
+                }
             }
         }
     }
@@ -115,6 +130,7 @@ internal fun HomeShelfRow(
  */
 @Composable
 private fun RowHeader(
+    shelf: HomeShelf,
     title: String,
     onOpen: () -> Unit,
     modifier: Modifier = Modifier,
@@ -135,11 +151,15 @@ private fun RowHeader(
             )
             .padding(vertical = Space.xxs),
     ) {
+        ShelfBadge(shelf = shelf, size = chevronSize * BadgeScale)
+
+        Spacer(modifier = Modifier.size(Space.sm))
+
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onBackground,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f, fill = false),
         )
 
@@ -155,3 +175,35 @@ private fun RowHeader(
         )
     }
 }
+
+/** How much bigger than the chevron the row's own mark is drawn, plate and all. */
+private const val BadgeScale = 1.6f
+
+/**
+ * What the row holds, as a glyph on a wash of the accent: the same marks the
+ * menus use for favouriting, reading and adding, so a row is recognised before
+ * its title is read.
+ */
+@Composable
+private fun ShelfBadge(shelf: HomeShelf, size: Dp) {
+    val tint = MaterialTheme.colorScheme.primary
+    val glyph = Modifier.size(size * GlyphShare)
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(tint.copy(alpha = LukiaAlpha.Tonal)),
+    ) {
+        when (shelf) {
+            HomeShelf.Favorites -> HeartGlyph(tint = tint, filled = true, modifier = glyph)
+            HomeShelf.RecentlyOpened -> OpenBookGlyph(tint = tint, modifier = glyph)
+            HomeShelf.Unread -> UnreadBookGlyph(tint = tint, modifier = glyph)
+            HomeShelf.RecentlyAdded -> PlusGlyph(tint = tint, modifier = glyph)
+        }
+    }
+}
+
+/** The glyph's share of its plate. */
+private const val GlyphShare = 0.62f

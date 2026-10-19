@@ -74,6 +74,11 @@ class SqlServerShelf(
         Unit
     }
 
+    override suspend fun markNotDownloaded(location: String) = withContext(dispatcher) {
+        documents.markNotDownloaded(location)
+        Unit
+    }
+
     override suspend fun newestPosition(): Long = withContext(dispatcher) {
         documents.selectNewestSortKey().executeAsOne()
     }

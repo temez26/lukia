@@ -95,13 +95,13 @@ class HomeShelfContentTest {
     fun aBookOnlyOnTheServerIsMarked() = runComposeUiTest {
         setContent(showing(serverOnly("Dune"), emptyMap()))
 
-        onNodeWithContentDescription("On server", useUnmergedTree = true).assertExists()
+        onNodeWithContentDescription("On the server, not downloaded", useUnmergedTree = true).assertExists()
     }
 
     @Test
     fun aBookOnTheDeviceCarriesNoDownloadMark() = runComposeUiTest {
         setContent(showing(library(book("Dune")), emptyMap()))
 
-        onNodeWithContentDescription("On server", useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithContentDescription("On the server, not downloaded", useUnmergedTree = true).assertDoesNotExist()
     }
 }

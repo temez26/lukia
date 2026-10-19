@@ -95,6 +95,7 @@ internal fun BoxScope.CoverOverlays(
             onRefresh = onRefresh,
             onDelete = onDelete,
             onDismissRequest = onMenuDismiss,
+            canRemoveFromDevice = !document.awaitsDownload,
             onShowDetails = onShowDetails,
             onSelectBooks = onSelectBooks,
             onRemoveFromServer = onRemoveFromServer,

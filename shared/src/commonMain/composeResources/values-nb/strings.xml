@@ -28,7 +28,7 @@
     <string name="menu_select_books">Velg bøker</string>
     <string name="menu_sync_with_server">Synkroniser med serveren</string>
     <string name="menu_refresh_details">Oppdater detaljer</string>
-    <string name="menu_delete_from_library">Slett fra biblioteket</string>
+    <string name="menu_remove_from_device">Fjern fra enheten</string>
     <string name="menu_remove_from_server">Fjern fra serveren</string>
     <string name="book_remove_from_server_title">Fjerne fra serveren?</string>
     <string name="book_remove_from_server_message">%1$s forsvinner fra det delte biblioteket for alle. Enheter som aldri lastet den ned, fjerner den ved neste synkronisering; en nedlastet kopi blir værende som en bok på sin enhet.</string>
@@ -54,8 +54,8 @@
         <item quantity="other">%1$d bøker merket som uleste</item>
     </plurals>
     <plurals name="library_bulk_deleted">
-        <item quantity="one">1 bok slettet fra biblioteket</item>
-        <item quantity="other">%1$d bøker slettet fra biblioteket</item>
+        <item quantity="one">1 bok fjernet</item>
+        <item quantity="other">%1$d bøker fjernet</item>
     </plurals>
     <plurals name="library_bulk_uploaded">
         <item quantity="one">1 bok lagt til på serveren</item>
@@ -75,11 +75,17 @@
     <string name="library_bulk_running_reset">Merker som ulest %1$d/%2$d…</string>
     <string name="library_bulk_running_delete">Sletter %1$d/%2$d…</string>
     <string name="library_bulk_running_upload">Legger til %1$d av %2$d på serveren…</string>
-    <string name="library_delete_confirm_message">Filene blir liggende der de er på disken.</string>
-    <plurals name="library_delete_confirm_title">
-        <item quantity="one">Slette 1 bok fra biblioteket ditt?</item>
-        <item quantity="other">Slette %1$d bøker fra biblioteket ditt?</item>
+    <plurals name="library_remove_confirm_title">
+        <item quantity="one">Fjerne 1 bok?</item>
+        <item quantity="other">Fjerne %1$d bøker?</item>
     </plurals>
+    <string name="remove_from_device">Fra denne enheten</string>
+    <string name="remove_from_server">Fra serveren</string>
+    <string name="remove_from_both">Fra denne enheten og serveren</string>
+    <string name="remove_from_device_detail">Bøker serveren også har, blir liggende der, klare til å lastes ned igjen. Importerte filer blir liggende der de er på disken.</string>
+    <string name="remove_from_server_detail">De forsvinner fra det delte biblioteket for alle. Kopier på denne enheten blir.</string>
+    <string name="remove_from_both_detail">De forsvinner fra denne enheten og fra det delte biblioteket for alle. Importerte filer blir liggende der de er på disken.</string>
+    <string name="remove_from_nothing_detail">Disse bøkene finnes bare på serveren, og bare administratoren kan fjerne dem derfra.</string>
     <string name="error_document_not_found_title">Fant ikke filen</string>
     <string name="error_document_not_found_message">Den kan ha blitt flyttet eller fjernet fra biblioteket ditt.</string>
     <string name="error_unsupported_file_title">Filformatet støttes ikke</string>
@@ -274,7 +280,7 @@
     <string name="selection_favourite">Legg til i favoritter</string>
     <string name="selection_unfavourite">Fjern fra favoritter</string>
     <string name="selection_mark_unread">Merk som ulest</string>
-    <string name="selection_delete">Slett fra biblioteket</string>
+    <string name="selection_delete">Fjern</string>
     <string name="selection_upload">Legg til på serveren</string>
     <string name="reader_close_book">Lukk boken</string>
     <string name="reader_close_the_book">Lukk boken</string>
@@ -517,6 +523,10 @@
     <string name="figure_illustration">Illustrasjon</string>
     <string name="home_see_all_shelf">Se alle %1$s</string>
     <string name="home_resume">Fortsett</string>
+    <plurals name="home_pages_left">
+        <item quantity="one">1 side igjen</item>
+        <item quantity="other">%1$d sider igjen</item>
+    </plurals>
     <string name="search_for_term">Søk etter %1$s</string>
     <string name="search_clear_recent">Tøm nylige søk</string>
     <string name="book_open_title">Åpne %1$s</string>
@@ -617,8 +627,9 @@
     <string name="sync_auto_upload">Legg til bøker jeg importerer på serveren</string>
     <string name="sync_auto_upload_detail">Bøker som legges til på denne enheten etter innlogging, havner i det felles biblioteket for alle. Bøker du allerede hadde, sendes bare når du legger dem til selv.</string>
     <string name="filter_device_only">Bare på denne enheten</string>
+    <string name="filter_server_only">Bare på serveren</string>
     <string name="book_info_sync">Synkroniseringsserver</string>
-    <string name="book_sync_on_server">På serveren</string>
+    <string name="book_on_device_and_server">På denne enheten og serveren</string>
     <string name="book_sync_not_downloaded">På serveren, ikke lastet ned</string>
     <string name="book_sync_device_only">Bare på denne enheten</string>
     <plurals name="sync_checked_minutes">

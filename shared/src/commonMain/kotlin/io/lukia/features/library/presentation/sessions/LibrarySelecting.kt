@@ -5,6 +5,7 @@ import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.model.BulkAction
 import io.lukia.features.library.presentation.model.LibrarySelection
+import io.lukia.features.library.presentation.model.RemoveFrom
 import io.lukia.features.library.presentation.model.upkeep
 import kotlinx.coroutines.flow.StateFlow
 
@@ -58,7 +59,8 @@ fun LibraryViewModel.setFavoriteOnSelected() =
 
 fun LibraryViewModel.resetProgressOnSelected() = selectionSession.resetProgress(::onBulkDone)
 
-fun LibraryViewModel.deleteSelected() = selectionSession.delete(::onBulkDone)
+fun LibraryViewModel.deleteSelected(from: RemoveFrom) =
+    selectionSession.delete(uiState.value.dataOrNull.orEmpty(), from, transfers::remove, ::onBulkDone)
 
 fun LibraryViewModel.uploadSelected() =
     selectionSession.upload(uiState.value.dataOrNull.orEmpty(), uploader, ::onBulkDone)

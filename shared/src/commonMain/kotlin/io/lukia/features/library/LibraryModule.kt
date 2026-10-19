@@ -77,7 +77,7 @@ val libraryModule = module {
     }
 
     single {
-        RemoveDocumentUseCase(get(), get(), get(), get(), get())
+        RemoveDocumentUseCase(get(), get(), get(), get(), get(), get(), get())
     }
 
     single<ContentHashStore> {

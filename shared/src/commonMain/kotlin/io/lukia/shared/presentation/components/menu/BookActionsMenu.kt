@@ -6,10 +6,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import io.lukia.resources.Res
 import io.lukia.resources.menu_book_details
-import io.lukia.resources.menu_delete_from_library
 import io.lukia.resources.menu_favourite
 import io.lukia.resources.menu_mark_unread
 import io.lukia.resources.menu_refresh_details
+import io.lukia.resources.menu_remove_from_device
 import io.lukia.resources.menu_remove_from_server
 import io.lukia.resources.menu_select_books
 import io.lukia.resources.menu_unfavourite
@@ -52,6 +52,8 @@ fun BookActionsMenu(
     onRemoveFromServer: (() -> Unit)? = null,
     /** Puts the book back to unread; null, and no row, for a book not yet started. */
     onMarkUnread: (() -> Unit)? = null,
+    /** False for a book only on the server, which has nothing on this device to remove. */
+    canRemoveFromDevice: Boolean = true,
 ) {
     AnchoredMenu(
         expanded = expanded,
@@ -107,12 +109,14 @@ fun BookActionsMenu(
             },
         )
 
-        MenuSeparator()
+        if (canRemoveFromDevice) {
+            MenuSeparator()
 
-        RemovingRow(stringResource(Res.string.menu_delete_from_library), onDismissRequest, onDelete)
+            RemovingRow(stringResource(Res.string.menu_remove_from_device), onDismissRequest, onDelete)
+        }
 
-        // Last and apart from Delete: Delete is about this device, this is
-        // about everyone's library.
+        // Last and apart from the device's row: that one is about this device,
+        // this is about everyone's library.
         if (onRemoveFromServer != null) {
             MenuSeparator()
 

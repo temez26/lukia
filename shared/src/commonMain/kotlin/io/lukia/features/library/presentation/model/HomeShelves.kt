@@ -79,7 +79,12 @@ fun List<LibraryBook>.homeLayout(limit: Int = ShelfLimit): HomeLayout {
         if (books.isEmpty()) null else HomeRow(shelf, books)
     }
 
-    return HomeLayout(current, rows, bookCount = size, readingCount = reading.size)
+    return HomeLayout(
+        current = current,
+        rows = rows,
+        bookCount = size,
+        readingCount = reading.size,
+    )
 }
 
 /**

@@ -35,7 +35,7 @@
     <string name="menu_select_books">Sélectionner des livres</string>
     <string name="menu_sync_with_server">Synchroniser avec le serveur</string>
     <string name="menu_refresh_details">Actualiser les détails</string>
-    <string name="menu_delete_from_library">Supprimer de la bibliothèque</string>
+    <string name="menu_remove_from_device">Retirer de l’appareil</string>
     <string name="menu_remove_from_server">Retirer du serveur</string>
     <string name="book_remove_from_server_title">Retirer du serveur\u00A0?</string>
     <string name="book_remove_from_server_message">%1$s quitte la bibliothèque partagée pour tout le monde. Les appareils qui ne l’ont jamais téléchargé le retirent à leur prochaine synchronisation\u00A0; une copie téléchargée reste un livre sur son appareil.</string>
@@ -61,8 +61,8 @@
         <item quantity="other">%1$d livres marqués comme non lus</item>
     </plurals>
     <plurals name="library_bulk_deleted">
-        <item quantity="one">1 livre supprimé de la bibliothèque</item>
-        <item quantity="other">%1$d livres supprimés de la bibliothèque</item>
+        <item quantity="one">1 livre retiré</item>
+        <item quantity="other">%1$d livres retirés</item>
     </plurals>
     <plurals name="library_bulk_uploaded">
         <item quantity="one">1 livre ajouté au serveur</item>
@@ -82,11 +82,17 @@
     <string name="library_bulk_running_reset">Marquage comme non lu %1$d/%2$d…</string>
     <string name="library_bulk_running_delete">Suppression %1$d/%2$d…</string>
     <string name="library_bulk_running_upload">Ajout de %1$d sur %2$d au serveur…</string>
-    <string name="library_delete_confirm_message">Les fichiers restent là où ils sont sur le disque.</string>
-    <plurals name="library_delete_confirm_title">
-        <item quantity="one">Supprimer 1 livre de votre bibliothèque ?</item>
-        <item quantity="other">Supprimer %1$d livres de votre bibliothèque ?</item>
+    <plurals name="library_remove_confirm_title">
+        <item quantity="one">Retirer 1 livre\u00A0?</item>
+        <item quantity="other">Retirer %1$d livres\u00A0?</item>
     </plurals>
+    <string name="remove_from_device">De cet appareil</string>
+    <string name="remove_from_server">Du serveur</string>
+    <string name="remove_from_both">De cet appareil et du serveur</string>
+    <string name="remove_from_device_detail">Les livres que le serveur possède aussi y restent, prêts à être téléchargés à nouveau. Les fichiers importés restent là où ils sont sur le disque.</string>
+    <string name="remove_from_server_detail">Ils quittent la bibliothèque partagée pour tout le monde. Les copies sur cet appareil restent.</string>
+    <string name="remove_from_both_detail">Ils quittent cet appareil et la bibliothèque partagée pour tout le monde. Les fichiers importés restent là où ils sont sur le disque.</string>
+    <string name="remove_from_nothing_detail">Ces livres ne sont que sur le serveur, et seul son administrateur peut les en retirer.</string>
     <string name="error_document_not_found_title">Fichier introuvable</string>
     <string name="error_document_not_found_message">Il a peut-être été déplacé ou retiré de votre bibliothèque.</string>
     <string name="error_unsupported_file_title">Format de fichier non pris en charge</string>
@@ -281,7 +287,7 @@
     <string name="selection_favourite">Ajouter aux favoris</string>
     <string name="selection_unfavourite">Retirer des favoris</string>
     <string name="selection_mark_unread">Marquer comme non lu</string>
-    <string name="selection_delete">Supprimer de la bibliothèque</string>
+    <string name="selection_delete">Retirer</string>
     <string name="selection_upload">Ajouter au serveur</string>
     <string name="reader_close_book">Fermer le livre</string>
     <string name="reader_close_the_book">Fermer le livre</string>
@@ -524,6 +530,10 @@
     <string name="figure_illustration">Illustration</string>
     <string name="home_see_all_shelf">Voir tout : %1$s</string>
     <string name="home_resume">Reprendre</string>
+    <plurals name="home_pages_left">
+        <item quantity="one">1 page restante</item>
+        <item quantity="other">%1$d pages restantes</item>
+    </plurals>
     <string name="search_for_term">Rechercher %1$s</string>
     <string name="search_clear_recent">Effacer les recherches récentes</string>
     <string name="book_open_title">Ouvrir %1$s</string>
@@ -624,8 +634,9 @@
     <string name="sync_auto_upload">Ajouter au serveur les livres que j’importe</string>
     <string name="sync_auto_upload_detail">Les livres ajoutés sur cet appareil après la connexion vont dans la bibliothèque partagée, pour tous. Ceux que vous aviez déjà ne sont envoyés que si vous les ajoutez vous-même.</string>
     <string name="filter_device_only">Seulement sur cet appareil</string>
+    <string name="filter_server_only">Seulement sur le serveur</string>
     <string name="book_info_sync">Serveur de synchronisation</string>
-    <string name="book_sync_on_server">Sur le serveur</string>
+    <string name="book_on_device_and_server">Sur cet appareil et le serveur</string>
     <string name="book_sync_not_downloaded">Sur le serveur, pas téléchargé</string>
     <string name="book_sync_device_only">Seulement sur cet appareil</string>
     <plurals name="sync_checked_minutes">

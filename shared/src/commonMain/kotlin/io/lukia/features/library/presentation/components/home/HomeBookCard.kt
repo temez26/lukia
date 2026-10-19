@@ -99,7 +99,7 @@ internal fun HomeBookCard(
         Text(
             text = title,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground,
+            color = MaterialTheme.colorScheme.onSurface,
             maxLines = 2,
             // Two lines whether the title needs them or not, so the author line
             // sits level across a row of books with titles of every length.
@@ -180,6 +180,7 @@ private fun Cover(
             onToggleFavorite = { actions.onToggleFavorite(book) },
             onRefresh = { actions.onRefresh(book) },
             onDelete = { actions.onDelete(book) },
+            canRemoveFromDevice = !book.document.awaitsDownload,
             onDismissRequest = { onMenuExpandedChange(false) },
             onShowDetails = { actions.onShowDetails(book) },
             onSelectBooks = actions.onSelectBooks,

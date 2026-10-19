@@ -19,13 +19,11 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.document.DocumentInfo
-import io.lukia.core.presentation.statusLabel
 import io.lukia.features.library.presentation.screens.BookTransfer
 import io.lukia.resources.Res
 import io.lukia.resources.book_download_failed
 import io.lukia.resources.book_downloading
 import io.lukia.resources.reader_percent
-import io.lukia.shared.presentation.components.icons.CloudGlyph
 import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
@@ -33,11 +31,11 @@ import org.jetbrains.compose.resources.stringResource
 /** The ring drawn while a book comes down: big enough to read at a glance on a small cover. */
 private val RingSize = 40.dp
 private val RingStroke = 3.dp
-private val CloudSize = 16.dp
+private val MarkSize = 16.dp
 
 /**
- * What a cover says about a book whose file is still on the server: that it is
- * only there, how far a download has got, or that one failed.
+ * What a cover says about where a book is kept: only on the server or there as
+ * well as here, how far a download has got, or that one failed.
  *
  * On the cover rather than beside it, because the cover is what was pressed.
  * Opening a book that is only on the server downloads it first, and that used
@@ -85,22 +83,20 @@ internal fun CoverTransferOverlay(
             )
         }
 
-        else -> if (document.awaitsDownload) {
-            val label = stringResource(document.statusLabel())
-
+        // The same mark the shelf's captions carry, so a cloud means the
+        // server on every screen - see [StorageMark].
+        else -> if (document.storage.isMarked) {
             Box(modifier = modifier.fillMaxSize()) {
-                Box(
-                    contentAlignment = Alignment.Center,
+                StorageMark(
+                    document = document,
+                    size = MarkSize,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(Space.sm)
                         .clip(MaterialTheme.shapes.small)
                         .background(MaterialTheme.colorScheme.surface.copy(alpha = LukiaAlpha.OverArtwork))
-                        .padding(Space.xs)
-                        .semantics { contentDescription = label },
-                ) {
-                    CloudGlyph(tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(CloudSize))
-                }
+                        .padding(Space.xs),
+                )
             }
         }
     }

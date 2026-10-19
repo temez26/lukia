@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.zIndex
+import io.lukia.core.domain.document.BookStorage
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.presentation.bookTitle
 import io.lukia.core.presentation.displayType
@@ -40,7 +41,7 @@ import io.lukia.resources.Res
 import io.lukia.resources.book_actions
 import io.lukia.resources.book_favourited
 import io.lukia.resources.book_format_and_size
-import io.lukia.resources.book_on_server
+import io.lukia.resources.book_on_device_and_server
 import io.lukia.resources.reader_percent
 import io.lukia.resources.state_not_selected
 import io.lukia.resources.state_selected
@@ -201,7 +202,7 @@ private fun Modifier.bookCardSemantics(
         stringResource(Res.string.book_favourited).takeIf { document.isFavorite },
         book.progress?.percent?.let { stringResource(Res.string.reader_percent, it) },
         stringResource(document.statusLabel()).takeIf { !document.exists },
-        stringResource(Res.string.book_on_server).takeIf { document.alsoOnServer },
+        stringResource(Res.string.book_on_device_and_server).takeIf { document.storage == BookStorage.Both },
     ).joinToString(separator = ". ")
 
     return semantics(mergeDescendants = true) {
@@ -294,10 +295,12 @@ private fun BookCardCaption(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f, fill = false),
             )
-            if (document.alsoOnServer) OnServerMark(Modifier.padding(start = Space.xs))
+            StorageMark(document, Modifier.padding(start = Space.xs))
         }
 
-        if (!document.exists) {
+        // A book only on the server says so with its cloud; words are for
+        // a file gone missing and a download under way.
+        if (document.storage == BookStorage.Missing || transfer != null) {
             BookStatusBadge(document, Modifier.padding(top = Space.sm), transfer)
         }
     }

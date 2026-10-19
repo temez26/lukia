@@ -11,6 +11,7 @@ import io.lukia.features.library.presentation.model.BulkAction
 import io.lukia.features.library.presentation.model.BulkOperation
 import io.lukia.features.library.presentation.model.LibraryMessage
 import io.lukia.features.library.presentation.model.LibrarySelection
+import io.lukia.features.library.presentation.model.RemoveFrom
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -113,13 +114,39 @@ class LibrarySelectionSession(
         }
 
     /**
-     * Drops the books from the library. The files on disk are left alone - see
-     * [RemoveDocumentUseCase], which is what this is a loop over.
+     * Takes the selected books away [from] this device, the server or both,
+     * leaving out any it does not reach. The device half is a loop over
+     * [RemoveDocumentUseCase], so the reader's own files stay on disk.
+     *
+     * The server goes first: a book it no longer has is then an ordinary book
+     * on this device, and taking that off removes it from the shelf altogether
+     * rather than leaving it waiting to be downloaded again.
      */
-    fun delete(onDone: (LibraryMessage) -> Unit) =
-        run(operation = BulkOperation.Delete, onDone = onDone) { location ->
-            removeDocumentUseCase(location)
+    fun delete(
+        books: List<DocumentInfo>,
+        from: RemoveFrom,
+        removeFromServer: suspend (location: String) -> Unit,
+        onDone: (LibraryMessage) -> Unit,
+    ) {
+        if (_selection.value.isEmpty) return
+
+        val removing = books
+            .filter { it.document.location in _selection.value && from.reaches(it) }
+            .associateBy { it.document.location }
+
+        if (removing.isEmpty()) {
+            stop()
+            onDone(LibraryMessage.BulkDone(operation = BulkOperation.Delete, done = 0, failed = 0))
+            return
         }
+
+        run(operation = BulkOperation.Delete, onDone = onDone, locations = removing.keys.toList()) { location ->
+            val book = removing.getValue(location)
+
+            if (from.server && book.onServer) removeFromServer(location)
+            if (from.device && !book.awaitsDownload) removeDocumentUseCase(location)
+        }
+    }
 
     /**
      * Sends the selected books to the sync server. Those already there, and

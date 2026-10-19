@@ -1,6 +1,5 @@
 package io.lukia.features.library.presentation.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,12 +14,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import io.lukia.features.library.presentation.components.home.HomeContinueCard
 import io.lukia.features.library.presentation.components.home.HomeShelfRow
 import io.lukia.features.library.presentation.components.toolbar.LibraryMenu
 import io.lukia.features.library.presentation.components.toolbar.MenuButton
+import io.lukia.features.library.presentation.components.toolbar.TonalPlate
 import io.lukia.features.library.presentation.model.HomeLayout
 import io.lukia.features.library.presentation.model.HomeMenu
 import io.lukia.features.library.presentation.model.HomeShelf
@@ -33,9 +32,7 @@ import io.lukia.resources.home_title
 import io.lukia.shared.presentation.components.launch.LaunchReveal
 import io.lukia.shared.presentation.components.launch.launchReveal
 import io.lukia.shared.presentation.theme.Clearance
-import io.lukia.shared.presentation.theme.LocalIconButtonShape
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
-import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
@@ -184,24 +181,6 @@ internal fun HomeHeader(
                 onSettings = onSettings,
             )
         }
-    }
-}
-
-/**
- * A wash of the accent behind one of the header's buttons, in the buttons' own
- * shape. The statistics button arrives as a slot from the shell, so the header
- * dresses it rather than asking for a different one.
- */
-@Composable
-private fun TonalPlate(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
-    val shape = LocalIconButtonShape.current
-
-    Box(
-        modifier = modifier
-            .clip(shape)
-            .background(MaterialTheme.colorScheme.primary.copy(alpha = LukiaAlpha.Tonal)),
-    ) {
-        content()
     }
 }
 

@@ -42,7 +42,7 @@
     <string name="menu_select_books">Select Books</string>
     <string name="menu_sync_with_server">Sync with Server</string>
     <string name="menu_refresh_details">Refresh Details</string>
-    <string name="menu_delete_from_library">Delete from Library</string>
+    <string name="menu_remove_from_device">Remove from Device</string>
     <string name="menu_remove_from_server">Remove from Server</string>
     <string name="book_remove_from_server_title">Remove from the server?</string>
     <string name="book_remove_from_server_message">%1$s leaves the shared library for everyone. Devices that never downloaded it drop it on their next sync; a downloaded copy stays as a book on its device.</string>
@@ -78,8 +78,8 @@
         <item quantity="other">%1$d books set back to unread</item>
     </plurals>
     <plurals name="library_bulk_deleted">
-        <item quantity="one">1 book removed from your library</item>
-        <item quantity="other">%1$d books removed from your library</item>
+        <item quantity="one">1 book removed</item>
+        <item quantity="other">%1$d books removed</item>
     </plurals>
     <plurals name="library_bulk_uploaded">
         <item quantity="one">1 book added to the server</item>
@@ -104,11 +104,17 @@
     <string name="library_bulk_running_delete">Deleting %1$d of %2$d\u2026</string>
     <string name="library_bulk_running_upload">Adding %1$d of %2$d to the server…</string>
 
-    <string name="library_delete_confirm_message">The files stay where they are on disk.</string>
-    <plurals name="library_delete_confirm_title">
-        <item quantity="one">Delete 1 book from your library?</item>
-        <item quantity="other">Delete %1$d books from your library?</item>
+    <plurals name="library_remove_confirm_title">
+        <item quantity="one">Remove 1 book?</item>
+        <item quantity="other">Remove %1$d books?</item>
     </plurals>
+    <string name="remove_from_device">From this device</string>
+    <string name="remove_from_server">From the server</string>
+    <string name="remove_from_both">From this device and the server</string>
+    <string name="remove_from_device_detail">Books the server also has stay there, ready to download again. Files you imported stay where they are on disk.</string>
+    <string name="remove_from_server_detail">They leave the shared library for everyone. Copies on this device stay.</string>
+    <string name="remove_from_both_detail">They leave this device and the shared library for everyone. Files you imported stay where they are on disk.</string>
+    <string name="remove_from_nothing_detail">These books are only on the server, and only its admin can remove them from there.</string>
 
     <!--
         What each failure is called and what it says. Paired: a title alone is
@@ -372,7 +378,7 @@
     <string name="selection_favourite">Add to favourites</string>
     <string name="selection_unfavourite">Remove from favourites</string>
     <string name="selection_mark_unread">Mark as unread</string>
-    <string name="selection_delete">Delete from library</string>
+    <string name="selection_delete">Remove</string>
     <string name="selection_upload">Add to server</string>
 
     <!-- The bar over the book, and what it says about where the reader is. -->
@@ -698,6 +704,10 @@
     <string name="figure_illustration">Illustration</string>
     <string name="home_see_all_shelf">See all %1$s</string>
     <string name="home_resume">Resume</string>
+    <plurals name="home_pages_left">
+        <item quantity="one">1 page left</item>
+        <item quantity="other">%1$d pages left</item>
+    </plurals>
     <string name="search_for_term">Search for %1$s</string>
     <string name="search_clear_recent">Clear recent searches</string>
     <string name="book_open_title">Open %1$s</string>
@@ -802,8 +812,9 @@
     <string name="sync_auto_upload">Add books I import to the server</string>
     <string name="sync_auto_upload_detail">Books added on this device after signing in go to the shared library for everyone. Books you already had are only sent when you add them yourself.</string>
     <string name="filter_device_only">Only on this device</string>
+    <string name="filter_server_only">Only on the server</string>
     <string name="book_info_sync">Sync server</string>
-    <string name="book_sync_on_server">On the server</string>
+    <string name="book_on_device_and_server">On this device and the server</string>
     <string name="book_sync_not_downloaded">On the server, not downloaded</string>
     <string name="book_sync_device_only">Only on this device</string>
     <plurals name="sync_checked_minutes">

@@ -30,7 +30,7 @@
     <string name="menu_select_books">Välj böcker</string>
     <string name="menu_sync_with_server">Synkronisera med servern</string>
     <string name="menu_refresh_details">Uppdatera uppgifter</string>
-    <string name="menu_delete_from_library">Ta bort från biblioteket</string>
+    <string name="menu_remove_from_device">Ta bort från enheten</string>
     <string name="menu_remove_from_server">Ta bort från servern</string>
     <string name="book_remove_from_server_title">Ta bort från servern?</string>
     <string name="book_remove_from_server_message">%1$s försvinner ur det delade biblioteket för alla. Enheter som aldrig laddat ner den tar bort den vid nästa synkronisering; en nedladdad kopia blir kvar som en bok på sin enhet.</string>
@@ -60,8 +60,8 @@
         <item quantity="other">%1$d böcker markerade som olästa</item>
     </plurals>
     <plurals name="library_bulk_deleted">
-        <item quantity="one">1 bok borttagen från biblioteket</item>
-        <item quantity="other">%1$d böcker borttagna från biblioteket</item>
+        <item quantity="one">1 bok borttagen</item>
+        <item quantity="other">%1$d böcker borttagna</item>
     </plurals>
     <plurals name="library_bulk_uploaded">
         <item quantity="one">1 bok tillagd på servern</item>
@@ -84,11 +84,17 @@
     <string name="library_bulk_running_delete">Tar bort %1$d/%2$d…</string>
     <string name="library_bulk_running_upload">Lägger till %1$d av %2$d på servern…</string>
 
-    <string name="library_delete_confirm_message">Filerna ligger kvar där de är på disken.</string>
-    <plurals name="library_delete_confirm_title">
-        <item quantity="one">Ta bort 1 bok från ditt bibliotek?</item>
-        <item quantity="other">Ta bort %1$d böcker från ditt bibliotek?</item>
+    <plurals name="library_remove_confirm_title">
+        <item quantity="one">Ta bort 1 bok?</item>
+        <item quantity="other">Ta bort %1$d böcker?</item>
     </plurals>
+    <string name="remove_from_device">Från den här enheten</string>
+    <string name="remove_from_server">Från servern</string>
+    <string name="remove_from_both">Från den här enheten och servern</string>
+    <string name="remove_from_device_detail">Böcker som även finns på servern ligger kvar där, redo att laddas ned igen. Importerade filer ligger kvar där de är på disken.</string>
+    <string name="remove_from_server_detail">De försvinner ur det delade biblioteket för alla. Kopior på den här enheten finns kvar.</string>
+    <string name="remove_from_both_detail">De försvinner från den här enheten och ur det delade biblioteket för alla. Importerade filer ligger kvar där de är på disken.</string>
+    <string name="remove_from_nothing_detail">De här böckerna finns bara på servern, och bara dess administratör kan ta bort dem där.</string>
 
     <string name="error_document_not_found_title">Filen hittades inte</string>
     <string name="error_document_not_found_message">Den kan ha flyttats eller tagits bort från ditt bibliotek.</string>
@@ -308,7 +314,7 @@
     <string name="selection_favourite">Lägg till i favoriter</string>
     <string name="selection_unfavourite">Ta bort från favoriter</string>
     <string name="selection_mark_unread">Markera som oläst</string>
-    <string name="selection_delete">Ta bort från biblioteket</string>
+    <string name="selection_delete">Ta bort</string>
     <string name="selection_upload">Lägg till på servern</string>
 
     <string name="reader_close_book">Stäng boken</string>
@@ -571,6 +577,10 @@
     <string name="figure_illustration">Illustration</string>
     <string name="home_see_all_shelf">Visa alla %1$s</string>
     <string name="home_resume">Fortsätt</string>
+    <plurals name="home_pages_left">
+        <item quantity="one">1 sida kvar</item>
+        <item quantity="other">%1$d sidor kvar</item>
+    </plurals>
     <string name="search_for_term">Sök efter %1$s</string>
     <string name="search_clear_recent">Rensa senaste sökningarna</string>
     <string name="book_open_title">Öppna %1$s</string>
@@ -671,8 +681,9 @@
     <string name="sync_auto_upload">Lägg till böcker jag importerar på servern</string>
     <string name="sync_auto_upload_detail">Böcker som läggs till på den här enheten efter inloggning hamnar i det delade biblioteket för alla. Böcker du redan hade skickas bara när du lägger till dem själv.</string>
     <string name="filter_device_only">Bara på den här enheten</string>
+    <string name="filter_server_only">Bara på servern</string>
     <string name="book_info_sync">Synkroniseringsserver</string>
-    <string name="book_sync_on_server">På servern</string>
+    <string name="book_on_device_and_server">På den här enheten och servern</string>
     <string name="book_sync_not_downloaded">På servern, inte nedladdad</string>
     <string name="book_sync_device_only">Bara på den här enheten</string>
     <plurals name="sync_checked_minutes">

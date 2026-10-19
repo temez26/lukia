@@ -36,6 +36,8 @@ data class LibraryFacets(
      * is never offered a filter about a server.
      */
     val hasDeviceOnly: Boolean = false,
+    /** Some books are on the sync server and not downloaded here, and some are. */
+    val hasServerOnly: Boolean = false,
 ) {
     companion object {
         val Empty = LibraryFacets()
@@ -69,6 +71,7 @@ fun List<LibraryBook>.facets(): LibraryFacets {
         languages = dividingValues(key = ::languageKey) { listOfNotNull(it.language) }.map { it.spelling },
         hasFavourites = divides { it.document.isFavorite },
         hasDeviceOnly = any { it.document.onServer } && divides { it.document.exists && !it.document.onServer },
+        hasServerOnly = divides { it.document.awaitsDownload },
     )
 }
 
