@@ -14,6 +14,8 @@ import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.components.selection.LibrarySelectionActions
 import io.lukia.features.library.presentation.components.selection.LibrarySelectionBar
 import io.lukia.features.library.presentation.model.LibraryBook
+import io.lukia.features.library.presentation.model.RemoveFrom
+import io.lukia.features.library.presentation.model.removalChoices
 import io.lukia.features.library.presentation.model.upkeep
 import io.lukia.features.library.presentation.sessions.BookTransferUi
 import io.lukia.features.library.presentation.sessions.LibraryShelfUi
@@ -31,10 +33,19 @@ import io.lukia.features.library.presentation.sessions.toggleAllSelected
 import io.lukia.features.library.presentation.sessions.toggleSelected
 import io.lukia.features.library.presentation.sessions.uploadSelected
 import io.lukia.resources.Res
-import io.lukia.resources.action_delete
-import io.lukia.resources.library_delete_confirm_message
-import io.lukia.resources.library_delete_confirm_title
+import io.lukia.resources.book_remove_from_server_confirm
+import io.lukia.resources.library_remove_confirm_title
+import io.lukia.resources.remove_from_both
+import io.lukia.resources.remove_from_both_detail
+import io.lukia.resources.remove_from_device
+import io.lukia.resources.remove_from_device_detail
+import io.lukia.resources.remove_from_nothing_detail
+import io.lukia.resources.remove_from_server
+import io.lukia.resources.remove_from_server_detail
+import io.lukia.shared.presentation.components.controls.ChoiceDensity
+import io.lukia.shared.presentation.components.controls.ChoiceList
 import io.lukia.shared.presentation.components.surface.ConfirmDialog
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -55,8 +66,9 @@ internal fun rememberShelfUi(viewModel: LibraryViewModel, onSyncWithServer: () -
     val upkeep = remember(books) { books.upkeep() }
     val layout by viewModel.layout.collectAsState()
     val canUpload by viewModel.transfers.canUpload.collectAsState()
+    val canRemove by viewModel.transfers.canRemove.collectAsState()
 
-    return remember(viewModel, selection, running, upkeep, layout, canUpload, onSyncWithServer) {
+    return remember(viewModel, selection, running, upkeep, layout, canUpload, canRemove, onSyncWithServer) {
         LibraryShelfUi(
             selection = selection,
             running = running,
@@ -69,6 +81,7 @@ internal fun rememberShelfUi(viewModel: LibraryViewModel, onSyncWithServer: () -
             onFavorite = viewModel::setFavoriteOnSelected,
             onResetProgress = viewModel::resetProgressOnSelected,
             onDelete = viewModel::deleteSelected,
+            canRemoveFromServer = canRemove,
             canUpload = canUpload,
             onUpload = viewModel::uploadSelected,
             onSelectMissing = viewModel::selectMissing,
@@ -147,17 +160,68 @@ internal fun BoxScope.LibrarySelectionSurface(
         modifier = Modifier.align(Alignment.BottomCenter),
     )
 
-    ConfirmDialog(
+    RemoveSelectionDialog(
         visible = confirming,
-        title = pluralStringResource(
-            Res.plurals.library_delete_confirm_title,
-            ui.selection.count,
-            ui.selection.count,
-        ),
-        message = stringResource(Res.string.library_delete_confirm_message),
-        confirmLabel = stringResource(Res.string.action_delete),
-        destructive = true,
-        onConfirm = ui.onDelete,
+        books = selected,
+        canRemoveFromServer = ui.canRemoveFromServer,
+        onRemove = ui.onDelete,
         onDismissRequest = { confirming = false },
     )
+}
+
+/**
+ * The question before the selection goes, and where it goes from.
+ *
+ * The places offered are the ones these books are in: a shelf of books only on
+ * this device is asked nothing about a server, and the server is offered only to
+ * its admin. Where there is one place, the question is only whether.
+ */
+@Composable
+private fun RemoveSelectionDialog(
+    visible: Boolean,
+    books: List<LibraryBook>,
+    canRemoveFromServer: Boolean,
+    onRemove: (RemoveFrom) -> Unit,
+    onDismissRequest: () -> Unit,
+) {
+    val choices = remember(books, canRemoveFromServer) {
+        books.map { it.document }.removalChoices(canRemoveFromServer)
+    }
+    var chosen by remember(choices) { mutableStateOf(choices.firstOrNull()) }
+
+    ConfirmDialog(
+        visible = visible,
+        title = pluralStringResource(Res.plurals.library_remove_confirm_title, books.size, books.size),
+        message = stringResource(chosen?.detail() ?: Res.string.remove_from_nothing_detail),
+        confirmLabel = stringResource(Res.string.book_remove_from_server_confirm),
+        destructive = true,
+        confirmEnabled = chosen != null,
+        onConfirm = { chosen?.let(onRemove) },
+        onDismissRequest = onDismissRequest,
+        content = if (choices.size > 1) {
+            {
+                ChoiceList(
+                    options = choices,
+                    selected = chosen,
+                    label = { stringResource(it.label()) },
+                    onSelect = { chosen = it },
+                    density = ChoiceDensity.Compact,
+                )
+            }
+        } else {
+            null
+        },
+    )
+}
+
+private fun RemoveFrom.label(): StringResource = when (this) {
+    RemoveFrom.Device -> Res.string.remove_from_device
+    RemoveFrom.Server -> Res.string.remove_from_server
+    RemoveFrom.DeviceAndServer -> Res.string.remove_from_both
+}
+
+private fun RemoveFrom.detail(): StringResource = when (this) {
+    RemoveFrom.Device -> Res.string.remove_from_device_detail
+    RemoveFrom.Server -> Res.string.remove_from_server_detail
+    RemoveFrom.DeviceAndServer -> Res.string.remove_from_both_detail
 }

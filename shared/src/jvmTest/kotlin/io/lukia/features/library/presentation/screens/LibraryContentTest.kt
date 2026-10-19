@@ -296,7 +296,7 @@ class LibraryContentTest {
 
         openBookMenu("Moby Dick")
 
-        onNodeWithText("Delete from Library").assertExists()
+        onNodeWithText("Remove from Device").assertExists()
         onNodeWithText("Remove from Server").assertDoesNotExist()
     }
 

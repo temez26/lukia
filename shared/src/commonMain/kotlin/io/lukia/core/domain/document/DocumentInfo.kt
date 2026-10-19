@@ -22,4 +22,20 @@ data class DocumentInfo(
 ) {
     /** On the sync server and not on this device yet: a book to download rather than one that went missing. */
     val awaitsDownload: Boolean get() = onServer && !exists
+
+    val storage: BookStorage
+        get() = when {
+            exists && onServer -> BookStorage.Both
+            exists -> BookStorage.Device
+            onServer -> BookStorage.Server
+            else -> BookStorage.Missing
+        }
+}
+
+/** Where a book's file is kept: here, on the sync server, both, or nowhere it can be read from. */
+enum class BookStorage {
+    Device,
+    Server,
+    Both,
+    Missing,
 }

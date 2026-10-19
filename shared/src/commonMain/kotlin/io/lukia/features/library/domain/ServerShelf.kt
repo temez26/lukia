@@ -45,6 +45,9 @@ interface ServerShelf {
     /** The download for [location] has landed. */
     suspend fun markDownloaded(location: String)
 
+    /** The downloaded copy at [location] is gone: the server book waits to be downloaded again. */
+    suspend fun markNotDownloaded(location: String)
+
     /** Where the library ends now - a mark that books added later are counted from. */
     suspend fun newestPosition(): Long
 

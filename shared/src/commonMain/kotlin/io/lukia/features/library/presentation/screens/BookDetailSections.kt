@@ -40,13 +40,13 @@ import io.lukia.resources.book_language
 import io.lukia.resources.book_length
 import io.lukia.resources.book_less
 import io.lukia.resources.book_more
+import io.lukia.resources.book_on_device_and_server
 import io.lukia.resources.book_published
 import io.lukia.resources.book_publisher
 import io.lukia.resources.book_size
 import io.lukia.resources.book_subjects
 import io.lukia.resources.book_sync_device_only
 import io.lukia.resources.book_sync_not_downloaded
-import io.lukia.resources.book_sync_on_server
 import io.lukia.shared.presentation.components.controls.ButtonSize
 import io.lukia.shared.presentation.components.controls.ButtonVariant
 import io.lukia.shared.presentation.components.controls.LukiaButton
@@ -252,6 +252,6 @@ internal fun SubjectSection(
 /** Where a book stands with the sync server, as the Information card says it. */
 private fun DocumentInfo.serverStanding(): StringResource = when {
     awaitsDownload -> Res.string.book_sync_not_downloaded
-    onServer -> Res.string.book_sync_on_server
+    onServer -> Res.string.book_on_device_and_server
     else -> Res.string.book_sync_device_only
 }

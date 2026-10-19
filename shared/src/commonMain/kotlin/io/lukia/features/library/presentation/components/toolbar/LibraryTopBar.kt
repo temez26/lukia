@@ -167,11 +167,13 @@ internal fun LibraryNavBar(
             // Before the actions button, so the row reads left to right as what
             // this screen is, how the reading is going, and what can be done to
             // the shelf.
-            Box(modifier = Modifier.padding(end = Space.md)) {
+            // On the same tonal plates as Home's header, so the two buttons
+            // look the same whichever tab they are pressed from.
+            TonalPlate(modifier = Modifier.padding(end = Space.md)) {
                 statsButton()
             }
 
-            Box {
+            TonalPlate {
                 MenuButton(
                     expanded = menuExpanded,
                     onClick = { onMenuExpandedChange(!menuExpanded) },

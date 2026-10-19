@@ -201,3 +201,9 @@ ORDER BY sortKey;
 -- Where the library ends now, so that books added later can be told apart.
 selectNewestSortKey:
 SELECT COALESCE(MAX(sortKey), 0) FROM document;
+
+-- A downloaded server book taken off this device: the row stays, as one to
+-- download again, because the server will not offer it a second time - the
+-- library catch-up only sends what changed.
+markNotDownloaded:
+UPDATE document SET fileExists = 0 WHERE location = ? AND onServer = 1;

@@ -129,7 +129,7 @@ class LibrarySelectionModeTest {
                                     locations = if (selection.locations == all) emptySet() else all,
                                 )
                             },
-                            onDelete = onDelete,
+                            onDelete = { onDelete() },
                             upkeep = upkeep,
                             onSelectMissing = {
                                 selection = LibrarySelection(true, upkeep.missing)
@@ -233,12 +233,13 @@ class LibrarySelectionModeTest {
             onDelete = { deleted = true },
         )
 
-        onNodeWithContentDescription("Delete from library").performClick()
+        onNodeWithContentDescription("Remove").performClick()
 
-        onNodeWithText("Delete 1 book from your library?").assertIsDisplayed()
+        onNodeWithText("Remove 1 book?").assertIsDisplayed()
         assertTrue(!deleted, "the books went before the question was answered")
 
-        press("Delete")
+        // The dialog's button rather than the bar's, which is named the same.
+        onNodeWithText("Remove").performClick()
 
         assertTrue(deleted)
     }
@@ -254,7 +255,7 @@ class LibrarySelectionModeTest {
             onDelete = { deleted = true },
         )
 
-        onNodeWithContentDescription("Delete from library").performClick()
+        onNodeWithContentDescription("Remove").performClick()
         press("Cancel")
 
         assertTrue(!deleted)

@@ -334,12 +334,15 @@ class LibraryViewModel(
         }
     }
 
-    /** Removes the book from the library index only; the file is left on disk. */
+    /** Takes the book off this device, leaving the file on disk - see [RemoveDocumentUseCase]. */
     fun deleteDocument(document: DocumentInfo) {
         val location = document.document.location
 
         viewModelScope.launch {
             if (!reported { removeDocumentUseCase(location) }) return@launch
+
+            // A server book's row stays, perhaps moved, so the shelf is read again.
+            if (document.onServer) return@launch loadDocuments()
 
             // Dropped from the list for the same reason favouriting patches it:
             // one row leaving is not a reason to re-read the rest.

@@ -37,11 +37,13 @@ import io.lukia.resources.filter_device_only
 import io.lukia.resources.filter_favourites
 import io.lukia.resources.filter_format
 import io.lukia.resources.filter_language
+import io.lukia.resources.filter_server_only
 import io.lukia.shared.presentation.components.controls.LukiaChip
+import io.lukia.shared.presentation.components.icons.CloudGlyph
+import io.lukia.shared.presentation.components.icons.DeviceGlyph
 import io.lukia.shared.presentation.components.icons.HeartGlyph
 import io.lukia.shared.presentation.components.icons.LayoutGlyph
 import io.lukia.shared.presentation.components.icons.SortGlyph
-import io.lukia.shared.presentation.components.icons.UploadGlyph
 import io.lukia.shared.presentation.components.menu.AnchoredMenu
 import io.lukia.shared.presentation.components.menu.MenuRow
 import io.lukia.shared.presentation.components.menu.MenuSeparator
@@ -100,8 +102,18 @@ internal fun LibraryFilterBar(
             LukiaChip(
                 label = stringResource(Res.string.filter_device_only),
                 selected = query.deviceOnly,
-                onClick = { onQueryChange(query.copy(deviceOnly = !query.deviceOnly)) },
-                icon = { tint, glyph -> UploadGlyph(tint = tint, modifier = glyph) },
+                // The two places exclude each other, so choosing one lets go of the other.
+                onClick = { onQueryChange(query.copy(deviceOnly = !query.deviceOnly, serverOnly = false)) },
+                icon = { tint, glyph -> DeviceGlyph(tint = tint, modifier = glyph) },
+            )
+        }
+
+        if (facets.hasServerOnly) {
+            LukiaChip(
+                label = stringResource(Res.string.filter_server_only),
+                selected = query.serverOnly,
+                onClick = { onQueryChange(query.copy(serverOnly = !query.serverOnly, deviceOnly = false)) },
+                icon = { tint, glyph -> CloudGlyph(tint = tint, modifier = glyph) },
             )
         }
 

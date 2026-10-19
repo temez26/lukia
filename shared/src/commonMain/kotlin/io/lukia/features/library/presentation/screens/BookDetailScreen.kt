@@ -231,6 +231,7 @@ private fun BookDetailActions(
             onRefresh = onRefresh,
             onDelete = onDelete,
             onDismissRequest = { onMenuExpandedChange(false) },
+            canRemoveFromDevice = !document.awaitsDownload,
             onRemoveFromServer = onRemoveFromServer?.takeIf { document.onServer }?.let { { confirmingRemoval = true } },
             onMarkUnread = onMarkUnread,
         )

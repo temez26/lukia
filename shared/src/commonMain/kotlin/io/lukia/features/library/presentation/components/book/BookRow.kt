@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.lukia.core.domain.document.BookStorage
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.core.presentation.authorLine
@@ -195,7 +196,7 @@ private fun RowDetails(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f, fill = false),
             )
-            if (document.alsoOnServer) OnServerMark(Modifier.padding(start = Space.xs))
+            StorageMark(document, Modifier.padding(start = Space.xs))
 
             // Only for a book somebody has started. A bar at nothing on every
             // unread row would turn a shelf into a progress report.
@@ -224,7 +225,9 @@ private fun RowDetails(
             }
         }
 
-        if (!document.exists) {
+        // A book only on the server says so with its cloud; words are for
+        // a file gone missing and a download under way.
+        if (document.storage == BookStorage.Missing || transfer != null) {
             BookStatusBadge(document, transfer = transfer)
         }
     }

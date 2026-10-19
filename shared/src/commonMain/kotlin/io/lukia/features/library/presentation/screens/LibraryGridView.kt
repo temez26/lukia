@@ -314,6 +314,7 @@ private fun LazyGridItemScope.ShelfItem(
                 onRefresh = onRefresh,
                 onDelete = onDelete,
                 onDismissRequest = { onMenuExpandedChange(false) },
+                canRemoveFromDevice = !book.document.awaitsDownload,
                 onShowDetails = onShowDetails,
                 onSelectBooks = onSelectBooks,
                 onRemoveFromServer = onRemoveFromServer,

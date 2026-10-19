@@ -5,6 +5,7 @@ import io.lukia.features.library.domain.LibraryLayout
 import io.lukia.features.library.presentation.model.BulkAction
 import io.lukia.features.library.presentation.model.LibrarySelection
 import io.lukia.features.library.presentation.model.LibraryUpkeep
+import io.lukia.features.library.presentation.model.RemoveFrom
 
 /**
  * How the shelf is being worked with: how it is laid out, what is picked off it,
@@ -26,7 +27,10 @@ class LibraryShelfUi(
     val onRefresh: () -> Unit = {},
     val onFavorite: () -> Unit = {},
     val onResetProgress: () -> Unit = {},
-    val onDelete: () -> Unit = {},
+    /** Removes the selection from where the reader chose - see [RemoveFrom]. */
+    val onDelete: (RemoveFrom) -> Unit = {},
+    /** Whether the server's shared library is the reader's to remove from - true for its admin. */
+    val canRemoveFromServer: Boolean = false,
     /** Whether there is a server to add the selected books to - true while signed in. */
     val canUpload: Boolean = false,
     val onUpload: () -> Unit = {},
@@ -67,6 +71,7 @@ class LibraryShelfUi(
         onFavorite = onFavorite,
         onResetProgress = onResetProgress,
         onDelete = onDelete,
+        canRemoveFromServer = canRemoveFromServer,
         canUpload = canUpload,
         onUpload = onUpload,
         upkeep = upkeep,

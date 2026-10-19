@@ -302,3 +302,35 @@ fun CloudGlyph(
         drawPath(path = cloud, color = tint, style = glyphStroke())
     }
 }
+
+/**
+ * A phone in outline: the book is on this device. Drawn at [CloudGlyph]'s weight
+ * so the two read as a pair when a book is in both places.
+ */
+@Composable
+fun DeviceGlyph(
+    tint: Color,
+    modifier: Modifier = Modifier,
+) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        val stroke = glyphStroke(cap = StrokeCap.Round)
+
+        drawRoundRect(
+            color = tint,
+            topLeft = Offset(w * 0.28f, h * 0.14f),
+            size = Size(w * 0.44f, h * 0.72f),
+            cornerRadius = CornerRadius(w * 0.08f),
+            style = stroke,
+        )
+
+        drawLine(
+            color = tint,
+            start = Offset(w * 0.44f, h * 0.74f),
+            end = Offset(w * 0.56f, h * 0.74f),
+            strokeWidth = stroke.width,
+            cap = StrokeCap.Round,
+        )
+    }
+}

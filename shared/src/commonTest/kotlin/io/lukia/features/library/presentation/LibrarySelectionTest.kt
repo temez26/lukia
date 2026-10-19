@@ -8,6 +8,7 @@ import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.features.library.presentation.model.BulkOperation
 import io.lukia.features.library.presentation.model.LibraryMessage
 import io.lukia.features.library.presentation.model.LibraryQuery
+import io.lukia.features.library.presentation.model.RemoveFrom
 import io.lukia.features.library.presentation.sessions.deleteSelected
 import io.lukia.features.library.presentation.sessions.resetProgressOnSelected
 import io.lukia.features.library.presentation.sessions.selectDuplicates
@@ -122,7 +123,7 @@ class LibrarySelectionTest : MainDispatcherTest() {
         viewModel.toggleSelected(one.document.location)
         viewModel.toggleSelected(three.document.location)
 
-        viewModel.deleteSelected()
+        viewModel.deleteSelected(RemoveFrom.Device)
 
         assertEquals(listOf(two.document.location), repository.documents.map { it.document.location })
     }
@@ -134,7 +135,7 @@ class LibrarySelectionTest : MainDispatcherTest() {
         viewModel.startSelecting()
         viewModel.toggleSelected(one.document.location)
 
-        viewModel.deleteSelected()
+        viewModel.deleteSelected(RemoveFrom.Device)
 
         assertFalse(viewModel.selection.value.active)
     }
@@ -145,7 +146,7 @@ class LibrarySelectionTest : MainDispatcherTest() {
         viewModel.startSelecting()
         viewModel.toggleSelected(one.document.location)
 
-        viewModel.deleteSelected()
+        viewModel.deleteSelected(RemoveFrom.Device)
 
         assertEquals(
             LibraryMessage.BulkDone(operation = BulkOperation.Delete, done = 1, failed = 0),
@@ -208,7 +209,7 @@ class LibrarySelectionTest : MainDispatcherTest() {
         val viewModel = createViewModel(repository)
         viewModel.startSelecting()
 
-        viewModel.deleteSelected()
+        viewModel.deleteSelected(RemoveFrom.Device)
 
         assertEquals(2, repository.documents.size)
         assertTrue(viewModel.selection.value.active)
@@ -248,7 +249,7 @@ class LibrarySelectionTest : MainDispatcherTest() {
         val viewModel = createViewModel(repository)
 
         viewModel.selectDuplicates()
-        viewModel.deleteSelected()
+        viewModel.deleteSelected(RemoveFrom.Device)
 
         assertEquals(
             listOf(one.document.location, three.document.location),

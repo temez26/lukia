@@ -28,7 +28,7 @@
     <string name="menu_select_books">Boeken selecteren</string>
     <string name="menu_sync_with_server">Synchroniseren met server</string>
     <string name="menu_refresh_details">Gegevens vernieuwen</string>
-    <string name="menu_delete_from_library">Uit de bibliotheek verwijderen</string>
+    <string name="menu_remove_from_device">Van apparaat verwijderen</string>
     <string name="menu_remove_from_server">Van de server verwijderen</string>
     <string name="book_remove_from_server_title">Van de server verwijderen?</string>
     <string name="book_remove_from_server_message">%1$s verdwijnt voor iedereen uit de gedeelde bibliotheek. Apparaten die het nooit hebben gedownload, verwijderen het bij de volgende synchronisatie; een gedownloade kopie blijft als boek op dat apparaat.</string>
@@ -54,8 +54,8 @@
         <item quantity="other">%1$d boeken gemarkeerd als ongelezen</item>
     </plurals>
     <plurals name="library_bulk_deleted">
-        <item quantity="one">1 boek uit de bibliotheek verwijderd</item>
-        <item quantity="other">%1$d boeken uit de bibliotheek verwijderd</item>
+        <item quantity="one">1 boek verwijderd</item>
+        <item quantity="other">%1$d boeken verwijderd</item>
     </plurals>
     <plurals name="library_bulk_uploaded">
         <item quantity="one">1 boek aan de server toegevoegd</item>
@@ -75,11 +75,17 @@
     <string name="library_bulk_running_reset">Markeren als ongelezen %1$d/%2$d…</string>
     <string name="library_bulk_running_delete">Verwijderen %1$d/%2$d…</string>
     <string name="library_bulk_running_upload">%1$d van %2$d aan de server toevoegen…</string>
-    <string name="library_delete_confirm_message">De bestanden blijven staan waar ze op de schijf staan.</string>
-    <plurals name="library_delete_confirm_title">
-        <item quantity="one">1 boek uit uw bibliotheek verwijderen?</item>
-        <item quantity="other">%1$d boeken uit uw bibliotheek verwijderen?</item>
+    <plurals name="library_remove_confirm_title">
+        <item quantity="one">1 boek verwijderen?</item>
+        <item quantity="other">%1$d boeken verwijderen?</item>
     </plurals>
+    <string name="remove_from_device">Van dit apparaat</string>
+    <string name="remove_from_server">Van de server</string>
+    <string name="remove_from_both">Van dit apparaat en de server</string>
+    <string name="remove_from_device_detail">Boeken die ook op de server staan, blijven daar en kunt u opnieuw downloaden. Bestanden die u hebt geïmporteerd, blijven staan waar ze op de schijf staan.</string>
+    <string name="remove_from_server_detail">Ze verdwijnen voor iedereen uit de gedeelde bibliotheek. Kopieën op dit apparaat blijven.</string>
+    <string name="remove_from_both_detail">Ze verdwijnen van dit apparaat en voor iedereen uit de gedeelde bibliotheek. Bestanden die u hebt geïmporteerd, blijven staan waar ze op de schijf staan.</string>
+    <string name="remove_from_nothing_detail">Deze boeken staan alleen op de server, en alleen de beheerder kan ze daar verwijderen.</string>
     <string name="error_document_not_found_title">Bestand niet gevonden</string>
     <string name="error_document_not_found_message">Het is misschien verplaatst of uit uw bibliotheek verwijderd.</string>
     <string name="error_unsupported_file_title">Bestandsindeling wordt niet ondersteund</string>
@@ -274,7 +280,7 @@
     <string name="selection_favourite">Aan favorieten toevoegen</string>
     <string name="selection_unfavourite">Uit favorieten verwijderen</string>
     <string name="selection_mark_unread">Markeren als ongelezen</string>
-    <string name="selection_delete">Uit de bibliotheek verwijderen</string>
+    <string name="selection_delete">Verwijderen</string>
     <string name="selection_upload">Aan server toevoegen</string>
     <string name="reader_close_book">Boek sluiten</string>
     <string name="reader_close_the_book">Het boek sluiten</string>
@@ -517,6 +523,10 @@
     <string name="figure_illustration">Illustratie</string>
     <string name="home_see_all_shelf">Alle %1$s tonen</string>
     <string name="home_resume">Verder lezen</string>
+    <plurals name="home_pages_left">
+        <item quantity="one">Nog 1 pagina</item>
+        <item quantity="other">Nog %1$d pagina’s</item>
+    </plurals>
     <string name="search_for_term">Zoeken naar %1$s</string>
     <string name="search_clear_recent">Recente zoekopdrachten wissen</string>
     <string name="book_open_title">%1$s openen</string>
@@ -617,8 +627,9 @@
     <string name="sync_auto_upload">Boeken die ik importeer aan de server toevoegen</string>
     <string name="sync_auto_upload_detail">Boeken die na het aanmelden op dit apparaat worden toegevoegd, gaan naar de gedeelde bibliotheek voor iedereen. Boeken die u al had, worden alleen verstuurd als u ze zelf toevoegt.</string>
     <string name="filter_device_only">Alleen op dit apparaat</string>
+    <string name="filter_server_only">Alleen op de server</string>
     <string name="book_info_sync">Synchronisatieserver</string>
-    <string name="book_sync_on_server">Op de server</string>
+    <string name="book_on_device_and_server">Op dit apparaat en de server</string>
     <string name="book_sync_not_downloaded">Op de server, niet gedownload</string>
     <string name="book_sync_device_only">Alleen op dit apparaat</string>
     <plurals name="sync_checked_minutes">

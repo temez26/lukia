@@ -29,6 +29,7 @@ internal fun book(
     sizeBytes: Long = 1024L,
     progress: ReadingProgress? = null,
     onServer: Boolean = false,
+    exists: Boolean = true,
 ): TestBook {
     val extension = when (type) {
         DocumentType.EPUB -> "epub"
@@ -53,7 +54,7 @@ internal fun book(
                 location = "/library/$title.$extension",
             ),
             type = type,
-            exists = true,
+            exists = exists,
             sizeBytes = sizeBytes,
             isFavorite = favorite,
             metadata = metadata,

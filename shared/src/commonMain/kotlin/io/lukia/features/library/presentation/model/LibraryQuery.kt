@@ -24,6 +24,8 @@ data class LibraryQuery(
     val favouritesOnly: Boolean = false,
     /** Only books on this device that the sync server does not have - the ones that could be added to it. */
     val deviceOnly: Boolean = false,
+    /** Only books on the sync server that are not on this device - the ones that could be downloaded. */
+    val serverOnly: Boolean = false,
     /** One format, or null for every format the library holds. */
     val format: DocumentType? = null,
     /** A subject as the document wrote it; matched without regard to case. */
@@ -40,6 +42,7 @@ data class LibraryQuery(
     val isRefined: Boolean
         get() = favouritesOnly ||
             deviceOnly ||
+            serverOnly ||
             format != null ||
             category != null ||
             author != null ||
@@ -60,6 +63,7 @@ data class LibraryQuery(
     fun cleared(): LibraryQuery = copy(
         favouritesOnly = false,
         deviceOnly = false,
+        serverOnly = false,
         format = null,
         category = null,
         author = null,
@@ -78,6 +82,7 @@ data class LibraryQuery(
         shelf = shelf.takeIf { it in facets.shelves } ?: LibraryShelf.All,
         favouritesOnly = favouritesOnly && facets.hasFavourites,
         deviceOnly = deviceOnly && facets.hasDeviceOnly,
+        serverOnly = serverOnly && facets.hasServerOnly,
         format = format?.takeIf { it in facets.formats },
         category = category?.takeIf { facets.categories.filesUnder(it) },
         author = author?.takeIf { facets.authors.holds(it) },
@@ -107,6 +112,7 @@ fun List<LibraryBook>.matching(query: LibraryQuery): List<LibraryBook> {
 private fun LibraryQuery.refinesTo(book: LibraryBook): Boolean =
     (!favouritesOnly || book.document.isFavorite) &&
         (!deviceOnly || book.isDeviceOnly) &&
+        (!serverOnly || book.document.awaitsDownload) &&
         (format == null || book.document.type == format) &&
         (category == null || book.categories.filesUnder(category)) &&
         (author == null || book.authors.holds(author)) &&
