@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -12,16 +13,26 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
@@ -55,18 +66,22 @@ private const val CardAspectRatio = 4f / 5f
  */
 private val MaxCardWidth: Dp = 440.dp
 
-/** How much of the card, from the bottom, the dark wash under the progress covers. */
-private const val ScrimShare = 0.6f
+/** How far the frosted panel is darkened, on top of its blur: enough for white text on a pale cover. */
+private const val PanelDarkness = 0.5f
 
-/** The wash at its darkest, along the card's bottom edge. */
-private const val ScrimDarkest = 0.88f
+/** The panel's top corners; its bottom ones are the card's. */
+private val PanelCorner: Dp = 20.dp
+
+/** The heart and the server or device mark, drawn larger on the biggest cover on the screen. */
+private val BadgeSize: Dp = 34.dp
+private val MarkSize: Dp = 24.dp
 
 /**
  * The book being read, at the top of the home screen, with a button to carry on.
  *
  * The cover is the card: drawn across the whole of it, cropped from the bottom
  * up so its title and picture stay, with how far through, the button and the
- * facts about the file laid over a dark wash along its lower part. No title or
+ * facts about the file on one dark panel over its lower part. No title or
  * author is printed - at this size the cover says what the book is - but a
  * screen reader is told both.
  *
@@ -90,6 +105,9 @@ internal fun HomeContinueCard(
     val named = if (authors != null) stringResource(Res.string.book_title_by_author, title, authors) else title
     val shape = MaterialTheme.shapes.extraLarge
     val interactionSource = remember { MutableInteractionSource() }
+    // How tall the panel along the bottom is, so the frosted cover behind it is
+    // cut to the same shape.
+    var panelHeight by remember { mutableIntStateOf(0) }
 
     BoxWithConstraints(modifier = modifier.widthIn(max = MaxCardWidth)) {
         Box(
@@ -110,16 +128,18 @@ internal fun HomeContinueCard(
         ) {
             CoverBackground(cover = book.cover, title = title, modifier = Modifier.matchParentSize())
 
-            Scrim(modifier = Modifier.matchParentSize())
+            FrostedPanel(book = book, title = title, panelHeight = { panelHeight })
 
             CoverTransferOverlay(
                 document = book.document,
                 transfer = transfer,
+                markSize = MarkSize,
                 modifier = Modifier.matchParentSize(),
             )
 
             FavoriteBadge(
                 visible = book.document.isFavorite,
+                size = BadgeSize,
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(Space.md),
@@ -128,44 +148,75 @@ internal fun HomeContinueCard(
             Overlay(
                 book = book,
                 onResume = { actions.onOpen(book) },
-                modifier = Modifier.align(Alignment.BottomStart),
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .onSizeChanged { panelHeight = it.height },
             )
 
-            BookActionsMenu(
-                expanded = menuExpanded,
-                isFavorite = book.document.isFavorite,
-                onToggleFavorite = { actions.onToggleFavorite(book) },
-                onRefresh = { actions.onRefresh(book) },
-                onDelete = { actions.onDelete(book) },
-                canRemoveFromDevice = !book.document.awaitsDownload,
-                onDismissRequest = { onMenuExpandedChange(false) },
-                onShowDetails = { actions.onShowDetails(book) },
-                onSelectBooks = actions.onSelectBooks,
-                onRemoveFromServer = actions.removeFromServer(book.document),
-                onMarkUnread = book.progress?.let { { actions.onMarkUnread(book) } },
-            )
+            ContinueMenu(book, actions, menuExpanded, onMenuExpandedChange)
         }
     }
 }
 
-/** Darkens the lower part of the cover, so what is laid over it reads on any artwork. */
+/**
+ * The cover again behind the panel, frosted and cut to the panel's shape - so
+ * the panel is glass over the cover rather than a slab across it.
+ */
 @Composable
-private fun Scrim(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.background(
-            Brush.verticalGradient(
-                0f to Color.Transparent,
-                (1f - ScrimShare) to Color.Transparent,
-                1f to Color.Black.copy(alpha = ScrimDarkest),
-            ),
-        ),
+private fun BoxScope.FrostedPanel(book: LibraryBook, title: String, panelHeight: () -> Int) {
+    val corner = with(LocalDensity.current) { PanelCorner.toPx() }
+
+    CoverBackground(
+        cover = book.cover,
+        title = title,
+        frosted = true,
+        modifier = Modifier
+            .matchParentSize()
+            .drawWithContent {
+                val panel = Path().apply {
+                    addRoundRect(
+                        RoundRect(
+                            left = 0f,
+                            top = size.height - panelHeight(),
+                            right = size.width,
+                            bottom = size.height,
+                            topLeftCornerRadius = CornerRadius(corner),
+                            topRightCornerRadius = CornerRadius(corner),
+                        ),
+                    )
+                }
+                clipPath(panel) { this@drawWithContent.drawContent() }
+            },
+    )
+}
+
+/** The menu a long press opens, the same as every other cover's. */
+@Composable
+private fun ContinueMenu(
+    book: LibraryBook,
+    actions: HomeBookActions,
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+) {
+    BookActionsMenu(
+        expanded = expanded,
+        isFavorite = book.document.isFavorite,
+        onToggleFavorite = { actions.onToggleFavorite(book) },
+        onRefresh = { actions.onRefresh(book) },
+        onDelete = { actions.onDelete(book) },
+        canRemoveFromDevice = !book.document.awaitsDownload,
+        onDismissRequest = { onExpandedChange(false) },
+        onShowDetails = { actions.onShowDetails(book) },
+        onSelectBooks = actions.onSelectBooks,
+        onRemoveFromServer = actions.removeFromServer(book.document),
+        onMarkUnread = book.progress?.let { { actions.onMarkUnread(book) } },
     )
 }
 
 /**
  * How far through and the button on one line, the button at its end, then the
  * facts about the file - all in light colours whatever the theme, because they
- * are always on the dark wash rather than on the page.
+ * are always on the dark panel rather than on the page.
  */
 @Composable
 private fun Overlay(book: LibraryBook, onResume: () -> Unit, modifier: Modifier = Modifier) {
@@ -176,7 +227,19 @@ private fun Overlay(book: LibraryBook, onResume: () -> Unit, modifier: Modifier 
     )
 
     MaterialTheme(colorScheme = onWash) {
-        Column(modifier = modifier.fillMaxWidth().padding(Space.lg)) {
+        // One panel behind all three, so they read as one thing set on the
+        // cover rather than as words floating over whatever the artwork is: the
+        // frosted cover under it, darkened here. Flush with the card's sides
+        // and bottom, whose corners clip it.
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .background(
+                    color = Color.Black.copy(alpha = PanelDarkness),
+                    shape = RoundedCornerShape(topStart = PanelCorner, topEnd = PanelCorner),
+                )
+                .padding(Space.lg),
+        ) {
             // Where the two do not both fit - a narrow phone, a large font size -
             // the button moves under the progress rather than squeezing it.
             FlowRow(
@@ -199,8 +262,8 @@ private fun Overlay(book: LibraryBook, onResume: () -> Unit, modifier: Modifier 
     }
 }
 
-/** Secondary text on the wash: light, a step back from the white beside it. */
+/** Secondary text on the panel: light, a step back from the white beside it. */
 private const val OnWashMuted = 0.75f
 
-/** Hairlines and the ring's track on the wash. */
+/** Hairlines and the ring's track on the panel. */
 private const val OnWashLine = 0.25f
