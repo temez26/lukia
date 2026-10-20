@@ -5,34 +5,22 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
@@ -51,23 +39,25 @@ import io.lukia.resources.home_resume
 import io.lukia.shared.presentation.components.controls.ButtonSize
 import io.lukia.shared.presentation.components.controls.LukiaButton
 import io.lukia.shared.presentation.components.controls.menuGesture
+import io.lukia.shared.presentation.components.cover.BOOK_COVER_ASPECT_RATIO
 import io.lukia.shared.presentation.components.cover.CoverBackground
 import io.lukia.shared.presentation.components.cover.FavoriteBadge
 import io.lukia.shared.presentation.components.menu.BookActionsMenu
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 
-/** The card's width against its height: a cover cut short at the bottom, rather than a whole one. */
-private const val CardAspectRatio = 4f / 5f
+/**
+ * No wider than this, however wide the window: past it a whole cover is taller
+ * than the screen it is on, and it only gets softer as it is stretched.
+ */
+private val MaxCardWidth: Dp = 400.dp
 
 /**
- * No wider than this, however wide the window: past it a 4:5 card is taller
- * than the screen it is on, and the cover only gets softer as it is stretched.
+ * The band's colour: solid, so nothing of the cover's lettering shows through
+ * behind the text, and near-black whatever the theme, so white text and the
+ * accent button read the same over any cover.
  */
-private val MaxCardWidth: Dp = 440.dp
-
-/** How far the frosted panel is darkened, on top of its blur: enough for white text on a pale cover. */
-private const val PanelDarkness = 0.5f
+private val PanelColor = Color(0xFF141416)
 
 /** The panel's top corners; its bottom ones are the card's. */
 private val PanelCorner: Dp = 20.dp
@@ -79,11 +69,11 @@ private val MarkSize: Dp = 24.dp
 /**
  * The book being read, at the top of the home screen, with a button to carry on.
  *
- * The cover is the card: drawn across the whole of it, cropped from the bottom
- * up so its title and picture stay, with how far through, the button and the
- * facts about the file on one dark panel over its lower part. No title or
- * author is printed - at this size the cover says what the book is - but a
- * screen reader is told both.
+ * The cover is the card, whole - the card takes the cover's own proportions -
+ * with how far through and the button on a solid band along its bottom edge,
+ * and the facts about the file under the card. No title or author is printed:
+ * at this size the cover says what the book is, and a screen reader is told
+ * both.
  *
  * The press and the long press work as on every other cover: anywhere on the
  * card opens the book, and the long press offers the book's menu, which is
@@ -105,16 +95,13 @@ internal fun HomeContinueCard(
     val named = if (authors != null) stringResource(Res.string.book_title_by_author, title, authors) else title
     val shape = MaterialTheme.shapes.extraLarge
     val interactionSource = remember { MutableInteractionSource() }
-    // How tall the panel along the bottom is, so the frosted cover behind it is
-    // cut to the same shape.
-    var panelHeight by remember { mutableIntStateOf(0) }
 
-    BoxWithConstraints(modifier = modifier.widthIn(max = MaxCardWidth)) {
+    Column(modifier = modifier.widthIn(max = MaxCardWidth)) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                // The card's shape at least; taller only when large text needs it.
-                .heightIn(min = maxWidth / CardAspectRatio)
+                // The cover's own shape, so none of it is cropped.
+                .aspectRatio(BOOK_COVER_ASPECT_RATIO)
                 .clip(shape)
                 .menuGesture(
                     interactionSource = interactionSource,
@@ -127,8 +114,6 @@ internal fun HomeContinueCard(
                 .semantics { contentDescription = named },
         ) {
             CoverBackground(cover = book.cover, title = title, modifier = Modifier.matchParentSize())
-
-            FrostedPanel(book = book, title = title, panelHeight = { panelHeight })
 
             CoverTransferOverlay(
                 document = book.document,
@@ -148,46 +133,16 @@ internal fun HomeContinueCard(
             Overlay(
                 book = book,
                 onResume = { actions.onOpen(book) },
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .onSizeChanged { panelHeight = it.height },
+                modifier = Modifier.align(Alignment.BottomStart),
             )
 
             ContinueMenu(book, actions, menuExpanded, onMenuExpandedChange)
         }
+
+        // Under the card, on the page, so the band over the cover is one line
+        // and leaves the picture alone.
+        ContinueFacts(document = book.document, modifier = Modifier.padding(top = Space.md))
     }
-}
-
-/**
- * The cover again behind the panel, frosted and cut to the panel's shape - so
- * the panel is glass over the cover rather than a slab across it.
- */
-@Composable
-private fun BoxScope.FrostedPanel(book: LibraryBook, title: String, panelHeight: () -> Int) {
-    val corner = with(LocalDensity.current) { PanelCorner.toPx() }
-
-    CoverBackground(
-        cover = book.cover,
-        title = title,
-        frosted = true,
-        modifier = Modifier
-            .matchParentSize()
-            .drawWithContent {
-                val panel = Path().apply {
-                    addRoundRect(
-                        RoundRect(
-                            left = 0f,
-                            top = size.height - panelHeight(),
-                            right = size.width,
-                            bottom = size.height,
-                            topLeftCornerRadius = CornerRadius(corner),
-                            topRightCornerRadius = CornerRadius(corner),
-                        ),
-                    )
-                }
-                clipPath(panel) { this@drawWithContent.drawContent() }
-            },
-    )
 }
 
 /** The menu a long press opens, the same as every other cover's. */
@@ -214,9 +169,8 @@ private fun ContinueMenu(
 }
 
 /**
- * How far through and the button on one line, the button at its end, then the
- * facts about the file - all in light colours whatever the theme, because they
- * are always on the dark panel rather than on the page.
+ * How far through and the button on one line, the button at its end, on the
+ * band - in light colours whatever the theme, because the band is always dark.
  */
 @Composable
 private fun Overlay(book: LibraryBook, onResume: () -> Unit, modifier: Modifier = Modifier) {
@@ -227,18 +181,15 @@ private fun Overlay(book: LibraryBook, onResume: () -> Unit, modifier: Modifier 
     )
 
     MaterialTheme(colorScheme = onWash) {
-        // One panel behind all three, so they read as one thing set on the
-        // cover rather than as words floating over whatever the artwork is: the
-        // frosted cover under it, darkened here. Flush with the card's sides
-        // and bottom, whose corners clip it.
+        // Flush with the card's sides and bottom, whose corners clip it.
         Column(
             modifier = modifier
                 .fillMaxWidth()
                 .background(
-                    color = Color.Black.copy(alpha = PanelDarkness),
+                    color = PanelColor,
                     shape = RoundedCornerShape(topStart = PanelCorner, topEnd = PanelCorner),
                 )
-                .padding(Space.lg),
+                .padding(horizontal = Space.lg, vertical = Space.md),
         ) {
             // Where the two do not both fit - a narrow phone, a large font size -
             // the button moves under the progress rather than squeezing it.
@@ -256,14 +207,12 @@ private fun Overlay(book: LibraryBook, onResume: () -> Unit, modifier: Modifier 
                     size = ButtonSize.Compact,
                 )
             }
-
-            ContinueFacts(document = book.document, modifier = Modifier.padding(top = Space.md))
         }
     }
 }
 
-/** Secondary text on the panel: light, a step back from the white beside it. */
+/** Secondary text on the band: light, a step back from the white beside it. */
 private const val OnWashMuted = 0.75f
 
-/** Hairlines and the ring's track on the panel. */
+/** The ring's track on the band. */
 private const val OnWashLine = 0.25f

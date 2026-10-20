@@ -9,7 +9,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.TextUnit
@@ -19,6 +18,7 @@ import io.lukia.shared.presentation.theme.LukiaMotion
 /**
  * A book's cover filling whatever box it is given, cropped rather than fitted:
  * for a card the cover is the background of, rather than a cover on a shelf.
+ * Given a box of the cover's own proportions, nothing is cropped at all.
  *
  * Cropped from the bottom up, keeping the top. A cover puts its title and its
  * picture high, and a card that lays anything over its artwork lays it over
@@ -27,11 +27,6 @@ import io.lukia.shared.presentation.theme.LukiaMotion
  *
  * Covers are kept decoded no larger than [MaxCoverEdge], so one stretched
  * across a wide card is drawn softer than the same cover on a shelf.
- *
- * [frosted] draws the same cover blurred past reading instead, cropped the same
- * way so it lines up with the sharp one under it: frosted glass to lay text on,
- * which a dark wash over lettering never quite is. The blur is the cover's own
- * small resample - see [CoverArtwork] - so it is the same on every Android.
  */
 @Composable
 fun CoverBackground(
@@ -39,7 +34,6 @@ fun CoverBackground(
     title: String,
     modifier: Modifier = Modifier,
     monogramFontSize: TextUnit = 72.sp,
-    frosted: Boolean = false,
 ) {
     val art = rememberCoverArt(cover)
     val baseColor = remember(title) { bookCoverColor(title) }
@@ -52,20 +46,16 @@ fun CoverBackground(
     Box(contentAlignment = Alignment.Center, modifier = modifier.coverTile(baseColor)) {
         when (art) {
             is CoverArt.Artwork -> Image(
-                bitmap = if (frosted) art.cover.backdrop else art.cover.artwork,
+                bitmap = art.cover.artwork,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 alignment = Alignment.TopCenter,
-                // Bilinear, which is what turns the backdrop's two dozen pixels
-                // into a wash rather than into squares.
-                filterQuality = if (frosted) FilterQuality.Low else FilterQuality.Medium,
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer { alpha = artworkAlpha },
             )
 
-            // The tile alone where frosted: the letter is for the sharp cover.
-            CoverArt.Absent -> if (!frosted) CoverMonogram(title = title, fontSize = monogramFontSize)
+            CoverArt.Absent -> CoverMonogram(title = title, fontSize = monogramFontSize)
 
             // Nothing but the tile, which is already drawn behind this.
             CoverArt.Pending -> Unit

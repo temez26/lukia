@@ -49,8 +49,8 @@ import org.jetbrains.compose.resources.stringResource
 /** A fact's glyph, in sp so it grows with the words beside it. */
 private val FactGlyphSize: TextUnit = 15.sp
 
-/** The ring beside the cover: the biggest thing in the column it has to itself. */
-private val RingSize: TextUnit = 72.sp
+/** The ring in the band over the cover: large enough to read at a glance, small enough to keep the band a strip. */
+private val RingSize: TextUnit = 56.sp
 
 /** Joins what is read out for the progress, as a sentence is joined. */
 private const val SpokenSeparator = ", "
