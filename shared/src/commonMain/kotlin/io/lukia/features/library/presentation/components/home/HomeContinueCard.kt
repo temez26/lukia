@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -58,6 +59,9 @@ private val MaxCardWidth: Dp = 400.dp
  */
 private val PanelColor = Color(0xFF141416)
 
+/** The panel's top corners; its bottom ones are the card's. */
+private val PanelCorner: Dp = 20.dp
+
 /** The heart and the server or device mark, drawn larger on the biggest cover on the screen. */
 private val BadgeSize: Dp = 34.dp
 private val MarkSize: Dp = 24.dp
@@ -65,9 +69,9 @@ private val MarkSize: Dp = 24.dp
 /**
  * The book being read, at the top of the home screen, with a button to carry on.
  *
- * The cover is the card, whole and at its own proportions, with how far through
- * and the button on a solid band joined to its bottom edge, and the facts about
- * the file under the card. No title or author is printed:
+ * The cover is the card, whole - the card takes the cover's own proportions -
+ * with how far through and the button on a solid band along its bottom edge,
+ * and the facts about the file under the card. No title or author is printed:
  * at this size the cover says what the book is, and a screen reader is told
  * both.
  *
@@ -93,10 +97,11 @@ internal fun HomeContinueCard(
     val interactionSource = remember { MutableInteractionSource() }
 
     Column(modifier = modifier.widthIn(max = MaxCardWidth)) {
-        // The cover and the band under it are one card: one shape, one press.
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
+                // The cover's own shape, so none of it is cropped.
+                .aspectRatio(BOOK_COVER_ASPECT_RATIO)
                 .clip(shape)
                 .menuGesture(
                     interactionSource = interactionSource,
@@ -108,57 +113,35 @@ internal fun HomeContinueCard(
                 .pointerHoverIcon(PointerIcon.Hand)
                 .semantics { contentDescription = named },
         ) {
-            ContinueCover(
-                book = book,
-                title = title,
-                actions = actions,
-                menuExpanded = menuExpanded,
-                onMenuExpandedChange = onMenuExpandedChange,
+            CoverBackground(cover = book.cover, title = title, modifier = Modifier.matchParentSize())
+
+            CoverTransferOverlay(
+                document = book.document,
                 transfer = transfer,
+                markSize = MarkSize,
+                modifier = Modifier.matchParentSize(),
             )
 
-            Band(book = book, onResume = { actions.onOpen(book) })
+            FavoriteBadge(
+                visible = book.document.isFavorite,
+                size = BadgeSize,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(Space.md),
+            )
+
+            Overlay(
+                book = book,
+                onResume = { actions.onOpen(book) },
+                modifier = Modifier.align(Alignment.BottomStart),
+            )
+
+            ContinueMenu(book, actions, menuExpanded, onMenuExpandedChange)
         }
 
-        // Under the card, on the page, so the band stays one line.
+        // Under the card, on the page, so the band over the cover is one line
+        // and leaves the picture alone.
         ContinueFacts(document = book.document, modifier = Modifier.padding(top = Space.md))
-    }
-}
-
-/** The cover whole, at its own proportions, with its badges and the menu a long press opens. */
-@Composable
-private fun ContinueCover(
-    book: LibraryBook,
-    title: String,
-    actions: HomeBookActions,
-    menuExpanded: Boolean,
-    onMenuExpandedChange: (Boolean) -> Unit,
-    transfer: BookTransfer?,
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            // The cover's own shape, so none of it is cropped.
-            .aspectRatio(BOOK_COVER_ASPECT_RATIO),
-    ) {
-        CoverBackground(cover = book.cover, title = title, modifier = Modifier.matchParentSize())
-
-        CoverTransferOverlay(
-            document = book.document,
-            transfer = transfer,
-            markSize = MarkSize,
-            modifier = Modifier.matchParentSize(),
-        )
-
-        FavoriteBadge(
-            visible = book.document.isFavorite,
-            size = BadgeSize,
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(Space.md),
-        )
-
-        ContinueMenu(book, actions, menuExpanded, onMenuExpandedChange)
     }
 }
 
@@ -187,11 +170,10 @@ private fun ContinueMenu(
 
 /**
  * How far through and the button on one line, the button at its end, on the
- * band under the cover - in light colours whatever the theme, because the band
- * is always dark.
+ * band - in light colours whatever the theme, because the band is always dark.
  */
 @Composable
-private fun Band(book: LibraryBook, onResume: () -> Unit, modifier: Modifier = Modifier) {
+private fun Overlay(book: LibraryBook, onResume: () -> Unit, modifier: Modifier = Modifier) {
     val onWash = MaterialTheme.colorScheme.copy(
         onSurface = Color.White,
         onSurfaceVariant = Color.White.copy(alpha = OnWashMuted),
@@ -203,7 +185,10 @@ private fun Band(book: LibraryBook, onResume: () -> Unit, modifier: Modifier = M
         Column(
             modifier = modifier
                 .fillMaxWidth()
-                .background(PanelColor)
+                .background(
+                    color = PanelColor,
+                    shape = RoundedCornerShape(topStart = PanelCorner, topEnd = PanelCorner),
+                )
                 .padding(horizontal = Space.lg, vertical = Space.md),
         ) {
             // Where the two do not both fit - a narrow phone, a large font size -
