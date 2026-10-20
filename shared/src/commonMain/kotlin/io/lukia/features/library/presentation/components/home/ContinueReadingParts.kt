@@ -76,7 +76,7 @@ internal fun ContinueProgress(progress: ReadingProgress, modifier: Modifier = Mo
     // Side by side where they fit; at a large font size the page goes under the
     // ring rather than being cut off beside it.
     FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(Space.md),
+        horizontalArrangement = Arrangement.spacedBy(Space.sm),
         verticalArrangement = Arrangement.spacedBy(Space.sm),
         itemVerticalAlignment = Alignment.CenterVertically,
         modifier = modifier.clearAndSetSemantics { contentDescription = spoken },

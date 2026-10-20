@@ -5,6 +5,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -33,15 +34,12 @@ import io.lukia.resources.Res
 import io.lukia.resources.book_actions
 import io.lukia.resources.book_read_title
 import io.lukia.resources.home_resume
-import io.lukia.resources.menu_book_details
 import io.lukia.shared.presentation.components.controls.ButtonSize
 import io.lukia.shared.presentation.components.controls.LukiaButton
-import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.controls.menuGesture
 import io.lukia.shared.presentation.components.cover.BOOK_COVER_ASPECT_RATIO
 import io.lukia.shared.presentation.components.cover.BookCover
 import io.lukia.shared.presentation.components.cover.FavoriteBadge
-import io.lukia.shared.presentation.components.icons.InfoGlyph
 import io.lukia.shared.presentation.components.menu.BookActionsMenu
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
@@ -64,8 +62,9 @@ private const val TitleLines = 3
  * press offers the same menu as every other cover.
  *
  * Everything beside the cover has a fixed place: what the book is along the
- * cover's top edge, how far through and the buttons along its bottom, and the
- * facts about the file in a row under both. Hung loosely off the top instead,
+ * cover's top edge, how far through and the button to carry on along its
+ * bottom, and the facts about the file in a row under both. The book's own page
+ * is in the long-press menu, as it is on every other cover. Hung loosely off the top instead,
  * a short title, a missing author or an unknown length moved the buttons, so
  * no two books looked alike. The cover's frame is the same for every book -
  * artwork of any shape is fitted inside it - so the frame is what everything
@@ -116,7 +115,6 @@ internal fun HomeContinueCard(
                 book = book,
                 title = title,
                 onResume = { actions.onOpen(book) },
-                onShowDetails = { actions.onShowDetails(book) },
                 modifier = Modifier
                     .weight(1f)
                     // At least as tall as the cover, so the bottom slot meets its
@@ -178,13 +176,12 @@ private fun ContinueCover(
     }
 }
 
-/** What the book is at the top, how far through and the buttons at the bottom, and space between. */
+/** What the book is at the top, how far through and the button at the bottom, and space between. */
 @Composable
 private fun Details(
     book: LibraryBook,
     title: String,
     onResume: () -> Unit,
-    onShowDetails: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // Two groups pushed apart rather than a weighted gap between them: a weight
@@ -213,35 +210,24 @@ private fun Details(
             }
         }
 
-        Column(modifier = Modifier.padding(top = Space.md)) {
-            book.progress?.let { progress -> ContinueProgress(progress, Modifier.padding(bottom = Space.md)) }
+        // How far through and the button on one line, the button at its end.
+        // Where they do not both fit - a narrow phone, a large font size - the
+        // button moves under the progress rather than squeezing it.
+        FlowRow(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalArrangement = Arrangement.spacedBy(Space.sm),
+            itemVerticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = Space.md),
+        ) {
+            book.progress?.let { progress -> ContinueProgress(progress) }
 
-            Actions(onResume = onResume, onShowDetails = onShowDetails)
+            LukiaButton(
+                label = stringResource(Res.string.home_resume),
+                onClick = onResume,
+                size = ButtonSize.Compact,
+            )
         }
-    }
-}
-
-/**
- * Carrying on, which leads, and the way to the book's own page beside it as an
- * icon: the column beside a phone's cover is too narrow for two labelled
- * buttons, and the one that matters keeps its word. The icon is still named
- * for screen readers.
- */
-@Composable
-private fun Actions(onResume: () -> Unit, onShowDetails: () -> Unit) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Space.sm),
-    ) {
-        LukiaButton(
-            label = stringResource(Res.string.home_resume),
-            onClick = onResume,
-            size = ButtonSize.Compact,
-        )
-
-        LukiaIconButton(
-            label = stringResource(Res.string.menu_book_details),
-            onClick = onShowDetails,
-        ) { tint, glyph -> InfoGlyph(tint = tint, modifier = glyph) }
     }
 }
