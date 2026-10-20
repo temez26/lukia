@@ -523,6 +523,7 @@
     <string name="figure_illustration">Ilustración</string>
     <string name="home_see_all_shelf">Ver todo: %1$s</string>
     <string name="home_resume">Continuar</string>
+    <string name="book_title_by_author">%1$s, de %2$s</string>
     <string name="home_page_position">%1$d/%2$d</string>
     <string name="book_fact_spoken">%1$s: %2$s</string>
     <plurals name="home_pages_left">

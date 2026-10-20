@@ -5,14 +5,12 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -21,8 +19,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.sp
 import io.lukia.core.presentation.authorLine
 import io.lukia.core.presentation.bookTitle
@@ -33,6 +31,7 @@ import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.resources.Res
 import io.lukia.resources.book_actions
 import io.lukia.resources.book_read_title
+import io.lukia.resources.book_title_by_author
 import io.lukia.resources.home_resume
 import io.lukia.shared.presentation.components.controls.ButtonSize
 import io.lukia.shared.presentation.components.controls.LukiaButton
@@ -50,9 +49,6 @@ private const val CoverScale = 1.3f
 
 private val CoverMonogramSize = 30.sp
 
-/** A long title gets this many lines before it is cut short. */
-private const val TitleLines = 3
-
 /**
  * The book being read, at the top of the home screen, with a button to carry on.
  *
@@ -61,10 +57,10 @@ private const val TitleLines = 3
  * book as well, so a press anywhere on it does what the button says; a long
  * press offers the same menu as every other cover.
  *
- * Everything beside the cover has a fixed place: what the book is along the
- * cover's top edge, how far through and the button to carry on along its
- * bottom, and the facts about the file in a row under both. The book's own page
- * is in the long-press menu, as it is on every other cover. Hung loosely off the top instead,
+ * The cover is the book here: no title or author beside it, which only said
+ * again in small print what the artwork says at this size. Beside it, how far
+ * through and the button to carry on; under both, the facts about the file.
+ * The book's own page is in the long-press menu, as on every other cover. Hung loosely off the top instead,
  * a short title, a missing author or an unknown length moved the buttons, so
  * no two books looked alike. The cover's frame is the same for every book -
  * artwork of any shape is fitted inside it - so the frame is what everything
@@ -111,14 +107,13 @@ internal fun HomeContinueCard(
                 modifier = Modifier.width(coverWidth),
             )
 
-            Details(
+            Progress(
                 book = book,
-                title = title,
                 onResume = { actions.onOpen(book) },
                 modifier = Modifier
                     .weight(1f)
-                    // At least as tall as the cover, so the bottom slot meets its
-                    // bottom edge; taller only when a long title or large text needs it.
+                    // As tall as the cover at least, so the progress sits centred
+                    // against it; taller only when large text needs it.
                     .heightIn(min = coverWidth / BOOK_COVER_ASPECT_RATIO)
                     .padding(start = Space.lg),
             )
@@ -140,7 +135,12 @@ private fun ContinueCover(
     transfer: BookTransfer?,
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier = modifier) {
+    // The cover is all this card shows of what the book is, so it is what a
+    // screen reader is told: the title, and who wrote it.
+    val authors = book.document.metadata?.authorLine()
+    val named = if (authors != null) stringResource(Res.string.book_title_by_author, title, authors) else title
+
+    Box(modifier = modifier.semantics { contentDescription = named }) {
         BookCover(
             cover = book.cover,
             title = title,
@@ -176,58 +176,26 @@ private fun ContinueCover(
     }
 }
 
-/** What the book is at the top, how far through and the button at the bottom, and space between. */
+/**
+ * How far through, and the button to carry on, centred against the cover.
+ *
+ * Nothing here says what the book is: the cover does that, at the size this
+ * card gives it, and a title and author beside it only said it again in
+ * smaller print.
+ */
 @Composable
-private fun Details(
+private fun Progress(
     book: LibraryBook,
-    title: String,
     onResume: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // Two groups pushed apart rather than a weighted gap between them: a weight
-    // stretches to whatever height the parent allows, where this only ever has
-    // to reach the cover's bottom edge.
-    Column(verticalArrangement = Arrangement.SpaceBetween, modifier = modifier) {
-        Column {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = TitleLines,
-                overflow = TextOverflow.Ellipsis,
-            )
+    Column(verticalArrangement = Arrangement.Center, modifier = modifier) {
+        book.progress?.let { progress -> ContinueProgress(progress, Modifier.padding(bottom = Space.lg)) }
 
-            book.document.metadata?.authorLine()?.let { authors ->
-                Text(
-                    text = authors,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = Space.xs),
-                )
-            }
-        }
-
-        // How far through and the button on one line, the button at its end.
-        // Where they do not both fit - a narrow phone, a large font size - the
-        // button moves under the progress rather than squeezing it.
-        FlowRow(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalArrangement = Arrangement.spacedBy(Space.sm),
-            itemVerticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = Space.md),
-        ) {
-            book.progress?.let { progress -> ContinueProgress(progress) }
-
-            LukiaButton(
-                label = stringResource(Res.string.home_resume),
-                onClick = onResume,
-                size = ButtonSize.Compact,
-            )
-        }
+        LukiaButton(
+            label = stringResource(Res.string.home_resume),
+            onClick = onResume,
+            size = ButtonSize.Compact,
+        )
     }
 }

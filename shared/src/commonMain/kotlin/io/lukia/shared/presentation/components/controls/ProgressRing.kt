@@ -14,6 +14,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
@@ -43,6 +44,7 @@ fun ProgressRing(
     label: String,
     modifier: Modifier = Modifier,
     size: TextUnit = DefaultRingSize,
+    labelStyle: TextStyle = MaterialTheme.typography.labelLarge,
 ) {
     val track = MaterialTheme.colorScheme.outlineVariant
     val fill = MaterialTheme.colorScheme.primary
@@ -77,7 +79,7 @@ fun ProgressRing(
 
         Text(
             text = label,
-            style = MaterialTheme.typography.labelLarge,
+            style = labelStyle,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,

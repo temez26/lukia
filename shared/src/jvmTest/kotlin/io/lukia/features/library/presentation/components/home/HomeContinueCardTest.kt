@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runComposeUiTest
@@ -62,11 +61,19 @@ class HomeContinueCardTest {
     fun theProgressIsARingAndAShortPageCount() = runComposeUiTest {
         show(book(piranesi))
 
-        onNodeWithText("Piranesi").assertIsDisplayed()
-        onNodeWithText("Susanna Clarke").assertIsDisplayed()
         onNodeWithText("42%", useUnmergedTree = true).assertExists()
         onNodeWithText("126/300", useUnmergedTree = true).assertExists()
         onNodeWithContentDescription("42%, Page 126 of 300, 174 pages left").assertExists()
+    }
+
+    /** The cover says what the book is; a screen reader is told it in words. */
+    @Test
+    fun theCoverNamesTheBookAndNothingElseDoes() = runComposeUiTest {
+        show(book(piranesi))
+
+        onNodeWithText("Piranesi").assertDoesNotExist()
+        onNodeWithText("Susanna Clarke").assertDoesNotExist()
+        onNodeWithContentDescription("Piranesi by Susanna Clarke").assertExists()
     }
 
     /** The blurb is for the book's own page; this card only reminds. */

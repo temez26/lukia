@@ -49,6 +49,9 @@ import org.jetbrains.compose.resources.stringResource
 /** A fact's glyph, in sp so it grows with the words beside it. */
 private val FactGlyphSize: TextUnit = 15.sp
 
+/** The ring beside the cover: the biggest thing in the column it has to itself. */
+private val RingSize: TextUnit = 72.sp
+
 /** Joins what is read out for the progress, as a sentence is joined. */
 private const val SpokenSeparator = ", "
 
@@ -81,13 +84,18 @@ internal fun ContinueProgress(progress: ReadingProgress, modifier: Modifier = Mo
         itemVerticalAlignment = Alignment.CenterVertically,
         modifier = modifier.clearAndSetSemantics { contentDescription = spoken },
     ) {
-        ProgressRing(fraction = fraction, label = percent)
+        ProgressRing(
+            fraction = fraction,
+            label = percent,
+            size = RingSize,
+            labelStyle = MaterialTheme.typography.titleMedium,
+        )
 
         if (page != null) {
             Column {
                 Text(
                     text = stringResource(Res.string.home_page_position, page, progress.pageCount),
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
@@ -96,7 +104,7 @@ internal fun ContinueProgress(progress: ReadingProgress, modifier: Modifier = Mo
                 pagesLeft?.let {
                     Text(
                         text = it,
-                        style = MaterialTheme.typography.labelSmall,
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                     )
