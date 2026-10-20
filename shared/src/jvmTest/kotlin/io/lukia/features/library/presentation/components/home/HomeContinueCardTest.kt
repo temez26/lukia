@@ -1,6 +1,6 @@
 package io.lukia.features.library.presentation.components.home
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ComposeUiTest
@@ -37,13 +37,15 @@ class HomeContinueCardTest {
 
         setContent {
             LukiaTheme(darkTheme = false) {
-                Box(modifier = Modifier.width(400.dp)) {
+                // As Home sets them: the book's row, and the facts about its file under it.
+                Column(modifier = Modifier.width(400.dp)) {
                     HomeContinueCard(
                         book = book,
                         actions = HomeBookActions.None,
                         menuExpanded = false,
                         onMenuExpandedChange = {},
                     )
+                    ContinueFacts(document = book.document)
                 }
             }
         }

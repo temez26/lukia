@@ -3,7 +3,9 @@ package io.lukia.features.library.presentation.screens
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.MaterialTheme
@@ -192,8 +194,7 @@ internal fun HomeContent(
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.background,
-        // See `LibraryContent`: the cutout is not in the Scaffold's default.
-        contentWindowInsets = WindowInsets.safeDrawing,
+        contentWindowInsets = homeInsets(home),
     ) { paddingValues ->
         UiStateContent(
             state = uiState,
@@ -291,4 +292,17 @@ private fun NoBooksYet(
             modifier = Modifier.fillMaxSize(),
         )
     }
+}
+
+/**
+ * What the screen keeps clear of. See `LibraryContent`: the cutout is not in the
+ * Scaffold's default. With shelves to show, the top is left to them - their
+ * first item, the book being read in its own colour, runs up under the status
+ * bar and pads itself.
+ */
+@Composable
+private fun homeInsets(home: HomeLayout): WindowInsets = if (home.isEmpty) {
+    WindowInsets.safeDrawing
+} else {
+    WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
 }

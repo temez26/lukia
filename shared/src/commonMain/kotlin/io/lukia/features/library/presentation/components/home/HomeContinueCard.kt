@@ -44,7 +44,6 @@ import io.lukia.shared.presentation.components.cover.BookCover
 import io.lukia.shared.presentation.components.cover.FavoriteBadge
 import io.lukia.shared.presentation.components.icons.OpenBookGlyph
 import io.lukia.shared.presentation.components.menu.BookActionsMenu
-import io.lukia.shared.presentation.components.surface.GroupCard
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
@@ -65,9 +64,12 @@ private const val ReadGlyphShare = 0.45f
  *
  * The cover sits in the middle, whole and at its own proportions, with how far
  * through on its left and the button to carry on on its right - the way a player
- * sets what is playing between where it has got to and the button that goes on
- * - and the facts about the file along the bottom. No title or author is
- * printed: the cover says what the book is, and a screen reader is told both.
+ * sets what is playing between where it has got to and the button that goes on.
+ * No title or author is printed: the cover says what the book is, and a screen
+ * reader is told both.
+ *
+ * No surface of its own: it is drawn on the top of Home, in the book's colour -
+ * see `ContinueHero` - with the facts about the file under that.
  *
  * The button is an open book rather than a play triangle, as reading apps draw
  * it: carrying on with a book is not something that runs while you watch.
@@ -92,8 +94,10 @@ internal fun HomeContinueCard(
     val named = if (authors != null) stringResource(Res.string.book_title_by_author, title, authors) else title
     val interactionSource = remember { MutableInteractionSource() }
 
-    GroupCard(
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
+            .fillMaxWidth()
             .menuGesture(
                 interactionSource = interactionSource,
                 onClick = { actions.onOpen(book) },
@@ -103,30 +107,24 @@ internal fun HomeContinueCard(
             )
             .pointerHoverIcon(PointerIcon.Hand),
     ) {
-        Column(modifier = Modifier.padding(Space.lg)) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                // Equal room either side, so the cover stays in the middle even
-                // where there is no progress to show on its left.
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.weight(1f)) {
-                    book.progress?.let { progress -> ContinueProgress(progress) }
-                }
+        // Equal room either side, so the cover stays in the middle even where
+        // there is no progress to show on its left.
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.weight(1f)) {
+            book.progress?.let { progress -> ContinueProgress(progress) }
+        }
 
-                ContinueCover(
-                    book = book,
-                    title = title,
-                    named = named,
-                    actions = actions,
-                    menuExpanded = menuExpanded,
-                    onMenuExpandedChange = onMenuExpandedChange,
-                    transfer = transfer,
-                )
+        ContinueCover(
+            book = book,
+            title = title,
+            named = named,
+            actions = actions,
+            menuExpanded = menuExpanded,
+            onMenuExpandedChange = onMenuExpandedChange,
+            transfer = transfer,
+        )
 
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.weight(1f)) {
-                    ReadButton(onClick = { actions.onOpen(book) })
-                }
-            }
-
-            ContinueFacts(document = book.document, modifier = Modifier.padding(top = Space.lg))
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.weight(1f)) {
+            ReadButton(onClick = { actions.onOpen(book) })
         }
     }
 }
