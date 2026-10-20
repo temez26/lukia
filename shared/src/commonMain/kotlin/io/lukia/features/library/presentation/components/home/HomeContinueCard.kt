@@ -6,25 +6,26 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.lukia.core.presentation.authorLine
 import io.lukia.core.presentation.bookTitle
 import io.lukia.features.library.presentation.components.book.CoverTransferOverlay
@@ -36,48 +37,43 @@ import io.lukia.resources.book_actions
 import io.lukia.resources.book_read_title
 import io.lukia.resources.book_title_by_author
 import io.lukia.resources.home_resume
-import io.lukia.shared.presentation.components.controls.ButtonSize
-import io.lukia.shared.presentation.components.controls.LukiaButton
 import io.lukia.shared.presentation.components.controls.menuGesture
-import io.lukia.shared.presentation.components.cover.BOOK_COVER_ASPECT_RATIO
-import io.lukia.shared.presentation.components.cover.CoverBackground
+import io.lukia.shared.presentation.components.controls.pressable
+import io.lukia.shared.presentation.components.cover.BookCover
 import io.lukia.shared.presentation.components.cover.FavoriteBadge
+import io.lukia.shared.presentation.components.icons.OpenBookGlyph
 import io.lukia.shared.presentation.components.menu.BookActionsMenu
+import io.lukia.shared.presentation.components.surface.GroupCard
+import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 
-/**
- * No wider than this, however wide the window: past it a whole cover is taller
- * than the screen it is on, and it only gets softer as it is stretched.
- */
-private val MaxCardWidth: Dp = 400.dp
+/** The cover's width against a shelf cell: a little larger than the covers in the rows under it. */
+private const val CoverScale = 1.15f
+
+private val CoverMonogramSize = 30.sp
+
+/** The read button: as big as the ring across the cover from it. */
+private val ReadButtonSize: Dp = 60.dp
+
+/** The open book on the read button, against the button's width. */
+private const val ReadGlyphShare = 0.45f
 
 /**
- * The band's colour: solid, so nothing of the cover's lettering shows through
- * behind the text, and near-black whatever the theme, so white text and the
- * accent button read the same over any cover.
- */
-private val PanelColor = Color(0xFF141416)
-
-/** The panel's top corners; its bottom ones are the card's. */
-private val PanelCorner: Dp = 20.dp
-
-/** The heart and the server or device mark, drawn larger on the biggest cover on the screen. */
-private val BadgeSize: Dp = 34.dp
-private val MarkSize: Dp = 24.dp
-
-/**
- * The book being read, at the top of the home screen, with a button to carry on.
+ * The book being read, at the top of the home screen, with a way to carry on.
  *
- * The cover is the card, whole - the card takes the cover's own proportions -
- * with how far through and the button on a solid band along its bottom edge,
- * and the facts about the file under the card. No title or author is printed:
- * at this size the cover says what the book is, and a screen reader is told
- * both.
+ * The cover sits in the middle, whole and at its own proportions, with how far
+ * through on its left and the button to carry on on its right - the way a player
+ * sets what is playing between where it has got to and the button that goes on
+ * - and the facts about the file along the bottom. No title or author is
+ * printed: the cover says what the book is, and a screen reader is told both.
  *
- * The press and the long press work as on every other cover: anywhere on the
- * card opens the book, and the long press offers the book's menu, which is
- * also where its own page is.
+ * The button is an open book rather than a play triangle, as reading apps draw
+ * it: carrying on with a book is not something that runs while you watch.
+ *
+ * Anywhere on the card opens the book as the button does; a long press offers
+ * the book's menu, the same as every other cover's, which is also where its own
+ * page is.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -93,126 +89,139 @@ internal fun HomeContinueCard(
     val title = book.document.bookTitle()
     val authors = book.document.metadata?.authorLine()
     val named = if (authors != null) stringResource(Res.string.book_title_by_author, title, authors) else title
-    val shape = MaterialTheme.shapes.extraLarge
     val interactionSource = remember { MutableInteractionSource() }
 
-    Column(modifier = modifier.widthIn(max = MaxCardWidth)) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                // The cover's own shape, so none of it is cropped.
-                .aspectRatio(BOOK_COVER_ASPECT_RATIO)
-                .clip(shape)
-                .menuGesture(
-                    interactionSource = interactionSource,
-                    onClick = { actions.onOpen(book) },
-                    onMenu = { onMenuExpandedChange(true) },
-                    menuLabel = stringResource(Res.string.book_actions),
-                    clickLabel = stringResource(Res.string.book_read_title, title),
-                )
-                .pointerHoverIcon(PointerIcon.Hand)
-                .semantics { contentDescription = named },
-        ) {
-            CoverBackground(cover = book.cover, title = title, modifier = Modifier.matchParentSize())
-
-            CoverTransferOverlay(
-                document = book.document,
-                transfer = transfer,
-                markSize = MarkSize,
-                modifier = Modifier.matchParentSize(),
+    GroupCard(
+        modifier = modifier
+            .menuGesture(
+                interactionSource = interactionSource,
+                onClick = { actions.onOpen(book) },
+                onMenu = { onMenuExpandedChange(true) },
+                menuLabel = stringResource(Res.string.book_actions),
+                clickLabel = stringResource(Res.string.book_read_title, title),
             )
+            .pointerHoverIcon(PointerIcon.Hand),
+    ) {
+        Column(modifier = Modifier.padding(Space.lg)) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                // Equal room either side, so the cover stays in the middle even
+                // where there is no progress to show on its left.
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.weight(1f)) {
+                    book.progress?.let { progress -> ContinueProgress(progress) }
+                }
 
-            FavoriteBadge(
-                visible = book.document.isFavorite,
-                size = BadgeSize,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(Space.md),
-            )
-
-            Overlay(
-                book = book,
-                onResume = { actions.onOpen(book) },
-                modifier = Modifier.align(Alignment.BottomStart),
-            )
-
-            ContinueMenu(book, actions, menuExpanded, onMenuExpandedChange)
-        }
-
-        // Under the card, on the page, so the band over the cover is one line
-        // and leaves the picture alone.
-        ContinueFacts(document = book.document, modifier = Modifier.padding(top = Space.md))
-    }
-}
-
-/** The menu a long press opens, the same as every other cover's. */
-@Composable
-private fun ContinueMenu(
-    book: LibraryBook,
-    actions: HomeBookActions,
-    expanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit,
-) {
-    BookActionsMenu(
-        expanded = expanded,
-        isFavorite = book.document.isFavorite,
-        onToggleFavorite = { actions.onToggleFavorite(book) },
-        onRefresh = { actions.onRefresh(book) },
-        onDelete = { actions.onDelete(book) },
-        canRemoveFromDevice = !book.document.awaitsDownload,
-        onDismissRequest = { onExpandedChange(false) },
-        onShowDetails = { actions.onShowDetails(book) },
-        onSelectBooks = actions.onSelectBooks,
-        onRemoveFromServer = actions.removeFromServer(book.document),
-        onMarkUnread = book.progress?.let { { actions.onMarkUnread(book) } },
-    )
-}
-
-/**
- * How far through and the button on one line, the button at its end, on the
- * band - in light colours whatever the theme, because the band is always dark.
- */
-@Composable
-private fun Overlay(book: LibraryBook, onResume: () -> Unit, modifier: Modifier = Modifier) {
-    val onWash = MaterialTheme.colorScheme.copy(
-        onSurface = Color.White,
-        onSurfaceVariant = Color.White.copy(alpha = OnWashMuted),
-        outlineVariant = Color.White.copy(alpha = OnWashLine),
-    )
-
-    MaterialTheme(colorScheme = onWash) {
-        // Flush with the card's sides and bottom, whose corners clip it.
-        Column(
-            modifier = modifier
-                .fillMaxWidth()
-                .background(
-                    color = PanelColor,
-                    shape = RoundedCornerShape(topStart = PanelCorner, topEnd = PanelCorner),
+                ContinueCover(
+                    book = book,
+                    title = title,
+                    named = named,
+                    actions = actions,
+                    menuExpanded = menuExpanded,
+                    onMenuExpandedChange = onMenuExpandedChange,
+                    transfer = transfer,
                 )
-                .padding(horizontal = Space.lg, vertical = Space.md),
-        ) {
-            // Where the two do not both fit - a narrow phone, a large font size -
-            // the button moves under the progress rather than squeezing it.
-            FlowRow(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalArrangement = Arrangement.spacedBy(Space.sm),
-                itemVerticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                book.progress?.let { progress -> ContinueProgress(progress) }
 
-                LukiaButton(
-                    label = stringResource(Res.string.home_resume),
-                    onClick = onResume,
-                    size = ButtonSize.Compact,
-                )
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.weight(1f)) {
+                    ReadButton(onClick = { actions.onOpen(book) })
+                }
             }
+
+            ContinueFacts(document = book.document, modifier = Modifier.padding(top = Space.lg))
         }
     }
 }
 
-/** Secondary text on the band: light, a step back from the white beside it. */
-private const val OnWashMuted = 0.75f
+/** The cover, whole, with its badges and the menu a long press opens under it. */
+@Composable
+private fun ContinueCover(
+    book: LibraryBook,
+    title: String,
+    named: String,
+    actions: HomeBookActions,
+    menuExpanded: Boolean,
+    onMenuExpandedChange: (Boolean) -> Unit,
+    transfer: BookTransfer?,
+) {
+    val shape = MaterialTheme.shapes.medium
 
-/** The ring's track on the band. */
-private const val OnWashLine = 0.25f
+    // The cover is all this card shows of what the book is, so it is what a
+    // screen reader is told: the title, and who wrote it.
+    Box(
+        modifier = Modifier
+            .width(LocalLukiaDimens.current.bookCellMinWidth * CoverScale)
+            .semantics { contentDescription = named },
+    ) {
+        BookCover(
+            cover = book.cover,
+            title = title,
+            shape = shape,
+            monogramFontSize = CoverMonogramSize,
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        FavoriteBadge(
+            visible = book.document.isFavorite,
+            modifier = Modifier.padding(Space.sm),
+        )
+
+        CoverTransferOverlay(
+            document = book.document,
+            transfer = transfer,
+            modifier = Modifier.matchParentSize().clip(shape),
+        )
+
+        BookActionsMenu(
+            expanded = menuExpanded,
+            isFavorite = book.document.isFavorite,
+            onToggleFavorite = { actions.onToggleFavorite(book) },
+            onRefresh = { actions.onRefresh(book) },
+            onDelete = { actions.onDelete(book) },
+            canRemoveFromDevice = !book.document.awaitsDownload,
+            onDismissRequest = { onMenuExpandedChange(false) },
+            onShowDetails = { actions.onShowDetails(book) },
+            onSelectBooks = actions.onSelectBooks,
+            onRemoveFromServer = actions.removeFromServer(book.document),
+            onMarkUnread = book.progress?.let { { actions.onMarkUnread(book) } },
+        )
+    }
+}
+
+/** Carrying on: a round accent button with an open book in it, and the word under it. */
+@Composable
+private fun ReadButton(onClick: () -> Unit) {
+    val label = stringResource(Res.string.home_resume)
+    val interactionSource = remember { MutableInteractionSource() }
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(Space.sm),
+        modifier = Modifier
+            .clip(MaterialTheme.shapes.medium)
+            .pressable(
+                interactionSource = interactionSource,
+                shape = MaterialTheme.shapes.medium,
+                onClickLabel = label,
+                onClick = onClick,
+            )
+            .padding(Space.xs),
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(ReadButtonSize)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primary),
+        ) {
+            OpenBookGlyph(
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.size(ReadButtonSize * ReadGlyphShare),
+            )
+        }
+
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+        )
+    }
+}

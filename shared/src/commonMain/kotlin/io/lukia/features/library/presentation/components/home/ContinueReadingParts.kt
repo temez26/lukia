@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import io.lukia.core.domain.document.DocumentInfo
@@ -49,19 +48,19 @@ import org.jetbrains.compose.resources.stringResource
 /** A fact's glyph, in sp so it grows with the words beside it. */
 private val FactGlyphSize: TextUnit = 15.sp
 
-/** The ring in the band over the cover: large enough to read at a glance, small enough to keep the band a strip. */
-private val RingSize: TextUnit = 56.sp
+/** The ring beside the cover: about as big as the read button on the other side of it. */
+private val RingSize: TextUnit = 64.sp
 
 /** Joins what is read out for the progress, as a sentence is joined. */
 private const val SpokenSeparator = ", "
 
 /**
- * How far through the book is: the ring with its percentage, and beside it the
- * page as "126/300" with how many are left under it.
+ * How far through the book is: the ring with its percentage, and the page as
+ * "126/300" under it - the column on the cover's left.
  *
  * Read out as one sentence - "42%, page 126 of 300, 174 pages left" - rather
- * than as a ring, a fraction and a count a screen reader would announce apart.
- * A book whose length is unknown has nothing to draw here.
+ * than as a ring and a fraction a screen reader would announce apart. A book
+ * whose length is unknown has nothing to draw here.
  */
 @Composable
 internal fun ContinueProgress(progress: ReadingProgress, modifier: Modifier = Modifier) {
@@ -69,19 +68,15 @@ internal fun ContinueProgress(progress: ReadingProgress, modifier: Modifier = Mo
     val percent = progress.percent?.let { stringResource(Res.string.reader_percent, it) }.orEmpty()
     val page = progress.pageNumber
     val left = page?.let { progress.pageCount - it }?.takeIf { it > 0 }
-    val pagesLeft = left?.let { pluralStringResource(Res.plurals.home_pages_left, it, it) }
     val spoken = listOfNotNull(
         percent,
         page?.let { stringResource(Res.string.book_progress_page_of, it, progress.pageCount) },
-        pagesLeft,
+        left?.let { pluralStringResource(Res.plurals.home_pages_left, it, it) },
     ).joinToString(SpokenSeparator)
 
-    // Side by side where they fit; at a large font size the page goes under the
-    // ring rather than being cut off beside it.
-    FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(Space.sm),
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(Space.sm),
-        itemVerticalAlignment = Alignment.CenterVertically,
         modifier = modifier.clearAndSetSemantics { contentDescription = spoken },
     ) {
         ProgressRing(
@@ -92,24 +87,12 @@ internal fun ContinueProgress(progress: ReadingProgress, modifier: Modifier = Mo
         )
 
         if (page != null) {
-            Column {
-                Text(
-                    text = stringResource(Res.string.home_page_position, page, progress.pageCount),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                )
-
-                pagesLeft?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                    )
-                }
-            }
+            Text(
+                text = stringResource(Res.string.home_page_position, page, progress.pageCount),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+            )
         }
     }
 }

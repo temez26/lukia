@@ -17,7 +17,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.features.library.presentation.screens.BookTransfer
@@ -51,8 +50,6 @@ internal fun CoverTransferOverlay(
     document: DocumentInfo,
     transfer: BookTransfer?,
     modifier: Modifier = Modifier,
-    /** How big the server or device mark is drawn: larger where the cover is. */
-    markSize: Dp = MarkSize,
 ) {
     when (transfer) {
         is BookTransfer.Running -> {
@@ -92,7 +89,7 @@ internal fun CoverTransferOverlay(
             Box(modifier = modifier.fillMaxSize()) {
                 StorageMark(
                     document = document,
-                    size = markSize,
+                    size = MarkSize,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(Space.sm)
