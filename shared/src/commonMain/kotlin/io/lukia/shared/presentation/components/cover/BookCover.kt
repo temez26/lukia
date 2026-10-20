@@ -183,14 +183,7 @@ fun BookCover(
             .aspectRatio(BOOK_COVER_ASPECT_RATIO)
             .shadow(elevation = elevation, shape = shape, clip = false)
             .clip(shape)
-            .background(
-                Brush.linearGradient(
-                    listOf(
-                        lerp(baseColor, Color.White, 0.12f),
-                        lerp(baseColor, Color.Black, 0.22f),
-                    ),
-                ),
-            )
+            .coverTile(baseColor)
             // A faint inner edge keeps light covers from bleeding into a light page.
             .border(
                 width = 1.dp,
@@ -202,16 +195,7 @@ fun BookCover(
         when (art) {
             is CoverArt.Artwork -> CoverArtwork(cover = art.cover, alpha = artworkAlpha::value)
 
-            CoverArt.Absent -> Text(
-                text = title.trim().firstOrNull()?.uppercase() ?: "?",
-                color = Color.White.copy(alpha = 0.92f),
-                fontSize = monogramFontSize,
-                fontWeight = FontWeight.SemiBold,
-                style = MaterialTheme.typography.displaySmall.copy(
-                    fontSize = monogramFontSize,
-                    fontWeight = FontWeight.SemiBold,
-                ),
-            )
+            CoverArt.Absent -> CoverMonogram(title = title, fontSize = monogramFontSize)
 
             // Nothing but the tile, which is already drawn behind this.
             CoverArt.Pending -> Unit
@@ -268,4 +252,35 @@ private fun CoverArtwork(cover: DecodedCover, alpha: () -> Float) {
             modifier = Modifier.fillMaxSize(),
         )
     }
+}
+
+/** How far towards white the tile starts, at its top-left corner. */
+private const val TileLightening = 0.12f
+
+/** How far towards black it ends, at its bottom-right. */
+private const val TileDarkening = 0.22f
+
+/** The generated tile a cover is drawn on, and what stands in for one that has no artwork. */
+internal fun Modifier.coverTile(baseColor: Color): Modifier = background(
+    Brush.linearGradient(
+        listOf(
+            lerp(baseColor, Color.White, TileLightening),
+            lerp(baseColor, Color.Black, TileDarkening),
+        ),
+    ),
+)
+
+/** The title's first letter, set on [coverTile] where a book has no artwork of its own. */
+@Composable
+internal fun CoverMonogram(title: String, fontSize: TextUnit) {
+    Text(
+        text = title.trim().firstOrNull()?.uppercase() ?: "?",
+        color = Color.White.copy(alpha = 0.92f),
+        fontSize = fontSize,
+        fontWeight = FontWeight.SemiBold,
+        style = MaterialTheme.typography.displaySmall.copy(
+            fontSize = fontSize,
+            fontWeight = FontWeight.SemiBold,
+        ),
+    )
 }
