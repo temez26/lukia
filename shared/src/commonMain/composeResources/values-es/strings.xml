@@ -523,6 +523,8 @@
     <string name="figure_illustration">Ilustración</string>
     <string name="home_see_all_shelf">Ver todo: %1$s</string>
     <string name="home_resume">Continuar</string>
+    <string name="home_page_position">%1$d/%2$d</string>
+    <string name="book_fact_spoken">%1$s: %2$s</string>
     <plurals name="home_pages_left">
         <item quantity="one">Queda 1 página</item>
         <item quantity="other">Quedan %1$d páginas</item>

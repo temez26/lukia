@@ -563,6 +563,8 @@
     <string name="figure_illustration">Ilustracja</string>
     <string name="home_see_all_shelf">Pokaż wszystkie: %1$s</string>
     <string name="home_resume">Wznów</string>
+    <string name="home_page_position">%1$d/%2$d</string>
+    <string name="book_fact_spoken">%1$s: %2$s</string>
     <plurals name="home_pages_left">
         <item quantity="one">Została 1 strona</item>
         <item quantity="few">Zostały %1$d strony</item>

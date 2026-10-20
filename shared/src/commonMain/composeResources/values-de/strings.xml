@@ -524,6 +524,8 @@
     <string name="figure_illustration">Illustration</string>
     <string name="home_see_all_shelf">Alle %1$s anzeigen</string>
     <string name="home_resume">Weiterlesen</string>
+    <string name="home_page_position">%1$d/%2$d</string>
+    <string name="book_fact_spoken">%1$s: %2$s</string>
     <plurals name="home_pages_left">
         <item quantity="one">1 Seite übrig</item>
         <item quantity="other">%1$d Seiten übrig</item>

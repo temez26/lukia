@@ -592,6 +592,8 @@
     <string name="figure_illustration">Kuva</string>
     <string name="home_see_all_shelf">Näytä kaikki: %1$s</string>
     <string name="home_resume">Jatka</string>
+    <string name="home_page_position">%1$d/%2$d</string>
+    <string name="book_fact_spoken">%1$s: %2$s</string>
     <plurals name="home_pages_left">
         <item quantity="one">1 sivu jäljellä</item>
         <item quantity="other">%1$d sivua jäljellä</item>

@@ -163,3 +163,11 @@ private val YearPrefix = Regex("""^(1\d{3}|20\d{2}|21\d{2})\b""")
  * there.
  */
 fun BookMetadata.languageName(): String? = languageName(language)
+
+/**
+ * The language the document declares, as its short code - "EN", "PT" - for
+ * where there is room for two letters and not for a word. Screen readers are
+ * given [languageName] instead.
+ */
+fun BookMetadata.languageCode(): String? =
+    language?.trim()?.takeIf { it.isNotBlank() }?.substringBefore('-')?.substringBefore('_')?.uppercase()

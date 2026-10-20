@@ -577,6 +577,8 @@
     <string name="figure_illustration">Illustration</string>
     <string name="home_see_all_shelf">Visa alla %1$s</string>
     <string name="home_resume">Fortsätt</string>
+    <string name="home_page_position">%1$d/%2$d</string>
+    <string name="book_fact_spoken">%1$s: %2$s</string>
     <plurals name="home_pages_left">
         <item quantity="one">1 sida kvar</item>
         <item quantity="other">%1$d sidor kvar</item>

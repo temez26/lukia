@@ -523,6 +523,8 @@
     <string name="figure_illustration">Illustratie</string>
     <string name="home_see_all_shelf">Alle %1$s tonen</string>
     <string name="home_resume">Verder lezen</string>
+    <string name="home_page_position">%1$d/%2$d</string>
+    <string name="book_fact_spoken">%1$s: %2$s</string>
     <plurals name="home_pages_left">
         <item quantity="one">Nog 1 pagina</item>
         <item quantity="other">Nog %1$d pagina’s</item>
