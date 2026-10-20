@@ -40,6 +40,10 @@
     <string name="menu_refresh_details">Päivitä tiedot</string>
     <string name="menu_remove_from_device">Poista laitteelta</string>
     <string name="menu_remove_from_server">Poista palvelimelta</string>
+    <string name="sheet_favourite">Suosikki</string>
+    <string name="sheet_details">Tiedot</string>
+    <string name="sheet_unread">Lukematon</string>
+    <string name="sheet_select">Valitse</string>
     <string name="book_remove_from_server_title">Poistetaanko palvelimelta?</string>
     <string name="book_remove_from_server_message">%1$s poistuu jaetusta kirjastosta kaikilta. Laitteet, jotka eivät koskaan ladanneet sitä, poistavat sen seuraavassa synkronoinnissa; ladattu kopio jää kirjaksi omaan laitteeseensa.</string>
     <string name="book_remove_from_server_confirm">Poista</string>

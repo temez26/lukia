@@ -44,6 +44,10 @@
     <string name="menu_refresh_details">Refresh Details</string>
     <string name="menu_remove_from_device">Remove from Device</string>
     <string name="menu_remove_from_server">Remove from Server</string>
+    <string name="sheet_favourite">Favourite</string>
+    <string name="sheet_details">Details</string>
+    <string name="sheet_unread">Unread</string>
+    <string name="sheet_select">Select</string>
     <string name="book_remove_from_server_title">Remove from the server?</string>
     <string name="book_remove_from_server_message">%1$s leaves the shared library for everyone. Devices that never downloaded it drop it on their next sync; a downloaded copy stays as a book on its device.</string>
     <string name="book_remove_from_server_confirm">Remove</string>

@@ -23,6 +23,7 @@ import io.lukia.core.presentation.authorLine
 import io.lukia.core.presentation.bookTitle
 import io.lukia.features.library.presentation.components.book.CoverTransferOverlay
 import io.lukia.features.library.presentation.model.LibraryBook
+import io.lukia.features.library.presentation.model.menuHeader
 import io.lukia.features.library.presentation.screens.BookTransfer
 import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.resources.Res
@@ -186,6 +187,7 @@ private fun Cover(
             onSelectBooks = actions.onSelectBooks,
             onRemoveFromServer = actions.removeFromServer(book.document),
             onMarkUnread = book.progress?.let { { actions.onMarkUnread(book) } },
+            header = book.menuHeader(),
         )
     }
 }

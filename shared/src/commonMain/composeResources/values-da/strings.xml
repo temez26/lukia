@@ -30,6 +30,10 @@
     <string name="menu_refresh_details">Opdater oplysninger</string>
     <string name="menu_remove_from_device">Fjern fra enheden</string>
     <string name="menu_remove_from_server">Fjern fra serveren</string>
+    <string name="sheet_favourite">Favorit</string>
+    <string name="sheet_details">Detaljer</string>
+    <string name="sheet_unread">Ulæst</string>
+    <string name="sheet_select">Vælg</string>
     <string name="book_remove_from_server_title">Fjern fra serveren?</string>
     <string name="book_remove_from_server_message">%1$s forsvinder fra det delte bibliotek for alle. Enheder, der aldrig har hentet den, fjerner den ved næste synkronisering; en hentet kopi bliver som en bog på sin enhed.</string>
     <string name="book_remove_from_server_confirm">Fjern</string>

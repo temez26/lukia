@@ -30,6 +30,10 @@
     <string name="menu_refresh_details">Gegevens vernieuwen</string>
     <string name="menu_remove_from_device">Van apparaat verwijderen</string>
     <string name="menu_remove_from_server">Van de server verwijderen</string>
+    <string name="sheet_favourite">Favoriet</string>
+    <string name="sheet_details">Details</string>
+    <string name="sheet_unread">Ongelezen</string>
+    <string name="sheet_select">Selecteren</string>
     <string name="book_remove_from_server_title">Van de server verwijderen?</string>
     <string name="book_remove_from_server_message">%1$s verdwijnt voor iedereen uit de gedeelde bibliotheek. Apparaten die het nooit hebben gedownload, verwijderen het bij de volgende synchronisatie; een gedownloade kopie blijft als boek op dat apparaat.</string>
     <string name="book_remove_from_server_confirm">Verwijderen</string>

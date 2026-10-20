@@ -30,6 +30,10 @@
     <string name="menu_refresh_details">Actualizar datos</string>
     <string name="menu_remove_from_device">Quitar del dispositivo</string>
     <string name="menu_remove_from_server">Quitar del servidor</string>
+    <string name="sheet_favourite">Favorito</string>
+    <string name="sheet_details">Detalles</string>
+    <string name="sheet_unread">No leído</string>
+    <string name="sheet_select">Seleccionar</string>
     <string name="book_remove_from_server_title">¿Quitar del servidor?</string>
     <string name="book_remove_from_server_message">%1$s sale de la biblioteca compartida para todos. Los dispositivos que nunca lo descargaron lo quitan en su próxima sincronización; una copia descargada se queda como libro en su dispositivo.</string>
     <string name="book_remove_from_server_confirm">Quitar</string>

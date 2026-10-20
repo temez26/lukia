@@ -170,4 +170,4 @@ fun BookMetadata.languageName(): String? = languageName(language)
  * given [languageName] instead.
  */
 fun BookMetadata.languageCode(): String? =
-    language?.trim()?.takeIf { it.isNotBlank() }?.substringBefore('-')?.substringBefore('_')?.uppercase()
+    language?.trim()?.substringBefore('-')?.substringBefore('_')?.uppercase()?.takeIf { it.isNotBlank() }

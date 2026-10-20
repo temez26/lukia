@@ -32,6 +32,10 @@
     <string name="menu_refresh_details">Odśwież szczegóły</string>
     <string name="menu_remove_from_device">Usuń z urządzenia</string>
     <string name="menu_remove_from_server">Usuń z serwera</string>
+    <string name="sheet_favourite">Ulubione</string>
+    <string name="sheet_details">Szczegóły</string>
+    <string name="sheet_unread">Nieprzeczytana</string>
+    <string name="sheet_select">Zaznacz</string>
     <string name="book_remove_from_server_title">Usunąć z serwera?</string>
     <string name="book_remove_from_server_message">„%1$s” znika ze wspólnej biblioteki dla wszystkich. Urządzenia, które nigdy jej nie pobrały, usuną ją przy następnej synchronizacji; pobrana kopia zostaje jako książka na swoim urządzeniu.</string>
     <string name="book_remove_from_server_confirm">Usuń</string>

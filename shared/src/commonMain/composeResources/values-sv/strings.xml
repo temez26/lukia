@@ -32,6 +32,10 @@
     <string name="menu_refresh_details">Uppdatera uppgifter</string>
     <string name="menu_remove_from_device">Ta bort från enheten</string>
     <string name="menu_remove_from_server">Ta bort från servern</string>
+    <string name="sheet_favourite">Favorit</string>
+    <string name="sheet_details">Detaljer</string>
+    <string name="sheet_unread">Oläst</string>
+    <string name="sheet_select">Välj</string>
     <string name="book_remove_from_server_title">Ta bort från servern?</string>
     <string name="book_remove_from_server_message">%1$s försvinner ur det delade biblioteket för alla. Enheter som aldrig laddat ner den tar bort den vid nästa synkronisering; en nedladdad kopia blir kvar som en bok på sin enhet.</string>
     <string name="book_remove_from_server_confirm">Ta bort</string>

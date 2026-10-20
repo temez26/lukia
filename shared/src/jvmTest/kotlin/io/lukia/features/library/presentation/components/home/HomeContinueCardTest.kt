@@ -103,4 +103,12 @@ class HomeContinueCardTest {
         onNodeWithContentDescription("Language:", substring = true).assertDoesNotExist()
         onNodeWithContentDescription("Published:", substring = true).assertDoesNotExist()
     }
+
+    /** A language tag with nothing before its region - "-US" - names no language, so none is shown. */
+    @Test
+    fun aLanguageTagWithNoLanguageInItIsLeftOut() = runComposeUiTest {
+        show(book(BookMetadata(title = "Piranesi", language = "-US")))
+
+        onNodeWithContentDescription("Language:", substring = true).assertDoesNotExist()
+    }
 }
