@@ -188,6 +188,7 @@ internal fun HomeContent(
             onSettings = onSettings,
             statsButton = statsButton,
             summary = homeSummary(home),
+            onHero = home.current != null,
         )
     }
 

@@ -1,5 +1,6 @@
 package io.lukia.features.library.presentation.components.home
 
+import androidx.compose.animation.core.EaseInOut
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import io.lukia.core.presentation.bookTitle
 import io.lukia.features.library.presentation.model.LibraryBook
 import io.lukia.shared.presentation.components.cover.rememberCoverTone
+import io.lukia.shared.presentation.theme.RecolouredForPage
 import io.lukia.shared.presentation.theme.Space
 
 /**
@@ -36,8 +38,17 @@ private val FadeLength: Dp = 320.dp
 /** The fade drawn in this many steps, each eased, so its start and end have no edge. */
 private const val FadeSteps = 12
 
+/** How much nearer black the colour is behind the header, so the controls there read on any cover. */
+private const val HeaderDepth = 0.45f
+
+/** How far below the status bar the deeper colour behind the header holds before it eases off. */
+private val HeaderDeepLength: Dp = 64.dp
+
+/** How far the deeper colour behind the header takes to ease into the book's own. */
+private val HeaderEaseLength: Dp = 96.dp
+
 /** Secondary text on the book's colour: light, a step back from the white beside it. */
-private const val OnToneMuted = 0.75f
+private const val OnToneMuted = 0.85f
 
 /** Hairlines and the ring's track on the book's colour. */
 private const val OnToneLine = 0.25f
@@ -50,8 +61,13 @@ private const val OnToneLine = 0.25f
  *
  * Its own top inset, since it is drawn under the status bar rather than below
  * it; what is laid on it is in light colours whatever the theme, because the
- * colour is always deepened for white text - see `rememberCoverTone`. The fade
- * is drawn past the hero's own bottom edge, under the items that follow it.
+ * colour is always deepened for white text - see `rememberCoverTone`. Behind
+ * the header it is deeper still, so the title and the buttons there read on any
+ * cover. The fade is drawn past the hero's own bottom edge, under the items that
+ * follow it.
+ *
+ * Its accent is white, with the book's colour on it: the ring and the button to
+ * carry on are drawn in it.
  */
 @Composable
 internal fun ContinueHero(
@@ -61,29 +77,39 @@ internal fun ContinueHero(
 ) {
     val tone = rememberCoverTone(book.cover, book.document.bookTitle())
     val page = MaterialTheme.colorScheme.background
-    val fade = with(LocalDensity.current) { FadeLength.toPx() }
+    val density = LocalDensity.current
+    val fade = with(density) { FadeLength.toPx() }
+    val deepEnd = WindowInsets.safeDrawing.getTop(density) + with(density) { HeaderDeepLength.toPx() }
+    val easeEnd = deepEnd + with(density) { HeaderEaseLength.toPx() }
+    val deep = lerp(tone, Color.Black, HeaderDepth)
     val onTone = MaterialTheme.colorScheme.copy(
+        primary = Color.White,
+        onPrimary = tone,
         onBackground = Color.White,
         onSurface = Color.White,
         onSurfaceVariant = Color.White.copy(alpha = OnToneMuted),
         outlineVariant = Color.White.copy(alpha = OnToneLine),
     )
 
-    MaterialTheme(colorScheme = onTone) {
+    RecolouredForPage(onTone) {
         Column(
             modifier = modifier
                 .fillMaxWidth()
                 .drawBehind {
                     drawRect(color = tone, size = size)
-
-                    // Evenly spaced steps, each eased by a smoothstep: slow to
-                    // leave the colour, slow to arrive at the page.
-                    val steps = List(FadeSteps + 1) { step ->
-                        val t = step / FadeSteps.toFloat()
-                        lerp(tone, page, t * t * (3 - 2 * t))
-                    }
+                    drawRect(color = deep, size = Size(size.width, deepEnd))
                     drawRect(
-                        brush = Brush.verticalGradient(steps, startY = size.height, endY = size.height + fade),
+                        brush = Brush.verticalGradient(easedSteps(deep, tone), startY = deepEnd, endY = easeEnd),
+                        topLeft = Offset(0f, deepEnd),
+                        size = Size(size.width, easeEnd - deepEnd),
+                    )
+                    drawRect(
+                        brush = Brush.verticalGradient(
+                            easedSteps(tone, page),
+                            startY = size.height,
+                            endY =
+                            size.height + fade,
+                        ),
                         topLeft = Offset(0f, size.height),
                         size = Size(size.width, fade),
                     )
@@ -93,4 +119,13 @@ internal fun ContinueHero(
             content = content,
         )
     }
+}
+
+/**
+ * From one colour to another in evenly spaced steps, each eased: slow to leave
+ * the first, slow to arrive at the second, so neither end of the gradient shows
+ * an edge.
+ */
+private fun easedSteps(from: Color, to: Color): List<Color> = List(FadeSteps + 1) { step ->
+    lerp(from, to, EaseInOut.transform(step / FadeSteps.toFloat()))
 }

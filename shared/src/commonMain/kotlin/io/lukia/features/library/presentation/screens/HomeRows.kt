@@ -50,6 +50,7 @@ import io.lukia.shared.presentation.components.launch.LaunchReveal
 import io.lukia.shared.presentation.components.launch.launchReveal
 import io.lukia.shared.presentation.theme.Clearance
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import io.lukia.shared.presentation.theme.OnPageColors
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.SystemBarIcons
 import org.jetbrains.compose.resources.pluralStringResource
@@ -232,7 +233,9 @@ private fun ContinueTop(
  * than this screen's - see [LibraryShelfUi.selectingOn].
  *
  * The controls sit on tonal plates: this header is on the screen's background
- * rather than in a bar, and two bare glyphs at its edge read as decoration.
+ * rather than in a bar, and two bare glyphs at its edge read as decoration. On
+ * the book being read they go bare and white instead, which the deepened colour
+ * there reads better than a faint plate - see `ContinueHero`.
  */
 @Composable
 internal fun HomeHeader(
@@ -247,7 +250,13 @@ internal fun HomeHeader(
     statsButton: @Composable () -> Unit = {},
     /** What the library holds, under the title - see [homeSummary]. Null for none. */
     summary: String? = null,
+    /** Whether it is drawn on the book being read rather than on the page. */
+    onHero: Boolean = false,
 ) {
+    val plate: @Composable (Modifier, @Composable () -> Unit) -> Unit = { plateModifier, control ->
+        if (onHero) Box(modifier = plateModifier) { control() } else TonalPlate(modifier = plateModifier) { control() }
+    }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier.fillMaxWidth(),
@@ -270,9 +279,9 @@ internal fun HomeHeader(
             }
         }
 
-        TonalPlate(modifier = Modifier.padding(end = Space.md)) { statsButton() }
+        plate(Modifier.padding(end = Space.md)) { statsButton() }
 
-        TonalPlate {
+        plate(Modifier) {
             HeaderMenu(
                 menuExpanded = menuExpanded,
                 onMenuExpandedChange = onMenuExpandedChange,
@@ -300,14 +309,16 @@ private fun HeaderMenu(
             onClick = { onMenuExpandedChange(!menuExpanded) },
         )
 
-        LibraryMenu(
-            expanded = menuExpanded,
-            onDismissRequest = { onMenuExpandedChange(false) },
-            onImport = onImport,
-            onImportFolder = onImportFolder,
-            shelf = shelf,
-            onSettings = onSettings,
-        )
+        OnPageColors {
+            LibraryMenu(
+                expanded = menuExpanded,
+                onDismissRequest = { onMenuExpandedChange(false) },
+                onImport = onImport,
+                onImportFolder = onImportFolder,
+                shelf = shelf,
+                onSettings = onSettings,
+            )
+        }
     }
 }
 

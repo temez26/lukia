@@ -272,6 +272,9 @@ Compose:
       - LocalMotionStyle
       - LocalIconButtonShape
       - LocalThemeChoice
+      # The page's own colours under a part of it drawn in other ones, for the
+      # menus opened from there - see `OnPageColors`.
+      - LocalPageColors
   ContentEmitterReturningValues:
     active: true
   DefaultsVisibility:

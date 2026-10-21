@@ -19,6 +19,7 @@ import io.lukia.shared.presentation.components.icons.InfoGlyph
 import io.lukia.shared.presentation.components.icons.RefreshGlyph
 import io.lukia.shared.presentation.components.icons.TrashGlyph
 import io.lukia.shared.presentation.components.icons.UnreadBookGlyph
+import io.lukia.shared.presentation.theme.OnPageColors
 import io.lukia.shared.presentation.theme.isWideWindow
 import org.jetbrains.compose.resources.stringResource
 
@@ -72,10 +73,12 @@ fun BookActionsMenu(
         canRemoveFromDevice = canRemoveFromDevice,
     )
 
-    if (isWideWindow) {
-        AnchoredBookMenu(expanded, choices, onDismissRequest, modifier)
-    } else {
-        BookActionsSheet(expanded, choices, onDismissRequest, header)
+    OnPageColors {
+        if (isWideWindow) {
+            AnchoredBookMenu(expanded, choices, onDismissRequest, modifier)
+        } else {
+            BookActionsSheet(expanded, choices, onDismissRequest, header)
+        }
     }
 }
 

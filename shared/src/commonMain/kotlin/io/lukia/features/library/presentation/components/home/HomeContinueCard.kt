@@ -49,7 +49,7 @@ import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 
 /** The cover's width against a shelf cell: a little larger than the covers in the rows under it. */
-private const val CoverScale = 1.15f
+private const val CoverScale = 1.45f
 
 private val CoverMonogramSize = 30.sp
 
