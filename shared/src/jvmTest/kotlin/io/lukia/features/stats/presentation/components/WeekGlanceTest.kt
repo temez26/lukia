@@ -15,13 +15,13 @@ import io.lukia.features.stats.domain.ReadingHabits
 import io.lukia.features.stats.domain.readingHabits
 import io.lukia.features.stats.presentation.dayTime
 import io.lukia.shared.presentation.theme.LukiaTheme
-import kotlin.test.Test
-import kotlin.test.assertTrue
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
+import kotlin.test.Test
+import kotlin.test.assertTrue
 
 /** The glance at the week on Home, on a fixed Tuesday - see `TimeSectionsTest`. */
 @OptIn(ExperimentalTestApi::class)
