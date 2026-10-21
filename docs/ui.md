@@ -63,12 +63,11 @@ and the groups adapt to it rather than forking:
 
 ## Desktop window
 
-`DesktopShell` puts Home and Library side by side as two pages, switched by
-their names at the start of the bar (`DesktopSectionTabs`), and shares one
-`LibraryViewModel` between them as the phone does. Home is held to the
-library's measure (`maxGridWidth`).
+`DesktopShell` opens on the library and pushes everything else over it. It
+has no Home and no tab bar: the phone's pages drawn across a monitor read as a
+phone stretched out, so the window keeps a layout of its own.
 
-- Settings open over whichever page is showing; the shell hosts the overlay.
+- Settings open over whatever is showing; the shell hosts the overlay.
 - A book's details dock at the trailing edge (`BookDetailSidePanel`) and the
   page narrows beside them, so another book can be picked with them open.
 - Menus are focusable popups on desktop (`menusTakeFocus`): arrows, Home, End

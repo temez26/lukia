@@ -1,12 +1,8 @@
 package io.lukia.navigation
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -16,7 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -30,28 +25,25 @@ import io.lukia.core.infrastructure.AppCommand
 import io.lukia.core.infrastructure.AppCommands
 import io.lukia.features.library.presentation.BookDetailSide
 import io.lukia.features.library.presentation.LibraryViewModel
-import io.lukia.features.library.presentation.screens.HomeScreen
 import io.lukia.features.library.presentation.screens.LibraryScreen
 import io.lukia.features.settings.presentation.SettingsOverlay
 import io.lukia.features.settings.presentation.screens.SettingsArea
 import io.lukia.features.stats.presentation.StatsButton
-import io.lukia.features.stats.presentation.components.WeekGlance
 import io.lukia.shared.presentation.components.surface.behindOverlay
-import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.LocalMotionStyle
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
- * The app as a window: Home and the library as two pages under one bar, with
- * a book, the statistics and a row's own screen pushed over them.
+ * The app as a window: the library, with everything else pushed on top of it.
  *
- * The phone's Home, rows and all, rather than a desktop page of its own: the
- * book being read and the shelves are the same answer on either, and the two
- * pages share one [LibraryViewModel] for the reason `MobileShell` gives.
+ * There is no tab bar here and deliberately so, nor the phone's Home: a desktop
+ * window has room to show a book's details beside the shelf rather than instead
+ * of it - see [BookDetailSide] - so the shelf never leaves the screen, and the
+ * phone's pages drawn across a monitor read as a phone stretched out.
  *
- * Settings open in place over whichever page is showing, so changing a theme
- * does not throw the shelf away - see [SettingsOverlay].
+ * Settings open in place over the shelf, so changing a theme does not throw it
+ * away - see [SettingsOverlay].
  */
 @Composable
 internal fun DesktopShell(library: LibraryViewModel = koinViewModel()) {
@@ -82,28 +74,25 @@ internal fun DesktopShell(library: LibraryViewModel = koinViewModel()) {
             NavHost(
                 modifier = Modifier.weight(1f),
                 navController = navController,
-                startDestination = Routes.Home.route,
+                startDestination = Routes.Library.route,
                 // Set on the host rather than per destination: every move in
-                // this shell is a push onto or a pop off a page, or between the
-                // two pages, so declaring it once is less to forget.
+                // this shell is a push onto or a pop off the library, so
+                // declaring it once is less to forget.
                 enterTransition = { if (changesInPlace(motion)) tabEnter(motion) else pushEnter(motion) },
                 exitTransition = { if (changesInPlace(motion)) tabExit(motion) else pushExit(motion) },
                 popEnterTransition = { if (changesInPlace(motion)) tabEnter(motion) else popEnter(motion) },
                 popExitTransition = { if (changesInPlace(motion)) tabExit(motion) else popExit(motion) },
             ) {
-                homePage(pages, library)
                 libraryPage(pages, library, command = requested, onClearCommand = { requested = null })
-                homeShelfDestination(navController, library, pages.openBook, pages.openDetails)
                 bookDestinations(navController)
                 windowSettingsDestinations(navController)
             }
 
-            // Beside the pages and the shelf screens only: a book being read or
-            // the statistics take the window to themselves.
-            // The same LibraryViewModel the pages share: resolved from the same
-            // owner, outside the host.
+            // Beside the shelf only: a book being read or the statistics take
+            // the window to themselves. The same LibraryViewModel the shelf
+            // uses, resolved from the same owner, outside the host.
             BookDetailSide(
-                location = detailLocation.takeIf { route in PagesWithDetails },
+                location = detailLocation.takeIf { route == Routes.Library.route },
                 onDismiss = { detailLocation = null },
                 onRead = { document ->
                     detailLocation = null
@@ -121,10 +110,7 @@ internal fun DesktopShell(library: LibraryViewModel = koinViewModel()) {
     }
 }
 
-/** Where a book's details can be docked beside what is showing. */
-private val PagesWithDetails = setOf(Routes.Home.route, Routes.Library.route, Routes.HomeShelf.route)
-
-/** What both pages open, written once so a book opens the same way from either. */
+/** What the shelf and the panel beside it open, written once so a book opens the same way from either. */
 private class DesktopPages(
     val navController: NavController,
     val openSettings: (SettingsArea) -> Unit,
@@ -144,40 +130,6 @@ private class DesktopPages(
     }
 
     val openStats: () -> Unit = { navController.navigate(Routes.Stats.route) }
-
-    val tabs: @Composable (MobileTab) -> Unit = { selected ->
-        DesktopSectionTabs(selected = selected, onSelect = navController::switchTo)
-    }
-}
-
-private fun NavGraphBuilder.homePage(pages: DesktopPages, library: LibraryViewModel) {
-    composable(Routes.Home.route) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-        ) {
-            DesktopHomeBar(selected = MobileTab.Home, onSelect = pages.navController::switchTo)
-
-            // At the library's measure, so the two pages line up under the
-            // tabs and Home's rows are not stretched across a whole monitor.
-            HomeScreen(
-                modifier = Modifier.widthIn(max = LocalLukiaDimens.current.maxGridWidth),
-                onOpenBook = pages.openBook,
-                onShowDetails = pages.openDetails,
-                onOpenShelf = { shelf -> pages.navController.navigate(Routes.HomeShelf.createRoute(shelf.name)) },
-                onOpenLibrary = { pages.navController.switchTo(MobileTab.Library) },
-                onSettings = { pages.openSettings(SettingsArea.Default) },
-                stats = { WeekGlance(onClick = pages.openStats) },
-                onSyncWithServer = {
-                    pages.startSync()
-                    pages.openSettings(SettingsArea.Account)
-                },
-                viewModel = library,
-            )
-        }
-    }
 }
 
 private fun NavGraphBuilder.libraryPage(
@@ -199,13 +151,12 @@ private fun NavGraphBuilder.libraryPage(
             statsButton = { StatsButton(onClick = pages.openStats) },
             onSyncWithServer = pages.startSync,
             onAccountSettings = { pages.openSettings(SettingsArea.Account) },
-            sections = { pages.tabs(MobileTab.Library) },
         )
     }
 }
 
 /**
- * The commands that are about the settings. They open over whichever page is
+ * The commands that are about the settings. They open over whatever is
  * showing, so the shell carries that one out itself; Find is for the shelf
  * behind the settings, so it closes them.
  */
@@ -258,9 +209,9 @@ private fun rememberSettingsOverlayState(): SettingsOverlayState {
  * panel nobody had just asked for.
  *
  * The shelf is brought forward as part of taking any command but Settings,
- * which open over whichever page is showing, because it is what carries them out and because somebody adding books should see them
- * arrive. Popped back to where it is on the stack, or switched to from Home
- * where it is not.
+ * which open over whatever is showing, because it is what carries the others
+ * out and because somebody adding books should see them arrive. A no-op when it
+ * is already showing.
  */
 @Composable
 internal fun rememberRequestedCommand(
@@ -273,13 +224,8 @@ internal fun rememberRequestedCommand(
         commands.commands.collect { command ->
             pending.value = command
 
-            val showing = navController.currentDestination?.route == Routes.Library.route
-
-            if (command != AppCommand.OpenSettings &&
-                !showing &&
-                !navController.popBackStack(Routes.Library.route, inclusive = false)
-            ) {
-                navController.switchTo(MobileTab.Library)
+            if (command != AppCommand.OpenSettings) {
+                navController.popBackStack(Routes.Library.route, inclusive = false)
             }
         }
     }

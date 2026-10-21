@@ -263,7 +263,7 @@ private fun BottomBar(
  * All of one home row, pushed over the tabs rather than one of them, so the bar
  * steps aside - see [MobileTab.forRoute].
  */
-internal fun NavGraphBuilder.homeShelfDestination(
+private fun NavGraphBuilder.homeShelfDestination(
     navController: NavController,
     library: LibraryViewModel,
     openBook: (DocumentInfo) -> Unit,
@@ -303,7 +303,7 @@ internal fun NavGraphBuilder.homeShelfDestination(
  * than "the tab before this one". `saveState` and `restoreState` are what make
  * returning to the library find it scrolled where it was left.
  */
-internal fun NavController.switchTo(tab: MobileTab) {
+private fun NavController.switchTo(tab: MobileTab) {
     navigate(tab.route) {
         popUpTo(Routes.Home.route) { saveState = true }
         launchSingleTop = true

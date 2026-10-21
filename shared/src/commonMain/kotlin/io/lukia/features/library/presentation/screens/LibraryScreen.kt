@@ -52,8 +52,6 @@ fun LibraryScreen(
     onSyncWithServer: () -> Unit = {},
     /** Opens Settings on the Account page, where syncing is reported. */
     onAccountSettings: () -> Unit = {},
-    /** Where a window switches between Home and the library - see `DesktopSectionTabs`. */
-    sections: @Composable () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val books by viewModel.books.collectAsState()
@@ -100,7 +98,6 @@ fun LibraryScreen(
         showSearch = showSearch,
         statsButton = statsButton,
         searchFocus = requests.searchFocus,
-        sections = sections,
     )
 
     RemoveFromServerDialog(removal, onRemove = viewModel::removeFromServer)

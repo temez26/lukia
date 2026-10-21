@@ -93,8 +93,6 @@ fun LibraryContent(
     statsButton: @Composable () -> Unit = {},
     /** Where Find puts the keyboard - see `AppCommand.FindInLibrary`. */
     searchFocus: FocusRequester? = null,
-    /** Where a window switches between Home and the library - see `DesktopSectionTabs`. */
-    sections: @Composable () -> Unit = {},
 ) {
     val dimens = LocalLukiaDimens.current
     val reveal = rememberLaunchReveal()
@@ -248,7 +246,6 @@ fun LibraryContent(
                         showSearch = showSearch,
                         statsButton = statsButton,
                         searchFocus = searchFocus,
-                        sections = sections,
                     )
                 }
 
