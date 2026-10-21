@@ -205,7 +205,9 @@ private fun DayBar(day: DayReading, share: Float, modifier: Modifier = Modifier)
         Text(
             text = dayTime(day.durationMs),
             style = MaterialTheme.typography.labelSmall,
-            color = dayTextColor(day),
+            // Muted on every day, today's too: the bar and the day's name
+            // already mark today, and a third accent over them was loud.
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             maxLines = 1,
             softWrap = false,
