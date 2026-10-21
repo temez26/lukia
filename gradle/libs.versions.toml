@@ -38,7 +38,7 @@ ktor = "3.1.3"
 kotlinx-serialization = "1.11.0"
 # The server's log output. Only `:server` ships it; the app logs through
 # `Diagnostics` and nothing else.
-logback = "1.5.18"
+logback = "1.6.5"
 # Argon2id for the server's password hashes, in plain Java so the image needs no
 # native library.
 bouncycastle = "1.81"
