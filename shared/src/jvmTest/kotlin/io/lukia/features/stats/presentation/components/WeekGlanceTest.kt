@@ -3,7 +3,9 @@ package io.lukia.features.stats.presentation.components
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -80,5 +82,22 @@ class WeekGlanceTest {
 
         onNodeWithText("25m").assertIsDisplayed()
         onNodeWithText("[]").assertIsDisplayed()
+    }
+
+    /**
+     * The bars themselves, which the card hides from a screen reader behind its
+     * own sentence: the day read carries its time over its bar, and the days not
+     * read carry none.
+     */
+    @Test
+    fun theBarsCarryTheTimeOfTheDaysRead() = runComposeUiTest {
+        setContent {
+            LukiaTheme(darkTheme = false) {
+                WeekBars(days = habits(minutes = 25).days)
+            }
+        }
+
+        onAllNodesWithText("25m").assertCountEquals(1)
+        onAllNodesWithText("m", substring = true).assertCountEquals(1)
     }
 }

@@ -1,6 +1,7 @@
 package io.lukia.features.library.presentation.screens
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -41,6 +42,7 @@ import io.lukia.shared.presentation.components.launch.rememberLaunchReveal
 import io.lukia.shared.presentation.components.menu.ActionMenuScrim
 import io.lukia.shared.presentation.components.state.UiStateContent
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.softFadeOut
 import io.lukia.shared.presentation.theme.stateSwapIn
 import org.jetbrains.compose.resources.stringResource
@@ -109,7 +111,13 @@ fun LibraryContent(
 
     // Room for the bar that floats over the shelf, where there is one: always
     // where the shelf has its own, and while books are being picked everywhere.
-    val topClearance = if (showSearch || shelf.active) libraryNavBarHeight() else 0.dp
+    // Eased on a phone, where picking brings the bar in, so the shelf moves down
+    // to meet it rather than jumping under a finger still on a cover.
+    val topClearance by animateDpAsState(
+        targetValue = if (showSearch || shelf.active) libraryNavBarHeight() else 0.dp,
+        animationSpec = LukiaMotion.standard(),
+        label = "libraryTopClearance",
+    )
 
     val collapseDistancePx = with(LocalDensity.current) { HeaderCollapseDistance.toPx() }
     // A lambda, not a value: read this way the scroll position reaches only the

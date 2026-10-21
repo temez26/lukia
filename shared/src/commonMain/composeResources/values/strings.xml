@@ -690,6 +690,7 @@
     <string name="stats_longest_run_spoken">Longest run: %1$s</string>
     <!-- One bar of the week chart, for a screen reader. -->
     <string name="stats_day_spoken">%1$s: %2$s</string>
+    <string name="stats_week_run_spoken">%1$s: %2$s. %3$s</string>
     <string name="stats_still_to_come">still to come</string>
 
     <string name="stats_your_library">Your library</string>

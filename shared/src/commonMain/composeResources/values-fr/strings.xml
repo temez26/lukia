@@ -534,6 +534,7 @@
     <string name="stats_today_spoken">Aujourd\u2019hui : %1$s</string>
     <string name="stats_longest_run_spoken">Plus longue série : %1$s</string>
     <string name="stats_day_spoken">%1$s : %2$s</string>
+    <string name="stats_week_run_spoken">%1$s : %2$s. %3$s</string>
     <string name="stats_still_to_come">encore à venir</string>
     <string name="stats_your_library">Votre bibliothèque</string>
     <string name="stats_nothing_to_count">Rien à compter encore. Importez un livre, et ceci se remplira à mesure que vous lisez.</string>
