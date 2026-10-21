@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -17,7 +18,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.sp
 import io.lukia.features.library.presentation.model.HomeMenu
 import io.lukia.features.library.presentation.model.HomeRow
 import io.lukia.features.library.presentation.model.HomeShelf
@@ -26,11 +33,13 @@ import io.lukia.features.library.presentation.model.isListed
 import io.lukia.features.library.presentation.screens.BookTransfer
 import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.resources.Res
-import io.lukia.resources.home_see_all
+import io.lukia.resources.home_book_count
 import io.lukia.resources.home_see_all_shelf
 import io.lukia.shared.presentation.components.controls.pressable
+import io.lukia.shared.presentation.components.icons.DisclosureChevron
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -68,6 +77,7 @@ internal fun HomeShelfRow(
     Column(modifier = modifier.fillMaxWidth()) {
         ShelfHeader(
             title = row.shelf.displayTitle(),
+            count = row.total,
             onOpen = { onOpenShelf(row.shelf) },
             modifier = Modifier.padding(horizontal = dimens.screenPadding),
         )
@@ -106,18 +116,26 @@ internal fun HomeShelfRow(
 
 /**
  * A shelf's name, as the way to the whole of what it is a sample of: the title,
- * and "See all" at the far end, the whole line one press. Muted rather than in
- * the accent: four of them down the screen put the accent beside every title,
- * competing with the covers they lead past.
+ * then at the far end how many books the shelf holds and an arrow in the
+ * accent - the whole line one press. A count says more than "See all" did, and
+ * only the arrow takes the accent, so four headers down the screen do not
+ * compete with the covers they lead past.
+ *
+ * Read out as the title and the count in words - "Favourites, 12 books" -
+ * rather than a bare number after it.
  */
 @Composable
 internal fun ShelfHeader(
     title: String,
+    count: Int,
     onOpen: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val shape = MaterialTheme.shapes.extraSmall
+    val spoken = listOf(title, pluralStringResource(Res.plurals.home_book_count, count, count))
+        .joinToString(SpokenSeparator)
+    val chevronSize = with(LocalDensity.current) { HeaderChevronSize.toDp() }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -130,7 +148,8 @@ internal fun ShelfHeader(
                 onClickLabel = stringResource(Res.string.home_see_all_shelf, title),
                 onClick = onOpen,
             )
-            .padding(vertical = Space.xs),
+            .padding(vertical = Space.xs)
+            .clearAndSetSemantics { contentDescription = spoken },
     ) {
         Text(
             text = title,
@@ -141,9 +160,26 @@ internal fun ShelfHeader(
         )
 
         Text(
-            text = stringResource(Res.string.home_see_all),
+            text = count.toString(),
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+
+        DisclosureChevron(
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .padding(start = Space.xs)
+                .size(chevronSize)
+                .graphicsLayer { rotationZ = PointForward },
+        )
     }
 }
+
+/** Between the title and the count, as a screen reader is given them. */
+private const val SpokenSeparator = ", "
+
+/** The arrow after the count, in sp so it grows with the count at a large system font size. */
+private val HeaderChevronSize: TextUnit = 18.sp
+
+/** The app's disclosure mark points down; this turns it to point the way the header goes. */
+private const val PointForward = -90f

@@ -77,6 +77,20 @@ class HomeShelvesTest {
         assertEquals(listOf("D"), rows(home)[HomeShelf.Favorites])
     }
 
+    /** A row's count is the whole shelf's, not the handful the row has room for. */
+    @Test
+    fun aRowCountsEveryBookItsShelfHolds() {
+        val home = layoutOf(
+            book("Current", progress = readAt(50)),
+            book("A", progress = readAt(40)),
+            book("B", progress = readAt(30)),
+            book("C", progress = readAt(20)),
+            book("D", progress = readAt(10)),
+        )
+
+        assertEquals(5, home.rows.single { it.shelf == HomeShelf.RecentlyOpened }.total)
+    }
+
     @Test
     fun favoritesHoldOnlyWhatWasMarked_newestFirst() {
         val rows = rowsOf(

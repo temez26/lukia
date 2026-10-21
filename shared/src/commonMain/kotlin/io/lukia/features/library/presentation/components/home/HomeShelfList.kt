@@ -80,7 +80,7 @@ internal fun HomeShelfList(
     val dimens = LocalLukiaDimens.current
 
     Column(modifier = modifier.fillMaxWidth().padding(horizontal = dimens.screenPadding)) {
-        ShelfHeader(title = row.shelf.displayTitle(), onOpen = { onOpenShelf(row.shelf) })
+        ShelfHeader(title = row.shelf.displayTitle(), count = row.total, onOpen = { onOpenShelf(row.shelf) })
 
         GroupCard(modifier = Modifier.padding(top = Space.sm)) {
             Column {

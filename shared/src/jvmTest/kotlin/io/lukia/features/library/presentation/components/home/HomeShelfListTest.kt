@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.unit.dp
@@ -54,7 +55,7 @@ class HomeShelfListTest {
     fun recentlyOpenedListsItsBooksWithHowFarThrough() = runComposeUiTest {
         show(HomeShelf.RecentlyOpened)
 
-        onNodeWithText("See all").assertExists()
+        onNodeWithContentDescription("Recently Opened, 5 books").assertExists()
         onNodeWithText("Book 1", useUnmergedTree = true).assertExists()
         onNodeWithText("Author 1", useUnmergedTree = true).assertExists()
         onNodeWithText("42%", useUnmergedTree = true).assertExists()
@@ -65,7 +66,7 @@ class HomeShelfListTest {
     fun otherShelvesAreRowsOfCovers() = runComposeUiTest {
         show(HomeShelf.Favorites)
 
-        onNodeWithText("See all").assertExists()
+        onNodeWithContentDescription("Favourites, 5 books").assertExists()
         onNodeWithText("Book 1", useUnmergedTree = true).assertExists()
         onNodeWithText("Book 2", useUnmergedTree = true).assertExists()
     }

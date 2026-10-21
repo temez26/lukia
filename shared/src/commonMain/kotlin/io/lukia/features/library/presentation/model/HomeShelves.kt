@@ -35,11 +35,15 @@ enum class HomeShelf {
     RecentlyAdded,
 }
 
-/** One row of the home screen: what it is called, and the books on it. */
+/**
+ * One row of the home screen: what it is called, the books on it, and how many
+ * the whole shelf holds - which the row's title says, and its "see all" opens.
+ */
 @Immutable
 data class HomeRow(
     val shelf: HomeShelf,
     val books: List<LibraryBook>,
+    val total: Int = books.size,
 )
 
 /**
@@ -80,12 +84,13 @@ fun List<LibraryBook>.homeLayout(limit: Int = ShelfLimit): HomeLayout {
     current?.let { shown += it.location }
 
     val rows = HomeShelf.entries.mapNotNull { shelf ->
-        val books = onShelf(shelf)
+        val all = onShelf(shelf)
+        val books = all
             .filter { it.location !in shown }
             .take(if (shelf.isListed) minOf(limit, ListLength) else limit)
         shown += books.map { it.location }
 
-        if (books.isEmpty()) null else HomeRow(shelf, books)
+        if (books.isEmpty()) null else HomeRow(shelf, books, total = all.size)
     }
 
     return HomeLayout(
