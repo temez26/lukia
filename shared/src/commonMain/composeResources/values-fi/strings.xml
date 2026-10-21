@@ -515,6 +515,7 @@
     <string name="settings_open_source_footnote">Mistä Lukia on rakennettu, ja millä ehdoilla kukin osa on käytössä.</string>
 
     <string name="stats_entry">Lukemisesi</string>
+    <string name="stats_open">Avaa lukutilastot</string>
     <string name="stats_title">Lukeminen</string>
     <string name="stats_footnote">Lasketaan tällä laitteella, ja säilytetään täällä.</string>
     <string name="stats_footnote_synced">Lasketaan jokaisella laitteella, jolla olet kirjautunut tilillesi.</string>

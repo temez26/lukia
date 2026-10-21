@@ -84,6 +84,8 @@ internal fun HomeRows(
     reveal: LaunchReveal = LaunchReveal.Finished,
     /** Downloads under way, by book location - see `BookTransfers`. */
     transfers: Map<String, BookTransfer> = emptyMap(),
+    /** A glance at the week's reading, under the book being read - supplied by the shell. */
+    stats: @Composable (Modifier) -> Unit = {},
     header: @Composable () -> Unit,
 ) {
     val dimens = LocalLukiaDimens.current
@@ -117,16 +119,15 @@ internal fun HomeRows(
                     )
                 }
             } else {
-                item(key = "header", contentType = "header") {
-                    Box(
-                        modifier = Modifier
-                            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))
-                            .padding(horizontal = dimens.screenPadding)
-                            .launchReveal(reveal, index = 0),
-                    ) {
-                        header()
-                    }
-                }
+                item(key = "header", contentType = "header") { PageHeader(reveal = reveal, header = header) }
+            }
+
+            item(key = "stats", contentType = "stats") {
+                stats(
+                    Modifier
+                        .padding(horizontal = dimens.screenPadding)
+                        .launchReveal(reveal, index = RowRevealOffset + 1),
+                )
             }
 
             itemsIndexed(
@@ -140,13 +141,26 @@ internal fun HomeRows(
                     openMenu = openMenu,
                     onOpenMenuChange = onOpenMenuChange,
                     onOpenShelf = onOpenShelf,
-                    modifier = Modifier.launchReveal(reveal, index = index + RowRevealOffset + 1),
+                    modifier = Modifier.launchReveal(reveal, index = index + RowRevealOffset + 2),
                     transfers = transfers,
                 )
             }
         }
 
         StatusBarBacking(visible = !heroUnderStatusBar)
+    }
+}
+
+/** The header on the page itself, with no book being read to carry it under the status bar. */
+@Composable
+private fun PageHeader(reveal: LaunchReveal, header: @Composable () -> Unit) {
+    Box(
+        modifier = Modifier
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))
+            .padding(horizontal = LocalLukiaDimens.current.screenPadding)
+            .launchReveal(reveal, index = 0),
+    ) {
+        header()
     }
 }
 
@@ -232,9 +246,12 @@ private fun ContinueTop(
  * That the rows underneath cannot show a selection is the menu's problem rather
  * than this screen's - see [LibraryShelfUi.selectingOn].
  *
- * The controls sit on tonal plates: this header is on the screen's background
- * rather than in a bar, and two bare glyphs at its edge read as decoration. On
- * the book being read they go bare and white instead, which the deepened colour
+ * The way to the reading statistics is not here but on a card of its own under
+ * the book being read - see `WeekGlance`.
+ *
+ * The menu sits on a tonal plate: this header is on the screen's background
+ * rather than in a bar, and a bare glyph at its edge reads as decoration. On
+ * the book being read it goes bare and white instead, which the deepened colour
  * there reads better than a faint plate - see `ContinueHero`.
  */
 @Composable
@@ -246,17 +263,11 @@ internal fun HomeHeader(
     shelf: LibraryShelfUi,
     onSettings: () -> Unit,
     modifier: Modifier = Modifier,
-    /** The way to the reader's own page, supplied by the shell - see [LibraryNavBar]. */
-    statsButton: @Composable () -> Unit = {},
     /** What the library holds, under the title - see [homeSummary]. Null for none. */
     summary: String? = null,
     /** Whether it is drawn on the book being read rather than on the page. */
     onHero: Boolean = false,
 ) {
-    val plate: @Composable (Modifier, @Composable () -> Unit) -> Unit = { plateModifier, control ->
-        if (onHero) Box(modifier = plateModifier) { control() } else TonalPlate(modifier = plateModifier) { control() }
-    }
-
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier.fillMaxWidth(),
@@ -279,9 +290,7 @@ internal fun HomeHeader(
             }
         }
 
-        plate(Modifier.padding(end = Space.md)) { statsButton() }
-
-        plate(Modifier) {
+        val menu: @Composable () -> Unit = {
             HeaderMenu(
                 menuExpanded = menuExpanded,
                 onMenuExpandedChange = onMenuExpandedChange,
@@ -291,6 +300,8 @@ internal fun HomeHeader(
                 onSettings = onSettings,
             )
         }
+
+        if (onHero) menu() else TonalPlate { menu() }
     }
 }
 

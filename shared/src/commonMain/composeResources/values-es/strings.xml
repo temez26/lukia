@@ -452,6 +452,7 @@
     <string name="settings_open_source">Licencias de código abierto</string>
     <string name="settings_open_source_footnote">De qué está hecho Lukia, y bajo qué términos se usa cada parte.</string>
     <string name="stats_entry">Tu lectura</string>
+    <string name="stats_open">Abrir estadísticas de lectura</string>
     <string name="stats_title">Lectura</string>
     <string name="stats_footnote">Se cuenta en este dispositivo, y se queda aquí.</string>
     <string name="stats_footnote_synced">Se cuenta en cada dispositivo con tu cuenta iniciada.</string>

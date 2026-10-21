@@ -501,6 +501,7 @@
     <string name="settings_open_source_footnote">Vad Lukia är byggt av, och vilka villkor varje del kommer under.</string>
 
     <string name="stats_entry">Din läsning</string>
+    <string name="stats_open">Öppna lässtatistik</string>
     <string name="stats_title">Läsning</string>
     <string name="stats_footnote">Räknas på den här enheten, och stannar här.</string>
     <string name="stats_footnote_synced">Räknas på varje enhet som är inloggad på ditt konto.</string>

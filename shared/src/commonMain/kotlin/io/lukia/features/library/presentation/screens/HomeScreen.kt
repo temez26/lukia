@@ -63,8 +63,8 @@ internal fun HomeScreen(
     onOpenShelf: (HomeShelf) -> Unit,
     onOpenLibrary: () -> Unit,
     onSettings: () -> Unit,
-    /** The way to the reader's own page, supplied by the shell - see `MobileShell`. */
-    statsButton: @Composable () -> Unit = {},
+    /** A glance at the week's reading that opens the reader's own page, supplied by the shell - see `MobileShell`. */
+    stats: @Composable (Modifier) -> Unit = {},
     /** Syncs with the server and opens where that is reported - see `LibraryShelfUi`. */
     onSyncWithServer: () -> Unit = {},
     viewModel: LibraryViewModel = koinViewModel(),
@@ -110,7 +110,7 @@ internal fun HomeScreen(
         onRetry = viewModel::refresh,
         shelf = homeShelf,
         onSettings = onSettings,
-        statsButton = statsButton,
+        stats = stats,
     )
 
     RemoveFromServerDialog(removal, onRemove = viewModel::removeFromServer)
@@ -165,8 +165,8 @@ internal fun HomeContent(
     /** What the corner menu offers, which is what the library's own bar offers. */
     shelf: LibraryShelfUi = LibraryShelfUi.None,
     onSettings: () -> Unit = {},
-    /** The way to the reader's own page, supplied by the shell - see `MobileShell`. */
-    statsButton: @Composable () -> Unit = {},
+    /** A glance at the week's reading, supplied by the shell - see `MobileShell`. */
+    stats: @Composable (Modifier) -> Unit = {},
 ) {
     // One value rather than a flag per menu, as everywhere else in this app: the
     // header carries one, the empty state carries another and every cover on
@@ -186,7 +186,6 @@ internal fun HomeContent(
             onImportFolder = onImportFolder,
             shelf = shelf,
             onSettings = onSettings,
-            statsButton = statsButton,
             summary = homeSummary(home),
             onHero = home.current != null,
         )
@@ -215,11 +214,12 @@ internal fun HomeContent(
                     reveal = reveal,
                     transfers = transfers,
                     modifier = Modifier.fillMaxSize(),
+                    stats = stats,
                     header = header,
                 )
 
-                // The header stays with no books too. It carries settings, the
-                // reading statistics and the import menu, and with it gone a new
+                // The header stays with no books too. It carries settings and
+                // the import menu, and with it gone a new
                 // library was a screen with no way to any of them.
                 else -> HeadedState(header = header, reveal = reveal) {
                     NoBooksYet(

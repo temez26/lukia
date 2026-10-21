@@ -35,6 +35,7 @@ import io.lukia.features.library.presentation.screens.HomeShelfScreen
 import io.lukia.features.library.presentation.screens.LibraryScreen
 import io.lukia.features.library.presentation.screens.SearchScreen
 import io.lukia.features.stats.presentation.StatsButton
+import io.lukia.features.stats.presentation.components.WeekGlance
 import io.lukia.shared.presentation.theme.LocalMotionStyle
 import io.lukia.shared.presentation.theme.MotionStyle
 import io.lukia.shared.presentation.theme.exit
@@ -153,9 +154,8 @@ private fun NavGraphBuilder.tabDestinations(
     // Filled here rather than by the library screens, which have a place on
     // their bars for it and no business knowing what the statistics screen is.
     // This shell is where the two features meet.
-    val statsButton: @Composable () -> Unit = {
-        StatsButton(onClick = { navController.navigate(Routes.Stats.route) })
-    }
+    val openStats: () -> Unit = { navController.navigate(Routes.Stats.route) }
+    val statsButton: @Composable () -> Unit = { StatsButton(onClick = openStats) }
 
     tabDestination(Routes.Home.route) {
         HomeScreen(
@@ -164,7 +164,7 @@ private fun NavGraphBuilder.tabDestinations(
             onOpenShelf = { shelf -> navController.navigate(Routes.HomeShelf.createRoute(shelf.name)) },
             onOpenLibrary = { navController.switchTo(MobileTab.Library) },
             onSettings = openSettings,
-            statsButton = statsButton,
+            stats = { modifier -> WeekGlance(onClick = openStats, modifier = modifier) },
             onSyncWithServer = {
                 startSync()
                 openAccountSettings()
