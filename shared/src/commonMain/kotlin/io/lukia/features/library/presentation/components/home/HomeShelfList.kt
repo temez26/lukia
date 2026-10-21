@@ -53,12 +53,6 @@ import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 
-/** Whether the shelf is drawn as a [HomeShelfList] rather than a row of covers. */
-internal val HomeShelf.isListed: Boolean get() = this == HomeShelf.RecentlyOpened
-
-/** As many books as the list shows; the rest are behind its "See all". */
-private const val ListLength = 3
-
 private val ListCoverWidth: Dp = 44.dp
 private val ListCoverMonogramSize = 14.sp
 private val ProgressHeight: Dp = 3.dp
@@ -90,7 +84,7 @@ internal fun HomeShelfList(
 
         GroupCard(modifier = Modifier.padding(top = Space.sm)) {
             Column {
-                row.books.take(ListLength).forEachIndexed { index, book ->
+                row.books.forEachIndexed { index, book ->
                     if (index > 0) {
                         HorizontalDivider(
                             color = MaterialTheme.colorScheme.outlineVariant,

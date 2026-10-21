@@ -51,7 +51,7 @@ class HomeShelfListTest {
     }
 
     @Test
-    fun recentlyOpenedListsThreeBooksWithHowFarThrough() = runComposeUiTest {
+    fun recentlyOpenedListsItsBooksWithHowFarThrough() = runComposeUiTest {
         show(HomeShelf.RecentlyOpened)
 
         onNodeWithText("See all").assertExists()
@@ -59,7 +59,6 @@ class HomeShelfListTest {
         onNodeWithText("Author 1", useUnmergedTree = true).assertExists()
         onNodeWithText("42%", useUnmergedTree = true).assertExists()
         onNodeWithText("Book 3", useUnmergedTree = true).assertExists()
-        onNodeWithText("Book 4", useUnmergedTree = true).assertDoesNotExist()
     }
 
     @Test

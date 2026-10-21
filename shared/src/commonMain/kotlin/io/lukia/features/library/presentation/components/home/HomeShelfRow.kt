@@ -22,6 +22,7 @@ import io.lukia.features.library.presentation.model.HomeMenu
 import io.lukia.features.library.presentation.model.HomeRow
 import io.lukia.features.library.presentation.model.HomeShelf
 import io.lukia.features.library.presentation.model.displayTitle
+import io.lukia.features.library.presentation.model.isListed
 import io.lukia.features.library.presentation.screens.BookTransfer
 import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.resources.Res
@@ -105,7 +106,9 @@ internal fun HomeShelfRow(
 
 /**
  * A shelf's name, as the way to the whole of what it is a sample of: the title,
- * and "See all" in the accent at the far end, the whole line one press.
+ * and "See all" at the far end, the whole line one press. Muted rather than in
+ * the accent: four of them down the screen put the accent beside every title,
+ * competing with the covers they lead past.
  */
 @Composable
 internal fun ShelfHeader(
@@ -140,7 +143,7 @@ internal fun ShelfHeader(
         Text(
             text = stringResource(Res.string.home_see_all),
             style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

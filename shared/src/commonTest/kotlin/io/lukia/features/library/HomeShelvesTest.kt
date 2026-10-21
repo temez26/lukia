@@ -46,7 +46,7 @@ class HomeShelvesTest {
     }
 
     @Test
-    fun theRowsRunFavoritesRecentlyOpenedUnreadRecentlyAdded() {
+    fun theRowsRunRecentlyOpenedFavoritesUnreadRecentlyAdded() {
         val home = layoutOf(
             book("Kept", favorite = true),
             book("Current", progress = readAt(30)),
@@ -57,9 +57,24 @@ class HomeShelvesTest {
         )
 
         assertEquals(
-            listOf(HomeShelf.Favorites, HomeShelf.RecentlyOpened, HomeShelf.Unread, HomeShelf.RecentlyAdded),
+            listOf(HomeShelf.RecentlyOpened, HomeShelf.Favorites, HomeShelf.Unread, HomeShelf.RecentlyAdded),
             home.rows.map { it.shelf },
         )
+    }
+
+    /** The list shows three; a fourth opened book is left for the shelves after it, not hidden. */
+    @Test
+    fun recentlyOpenedHoldsOnlyWhatItsListShows() {
+        val home = layoutOf(
+            book("Current", progress = readAt(50)),
+            book("A", progress = readAt(40)),
+            book("B", progress = readAt(30)),
+            book("C", progress = readAt(20)),
+            book("D", progress = readAt(10), favorite = true),
+        )
+
+        assertEquals(listOf("A", "B", "C"), rows(home)[HomeShelf.RecentlyOpened])
+        assertEquals(listOf("D"), rows(home)[HomeShelf.Favorites])
     }
 
     @Test
