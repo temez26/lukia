@@ -170,8 +170,8 @@ private fun StatusBarBacking(visible: Boolean) {
 private const val LightPage = 0.5f
 
 /**
- * The top of Home while a book is being read: the header and the book on the
- * book's own colour, then the facts about its file on the page under it.
+ * The top of Home while a book is being read: the header, the book and the facts
+ * about its file, all on the book's own colour.
  */
 @Composable
 private fun ContinueTop(
@@ -208,14 +208,15 @@ private fun ContinueTop(
                     .launchReveal(reveal, index = RowRevealOffset),
                 transfer = transfer,
             )
-        }
 
-        ContinueFacts(
-            document = book.document,
-            modifier = Modifier
-                .padding(horizontal = dimens.screenPadding)
-                .launchReveal(reveal, index = RowRevealOffset),
-        )
+            ContinueFacts(
+                document = book.document,
+                modifier = Modifier
+                    .padding(horizontal = dimens.screenPadding)
+                    .padding(top = Space.lg)
+                    .launchReveal(reveal, index = RowRevealOffset),
+            )
+        }
     }
 }
 
