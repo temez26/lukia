@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -37,6 +36,7 @@ import io.lukia.features.stats.domain.DayReading
 import io.lukia.features.stats.domain.ReadingHabits
 import io.lukia.features.stats.presentation.WeekGlanceViewModel
 import io.lukia.features.stats.presentation.dayLabel
+import io.lukia.features.stats.presentation.dayTime
 import io.lukia.features.stats.presentation.readingTime
 import io.lukia.resources.Res
 import io.lukia.resources.stats_day_spoken
@@ -154,34 +154,36 @@ internal fun WeekGlanceContent(
     }
 }
 
-/** Each day's reading against the week's longest, as bars rising from one line over their day's name. */
+/**
+ * Each day's reading against the week's longest, as bars rising from one line
+ * over their day's name, each topped with its time.
+ */
 @Composable
 private fun WeekBars(days: List<DayReading>, modifier: Modifier = Modifier) {
     val longest = maxOf(days.maxOfOrNull { it.durationMs } ?: 0L, FullBarMs)
+    val density = LocalDensity.current
 
-    Column(modifier = modifier.fillMaxWidth()) {
-        DayRow(modifier = Modifier.height(BarsHeight), verticalAlignment = Alignment.Bottom) {
-            days.forEach { day ->
-                val share = (day.durationMs.toFloat() / longest).coerceAtLeast(EmptyBar)
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight(share)
-                        .background(barColor(day), BarShape),
-                )
+    // Capped together, so a day's time and its name stay as wide as its bar.
+    CompositionLocalProvider(
+        LocalDensity provides Density(density.density, density.fontScale.coerceAtMost(DayNameMaxScale)),
+    ) {
+        Column(modifier = modifier.fillMaxWidth()) {
+            DayRow(verticalAlignment = Alignment.Bottom) {
+                days.forEach { day ->
+                    DayBar(
+                        day = day,
+                        share = (day.durationMs.toFloat() / longest).coerceAtLeast(EmptyBar),
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
-        }
 
-        val density = LocalDensity.current
-        CompositionLocalProvider(
-            LocalDensity provides Density(density.density, density.fontScale.coerceAtMost(DayNameMaxScale)),
-        ) {
             DayRow(modifier = Modifier.padding(top = Space.xs)) {
                 days.forEach { day ->
                     Text(
                         text = dayLabel(day.date),
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.run { if (day.isToday) primary else onSurfaceVariant },
+                        color = dayTextColor(day),
                         textAlign = TextAlign.Center,
                         maxLines = 1,
                         modifier = Modifier.weight(1f),
@@ -191,6 +193,37 @@ private fun WeekBars(days: List<DayReading>, modifier: Modifier = Modifier) {
         }
     }
 }
+
+/**
+ * One day's bar under its time. A day with less than a minute read carries no
+ * time - the app does not round a reader up to a minute - and keeps the room
+ * for one, so every bar rises from the same line.
+ */
+@Composable
+private fun DayBar(day: DayReading, share: Float, modifier: Modifier = Modifier) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
+        Text(
+            text = dayTime(day.durationMs),
+            style = MaterialTheme.typography.labelSmall,
+            color = dayTextColor(day),
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+            softWrap = false,
+            modifier = Modifier.padding(bottom = Space.xs),
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(BarsHeight * share)
+                .background(barColor(day), BarShape),
+        )
+    }
+}
+
+@Composable
+private fun dayTextColor(day: DayReading): Color =
+    MaterialTheme.colorScheme.run { if (day.isToday) primary else onSurfaceVariant }
 
 /** The bars and the names under them, spaced the same so each name sits under its bar. */
 @Composable

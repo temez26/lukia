@@ -1,21 +1,25 @@
 package io.lukia.features.stats.presentation.components
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Text
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
 import io.lukia.core.domain.reading.ReadingSession
 import io.lukia.features.stats.domain.ReadingHabits
 import io.lukia.features.stats.domain.readingHabits
+import io.lukia.features.stats.presentation.dayTime
 import io.lukia.shared.presentation.theme.LukiaTheme
+import kotlin.test.Test
+import kotlin.test.assertTrue
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
-import kotlin.test.Test
-import kotlin.test.assertTrue
 
 /** The glance at the week on Home, on a fixed Tuesday - see `TimeSectionsTest`. */
 @OptIn(ExperimentalTestApi::class)
@@ -59,5 +63,21 @@ class WeekGlanceTest {
         }
 
         onNodeWithContentDescription("This week: None yet").assertIsDisplayed()
+    }
+
+    /** Each bar carries its day's time, and less than a minute carries none rather than rounding up. */
+    @Test
+    fun aDayIsLabelledWithItsMinutes() = runComposeUiTest {
+        setContent {
+            LukiaTheme(darkTheme = false) {
+                Column {
+                    Text(dayTime(25 * 60_000L))
+                    Text("[" + dayTime(30_000L) + "]")
+                }
+            }
+        }
+
+        onNodeWithText("25m").assertIsDisplayed()
+        onNodeWithText("[]").assertIsDisplayed()
     }
 }
