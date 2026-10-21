@@ -3,6 +3,8 @@ package io.lukia.features.settings.presentation.screens
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -19,7 +21,7 @@ import io.lukia.resources.Res
 import io.lukia.resources.gesture_off
 import io.lukia.resources.passage_unit_paragraph
 import io.lukia.resources.passage_unit_word
-import io.lukia.resources.settings_area_ai_translation
+import io.lukia.resources.settings_ai_translation
 import io.lukia.shared.presentation.theme.LukiaTheme
 import io.lukia.shared.words
 import kotlin.test.Test
@@ -67,7 +69,7 @@ class AiGestureUnitsTest {
             }
         }
 
-        onNodeWithText(words(Res.string.settings_area_ai_translation)).performClick()
+        onAllNodesWithText(words(Res.string.settings_ai_translation)).onFirst().performClick()
     }
 
     /** Neither row offers the word, which is the unit this group asks past. */

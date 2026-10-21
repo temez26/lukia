@@ -194,28 +194,19 @@ class LibraryContentTest {
     }
 
     /**
-     * A window with room for both keeps the library on screen and lays the
-     * details over it, rather than navigating away from what was being browsed.
+     * Details are the shell's to show - docked beside the page on a window, see
+     * `BookDetailSidePanel`, or pushed as a screen on a phone - so the library
+     * only asks, at any width.
      */
     @Test
-    fun aWideWindowOpensDetailsOverTheLibrary() = runComposeUiTest {
-        var navigatedTo: DocumentInfo? = null
-        setLibrary(width = 1000.dp, onDocumentDetails = { navigatedTo = it })
+    fun aWideWindowAsksTheShellForDetails() = runComposeUiTest {
+        var asked: DocumentInfo? = null
+        setLibrary(width = 1000.dp, onDocumentDetails = { asked = it })
 
         openBookMenu("Moby Dick")
         onNodeWithText("Book Details").performClick()
 
-        // The panel is up...
-        onNodeWithText("Information").assertIsDisplayed()
-        // ...and nothing was navigated to, which is the difference between a
-        // panel laid over the library and a screen pushed instead of it.
-        assertNull(navigatedTo)
-
-        // The library is still drawn behind, dimmed - but deliberately out of
-        // the semantics tree while the panel is open, so that a screen reader
-        // and the Tab key cannot walk out of a modal into the shelf under it.
-        // See `behindOverlay`, which BehindOverlayTest covers directly.
-        onNodeWithText("The Hobbit").assertDoesNotExist()
+        assertEquals("Moby Dick.pdf", asked?.document?.fileName)
     }
 
     /** A phone has room for one thing at a time, so it still goes to a screen. */
@@ -254,21 +245,6 @@ class LibraryContentTest {
         setLibrary()
 
         onNode(hasText("%", substring = true)).assertDoesNotExist()
-    }
-
-    /** Closing puts the reader back where they were, with nothing else changed. */
-    @Test
-    fun theDetailPanelCloses() = runComposeUiTest {
-        setLibrary(width = 1000.dp)
-
-        openBookMenu("Moby Dick")
-        onNodeWithText("Book Details").performClick()
-        onNodeWithText("Information").assertIsDisplayed()
-
-        onNodeWithContentDescription("Close").performClick()
-
-        onNodeWithText("Information").assertDoesNotExist()
-        onNodeWithText("Add Books").assertIsDisplayed()
     }
 
     /** Only the admin is offered it, and only on a book the server has. */

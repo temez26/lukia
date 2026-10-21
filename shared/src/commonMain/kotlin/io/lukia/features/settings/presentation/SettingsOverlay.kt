@@ -1,6 +1,10 @@
 package io.lukia.features.settings.presentation
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -14,6 +18,12 @@ import io.lukia.shared.presentation.components.surface.OverlayPanel
 import io.lukia.shared.presentation.components.surface.OverlayPanelTopClearance
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import org.koin.compose.viewmodel.koinViewModel
+
+/** Room for the sidebar and a group at a comfortable measure beside it. */
+private val SheetWidth: Dp = 820.dp
+
+/** Tall enough for most groups without scrolling, short of filling a large monitor. */
+private val SheetMaxHeight: Dp = 720.dp
 
 /**
  * The app's settings, over whatever they were opened from rather than instead of
@@ -38,6 +48,7 @@ fun SettingsOverlay(
         visible = visible,
         onDismiss = onDismiss,
         modifier = modifier,
+        widthCap = SheetWidth,
     ) {
         SettingsPanelBody(account = account, initialArea = initialArea)
     }
@@ -68,7 +79,12 @@ private fun SettingsPanelBody(
         onReaderChange = viewModel::setReaderSettings,
         translatingActions = rememberTranslatingActions(viewModel),
         providerActions = rememberProviderActions(viewModel),
-        modifier = Modifier.fillMaxWidth(),
+        // One height for every group, so the sidebar never moves under the
+        // pointer - see [SettingsBody].
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(max = SheetMaxHeight)
+            .fillMaxHeight(),
         topClearance = OverlayPanelTopClearance,
         bottomClearance = dimens.sectionSpacing,
         // A step away from the panel it sits on, rather than from the window
