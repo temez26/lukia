@@ -21,9 +21,6 @@ internal enum class WeekdayForm {
     /** "Monday", for a sentence. */
     Full,
 
-    /** "Mon", under a bar with room for it. */
+    /** "Mon", under a bar. */
     Short,
-
-    /** "M", under a bar with room for one letter - not always the first of the name. */
-    Narrow,
 }

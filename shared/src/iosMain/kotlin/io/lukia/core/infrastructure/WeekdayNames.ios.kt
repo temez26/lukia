@@ -9,7 +9,6 @@ internal actual fun weekdayName(dayOfWeek: DayOfWeek, form: WeekdayForm): String
     val symbols = when (form) {
         WeekdayForm.Full -> formatter.weekdaySymbols
         WeekdayForm.Short -> formatter.shortWeekdaySymbols
-        WeekdayForm.Narrow -> formatter.veryShortWeekdaySymbols
     }
 
     // Cocoa's symbols begin on Sunday; an ISO day number begins on Monday and

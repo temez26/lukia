@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import io.lukia.features.stats.domain.DayReading
 import io.lukia.features.stats.domain.ReadingHabits
 import io.lukia.features.stats.presentation.WeekGlanceViewModel
-import io.lukia.features.stats.presentation.dayLetter
+import io.lukia.features.stats.presentation.dayLabel
 import io.lukia.features.stats.presentation.readingTime
 import io.lukia.resources.Res
 import io.lukia.resources.stats_day_spoken
@@ -45,9 +45,9 @@ import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
-private val BarsHeight: Dp = 56.dp
-private val BarGap: Dp = 8.dp
-private val BarShape = RoundedCornerShape(4.dp)
+private val BarsHeight: Dp = 80.dp
+private val BarGap: Dp = 10.dp
+private val BarShape = RoundedCornerShape(6.dp)
 
 /** The stub drawn for a day with no reading, as a share of the bars' height, so the week keeps its shape. */
 private const val EmptyBar = 0.06f
@@ -55,7 +55,7 @@ private const val EmptyBar = 0.06f
 /** Days already read, a step back from today's bar in the accent. */
 private const val PastDayAlpha = 0.5f
 
-private val ChevronSize: Dp = 18.dp
+private val ChevronSize: Dp = 20.dp
 
 /** The app's disclosure mark points down; this turns it to point the way the glance goes. */
 private const val PointForward = -90f
@@ -86,7 +86,7 @@ fun WeekGlance(
 
 /**
  * This week's reading time, with a bar for each of its days over the day's
- * letter - today's in the accent - and the way on to the statistics in its
+ * name - today's in the accent - and the way on to the statistics in its
  * corner. Read out as one line: the week and its time.
  */
 @Composable
@@ -129,7 +129,7 @@ internal fun WeekGlanceContent(
 
         Text(
             text = time,
-            style = MaterialTheme.typography.headlineSmall,
+            style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )
 
@@ -137,7 +137,7 @@ internal fun WeekGlanceContent(
     }
 }
 
-/** Each day's reading against the week's longest, as bars rising from one line over their day's letter. */
+/** Each day's reading against the week's longest, as bars rising from one line over their day's name. */
 @Composable
 private fun WeekBars(days: List<DayReading>, modifier: Modifier = Modifier) {
     val longest = days.maxOfOrNull { it.durationMs }?.takeIf { it > 0 } ?: 1L
@@ -158,8 +158,8 @@ private fun WeekBars(days: List<DayReading>, modifier: Modifier = Modifier) {
         DayRow(modifier = Modifier.padding(top = Space.xs)) {
             days.forEach { day ->
                 Text(
-                    text = dayLetter(day.date),
-                    style = MaterialTheme.typography.labelSmall,
+                    text = dayLabel(day.date),
+                    style = MaterialTheme.typography.labelMedium,
                     color = if (day.isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
@@ -170,7 +170,7 @@ private fun WeekBars(days: List<DayReading>, modifier: Modifier = Modifier) {
     }
 }
 
-/** The bars and the letters under them, spaced the same so each letter sits under its bar. */
+/** The bars and the names under them, spaced the same so each name sits under its bar. */
 @Composable
 private fun DayRow(
     modifier: Modifier = Modifier,

@@ -10,7 +10,6 @@ internal actual fun weekdayName(dayOfWeek: DayOfWeek, form: WeekdayForm): String
         when (form) {
             WeekdayForm.Full -> TextStyle.FULL
             WeekdayForm.Short -> TextStyle.SHORT
-            WeekdayForm.Narrow -> TextStyle.NARROW
         },
         Locale.getDefault(),
     )

@@ -94,10 +94,6 @@ internal fun dayLabel(date: LocalDate): String =
 internal fun dayName(date: LocalDate): String =
     weekdayName(date.dayOfWeek, WeekdayForm.Full)
 
-/** A day as one letter, under one of the small bars of the glance at the week on Home. */
-internal fun dayLetter(date: LocalDate): String =
-    weekdayName(date.dayOfWeek, WeekdayForm.Narrow)
-
 /**
  * How many days in a row, said as a sentence rather than as a number with a
  * label under it.
