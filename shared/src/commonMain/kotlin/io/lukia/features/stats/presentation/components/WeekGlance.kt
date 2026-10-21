@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -25,9 +26,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.stats.domain.DayReading
@@ -51,6 +54,20 @@ private val BarShape = RoundedCornerShape(6.dp)
 
 /** The stub drawn for a day with no reading, as a share of the bars' height, so the week keeps its shape. */
 private const val EmptyBar = 0.06f
+
+/**
+ * The least a full bar stands for. Scaled to the week's longest day alone, forty
+ * seconds of reading drew as tall a bar as four hours would, and a week barely
+ * begun looked like a busy one.
+ */
+private const val FullBarMs = 30 * 60_000L
+
+/**
+ * How far the days' names follow the system font size. Further, and seven of
+ * them no longer fit under seven bars: "Wed" was cut to "We", which is no day's
+ * name. The time over the bars, which is what the card says, grows in full.
+ */
+private const val DayNameMaxScale = 1.2f
 
 /** Days already read, a step back from today's bar in the accent. */
 private const val PastDayAlpha = 0.5f
@@ -140,7 +157,7 @@ internal fun WeekGlanceContent(
 /** Each day's reading against the week's longest, as bars rising from one line over their day's name. */
 @Composable
 private fun WeekBars(days: List<DayReading>, modifier: Modifier = Modifier) {
-    val longest = days.maxOfOrNull { it.durationMs }?.takeIf { it > 0 } ?: 1L
+    val longest = maxOf(days.maxOfOrNull { it.durationMs } ?: 0L, FullBarMs)
 
     Column(modifier = modifier.fillMaxWidth()) {
         DayRow(modifier = Modifier.height(BarsHeight), verticalAlignment = Alignment.Bottom) {
@@ -155,16 +172,21 @@ private fun WeekBars(days: List<DayReading>, modifier: Modifier = Modifier) {
             }
         }
 
-        DayRow(modifier = Modifier.padding(top = Space.xs)) {
-            days.forEach { day ->
-                Text(
-                    text = dayLabel(day.date),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = if (day.isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    maxLines = 1,
-                    modifier = Modifier.weight(1f),
-                )
+        val density = LocalDensity.current
+        CompositionLocalProvider(
+            LocalDensity provides Density(density.density, density.fontScale.coerceAtMost(DayNameMaxScale)),
+        ) {
+            DayRow(modifier = Modifier.padding(top = Space.xs)) {
+                days.forEach { day ->
+                    Text(
+                        text = dayLabel(day.date),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.run { if (day.isToday) primary else onSurfaceVariant },
+                        textAlign = TextAlign.Center,
+                        maxLines = 1,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
         }
     }

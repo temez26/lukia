@@ -20,8 +20,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.sp
 import io.lukia.resources.Res
 import io.lukia.resources.home_add_books
 import io.lukia.resources.library_settings
@@ -32,7 +33,8 @@ import io.lukia.shared.presentation.components.surface.GroupCard
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 
-private val ActionGlyphSize: Dp = 18.dp
+/** In sp, so the glyph grows with its label at a large system font size rather than shrinking beside it. */
+private val ActionGlyphSize: TextUnit = 18.sp
 
 /**
  * The card under the book being read: a glance at the week's reading, supplied
@@ -94,7 +96,8 @@ private fun RowScope.GlanceAction(
             )
             .padding(vertical = Space.md),
     ) {
-        glyph(MaterialTheme.colorScheme.primary, Modifier.size(ActionGlyphSize))
+        val glyphSize = with(LocalDensity.current) { ActionGlyphSize.toDp() }
+        glyph(MaterialTheme.colorScheme.primary, Modifier.size(glyphSize))
 
         Text(
             text = label,

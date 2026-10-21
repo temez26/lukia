@@ -49,6 +49,7 @@ import io.lukia.shared.presentation.components.cover.BookCover
 import io.lukia.shared.presentation.components.menu.BookActionsMenu
 import io.lukia.shared.presentation.components.surface.GroupCard
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 
@@ -61,6 +62,9 @@ private const val ListLength = 3
 private val ListCoverWidth: Dp = 44.dp
 private val ListCoverMonogramSize = 14.sp
 private val ProgressHeight: Dp = 3.dp
+
+/** The least of the bar that is filled, so a book a page in shows a mark rather than an empty track. */
+private const val ProgressMinFill = 0.03f
 
 /**
  * A shelf as a short list rather than a row of covers: a small cover beside the
@@ -213,12 +217,15 @@ private fun ListItemText(book: LibraryBook, title: String, modifier: Modifier = 
                     .fillMaxWidth()
                     .height(ProgressHeight)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.outlineVariant),
+                    // Darker than a hairline: on a light page the outline colour
+                    // all but vanished, and an empty track read as nothing.
+                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = LukiaAlpha.Tonal)),
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxHeight()
-                        .fillMaxWidth(fraction)
+                        .fillMaxWidth(fraction.coerceAtLeast(ProgressMinFill))
+                        .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.primary),
                 )
             }
