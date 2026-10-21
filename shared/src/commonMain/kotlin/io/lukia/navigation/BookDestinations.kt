@@ -12,14 +12,13 @@ import io.lukia.features.account.application.AccountSession
 import io.lukia.features.account.domain.AccountStatus
 import io.lukia.features.library.presentation.screens.BookDetailScreen
 import io.lukia.features.reader.presentation.screens.ReaderScreen
-import io.lukia.features.settings.presentation.screens.SettingsArea
-import io.lukia.features.settings.presentation.screens.SettingsScreen
 import io.lukia.features.stats.presentation.screens.StatsScreen
 import org.koin.compose.koinInject
 
 /**
  * The screens that push over whatever was showing: one book being read, one
- * book being described, the settings, and the reading statistics.
+ * book being described, and the reading statistics. Settings differ between a
+ * phone and a window - see `SettingsDestinations`.
  *
  * Registered from here rather than from each shell because they are the same
  * screens reached the same way on every platform. What differs between a desktop
@@ -27,18 +26,6 @@ import org.koin.compose.koinInject
  * three screens behind it - and that is all either shell has to say.
  */
 internal fun NavGraphBuilder.bookDestinations(navController: NavController) {
-    composable(Routes.Settings.route) {
-        SettingsScreen(onBack = { navController.popBackStack() }, account = AppAccountPage)
-    }
-
-    composable(Routes.AccountSettings.route) {
-        SettingsScreen(
-            onBack = { navController.popBackStack() },
-            account = AppAccountPage,
-            initialArea = SettingsArea.Account,
-        )
-    }
-
     composable(Routes.Stats.route) {
         val account by koinInject<AccountSession>().status.collectAsState()
         StatsScreen(

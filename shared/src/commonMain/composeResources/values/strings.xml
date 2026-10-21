@@ -614,6 +614,15 @@
     <!-- Which Lukia this is, and what it was built out of. -->
     <string name="settings_about">About</string>
     <string name="settings_version">Version %1$s</string>
+    <string name="settings_open_area">Open %1$s</string>
+    <string name="settings_reading_summary">%1$s, %2$d%</string>
+    <string name="settings_account_signed_out_summary">Sync your library with your own server</string>
+    <string name="settings_account_sign_in_again">Sign in again</string>
+    <string name="settings_reading_layout">Layout</string>
+    <string name="settings_reading_sample">The rain had stopped by the time she reached the harbour. Somewhere above the boats, a gull laughed at nothing in particular.</string>
+    <string name="settings_type_sample">Aa</string>
+    <string name="settings_percent">%1$d%</string>
+    <string name="settings_use_ai_detail_short">On: whole sentences and paragraphs are translated through a service you set up and pay for. Off: words still come from a free dictionary.</string>
     <string name="settings_licensed_under">Licensed under the Apache License 2.0.</string>
     <string name="settings_open_source">Open-source licences</string>
     <string name="settings_open_source_footnote">What Lukia is built from, and the terms each part comes under.</string>

@@ -153,12 +153,15 @@ fun SectionLabel(
  */
 @Composable
 fun GroupSection(
-    title: String,
+    /** Null leaves the header off, for a group the page's own title already names. */
+    title: String?,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.surface,
     footnote: String? = null,
     /** Rows that draw their own vertical padding ask for none of the card's. */
     padding: Dp = Space.lg,
+    /** Rows that run to the card's edges, pressed highlight and all, ask for none. */
+    horizontalPadding: Dp = Space.lg,
     /**
      * The mark that opens whatever this group needs a paragraph to say - see
      * `InfoButton`. A slot rather than a string, so this primitive stays a
@@ -175,22 +178,24 @@ fun GroupSection(
     content: @Composable () -> Unit,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(start = Space.xs, bottom = Space.sm),
-        ) {
-            SectionLabel(text = title)
+        if (title != null) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(start = Space.xs, bottom = Space.sm),
+            ) {
+                SectionLabel(text = title)
 
-            badge?.invoke()
+                badge?.invoke()
 
-            // Beside the name rather than at the far edge of the row: it is
-            // about this group, and a mark floating in white space next to a
-            // short title is about nothing in particular.
-            info?.invoke()
+                // Beside the name rather than at the far edge of the row: it is
+                // about this group, and a mark floating in white space next to a
+                // short title is about nothing in particular.
+                info?.invoke()
+            }
         }
 
         GroupCard(color = color) {
-            Box(modifier = Modifier.padding(horizontal = Space.lg, vertical = padding)) {
+            Box(modifier = Modifier.padding(horizontal = horizontalPadding, vertical = padding)) {
                 content()
             }
         }

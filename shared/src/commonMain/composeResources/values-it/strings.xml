@@ -470,6 +470,15 @@
 
     <string name="settings_about">Informazioni</string>
     <string name="settings_version">Versione %1$s</string>
+    <string name="settings_open_area">Apri %1$s</string>
+    <string name="settings_reading_summary">%1$s, %2$d%</string>
+    <string name="settings_account_signed_out_summary">Sincronizza la tua libreria con il tuo server</string>
+    <string name="settings_account_sign_in_again">Accedi di nuovo</string>
+    <string name="settings_reading_layout">Impaginazione</string>
+    <string name="settings_reading_sample">Aveva smesso di piovere quando arrivò al porto. Da qualche parte sopra le barche, un gabbiano rideva di niente in particolare.</string>
+    <string name="settings_type_sample">Aa</string>
+    <string name="settings_percent">%1$d%</string>
+    <string name="settings_use_ai_detail_short">Attivo: frasi e paragrafi interi vengono tradotti da un servizio che configuri e paghi. Disattivo: le parole arrivano comunque da un dizionario gratuito.</string>
     <string name="settings_licensed_under">Distribuito sotto Apache License 2.0.</string>
     <string name="settings_open_source">Licenze open source</string>
     <string name="settings_open_source_footnote">Di cosa è fatta Lukia, e a quali condizioni viene usata ogni parte.</string>

@@ -37,6 +37,29 @@ shelf) start with `BackBar`: the back button, an optional title and the screen's
 own actions, held still while the content scrolls below it. Don't float a back
 button over scrolling content; headings slide under it.
 
+## Settings
+
+Phones and windows show settings differently (`SettingsDestinations`):
+
+- Phone: `SettingsHub`, a grouped list. An account card on top, then one row
+  per group with its glyph on an accent-tinted tile, its current value and a
+  chevron. Each row pushes the group as its own page (`SettingsAreaScreen`,
+  route `settings/{area}`), named in the `BackBar`.
+- Window: `SettingsBody`, one page that switches groups with a segmented
+  control, with Account beside the title.
+
+Both build the groups from the same `SettingsAreaContent`, so a setting reads
+the same either way. On a phone each group page provides `LocalPhoneSettingsPage`,
+and the groups adapt to it rather than forking:
+
+- `SettingsSection` shows its explanation as a footnote instead of behind ⓘ,
+  and drops a heading that only repeats the page title.
+- A long list becomes one value row that opens its own page (`SettingsValueRow`,
+  the languages at `settings/translating/language`).
+- Reading leads with a sample set by the reader's own `readerTextStyle`, shows
+  theme and typeface as tiles, and puts the rest behind disclosure rows.
+  Appearance shows palettes as a grid of previews (`PaletteGrid`).
+
 ## Home screen
 
 The mobile home screen leads with the book being read

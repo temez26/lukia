@@ -470,6 +470,15 @@
 
     <string name="settings_about">Over</string>
     <string name="settings_version">Versie %1$s</string>
+    <string name="settings_open_area">%1$s openen</string>
+    <string name="settings_reading_summary">%1$s, %2$d%</string>
+    <string name="settings_account_signed_out_summary">Synchroniseer uw bibliotheek met uw eigen server</string>
+    <string name="settings_account_sign_in_again">Meld u opnieuw aan</string>
+    <string name="settings_reading_layout">Opmaak</string>
+    <string name="settings_reading_sample">Toen ze de haven bereikte, was de regen opgehouden. Ergens boven de boten lachte een meeuw om niets in het bijzonder.</string>
+    <string name="settings_type_sample">Aa</string>
+    <string name="settings_percent">%1$d%</string>
+    <string name="settings_use_ai_detail_short">Aan: hele zinnen en alinea’s worden vertaald via een dienst die u instelt en betaalt. Uit: woorden komen nog steeds uit een gratis woordenboek.</string>
     <string name="settings_licensed_under">Uitgebracht onder de Apache License 2.0.</string>
     <string name="settings_open_source">Opensourcelicenties</string>
     <string name="settings_open_source_footnote">Waar Lukia van gemaakt is, en onder welke voorwaarden elk onderdeel valt.</string>

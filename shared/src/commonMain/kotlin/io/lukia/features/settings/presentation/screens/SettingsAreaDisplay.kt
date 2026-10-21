@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import io.lukia.resources.Res
 import io.lukia.resources.account_area
 import io.lukia.resources.settings_about
+import io.lukia.resources.settings_ai_translation
 import io.lukia.resources.settings_area_ai_translation
 import io.lukia.resources.settings_area_appearance
 import io.lukia.resources.settings_area_reading
@@ -29,4 +30,17 @@ internal fun SettingsArea.displayTitle(): String = when (this) {
     SettingsArea.AiTranslation -> stringResource(Res.string.settings_area_ai_translation)
     SettingsArea.About -> stringResource(Res.string.settings_about)
     SettingsArea.Account -> stringResource(Res.string.account_area)
+}
+
+/**
+ * What a group is called as a page of its own, on a phone.
+ *
+ * The same as [displayTitle] except for AI translation: "Beta" is a word chosen
+ * to fit beside four others in a segmented control, and a row in a list has the
+ * room to say what the page is about and mark it beta beside the name.
+ */
+@Composable
+internal fun SettingsArea.pageTitle(): String = when (this) {
+    SettingsArea.AiTranslation -> stringResource(Res.string.settings_ai_translation)
+    else -> displayTitle()
 }

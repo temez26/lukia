@@ -281,14 +281,41 @@ internal fun SettingsSection(
      * about the thing they have in common.
      */
     beta: Boolean = false,
+    /** Rows that run to the card's edges ask for none - see `GroupSection`. */
+    horizontalPadding: Dp = Space.lg,
     content: @Composable () -> Unit,
 ) {
+    val phone = LocalPhoneSettingsPage.current
+
+    // On a phone the explanation is a line under the group rather than a mark
+    // to press: there is the height for it, and nothing beside it to crowd. A
+    // heading that only repeats the page's own title goes, and its badge with
+    // it - the page's bar carries that.
+    if (phone != null) {
+        GroupSection(
+            title = title.takeIf { it != phone.title },
+            modifier = modifier,
+            color = groupColor,
+            footnote = listOfNotNull(info, footnote).joinToString(separator = " ").ifEmpty { null },
+            padding = padding,
+            horizontalPadding = horizontalPadding,
+            badge = if (beta && title != phone.title) {
+                { BetaBadge(modifier = Modifier.padding(start = Space.sm)) }
+            } else {
+                null
+            },
+            content = content,
+        )
+        return
+    }
+
     GroupSection(
         title = title,
         modifier = modifier,
         color = groupColor,
         footnote = footnote,
         padding = padding,
+        horizontalPadding = horizontalPadding,
         badge = if (beta) {
             { BetaBadge(modifier = Modifier.padding(start = Space.sm)) }
         } else {

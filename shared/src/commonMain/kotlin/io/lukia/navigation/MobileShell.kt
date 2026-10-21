@@ -95,6 +95,7 @@ internal fun MobileShell(library: LibraryViewModel = koinViewModel()) {
             tabDestinations(navController = navController, library = library, startSync = startSync)
 
             bookDestinations(navController)
+            phoneSettingsDestinations(navController)
         }
 
         BottomBar(

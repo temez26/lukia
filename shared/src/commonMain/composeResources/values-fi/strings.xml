@@ -532,6 +532,15 @@
 
     <string name="settings_about">Tietoja</string>
     <string name="settings_version">Versio %1$s</string>
+    <string name="settings_open_area">Avaa %1$s</string>
+    <string name="settings_reading_summary">%1$s, %2$d %</string>
+    <string name="settings_account_signed_out_summary">Synkronoi kirjastosi omalle palvelimellesi</string>
+    <string name="settings_account_sign_in_again">Kirjaudu uudelleen</string>
+    <string name="settings_reading_layout">Asettelu</string>
+    <string name="settings_reading_sample">Sade oli lakannut, kun hän saapui satamaan. Jossain veneiden yllä lokki nauroi ei millekään erityiselle.</string>
+    <string name="settings_type_sample">Aa</string>
+    <string name="settings_percent">%1$d %</string>
+    <string name="settings_use_ai_detail_short">Päällä: kokonaiset lauseet ja kappaleet käännetään palvelulla, jonka otat käyttöön ja maksat. Pois: sanat haetaan edelleen ilmaisesta sanakirjasta.</string>
     <string name="settings_licensed_under">Lisensoitu Apache License 2.0 -lisenssillä.</string>
     <string name="settings_open_source">Avoimen lähdekoodin lisenssit</string>
     <string name="settings_open_source_footnote">Mistä Lukia on rakennettu, ja millä ehdoilla kukin osa on käytössä.</string>
