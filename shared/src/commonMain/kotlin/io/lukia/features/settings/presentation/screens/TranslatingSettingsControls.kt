@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import io.lukia.features.settings.presentation.ProviderActions
 import io.lukia.features.settings.presentation.TranslatingActions
 import io.lukia.features.settings.presentation.components.SettingsTextField
@@ -33,6 +34,7 @@ import io.lukia.resources.settings_tap_to_translate
 import io.lukia.resources.settings_translate_into_footnote
 import io.lukia.shared.presentation.components.controls.ChoiceList
 import io.lukia.shared.presentation.components.controls.SegmentedControl
+import io.lukia.shared.presentation.components.surface.GroupSection
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
@@ -77,22 +79,11 @@ internal fun TranslatingSettings(
     val dimens = LocalLukiaDimens.current
 
     Column(modifier = modifier.fillMaxWidth()) {
-        SettingsSection(
-            title = stringResource(Res.string.reader_translate_into),
-            info = stringResource(Res.string.settings_translate_into_footnote),
+        TargetLanguageSection(
+            translation = translation,
+            actions = actions,
             groupColor = groupColor,
-            padding = Space.xs,
-        ) {
-            ChoiceList(
-                options = TargetLanguage.entries,
-                selected = translation.targetLanguage,
-                label = { it.endonym },
-                // The English name too, so somebody who cannot yet read the
-                // language they are learning can still find it in the list.
-                detail = { it.englishName.takeIf { name -> name != it.endonym } },
-                onSelect = actions.onTargetLanguageChange,
-            )
-        }
+        )
 
         GestureSection(
             translation = translation,
@@ -113,6 +104,57 @@ internal fun TranslatingSettings(
             actions = providerActions,
             groupColor = groupColor,
             modifier = Modifier.padding(top = dimens.sectionSpacing),
+        )
+    }
+}
+
+/**
+ * The language a book is translated into.
+ *
+ * On a phone, one row that opens the list as a page of its own: seventeen
+ * languages laid open at the top of the page pushed everything else on it two
+ * screens down, for a choice made once. A window has the room to keep them open.
+ */
+@Composable
+private fun TargetLanguageSection(
+    translation: TranslationSettings,
+    actions: TranslatingActions,
+    groupColor: Color,
+) {
+    val phone = LocalPhoneSettingsPage.current
+
+    if (phone != null) {
+        // No heading over it: the row already says what it is.
+        GroupSection(
+            title = null,
+            color = groupColor,
+            footnote = stringResource(Res.string.settings_translate_into_footnote),
+            padding = 0.dp,
+            horizontalPadding = 0.dp,
+        ) {
+            SettingsValueRow(
+                label = stringResource(Res.string.reader_translate_into),
+                value = translation.targetLanguage.endonym,
+                onClick = phone.onPickLanguage,
+            )
+        }
+        return
+    }
+
+    SettingsSection(
+        title = stringResource(Res.string.reader_translate_into),
+        info = stringResource(Res.string.settings_translate_into_footnote),
+        groupColor = groupColor,
+        padding = Space.xs,
+    ) {
+        ChoiceList(
+            options = TargetLanguage.entries,
+            selected = translation.targetLanguage,
+            label = { it.endonym },
+            // The English name too, so somebody who cannot yet read the
+            // language they are learning can still find it in the list.
+            detail = { it.englishName.takeIf { name -> name != it.endonym } },
+            onSelect = actions.onTargetLanguageChange,
         )
     }
 }

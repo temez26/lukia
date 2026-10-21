@@ -27,6 +27,7 @@ import io.lukia.resources.settings_translating_ahead
 import io.lukia.resources.settings_translating_ahead_footnote
 import io.lukia.resources.settings_use_ai
 import io.lukia.resources.settings_use_ai_detail
+import io.lukia.resources.settings_use_ai_detail_short
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
@@ -147,7 +148,14 @@ private fun AiSwitchSection(
             // Shown rather than behind a mark: this is the switch that decides
             // whether the app can spend money at all, and that is worth reading
             // before pressing rather than after.
-            detail = stringResource(Res.string.settings_use_ai_detail),
+            // Shorter on a phone, where the paragraph was the whole page while off.
+            detail = stringResource(
+                if (LocalPhoneSettingsPage.current != null) {
+                    Res.string.settings_use_ai_detail_short
+                } else {
+                    Res.string.settings_use_ai_detail
+                },
+            ),
             checked = on,
             onChange = onChange,
         )

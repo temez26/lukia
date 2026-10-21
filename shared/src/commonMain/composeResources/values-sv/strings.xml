@@ -518,6 +518,15 @@
 
     <string name="settings_about">Om</string>
     <string name="settings_version">Version %1$s</string>
+    <string name="settings_open_area">Öppna %1$s</string>
+    <string name="settings_reading_summary">%1$s, %2$d %</string>
+    <string name="settings_account_signed_out_summary">Synka ditt bibliotek med din egen server</string>
+    <string name="settings_account_sign_in_again">Logga in igen</string>
+    <string name="settings_reading_layout">Layout</string>
+    <string name="settings_reading_sample">Regnet hade upphört när hon kom fram till hamnen. Någonstans ovanför båtarna skrattade en mås åt ingenting särskilt.</string>
+    <string name="settings_type_sample">Aa</string>
+    <string name="settings_percent">%1$d %</string>
+    <string name="settings_use_ai_detail_short">På: hela meningar och stycken översätts via en tjänst du ställer in och betalar för. Av: ord slås fortfarande upp i en gratis ordbok.</string>
     <string name="settings_licensed_under">Licensierad under Apache License 2.0.</string>
     <string name="settings_open_source">Licenser för öppen källkod</string>
     <string name="settings_open_source_footnote">Vad Lukia är byggt av, och vilka villkor varje del kommer under.</string>

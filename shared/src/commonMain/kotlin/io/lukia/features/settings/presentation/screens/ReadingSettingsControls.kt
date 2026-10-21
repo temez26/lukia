@@ -57,6 +57,11 @@ internal fun ReadingSettings(
     groupColor: Color,
     modifier: Modifier = Modifier,
 ) {
+    if (LocalPhoneSettingsPage.current != null) {
+        PhoneReadingSettings(reader, onReaderChange, groupColor, modifier)
+        return
+    }
+
     val dimens = LocalLukiaDimens.current
 
     Column(modifier = modifier.fillMaxWidth()) {

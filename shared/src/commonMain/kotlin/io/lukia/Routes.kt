@@ -28,8 +28,23 @@ sealed class Routes(val route: String) {
 
     data object Settings : Routes("settings")
 
-    /** Settings opened on the Account page, where syncing is reported and signed in to. */
+    /**
+     * Settings opened on the Account page, where syncing is reported and signed in to.
+     * On a phone it is one [SettingsPage] like the rest, addressed the same way.
+     */
     data object AccountSettings : Routes("settings/account")
+
+    /**
+     * One group of settings as a page of its own, on a phone. Addressed by the
+     * group's name in lower case, so this file needs nothing from the settings
+     * feature - and so [AccountSettings] is one of these.
+     */
+    data object SettingsPage : Routes("settings/{$ARG_SETTINGS_AREA}") {
+        fun createRoute(area: String): String = "settings/$area"
+    }
+
+    /** The languages a book can be translated into, picked from a page of their own on a phone. */
+    data object TargetLanguage : Routes("settings/translating/language")
 
     /**
      * What the reading adds up to. A destination pushed over whatever was
@@ -66,5 +81,6 @@ sealed class Routes(val route: String) {
 
     companion object {
         const val ARG_SHELF = "shelf"
+        const val ARG_SETTINGS_AREA = "area"
     }
 }

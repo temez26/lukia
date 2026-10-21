@@ -95,20 +95,13 @@ internal fun AppearanceSettings(
             )
         }
 
-        SettingsSection(
-            title = stringResource(Res.string.settings_palette),
-            info = stringResource(Res.string.settings_palette_footnote),
+        PaletteSection(
+            settings = settings,
+            onChange = onChange,
+            darkTheme = darkTheme,
             groupColor = groupColor,
             modifier = Modifier.padding(top = dimens.sectionSpacing),
-        ) {
-            ChoiceList(
-                options = AppPalette.entries,
-                selected = settings.palette,
-                label = { it.displayName() },
-                detail = { it.displayDetail() },
-                onSelect = { onChange(settings.copy(palette = it)) },
-            )
-        }
+        )
 
         SettingsSection(
             title = stringResource(Res.string.settings_accent),
@@ -130,6 +123,40 @@ internal fun AppearanceSettings(
             groupColor = groupColor,
             modifier = Modifier.padding(top = dimens.sectionSpacing),
         )
+    }
+}
+
+/** The palettes: a grid of pictures of themselves on a phone, a described list in a window. */
+@Composable
+private fun PaletteSection(
+    settings: AppSettings,
+    onChange: (AppSettings) -> Unit,
+    darkTheme: Boolean,
+    groupColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    SettingsSection(
+        title = stringResource(Res.string.settings_palette),
+        info = stringResource(Res.string.settings_palette_footnote),
+        groupColor = groupColor,
+        modifier = modifier,
+    ) {
+        if (LocalPhoneSettingsPage.current != null) {
+            PaletteGrid(
+                selected = settings.palette,
+                accent = settings.accent,
+                darkTheme = darkTheme,
+                onSelect = { onChange(settings.copy(palette = it)) },
+            )
+        } else {
+            ChoiceList(
+                options = AppPalette.entries,
+                selected = settings.palette,
+                label = { it.displayName() },
+                detail = { it.displayDetail() },
+                onSelect = { onChange(settings.copy(palette = it)) },
+            )
+        }
     }
 }
 

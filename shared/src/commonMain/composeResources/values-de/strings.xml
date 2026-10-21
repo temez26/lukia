@@ -471,6 +471,15 @@
 
     <string name="settings_about">Über</string>
     <string name="settings_version">Version %1$s</string>
+    <string name="settings_open_area">%1$s öffnen</string>
+    <string name="settings_reading_summary">%1$s, %2$d %</string>
+    <string name="settings_account_signed_out_summary">Synchronisieren Sie Ihre Bibliothek mit Ihrem eigenen Server</string>
+    <string name="settings_account_sign_in_again">Melden Sie sich erneut an</string>
+    <string name="settings_reading_layout">Layout</string>
+    <string name="settings_reading_sample">Als sie den Hafen erreichte, hatte der Regen aufgehört. Irgendwo über den Booten lachte eine Möwe über nichts Bestimmtes.</string>
+    <string name="settings_type_sample">Aa</string>
+    <string name="settings_percent">%1$d %</string>
+    <string name="settings_use_ai_detail_short">Ein: Ganze Sätze und Absätze werden über einen Dienst übersetzt, den Sie einrichten und bezahlen. Aus: Wörter kommen weiterhin aus einem kostenlosen Wörterbuch.</string>
     <string name="settings_licensed_under">Lizenziert unter der Apache License 2.0.</string>
     <string name="settings_open_source">Open-Source-Lizenzen</string>
     <string name="settings_open_source_footnote">Woraus Lukia gebaut ist, und unter welchen Bedingungen jeder Teil steht.</string>

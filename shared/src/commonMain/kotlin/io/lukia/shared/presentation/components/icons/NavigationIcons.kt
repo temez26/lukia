@@ -50,3 +50,23 @@ fun DisclosureChevron(
         drawPath(path = chevron, color = tint, style = glyphStroke())
     }
 }
+
+/**
+ * [BackChevron] turned round: the row it ends opens a page of its own. Muted by
+ * whoever draws it, since it marks the row rather than being the control.
+ */
+@Composable
+fun ForwardChevron(
+    tint: Color,
+    modifier: Modifier = Modifier,
+) {
+    Canvas(modifier = modifier) {
+        val chevron = Path().apply {
+            moveTo(size.width * 0.38f, size.height * 0.20f)
+            lineTo(size.width * 0.66f, size.height * 0.50f)
+            lineTo(size.width * 0.38f, size.height * 0.80f)
+        }
+
+        drawPath(path = chevron, color = tint, style = glyphStroke())
+    }
+}

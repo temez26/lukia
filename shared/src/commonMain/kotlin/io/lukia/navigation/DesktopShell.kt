@@ -77,6 +77,7 @@ internal fun DesktopShell() {
         }
 
         bookDestinations(navController)
+        windowSettingsDestinations(navController)
     }
 }
 

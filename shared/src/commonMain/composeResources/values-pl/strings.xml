@@ -510,6 +510,15 @@
 
     <string name="settings_about">O aplikacji</string>
     <string name="settings_version">Wersja %1$s</string>
+    <string name="settings_open_area">Otwórz %1$s</string>
+    <string name="settings_reading_summary">%1$s, %2$d%</string>
+    <string name="settings_account_signed_out_summary">Synchronizuj bibliotekę z własnym serwerem</string>
+    <string name="settings_account_sign_in_again">Zaloguj się ponownie</string>
+    <string name="settings_reading_layout">Układ</string>
+    <string name="settings_reading_sample">Deszcz przestał padać, zanim dotarła do portu. Gdzieś nad łodziami mewa śmiała się z niczego konkretnego.</string>
+    <string name="settings_type_sample">Aa</string>
+    <string name="settings_percent">%1$d%</string>
+    <string name="settings_use_ai_detail_short">Włączone: całe zdania i akapity są tłumaczone przez usługę, którą konfigurujesz i opłacasz. Wyłączone: słowa nadal pochodzą z darmowego słownika.</string>
     <string name="settings_licensed_under">Udostępniane na licencji Apache License 2.0.</string>
     <string name="settings_open_source">Licencje open source</string>
     <string name="settings_open_source_footnote">Z czego zbudowana jest Lukia, i na jakich warunkach udostępniono każdą część.</string>

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -22,6 +23,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import io.lukia.resources.Res
 import io.lukia.resources.reader_choose
 import io.lukia.resources.reader_close_the_list
@@ -151,7 +153,11 @@ internal fun PanelDisclosureRow(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f, fill = false),
+            // At the far end, by the chevron, and never more than half the row:
+            // weighted like the label, it started halfway across whatever its length.
+            modifier = Modifier
+                .padding(start = Space.md)
+                .widthIn(max = DisclosureValueMaxWidth),
         )
 
         DisclosureChevron(
@@ -166,3 +172,6 @@ internal fun PanelDisclosureRow(
 
 /** What the chevron turns through when the list under it opens. */
 private const val HalfTurn = 180f
+
+/** How wide a disclosure row's value may grow before it gives way to the label. */
+private val DisclosureValueMaxWidth = 160.dp

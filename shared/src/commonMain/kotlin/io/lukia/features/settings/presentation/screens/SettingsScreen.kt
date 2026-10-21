@@ -3,6 +3,8 @@ package io.lukia.features.settings.presentation.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,17 +41,12 @@ fun SettingsScreen(
     val settings by viewModel.settings.collectAsState()
     val reader by viewModel.readerSettings.collectAsState()
     val translation by viewModel.translationSettings.collectAsState()
-    val connectionTest by viewModel.probe.connectionTest.collectAsState()
-    val availableModels by viewModel.probe.availableModels.collectAsState()
-    val modelReadiness by viewModel.probe.modelReadiness.collectAsState()
 
     SettingsContent(
         settings = settings,
         reader = reader,
         translation = translation,
-        providerState = remember(connectionTest, availableModels, modelReadiness) {
-            ProviderState(connectionTest, availableModels, modelReadiness)
-        },
+        providerState = rememberProviderState(viewModel),
         onSettingsChange = viewModel::setAppSettings,
         onReaderChange = viewModel::setReaderSettings,
         translatingActions = rememberTranslatingActions(viewModel),
@@ -84,6 +81,50 @@ fun SettingsContent(
     account: AccountPage? = null,
     initialArea: SettingsArea = SettingsArea.Default,
 ) {
+    SettingsPageFrame(onBack = onBack, modifier = modifier) {
+        SettingsBody(
+            settings = settings,
+            reader = reader,
+            translation = translation,
+            providerState = providerState,
+            onSettingsChange = onSettingsChange,
+            onReaderChange = onReaderChange,
+            translatingActions = translatingActions,
+            providerActions = providerActions,
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            diagnostics = diagnostics,
+            account = account,
+            initialArea = initialArea,
+        )
+    }
+}
+
+/** What the AI translation page shows about the service: whether it answered, and its models. */
+@Composable
+internal fun rememberProviderState(viewModel: SettingsViewModel): ProviderState {
+    val connectionTest by viewModel.probe.connectionTest.collectAsState()
+    val availableModels by viewModel.probe.availableModels.collectAsState()
+    val modelReadiness by viewModel.probe.modelReadiness.collectAsState()
+
+    return remember(connectionTest, availableModels, modelReadiness) {
+        ProviderState(connectionTest, availableModels, modelReadiness)
+    }
+}
+
+/**
+ * A settings page pushed over the app: its background to the screen's edges,
+ * the way back, and [content] below it.
+ */
+@Composable
+internal fun SettingsPageFrame(
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    title: String? = null,
+    actions: @Composable RowScope.() -> Unit = {},
+    content: @Composable ColumnScope.() -> Unit,
+) {
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -97,24 +138,9 @@ fun SettingsContent(
                 .fillMaxSize()
                 .windowInsetsPadding(WindowInsets.safeDrawing),
         ) {
-            BackBar(onBack = onBack)
+            BackBar(onBack = onBack, title = title, actions = actions)
 
-            SettingsBody(
-                settings = settings,
-                reader = reader,
-                translation = translation,
-                providerState = providerState,
-                onSettingsChange = onSettingsChange,
-                onReaderChange = onReaderChange,
-                translatingActions = translatingActions,
-                providerActions = providerActions,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                diagnostics = diagnostics,
-                account = account,
-                initialArea = initialArea,
-            )
+            content()
         }
     }
 }
