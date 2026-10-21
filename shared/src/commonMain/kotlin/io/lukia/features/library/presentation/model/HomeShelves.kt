@@ -23,16 +23,19 @@ internal const val ListLength = 3
 
 /**
  * The rows under the book being read, in the order the screen shows them:
- * what was opened lately, what was kept, what has not been started, what just
- * arrived. Opened lately first: after the book being read, the others being
- * read are the likeliest way back into a book. Nearly finished and done are the library tab's filters rather than
+ * what was opened lately, what was kept, what just arrived, what has not been
+ * started. Opened lately first: after the book being read, the others being
+ * read are the likeliest way back into a book. What just arrived before the
+ * unread pile, because a book shows once, on the first row that holds it: the
+ * other way round, a new book - nearly always unread - went to the pile, and
+ * the row that says when each book came showed none of the new ones. Nearly finished and done are the library tab's filters rather than
  * rows here - see ADR 0007.
  */
 enum class HomeShelf {
     RecentlyOpened,
     Favorites,
-    Unread,
     RecentlyAdded,
+    Unread,
 }
 
 /**
