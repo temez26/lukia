@@ -41,7 +41,7 @@ kotlinx-serialization = "1.11.0"
 logback = "1.5.18"
 # Argon2id for the server's password hashes, in plain Java so the image needs no
 # native library.
-bouncycastle = "1.81"
+bouncycastle = "1.85"
 # An alpha, and the only pre-release dependency the app ships. Nothing in the
 # app needs what the alpha adds - the one experimental Material 3 API used is
 # the tooltip, which every recent release has - but going back is not a version
