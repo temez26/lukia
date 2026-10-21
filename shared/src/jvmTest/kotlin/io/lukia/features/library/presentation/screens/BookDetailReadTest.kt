@@ -7,6 +7,7 @@ import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
@@ -79,7 +80,9 @@ class BookDetailReadTest {
         setDetails(ReadingProgress(pageIndex = 4, pageCount = 20))
 
         onNodeWithContentDescription("Book actions").performClick()
-        onNode(hasText("Mark as Unread") and hasClickAction()).performClick()
+        // A phone's width, so the menu is the sheet, whose Unread button is read out in full.
+        onNodeWithContentDescription("Mark as Unread").performClick()
+        waitForIdle()
 
         assertEquals(1, markedUnread)
     }
@@ -91,6 +94,6 @@ class BookDetailReadTest {
 
         onNodeWithContentDescription("Book actions").performClick()
 
-        assertTrue(onAllNodes(hasText("Mark as Unread")).fetchSemanticsNodes().isEmpty())
+        assertTrue(onAllNodesWithContentDescription("Mark as Unread").fetchSemanticsNodes().isEmpty())
     }
 }

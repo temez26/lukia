@@ -36,6 +36,7 @@ import io.lukia.core.presentation.statusLabel
 import io.lukia.features.library.presentation.components.selection.CardSelection
 import io.lukia.features.library.presentation.components.selection.jiggleAngle
 import io.lukia.features.library.presentation.model.LibraryBook
+import io.lukia.features.library.presentation.model.menuHeader
 import io.lukia.features.library.presentation.screens.BookTransfer
 import io.lukia.resources.Res
 import io.lukia.resources.book_actions
@@ -166,6 +167,7 @@ internal fun BookCard(
                 onSelectBooks = onSelectBooks,
                 onRemoveFromServer = onRemoveFromServer,
                 onMarkUnread = onMarkUnread,
+                header = book.menuHeader(),
             )
         }
 

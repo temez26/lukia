@@ -19,11 +19,15 @@ import io.lukia.shared.presentation.components.icons.InfoGlyph
 import io.lukia.shared.presentation.components.icons.RefreshGlyph
 import io.lukia.shared.presentation.components.icons.TrashGlyph
 import io.lukia.shared.presentation.components.icons.UnreadBookGlyph
+import io.lukia.shared.presentation.theme.OnPageColors
+import io.lukia.shared.presentation.theme.isWideWindow
 import org.jetbrains.compose.resources.stringResource
 
 /**
  * Actions for one book, hanging under whatever opened it - a card in the library
- * grid, or the cover on the detail screen.
+ * grid, or the cover on the detail screen. On a phone they come up from the
+ * bottom of the screen instead, as [BookActionsSheet], with [header] naming the
+ * book at the top; a menu hung off a cover there is a reach across the screen.
  *
  * Under rather than over: a menu covering the book it acts on hides the thing
  * the reader is choosing about, and on a phone a card is narrower than the menu,
@@ -54,6 +58,37 @@ fun BookActionsMenu(
     onMarkUnread: (() -> Unit)? = null,
     /** False for a book only on the server, which has nothing on this device to remove. */
     canRemoveFromDevice: Boolean = true,
+    /** The book, for the top of the phone's sheet; null where the book is already on screen. */
+    header: BookMenuHeader? = null,
+) {
+    val choices = BookMenuChoices(
+        isFavorite = isFavorite,
+        onToggleFavorite = onToggleFavorite,
+        onRefresh = onRefresh,
+        onDelete = onDelete,
+        onShowDetails = onShowDetails,
+        onSelectBooks = onSelectBooks,
+        onRemoveFromServer = onRemoveFromServer,
+        onMarkUnread = onMarkUnread,
+        canRemoveFromDevice = canRemoveFromDevice,
+    )
+
+    OnPageColors {
+        if (isWideWindow) {
+            AnchoredBookMenu(expanded, choices, onDismissRequest, modifier)
+        } else {
+            BookActionsSheet(expanded, choices, onDismissRequest, header)
+        }
+    }
+}
+
+/** The menu hung under the cover it was opened from, for anything wider than a phone. */
+@Composable
+private fun AnchoredBookMenu(
+    expanded: Boolean,
+    choices: BookMenuChoices,
+    onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     AnchoredMenu(
         expanded = expanded,
@@ -63,18 +98,18 @@ fun BookActionsMenu(
         OptionalRow(
             label = stringResource(Res.string.menu_book_details),
             icon = { tint, glyph -> InfoGlyph(tint = tint, modifier = glyph) },
-            action = onShowDetails,
+            action = choices.onShowDetails,
             onDismissRequest = onDismissRequest,
         )
 
         MenuRow(
-            label = stringResource(if (isFavorite) Res.string.menu_unfavourite else Res.string.menu_favourite),
+            label = stringResource(if (choices.isFavorite) Res.string.menu_unfavourite else Res.string.menu_favourite),
             icon = { tint, glyph ->
-                HeartGlyph(tint = tint, filled = isFavorite, modifier = glyph)
+                HeartGlyph(tint = tint, filled = choices.isFavorite, modifier = glyph)
             },
             onClick = {
                 onDismissRequest()
-                onToggleFavorite()
+                choices.onToggleFavorite()
             },
         )
 
@@ -85,7 +120,7 @@ fun BookActionsMenu(
         OptionalRow(
             label = stringResource(Res.string.menu_mark_unread),
             icon = { tint, glyph -> UnreadBookGlyph(tint = tint, modifier = glyph) },
-            action = onMarkUnread,
+            action = choices.onMarkUnread,
             onDismissRequest = onDismissRequest,
         )
 
@@ -96,7 +131,7 @@ fun BookActionsMenu(
         OptionalRow(
             label = stringResource(Res.string.menu_select_books),
             icon = { tint, glyph -> CheckGlyph(tint = tint, modifier = glyph) },
-            action = onSelectBooks,
+            action = choices.onSelectBooks,
             onDismissRequest = onDismissRequest,
         )
 
@@ -105,22 +140,22 @@ fun BookActionsMenu(
             icon = { tint, glyph -> RefreshGlyph(tint = tint, modifier = glyph) },
             onClick = {
                 onDismissRequest()
-                onRefresh()
+                choices.onRefresh()
             },
         )
 
-        if (canRemoveFromDevice) {
+        if (choices.canRemoveFromDevice) {
             MenuSeparator()
 
-            RemovingRow(stringResource(Res.string.menu_remove_from_device), onDismissRequest, onDelete)
+            RemovingRow(stringResource(Res.string.menu_remove_from_device), onDismissRequest, choices.onDelete)
         }
 
         // Last and apart from the device's row: that one is about this device,
         // this is about everyone's library.
-        if (onRemoveFromServer != null) {
+        choices.onRemoveFromServer?.let { remove ->
             MenuSeparator()
 
-            RemovingRow(stringResource(Res.string.menu_remove_from_server), onDismissRequest, onRemoveFromServer)
+            RemovingRow(stringResource(Res.string.menu_remove_from_server), onDismissRequest, remove)
         }
     }
 }

@@ -27,8 +27,8 @@ import io.lukia.shared.presentation.components.icons.CloudGlyph
 import io.lukia.shared.presentation.components.icons.CopyGlyph
 import io.lukia.shared.presentation.components.icons.EllipsisGlyph
 import io.lukia.shared.presentation.components.icons.FolderGlyph
-import io.lukia.shared.presentation.components.icons.GearGlyph
 import io.lukia.shared.presentation.components.icons.PlusGlyph
+import io.lukia.shared.presentation.components.icons.SettingsGlyph
 import io.lukia.shared.presentation.components.menu.AnchoredMenu
 import io.lukia.shared.presentation.components.menu.MenuGroupBreak
 import io.lukia.shared.presentation.components.menu.MenuRow
@@ -127,7 +127,7 @@ internal fun LibraryMenu(
 
         MenuRow(
             label = stringResource(Res.string.library_settings),
-            icon = { tint, glyph -> GearGlyph(tint = tint, modifier = glyph) },
+            icon = { tint, glyph -> SettingsGlyph(tint = tint, modifier = glyph) },
             onClick = {
                 onDismissRequest()
                 onSettings()

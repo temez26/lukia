@@ -14,23 +14,39 @@ import androidx.compose.runtime.Immutable
 private const val ShelfLimit = 12
 
 /**
+ * How many books a shelf drawn as a list holds - see [isListed]. Taken here
+ * rather than where the list is drawn, because a book given a place on Home is
+ * kept off the shelves after it: a list that held a dozen and showed three hid
+ * the other nine from everywhere.
+ */
+internal const val ListLength = 3
+
+/**
  * The rows under the book being read, in the order the screen shows them:
- * what was kept, what was opened lately, what has not been started, what just
- * arrived. Nearly finished and done are the library tab's filters rather than
+ * what was opened lately, what was kept, what just arrived, what has not been
+ * started. Opened lately first: after the book being read, the others being
+ * read are the likeliest way back into a book. What just arrived before the
+ * unread pile, because a book shows once, on the first row that holds it: the
+ * other way round, a new book - nearly always unread - went to the pile, and
+ * the row that says when each book came showed none of the new ones. Nearly finished and done are the library tab's filters rather than
  * rows here - see ADR 0007.
  */
 enum class HomeShelf {
-    Favorites,
     RecentlyOpened,
-    Unread,
+    Favorites,
     RecentlyAdded,
+    Unread,
 }
 
-/** One row of the home screen: what it is called, and the books on it. */
+/**
+ * One row of the home screen: what it is called, the books on it, and how many
+ * the whole shelf holds - which the row's title says, and its "see all" opens.
+ */
 @Immutable
 data class HomeRow(
     val shelf: HomeShelf,
     val books: List<LibraryBook>,
+    val total: Int = books.size,
 )
 
 /**
@@ -71,12 +87,13 @@ fun List<LibraryBook>.homeLayout(limit: Int = ShelfLimit): HomeLayout {
     current?.let { shown += it.location }
 
     val rows = HomeShelf.entries.mapNotNull { shelf ->
-        val books = onShelf(shelf)
+        val all = onShelf(shelf)
+        val books = all
             .filter { it.location !in shown }
-            .take(limit)
+            .take(if (shelf.isListed) minOf(limit, ListLength) else limit)
         shown += books.map { it.location }
 
-        if (books.isEmpty()) null else HomeRow(shelf, books)
+        if (books.isEmpty()) null else HomeRow(shelf, books, total = all.size)
     }
 
     return HomeLayout(
@@ -86,6 +103,9 @@ fun List<LibraryBook>.homeLayout(limit: Int = ShelfLimit): HomeLayout {
         readingCount = reading.size,
     )
 }
+
+/** Whether the shelf is drawn as a short list rather than a row of covers - see `HomeShelfList`. */
+internal val HomeShelf.isListed: Boolean get() = this == HomeShelf.RecentlyOpened
 
 /**
  * Every book [shelf] holds, in the order its row shows them: the whole of what

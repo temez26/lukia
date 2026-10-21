@@ -3,7 +3,9 @@ package io.lukia.features.library.presentation.screens
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.MaterialTheme
@@ -19,6 +21,8 @@ import androidx.compose.ui.Modifier
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.presentation.UiState
 import io.lukia.features.library.presentation.LibraryViewModel
+import io.lukia.features.library.presentation.components.home.AddBooksSheet
+import io.lukia.features.library.presentation.components.home.HomeGlance
 import io.lukia.features.library.presentation.model.HomeLayout
 import io.lukia.features.library.presentation.model.HomeMenu
 import io.lukia.features.library.presentation.model.HomeShelf
@@ -61,8 +65,8 @@ internal fun HomeScreen(
     onOpenShelf: (HomeShelf) -> Unit,
     onOpenLibrary: () -> Unit,
     onSettings: () -> Unit,
-    /** The way to the reader's own page, supplied by the shell - see `MobileShell`. */
-    statsButton: @Composable () -> Unit = {},
+    /** A glance at the week's reading that opens the reader's own page, supplied by the shell - see `MobileShell`. */
+    stats: @Composable () -> Unit = {},
     /** Syncs with the server and opens where that is reported - see `LibraryShelfUi`. */
     onSyncWithServer: () -> Unit = {},
     viewModel: LibraryViewModel = koinViewModel(),
@@ -106,9 +110,8 @@ internal fun HomeScreen(
             }
         },
         onRetry = viewModel::refresh,
-        shelf = homeShelf,
         onSettings = onSettings,
-        statsButton = statsButton,
+        stats = stats,
     )
 
     RemoveFromServerDialog(removal, onRemove = viewModel::removeFromServer)
@@ -160,15 +163,13 @@ internal fun HomeContent(
     importing: LibraryImportUi = LibraryImportUi.None,
     /** Downloads under way, by book location - see `BookTransfers`. */
     transfers: Map<String, BookTransfer> = emptyMap(),
-    /** What the corner menu offers, which is what the library's own bar offers. */
-    shelf: LibraryShelfUi = LibraryShelfUi.None,
     onSettings: () -> Unit = {},
-    /** The way to the reader's own page, supplied by the shell - see `MobileShell`. */
-    statsButton: @Composable () -> Unit = {},
+    /** A glance at the week's reading, supplied by the shell - see `MobileShell`. */
+    stats: @Composable () -> Unit = {},
 ) {
     // One value rather than a flag per menu, as everywhere else in this app: the
-    // header carries one, the empty state carries another and every cover on
-    // every row carries its own, and at most one of them may be open.
+    // way to add books carries one and every cover on every row carries its
+    // own, and at most one of them may be open.
     var menuOpen by remember { mutableStateOf<HomeMenu?>(null) }
 
     // This is where the mobile app opens, so this is the screen the launch
@@ -176,24 +177,21 @@ internal fun HomeContent(
     // down, because the header and the rows are one stagger and not four.
     val reveal = rememberLaunchReveal()
 
-    val header: @Composable () -> Unit = {
-        HomeHeader(
-            menuExpanded = menuOpen == HomeMenu.Bar,
-            onMenuExpandedChange = { menuOpen = if (it) HomeMenu.Bar else null },
-            onImport = onImport,
-            onImportFolder = onImportFolder,
-            shelf = shelf,
+    val header: @Composable () -> Unit = { HomeHeader(summary = homeSummary(home)) }
+
+    val glance: @Composable (Modifier) -> Unit = { glanceModifier ->
+        HomeGlance(
+            onAddBooks = { menuOpen = HomeMenu.Import },
             onSettings = onSettings,
-            statsButton = statsButton,
-            summary = homeSummary(home),
+            modifier = glanceModifier,
+            stats = stats,
         )
     }
 
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.background,
-        // See `LibraryContent`: the cutout is not in the Scaffold's default.
-        contentWindowInsets = WindowInsets.safeDrawing,
+        contentWindowInsets = homeInsets(home),
     ) { paddingValues ->
         UiStateContent(
             state = uiState,
@@ -213,12 +211,12 @@ internal fun HomeContent(
                     reveal = reveal,
                     transfers = transfers,
                     modifier = Modifier.fillMaxSize(),
+                    glance = glance,
                     header = header,
                 )
 
-                // The header stays with no books too. It carries settings, the
-                // reading statistics and the import menu, and with it gone a new
-                // library was a screen with no way to any of them.
+                // The header stays with no books too, so the screen still says
+                // where it is.
                 else -> HeadedState(header = header, reveal = reveal) {
                     NoBooksYet(
                         importing = importing,
@@ -232,13 +230,36 @@ internal fun HomeContent(
             }
         }
 
-        // Every menu on this screen is a non-focusable popup drawn above this
-        // layer, so the press that dismisses one has to be caught here.
-        ActionMenuScrim(
-            visible = menuOpen != null,
-            onDismiss = { menuOpen = null },
+        HomeOverlays(
+            menuOpen = menuOpen,
+            onClose = { menuOpen = null },
+            emptyLibrary = home.isEmpty,
+            onImport = onImport,
+            onImportFolder = onImportFolder,
         )
     }
+}
+
+/** What is drawn over Home while one of its menus is open. */
+@Composable
+private fun HomeOverlays(
+    menuOpen: HomeMenu?,
+    onClose: () -> Unit,
+    emptyLibrary: Boolean,
+    onImport: () -> Unit,
+    onImportFolder: () -> Unit,
+) {
+    // Every menu on this screen is a non-focusable popup drawn above this
+    // layer, so the press that dismisses one has to be caught here.
+    ActionMenuScrim(visible = menuOpen != null, onDismiss = onClose)
+
+    // The empty screen's own card opens a menu of the same two choices.
+    AddBooksSheet(
+        expanded = menuOpen == HomeMenu.Import && !emptyLibrary,
+        onDismissRequest = onClose,
+        onImport = onImport,
+        onImportFolder = onImportFolder,
+    )
 }
 
 /** Home's header over a state that fills the rest of the screen, set as it is over the shelves. */
@@ -291,4 +312,17 @@ private fun NoBooksYet(
             modifier = Modifier.fillMaxSize(),
         )
     }
+}
+
+/**
+ * What the screen keeps clear of. See `LibraryContent`: the cutout is not in the
+ * Scaffold's default. With shelves to show, the top is left to them - their
+ * first item, the book being read in its own colour, runs up under the status
+ * bar and pads itself.
+ */
+@Composable
+private fun homeInsets(home: HomeLayout): WindowInsets = if (home.isEmpty) {
+    WindowInsets.safeDrawing
+} else {
+    WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
 }

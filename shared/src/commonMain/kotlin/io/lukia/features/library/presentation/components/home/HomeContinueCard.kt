@@ -8,9 +8,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,65 +19,64 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.core.presentation.authorLine
 import io.lukia.core.presentation.bookTitle
-import io.lukia.core.presentation.displayType
-import io.lukia.core.presentation.formattedSize
-import io.lukia.core.presentation.languageName
-import io.lukia.core.presentation.publishedYear
 import io.lukia.features.library.presentation.components.book.CoverTransferOverlay
 import io.lukia.features.library.presentation.model.LibraryBook
+import io.lukia.features.library.presentation.model.menuHeader
 import io.lukia.features.library.presentation.screens.BookTransfer
 import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.resources.Res
 import io.lukia.resources.book_actions
-import io.lukia.resources.book_format_and_size
-import io.lukia.resources.book_progress_page_of
-import io.lukia.resources.book_read_continue
 import io.lukia.resources.book_read_title
-import io.lukia.resources.home_pages_left
+import io.lukia.resources.book_title_by_author
 import io.lukia.resources.home_resume
-import io.lukia.resources.menu_book_details
-import io.lukia.resources.reader_percent
-import io.lukia.shared.presentation.components.controls.ButtonSize
-import io.lukia.shared.presentation.components.controls.ButtonVariant
-import io.lukia.shared.presentation.components.controls.LukiaButton
-import io.lukia.shared.presentation.components.controls.ReadingProgressBar
 import io.lukia.shared.presentation.components.controls.menuGesture
+import io.lukia.shared.presentation.components.controls.pressable
 import io.lukia.shared.presentation.components.cover.BookCover
 import io.lukia.shared.presentation.components.cover.FavoriteBadge
-import io.lukia.shared.presentation.components.icons.InfoGlyph
+import io.lukia.shared.presentation.components.icons.OpenBookGlyph
 import io.lukia.shared.presentation.components.menu.BookActionsMenu
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
-import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
-/** The cover's width against a shelf cell: the biggest on the screen, with room left for the text. */
-private const val CoverScale = 1.2f
+/** The cover's width against a shelf cell: a little larger than the covers in the rows under it. */
+private const val CoverScale = 1.45f
 
-private val CoverMonogramSize = 26.sp
+private val CoverMonogramSize = 30.sp
 
-/** Thinner than the bar welded to a cover: here it sits on a card, not over artwork. */
-private val ProgressBarHeight: Dp = 4.dp
+/** The read button: as big as the ring across the cover from it. */
+private val ReadButtonSize: Dp = 60.dp
+
+/** The open book on the read button, against the button's width. */
+private const val ReadGlyphShare = 0.45f
 
 /**
- * The book being read, at the top of the home screen, with a button to carry on.
+ * The book being read, at the top of the home screen, with a way to carry on.
  *
- * Carrying on is the commonest reason to open the app, so it gets the screen's
- * one accent-filled control, its biggest cover, and room for what the book is,
- * where it is kept, how far through it its reader is and how it begins.
- * The whole of it opens the book as well, so a press anywhere on it does what the
- * button says; a long press offers the same menu as every other cover.
+ * The cover sits in the middle, whole and at its own proportions, with how far
+ * through on its left and the button to carry on on its right - the way a player
+ * sets what is playing between where it has got to and the button that goes on.
+ * No title or author is printed: the cover says what the book is, and a screen
+ * reader is told both.
+ *
+ * No surface of its own: it is drawn on the top of Home, in the book's colour -
+ * see `ContinueHero` - with the facts about the file under that.
+ *
+ * The button is an open book rather than a play triangle, as reading apps draw
+ * it: carrying on with a book is not something that runs while you watch.
+ *
+ * Anywhere on the card opens the book as the button does; a long press offers
+ * the book's menu, the same as every other cover's, which is also where its own
+ * page is.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -89,18 +89,15 @@ internal fun HomeContinueCard(
     /** How a download of this book is going, if one is - see [CoverTransferOverlay]. */
     transfer: BookTransfer? = null,
 ) {
-    val document = book.document
-    val title = document.bookTitle()
-    val dimens = LocalLukiaDimens.current
+    val title = book.document.bookTitle()
+    val authors = book.document.metadata?.authorLine()
+    val named = if (authors != null) stringResource(Res.string.book_title_by_author, title, authors) else title
     val interactionSource = remember { MutableInteractionSource() }
-    val coverShape = MaterialTheme.shapes.medium
 
-    // Straight on the page rather than in a card, as reading apps set the book
-    // in hand: the biggest cover on the screen is emphasis enough, and a box
-    // around it only set it apart from the background it sits on.
     Row(
-        verticalAlignment = Alignment.Top,
+        verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
+            .fillMaxWidth()
             .menuGesture(
                 interactionSource = interactionSource,
                 onClick = { actions.onOpen(book) },
@@ -108,45 +105,50 @@ internal fun HomeContinueCard(
                 menuLabel = stringResource(Res.string.book_actions),
                 clickLabel = stringResource(Res.string.book_read_title, title),
             )
-            .pointerHoverIcon(PointerIcon.Hand)
-            .padding(vertical = Space.sm),
+            .pointerHoverIcon(PointerIcon.Hand),
     ) {
+        // Equal room either side, so the cover stays in the middle even where
+        // there is no progress to show on its left.
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.weight(1f)) {
+            book.progress?.let { progress -> ContinueProgress(progress) }
+        }
+
         ContinueCover(
             book = book,
             title = title,
-            shape = coverShape,
+            named = named,
             actions = actions,
             menuExpanded = menuExpanded,
             onMenuExpandedChange = onMenuExpandedChange,
             transfer = transfer,
-            modifier = Modifier.width(dimens.bookCellMinWidth * CoverScale),
         )
 
-        Details(
-            book = book,
-            title = title,
-            onResume = { actions.onOpen(book) },
-            onShowDetails = { actions.onShowDetails(book) },
-            modifier = Modifier
-                .weight(1f)
-                .padding(start = Space.lg),
-        )
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.weight(1f)) {
+            ReadButton(onClick = { actions.onOpen(book) })
+        }
     }
 }
 
-/** The cover, with what is drawn over it and the menu a long press opens under it. */
+/** The cover, whole, with its badges and the menu a long press opens under it. */
 @Composable
 private fun ContinueCover(
     book: LibraryBook,
     title: String,
-    shape: Shape,
+    named: String,
     actions: HomeBookActions,
     menuExpanded: Boolean,
     onMenuExpandedChange: (Boolean) -> Unit,
     transfer: BookTransfer?,
-    modifier: Modifier = Modifier,
 ) {
-    Box(modifier = modifier) {
+    val shape = MaterialTheme.shapes.medium
+
+    // The cover is all this card shows of what the book is, so it is what a
+    // screen reader is told: the title, and who wrote it.
+    Box(
+        modifier = Modifier
+            .width(LocalLukiaDimens.current.bookCellMinWidth * CoverScale)
+            .semantics { contentDescription = named },
+    ) {
         BookCover(
             cover = book.cover,
             title = title,
@@ -178,161 +180,48 @@ private fun ContinueCover(
             onSelectBooks = actions.onSelectBooks,
             onRemoveFromServer = actions.removeFromServer(book.document),
             onMarkUnread = book.progress?.let { { actions.onMarkUnread(book) } },
+            header = book.menuHeader(),
         )
     }
 }
 
+/** Carrying on: a round accent button with an open book in it, and the word under it. */
 @Composable
-private fun Details(
-    book: LibraryBook,
-    title: String,
-    onResume: () -> Unit,
-    onShowDetails: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val document = book.document
-    val metadata = document.metadata
+private fun ReadButton(onClick: () -> Unit) {
+    val label = stringResource(Res.string.home_resume)
+    val interactionSource = remember { MutableInteractionSource() }
 
-    Column(modifier = modifier) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(Space.sm),
+        modifier = Modifier
+            .clip(MaterialTheme.shapes.medium)
+            .pressable(
+                interactionSource = interactionSource,
+                shape = MaterialTheme.shapes.medium,
+                onClickLabel = label,
+                onClick = onClick,
+            )
+            .padding(Space.xs),
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(ReadButtonSize)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primary),
+        ) {
+            OpenBookGlyph(
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.size(ReadButtonSize * ReadGlyphShare),
+            )
+        }
+
         Text(
-            text = stringResource(Res.string.book_read_continue),
+            text = label,
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
         )
-
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface,
-            maxLines = 3,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(top = Space.xs),
-        )
-
-        metadata?.authorLine()?.let { authors ->
-            Text(
-                text = authors,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(top = Space.xxs),
-            )
-        }
-
-        AboutLine(book, Modifier.padding(top = Space.sm))
-
-        book.progress?.let { progress -> Progress(progress, Modifier.padding(top = Space.md)) }
-
-        metadata?.description?.takeIf { it.isNotBlank() }?.let { description ->
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = DescriptionLines,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(top = Space.md),
-            )
-        }
-
-        Actions(onResume = onResume, onShowDetails = onShowDetails, modifier = Modifier.padding(top = Space.md))
-    }
-}
-
-/** Carrying on, which leads, and the book's own page beside it. */
-@Composable
-private fun Actions(onResume: () -> Unit, onShowDetails: () -> Unit, modifier: Modifier = Modifier) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Space.sm),
-        modifier = modifier,
-    ) {
-        LukiaButton(
-            label = stringResource(Res.string.home_resume),
-            onClick = onResume,
-            size = ButtonSize.Compact,
-        )
-
-        LukiaButton(
-            label = stringResource(Res.string.menu_book_details),
-            onClick = onShowDetails,
-            variant = ButtonVariant.Ghost,
-            size = ButtonSize.Compact,
-            icon = { tint, glyph -> InfoGlyph(tint = tint, modifier = glyph) },
-        )
-    }
-}
-
-/** How much of the blurb is shown: enough to recall the book by, not to read it here. */
-private const val DescriptionLines = 3
-
-/** Separates the facts in [aboutLine], as Home's summary sets its own. */
-private const val AboutSeparator = " · "
-
-/** What kind of file the book is and how big, then its language and year where it says them. */
-@Composable
-private fun AboutLine(book: LibraryBook, modifier: Modifier = Modifier) {
-    val document = book.document
-    val metadata = document.metadata
-
-    Text(
-        text = listOfNotNull(
-            stringResource(Res.string.book_format_and_size, document.displayType(), document.formattedSize()),
-            metadata?.languageName(),
-            metadata?.publishedYear(),
-        ).joinToString(AboutSeparator),
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        maxLines = 2,
-        overflow = TextOverflow.Ellipsis,
-        modifier = modifier,
-    )
-}
-
-/**
- * How far through: the bar and its percentage, then the page and what is left.
- * A book whose length is unknown has no fraction to draw, and says nothing.
- */
-@Composable
-private fun Progress(progress: ReadingProgress, modifier: Modifier = Modifier) {
-    val fraction = progress.fraction ?: return
-
-    Column(modifier = modifier) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            ReadingProgressBar(
-                fraction = fraction,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(ProgressBarHeight)
-                    .clip(MaterialTheme.shapes.extraSmall)
-                    // The bar's own track is tuned to sit over artwork and
-                    // vanishes on a card, leaving a sliver with no length.
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-            )
-
-            progress.percent?.let { percent ->
-                Text(
-                    text = stringResource(Res.string.reader_percent, percent),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = Space.sm),
-                )
-            }
-        }
-
-        progress.pageNumber?.let { page ->
-            val left = progress.pageCount - page
-
-            Text(
-                text = listOfNotNull(
-                    stringResource(Res.string.book_progress_page_of, page, progress.pageCount),
-                    pluralStringResource(Res.plurals.home_pages_left, left, left).takeIf { left > 0 },
-                ).joinToString(AboutSeparator),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = Space.xs),
-            )
-        }
     }
 }

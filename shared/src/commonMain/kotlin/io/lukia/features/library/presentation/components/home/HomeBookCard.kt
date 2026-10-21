@@ -23,6 +23,7 @@ import io.lukia.core.presentation.authorLine
 import io.lukia.core.presentation.bookTitle
 import io.lukia.features.library.presentation.components.book.CoverTransferOverlay
 import io.lukia.features.library.presentation.model.LibraryBook
+import io.lukia.features.library.presentation.model.menuHeader
 import io.lukia.features.library.presentation.screens.BookTransfer
 import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.resources.Res
@@ -66,6 +67,10 @@ internal fun HomeBookCard(
     modifier: Modifier = Modifier,
     /** How a download of this book is going, if one is - see [CoverTransferOverlay]. */
     transfer: BookTransfer? = null,
+    /** False for a shelf of covers alone, small and many - see `HomeShelfGrid`. */
+    showText: Boolean = true,
+    /** A line under the author, where the shelf has something to add - see `HomeShelfRow`. */
+    caption: (@Composable () -> Unit)? = null,
 ) {
     val document = book.document
     val title = document.bookTitle()
@@ -96,6 +101,8 @@ internal fun HomeBookCard(
             transfer = transfer,
         )
 
+        if (!showText) return@Column
+
         Text(
             text = title,
             style = MaterialTheme.typography.bodyMedium,
@@ -118,6 +125,8 @@ internal fun HomeBookCard(
                 modifier = Modifier.padding(top = Space.xxs),
             )
         }
+
+        caption?.invoke()
     }
 }
 
@@ -186,6 +195,7 @@ private fun Cover(
             onSelectBooks = actions.onSelectBooks,
             onRemoveFromServer = actions.removeFromServer(book.document),
             onMarkUnread = book.progress?.let { { actions.onMarkUnread(book) } },
+            header = book.menuHeader(),
         )
     }
 }

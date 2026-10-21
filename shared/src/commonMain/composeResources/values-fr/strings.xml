@@ -37,6 +37,10 @@
     <string name="menu_refresh_details">Actualiser les détails</string>
     <string name="menu_remove_from_device">Retirer de l’appareil</string>
     <string name="menu_remove_from_server">Retirer du serveur</string>
+    <string name="sheet_favourite">Favori</string>
+    <string name="sheet_details">Détails</string>
+    <string name="sheet_unread">Non lu</string>
+    <string name="sheet_select">Sélectionner</string>
     <string name="book_remove_from_server_title">Retirer du serveur\u00A0?</string>
     <string name="book_remove_from_server_message">%1$s quitte la bibliothèque partagée pour tout le monde. Les appareils qui ne l’ont jamais téléchargé le retirent à leur prochaine synchronisation\u00A0; une copie téléchargée reste un livre sur son appareil.</string>
     <string name="book_remove_from_server_confirm">Retirer</string>
@@ -185,6 +189,28 @@
     <plurals name="home_book_count">
         <item quantity="one">1 livre</item>
         <item quantity="other">%1$d livres</item>
+    </plurals>
+    <plurals name="home_and_more">
+        <item quantity="one">et 1 autre</item>
+        <item quantity="other">et %1$d autres</item>
+    </plurals>
+    <string name="home_added_today">Aujourd’hui</string>
+    <string name="home_added_yesterday">Hier</string>
+    <plurals name="home_added_days_ago">
+        <item quantity="one">il y a 1 jour</item>
+        <item quantity="other">il y a %1$d jours</item>
+    </plurals>
+    <plurals name="home_added_weeks_ago">
+        <item quantity="one">il y a 1 semaine</item>
+        <item quantity="other">il y a %1$d semaines</item>
+    </plurals>
+    <plurals name="home_added_months_ago">
+        <item quantity="one">il y a 1 mois</item>
+        <item quantity="other">il y a %1$d mois</item>
+    </plurals>
+    <plurals name="home_added_years_ago">
+        <item quantity="one">il y a 1 an</item>
+        <item quantity="other">il y a %1$d ans</item>
     </plurals>
     <plurals name="home_reading_count">
         <item quantity="one">1 en cours</item>
@@ -455,6 +481,7 @@
     <string name="settings_open_source">Licences open source</string>
     <string name="settings_open_source_footnote">Ce dont Lukia est fait, et les conditions qui s\u2019appliquent à chaque partie.</string>
     <string name="stats_entry">Vos lectures</string>
+    <string name="stats_open">Ouvrir les statistiques de lecture</string>
     <string name="stats_title">Lecture</string>
     <string name="stats_footnote">Compté sur cet appareil, et gardé ici.</string>
     <string name="stats_footnote_synced">Compté sur chaque appareil connecté à votre compte.</string>
@@ -530,6 +557,10 @@
     <string name="figure_illustration">Illustration</string>
     <string name="home_see_all_shelf">Voir tout : %1$s</string>
     <string name="home_resume">Reprendre</string>
+    <string name="book_title_by_author">%1$s, de %2$s</string>
+    <string name="home_page_position">%1$d/%2$d</string>
+    <string name="home_add_books">Ajouter des livres</string>
+    <string name="book_fact_spoken">%1$s\u00A0: %2$s</string>
     <plurals name="home_pages_left">
         <item quantity="one">1 page restante</item>
         <item quantity="other">%1$d pages restantes</item>

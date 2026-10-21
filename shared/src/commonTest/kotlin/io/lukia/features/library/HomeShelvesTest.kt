@@ -46,7 +46,7 @@ class HomeShelvesTest {
     }
 
     @Test
-    fun theRowsRunFavoritesRecentlyOpenedUnreadRecentlyAdded() {
+    fun theRowsRunRecentlyOpenedFavoritesRecentlyAddedUnread() {
         val home = layoutOf(
             book("Kept", favorite = true),
             book("Current", progress = readAt(30)),
@@ -57,9 +57,38 @@ class HomeShelvesTest {
         )
 
         assertEquals(
-            listOf(HomeShelf.Favorites, HomeShelf.RecentlyOpened, HomeShelf.Unread, HomeShelf.RecentlyAdded),
+            listOf(HomeShelf.RecentlyOpened, HomeShelf.Favorites, HomeShelf.RecentlyAdded, HomeShelf.Unread),
             home.rows.map { it.shelf },
         )
+    }
+
+    /** The list shows three; a fourth opened book is left for the shelves after it, not hidden. */
+    @Test
+    fun recentlyOpenedHoldsOnlyWhatItsListShows() {
+        val home = layoutOf(
+            book("Current", progress = readAt(50)),
+            book("A", progress = readAt(40)),
+            book("B", progress = readAt(30)),
+            book("C", progress = readAt(20)),
+            book("D", progress = readAt(10), favorite = true),
+        )
+
+        assertEquals(listOf("A", "B", "C"), rows(home)[HomeShelf.RecentlyOpened])
+        assertEquals(listOf("D"), rows(home)[HomeShelf.Favorites])
+    }
+
+    /** A row's count is the whole shelf's, not the handful the row has room for. */
+    @Test
+    fun aRowCountsEveryBookItsShelfHolds() {
+        val home = layoutOf(
+            book("Current", progress = readAt(50)),
+            book("A", progress = readAt(40)),
+            book("B", progress = readAt(30)),
+            book("C", progress = readAt(20)),
+            book("D", progress = readAt(10)),
+        )
+
+        assertEquals(5, home.rows.single { it.shelf == HomeShelf.RecentlyOpened }.total)
     }
 
     @Test
@@ -102,26 +131,32 @@ class HomeShelvesTest {
 
         assertEquals(everyTitle.distinct(), everyTitle)
         assertEquals(listOf("Kept Unread"), rows(home)[HomeShelf.Favorites])
-        assertEquals(listOf("Unread"), rows(home)[HomeShelf.Unread])
+        // New and unread, it is shown with the arrivals rather than the pile.
+        assertEquals(listOf("Unread"), rows(home)[HomeShelf.RecentlyAdded])
+        assertNull(rows(home)[HomeShelf.Unread])
     }
 
     @Test
     fun unreadHoldsWhatHasNeverBeenOpened_newestFirst() {
-        val rows = rowsOf(
+        val books = library(
             book("Older Arrival"),
             book("Started", progress = readAt(10)),
             book("Newer Arrival"),
         )
 
-        assertEquals(listOf("Newer Arrival", "Older Arrival"), rows[HomeShelf.Unread])
+        assertEquals(listOf("Newer Arrival", "Older Arrival"), books.onShelf(HomeShelf.Unread).titles())
     }
 
-    /** Last, so it holds only the arrivals no row above already shows. */
+    /**
+     * Before the unread pile, so the newest arrivals are shown with when they
+     * came, and the pile holds the older ones.
+     */
     @Test
-    fun recentlyAddedHoldsWhatIsLeftOver_newestFirst() {
+    fun recentlyAddedHoldsTheNewestArrivals_andUnreadTheRest() {
         val rows = rowsOf(book("First"), book("Second"), book("Third"), limit = 1)
 
-        assertEquals(listOf("Second"), rows[HomeShelf.RecentlyAdded])
+        assertEquals(listOf("Third"), rows[HomeShelf.RecentlyAdded])
+        assertEquals(listOf("Second"), rows[HomeShelf.Unread])
     }
 
     /** A heading over a blank strip teaches nothing. */
@@ -129,7 +164,7 @@ class HomeShelvesTest {
     fun aRowWithNothingOnItIsLeftOutEntirely() {
         val rows = rowsOf(book("Unread And Unloved"))
 
-        assertEquals(setOf(HomeShelf.Unread), rows.keys)
+        assertEquals(setOf(HomeShelf.RecentlyAdded), rows.keys)
     }
 
     @Test
@@ -144,7 +179,8 @@ class HomeShelvesTest {
 
         val rows = rowsOf(*books, limit = 3)
 
-        assertEquals(listOf("Book 5", "Book 4", "Book 3"), rows[HomeShelf.Unread])
+        assertEquals(listOf("Book 5", "Book 4", "Book 3"), rows[HomeShelf.RecentlyAdded])
+        assertEquals(listOf("Book 2", "Book 1"), rows[HomeShelf.Unread])
     }
 
     /** A row's own screen holds all of it, including what Home shows elsewhere. */

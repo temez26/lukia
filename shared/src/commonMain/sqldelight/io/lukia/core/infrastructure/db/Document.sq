@@ -22,6 +22,10 @@ import kotlin.Boolean;
 -- book, for one screen - and a join table for a value only ever displayed is
 -- schema nobody benefits from. A newline is safe because neither an author's
 -- name nor a genre may contain one.
+--
+-- `addedAt` is when the book first came onto the shelf, in milliseconds since
+-- the epoch, stamped by the insert itself. Null for a book added before it was
+-- recorded at all - see 15.sqm.
 CREATE TABLE document (
     location TEXT NOT NULL PRIMARY KEY,
     fileName TEXT NOT NULL,
@@ -41,7 +45,8 @@ CREATE TABLE document (
     metaSubjects TEXT,
     metaIdentifier TEXT,
     contentHash TEXT,
-    onServer INTEGER AS Boolean NOT NULL DEFAULT 0
+    onServer INTEGER AS Boolean NOT NULL DEFAULT 0,
+    addedAt INTEGER
 );
 
 -- What `insertIfAbsent` reads to give a new book its place on the shelf.
@@ -76,7 +81,7 @@ CREATE INDEX document_contentHash ON document(contentHash);
 selectAll:
 SELECT location, fileName, extension, type, fileExists, sizeBytes, isFavorite,
        sortKey, metaTitle, metaAuthors, metaPublisher, metaPublished,
-       metaLanguage, metaDescription, metaSubjects, metaIdentifier, onServer
+       metaLanguage, metaDescription, metaSubjects, metaIdentifier, onServer, addedAt
 FROM document ORDER BY sortKey;
 
 -- One book's artwork, for the card about to draw it. Bounded by what the reader
@@ -105,8 +110,8 @@ SELECT location FROM document;
 -- Ignored when the book is already there, so the shelf position it was given
 -- when it was first imported is the one it keeps.
 insertIfAbsent:
-INSERT OR IGNORE INTO document(location, fileName, extension, type, fileExists, sizeBytes, coverImage, sortKey, metaTitle, metaAuthors, metaPublisher, metaPublished, metaLanguage, metaDescription, metaSubjects, metaIdentifier)
-VALUES (?, ?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(sortKey), 0) + 1 FROM document), ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT OR IGNORE INTO document(location, fileName, extension, type, fileExists, sizeBytes, coverImage, sortKey, metaTitle, metaAuthors, metaPublisher, metaPublished, metaLanguage, metaDescription, metaSubjects, metaIdentifier, addedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(sortKey), 0) + 1 FROM document), ?, ?, ?, ?, ?, ?, ?, ?, CAST(strftime('%s', 'now') AS INTEGER) * 1000);
 
 -- Everything the analyser knows, and nothing only the reader knows: a rescan
 -- that re-analysed every book would otherwise un-favourite the lot, and
@@ -158,8 +163,8 @@ SELECT location FROM document WHERE contentHash = ? LIMIT 1;
 -- have. `INSERT OR IGNORE` for the import's reason: a row already there keeps
 -- its place on the shelf.
 insertServerBook:
-INSERT OR IGNORE INTO document(location, fileName, extension, type, fileExists, sizeBytes, coverImage, sortKey, metaTitle, metaAuthors, metaPublisher, metaPublished, metaLanguage, metaDescription, metaSubjects, metaIdentifier, contentHash, onServer)
-VALUES (?, ?, ?, ?, 0, ?, ?, (SELECT COALESCE(MAX(sortKey), 0) + 1 FROM document), ?, ?, ?, ?, ?, ?, ?, ?, ?, 1);
+INSERT OR IGNORE INTO document(location, fileName, extension, type, fileExists, sizeBytes, coverImage, sortKey, metaTitle, metaAuthors, metaPublisher, metaPublished, metaLanguage, metaDescription, metaSubjects, metaIdentifier, contentHash, onServer, addedAt)
+VALUES (?, ?, ?, ?, 0, ?, ?, (SELECT COALESCE(MAX(sortKey), 0) + 1 FROM document), ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, CAST(strftime('%s', 'now') AS INTEGER) * 1000);
 
 setOnServer:
 UPDATE document SET onServer = ? WHERE contentHash = ?;

@@ -1,0 +1,5 @@
+-- When each book came onto the shelf, for the "added" line under the newest
+-- ones on Home. Null for every book already there: when they were added was
+-- never written down, and a guess would be a date the reader could see is
+-- wrong.
+ALTER TABLE document ADD COLUMN addedAt INTEGER;

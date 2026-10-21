@@ -50,7 +50,7 @@ class ReaderChromeTest {
         assertEquals(1, onAllNodes(hasText("1 / 348")).fetchSemanticsNodes().size)
         assertEquals(
             1,
-            onAllNodes(hasContentDescription("Page 1 of 348. 0 percent read") and hasClickAction())
+            onAllNodes(hasContentDescription("Page 1 of 348. 1 percent read") and hasClickAction())
                 .fetchSemanticsNodes().size,
         )
     }
@@ -60,7 +60,7 @@ class ReaderChromeTest {
     fun thePageIndicatorReadsAsASentenceToAssistiveTechnology() = runComposeUiTest {
         setReader(pageCount = 348)
 
-        onNode(hasContentDescription("Page 1 of 348. 0 percent read") and hasClickAction()).assertExists()
+        onNode(hasContentDescription("Page 1 of 348. 1 percent read") and hasClickAction()).assertExists()
     }
 
     /** The count is only useful if it follows the reader through the book. */

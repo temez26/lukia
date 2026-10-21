@@ -32,6 +32,10 @@
     <string name="menu_refresh_details">Uppdatera uppgifter</string>
     <string name="menu_remove_from_device">Ta bort från enheten</string>
     <string name="menu_remove_from_server">Ta bort från servern</string>
+    <string name="sheet_favourite">Favorit</string>
+    <string name="sheet_details">Detaljer</string>
+    <string name="sheet_unread">Oläst</string>
+    <string name="sheet_select">Välj</string>
     <string name="book_remove_from_server_title">Ta bort från servern?</string>
     <string name="book_remove_from_server_message">%1$s försvinner ur det delade biblioteket för alla. Enheter som aldrig laddat ner den tar bort den vid nästa synkronisering; en nedladdad kopia blir kvar som en bok på sin enhet.</string>
     <string name="book_remove_from_server_confirm">Ta bort</string>
@@ -202,6 +206,28 @@
     <plurals name="home_book_count">
         <item quantity="one">1 bok</item>
         <item quantity="other">%1$d böcker</item>
+    </plurals>
+    <plurals name="home_and_more">
+        <item quantity="one">och 1 till</item>
+        <item quantity="other">och %1$d till</item>
+    </plurals>
+    <string name="home_added_today">I dag</string>
+    <string name="home_added_yesterday">I går</string>
+    <plurals name="home_added_days_ago">
+        <item quantity="one">för 1 dag sedan</item>
+        <item quantity="other">för %1$d dagar sedan</item>
+    </plurals>
+    <plurals name="home_added_weeks_ago">
+        <item quantity="one">för 1 vecka sedan</item>
+        <item quantity="other">för %1$d veckor sedan</item>
+    </plurals>
+    <plurals name="home_added_months_ago">
+        <item quantity="one">för 1 månad sedan</item>
+        <item quantity="other">för %1$d månader sedan</item>
+    </plurals>
+    <plurals name="home_added_years_ago">
+        <item quantity="one">för 1 år sedan</item>
+        <item quantity="other">för %1$d år sedan</item>
     </plurals>
     <plurals name="home_reading_count">
         <item quantity="one">1 påbörjad</item>
@@ -497,6 +523,7 @@
     <string name="settings_open_source_footnote">Vad Lukia är byggt av, och vilka villkor varje del kommer under.</string>
 
     <string name="stats_entry">Din läsning</string>
+    <string name="stats_open">Öppna lässtatistik</string>
     <string name="stats_title">Läsning</string>
     <string name="stats_footnote">Räknas på den här enheten, och stannar här.</string>
     <string name="stats_footnote_synced">Räknas på varje enhet som är inloggad på ditt konto.</string>
@@ -577,6 +604,10 @@
     <string name="figure_illustration">Illustration</string>
     <string name="home_see_all_shelf">Visa alla %1$s</string>
     <string name="home_resume">Fortsätt</string>
+    <string name="book_title_by_author">%1$s av %2$s</string>
+    <string name="home_page_position">%1$d/%2$d</string>
+    <string name="home_add_books">Lägg till böcker</string>
+    <string name="book_fact_spoken">%1$s: %2$s</string>
     <plurals name="home_pages_left">
         <item quantity="one">1 sida kvar</item>
         <item quantity="other">%1$d sidor kvar</item>

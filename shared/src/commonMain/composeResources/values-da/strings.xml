@@ -30,6 +30,10 @@
     <string name="menu_refresh_details">Opdater oplysninger</string>
     <string name="menu_remove_from_device">Fjern fra enheden</string>
     <string name="menu_remove_from_server">Fjern fra serveren</string>
+    <string name="sheet_favourite">Favorit</string>
+    <string name="sheet_details">Detaljer</string>
+    <string name="sheet_unread">Ulæst</string>
+    <string name="sheet_select">Vælg</string>
     <string name="book_remove_from_server_title">Fjern fra serveren?</string>
     <string name="book_remove_from_server_message">%1$s forsvinder fra det delte bibliotek for alle. Enheder, der aldrig har hentet den, fjerner den ved næste synkronisering; en hentet kopi bliver som en bog på sin enhed.</string>
     <string name="book_remove_from_server_confirm">Fjern</string>
@@ -178,6 +182,28 @@
     <plurals name="home_book_count">
         <item quantity="one">1 bog</item>
         <item quantity="other">%1$d bøger</item>
+    </plurals>
+    <plurals name="home_and_more">
+        <item quantity="one">og 1 mere</item>
+        <item quantity="other">og %1$d mere</item>
+    </plurals>
+    <string name="home_added_today">I dag</string>
+    <string name="home_added_yesterday">I går</string>
+    <plurals name="home_added_days_ago">
+        <item quantity="one">for 1 dag siden</item>
+        <item quantity="other">for %1$d dage siden</item>
+    </plurals>
+    <plurals name="home_added_weeks_ago">
+        <item quantity="one">for 1 uge siden</item>
+        <item quantity="other">for %1$d uger siden</item>
+    </plurals>
+    <plurals name="home_added_months_ago">
+        <item quantity="one">for 1 måned siden</item>
+        <item quantity="other">for %1$d måneder siden</item>
+    </plurals>
+    <plurals name="home_added_years_ago">
+        <item quantity="one">for 1 år siden</item>
+        <item quantity="other">for %1$d år siden</item>
     </plurals>
     <plurals name="home_reading_count">
         <item quantity="one">1 i gang</item>
@@ -448,6 +474,7 @@
     <string name="settings_open_source">Open source-licenser</string>
     <string name="settings_open_source_footnote">Hvad Lukia er bygget af, og hvilke vilkår hver del kommer under.</string>
     <string name="stats_entry">Din læsning</string>
+    <string name="stats_open">Åbn læsestatistik</string>
     <string name="stats_title">Læsning</string>
     <string name="stats_footnote">Tælles på denne enhed, og bliver her.</string>
     <string name="stats_footnote_synced">Tælles på alle enheder, der er logget ind på din konto.</string>
@@ -523,6 +550,10 @@
     <string name="figure_illustration">Illustration</string>
     <string name="home_see_all_shelf">Se alle %1$s</string>
     <string name="home_resume">Fortsæt</string>
+    <string name="book_title_by_author">%1$s af %2$s</string>
+    <string name="home_page_position">%1$d/%2$d</string>
+    <string name="home_add_books">Tilføj bøger</string>
+    <string name="book_fact_spoken">%1$s: %2$s</string>
     <plurals name="home_pages_left">
         <item quantity="one">1 side tilbage</item>
         <item quantity="other">%1$d sider tilbage</item>

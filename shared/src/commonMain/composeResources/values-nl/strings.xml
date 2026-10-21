@@ -30,6 +30,10 @@
     <string name="menu_refresh_details">Gegevens vernieuwen</string>
     <string name="menu_remove_from_device">Van apparaat verwijderen</string>
     <string name="menu_remove_from_server">Van de server verwijderen</string>
+    <string name="sheet_favourite">Favoriet</string>
+    <string name="sheet_details">Details</string>
+    <string name="sheet_unread">Ongelezen</string>
+    <string name="sheet_select">Selecteren</string>
     <string name="book_remove_from_server_title">Van de server verwijderen?</string>
     <string name="book_remove_from_server_message">%1$s verdwijnt voor iedereen uit de gedeelde bibliotheek. Apparaten die het nooit hebben gedownload, verwijderen het bij de volgende synchronisatie; een gedownloade kopie blijft als boek op dat apparaat.</string>
     <string name="book_remove_from_server_confirm">Verwijderen</string>
@@ -178,6 +182,28 @@
     <plurals name="home_book_count">
         <item quantity="one">1 boek</item>
         <item quantity="other">%1$d boeken</item>
+    </plurals>
+    <plurals name="home_and_more">
+        <item quantity="one">en nog 1</item>
+        <item quantity="other">en nog %1$d</item>
+    </plurals>
+    <string name="home_added_today">Vandaag</string>
+    <string name="home_added_yesterday">Gisteren</string>
+    <plurals name="home_added_days_ago">
+        <item quantity="one">1 dag geleden</item>
+        <item quantity="other">%1$d dagen geleden</item>
+    </plurals>
+    <plurals name="home_added_weeks_ago">
+        <item quantity="one">1 week geleden</item>
+        <item quantity="other">%1$d weken geleden</item>
+    </plurals>
+    <plurals name="home_added_months_ago">
+        <item quantity="one">1 maand geleden</item>
+        <item quantity="other">%1$d maanden geleden</item>
+    </plurals>
+    <plurals name="home_added_years_ago">
+        <item quantity="one">1 jaar geleden</item>
+        <item quantity="other">%1$d jaar geleden</item>
     </plurals>
     <plurals name="home_reading_count">
         <item quantity="one">1 bezig</item>
@@ -448,6 +474,7 @@
     <string name="settings_open_source">Opensourcelicenties</string>
     <string name="settings_open_source_footnote">Waar Lukia van gemaakt is, en onder welke voorwaarden elk onderdeel valt.</string>
     <string name="stats_entry">Uw lezen</string>
+    <string name="stats_open">Leesstatistieken openen</string>
     <string name="stats_title">Lezen</string>
     <string name="stats_footnote">Wordt op dit apparaat geteld, en blijft hier.</string>
     <string name="stats_footnote_synced">Wordt geteld op elk apparaat dat met uw account is aangemeld.</string>
@@ -523,6 +550,10 @@
     <string name="figure_illustration">Illustratie</string>
     <string name="home_see_all_shelf">Alle %1$s tonen</string>
     <string name="home_resume">Verder lezen</string>
+    <string name="book_title_by_author">%1$s door %2$s</string>
+    <string name="home_page_position">%1$d/%2$d</string>
+    <string name="home_add_books">Boeken toevoegen</string>
+    <string name="book_fact_spoken">%1$s: %2$s</string>
     <plurals name="home_pages_left">
         <item quantity="one">Nog 1 pagina</item>
         <item quantity="other">Nog %1$d pagina’s</item>

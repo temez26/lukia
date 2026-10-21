@@ -157,6 +157,7 @@ private fun SelectAll.toDocumentInfo(): DocumentInfo = DocumentInfo(
     isFavorite = isFavorite,
     metadata = storedMetadata(),
     onServer = onServer,
+    addedAt = addedAt,
 )
 
 /**
@@ -180,6 +181,7 @@ private fun Document.toDocumentInfo(): DocumentInfo = DocumentInfo(
     isFavorite = isFavorite,
     metadata = storedMetadata(),
     onServer = onServer,
+    addedAt = addedAt,
 )
 
 /** See [Document.toDocumentInfo] for why the name rather than the ordinal. */

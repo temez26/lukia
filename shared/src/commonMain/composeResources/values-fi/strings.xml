@@ -40,6 +40,10 @@
     <string name="menu_refresh_details">Päivitä tiedot</string>
     <string name="menu_remove_from_device">Poista laitteelta</string>
     <string name="menu_remove_from_server">Poista palvelimelta</string>
+    <string name="sheet_favourite">Suosikki</string>
+    <string name="sheet_details">Tiedot</string>
+    <string name="sheet_unread">Lukematon</string>
+    <string name="sheet_select">Valitse</string>
     <string name="book_remove_from_server_title">Poistetaanko palvelimelta?</string>
     <string name="book_remove_from_server_message">%1$s poistuu jaetusta kirjastosta kaikilta. Laitteet, jotka eivät koskaan ladanneet sitä, poistavat sen seuraavassa synkronoinnissa; ladattu kopio jää kirjaksi omaan laitteeseensa.</string>
     <string name="book_remove_from_server_confirm">Poista</string>
@@ -216,6 +220,28 @@
     <plurals name="home_book_count">
         <item quantity="one">1 kirja</item>
         <item quantity="other">%1$d kirjaa</item>
+    </plurals>
+    <plurals name="home_and_more">
+        <item quantity="one">ja 1 muu</item>
+        <item quantity="other">ja %1$d muuta</item>
+    </plurals>
+    <string name="home_added_today">Tänään</string>
+    <string name="home_added_yesterday">Eilen</string>
+    <plurals name="home_added_days_ago">
+        <item quantity="one">1 päivä sitten</item>
+        <item quantity="other">%1$d päivää sitten</item>
+    </plurals>
+    <plurals name="home_added_weeks_ago">
+        <item quantity="one">1 viikko sitten</item>
+        <item quantity="other">%1$d viikkoa sitten</item>
+    </plurals>
+    <plurals name="home_added_months_ago">
+        <item quantity="one">1 kuukausi sitten</item>
+        <item quantity="other">%1$d kuukautta sitten</item>
+    </plurals>
+    <plurals name="home_added_years_ago">
+        <item quantity="one">1 vuosi sitten</item>
+        <item quantity="other">%1$d vuotta sitten</item>
     </plurals>
     <plurals name="home_reading_count">
         <item quantity="one">1 kesken</item>
@@ -511,6 +537,7 @@
     <string name="settings_open_source_footnote">Mistä Lukia on rakennettu, ja millä ehdoilla kukin osa on käytössä.</string>
 
     <string name="stats_entry">Lukemisesi</string>
+    <string name="stats_open">Avaa lukutilastot</string>
     <string name="stats_title">Lukeminen</string>
     <string name="stats_footnote">Lasketaan tällä laitteella, ja säilytetään täällä.</string>
     <string name="stats_footnote_synced">Lasketaan jokaisella laitteella, jolla olet kirjautunut tilillesi.</string>
@@ -592,6 +619,10 @@
     <string name="figure_illustration">Kuva</string>
     <string name="home_see_all_shelf">Näytä kaikki: %1$s</string>
     <string name="home_resume">Jatka</string>
+    <string name="book_title_by_author">%1$s, kirjoittanut %2$s</string>
+    <string name="home_page_position">%1$d/%2$d</string>
+    <string name="home_add_books">Lisää kirjoja</string>
+    <string name="book_fact_spoken">%1$s: %2$s</string>
     <plurals name="home_pages_left">
         <item quantity="one">1 sivu jäljellä</item>
         <item quantity="other">%1$d sivua jäljellä</item>

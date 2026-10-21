@@ -32,6 +32,7 @@ import io.lukia.features.library.presentation.model.LibraryQuery
 import io.lukia.features.library.presentation.model.LibrarySelection
 import io.lukia.features.library.presentation.model.LibraryShelf
 import io.lukia.features.library.presentation.model.OpenMenu
+import io.lukia.features.library.presentation.model.menuHeader
 import io.lukia.features.library.presentation.sessions.BookTransferUi
 import io.lukia.features.library.presentation.sessions.LibraryImportUi
 import io.lukia.resources.Res
@@ -319,6 +320,7 @@ private fun LazyGridItemScope.ShelfItem(
                 onSelectBooks = onSelectBooks,
                 onRemoveFromServer = onRemoveFromServer,
                 onMarkUnread = onMarkUnread,
+                header = book.menuHeader(),
             )
         }
     }

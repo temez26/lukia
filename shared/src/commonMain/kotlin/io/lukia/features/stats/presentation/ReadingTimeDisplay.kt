@@ -1,6 +1,7 @@
 package io.lukia.features.stats.presentation
 
 import androidx.compose.runtime.Composable
+import io.lukia.core.infrastructure.WeekdayForm
 import io.lukia.core.infrastructure.weekdayName
 import io.lukia.resources.Res
 import io.lukia.resources.stats_days_in_a_row
@@ -87,11 +88,11 @@ internal fun readingTimeOrDash(millis: Long): String = if (millis <= 0) {
  * has none to cut. What each platform gives back is what its own calendars show.
  */
 internal fun dayLabel(date: LocalDate): String =
-    weekdayName(date.dayOfWeek, abbreviated = true)
+    weekdayName(date.dayOfWeek, WeekdayForm.Short)
 
 /** The day spelled out, for the sentence a screen reader is given. */
 internal fun dayName(date: LocalDate): String =
-    weekdayName(date.dayOfWeek, abbreviated = false)
+    weekdayName(date.dayOfWeek, WeekdayForm.Full)
 
 /**
  * How many days in a row, said as a sentence rather than as a number with a

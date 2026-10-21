@@ -224,8 +224,10 @@ class LibraryContentTest {
         var navigatedTo: DocumentInfo? = null
         setLibrary(width = 390.dp, onDocumentDetails = { navigatedTo = it })
 
+        // A phone's width, so the menu is the sheet, whose Details button is read out in full.
         openBookMenu("Moby Dick")
-        onNodeWithText("Book Details").performClick()
+        onNodeWithContentDescription("Book Details").performClick()
+        waitForIdle()
 
         assertEquals("Moby Dick.pdf", navigatedTo?.document?.fileName)
         onNodeWithText("Information").assertDoesNotExist()

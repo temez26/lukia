@@ -32,6 +32,10 @@
     <string name="menu_refresh_details">Odśwież szczegóły</string>
     <string name="menu_remove_from_device">Usuń z urządzenia</string>
     <string name="menu_remove_from_server">Usuń z serwera</string>
+    <string name="sheet_favourite">Ulubione</string>
+    <string name="sheet_details">Szczegóły</string>
+    <string name="sheet_unread">Nieprzeczytana</string>
+    <string name="sheet_select">Zaznacz</string>
     <string name="book_remove_from_server_title">Usunąć z serwera?</string>
     <string name="book_remove_from_server_message">„%1$s” znika ze wspólnej biblioteki dla wszystkich. Urządzenia, które nigdy jej nie pobrały, usuną ją przy następnej synchronizacji; pobrana kopia zostaje jako książka na swoim urządzeniu.</string>
     <string name="book_remove_from_server_confirm">Usuń</string>
@@ -198,6 +202,38 @@
         <item quantity="few">%1$d książki</item>
         <item quantity="many">%1$d książek</item>
         <item quantity="other">%1$d książki</item>
+    </plurals>
+    <plurals name="home_and_more">
+        <item quantity="one">i jeszcze 1</item>
+        <item quantity="few">i jeszcze %1$d</item>
+        <item quantity="many">i jeszcze %1$d</item>
+        <item quantity="other">i jeszcze %1$d</item>
+    </plurals>
+    <string name="home_added_today">Dzisiaj</string>
+    <string name="home_added_yesterday">Wczoraj</string>
+    <plurals name="home_added_days_ago">
+        <item quantity="one">1 dzień temu</item>
+        <item quantity="few">%1$d dni temu</item>
+        <item quantity="many">%1$d dni temu</item>
+        <item quantity="other">%1$d dnia temu</item>
+    </plurals>
+    <plurals name="home_added_weeks_ago">
+        <item quantity="one">1 tydzień temu</item>
+        <item quantity="few">%1$d tygodnie temu</item>
+        <item quantity="many">%1$d tygodni temu</item>
+        <item quantity="other">%1$d tygodnia temu</item>
+    </plurals>
+    <plurals name="home_added_months_ago">
+        <item quantity="one">1 miesiąc temu</item>
+        <item quantity="few">%1$d miesiące temu</item>
+        <item quantity="many">%1$d miesięcy temu</item>
+        <item quantity="other">%1$d miesiąca temu</item>
+    </plurals>
+    <plurals name="home_added_years_ago">
+        <item quantity="one">1 rok temu</item>
+        <item quantity="few">%1$d lata temu</item>
+        <item quantity="many">%1$d lat temu</item>
+        <item quantity="other">%1$d roku temu</item>
     </plurals>
     <plurals name="home_reading_count">
         <item quantity="one">1 w trakcie</item>
@@ -478,6 +514,7 @@
     <string name="settings_open_source">Licencje open source</string>
     <string name="settings_open_source_footnote">Z czego zbudowana jest Lukia, i na jakich warunkach udostępniono każdą część.</string>
     <string name="stats_entry">Twoje czytanie</string>
+    <string name="stats_open">Otwórz statystyki czytania</string>
     <string name="stats_title">Czytanie</string>
     <string name="stats_footnote">Liczone na tym urządzeniu i zostaje tutaj.</string>
     <string name="stats_footnote_synced">Liczone na każdym urządzeniu zalogowanym na Twoje konto.</string>
@@ -563,6 +600,10 @@
     <string name="figure_illustration">Ilustracja</string>
     <string name="home_see_all_shelf">Pokaż wszystkie: %1$s</string>
     <string name="home_resume">Wznów</string>
+    <string name="book_title_by_author">%1$s, autor: %2$s</string>
+    <string name="home_page_position">%1$d/%2$d</string>
+    <string name="home_add_books">Dodaj książki</string>
+    <string name="book_fact_spoken">%1$s: %2$s</string>
     <plurals name="home_pages_left">
         <item quantity="one">Została 1 strona</item>
         <item quantity="few">Zostały %1$d strony</item>

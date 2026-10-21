@@ -23,6 +23,7 @@ import io.lukia.shared.presentation.components.controls.LukiaIconButton
 import io.lukia.shared.presentation.components.cover.FavoriteBadge
 import io.lukia.shared.presentation.components.icons.EllipsisGlyph
 import io.lukia.shared.presentation.components.menu.BookActionsMenu
+import io.lukia.shared.presentation.components.menu.BookMenuHeader
 import io.lukia.shared.presentation.theme.LocalLukiaMetrics
 import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.Space
@@ -54,6 +55,8 @@ internal fun BoxScope.CoverOverlays(
     onSelectBooks: () -> Unit,
     onRemoveFromServer: (() -> Unit)? = null,
     onMarkUnread: (() -> Unit)? = null,
+    /** The book, for the top of the phone's menu sheet. */
+    header: BookMenuHeader? = null,
 ) {
     FavoriteBadge(
         visible = document.isFavorite,
@@ -100,6 +103,7 @@ internal fun BoxScope.CoverOverlays(
             onSelectBooks = onSelectBooks,
             onRemoveFromServer = onRemoveFromServer,
             onMarkUnread = onMarkUnread,
+            header = header,
         )
     }
 }

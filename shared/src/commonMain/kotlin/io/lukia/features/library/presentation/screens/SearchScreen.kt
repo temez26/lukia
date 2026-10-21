@@ -16,10 +16,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.document.DocumentInfo
@@ -119,6 +124,18 @@ internal fun SearchContent(
     onBrowseCategory: (String) -> Unit = {},
 ) {
     val dimens = LocalLukiaDimens.current
+    val fieldFocus = remember { FocusRequester() }
+    val keyboard = LocalSoftwareKeyboardController.current
+
+    // Coming to this screen is coming to search, so the field is ready to type
+    // into - unless there is already a search in it, which is a reader back
+    // from a book they found and reading the results, not typing.
+    LaunchedEffect(Unit) {
+        if (term.isEmpty()) {
+            fieldFocus.requestFocus()
+            keyboard?.show()
+        }
+    }
 
     Scaffold(
         modifier = modifier,
@@ -137,7 +154,8 @@ internal fun SearchContent(
                 placeholder = stringResource(Res.string.search_placeholder),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = dimens.screenPadding, vertical = Space.md),
+                    .padding(horizontal = dimens.screenPadding, vertical = Space.md)
+                    .focusRequester(fieldFocus),
                 onSubmit = onSubmit,
             )
 

@@ -19,6 +19,11 @@ data class DocumentInfo(
      * went missing - see docs/specs/sync-server.md.
      */
     val onServer: Boolean = false,
+    /**
+     * When the book came onto the shelf, in milliseconds since the epoch. Null
+     * for one added before the app recorded it.
+     */
+    val addedAt: Long? = null,
 ) {
     /** On the sync server and not on this device yet: a book to download rather than one that went missing. */
     val awaitsDownload: Boolean get() = onServer && !exists
