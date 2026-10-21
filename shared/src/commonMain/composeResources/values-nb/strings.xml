@@ -183,6 +183,10 @@
         <item quantity="one">1 bok</item>
         <item quantity="other">%1$d bøker</item>
     </plurals>
+    <plurals name="home_and_more">
+        <item quantity="one">og 1 til</item>
+        <item quantity="other">og %1$d til</item>
+    </plurals>
     <plurals name="home_reading_count">
         <item quantity="one">1 påbegynt</item>
         <item quantity="other">%1$d påbegynt</item>

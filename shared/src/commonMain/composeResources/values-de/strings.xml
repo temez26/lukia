@@ -184,6 +184,10 @@
         <item quantity="one">1 Buch</item>
         <item quantity="other">%1$d Bücher</item>
     </plurals>
+    <plurals name="home_and_more">
+        <item quantity="one">und 1 weiteres</item>
+        <item quantity="other">und %1$d weitere</item>
+    </plurals>
     <plurals name="home_reading_count">
         <item quantity="one">1 angefangen</item>
         <item quantity="other">%1$d angefangen</item>

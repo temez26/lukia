@@ -221,6 +221,10 @@
         <item quantity="one">1 kirja</item>
         <item quantity="other">%1$d kirjaa</item>
     </plurals>
+    <plurals name="home_and_more">
+        <item quantity="one">ja 1 muu</item>
+        <item quantity="other">ja %1$d muuta</item>
+    </plurals>
     <plurals name="home_reading_count">
         <item quantity="one">1 kesken</item>
         <item quantity="other">%1$d kesken</item>

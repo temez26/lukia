@@ -35,7 +35,6 @@ import io.lukia.features.library.presentation.model.HomeLayout
 import io.lukia.features.library.presentation.model.HomeMenu
 import io.lukia.features.library.presentation.model.HomeShelf
 import io.lukia.features.library.presentation.model.LibraryBook
-import io.lukia.features.library.presentation.model.isListed
 import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.resources.Res
 import io.lukia.resources.home_book_count
@@ -127,7 +126,7 @@ internal fun HomeRows(
             itemsIndexed(
                 items = home.rows,
                 key = { _, row -> row.shelf.name },
-                contentType = { _, row -> if (row.shelf.isListed) "shelfList" else "shelf" },
+                contentType = { _, row -> row.shelf.name },
             ) { index, row ->
                 HomeShelfRow(
                     row = row,

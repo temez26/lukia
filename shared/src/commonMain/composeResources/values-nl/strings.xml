@@ -183,6 +183,10 @@
         <item quantity="one">1 boek</item>
         <item quantity="other">%1$d boeken</item>
     </plurals>
+    <plurals name="home_and_more">
+        <item quantity="one">en nog 1</item>
+        <item quantity="other">en nog %1$d</item>
+    </plurals>
     <plurals name="home_reading_count">
         <item quantity="one">1 bezig</item>
         <item quantity="other">%1$d bezig</item>

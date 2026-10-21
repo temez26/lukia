@@ -255,6 +255,10 @@
         <item quantity="one">1 book</item>
         <item quantity="other">%1$d books</item>
     </plurals>
+    <plurals name="home_and_more">
+        <item quantity="one">and 1 more</item>
+        <item quantity="other">and %1$d more</item>
+    </plurals>
     <plurals name="home_reading_count">
         <item quantity="one">1 in progress</item>
         <item quantity="other">%1$d in progress</item>

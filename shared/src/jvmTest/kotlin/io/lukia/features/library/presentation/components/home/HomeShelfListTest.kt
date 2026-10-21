@@ -63,11 +63,21 @@ class HomeShelfListTest {
     }
 
     @Test
-    fun otherShelvesAreRowsOfCovers() = runComposeUiTest {
+    fun recentlyAddedIsARowOfCovers() = runComposeUiTest {
+        show(HomeShelf.RecentlyAdded)
+
+        onNodeWithContentDescription("Recently Added, 5 books").assertExists()
+        onNodeWithText("Book 1", useUnmergedTree = true).assertExists()
+        onNodeWithText("Book 2", useUnmergedTree = true).assertExists()
+    }
+
+    /** Favourites are a fan of covers, naming the top one and counting the rest. */
+    @Test
+    fun favouritesAreAFanThatCountsTheRest() = runComposeUiTest {
         show(HomeShelf.Favorites)
 
         onNodeWithContentDescription("Favourites, 5 books").assertExists()
         onNodeWithText("Book 1", useUnmergedTree = true).assertExists()
-        onNodeWithText("Book 2", useUnmergedTree = true).assertExists()
+        onNodeWithText("and 4 more", useUnmergedTree = true).assertExists()
     }
 }

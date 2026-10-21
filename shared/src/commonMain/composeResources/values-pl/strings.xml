@@ -203,6 +203,12 @@
         <item quantity="many">%1$d książek</item>
         <item quantity="other">%1$d książki</item>
     </plurals>
+    <plurals name="home_and_more">
+        <item quantity="one">i jeszcze 1</item>
+        <item quantity="few">i jeszcze %1$d</item>
+        <item quantity="many">i jeszcze %1$d</item>
+        <item quantity="other">i jeszcze %1$d</item>
+    </plurals>
     <plurals name="home_reading_count">
         <item quantity="one">1 w trakcie</item>
         <item quantity="few">%1$d w trakcie</item>

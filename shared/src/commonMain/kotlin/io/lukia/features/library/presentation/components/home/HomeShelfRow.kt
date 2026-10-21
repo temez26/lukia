@@ -1,7 +1,9 @@
 package io.lukia.features.library.presentation.components.home
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,13 +26,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import io.lukia.features.library.presentation.model.HomeMenu
 import io.lukia.features.library.presentation.model.HomeRow
 import io.lukia.features.library.presentation.model.HomeShelf
 import io.lukia.features.library.presentation.model.displayTitle
-import io.lukia.features.library.presentation.model.isListed
 import io.lukia.features.library.presentation.screens.BookTransfer
 import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.resources.Res
@@ -67,9 +70,14 @@ internal fun HomeShelfRow(
     /** Downloads under way, by book location - see `BookTransfers`. */
     transfers: Map<String, BookTransfer> = emptyMap(),
 ) {
-    if (row.shelf.isListed) {
-        HomeShelfList(row, actions, openMenu, onOpenMenuChange, onOpenShelf, modifier, transfers)
-        return
+    // Each shelf in the shape that suits what it holds - see each for why.
+    when (row.shelf) {
+        HomeShelf.RecentlyOpened ->
+            return HomeShelfList(row, actions, openMenu, onOpenMenuChange, onOpenShelf, modifier, transfers)
+        HomeShelf.Favorites -> return HomeShelfFan(row, onOpenShelf, modifier)
+        HomeShelf.Unread ->
+            return HomeShelfGrid(row, actions, openMenu, onOpenMenuChange, onOpenShelf, modifier, transfers)
+        HomeShelf.RecentlyAdded -> Unit
     }
 
     val dimens = LocalLukiaDimens.current
@@ -115,14 +123,13 @@ internal fun HomeShelfRow(
 }
 
 /**
- * A shelf's name, as the way to the whole of what it is a sample of: the title,
- * then at the far end how many books the shelf holds and an arrow in the
- * accent - the whole line one press. A count says more than "See all" did, and
- * only the arrow takes the accent, so four headers down the screen do not
- * compete with the covers they lead past.
+ * A shelf's name, as the way to the whole of what it is a sample of: the title
+ * with how many books the shelf holds under it, and at the far end an arrow in
+ * the accent inside a hairline ring - the whole line one press. Only the arrow
+ * takes the accent, so four headers down the screen do not compete with the
+ * covers they lead past. In the theme's own type: the theme decides the font.
  *
- * Read out as the title and the count in words - "Favourites, 12 books" -
- * rather than a bare number after it.
+ * Read out as the title and the count in words - "Favourites, 12 books".
  */
 @Composable
 internal fun ShelfHeader(
@@ -133,9 +140,11 @@ internal fun ShelfHeader(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val shape = MaterialTheme.shapes.extraSmall
-    val spoken = listOf(title, pluralStringResource(Res.plurals.home_book_count, count, count))
-        .joinToString(SpokenSeparator)
-    val chevronSize = with(LocalDensity.current) { HeaderChevronSize.toDp() }
+    val books = pluralStringResource(Res.plurals.home_book_count, count, count)
+    val spoken = listOf(title, books).joinToString(SpokenSeparator)
+    val density = LocalDensity.current
+    val ringSize = with(density) { HeaderRingSize.toDp() }
+    val chevronSize = with(density) { HeaderChevronSize.toDp() }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -151,34 +160,44 @@ internal fun ShelfHeader(
             .padding(vertical = Space.xs)
             .clearAndSetSemantics { contentDescription = spoken },
     ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.weight(1f),
-        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
 
-        Text(
-            text = count.toString(),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+            Text(
+                text = books,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
 
-        DisclosureChevron(
-            tint = MaterialTheme.colorScheme.primary,
+        Box(
+            contentAlignment = Alignment.Center,
             modifier = Modifier
-                .padding(start = Space.xxs)
-                .size(chevronSize)
-                .graphicsLayer { rotationZ = PointForward },
-        )
+                .size(ringSize)
+                .border(Dp.Hairline, MaterialTheme.colorScheme.outline, CircleShape),
+        ) {
+            DisclosureChevron(
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .size(chevronSize)
+                    .graphicsLayer { rotationZ = PointForward },
+            )
+        }
     }
 }
 
 /** Between the title and the count, as a screen reader is given them. */
 private const val SpokenSeparator = ", "
 
-/** The arrow after the count, in sp so it grows with the count at a large system font size. */
+/** The ring around the arrow, in sp so it grows with the title at a large system font size. */
+private val HeaderRingSize: TextUnit = 28.sp
+
+/** The arrow inside it. */
 private val HeaderChevronSize: TextUnit = 14.sp
 
 /** The app's disclosure mark points down; this turns it to point the way the header goes. */

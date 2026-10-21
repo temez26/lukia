@@ -67,6 +67,8 @@ internal fun HomeBookCard(
     modifier: Modifier = Modifier,
     /** How a download of this book is going, if one is - see [CoverTransferOverlay]. */
     transfer: BookTransfer? = null,
+    /** False for a shelf of covers alone, small and many - see `HomeShelfGrid`. */
+    showText: Boolean = true,
 ) {
     val document = book.document
     val title = document.bookTitle()
@@ -96,6 +98,8 @@ internal fun HomeBookCard(
             onMenuExpandedChange = onMenuExpandedChange,
             transfer = transfer,
         )
+
+        if (!showText) return@Column
 
         Text(
             text = title,

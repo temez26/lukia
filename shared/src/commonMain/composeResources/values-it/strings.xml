@@ -183,6 +183,10 @@
         <item quantity="one">1 libro</item>
         <item quantity="other">%1$d libri</item>
     </plurals>
+    <plurals name="home_and_more">
+        <item quantity="one">e 1 altro</item>
+        <item quantity="other">e altri %1$d</item>
+    </plurals>
     <plurals name="home_reading_count">
         <item quantity="one">1 in corso</item>
         <item quantity="other">%1$d in corso</item>

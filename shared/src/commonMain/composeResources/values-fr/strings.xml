@@ -190,6 +190,10 @@
         <item quantity="one">1 livre</item>
         <item quantity="other">%1$d livres</item>
     </plurals>
+    <plurals name="home_and_more">
+        <item quantity="one">et 1 autre</item>
+        <item quantity="other">et %1$d autres</item>
+    </plurals>
     <plurals name="home_reading_count">
         <item quantity="one">1 en cours</item>
         <item quantity="other">%1$d en cours</item>
