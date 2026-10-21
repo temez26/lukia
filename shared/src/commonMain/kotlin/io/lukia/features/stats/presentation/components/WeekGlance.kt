@@ -46,8 +46,6 @@ import io.lukia.resources.stats_this_week
 import io.lukia.shared.presentation.components.controls.pressable
 import io.lukia.shared.presentation.components.icons.DisclosureChevron
 import io.lukia.shared.presentation.components.icons.FlameGlyph
-import io.lukia.shared.presentation.components.surface.BadgeTone
-import io.lukia.shared.presentation.components.surface.StatusBadge
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -77,6 +75,9 @@ private const val DayNameMaxScale = 1.2f
 private const val PastDayAlpha = 0.5f
 
 private val ChevronSize: Dp = 20.dp
+
+/** A day's flame: small enough that seven sit under seven bars without crowding them. */
+private val FlameSize: Dp = 16.dp
 
 /** The app's disclosure mark points down; this turns it to point the way the glance goes. */
 private const val PointForward = -90f
@@ -142,18 +143,6 @@ internal fun WeekGlanceContent(
                 modifier = Modifier.weight(1f),
             )
 
-            // Only while there is a run to show. A day not read yet does not end
-            // it - see `currentStreak` - so the count stays as it was until today
-            // is over, with nothing asking for it to be kept.
-            if (streak != null) {
-                StatusBadge(
-                    text = streak,
-                    tone = BadgeTone.Accent,
-                    icon = { tint, glyph -> FlameGlyph(tint = tint, modifier = glyph) },
-                    modifier = Modifier.padding(end = Space.sm),
-                )
-            }
-
             DisclosureChevron(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier
@@ -193,6 +182,24 @@ private fun WeekBars(days: List<DayReading>, modifier: Modifier = Modifier) {
                         share = (day.durationMs.toFloat() / longest).coerceAtLeast(EmptyBar),
                         modifier = Modifier.weight(1f),
                     )
+                }
+            }
+
+            // A flame for every day of the week, lit on the days read: the run
+            // of reading as something seen rather than a number to work out.
+            DayRow(modifier = Modifier.padding(top = Space.sm)) {
+                days.forEach { day ->
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.weight(1f)) {
+                        FlameGlyph(
+                            tint = if (day.hasReading) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.outlineVariant
+                            },
+                            lit = day.hasReading,
+                            modifier = Modifier.size(FlameSize),
+                        )
+                    }
                 }
             }
 

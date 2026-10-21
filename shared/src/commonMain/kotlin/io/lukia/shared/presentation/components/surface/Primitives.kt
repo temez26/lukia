@@ -4,11 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -61,9 +58,6 @@ enum class BadgeTone {
     Accent,
 }
 
-/** As tall as the badge's own line of text, so a glyph does not make the pill grow. */
-private val BadgeIconSize = 12.dp
-
 /**
  * A short state, set in a tinted pill: a file the library can no longer find, and
  * anything else the reader has to be told about a book without leaving the card.
@@ -77,8 +71,6 @@ fun StatusBadge(
     text: String,
     modifier: Modifier = Modifier,
     tone: BadgeTone = BadgeTone.Error,
-    /** A glyph ahead of the words, drawn in the badge's own colour - see the icons package. */
-    icon: (@Composable (Color, Modifier) -> Unit)? = null,
 ) {
     val color = when (tone) {
         BadgeTone.Error -> MaterialTheme.colorScheme.error
@@ -86,18 +78,12 @@ fun StatusBadge(
         BadgeTone.Accent -> MaterialTheme.colorScheme.primary
     }
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    Box(
         modifier = modifier
             .clip(MaterialTheme.shapes.extraSmall)
             .background(color.copy(alpha = LukiaAlpha.Badge))
             .padding(horizontal = Space.md, vertical = Space.xxs),
     ) {
-        if (icon != null) {
-            icon(color, Modifier.size(BadgeIconSize))
-            Spacer(modifier = Modifier.width(Space.xs))
-        }
-
         Text(
             text = text,
             style = MaterialTheme.typography.labelSmall,

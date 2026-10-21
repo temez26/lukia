@@ -139,15 +139,19 @@ fun InfoGlyph(
 }
 
 /**
- * A flame: a run of days read, kept going. Outlined at the stroke every other
- * glyph here uses, with an inner tongue so it reads as fire rather than a drop.
+ * A flame: a day read. [lit] fills it, with its inner tongue cut out so it reads
+ * as fire rather than a drop; unlit it is an outline at the stroke every other
+ * glyph here uses, a day that has not been read.
  */
 @Composable
 fun FlameGlyph(
     tint: Color,
     modifier: Modifier = Modifier,
+    lit: Boolean = true,
 ) {
-    Canvas(modifier = modifier) {
+    // A layer of its own, so the tongue can be cut out of a lit flame rather than
+    // painted over in a colour that has to match what is behind it.
+    Canvas(modifier = modifier.graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }) {
         val w = size.width
         val h = size.height
         val flame = Path().apply {
@@ -168,7 +172,11 @@ fun FlameGlyph(
             close()
         }
 
-        drawPath(path = flame, color = tint, style = glyphStroke())
-        drawPath(path = tongue, color = tint)
+        if (lit) {
+            drawPath(path = flame, color = tint)
+            drawPath(path = tongue, color = tint, blendMode = BlendMode.Clear)
+        } else {
+            drawPath(path = flame, color = tint, style = glyphStroke())
+        }
     }
 }
