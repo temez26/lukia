@@ -29,10 +29,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
+import io.lukia.features.library.presentation.model.AddedAgo
 import io.lukia.features.library.presentation.model.HomeMenu
 import io.lukia.features.library.presentation.model.HomeRow
 import io.lukia.features.library.presentation.model.HomeShelf
+import io.lukia.features.library.presentation.model.addedAgo
 import io.lukia.features.library.presentation.model.displayTitle
+import io.lukia.features.library.presentation.model.label
 import io.lukia.features.library.presentation.screens.BookTransfer
 import io.lukia.features.library.presentation.sessions.HomeBookActions
 import io.lukia.resources.Res
@@ -42,8 +45,11 @@ import io.lukia.shared.presentation.components.controls.pressable
 import io.lukia.shared.presentation.components.icons.DisclosureChevron
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Clock
 
 /**
  * One row of the home screen: its title, which leads through to all of it, and
@@ -81,6 +87,8 @@ internal fun HomeShelfRow(
     }
 
     val dimens = LocalLukiaDimens.current
+    val zone = remember { TimeZone.currentSystemDefault() }
+    val today = remember { Clock.System.now().toLocalDateTime(zone).date }
 
     Column(modifier = modifier.fillMaxWidth()) {
         ShelfHeader(
@@ -116,10 +124,26 @@ internal fun HomeShelfRow(
                     // from, so both screens agree how big a book is.
                     modifier = Modifier.width(dimens.bookCellMinWidth),
                     transfer = transfers[book.location],
+                    caption = addedAgo(book.document.addedAt, today, zone)?.let { ago -> { AddedCaption(ago) } },
                 )
             }
         }
     }
+}
+
+/**
+ * When a book came onto the shelf, under its author on Recently added - in the
+ * accent for one that arrived today, the one line on Home that says what is new.
+ */
+@Composable
+private fun AddedCaption(ago: AddedAgo) {
+    Text(
+        text = ago.label(),
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.run { if (ago == AddedAgo.Today) primary else onSurfaceVariant },
+        maxLines = 1,
+        modifier = Modifier.padding(top = Space.xxs),
+    )
 }
 
 /**

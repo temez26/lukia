@@ -194,6 +194,24 @@
         <item quantity="one">et 1 autre</item>
         <item quantity="other">et %1$d autres</item>
     </plurals>
+    <string name="home_added_today">Aujourd’hui</string>
+    <string name="home_added_yesterday">Hier</string>
+    <plurals name="home_added_days_ago">
+        <item quantity="one">il y a 1 jour</item>
+        <item quantity="other">il y a %1$d jours</item>
+    </plurals>
+    <plurals name="home_added_weeks_ago">
+        <item quantity="one">il y a 1 semaine</item>
+        <item quantity="other">il y a %1$d semaines</item>
+    </plurals>
+    <plurals name="home_added_months_ago">
+        <item quantity="one">il y a 1 mois</item>
+        <item quantity="other">il y a %1$d mois</item>
+    </plurals>
+    <plurals name="home_added_years_ago">
+        <item quantity="one">il y a 1 an</item>
+        <item quantity="other">il y a %1$d ans</item>
+    </plurals>
     <plurals name="home_reading_count">
         <item quantity="one">1 en cours</item>
         <item quantity="other">%1$d en cours</item>

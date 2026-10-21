@@ -187,6 +187,24 @@
         <item quantity="one">en nog 1</item>
         <item quantity="other">en nog %1$d</item>
     </plurals>
+    <string name="home_added_today">Vandaag</string>
+    <string name="home_added_yesterday">Gisteren</string>
+    <plurals name="home_added_days_ago">
+        <item quantity="one">1 dag geleden</item>
+        <item quantity="other">%1$d dagen geleden</item>
+    </plurals>
+    <plurals name="home_added_weeks_ago">
+        <item quantity="one">1 week geleden</item>
+        <item quantity="other">%1$d weken geleden</item>
+    </plurals>
+    <plurals name="home_added_months_ago">
+        <item quantity="one">1 maand geleden</item>
+        <item quantity="other">%1$d maanden geleden</item>
+    </plurals>
+    <plurals name="home_added_years_ago">
+        <item quantity="one">1 jaar geleden</item>
+        <item quantity="other">%1$d jaar geleden</item>
+    </plurals>
     <plurals name="home_reading_count">
         <item quantity="one">1 bezig</item>
         <item quantity="other">%1$d bezig</item>

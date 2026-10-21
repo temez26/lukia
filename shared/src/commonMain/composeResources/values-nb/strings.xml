@@ -187,6 +187,24 @@
         <item quantity="one">og 1 til</item>
         <item quantity="other">og %1$d til</item>
     </plurals>
+    <string name="home_added_today">I dag</string>
+    <string name="home_added_yesterday">I går</string>
+    <plurals name="home_added_days_ago">
+        <item quantity="one">for 1 dag siden</item>
+        <item quantity="other">for %1$d dager siden</item>
+    </plurals>
+    <plurals name="home_added_weeks_ago">
+        <item quantity="one">for 1 uke siden</item>
+        <item quantity="other">for %1$d uker siden</item>
+    </plurals>
+    <plurals name="home_added_months_ago">
+        <item quantity="one">for 1 måned siden</item>
+        <item quantity="other">for %1$d måneder siden</item>
+    </plurals>
+    <plurals name="home_added_years_ago">
+        <item quantity="one">for 1 år siden</item>
+        <item quantity="other">for %1$d år siden</item>
+    </plurals>
     <plurals name="home_reading_count">
         <item quantity="one">1 påbegynt</item>
         <item quantity="other">%1$d påbegynt</item>

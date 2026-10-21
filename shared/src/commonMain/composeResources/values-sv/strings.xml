@@ -211,6 +211,24 @@
         <item quantity="one">och 1 till</item>
         <item quantity="other">och %1$d till</item>
     </plurals>
+    <string name="home_added_today">I dag</string>
+    <string name="home_added_yesterday">I går</string>
+    <plurals name="home_added_days_ago">
+        <item quantity="one">för 1 dag sedan</item>
+        <item quantity="other">för %1$d dagar sedan</item>
+    </plurals>
+    <plurals name="home_added_weeks_ago">
+        <item quantity="one">för 1 vecka sedan</item>
+        <item quantity="other">för %1$d veckor sedan</item>
+    </plurals>
+    <plurals name="home_added_months_ago">
+        <item quantity="one">för 1 månad sedan</item>
+        <item quantity="other">för %1$d månader sedan</item>
+    </plurals>
+    <plurals name="home_added_years_ago">
+        <item quantity="one">för 1 år sedan</item>
+        <item quantity="other">för %1$d år sedan</item>
+    </plurals>
     <plurals name="home_reading_count">
         <item quantity="one">1 påbörjad</item>
         <item quantity="other">%1$d påbörjade</item>

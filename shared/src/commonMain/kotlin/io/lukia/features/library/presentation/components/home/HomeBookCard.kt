@@ -69,6 +69,8 @@ internal fun HomeBookCard(
     transfer: BookTransfer? = null,
     /** False for a shelf of covers alone, small and many - see `HomeShelfGrid`. */
     showText: Boolean = true,
+    /** A line under the author, where the shelf has something to add - see `HomeShelfRow`. */
+    caption: (@Composable () -> Unit)? = null,
 ) {
     val document = book.document
     val title = document.bookTitle()
@@ -123,6 +125,8 @@ internal fun HomeBookCard(
                 modifier = Modifier.padding(top = Space.xxs),
             )
         }
+
+        caption?.invoke()
     }
 }
 

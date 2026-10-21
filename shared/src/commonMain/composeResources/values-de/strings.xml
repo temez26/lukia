@@ -188,6 +188,24 @@
         <item quantity="one">und 1 weiteres</item>
         <item quantity="other">und %1$d weitere</item>
     </plurals>
+    <string name="home_added_today">Heute</string>
+    <string name="home_added_yesterday">Gestern</string>
+    <plurals name="home_added_days_ago">
+        <item quantity="one">vor 1 Tag</item>
+        <item quantity="other">vor %1$d Tagen</item>
+    </plurals>
+    <plurals name="home_added_weeks_ago">
+        <item quantity="one">vor 1 Woche</item>
+        <item quantity="other">vor %1$d Wochen</item>
+    </plurals>
+    <plurals name="home_added_months_ago">
+        <item quantity="one">vor 1 Monat</item>
+        <item quantity="other">vor %1$d Monaten</item>
+    </plurals>
+    <plurals name="home_added_years_ago">
+        <item quantity="one">vor 1 Jahr</item>
+        <item quantity="other">vor %1$d Jahren</item>
+    </plurals>
     <plurals name="home_reading_count">
         <item quantity="one">1 angefangen</item>
         <item quantity="other">%1$d angefangen</item>

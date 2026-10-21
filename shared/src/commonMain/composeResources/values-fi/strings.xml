@@ -225,6 +225,24 @@
         <item quantity="one">ja 1 muu</item>
         <item quantity="other">ja %1$d muuta</item>
     </plurals>
+    <string name="home_added_today">Tänään</string>
+    <string name="home_added_yesterday">Eilen</string>
+    <plurals name="home_added_days_ago">
+        <item quantity="one">1 päivä sitten</item>
+        <item quantity="other">%1$d päivää sitten</item>
+    </plurals>
+    <plurals name="home_added_weeks_ago">
+        <item quantity="one">1 viikko sitten</item>
+        <item quantity="other">%1$d viikkoa sitten</item>
+    </plurals>
+    <plurals name="home_added_months_ago">
+        <item quantity="one">1 kuukausi sitten</item>
+        <item quantity="other">%1$d kuukautta sitten</item>
+    </plurals>
+    <plurals name="home_added_years_ago">
+        <item quantity="one">1 vuosi sitten</item>
+        <item quantity="other">%1$d vuotta sitten</item>
+    </plurals>
     <plurals name="home_reading_count">
         <item quantity="one">1 kesken</item>
         <item quantity="other">%1$d kesken</item>

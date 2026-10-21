@@ -187,6 +187,24 @@
         <item quantity="one">e 1 altro</item>
         <item quantity="other">e altri %1$d</item>
     </plurals>
+    <string name="home_added_today">Oggi</string>
+    <string name="home_added_yesterday">Ieri</string>
+    <plurals name="home_added_days_ago">
+        <item quantity="one">1 giorno fa</item>
+        <item quantity="other">%1$d giorni fa</item>
+    </plurals>
+    <plurals name="home_added_weeks_ago">
+        <item quantity="one">1 settimana fa</item>
+        <item quantity="other">%1$d settimane fa</item>
+    </plurals>
+    <plurals name="home_added_months_ago">
+        <item quantity="one">1 mese fa</item>
+        <item quantity="other">%1$d mesi fa</item>
+    </plurals>
+    <plurals name="home_added_years_ago">
+        <item quantity="one">1 anno fa</item>
+        <item quantity="other">%1$d anni fa</item>
+    </plurals>
     <plurals name="home_reading_count">
         <item quantity="one">1 in corso</item>
         <item quantity="other">%1$d in corso</item>

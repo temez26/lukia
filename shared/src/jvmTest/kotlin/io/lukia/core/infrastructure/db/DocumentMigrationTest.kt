@@ -88,6 +88,25 @@ class DocumentMigrationTest {
         assertEquals(true, refreshed?.isFavorite)
     }
 
+    /**
+     * When a book already on the shelf was added was never written down, so it
+     * stays unknown; a book added after the migration is stamped as it arrives.
+     */
+    @Test
+    fun onlyBooksAddedAfterTheMigrationKnowWhenTheyCame() = runTest {
+        val driver = version1Database()
+        LukiaDatabase.Schema.migrate(driver, oldVersion = 1, newVersion = LukiaDatabase.Schema.version)
+        val repository = SqlLibraryRepository(LukiaDatabase(driver))
+
+        val before = System.currentTimeMillis()
+        val existing = repository.getDocument("/books/moby.epub")!!
+        repository.addDocument(existing.copy(document = existing.document.copy(location = "/books/new.epub")))
+
+        assertNull(repository.getDocument("/books/moby.epub")?.addedAt)
+        val added = repository.getDocuments().single { it.document.location == "/books/new.epub" }.addedAt
+        assertTrue(added != null && added >= before - 1_000L, "added at $added, test began at $before")
+    }
+
     @Test
     fun theSchemaIsPastVersionOneSoTheMigrationIsReachable() {
         assertTrue(
