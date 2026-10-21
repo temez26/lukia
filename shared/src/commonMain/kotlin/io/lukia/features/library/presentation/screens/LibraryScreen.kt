@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.infrastructure.AppCommand
 import io.lukia.features.library.presentation.LibraryViewModel
@@ -111,6 +112,7 @@ fun LibraryScreen(
                 readingProgress = readingProgress,
                 showSearch = showSearch,
                 statsButton = statsButton,
+                searchFocus = requests.searchFocus,
             )
         }
 
@@ -174,12 +176,23 @@ private class LibraryRequests(
     val openSettings: () -> Unit,
     /** Syncs, and shows how that went where it is reported - or where to sign in. */
     val syncWithServer: () -> Unit,
+    /** The search field, which Find puts the keyboard in. */
+    val searchFocus: FocusRequester,
+    private val closeSettings: () -> Unit,
 ) {
 
     fun carryOut(command: AppCommand) = when (command) {
         AppCommand.AddBooks -> addBooks()
         AppCommand.AddFolder -> addFolder()
         AppCommand.OpenSettings -> openSettings()
+        AppCommand.FindInLibrary -> findInLibrary()
+    }
+
+    private fun findInLibrary() {
+        closeSettings()
+        // The field is not on screen while books are being picked, and a
+        // shortcut pressed then has nothing to land on.
+        runCatching { searchFocus.requestFocus() }
     }
 }
 
@@ -200,5 +213,7 @@ private fun rememberLibraryRequests(
             onSyncWithServer()
             settings.show(SettingsArea.Account)
         },
+        searchFocus = remember { FocusRequester() },
+        closeSettings = { settings.open.value = false },
     )
 }

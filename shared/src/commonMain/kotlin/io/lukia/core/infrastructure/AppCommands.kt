@@ -16,6 +16,9 @@ enum class AppCommand {
     AddBooks,
     AddFolder,
     OpenSettings,
+
+    /** Puts the keyboard in the library's search field. */
+    FindInLibrary,
 }
 
 /**

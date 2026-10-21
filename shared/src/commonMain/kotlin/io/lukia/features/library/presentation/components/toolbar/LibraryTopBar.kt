@@ -15,6 +15,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.style.TextOverflow
@@ -113,6 +115,7 @@ internal fun LibraryNavBar(
      * preview without the statistics feature behind it.
      */
     statsButton: @Composable () -> Unit = {},
+    searchFocus: FocusRequester? = null,
 ) {
     val dimens = LocalLukiaDimens.current
     val barColor = MaterialTheme.colorScheme.background
@@ -157,6 +160,7 @@ internal fun LibraryNavBar(
                     query = query,
                     onQueryChange = onQueryChange,
                     searchableCount = searchableCount,
+                    focusRequester = searchFocus,
                 )
             } else {
                 TitleSlot()
@@ -204,16 +208,19 @@ private fun RowScope.SearchSlot(
     query: String,
     onQueryChange: (String) -> Unit,
     searchableCount: Int,
+    focusRequester: FocusRequester?,
 ) {
     val compact = !isWideWindow
 
     if (!compact) Spacer(modifier = Modifier.weight(1f))
 
+    val sized = if (compact) Modifier.weight(1f) else Modifier.width(ToolbarSearchWidth)
+
     LibrarySearchField(
         query = query,
         onQueryChange = onQueryChange,
         placeholder = searchPlaceholder(searchableCount),
-        modifier = if (compact) Modifier.weight(1f) else Modifier.width(ToolbarSearchWidth),
+        modifier = if (focusRequester != null) sized.focusRequester(focusRequester) else sized,
     )
 }
 

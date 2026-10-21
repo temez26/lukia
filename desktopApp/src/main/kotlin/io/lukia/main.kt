@@ -257,6 +257,11 @@ private fun FrameWindowScope.LukiaMenuBar(commands: AppCommands) {
                 shortcut = shortcut(Key.O, shift = true),
                 onClick = { commands.request(AppCommand.AddFolder) },
             )
+            Item(
+                "Find…",
+                shortcut = shortcut(Key.F),
+                onClick = { commands.request(AppCommand.FindInLibrary) },
+            )
             Separator()
             Item(
                 "Settings…",
@@ -272,7 +277,7 @@ private fun shortcut(key: Key, shift: Boolean = false): KeyShortcut =
     KeyShortcut(key, meta = true, shift = shift)
 
 /**
- * The same three shortcuts the menu declares, read off the window instead.
+ * The same shortcuts the menu declares, read off the window instead.
  *
  * Windows and Linux have no menu bar to hang them on - see [LukiaMenuBar] - and
  * a reader who learnt Ctrl+O everywhere else should not find it dead here.
@@ -289,6 +294,7 @@ private fun AppCommands.requestedBy(event: KeyEvent): Boolean {
     val command = when (event.key) {
         Key.O -> if (event.isShiftPressed) AppCommand.AddFolder else AppCommand.AddBooks
         Key.Comma -> AppCommand.OpenSettings
+        Key.F -> AppCommand.FindInLibrary
         else -> null
     } ?: return false
 

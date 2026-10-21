@@ -27,6 +27,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalFocusManager
@@ -135,6 +140,16 @@ internal fun LibrarySearchField(
             // losing focus rather than moving it.
             .focusRing(interactionSource, shape)
             .pointerHoverIcon(PointerIcon.Text)
+            // Escape empties the field, and a second press leaves it, as a
+            // desktop search field does. Both halves of the press are taken so
+            // the key-up does not go on to close whatever is behind the field.
+            .onPreviewKeyEvent { event ->
+                if (event.key != Key.Escape) return@onPreviewKeyEvent false
+                if (event.type == KeyEventType.KeyDown) {
+                    if (query.isNotEmpty()) onQueryChange("") else focusManager.clearFocus()
+                }
+                true
+            }
             .semantics { contentDescription = spoken },
         decorationBox = { textField ->
             SearchFieldDecoration(

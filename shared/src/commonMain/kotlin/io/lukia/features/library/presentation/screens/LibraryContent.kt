@@ -21,6 +21,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -102,6 +103,8 @@ fun LibraryContent(
     showSearch: Boolean = true,
     /** The way to the reader's own page, supplied by the shell - see `MobileShell`. */
     statsButton: @Composable () -> Unit = {},
+    /** Where Find puts the keyboard - see `AppCommand.FindInLibrary`. */
+    searchFocus: FocusRequester? = null,
 ) {
     val dimens = LocalLukiaDimens.current
     val reveal = rememberLaunchReveal()
@@ -287,6 +290,7 @@ fun LibraryContent(
                         modifier = Modifier.align(Alignment.TopCenter),
                         showSearch = showSearch,
                         statsButton = statsButton,
+                        searchFocus = searchFocus,
                     )
                 }
 
