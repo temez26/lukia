@@ -26,8 +26,8 @@ import io.lukia.resources.Res
 import io.lukia.resources.home_add_books
 import io.lukia.resources.library_settings
 import io.lukia.shared.presentation.components.controls.pressable
-import io.lukia.shared.presentation.components.icons.GearGlyph
 import io.lukia.shared.presentation.components.icons.PlusGlyph
+import io.lukia.shared.presentation.components.icons.SettingsGlyph
 import io.lukia.shared.presentation.components.surface.GroupCard
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
@@ -68,7 +68,7 @@ internal fun HomeGlance(
                 GlanceAction(
                     label = stringResource(Res.string.library_settings),
                     onClick = onSettings,
-                    glyph = { tint, glyphModifier -> GearGlyph(tint = tint, modifier = glyphModifier) },
+                    glyph = { tint, glyphModifier -> SettingsGlyph(tint = tint, modifier = glyphModifier) },
                 )
             }
         }

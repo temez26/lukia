@@ -134,65 +134,35 @@ fun ClearGlyph(
 }
 
 /**
- * A gear, for the row that leads to the app's settings.
+ * Three sliders, for the way to the app's settings: what is behind it is mostly
+ * things set to taste - the theme, the type, the reader's margins - which a row
+ * of sliders says more plainly than a machine part.
  *
- * The teeth start where the rim ends rather than crossing it - run them through
- * the rim and the mark reads as a spoked wheel instead of a gear. Six of them,
- * not eight: at 18.dp, eight teeth and the gaps between them fall below a pixel
- * apart and silt up into a disc.
+ * Each track breaks around its knob rather than running under it, so the knobs
+ * read as rings on a line instead of beads threaded on one. The knobs are set
+ * at different points along their tracks, as sliders left where they were set.
  */
 @Composable
-fun GearGlyph(
+fun SettingsGlyph(
     tint: Color,
     modifier: Modifier = Modifier,
 ) {
     Canvas(modifier = modifier) {
-        val strokeWidth = glyphStrokeWidth(GlyphWeight.Light)
-        val center = Offset(size.width / 2f, size.height / 2f)
-        val rimRadius = size.minDimension * 0.27f
+        val stroke = glyphStroke(GlyphWeight.Light)
+        val start = size.width * 0.14f
+        val end = size.width * 0.86f
+        val knob = size.minDimension * 0.10f
 
-        drawCircle(
-            color = tint,
-            radius = rimRadius,
-            center = center,
-            style = glyphStroke(GlyphWeight.Light, cap = StrokeCap.Butt),
-        )
+        listOf(0.26f to 0.36f, 0.50f to 0.66f, 0.74f to 0.46f).forEach { (y, x) ->
+            val track = size.height * y
+            val at = size.width * x
 
-        // Wide enough that the stroke leaves a hole rather than closing over it,
-        // which is the difference between a gear and a spoked sun.
-        drawCircle(
-            color = tint,
-            radius = size.minDimension * 0.105f,
-            center = center,
-            style = glyphStroke(GlyphWeight.Light, cap = StrokeCap.Butt),
-        )
-
-        val toothInner = rimRadius + strokeWidth * 0.25f
-        val toothOuter = size.minDimension * 0.43f
-
-        repeat(TOOTH_COUNT) { index ->
-            val angle = index * (2f * PI / TOOTH_COUNT)
-            val dx = cos(angle).toFloat()
-            val dy = sin(angle).toFloat()
-
-            drawLine(
-                color = tint,
-                start = Offset(
-                    x = center.x + dx * toothInner,
-                    y = center.y + dy * toothInner,
-                ),
-                end = Offset(
-                    x = center.x + dx * toothOuter,
-                    y = center.y + dy * toothOuter,
-                ),
-                strokeWidth = strokeWidth * 1.4f,
-                cap = StrokeCap.Round,
-            )
+            drawLine(tint, Offset(start, track), Offset(at - knob, track), stroke.width, StrokeCap.Round)
+            drawLine(tint, Offset(at + knob, track), Offset(end, track), stroke.width, StrokeCap.Round)
+            drawCircle(color = tint, radius = knob, center = Offset(at, track), style = stroke)
         }
     }
 }
-
-private const val TOOTH_COUNT = 6
 
 /** Three dots, used as the hover-revealed menu trigger on a book card. */
 @Composable

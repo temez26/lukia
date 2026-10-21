@@ -31,6 +31,7 @@ import io.lukia.features.library.presentation.components.home.ContinueFacts
 import io.lukia.features.library.presentation.components.home.ContinueHero
 import io.lukia.features.library.presentation.components.home.HomeContinueCard
 import io.lukia.features.library.presentation.components.home.HomeShelfRow
+import io.lukia.features.library.presentation.components.home.isListed
 import io.lukia.features.library.presentation.model.HomeLayout
 import io.lukia.features.library.presentation.model.HomeMenu
 import io.lukia.features.library.presentation.model.HomeShelf
@@ -126,7 +127,7 @@ internal fun HomeRows(
             itemsIndexed(
                 items = home.rows,
                 key = { _, row -> row.shelf.name },
-                contentType = { _, _ -> "shelf" },
+                contentType = { _, row -> if (row.shelf.isListed) "shelfList" else "shelf" },
             ) { index, row ->
                 HomeShelfRow(
                     row = row,
