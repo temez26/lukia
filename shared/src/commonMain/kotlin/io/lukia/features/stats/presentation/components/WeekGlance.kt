@@ -38,12 +38,16 @@ import io.lukia.features.stats.presentation.WeekGlanceViewModel
 import io.lukia.features.stats.presentation.dayLabel
 import io.lukia.features.stats.presentation.dayTime
 import io.lukia.features.stats.presentation.readingTime
+import io.lukia.features.stats.presentation.streakLine
 import io.lukia.resources.Res
 import io.lukia.resources.stats_day_spoken
 import io.lukia.resources.stats_open
 import io.lukia.resources.stats_this_week
 import io.lukia.shared.presentation.components.controls.pressable
 import io.lukia.shared.presentation.components.icons.DisclosureChevron
+import io.lukia.shared.presentation.components.icons.FlameGlyph
+import io.lukia.shared.presentation.components.surface.BadgeTone
+import io.lukia.shared.presentation.components.surface.StatusBadge
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -114,7 +118,9 @@ internal fun WeekGlanceContent(
 ) {
     val title = stringResource(Res.string.stats_this_week)
     val time = readingTime(habits.weekMs)
-    val spoken = stringResource(Res.string.stats_day_spoken, title, time)
+    val streak = habits.currentStreak.takeIf { it > 0 }?.let { streakLine(it) }
+    val week = stringResource(Res.string.stats_day_spoken, title, time)
+    val spoken = if (streak == null) week else "$week. $streak"
 
     Column(
         modifier = modifier
@@ -135,6 +141,18 @@ internal fun WeekGlanceContent(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.weight(1f),
             )
+
+            // Only while there is a run to show. A day not read yet does not end
+            // it - see `currentStreak` - so the count stays as it was until today
+            // is over, with nothing asking for it to be kept.
+            if (streak != null) {
+                StatusBadge(
+                    text = streak,
+                    tone = BadgeTone.Accent,
+                    icon = { tint, glyph -> FlameGlyph(tint = tint, modifier = glyph) },
+                    modifier = Modifier.padding(end = Space.sm),
+                )
+            }
 
             DisclosureChevron(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,

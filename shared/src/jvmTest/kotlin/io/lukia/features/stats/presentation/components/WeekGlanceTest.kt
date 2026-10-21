@@ -50,7 +50,8 @@ class WeekGlanceTest {
             }
         }
 
-        onNodeWithContentDescription("This week: 3h 20m").assertIsDisplayed().performClick()
+        // Read today, so the run is a day long and is said with the week.
+        onNodeWithContentDescription("This week: 3h 20m. 1 day in a row").assertIsDisplayed().performClick()
         assertTrue(opened)
     }
 

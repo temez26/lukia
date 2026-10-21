@@ -137,3 +137,38 @@ fun InfoGlyph(
         )
     }
 }
+
+/**
+ * A flame: a run of days read, kept going. Outlined at the stroke every other
+ * glyph here uses, with an inner tongue so it reads as fire rather than a drop.
+ */
+@Composable
+fun FlameGlyph(
+    tint: Color,
+    modifier: Modifier = Modifier,
+) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        val flame = Path().apply {
+            moveTo(w * 0.52f, h * 0.08f)
+            cubicTo(w * 0.62f, h * 0.30f, w * 0.82f, h * 0.40f, w * 0.82f, h * 0.62f)
+            cubicTo(w * 0.82f, h * 0.80f, w * 0.68f, h * 0.92f, w * 0.50f, h * 0.92f)
+            cubicTo(w * 0.32f, h * 0.92f, w * 0.18f, h * 0.80f, w * 0.18f, h * 0.62f)
+            cubicTo(w * 0.18f, h * 0.48f, w * 0.27f, h * 0.40f, w * 0.34f, h * 0.33f)
+            cubicTo(w * 0.36f, h * 0.43f, w * 0.40f, h * 0.49f, w * 0.46f, h * 0.51f)
+            cubicTo(w * 0.42f, h * 0.36f, w * 0.45f, h * 0.20f, w * 0.52f, h * 0.08f)
+            close()
+        }
+        val tongue = Path().apply {
+            moveTo(w * 0.50f, h * 0.60f)
+            cubicTo(w * 0.60f, h * 0.68f, w * 0.62f, h * 0.76f, w * 0.58f, h * 0.82f)
+            cubicTo(w * 0.54f, h * 0.88f, w * 0.44f, h * 0.88f, w * 0.41f, h * 0.81f)
+            cubicTo(w * 0.38f, h * 0.74f, w * 0.43f, h * 0.67f, w * 0.50f, h * 0.60f)
+            close()
+        }
+
+        drawPath(path = flame, color = tint, style = glyphStroke())
+        drawPath(path = tongue, color = tint)
+    }
+}
