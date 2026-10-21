@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.features.library.domain.LibraryLayout
@@ -28,7 +29,6 @@ import io.lukia.features.library.presentation.components.book.ImportBookRow
 import io.lukia.features.library.presentation.components.book.rememberContinueReading
 import io.lukia.features.library.presentation.components.selection.CardSelection
 import io.lukia.features.library.presentation.components.toolbar.LibraryHeader
-import io.lukia.features.library.presentation.components.toolbar.libraryNavBarHeight
 import io.lukia.features.library.presentation.model.LibraryBook
 import io.lukia.features.library.presentation.model.LibraryFacets
 import io.lukia.features.library.presentation.model.LibraryQuery
@@ -66,6 +66,8 @@ private const val GridRevealOffset = 3
 
 @Composable
 internal fun LibraryGrid(
+    /** Room left for the bar floating over the shelf - see `LibraryContent`. Nothing where there is none. */
+    topClearance: Dp,
     books: List<LibraryBook>,
     gridState: LazyGridState,
     query: LibraryQuery,
@@ -114,7 +116,7 @@ internal fun LibraryGrid(
             end = dimens.screenPadding,
             // Content scrolls under the compact bar, so the header has to start
             // clear of where it sits at rest.
-            top = libraryNavBarHeight() + Space.md,
+            top = topClearance + Space.md,
             bottom = Clearance.listBottom,
         ),
         horizontalArrangement = Arrangement.spacedBy(dimens.gridSpacing),

@@ -87,7 +87,11 @@ fun LibraryContent(
     shelf: LibraryShelfUi = LibraryShelfUi.None,
     /** Books moving to or from the sync server, for the panel's row. */
     transfers: BookTransferUi = BookTransferUi.None,
-    /** False where searching has a screen of its own - see [LibraryNavBar]. */
+    /**
+     * Whether the shelf carries its own bar - search, the statistics and the
+     * actions menu. False on a phone, where searching has a tab of its own and
+     * Home holds the rest - see `MobileShell` - so the shelf starts at the top.
+     */
     showSearch: Boolean = true,
     /** The way to the reader's own page, supplied by the shell - see `MobileShell`. */
     statsButton: @Composable () -> Unit = {},
@@ -102,6 +106,10 @@ fun LibraryContent(
     // on every book and one on every filter chip, and at most one may be open.
     // Held here so the dimming scrim behind any of them sits in one layer.
     var openMenu by remember { mutableStateOf<OpenMenu?>(null) }
+
+    // Room for the bar that floats over the shelf, where there is one: always
+    // where the shelf has its own, and while books are being picked everywhere.
+    val topClearance = if (showSearch || shelf.active) libraryNavBarHeight() else 0.dp
 
     val collapseDistancePx = with(LocalDensity.current) { HeaderCollapseDistance.toPx() }
     // A lambda, not a value: read this way the scroll position reaches only the
@@ -179,7 +187,7 @@ fun LibraryContent(
                                     importing = importing,
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .padding(top = libraryNavBarHeight()),
+                                        .padding(top = topClearance),
                                 )
 
                                 LibraryContentState.Empty -> LibraryEmptyState(
@@ -193,6 +201,7 @@ fun LibraryContent(
                                 )
 
                                 LibraryContentState.Content -> LibraryGrid(
+                                    topClearance = topClearance,
                                     books = books,
                                     gridState = gridState,
                                     query = query,
@@ -230,7 +239,7 @@ fun LibraryContent(
                 // of them - see LibrarySelectionBar.
                 if (shelf.active) {
                     LibrarySelectionSurface(ui = shelf, books = books)
-                } else {
+                } else if (showSearch) {
                     LibraryNavBar(
                         collapsedProgress = collapsedProgress,
                         query = query.search,
@@ -243,7 +252,6 @@ fun LibraryContent(
                         shelf = shelf,
                         onSettings = onSettings,
                         modifier = Modifier.align(Alignment.TopCenter),
-                        showSearch = showSearch,
                         statsButton = statsButton,
                         searchFocus = searchFocus,
                     )

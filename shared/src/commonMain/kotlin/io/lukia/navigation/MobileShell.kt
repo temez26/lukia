@@ -39,7 +39,6 @@ import io.lukia.features.library.presentation.screens.LibraryScreen
 import io.lukia.features.library.presentation.screens.SearchScreen
 import io.lukia.features.settings.presentation.SettingsOverlay
 import io.lukia.features.settings.presentation.screens.SettingsArea
-import io.lukia.features.stats.presentation.StatsButton
 import io.lukia.features.stats.presentation.components.WeekGlance
 import io.lukia.shared.presentation.components.surface.behindOverlay
 import io.lukia.shared.presentation.theme.LocalMotionStyle
@@ -159,11 +158,9 @@ private fun NavGraphBuilder.tabDestinations(
         navController.switchTo(MobileTab.Library)
     }
 
-    // Filled here rather than by the library screens, which have a place on
-    // their bars for it and no business knowing what the statistics screen is.
-    // This shell is where the two features meet.
+    // Reached from Home's week rather than from a button on the library, which
+    // on a phone has no bar - see `LibraryContent`.
     val openStats: () -> Unit = { navController.navigate(Routes.Stats.route) }
-    val statsButton: @Composable () -> Unit = { StatsButton(onClick = openStats) }
 
     tabDestination(Routes.Home.route) {
         HomeScreen(
@@ -193,7 +190,6 @@ private fun NavGraphBuilder.tabDestinations(
     libraryTab(
         library = library,
         pages = LibraryTabPages(openBook, openDetails, openSettings, openAccountSettings, startSync),
-        statsButton = statsButton,
     )
 
     homeShelfDestination(navController, library, openBook, openDetails)
@@ -216,7 +212,6 @@ private class LibraryTabPages(
 private fun NavGraphBuilder.libraryTab(
     library: LibraryViewModel,
     pages: LibraryTabPages,
-    statsButton: @Composable () -> Unit,
 ) {
     tabDestination(Routes.Library.route) {
         val wide = isWideWindow
@@ -233,14 +228,12 @@ private fun NavGraphBuilder.libraryTab(
                             if (wide) detailLocation = document.document.location else pages.openDetails(document)
                         },
                         onSettings = { if (wide) settings.show(SettingsArea.Default) else pages.openSettings() },
-                        statsButton = statsButton,
                         onSyncWithServer = pages.startSync,
                         onAccountSettings = {
                             if (wide) settings.show(SettingsArea.Account) else pages.openAccountSettings()
                         },
-                        // Searching has a tab of its own here, and a field on this
-                        // screen as well would be a second search with a second
-                        // answer to the same question.
+                        // No bar of its own: searching has a tab here, and Home
+                        // holds adding books, the settings and the statistics.
                         showSearch = false,
                     )
                 }
