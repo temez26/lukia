@@ -22,8 +22,10 @@ import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.features.library.domain.LibraryLayout
 import io.lukia.features.library.presentation.components.book.BookCard
 import io.lukia.features.library.presentation.components.book.BookRow
+import io.lukia.features.library.presentation.components.book.ContinueReadingBand
 import io.lukia.features.library.presentation.components.book.ImportBookCard
 import io.lukia.features.library.presentation.components.book.ImportBookRow
+import io.lukia.features.library.presentation.components.book.rememberContinueReading
 import io.lukia.features.library.presentation.components.selection.CardSelection
 import io.lukia.features.library.presentation.components.toolbar.LibraryHeader
 import io.lukia.features.library.presentation.components.toolbar.libraryNavBarHeight
@@ -94,6 +96,8 @@ internal fun LibraryGrid(
 ) {
     val dimens = LocalLukiaDimens.current
 
+    val continuing = rememberContinueReading(books, query, selection)
+
     LazyVerticalGrid(
         // One grid for both, differing only in how wide a cell is. A list is a
         // grid one column across, and building it as a lazy column of its own
@@ -128,6 +132,12 @@ internal fun LibraryGrid(
                 layout = layout,
                 onLayoutChange = onLayoutChange,
             )
+        }
+
+        if (continuing.isNotEmpty()) {
+            item(span = { GridItemSpan(maxLineSpan) }, key = "continue", contentType = "continue") {
+                ContinueReadingBand(books = continuing, onOpen = onDocumentClick)
+            }
         }
 
         // Only where the reader asked for something the library could not

@@ -67,6 +67,9 @@ and the groups adapt to it rather than forking:
 has no Home and no tab bar: the phone's pages drawn across a monitor read as a
 phone stretched out, so the window keeps a layout of its own.
 
+- `ContinueReadingBand`: the last three books being read, as one slim row
+  between the filters and the grid. Hidden while the shelf is narrowed or
+  being selected from, and on a phone, which has Home for it.
 - Settings open over whatever is showing; the shell hosts the overlay.
 - A book's details dock at the trailing edge (`BookDetailSidePanel`) and the
   page narrows beside them, so another book can be picked with them open.
