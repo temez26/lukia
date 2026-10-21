@@ -1,90 +1,211 @@
 package io.lukia.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import io.lukia.Routes
+import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.infrastructure.AppCommand
 import io.lukia.core.infrastructure.AppCommands
+import io.lukia.features.library.presentation.BookDetailSide
+import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.screens.LibraryScreen
+import io.lukia.features.settings.presentation.SettingsOverlay
+import io.lukia.features.settings.presentation.screens.SettingsArea
 import io.lukia.features.stats.presentation.StatsButton
+import io.lukia.shared.presentation.components.surface.behindOverlay
 import io.lukia.shared.presentation.theme.LocalMotionStyle
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * The app as a window: the library, with everything else pushed on top of it.
  *
- * There is no tab bar here and deliberately so. A desktop window has room to
- * show a book's details beside the library rather than instead of it - see
- * `LibraryScreen` - so the shelf never leaves the screen, and a bar for
- * returning to a screen you never left is a row of chrome doing nothing.
+ * There is no tab bar here and deliberately so, nor the phone's Home: a desktop
+ * window has room to show a book's details beside the shelf rather than instead
+ * of it - see [BookDetailSide] - so the shelf never leaves the screen, and the
+ * phone's pages drawn across a monitor read as a phone stretched out.
+ *
+ * Settings open in place over the shelf, so changing a theme does not throw it
+ * away - see [SettingsOverlay].
  */
 @Composable
-internal fun DesktopShell() {
+internal fun DesktopShell(library: LibraryViewModel = koinViewModel()) {
     val navController = rememberNavController()
     val startSync = rememberStartSync()
     val motion = LocalMotionStyle.current
 
     val commands: AppCommands = koinInject()
     var requested by rememberRequestedCommand(commands, navController)
+    val settings = rememberSettingsOverlayState()
 
-    NavHost(
+    SettingsCommands(requested, settings, onTake = { requested = null })
+
+    // The book whose details are docked beside the page, by location - see
+    // [BookDetailSide], which looks it up again on every pass.
+    var detailLocation by rememberSaveable { mutableStateOf<String?>(null) }
+    val route = navController.currentBackStackEntryAsState().value?.destination?.route
+
+    // Closed by leaving the shelf: coming back from a book should find the shelf
+    // as it was before the panel, not a panel about a book that was not reopened.
+    LaunchedEffect(route) {
+        if (route != null && route != Routes.Library.route) detailLocation = null
+    }
+
+    val pages = DesktopPages(
         navController = navController,
-        startDestination = Routes.Library.route,
-        // Set on the host rather than per destination: every move in this shell
-        // is a push onto or a pop off the library, so declaring it once is
-        // both less to repeat and one less thing to forget when a screen is
-        // added.
-        enterTransition = { if (changesInPlace(motion)) tabEnter(motion) else pushEnter(motion) },
-        exitTransition = { if (changesInPlace(motion)) tabExit(motion) else pushExit(motion) },
-        popEnterTransition = { if (changesInPlace(motion)) tabEnter(motion) else popEnter(motion) },
-        popExitTransition = { if (changesInPlace(motion)) tabExit(motion) else popExit(motion) },
-    ) {
-        composable(Routes.Library.route) {
-            LibraryScreen(
-                // Opening the book is what tapping it is for; everything
-                // else about it lives behind the card's own menu.
-                // A server book not downloaded yet has nothing to read: its
-                // page is where it is downloaded from.
-                onDocumentClick = { document ->
-                    val route = if (document.awaitsDownload) Routes.Detail else Routes.Reader
-                    navController.navigate(route.createRoute(document.document.location))
+        openSettings = { area -> settings.show(area) },
+        showDetails = { location -> detailLocation = location },
+        startSync = startSync,
+    )
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Row(modifier = Modifier.fillMaxSize().behindOverlay(settings.open)) {
+            NavHost(
+                modifier = Modifier.weight(1f),
+                navController = navController,
+                startDestination = Routes.Library.route,
+                // Set on the host rather than per destination: every move in
+                // this shell is a push onto or a pop off the library, so
+                // declaring it once is less to forget.
+                enterTransition = { if (changesInPlace(motion)) tabEnter(motion) else pushEnter(motion) },
+                exitTransition = { if (changesInPlace(motion)) tabExit(motion) else pushExit(motion) },
+                popEnterTransition = { if (changesInPlace(motion)) tabEnter(motion) else popEnter(motion) },
+                popExitTransition = { if (changesInPlace(motion)) tabExit(motion) else popExit(motion) },
+            ) {
+                libraryPage(pages, library, command = requested, onClearCommand = { requested = null })
+                bookDestinations(navController)
+            }
+
+            // Beside the shelf only: a book being read or the statistics take
+            // the window to themselves. The same LibraryViewModel the shelf
+            // uses, resolved from the same owner, outside the host.
+            BookDetailSide(
+                location = detailLocation.takeIf { route == Routes.Library.route },
+                onDismiss = { detailLocation = null },
+                onRead = { document ->
+                    detailLocation = null
+                    pages.openBook(document)
                 },
-                onDocumentDetails = { document ->
-                    navController.navigate(Routes.Detail.createRoute(document.document.location))
-                },
-                onSettings = { navController.navigate(Routes.Settings.route) },
-                command = requested,
-                onClearCommand = { requested = null },
-                // Filled here rather than by the library, which has a place on
-                // its bar for it and no business knowing what the statistics
-                // screen is. This shell is where the two features meet.
-                statsButton = {
-                    StatsButton(onClick = { navController.navigate(Routes.Stats.route) })
-                },
-                accountPage = AppAccountPage,
-                onSyncWithServer = startSync,
-                onAccountSettings = { navController.navigate(Routes.AccountSettings.route) },
             )
         }
 
-        bookDestinations(navController)
-        windowSettingsDestinations(navController)
+        SettingsOverlay(
+            visible = settings.open,
+            onDismiss = { settings.open = false },
+            account = AppAccountPage,
+            initialArea = settings.area,
+        )
     }
+}
+
+/** What the shelf and the panel beside it open, written once so a book opens the same way from either. */
+private class DesktopPages(
+    val navController: NavController,
+    val openSettings: (SettingsArea) -> Unit,
+    showDetails: (String) -> Unit,
+    val startSync: () -> Unit,
+) {
+    val openDetails: (DocumentInfo) -> Unit = { document -> showDetails(document.document.location) }
+
+    // A server book not downloaded yet has nothing to read: its page is where
+    // it is downloaded from.
+    val openBook: (DocumentInfo) -> Unit = { document ->
+        if (document.awaitsDownload) {
+            openDetails(document)
+        } else {
+            navController.navigate(Routes.Reader.createRoute(document.document.location))
+        }
+    }
+
+    val openStats: () -> Unit = { navController.navigate(Routes.Stats.route) }
+}
+
+private fun NavGraphBuilder.libraryPage(
+    pages: DesktopPages,
+    library: LibraryViewModel,
+    command: AppCommand?,
+    onClearCommand: () -> Unit,
+) {
+    composable(Routes.Library.route) {
+        LibraryScreen(
+            viewModel = library,
+            onDocumentClick = pages.openBook,
+            onDocumentDetails = pages.openDetails,
+            onSettings = { pages.openSettings(SettingsArea.Default) },
+            command = command,
+            onClearCommand = onClearCommand,
+            // Filled here rather than by the library, which has a place on its
+            // bar for it and no business knowing what the statistics screen is.
+            statsButton = { StatsButton(onClick = pages.openStats) },
+            onSyncWithServer = pages.startSync,
+            onAccountSettings = { pages.openSettings(SettingsArea.Account) },
+        )
+    }
+}
+
+/**
+ * The commands that are about the settings. They open over whatever is
+ * showing, so the shell carries that one out itself; Find is for the shelf
+ * behind the settings, so it closes them.
+ */
+@Composable
+private fun SettingsCommands(requested: AppCommand?, settings: SettingsOverlayState, onTake: () -> Unit) {
+    val take by rememberUpdatedState(onTake)
+
+    LaunchedEffect(requested) {
+        when (requested) {
+            AppCommand.OpenSettings -> {
+                settings.show(SettingsArea.Default)
+                take()
+            }
+            AppCommand.FindInLibrary -> settings.open = false
+            else -> Unit
+        }
+    }
+}
+
+/** Whether the settings are open over the window, and on which page. */
+internal class SettingsOverlayState(
+    private val visible: MutableState<Boolean>,
+    private val page: MutableState<SettingsArea>,
+) {
+    var open: Boolean by visible
+    val area: SettingsArea get() = page.value
+
+    fun show(area: SettingsArea) {
+        page.value = area
+        open = true
+    }
+}
+
+@Composable
+internal fun rememberSettingsOverlayState(): SettingsOverlayState {
+    val visible = rememberSaveable { mutableStateOf(false) }
+    val page = rememberSaveable { mutableStateOf(SettingsArea.Default) }
+    return remember(visible, page) { SettingsOverlayState(visible, page) }
 }
 
 /**
  * What the window has been asked for and has not yet had carried out.
  *
- * Collected here rather than on the library screen, which is where all three
+ * Collected here rather than on the library screen, which is where all of the
  * commands are actually carried out - see `LibraryScreen`. The menu bar and the
  * shortcuts standing in for it belong to the window and are live on every
  * screen, while the library leaves the composition the moment a book is opened.
@@ -92,9 +213,10 @@ internal fun DesktopShell() {
  * channel until the reader happened to navigate back, and then open a file
  * panel nobody had just asked for.
  *
- * The shelf is brought forward as part of taking the command, because it is
- * what carries all three out and because somebody adding books should see them
- * arrive. A no-op when it is already showing.
+ * The shelf is brought forward as part of taking any command but Settings,
+ * which open over whatever is showing, because it is what carries the others
+ * out and because somebody adding books should see them arrive. A no-op when it
+ * is already showing.
  */
 @Composable
 internal fun rememberRequestedCommand(
@@ -107,7 +229,9 @@ internal fun rememberRequestedCommand(
         commands.commands.collect { command ->
             pending.value = command
 
-            navController.popBackStack(Routes.Library.route, inclusive = false)
+            if (command != AppCommand.OpenSettings) {
+                navController.popBackStack(Routes.Library.route, inclusive = false)
+            }
         }
     }
 

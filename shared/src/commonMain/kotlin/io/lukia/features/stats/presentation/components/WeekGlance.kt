@@ -7,12 +7,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,17 +33,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.lukia.features.stats.domain.DayReading
 import io.lukia.features.stats.domain.ReadingHabits
 import io.lukia.features.stats.presentation.WeekGlanceViewModel
 import io.lukia.features.stats.presentation.dayLabel
+import io.lukia.features.stats.presentation.dayTime
 import io.lukia.features.stats.presentation.readingTime
+import io.lukia.features.stats.presentation.streakLine
 import io.lukia.resources.Res
 import io.lukia.resources.stats_day_spoken
 import io.lukia.resources.stats_open
 import io.lukia.resources.stats_this_week
+import io.lukia.resources.stats_week_run_spoken
 import io.lukia.shared.presentation.components.controls.pressable
 import io.lukia.shared.presentation.components.icons.DisclosureChevron
+import io.lukia.shared.presentation.components.icons.FlameGlyph
+import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -73,6 +79,12 @@ private const val DayNameMaxScale = 1.2f
 private const val PastDayAlpha = 0.5f
 
 private val ChevronSize: Dp = 20.dp
+
+/** The smallest a day's time shrinks to before it is cut - see [DayBar]. */
+private val MinDayTimeSize = 8.sp
+
+/** A day's flame: small enough that seven sit under seven bars without crowding them. */
+private val FlameSize: Dp = 16.dp
 
 /** The app's disclosure mark points down; this turns it to point the way the glance goes. */
 private const val PointForward = -90f
@@ -114,7 +126,14 @@ internal fun WeekGlanceContent(
 ) {
     val title = stringResource(Res.string.stats_this_week)
     val time = readingTime(habits.weekMs)
-    val spoken = stringResource(Res.string.stats_day_spoken, title, time)
+    // The run is said with the week, counted across weeks: eleven days in a row
+    // can sit under three lit flames on a Wednesday, and both are right - the
+    // flames answer "which days this week", the run "how long without a gap".
+    val spoken = if (habits.currentStreak > 0) {
+        stringResource(Res.string.stats_week_run_spoken, title, time, streakLine(habits.currentStreak))
+    } else {
+        stringResource(Res.string.stats_day_spoken, title, time)
+    }
 
     Column(
         modifier = modifier
@@ -154,34 +173,50 @@ internal fun WeekGlanceContent(
     }
 }
 
-/** Each day's reading against the week's longest, as bars rising from one line over their day's name. */
+/**
+ * Each day's reading against the week's longest, as bars rising from one line
+ * over their day's name, each topped with its time.
+ */
 @Composable
-private fun WeekBars(days: List<DayReading>, modifier: Modifier = Modifier) {
+internal fun WeekBars(days: List<DayReading>, modifier: Modifier = Modifier) {
     val longest = maxOf(days.maxOfOrNull { it.durationMs } ?: 0L, FullBarMs)
+    val density = LocalDensity.current
 
-    Column(modifier = modifier.fillMaxWidth()) {
-        DayRow(modifier = Modifier.height(BarsHeight), verticalAlignment = Alignment.Bottom) {
-            days.forEach { day ->
-                val share = (day.durationMs.toFloat() / longest).coerceAtLeast(EmptyBar)
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight(share)
-                        .background(barColor(day), BarShape),
-                )
+    // Capped together, so a day's time and its name stay as wide as its bar.
+    CompositionLocalProvider(
+        LocalDensity provides Density(density.density, density.fontScale.coerceAtMost(DayNameMaxScale)),
+    ) {
+        Column(modifier = modifier.fillMaxWidth()) {
+            DayRow(verticalAlignment = Alignment.Bottom) {
+                days.forEach { day ->
+                    DayBar(
+                        day = day,
+                        share = (day.durationMs.toFloat() / longest).coerceAtLeast(EmptyBar),
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
-        }
 
-        val density = LocalDensity.current
-        CompositionLocalProvider(
-            LocalDensity provides Density(density.density, density.fontScale.coerceAtMost(DayNameMaxScale)),
-        ) {
+            // A flame for every day of the week, lit on the days read: the run
+            // of reading as something seen rather than a number to work out.
+            DayRow(modifier = Modifier.padding(top = Space.sm)) {
+                days.forEach { day ->
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.weight(1f)) {
+                        FlameGlyph(
+                            tint = flameColor(day),
+                            lit = day.hasReading,
+                            modifier = Modifier.size(FlameSize),
+                        )
+                    }
+                }
+            }
+
             DayRow(modifier = Modifier.padding(top = Space.xs)) {
                 days.forEach { day ->
                     Text(
                         text = dayLabel(day.date),
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.run { if (day.isToday) primary else onSurfaceVariant },
+                        color = dayTextColor(day),
                         textAlign = TextAlign.Center,
                         maxLines = 1,
                         modifier = Modifier.weight(1f),
@@ -191,6 +226,55 @@ private fun WeekBars(days: List<DayReading>, modifier: Modifier = Modifier) {
         }
     }
 }
+
+/**
+ * One day's bar under its time. A day with less than a minute read carries no
+ * time - the app does not round a reader up to a minute - and keeps the room
+ * for one, so every bar rises from the same line.
+ */
+@Composable
+private fun DayBar(day: DayReading, share: Float, modifier: Modifier = Modifier) {
+    val dayTimeStyle = MaterialTheme.typography.labelSmall
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
+        Text(
+            text = dayTime(day.durationMs),
+            style = dayTimeStyle,
+            // Muted on every day, today's too: the bar and the day's name
+            // already mark today, and a third accent over them was loud.
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+            softWrap = false,
+            // Shrunk to its bar rather than cut: "1h 24m" at a large text size
+            // is wider than a seventh of a phone.
+            autoSize = TextAutoSize.StepBased(minFontSize = MinDayTimeSize, maxFontSize = dayTimeStyle.fontSize),
+            modifier = Modifier.padding(bottom = Space.xs),
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(BarsHeight * share)
+                .background(barColor(day), BarShape),
+        )
+    }
+}
+
+/**
+ * Lit in the accent on a day read; an outline on a day missed; fainter still on
+ * a day still to come, so Monday's week does not read as six days missed.
+ */
+@Composable
+private fun flameColor(day: DayReading): Color = when {
+    day.hasReading -> MaterialTheme.colorScheme.primary
+    day.isFuture -> MaterialTheme.colorScheme.outlineVariant.copy(alpha = LukiaAlpha.Disabled)
+    else -> MaterialTheme.colorScheme.outlineVariant
+}
+
+@Composable
+private fun dayTextColor(day: DayReading): Color =
+    MaterialTheme.colorScheme.run { if (day.isToday) primary else onSurfaceVariant }
 
 /** The bars and the names under them, spaced the same so each name sits under its bar. */
 @Composable

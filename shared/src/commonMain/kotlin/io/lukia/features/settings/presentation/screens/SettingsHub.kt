@@ -69,7 +69,7 @@ private val RowMinHeight: Dp = 52.dp
 private val ValueMaxWidth: Dp = 150.dp
 
 /** A glyph drawn in a tint at a size, as every glyph in the icons package is. */
-private typealias RowGlyph = @Composable (tint: Color, modifier: Modifier) -> Unit
+internal typealias RowGlyph = @Composable (tint: Color, modifier: Modifier) -> Unit
 
 /**
  * Who this device is signed in as, said in the two lines the top of the phone's
@@ -346,7 +346,7 @@ private fun LinkRow(
  * so the list wears the palette the reader chose rather than a rainbow of its own.
  */
 @Composable
-private fun GlyphTile(glyph: RowGlyph) {
+internal fun GlyphTile(glyph: RowGlyph) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier

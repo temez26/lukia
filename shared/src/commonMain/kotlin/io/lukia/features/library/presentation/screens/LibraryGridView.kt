@@ -2,6 +2,7 @@ package io.lukia.features.library.presentation.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -16,16 +17,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.features.library.domain.LibraryLayout
 import io.lukia.features.library.presentation.components.book.BookCard
 import io.lukia.features.library.presentation.components.book.BookRow
+import io.lukia.features.library.presentation.components.book.ContinueReadingBand
 import io.lukia.features.library.presentation.components.book.ImportBookCard
 import io.lukia.features.library.presentation.components.book.ImportBookRow
+import io.lukia.features.library.presentation.components.book.rememberContinueReading
 import io.lukia.features.library.presentation.components.selection.CardSelection
 import io.lukia.features.library.presentation.components.toolbar.LibraryHeader
-import io.lukia.features.library.presentation.components.toolbar.libraryNavBarHeight
 import io.lukia.features.library.presentation.model.LibraryBook
 import io.lukia.features.library.presentation.model.LibraryFacets
 import io.lukia.features.library.presentation.model.LibraryQuery
@@ -36,10 +39,14 @@ import io.lukia.features.library.presentation.model.menuHeader
 import io.lukia.features.library.presentation.sessions.BookTransferUi
 import io.lukia.features.library.presentation.sessions.LibraryImportUi
 import io.lukia.resources.Res
+import io.lukia.resources.filter_clear
 import io.lukia.resources.library_no_matches_filtered
 import io.lukia.resources.library_no_matches_filtered_term
 import io.lukia.resources.library_no_matches_term
 import io.lukia.resources.library_no_results_title
+import io.lukia.resources.search_clear
+import io.lukia.shared.presentation.components.controls.ButtonVariant
+import io.lukia.shared.presentation.components.controls.LukiaButton
 import io.lukia.shared.presentation.components.launch.LaunchReveal
 import io.lukia.shared.presentation.components.menu.BookActionsMenu
 import io.lukia.shared.presentation.components.surface.EmptyState
@@ -59,6 +66,8 @@ private const val GridRevealOffset = 3
 
 @Composable
 internal fun LibraryGrid(
+    /** Room left for the bar floating over the shelf - see `LibraryContent`. Nothing where there is none. */
+    topClearance: Dp,
     books: List<LibraryBook>,
     gridState: LazyGridState,
     query: LibraryQuery,
@@ -89,6 +98,8 @@ internal fun LibraryGrid(
 ) {
     val dimens = LocalLukiaDimens.current
 
+    val continuing = rememberContinueReading(books, query, selection)
+
     LazyVerticalGrid(
         // One grid for both, differing only in how wide a cell is. A list is a
         // grid one column across, and building it as a lazy column of its own
@@ -105,7 +116,7 @@ internal fun LibraryGrid(
             end = dimens.screenPadding,
             // Content scrolls under the compact bar, so the header has to start
             // clear of where it sits at rest.
-            top = libraryNavBarHeight() + Space.md,
+            top = topClearance + Space.md,
             bottom = Clearance.listBottom,
         ),
         horizontalArrangement = Arrangement.spacedBy(dimens.gridSpacing),
@@ -125,12 +136,18 @@ internal fun LibraryGrid(
             )
         }
 
+        if (continuing.isNotEmpty()) {
+            item(span = { GridItemSpan(maxLineSpan) }, key = "continue", contentType = "continue") {
+                ContinueReadingBand(books = continuing, onOpen = onDocumentClick)
+            }
+        }
+
         // Only where the reader asked for something the library could not
         // answer. An unnarrowed library with nothing in it is not a dead end -
         // it is the empty state, which this grid is not showing at all.
         if (books.isEmpty() && query.isNarrowed) {
             item(span = { GridItemSpan(maxLineSpan) }, key = "noMatches", contentType = "notice") {
-                NoMatchesNotice(query)
+                NoMatchesNotice(query = query, onQueryChange = onQueryChange)
             }
         }
 
@@ -224,15 +241,14 @@ internal fun LibraryGrid(
  *
  * A word somebody just typed is the likeliest thing to be wrong, so it is quoted
  * back wherever there is one. The filters are named only in the general: listing
- * all five would be a paragraph, and the "Clear" chip above is already the
- * answer to every one of them.
+ * all five would be a paragraph. Under the words, the way out of it.
  */
 @Composable
-private fun NoMatchesNotice(query: LibraryQuery) {
+private fun NoMatchesNotice(query: LibraryQuery, onQueryChange: (LibraryQuery) -> Unit) {
     val trimmed = query.search.trim()
 
-    Box(
-        contentAlignment = Alignment.TopCenter,
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 40.dp),
@@ -246,6 +262,20 @@ private fun NoMatchesNotice(query: LibraryQuery) {
 
                 else -> stringResource(Res.string.library_no_matches_term, trimmed)
             },
+        )
+
+        // The way out of the dead end, under the words that explain it: the
+        // search when there is one, as the likeliest thing to be wrong, and the
+        // filters otherwise.
+        LukiaButton(
+            label = stringResource(if (trimmed.isEmpty()) Res.string.filter_clear else Res.string.search_clear),
+            onClick = {
+                onQueryChange(
+                    if (trimmed.isEmpty()) query.cleared().copy(shelf = LibraryShelf.All) else query.copy(search = ""),
+                )
+            },
+            variant = ButtonVariant.Secondary,
+            modifier = Modifier.padding(top = Space.lg),
         )
     }
 }

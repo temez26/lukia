@@ -1,6 +1,8 @@
 package io.lukia.features.settings.presentation.screens
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import io.lukia.resources.Res
 import io.lukia.resources.account_area
 import io.lukia.resources.settings_about
@@ -9,6 +11,12 @@ import io.lukia.resources.settings_area_ai_translation
 import io.lukia.resources.settings_area_appearance
 import io.lukia.resources.settings_area_reading
 import io.lukia.resources.settings_area_translating
+import io.lukia.shared.presentation.components.icons.AppearanceGlyph
+import io.lukia.shared.presentation.components.icons.CloudGlyph
+import io.lukia.shared.presentation.components.icons.InfoGlyph
+import io.lukia.shared.presentation.components.icons.OpenBookGlyph
+import io.lukia.shared.presentation.components.icons.SparkleGlyph
+import io.lukia.shared.presentation.components.icons.TranslateGlyph
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -43,4 +51,15 @@ internal fun SettingsArea.displayTitle(): String = when (this) {
 internal fun SettingsArea.pageTitle(): String = when (this) {
     SettingsArea.AiTranslation -> stringResource(Res.string.settings_ai_translation)
     else -> displayTitle()
+}
+
+/** The glyph a group is known by, in the phone's list and a window's sidebar alike. */
+@Composable
+internal fun SettingsArea.Glyph(tint: Color, modifier: Modifier = Modifier) = when (this) {
+    SettingsArea.Appearance -> AppearanceGlyph(tint, modifier)
+    SettingsArea.Reading -> OpenBookGlyph(tint, modifier)
+    SettingsArea.Translating -> TranslateGlyph(tint, modifier)
+    SettingsArea.AiTranslation -> SparkleGlyph(tint, modifier)
+    SettingsArea.About -> InfoGlyph(tint, modifier)
+    SettingsArea.Account -> CloudGlyph(tint, modifier)
 }

@@ -1,13 +1,19 @@
 package io.lukia.features.stats.presentation.components
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Text
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
 import io.lukia.core.domain.reading.ReadingSession
 import io.lukia.features.stats.domain.ReadingHabits
 import io.lukia.features.stats.domain.readingHabits
+import io.lukia.features.stats.presentation.dayTime
 import io.lukia.shared.presentation.theme.LukiaTheme
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -46,7 +52,8 @@ class WeekGlanceTest {
             }
         }
 
-        onNodeWithContentDescription("This week: 3h 20m").assertIsDisplayed().performClick()
+        // Read today, so the run is a day long and is said with the week.
+        onNodeWithContentDescription("This week: 3h 20m. 1 day in a row").assertIsDisplayed().performClick()
         assertTrue(opened)
     }
 
@@ -59,5 +66,38 @@ class WeekGlanceTest {
         }
 
         onNodeWithContentDescription("This week: None yet").assertIsDisplayed()
+    }
+
+    /** Each bar carries its day's time, and less than a minute carries none rather than rounding up. */
+    @Test
+    fun aDayIsLabelledWithItsMinutes() = runComposeUiTest {
+        setContent {
+            LukiaTheme(darkTheme = false) {
+                Column {
+                    Text(dayTime(25 * 60_000L))
+                    Text("[" + dayTime(30_000L) + "]")
+                }
+            }
+        }
+
+        onNodeWithText("25m").assertIsDisplayed()
+        onNodeWithText("[]").assertIsDisplayed()
+    }
+
+    /**
+     * The bars themselves, which the card hides from a screen reader behind its
+     * own sentence: the day read carries its time over its bar, and the days not
+     * read carry none.
+     */
+    @Test
+    fun theBarsCarryTheTimeOfTheDaysRead() = runComposeUiTest {
+        setContent {
+            LukiaTheme(darkTheme = false) {
+                WeekBars(days = habits(minutes = 25).days)
+            }
+        }
+
+        onAllNodesWithText("25m").assertCountEquals(1)
+        onAllNodesWithText("m", substring = true).assertCountEquals(1)
     }
 }

@@ -31,7 +31,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 // Settings as a phone shows them: a list of the groups, and each group as a page
-// pushed over it. Wider windows keep `SettingsScreen` - see [SettingsHub].
+// pushed over it. Wider windows open `SettingsOverlay` instead - see [SettingsHub].
 
 /** The list of settings groups - the page Settings opens on, on a phone. */
 @Composable

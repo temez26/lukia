@@ -2,7 +2,9 @@ package io.lukia.features.stats.presentation.screens
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -32,6 +34,7 @@ import io.lukia.shared.presentation.components.state.LoadingState
 import io.lukia.shared.presentation.theme.Clearance
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.Space
+import io.lukia.shared.presentation.theme.isWideWindow
 import io.lukia.shared.presentation.theme.softFadeOut
 import io.lukia.shared.presentation.theme.stateSwapIn
 import org.jetbrains.compose.resources.stringResource
@@ -72,7 +75,9 @@ internal fun StatsBody(
 
         Column(
             modifier = Modifier
-                .widthIn(max = dimens.maxDetailWidth)
+                // A window lays the sections out two by two - see [StatsSections] -
+                // so it takes the library's measure rather than a detail page's.
+                .widthIn(max = if (isWideWindow) dimens.maxGridWidth else dimens.maxDetailWidth)
                 .fillMaxWidth()
                 .padding(horizontal = dimens.screenPadding),
         ) {
@@ -156,6 +161,10 @@ private fun CountedContent(
  * then the books last open. Somebody opening this has just put a book down, so
  * what they did today is the first thing on the page and the size of their
  * collection is the last.
+ *
+ * One column on a phone. A window has the width for two, and sets them two by
+ * two in the same reading order - time on top, the shelf below - rather than
+ * one narrow column down the middle of a monitor.
  */
 @Composable
 private fun StatsSections(
@@ -165,28 +174,28 @@ private fun StatsSections(
     modifier: Modifier = Modifier,
 ) {
     val dimens = LocalLukiaDimens.current
+    val time: List<@Composable (Modifier) -> Unit> = listOf(
+        { ThisWeekSection(habits = summary.habits, groupColor = groupColor, modifier = it) },
+        { AllTimeSection(habits = summary.habits, groupColor = groupColor, modifier = it) },
+    )
+    val shelf: List<@Composable (Modifier) -> Unit> = listOf(
+        { LibrarySection(stats = summary.stats, groupColor = groupColor, modifier = it) },
+        { ActivitySection(activity = summary.recent, onOpenBook = onOpenBook, groupColor = groupColor, modifier = it) },
+    )
 
-    Column(modifier = modifier.fillMaxWidth()) {
-        ThisWeekSection(habits = summary.habits, groupColor = groupColor)
-
-        AllTimeSection(
-            habits = summary.habits,
-            groupColor = groupColor,
-            modifier = Modifier.padding(top = dimens.sectionSpacing),
-        )
-
-        LibrarySection(
-            stats = summary.stats,
-            groupColor = groupColor,
-            modifier = Modifier.padding(top = dimens.sectionSpacing),
-        )
-
-        ActivitySection(
-            activity = summary.recent,
-            onOpenBook = onOpenBook,
-            groupColor = groupColor,
-            modifier = Modifier.padding(top = dimens.sectionSpacing),
-        )
+    Column(
+        verticalArrangement = Arrangement.spacedBy(dimens.sectionSpacing),
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        if (isWideWindow) {
+            listOf(time, shelf).forEach { pair ->
+                Row(horizontalArrangement = Arrangement.spacedBy(dimens.sectionSpacing)) {
+                    pair.forEach { section -> section(Modifier.weight(1f)) }
+                }
+            }
+        } else {
+            (time + shelf).forEach { section -> section(Modifier) }
+        }
     }
 }
 

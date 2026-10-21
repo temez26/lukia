@@ -16,11 +16,8 @@ import io.lukia.features.settings.domain.AppSettings
 import io.lukia.resources.Res
 import io.lukia.resources.accent_green
 import io.lukia.resources.palette_crisp
-import io.lukia.resources.palette_crisp_detail
 import io.lukia.resources.palette_paper
-import io.lukia.resources.palette_paper_detail
 import io.lukia.resources.palette_slate
-import io.lukia.resources.palette_slate_detail
 import io.lukia.shared.presentation.theme.LukiaTheme
 import io.lukia.shared.words
 import kotlin.test.Test
@@ -50,16 +47,14 @@ class AppearanceSettingsTest {
     }
 
     @Test
-    fun everyPaletteIsOfferedByNameAndBySomethingAboutIt() = runComposeUiTest {
+    fun everyPaletteIsOfferedByName() = runComposeUiTest {
         setAppearance()
 
         // Named by resource rather than by walking the enum: what a palette
         // is called now lives in `ThemeChoicesDisplay.kt`, whose exhaustive
-        // `when` is what fails when a palette is added without copy.
-        PaletteWords.forEach { (name, detail) ->
-            onNodeWithText(words(name)).assertIsDisplayed()
-            onNodeWithText(words(detail)).assertIsDisplayed()
-        }
+        // `when` is what fails when a palette is added without copy. What it
+        // looks like is its tile's preview.
+        PaletteNames.forEach { name -> onNodeWithText(words(name)).assertIsDisplayed() }
     }
 
     @Test
@@ -93,11 +88,11 @@ class AppearanceSettingsTest {
         assertEquals(AppTheme.Dark, chosen?.theme)
     }
     private companion object {
-        /** Each palette's name and the line under it, in the order they appear. */
-        val PaletteWords = listOf(
-            Res.string.palette_crisp to Res.string.palette_crisp_detail,
-            Res.string.palette_paper to Res.string.palette_paper_detail,
-            Res.string.palette_slate to Res.string.palette_slate_detail,
+        /** Each palette's name, in the order they appear. */
+        val PaletteNames = listOf(
+            Res.string.palette_crisp,
+            Res.string.palette_paper,
+            Res.string.palette_slate,
         )
     }
 }

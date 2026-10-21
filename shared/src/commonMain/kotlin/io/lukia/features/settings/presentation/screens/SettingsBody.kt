@@ -1,29 +1,40 @@
 package io.lukia.features.settings.presentation.screens
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.reader.domain.ReaderSettings
@@ -34,8 +45,7 @@ import io.lukia.features.settings.presentation.TranslatingActions
 import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.resources.Res
 import io.lukia.resources.settings_title
-import io.lukia.shared.presentation.components.controls.LukiaChip
-import io.lukia.shared.presentation.components.controls.SegmentedControl
+import io.lukia.shared.presentation.components.controls.pressFeedback
 import io.lukia.shared.presentation.theme.Clearance
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.LukiaMotion
@@ -46,37 +56,25 @@ import org.jetbrains.compose.resources.stringResource
 typealias AccountPage = @Composable (groupColor: Color) -> Unit
 
 /**
- * The least room a group is given, however little it has to put in it.
- *
- * Appearance is one control and AI translation is a dozen, and a page that shrank
- * to fit whichever was open made switching between them feel like opening and
- * closing something rather than moving along a row. Held at about the height of
- * a phone's content area, the shortest group still fills the view and the
- * longest is the only one that scrolls.
- */
-private val MinAreaHeight: Dp = 400.dp
-
-/**
- * How long one group takes to give way to the next, and how long the page takes
- * to reach the new height.
- *
- * The words go first and the height follows, which is the order that reads as
- * one movement rather than as two things happening to the same screen. Both are
- * the app's own durations rather than numbers of their own - see [LukiaMotion] -
- * so switching groups here moves at the rate a menu or a panel does.
+ * How long one group takes to give way to the next. The app's own quick
+ * duration - see [LukiaMotion] - so switching groups moves at the rate a menu does.
  */
 private const val AreaFadeMillis = LukiaMotion.QuickMillis
-private const val AreaSettleMillis = LukiaMotion.StandardMillis
+
+/** Wide enough for the longest group's name at the default size, beside its glyph. */
+private val SidebarWidth: Dp = 220.dp
 
 /**
- * The settings themselves, without the chrome around them.
+ * The settings themselves, without the chrome around them, as a window shows
+ * them: the groups listed down a sidebar, and the one chosen beside it.
  *
- * Shared, because these are shown two ways - a screen of its own on a phone, a
- * panel over the library on anything wider - and a setting must not read
- * differently depending on which one you reached.
+ * A sidebar rather than a row of segments: six groups did not fit one row at a
+ * readable size, and a page that changed height with every group moved the row
+ * under the pointer. The sheet holds one height; only the group scrolls.
  *
- * It keeps its title where the library dropped one: the library is the app's
- * home and needs no introduction, arriving here from a menu does.
+ * A phone shows the same groups as a list of pages - see `SettingsHub` - and
+ * both build them from [SettingsAreaContent], so a setting reads the same either
+ * way.
  */
 @Composable
 internal fun SettingsBody(
@@ -110,57 +108,55 @@ internal fun SettingsBody(
      * The Account page, which the account feature builds out of this feature's
      * controls - so it arrives as a slot, from the navigation that knows both,
      * rather than being named here and making the two features a circle. Null
-     * leaves it off the page and its control out of the header.
+     * leaves it off the page and out of the sidebar.
      */
     account: AccountPage? = null,
     /** The page it opens on - the Account page, when that is what was asked for. */
     initialArea: SettingsArea = SettingsArea.Default,
 ) {
     val dimens = LocalLukiaDimens.current
-    val scroll = rememberScrollState()
+    var area by rememberSaveable(initialArea) { mutableStateOf(initialArea) }
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.verticalScroll(scroll),
-    ) {
-        Spacer(modifier = Modifier.height(topClearance))
-
-        Column(
+    Row(modifier = modifier) {
+        SettingsSidebar(
+            area = area,
+            onAreaChange = { area = it },
+            showAccount = account != null,
             modifier = Modifier
-                .widthIn(max = dimens.maxDetailWidth)
-                .fillMaxWidth()
-                .padding(horizontal = dimens.screenPadding),
-        ) {
-            // Open on the first one rather than on a menu of them. Settings is
-            // five groups, not a place to navigate around: the same control the
-            // library narrows itself with switches between them, in place, with
-            // nothing to go back out of.
-            var area by rememberSaveable(initialArea) { mutableStateOf(initialArea) }
+                .width(SidebarWidth)
+                .fillMaxHeight()
+                .padding(top = topClearance, bottom = dimens.sectionSpacing),
+        )
 
-            SettingsHeader(area = area, onAreaChange = { area = it }, showAccount = account != null)
+        Box(
+            modifier = Modifier
+                .width(1.dp)
+                .fillMaxHeight()
+                .background(MaterialTheme.colorScheme.outlineVariant),
+        )
 
-            // Back to the top of whatever was opened. Switching from a long
-            // group to a short one while scrolled down otherwise lands the
-            // reader at the bottom of something they have not seen the top of.
-            LaunchedEffect(area) { scroll.animateScrollTo(0) }
-
-            // One group fades into the next while the page eases between their
-            // heights. Switched without either, the page jumps from the height
-            // of one group to the height of another - which reads as the screen
-            // being rebuilt rather than as a control being used, and is worse
-            // the further apart the two groups are in length.
-            Crossfade(
-                targetState = area,
-                animationSpec = tween(AreaFadeMillis, easing = LukiaMotion.Standard),
+        // One group fades into the next in place; the sheet around them keeps
+        // its height, so nothing else moves.
+        Crossfade(
+            targetState = area,
+            animationSpec = tween(AreaFadeMillis, easing = LukiaMotion.Standard),
+            modifier = Modifier.weight(1f).fillMaxHeight(),
+        ) { shown ->
+            Column(
                 modifier = Modifier
-                    .animateContentSize(
-                        animationSpec = tween(AreaSettleMillis, easing = LukiaMotion.Standard),
-                    )
-                    // Applied inside the animation, so what eases between the
-                    // groups is already the held height rather than the height
-                    // of whichever group happens to be shortest.
-                    .heightIn(min = MinAreaHeight),
-            ) { shown ->
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = dimens.screenPadding),
+            ) {
+                Spacer(modifier = Modifier.height(topClearance))
+
+                Text(
+                    text = shown.pageTitle(),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.semantics { heading() },
+                )
+
                 SettingsAreaContent(
                     area = shown,
                     settings = settings,
@@ -176,53 +172,92 @@ internal fun SettingsBody(
                     diagnostics = diagnostics,
                     account = account,
                 )
+
+                Spacer(modifier = Modifier.height(bottomClearance))
             }
         }
-
-        Spacer(modifier = Modifier.height(bottomClearance))
     }
 }
 
 /**
- * The page's name, the control that switches between its five groups, and the
- * way to the Account page beside the name.
- *
- * It keeps its title where the library dropped one: the library is the app's
- * home and needs no introduction, while arriving here from a menu does.
+ * The page's name over its groups, one row each, with Account kept apart at the
+ * foot: it is about the device rather than about reading, and most readers open
+ * it once.
  */
 @Composable
-private fun SettingsHeader(
+private fun SettingsSidebar(
     area: SettingsArea,
     onAreaChange: (SettingsArea) -> Unit,
     showAccount: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = stringResource(Res.string.settings_title),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.weight(1f),
-            )
+    Column(
+        verticalArrangement = Arrangement.spacedBy(Space.xs),
+        modifier = modifier
+            .padding(horizontal = Space.md)
+            .selectableGroup(),
+    ) {
+        Text(
+            text = stringResource(Res.string.settings_title),
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier
+                .padding(horizontal = Space.sm)
+                .padding(bottom = Space.lg)
+                .semantics { heading() },
+        )
 
-            if (showAccount) {
-                LukiaChip(
-                    label = SettingsArea.Account.displayTitle(),
-                    selected = area == SettingsArea.Account,
-                    onClick = { onAreaChange(SettingsArea.Account) },
-                )
-            }
+        SettingsArea.Segments.forEach { group ->
+            SidebarRow(group = group, selected = group == area, onClick = { onAreaChange(group) })
         }
 
-        // No segment is lit while Account is open, which is what the control's
-        // nullable selection is for: the page shown is none of these five.
-        SegmentedControl(
-            options = SettingsArea.Segments,
-            selected = area.takeIf { it in SettingsArea.Segments },
-            label = { it.displayTitle() },
-            onSelect = onAreaChange,
-            modifier = Modifier.padding(top = Space.lg),
+        if (showAccount) {
+            Spacer(modifier = Modifier.weight(1f))
+
+            SidebarRow(
+                group = SettingsArea.Account,
+                selected = area == SettingsArea.Account,
+                onClick = { onAreaChange(SettingsArea.Account) },
+            )
+        }
+    }
+}
+
+/** One group in the sidebar: its glyph on a tile and its name, lit while it is the one shown. */
+@Composable
+private fun SidebarRow(group: SettingsArea, selected: Boolean, onClick: () -> Unit) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val shape = MaterialTheme.shapes.small
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(if (selected) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent)
+            .pressFeedback(interactionSource, shape)
+            .selectable(
+                selected = selected,
+                interactionSource = interactionSource,
+                indication = null,
+                role = Role.Tab,
+                onClick = onClick,
+            )
+            .padding(Space.sm),
+    ) {
+        GlyphTile { tint, glyph -> group.Glyph(tint, glyph) }
+
+        Spacer(modifier = Modifier.width(Space.md))
+
+        Text(
+            text = group.pageTitle(),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f, fill = false),
         )
+
+        if (group == SettingsArea.AiTranslation) BetaBadge(modifier = Modifier.padding(start = Space.sm))
     }
 }

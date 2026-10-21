@@ -7,6 +7,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -15,6 +16,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +29,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.savedstate.read
 import io.lukia.Routes
 import io.lukia.core.domain.document.DocumentInfo
+import io.lukia.features.library.presentation.BookDetailSide
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.model.HomeShelf
 import io.lukia.features.library.presentation.model.LibraryQuery
@@ -34,11 +37,14 @@ import io.lukia.features.library.presentation.screens.HomeScreen
 import io.lukia.features.library.presentation.screens.HomeShelfScreen
 import io.lukia.features.library.presentation.screens.LibraryScreen
 import io.lukia.features.library.presentation.screens.SearchScreen
-import io.lukia.features.stats.presentation.StatsButton
+import io.lukia.features.settings.presentation.SettingsOverlay
+import io.lukia.features.settings.presentation.screens.SettingsArea
 import io.lukia.features.stats.presentation.components.WeekGlance
+import io.lukia.shared.presentation.components.surface.behindOverlay
 import io.lukia.shared.presentation.theme.LocalMotionStyle
 import io.lukia.shared.presentation.theme.MotionStyle
 import io.lukia.shared.presentation.theme.exit
+import io.lukia.shared.presentation.theme.isWideWindow
 import io.lukia.shared.presentation.theme.standard
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -152,11 +158,9 @@ private fun NavGraphBuilder.tabDestinations(
         navController.switchTo(MobileTab.Library)
     }
 
-    // Filled here rather than by the library screens, which have a place on
-    // their bars for it and no business knowing what the statistics screen is.
-    // This shell is where the two features meet.
+    // Reached from Home's week rather than from a button on the library, which
+    // on a phone has no bar - see `LibraryContent`.
     val openStats: () -> Unit = { navController.navigate(Routes.Stats.route) }
-    val statsButton: @Composable () -> Unit = { StatsButton(onClick = openStats) }
 
     tabDestination(Routes.Home.route) {
         HomeScreen(
@@ -183,24 +187,76 @@ private fun NavGraphBuilder.tabDestinations(
         )
     }
 
-    tabDestination(Routes.Library.route) {
-        LibraryScreen(
-            viewModel = library,
-            onDocumentClick = openBook,
-            onDocumentDetails = openDetails,
-            onSettings = openSettings,
-            statsButton = statsButton,
-            accountPage = AppAccountPage,
-            onSyncWithServer = startSync,
-            onAccountSettings = openAccountSettings,
-            // Searching has a tab of its own here, and a field on this screen as
-            // well would be a second search with a second answer to the same
-            // question.
-            showSearch = false,
-        )
-    }
+    libraryTab(
+        library = library,
+        pages = LibraryTabPages(openBook, openDetails, openSettings, openAccountSettings, startSync),
+    )
 
     homeShelfDestination(navController, library, openBook, openDetails)
+}
+
+/** What the library tab opens when there is no room to open it beside the shelf. */
+private class LibraryTabPages(
+    val openBook: (DocumentInfo) -> Unit,
+    val openDetails: (DocumentInfo) -> Unit,
+    val openSettings: () -> Unit,
+    val openAccountSettings: () -> Unit,
+    val startSync: () -> Unit,
+)
+
+/**
+ * The library tab. On a tablet's wide window a book's details dock beside the
+ * shelf and Settings open over it, as in a desktop window - see `DesktopShell` -
+ * rather than pushing a page of their own; a phone pushes them.
+ */
+private fun NavGraphBuilder.libraryTab(
+    library: LibraryViewModel,
+    pages: LibraryTabPages,
+) {
+    tabDestination(Routes.Library.route) {
+        val wide = isWideWindow
+        var detailLocation by rememberSaveable { mutableStateOf<String?>(null) }
+        val settings = rememberSettingsOverlayState()
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            Row(modifier = Modifier.fillMaxSize().behindOverlay(settings.open)) {
+                Box(modifier = Modifier.weight(1f)) {
+                    LibraryScreen(
+                        viewModel = library,
+                        onDocumentClick = pages.openBook,
+                        onDocumentDetails = { document ->
+                            if (wide) detailLocation = document.document.location else pages.openDetails(document)
+                        },
+                        onSettings = { if (wide) settings.show(SettingsArea.Default) else pages.openSettings() },
+                        onSyncWithServer = pages.startSync,
+                        onAccountSettings = {
+                            if (wide) settings.show(SettingsArea.Account) else pages.openAccountSettings()
+                        },
+                        // No bar of its own: searching has a tab here, and Home
+                        // holds adding books, the settings and the statistics.
+                        showSearch = false,
+                    )
+                }
+
+                BookDetailSide(
+                    location = detailLocation.takeIf { wide },
+                    onDismiss = { detailLocation = null },
+                    onRead = { document ->
+                        detailLocation = null
+                        pages.openBook(document)
+                    },
+                    viewModel = library,
+                )
+            }
+
+            SettingsOverlay(
+                visible = settings.open && wide,
+                onDismiss = { settings.open = false },
+                account = AppAccountPage,
+                initialArea = settings.area,
+            )
+        }
+    }
 }
 
 /**

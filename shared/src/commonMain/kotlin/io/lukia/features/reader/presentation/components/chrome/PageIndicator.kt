@@ -57,6 +57,8 @@ internal fun PageIndicatorButton(
     /** The book's chapters, so the bar can say which one the page is in. */
     chapters: List<OutlineEntry>,
     onClick: () -> Unit,
+    /** Whether the contents it opens are open, which quietens its tooltip. */
+    expanded: Boolean = false,
 ) {
     // The page and how far through the book it is, as one value read from the
     // list. Kept as two, the share was worked out in this function's body and the
@@ -96,6 +98,7 @@ internal fun PageIndicatorButton(
     ShortcutTooltip(
         description = stringResource(Res.string.reader_contents),
         shortcut = "C",
+        suppressed = expanded,
     ) {
         // What is pressed, which is as tall as anything else in the bar - a
         // thumb aiming at the middle of the toolbar has to land on this. What is

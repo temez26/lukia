@@ -483,7 +483,8 @@
     <string name="shortcut_close_book">Close book</string>
     <string name="shortcut_close_book_keys">Esc</string>
     <string name="shortcut_word_details">More about a word</string>
-    <string name="shortcut_word_details_keys">Two-finger press</string>
+    <string name="shortcut_word_details_keys">Right-click</string>
+    <string name="menu_find">Find…</string>
     <!-- A tooltip: what the control does, then the key that does it. -->
     <string name="shortcut_tooltip">%1$s  %2$s</string>
 
@@ -689,6 +690,7 @@
     <string name="stats_longest_run_spoken">Longest run: %1$s</string>
     <!-- One bar of the week chart, for a screen reader. -->
     <string name="stats_day_spoken">%1$s: %2$s</string>
+    <string name="stats_week_run_spoken">%1$s: %2$s. %3$s</string>
     <string name="stats_still_to_come">still to come</string>
 
     <string name="stats_your_library">Your library</string>

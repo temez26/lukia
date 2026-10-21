@@ -1,6 +1,7 @@
 package io.lukia.shared.presentation.components.menu
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,13 +22,26 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
@@ -74,6 +88,10 @@ private val MenuInset = Space.lg
  * would swallow that press - leaving the scrim, the way out, never seeing the
  * tap - and on Android would take focus mid-long-press, so the tail of that
  * gesture read as an outside touch and closed the menu before it had drawn.
+ *
+ * On a desktop it is focusable after all - see [menusTakeFocus] - so the keyboard
+ * can reach its rows: Down and Up move through them, Home and End jump to the
+ * ends, and Escape or a click outside closes it through [onDismissRequest].
  */
 @Composable
 fun AnchoredMenu(
@@ -90,21 +108,40 @@ fun AnchoredMenu(
 
     DismissOnBack(enabled = expanded, onDismiss = onDismissRequest)
 
+    // Taken once, as the menu opens, and kept through its exit so it fades out
+    // where it was rather than jumping back to its anchor.
+    val opening = remember { OpeningPoint() }
+    opening.update(expanded)
+    SideEffect { if (expanded) MenuPointer.clear() }
+
     val gapPx = with(LocalDensity.current) { AnchorGap.roundToPx() }
-    val positionProvider = remember(gapPx) { AnchoredMenuPositionProvider(gapPx) }
+    val positionProvider = remember(gapPx, opening.pointer) { AnchoredMenuPositionProvider(gapPx, opening.pointer) }
 
     Popup(
         popupPositionProvider = positionProvider,
         onDismissRequest = onDismissRequest,
-        properties = PopupProperties(focusable = false),
+        properties = PopupProperties(focusable = menusTakeFocus),
     ) {
+        val focusManager = LocalFocusManager.current
+        val menuFocus = remember { FocusRequester() }
+
+        // The menu itself holds focus until a row is chosen, so the first arrow
+        // press has somewhere to start from.
+        if (menusTakeFocus) {
+            LaunchedEffect(menuFocus) { menuFocus.requestFocus() }
+        }
+
         GlassSurface(
             shape = MaterialTheme.shapes.medium,
             tone = GlassTone.Panel,
-            modifier = modifier.popoverTransition(
-                progress = progress,
-                transformOrigin = TransformOrigin(1f, 0f),
-            ),
+            modifier = modifier
+                .popoverTransition(
+                    progress = progress,
+                    transformOrigin = TransformOrigin(1f, 0f),
+                )
+                .onPreviewKeyEvent { event -> focusManager.moveThroughMenu(event, menuFocus, onDismissRequest) }
+                .focusRequester(menuFocus)
+                .focusable(enabled = menusTakeFocus),
         ) {
             // Intrinsic width, not wrap: the rows below fill the menu's width,
             // and inside a Popup "fill" means the whole window unless the column
@@ -117,6 +154,43 @@ fun AnchoredMenu(
             )
         }
     }
+}
+
+/**
+ * Moves the keyboard through a menu's rows as a list rather than a grid.
+ *
+ * Linear on purpose: Compose's own arrow handling searches in two dimensions and
+ * picks oddly between rows of different widths. Next from the menu itself lands
+ * on its first row and Previous wraps to its last, which is what sends Home and
+ * End to the ends.
+ *
+ * Escape closes the menu.
+ */
+private fun FocusManager.moveThroughMenu(
+    event: KeyEvent,
+    menu: FocusRequester,
+    onDismiss: () -> Unit,
+): Boolean {
+    if (event.type != KeyEventType.KeyDown) return false
+
+    when (event.key) {
+        Key.DirectionDown -> moveFocus(FocusDirection.Next)
+        Key.DirectionUp -> moveFocus(FocusDirection.Previous)
+        Key.MoveHome -> {
+            menu.requestFocus()
+            moveFocus(FocusDirection.Next)
+        }
+        Key.MoveEnd -> {
+            menu.requestFocus()
+            moveFocus(FocusDirection.Previous)
+        }
+        // Taken here because focus inside the popup keeps the key from the
+        // window's own Back handling - see [DismissOnBack].
+        Key.Escape -> onDismiss()
+        else -> return false
+    }
+
+    return true
 }
 
 /**
@@ -237,13 +311,27 @@ fun MenuGroupBreak(modifier: Modifier = Modifier) {
     )
 }
 
+/** Where a menu was asked for with the pointer's second button, if it was - see [MenuPointer]. */
+private class OpeningPoint {
+    var pointer: Offset? = null
+        private set
+    private var open = false
+
+    fun update(expanded: Boolean) {
+        if (expanded && !open) pointer = MenuPointer.peek()
+        open = expanded
+    }
+}
+
 /**
- * Places the menu under its anchor, then clamps it into the window so that a card
- * in the last grid column - or one in the bottom row, whose menu would otherwise
- * open below the screen - does not push its menu out of sight.
+ * Places the menu under its anchor - or, for a right click, at the pointer, as a
+ * desktop's context menu opens - then keeps it in the window: a card in the last
+ * grid column, or one in the bottom row whose menu would otherwise open below
+ * the screen, does not push its menu out of sight.
  */
 private class AnchoredMenuPositionProvider(
     private val gapPx: Int,
+    private val pointer: Offset?,
 ) : PopupPositionProvider {
 
     override fun calculatePosition(
@@ -252,6 +340,8 @@ private class AnchoredMenuPositionProvider(
         layoutDirection: LayoutDirection,
         popupContentSize: IntSize,
     ): IntOffset {
+        if (pointer != null) return atPointer(pointer, windowSize, layoutDirection, popupContentSize)
+
         val x = if (layoutDirection == LayoutDirection.Ltr) {
             anchorBounds.right - popupContentSize.width
         } else {
@@ -262,6 +352,33 @@ private class AnchoredMenuPositionProvider(
             x = x.coerceIn(0, (windowSize.width - popupContentSize.width).coerceAtLeast(0)),
             y = (anchorBounds.bottom + gapPx)
                 .coerceIn(0, (windowSize.height - popupContentSize.height).coerceAtLeast(0)),
+        )
+    }
+
+    /**
+     * Its corner at the pointer, opening away from the reading edge, and turned
+     * back across the pointer where the window has no room that way.
+     */
+    private fun atPointer(
+        pointer: Offset,
+        windowSize: IntSize,
+        layoutDirection: LayoutDirection,
+        size: IntSize,
+    ): IntOffset {
+        val px = pointer.x.toInt()
+        val py = pointer.y.toInt()
+
+        val forward = if (layoutDirection == LayoutDirection.Ltr) px else px - size.width
+        val x = when {
+            forward + size.width > windowSize.width -> px - size.width
+            forward < 0 -> px
+            else -> forward
+        }
+        val y = if (py + size.height > windowSize.height) py - size.height else py
+
+        return IntOffset(
+            x = x.coerceIn(0, (windowSize.width - size.width).coerceAtLeast(0)),
+            y = y.coerceIn(0, (windowSize.height - size.height).coerceAtLeast(0)),
         )
     }
 }

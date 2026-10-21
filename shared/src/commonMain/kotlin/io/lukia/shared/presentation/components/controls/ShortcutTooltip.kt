@@ -9,6 +9,7 @@ import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -37,6 +38,11 @@ fun ShortcutTooltip(
     description: String,
     shortcut: String,
     modifier: Modifier = Modifier,
+    /**
+     * True while what the control opened is open. The panel hangs where the
+     * tooltip would, and a label over it says nothing the panel does not.
+     */
+    suppressed: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     // The same content is emitted from two different places in the tree - a bare
@@ -52,6 +58,12 @@ fun ShortcutTooltip(
         return
     }
 
+    val state = rememberTooltipState()
+
+    LaunchedEffect(suppressed) {
+        if (suppressed) state.dismiss()
+    }
+
     TooltipBox(
         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
         tooltip = {
@@ -62,9 +74,9 @@ fun ShortcutTooltip(
                 )
             }
         },
-        state = rememberTooltipState(),
+        state = state,
         focusable = false,
-        enableUserInput = true,
+        enableUserInput = !suppressed,
         modifier = modifier,
     ) {
         slot()

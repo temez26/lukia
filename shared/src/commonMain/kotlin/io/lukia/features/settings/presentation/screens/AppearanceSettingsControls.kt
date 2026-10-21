@@ -141,22 +141,12 @@ private fun PaletteSection(
         groupColor = groupColor,
         modifier = modifier,
     ) {
-        if (LocalPhoneSettingsPage.current != null) {
-            PaletteGrid(
-                selected = settings.palette,
-                accent = settings.accent,
-                darkTheme = darkTheme,
-                onSelect = { onChange(settings.copy(palette = it)) },
-            )
-        } else {
-            ChoiceList(
-                options = AppPalette.entries,
-                selected = settings.palette,
-                label = { it.displayName() },
-                detail = { it.displayDetail() },
-                onSelect = { onChange(settings.copy(palette = it)) },
-            )
-        }
+        PaletteGrid(
+            selected = settings.palette,
+            accent = settings.accent,
+            darkTheme = darkTheme,
+            onSelect = { onChange(settings.copy(palette = it)) },
+        )
     }
 }
 

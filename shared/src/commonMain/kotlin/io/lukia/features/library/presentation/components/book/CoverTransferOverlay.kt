@@ -50,6 +50,12 @@ internal fun CoverTransferOverlay(
     document: DocumentInfo,
     transfer: BookTransfer?,
     modifier: Modifier = Modifier,
+    /**
+     * Whether the cover carries where the book is kept. Off where the cover is
+     * too small to hold the mark - a list row's thumbnail - and the row says
+     * enough without it; a download's progress or failure still shows.
+     */
+    showStorage: Boolean = true,
 ) {
     when (transfer) {
         is BookTransfer.Running -> {
@@ -85,7 +91,7 @@ internal fun CoverTransferOverlay(
 
         // The same mark the shelf's captions carry, so a cloud means the
         // server on every screen - see [StorageMark].
-        else -> if (document.storage.isMarked) {
+        else -> if (showStorage && document.storage.isMarked) {
             Box(modifier = modifier.fillMaxSize()) {
                 StorageMark(
                     document = document,

@@ -11,20 +11,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.features.library.presentation.components.search.LibrarySearchField
 import io.lukia.features.library.presentation.components.search.searchFieldHeight
 import io.lukia.features.library.presentation.sessions.LibraryShelfUi
 import io.lukia.resources.Res
-import io.lukia.resources.library_title
 import io.lukia.resources.search_n_books
 import io.lukia.resources.search_title
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
@@ -75,10 +74,8 @@ private fun searchPlaceholder(searchableCount: Int): String {
  * without scrolling back to the top of a long library. Everything that describes
  * the library rather than acting on it stays below, where it can scroll away.
  *
- * Where the field is not wanted - see [showSearch] - the row carries the
- * screen's name instead. That is a concession to the tab bar underneath and
- * nothing else: a screen one of three tabs leads to has to confirm which was
- * pressed; the only screen a desktop window has does not.
+ * Only where the shelf carries its own bar: a phone's library has none, its
+ * search being a tab of its own - see `LibraryContent`.
  *
  * [collapsedProgress] is a lambda rather than a value so that scrolling redraws
  * this bar without recomposing it - it is read only inside draw and layer blocks.
@@ -98,13 +95,6 @@ internal fun LibraryNavBar(
     onSettings: () -> Unit,
     modifier: Modifier = Modifier,
     /**
-     * Whether the field belongs on this bar. False where searching has a screen
-     * of its own, which is the mobile app - see `MobileShell`. Two fields
-     * answering the same question with two different answers is worse than one
-     * of them being somewhere else.
-     */
-    showSearch: Boolean = true,
-    /**
      * The way to the reading statistics, supplied rather than built here.
      *
      * A library bar has a place for it and no business knowing what that screen
@@ -113,6 +103,7 @@ internal fun LibraryNavBar(
      * preview without the statistics feature behind it.
      */
     statsButton: @Composable () -> Unit = {},
+    searchFocus: FocusRequester? = null,
 ) {
     val dimens = LocalLukiaDimens.current
     val barColor = MaterialTheme.colorScheme.background
@@ -152,15 +143,12 @@ internal fun LibraryNavBar(
                 .fillMaxSize()
                 .padding(horizontal = dimens.screenPadding),
         ) {
-            if (showSearch) {
-                SearchSlot(
-                    query = query,
-                    onQueryChange = onQueryChange,
-                    searchableCount = searchableCount,
-                )
-            } else {
-                TitleSlot()
-            }
+            SearchSlot(
+                query = query,
+                onQueryChange = onQueryChange,
+                searchableCount = searchableCount,
+                focusRequester = searchFocus,
+            )
 
             Spacer(modifier = Modifier.width(Space.md))
 
@@ -204,28 +192,18 @@ private fun RowScope.SearchSlot(
     query: String,
     onQueryChange: (String) -> Unit,
     searchableCount: Int,
+    focusRequester: FocusRequester?,
 ) {
     val compact = !isWideWindow
 
     if (!compact) Spacer(modifier = Modifier.weight(1f))
 
+    val sized = if (compact) Modifier.weight(1f) else Modifier.width(ToolbarSearchWidth)
+
     LibrarySearchField(
         query = query,
         onQueryChange = onQueryChange,
         placeholder = searchPlaceholder(searchableCount),
-        modifier = if (compact) Modifier.weight(1f) else Modifier.width(ToolbarSearchWidth),
-    )
-}
-
-/** What the bar carries where the search field is not wanted. */
-@Composable
-private fun RowScope.TitleSlot() {
-    Text(
-        text = stringResource(Res.string.library_title),
-        style = MaterialTheme.typography.titleMedium,
-        color = MaterialTheme.colorScheme.onBackground,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
-        modifier = Modifier.weight(1f),
+        modifier = if (focusRequester != null) sized.focusRequester(focusRequester) else sized,
     )
 }

@@ -4,6 +4,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
@@ -16,7 +18,7 @@ import io.lukia.features.translate.domain.settings.TranslationSettings
 import io.lukia.resources.Res
 import io.lukia.resources.account_area
 import io.lukia.resources.settings_about
-import io.lukia.resources.settings_area_ai_translation
+import io.lukia.resources.settings_ai_translation
 import io.lukia.resources.settings_area_appearance
 import io.lukia.resources.settings_area_reading
 import io.lukia.resources.settings_area_translating
@@ -74,14 +76,15 @@ class SettingsAreasTest {
      * when a section is added without a name.
      */
     private fun ComposeUiTest.open(area: SettingsArea) {
-        onNodeWithText(words(area.titleResource())).performClick()
+        // The sidebar row, which is first; the open group repeats its name as a heading.
+        onAllNodesWithText(words(area.titleResource())).onFirst().performClick()
     }
 
     private fun SettingsArea.titleResource() = when (this) {
         SettingsArea.Appearance -> Res.string.settings_area_appearance
         SettingsArea.Reading -> Res.string.settings_area_reading
         SettingsArea.Translating -> Res.string.settings_area_translating
-        SettingsArea.AiTranslation -> Res.string.settings_area_ai_translation
+        SettingsArea.AiTranslation -> Res.string.settings_ai_translation
         SettingsArea.About -> Res.string.settings_about
         SettingsArea.Account -> Res.string.account_area
     }

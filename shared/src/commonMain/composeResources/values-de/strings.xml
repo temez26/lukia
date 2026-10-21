@@ -367,7 +367,8 @@
     <string name="shortcut_close_book">Buch schließen</string>
     <string name="shortcut_close_book_keys">Esc</string>
     <string name="shortcut_word_details">Mehr zu einem Wort</string>
-    <string name="shortcut_word_details_keys">Tippen mit zwei Fingern</string>
+    <string name="shortcut_word_details_keys">Rechtsklick</string>
+    <string name="menu_find">Suchen…</string>
     <string name="shortcut_tooltip">%1$s  %2$s</string>
     <string name="word_looked_up_under">Nachgeschlagen unter \u201E%1$s\u201C</string>
     <string name="word_looking_it_up">Wird nachgeschlagen…</string>
@@ -527,6 +528,7 @@
     <string name="stats_today_spoken">Heute: %1$s</string>
     <string name="stats_longest_run_spoken">Längste Serie: %1$s</string>
     <string name="stats_day_spoken">%1$s: %2$s</string>
+    <string name="stats_week_run_spoken">%1$s: %2$s. %3$s</string>
     <string name="stats_still_to_come">steht noch aus</string>
     <string name="stats_your_library">Ihre Bibliothek</string>
     <string name="stats_nothing_to_count">Noch nichts zu zählen. Importieren Sie ein Buch, dann füllt sich dies beim Lesen.</string>

@@ -30,6 +30,7 @@ import io.lukia.features.library.presentation.model.readActionLabel
 import io.lukia.resources.Res
 import io.lukia.resources.book_missing_file
 import io.lukia.shared.presentation.components.controls.LukiaButton
+import io.lukia.shared.presentation.components.cover.CoverArtSource
 import io.lukia.shared.presentation.components.cover.FavoriteBadge
 import io.lukia.shared.presentation.components.cover.rememberBookCover
 import io.lukia.shared.presentation.components.icons.OpenBookGlyph
@@ -78,6 +79,12 @@ internal fun BookDetailBody(
     transferActions: BookTransferActions = BookTransferActions(),
     /** Whether a book on this device could be added to the server - true while signed in. */
     canUpload: Boolean = false,
+    /**
+     * Where the artwork comes from when [details] arrived without it, as a book
+     * off the shelf does - see `LibraryBook.cover`. The document's own artwork
+     * when null.
+     */
+    cover: CoverArtSource? = null,
 ) {
     val dimens = LocalLukiaDimens.current
     val document = details.document
@@ -105,7 +112,7 @@ internal fun BookDetailBody(
         ) {
             Box {
                 ReadableCover(
-                    cover = rememberBookCover(document.document.location, document.coverImage?.bytes),
+                    cover = cover ?: rememberBookCover(document.document.location, document.coverImage?.bytes),
                     title = title,
                     progress = details.progress,
                     enabled = document.exists,

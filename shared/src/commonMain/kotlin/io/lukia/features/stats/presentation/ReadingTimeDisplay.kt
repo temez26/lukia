@@ -65,6 +65,15 @@ internal fun readingTime(millis: Long): String {
 }
 
 /**
+ * A day's reading over its bar in the week's chart: the same figure, or nothing
+ * for less than a minute. Seven of these share a phone's width, and "Under a
+ * minute" over one bar would not fit beside the others.
+ */
+@Composable
+internal fun dayTime(millis: Long): String =
+    if (millis < MillisPerMinute) "" else readingTime(millis)
+
+/**
  * The same stretch where a dash is better than a sentence.
  *
  * A figure standing under its own label has the label to explain it, so "None

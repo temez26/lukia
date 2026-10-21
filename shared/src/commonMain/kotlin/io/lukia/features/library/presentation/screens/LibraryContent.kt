@@ -1,6 +1,7 @@
 package io.lukia.features.library.presentation.screens
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -17,18 +18,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.document.DocumentInfo
-import io.lukia.core.domain.reading.ReadingProgress
 import io.lukia.core.presentation.UiState
-import io.lukia.core.presentation.dataOrNull
-import io.lukia.features.library.presentation.BookDetailOverlay
 import io.lukia.features.library.presentation.components.toolbar.LibraryNavBar
 import io.lukia.features.library.presentation.components.toolbar.libraryNavBarHeight
 import io.lukia.features.library.presentation.model.LibraryBook
@@ -43,9 +41,8 @@ import io.lukia.resources.action_try_again
 import io.lukia.shared.presentation.components.launch.rememberLaunchReveal
 import io.lukia.shared.presentation.components.menu.ActionMenuScrim
 import io.lukia.shared.presentation.components.state.UiStateContent
-import io.lukia.shared.presentation.components.surface.behindOverlay
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
-import io.lukia.shared.presentation.theme.isWideWindow
+import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.softFadeOut
 import io.lukia.shared.presentation.theme.stateSwapIn
 import org.jetbrains.compose.resources.stringResource
@@ -88,49 +85,39 @@ fun LibraryContent(
     /** Puts a started book back to unread, from its menu. */
     onMarkUnread: ((DocumentInfo) -> Unit)? = null,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
-    /**
-     * How far through each book its reader is, keyed by location. Only the book
-     * whose details are open is looked up here; the grid draws its bars from
-     * [books], which already carries each book's position.
-     */
-    readingProgress: Map<String, ReadingProgress> = emptyMap(),
     /** How the shelf is laid out, what is picked off it, and what can be done to that. */
     shelf: LibraryShelfUi = LibraryShelfUi.None,
     /** Books moving to or from the sync server, for the panel's row. */
     transfers: BookTransferUi = BookTransferUi.None,
-    /** False where searching has a screen of its own - see [LibraryNavBar]. */
+    /**
+     * Whether the shelf carries its own bar - search, the statistics and the
+     * actions menu. False on a phone, where searching has a tab of its own and
+     * Home holds the rest - see `MobileShell` - so the shelf starts at the top.
+     */
     showSearch: Boolean = true,
     /** The way to the reader's own page, supplied by the shell - see `MobileShell`. */
     statsButton: @Composable () -> Unit = {},
+    /** Where Find puts the keyboard - see `AppCommand.FindInLibrary`. */
+    searchFocus: FocusRequester? = null,
 ) {
     val dimens = LocalLukiaDimens.current
     val reveal = rememberLaunchReveal()
     val gridState = rememberLazyGridState()
-
-    // A phone leaves the library to show a book's details, because it has room
-    // for one thing at a time. Anything wider keeps the library on screen and
-    // lays the details over it, so browsing is not unwound to read a file size.
-    val detailsOpenInPlace = isWideWindow
-
-    // The book being looked at, held by location rather than by value: favouriting
-    // it from inside the panel replaces the instance in the library, and a panel
-    // holding the old one would go on showing an empty heart. Looking it up again
-    // each pass also closes the panel when the book it was showing is deleted.
-    var detailLocation by rememberSaveable { mutableStateOf<String?>(null) }
 
     // One value rather than a flag per menu: the screen has one on its bar, one
     // on every book and one on every filter chip, and at most one may be open.
     // Held here so the dimming scrim behind any of them sits in one layer.
     var openMenu by remember { mutableStateOf<OpenMenu?>(null) }
 
-    val documents = uiState.dataOrNull.orEmpty()
-
-    // From the whole library rather than from what is on screen: a filter that
-    // no longer matches the book being looked at is not a reason to shut the
-    // panel showing it.
-    val detailDocument = detailLocation?.let { location ->
-        documents.firstOrNull { it.document.location == location }
-    }
+    // Room for the bar that floats over the shelf, where there is one: always
+    // where the shelf has its own, and while books are being picked everywhere.
+    // Eased on a phone, where picking brings the bar in, so the shelf moves down
+    // to meet it rather than jumping under a finger still on a cover.
+    val topClearance by animateDpAsState(
+        targetValue = if (showSearch || shelf.active) libraryNavBarHeight() else 0.dp,
+        animationSpec = LukiaMotion.standard(),
+        label = "libraryTopClearance",
+    )
 
     val collapseDistancePx = with(LocalDensity.current) { HeaderCollapseDistance.toPx() }
     // A lambda, not a value: read this way the scroll position reaches only the
@@ -159,14 +146,7 @@ fun LibraryContent(
                 .fillMaxSize()
                 .padding(paddingValues),
         ) {
-            // Everything the detail panel is opened over - the shelf, the bar
-            // floating on it, and the scrim for the card menus - out of reach
-            // while it is, see [behindOverlay].
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .behindOverlay(detailLocation != null),
-            ) {
+            Box(modifier = Modifier.fillMaxSize()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.TopCenter,
@@ -215,7 +195,7 @@ fun LibraryContent(
                                     importing = importing,
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .padding(top = libraryNavBarHeight()),
+                                        .padding(top = topClearance),
                                 )
 
                                 LibraryContentState.Empty -> LibraryEmptyState(
@@ -229,6 +209,7 @@ fun LibraryContent(
                                 )
 
                                 LibraryContentState.Content -> LibraryGrid(
+                                    topClearance = topClearance,
                                     books = books,
                                     gridState = gridState,
                                     query = query,
@@ -237,13 +218,7 @@ fun LibraryContent(
                                     importing = importing,
                                     reveal = reveal,
                                     onDocumentClick = onDocumentClick,
-                                    onDocumentDetails = { document ->
-                                        if (detailsOpenInPlace) {
-                                            detailLocation = document.document.location
-                                        } else {
-                                            onDocumentDetails(document)
-                                        }
-                                    },
+                                    onDocumentDetails = onDocumentDetails,
                                     openMenu = openMenu,
                                     onOpenMenuChange = { openMenu = it },
                                     onToggleFavorite = onToggleFavorite,
@@ -272,7 +247,7 @@ fun LibraryContent(
                 // of them - see LibrarySelectionBar.
                 if (shelf.active) {
                     LibrarySelectionSurface(ui = shelf, books = books)
-                } else {
+                } else if (showSearch) {
                     LibraryNavBar(
                         collapsedProgress = collapsedProgress,
                         query = query.search,
@@ -285,8 +260,8 @@ fun LibraryContent(
                         shelf = shelf,
                         onSettings = onSettings,
                         modifier = Modifier.align(Alignment.TopCenter),
-                        showSearch = showSearch,
                         statsButton = statsButton,
+                        searchFocus = searchFocus,
                     )
                 }
 
@@ -297,23 +272,6 @@ fun LibraryContent(
                     onDismiss = { openMenu = null },
                 )
             }
-
-            // Last, so it covers the library and its chrome both. Draws nothing
-            // at all until a book is being looked at.
-            BookDetailOverlay(
-                document = detailDocument,
-                progress = detailLocation?.let(readingProgress::get),
-                onDismiss = { detailLocation = null },
-                onRead = { document ->
-                    detailLocation = null
-                    onDocumentClick(document)
-                },
-                onToggleFavorite = onToggleFavorite,
-                onRefresh = onRefresh,
-                onDelete = onDelete,
-                transfers = transfers,
-                onMarkUnread = onMarkUnread,
-            )
         }
     }
 }

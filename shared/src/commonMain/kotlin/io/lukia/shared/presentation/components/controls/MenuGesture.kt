@@ -5,17 +5,21 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
 import io.lukia.getPlatform
 import io.lukia.resources.Res
 import io.lukia.resources.book_actions
+import io.lukia.shared.presentation.components.menu.MenuPointer
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -86,8 +90,11 @@ fun Modifier.menuGesture(
 @Composable
 fun Modifier.onSecondaryPress(enabled: Boolean = true, onPress: () -> Unit): Modifier {
     val current by rememberUpdatedState(onPress)
+    // Where this element is in the window, so the press can be told to the menu
+    // it opens in the window's terms - see [MenuPointer].
+    val placed = remember { arrayOfNulls<LayoutCoordinates>(1) }
 
-    return pointerInput(enabled) {
+    return onPlaced { placed[0] = it }.pointerInput(enabled) {
         if (!enabled) return@pointerInput
 
         awaitEachGesture {
@@ -99,6 +106,7 @@ fun Modifier.onSecondaryPress(enabled: Boolean = true, onPress: () -> Unit): Mod
                 // ignores the second button anyway on every platform today, and
                 // a gesture that relies on that is a gesture waiting to break.
                 press.consume()
+                placed[0]?.takeIf { it.isAttached }?.let { MenuPointer.record(it.localToWindow(press.position)) }
                 current()
             }
         }
