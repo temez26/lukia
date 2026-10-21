@@ -161,14 +161,14 @@ internal fun ShelfHeader(
 
         Text(
             text = count.toString(),
-            style = MaterialTheme.typography.labelLarge,
+            style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         DisclosureChevron(
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier
-                .padding(start = Space.xs)
+                .padding(start = Space.xxs)
                 .size(chevronSize)
                 .graphicsLayer { rotationZ = PointForward },
         )
@@ -179,7 +179,7 @@ internal fun ShelfHeader(
 private const val SpokenSeparator = ", "
 
 /** The arrow after the count, in sp so it grows with the count at a large system font size. */
-private val HeaderChevronSize: TextUnit = 18.sp
+private val HeaderChevronSize: TextUnit = 14.sp
 
 /** The app's disclosure mark points down; this turns it to point the way the header goes. */
 private const val PointForward = -90f
