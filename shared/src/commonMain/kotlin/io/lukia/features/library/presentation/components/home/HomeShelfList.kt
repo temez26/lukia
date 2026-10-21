@@ -152,6 +152,7 @@ private fun HomeBookListItem(
                 document = book.document,
                 transfer = transfer,
                 modifier = Modifier.matchParentSize().clip(shape),
+                showStorage = false,
             )
 
             BookActionsMenu(
