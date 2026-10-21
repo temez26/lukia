@@ -3,6 +3,7 @@ package io.lukia.navigation
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
@@ -20,11 +21,13 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import io.lukia.Routes
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.infrastructure.AppCommand
 import io.lukia.core.infrastructure.AppCommands
+import io.lukia.features.library.presentation.BookDetailSide
 import io.lukia.features.library.presentation.LibraryViewModel
 import io.lukia.features.library.presentation.screens.HomeScreen
 import io.lukia.features.library.presentation.screens.LibraryScreen
@@ -72,16 +75,23 @@ internal fun DesktopShell(library: LibraryViewModel = koinViewModel()) {
         }
     }
 
+    // The book whose details are docked beside the page, by location - see
+    // [BookDetailSide], which looks it up again on every pass.
+    var detailLocation by rememberSaveable { mutableStateOf<String?>(null) }
+    val route = navController.currentBackStackEntryAsState().value?.destination?.route
+
     val pages = DesktopPages(
         navController = navController,
         library = library,
         openSettings = { area -> settings.show(area) },
+        showDetails = { location -> detailLocation = location },
         startSync = startSync,
     )
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Box(modifier = Modifier.fillMaxSize().behindOverlay(settings.open)) {
+        Row(modifier = Modifier.fillMaxSize().behindOverlay(settings.open)) {
             NavHost(
+                modifier = Modifier.weight(1f),
                 navController = navController,
                 startDestination = Routes.Home.route,
                 // Set on the host rather than per destination: every move in
@@ -98,6 +108,18 @@ internal fun DesktopShell(library: LibraryViewModel = koinViewModel()) {
                 bookDestinations(navController)
                 windowSettingsDestinations(navController)
             }
+
+            // Beside the pages and the shelf screens only: a book being read or
+            // the statistics take the window to themselves.
+            BookDetailSide(
+                viewModel = library,
+                location = detailLocation.takeIf { route in PagesWithDetails },
+                onDismiss = { detailLocation = null },
+                onRead = { document ->
+                    detailLocation = null
+                    pages.openBook(document)
+                },
+            )
         }
 
         SettingsOverlay(
@@ -109,16 +131,18 @@ internal fun DesktopShell(library: LibraryViewModel = koinViewModel()) {
     }
 }
 
+/** Where a book's details can be docked beside what is showing. */
+private val PagesWithDetails = setOf(Routes.Home.route, Routes.Library.route, Routes.HomeShelf.route)
+
 /** What both pages open, written once so a book opens the same way from either. */
 private class DesktopPages(
     val navController: NavController,
     val library: LibraryViewModel,
     val openSettings: (SettingsArea) -> Unit,
+    showDetails: (String) -> Unit,
     val startSync: () -> Unit,
 ) {
-    val openDetails: (DocumentInfo) -> Unit = { document ->
-        navController.navigate(Routes.Detail.createRoute(document.document.location))
-    }
+    val openDetails: (DocumentInfo) -> Unit = { document -> showDetails(document.document.location) }
 
     // A server book not downloaded yet has nothing to read: its page is where
     // it is downloaded from.

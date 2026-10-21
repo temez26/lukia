@@ -56,7 +56,6 @@ fun LibraryScreen(
     val facets by viewModel.facets.collectAsState()
     val query by viewModel.query.collectAsState()
     val message by viewModel.message.collectAsState()
-    val readingProgress by viewModel.readingProgress.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val requests = rememberLibraryRequests(viewModel, onSettings, onSyncWithServer, onAccountSettings)
@@ -94,7 +93,6 @@ fun LibraryScreen(
         onRetry = viewModel::refresh,
         importing = rememberImportUi(viewModel),
         snackbarHostState = snackbarHostState,
-        readingProgress = readingProgress,
         showSearch = showSearch,
         statsButton = statsButton,
         searchFocus = requests.searchFocus,
