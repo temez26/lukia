@@ -190,7 +190,6 @@ private fun NavGraphBuilder.tabDestinations(
             onDocumentDetails = openDetails,
             onSettings = openSettings,
             statsButton = statsButton,
-            accountPage = AppAccountPage,
             onSyncWithServer = startSync,
             onAccountSettings = openAccountSettings,
             // Searching has a tab of its own here, and a field on this screen as
@@ -264,7 +263,7 @@ private fun BottomBar(
  * All of one home row, pushed over the tabs rather than one of them, so the bar
  * steps aside - see [MobileTab.forRoute].
  */
-private fun NavGraphBuilder.homeShelfDestination(
+internal fun NavGraphBuilder.homeShelfDestination(
     navController: NavController,
     library: LibraryViewModel,
     openBook: (DocumentInfo) -> Unit,
@@ -304,7 +303,7 @@ private fun NavGraphBuilder.homeShelfDestination(
  * than "the tab before this one". `saveState` and `restoreState` are what make
  * returning to the library find it scrolled where it was left.
  */
-private fun NavController.switchTo(tab: MobileTab) {
+internal fun NavController.switchTo(tab: MobileTab) {
     navigate(tab.route) {
         popUpTo(Routes.Home.route) { saveState = true }
         launchSingleTop = true

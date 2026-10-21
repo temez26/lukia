@@ -69,6 +69,7 @@ internal fun HomeScreen(
     stats: @Composable () -> Unit = {},
     /** Syncs with the server and opens where that is reported - see `LibraryShelfUi`. */
     onSyncWithServer: () -> Unit = {},
+    modifier: Modifier = Modifier,
     viewModel: LibraryViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -112,6 +113,7 @@ internal fun HomeScreen(
         onRetry = viewModel::refresh,
         onSettings = onSettings,
         stats = stats,
+        modifier = modifier,
     )
 
     RemoveFromServerDialog(removal, onRemove = viewModel::removeFromServer)

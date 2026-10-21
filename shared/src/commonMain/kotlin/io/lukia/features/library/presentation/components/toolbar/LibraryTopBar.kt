@@ -116,6 +116,8 @@ internal fun LibraryNavBar(
      */
     statsButton: @Composable () -> Unit = {},
     searchFocus: FocusRequester? = null,
+    /** Led with on a window's bar, where the switch to Home sits - see `DesktopShell`. */
+    sections: @Composable () -> Unit = {},
 ) {
     val dimens = LocalLukiaDimens.current
     val barColor = MaterialTheme.colorScheme.background
@@ -156,6 +158,8 @@ internal fun LibraryNavBar(
                 .padding(horizontal = dimens.screenPadding),
         ) {
             if (showSearch) {
+                sections()
+
                 SearchSlot(
                     query = query,
                     onQueryChange = onQueryChange,
