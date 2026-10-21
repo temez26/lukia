@@ -366,7 +366,7 @@
     <string name="shortcut_close_book">Boek sluiten</string>
     <string name="shortcut_close_book_keys">Esc</string>
     <string name="shortcut_word_details">Meer over een woord</string>
-    <string name="shortcut_word_details_keys">Tikken met twee vingers</string>
+    <string name="shortcut_word_details_keys">Rechtsklik</string>
     <string name="shortcut_tooltip">%1$s  %2$s</string>
     <string name="word_looked_up_under">Opgezocht onder \u201C%1$s\u201D</string>
     <string name="word_looking_it_up">Wordt opgezocht…</string>

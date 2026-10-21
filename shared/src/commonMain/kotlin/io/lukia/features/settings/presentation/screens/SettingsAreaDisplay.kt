@@ -55,7 +55,7 @@ internal fun SettingsArea.pageTitle(): String = when (this) {
 
 /** The glyph a group is known by, in the phone's list and a window's sidebar alike. */
 @Composable
-internal fun SettingsArea.Glyph(tint: Color, modifier: Modifier) = when (this) {
+internal fun SettingsArea.Glyph(tint: Color, modifier: Modifier = Modifier) = when (this) {
     SettingsArea.Appearance -> AppearanceGlyph(tint, modifier)
     SettingsArea.Reading -> OpenBookGlyph(tint, modifier)
     SettingsArea.Translating -> TranslateGlyph(tint, modifier)

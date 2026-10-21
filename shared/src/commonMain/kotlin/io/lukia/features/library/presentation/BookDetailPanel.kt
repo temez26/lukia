@@ -28,8 +28,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.document.DocumentInfo
-import io.lukia.core.presentation.dataOrNull
 import io.lukia.core.domain.reading.ReadingProgress
+import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.library.application.BookDetails
 import io.lukia.features.library.presentation.screens.BookDetailBody
 import io.lukia.features.library.presentation.screens.BookTransferActions
@@ -53,6 +53,7 @@ import io.lukia.shared.presentation.theme.LocalLukiaDimens
 import io.lukia.shared.presentation.theme.LukiaMotion
 import io.lukia.shared.presentation.theme.Space
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 
 /** As wide as a column of facts reads well, and narrow enough to leave the shelf most of the window. */
 private val PanelWidth: Dp = 360.dp
@@ -65,8 +66,9 @@ private val PanelWidth: Dp = 360.dp
 private val PanelCoverWidth: Dp = 136.dp
 
 /**
- * A book's details, from [viewModel] - see [BookDetailSidePanel], which this
- * feeds. [location] is the book being looked at, or null for none.
+ * A book's details, from the library - see [BookDetailSidePanel], which this
+ * feeds. Composed beside the pages that share the same [LibraryViewModel], and
+ * resolved from the same owner, so it is that one. [location] is the book being looked at, or null for none.
  *
  * Held by location rather than by value: favouriting the book from inside the
  * panel replaces the instance in the library, and a panel holding the old one
@@ -75,11 +77,11 @@ private val PanelCoverWidth: Dp = 136.dp
  */
 @Composable
 internal fun BookDetailSide(
-    viewModel: LibraryViewModel,
     location: String?,
     onDismiss: () -> Unit,
     onRead: (DocumentInfo) -> Unit,
     modifier: Modifier = Modifier,
+    viewModel: LibraryViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val library by viewModel.library.collectAsState()
@@ -220,16 +222,12 @@ private fun PanelContent(
         // Where a touch window's menu is dismissed from - see [ActionMenuScrim].
         ActionMenuScrim(visible = menuExpanded, onDismiss = { menuExpanded = false })
 
-        LukiaIconButton(
-            label = stringResource(Res.string.action_close),
+        CloseButton(
             onClick = onDismiss,
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(end = dimens.screenPadding, top = Space.lg),
-            variant = IconButtonVariant.Glass,
-        ) { tint, glyph ->
-            PlusGlyph(tint = tint, modifier = glyph.graphicsLayer { rotationZ = 45f })
-        }
+        )
 
         Box(
             modifier = Modifier
@@ -256,5 +254,18 @@ private fun PanelContent(
                 onMarkUnread = onMarkUnread?.takeIf { progress != null }?.let { mark -> { mark(shown) } },
             )
         }
+    }
+}
+
+/** The plus turned on its side that closes a panel everywhere in the app - see `OverlayPanel`. */
+@Composable
+private fun CloseButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    LukiaIconButton(
+        label = stringResource(Res.string.action_close),
+        onClick = onClick,
+        modifier = modifier,
+        variant = IconButtonVariant.Glass,
+    ) { tint, glyph ->
+        PlusGlyph(tint = tint, modifier = glyph.graphicsLayer { rotationZ = 45f })
     }
 }

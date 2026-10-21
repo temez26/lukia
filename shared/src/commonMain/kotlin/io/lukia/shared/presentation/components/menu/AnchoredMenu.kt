@@ -25,13 +25,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
@@ -106,8 +107,13 @@ fun AnchoredMenu(
 
     DismissOnBack(enabled = expanded, onDismiss = onDismissRequest)
 
+    // Taken once, as the menu opens, and kept through its exit so it fades out
+    // where it was rather than jumping back to its anchor.
+    val opening = remember { OpeningPoint() }
+    opening.update(expanded)
+
     val gapPx = with(LocalDensity.current) { AnchorGap.roundToPx() }
-    val positionProvider = remember(gapPx) { AnchoredMenuPositionProvider(gapPx) }
+    val positionProvider = remember(gapPx, opening.pointer) { AnchoredMenuPositionProvider(gapPx, opening.pointer) }
 
     Popup(
         popupPositionProvider = positionProvider,
@@ -303,13 +309,27 @@ fun MenuGroupBreak(modifier: Modifier = Modifier) {
     )
 }
 
+/** Where a menu was asked for with the pointer's second button, if it was - see [MenuPointer]. */
+private class OpeningPoint {
+    var pointer: Offset? = null
+        private set
+    private var open = false
+
+    fun update(expanded: Boolean) {
+        if (expanded && !open) pointer = MenuPointer.take()
+        open = expanded
+    }
+}
+
 /**
- * Places the menu under its anchor, then clamps it into the window so that a card
- * in the last grid column - or one in the bottom row, whose menu would otherwise
- * open below the screen - does not push its menu out of sight.
+ * Places the menu under its anchor - or, for a right click, at the pointer, as a
+ * desktop's context menu opens - then keeps it in the window: a card in the last
+ * grid column, or one in the bottom row whose menu would otherwise open below
+ * the screen, does not push its menu out of sight.
  */
 private class AnchoredMenuPositionProvider(
     private val gapPx: Int,
+    private val pointer: Offset?,
 ) : PopupPositionProvider {
 
     override fun calculatePosition(
@@ -318,6 +338,8 @@ private class AnchoredMenuPositionProvider(
         layoutDirection: LayoutDirection,
         popupContentSize: IntSize,
     ): IntOffset {
+        if (pointer != null) return atPointer(pointer, windowSize, layoutDirection, popupContentSize)
+
         val x = if (layoutDirection == LayoutDirection.Ltr) {
             anchorBounds.right - popupContentSize.width
         } else {
@@ -328,6 +350,33 @@ private class AnchoredMenuPositionProvider(
             x = x.coerceIn(0, (windowSize.width - popupContentSize.width).coerceAtLeast(0)),
             y = (anchorBounds.bottom + gapPx)
                 .coerceIn(0, (windowSize.height - popupContentSize.height).coerceAtLeast(0)),
+        )
+    }
+
+    /**
+     * Its corner at the pointer, opening away from the reading edge, and turned
+     * back across the pointer where the window has no room that way.
+     */
+    private fun atPointer(
+        pointer: Offset,
+        windowSize: IntSize,
+        layoutDirection: LayoutDirection,
+        size: IntSize,
+    ): IntOffset {
+        val px = pointer.x.toInt()
+        val py = pointer.y.toInt()
+
+        val forward = if (layoutDirection == LayoutDirection.Ltr) px else px - size.width
+        val x = when {
+            forward + size.width > windowSize.width -> px - size.width
+            forward < 0 -> px
+            else -> forward
+        }
+        val y = if (py + size.height > windowSize.height) py - size.height else py
+
+        return IntOffset(
+            x = x.coerceIn(0, (windowSize.width - size.width).coerceAtLeast(0)),
+            y = y.coerceIn(0, (windowSize.height - size.height).coerceAtLeast(0)),
         )
     }
 }

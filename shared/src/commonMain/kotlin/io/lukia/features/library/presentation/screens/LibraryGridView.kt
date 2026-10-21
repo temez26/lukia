@@ -2,6 +2,7 @@ package io.lukia.features.library.presentation.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -36,10 +37,14 @@ import io.lukia.features.library.presentation.model.menuHeader
 import io.lukia.features.library.presentation.sessions.BookTransferUi
 import io.lukia.features.library.presentation.sessions.LibraryImportUi
 import io.lukia.resources.Res
+import io.lukia.resources.filter_clear
 import io.lukia.resources.library_no_matches_filtered
 import io.lukia.resources.library_no_matches_filtered_term
 import io.lukia.resources.library_no_matches_term
 import io.lukia.resources.library_no_results_title
+import io.lukia.resources.search_clear
+import io.lukia.shared.presentation.components.controls.ButtonVariant
+import io.lukia.shared.presentation.components.controls.LukiaButton
 import io.lukia.shared.presentation.components.launch.LaunchReveal
 import io.lukia.shared.presentation.components.menu.BookActionsMenu
 import io.lukia.shared.presentation.components.surface.EmptyState
@@ -130,7 +135,7 @@ internal fun LibraryGrid(
         // it is the empty state, which this grid is not showing at all.
         if (books.isEmpty() && query.isNarrowed) {
             item(span = { GridItemSpan(maxLineSpan) }, key = "noMatches", contentType = "notice") {
-                NoMatchesNotice(query)
+                NoMatchesNotice(query = query, onQueryChange = onQueryChange)
             }
         }
 
@@ -224,15 +229,14 @@ internal fun LibraryGrid(
  *
  * A word somebody just typed is the likeliest thing to be wrong, so it is quoted
  * back wherever there is one. The filters are named only in the general: listing
- * all five would be a paragraph, and the "Clear" chip above is already the
- * answer to every one of them.
+ * all five would be a paragraph. Under the words, the way out of it.
  */
 @Composable
-private fun NoMatchesNotice(query: LibraryQuery) {
+private fun NoMatchesNotice(query: LibraryQuery, onQueryChange: (LibraryQuery) -> Unit) {
     val trimmed = query.search.trim()
 
-    Box(
-        contentAlignment = Alignment.TopCenter,
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 40.dp),
@@ -246,6 +250,20 @@ private fun NoMatchesNotice(query: LibraryQuery) {
 
                 else -> stringResource(Res.string.library_no_matches_term, trimmed)
             },
+        )
+
+        // The way out of the dead end, under the words that explain it: the
+        // search when there is one, as the likeliest thing to be wrong, and the
+        // filters otherwise.
+        LukiaButton(
+            label = stringResource(if (trimmed.isEmpty()) Res.string.filter_clear else Res.string.search_clear),
+            onClick = {
+                onQueryChange(
+                    if (trimmed.isEmpty()) query.cleared().copy(shelf = LibraryShelf.All) else query.copy(search = ""),
+                )
+            },
+            variant = ButtonVariant.Secondary,
+            modifier = Modifier.padding(top = Space.lg),
         )
     }
 }

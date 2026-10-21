@@ -367,7 +367,7 @@
     <string name="shortcut_close_book">Buch schließen</string>
     <string name="shortcut_close_book_keys">Esc</string>
     <string name="shortcut_word_details">Mehr zu einem Wort</string>
-    <string name="shortcut_word_details_keys">Tippen mit zwei Fingern</string>
+    <string name="shortcut_word_details_keys">Rechtsklick</string>
     <string name="shortcut_tooltip">%1$s  %2$s</string>
     <string name="word_looked_up_under">Nachgeschlagen unter \u201E%1$s\u201C</string>
     <string name="word_looking_it_up">Wird nachgeschlagen…</string>

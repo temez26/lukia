@@ -94,17 +94,24 @@ internal fun ReaderTopChrome(
                         pageCount = pageCount,
                         chapters = (outline as? ReaderOutline.Chapters)?.entries.orEmpty(),
                         onClick = chrome::toggleContents,
+                        expanded = chrome.contentsExpanded,
                     )
                 }
             },
-            endControl = { BarEndControls(translation = translation, onOpenSettings = chrome::toggleSettings) },
+            endControl = {
+                BarEndControls(
+                    translation = translation,
+                    onOpenSettings = chrome::toggleSettings,
+                    settingsOpen = chrome.settingsExpanded,
+                )
+            },
         )
     }
 }
 
 /** Translation, where the bar has room for it, and the reading settings. */
 @Composable
-private fun BarEndControls(translation: ReaderTranslationUi, onOpenSettings: () -> Unit) {
+private fun BarEndControls(translation: ReaderTranslationUi, onOpenSettings: () -> Unit, settingsOpen: Boolean) {
     // One child rather than several, because on a narrow window the
     // bar spaces its children evenly - and three controls drifting
     // apart across half a phone is not a group of related buttons.
@@ -126,6 +133,7 @@ private fun BarEndControls(translation: ReaderTranslationUi, onOpenSettings: () 
         ShortcutTooltip(
             description = stringResource(Res.string.reader_reading_settings),
             shortcut = "T",
+            suppressed = settingsOpen,
         ) {
             LukiaIconButton(
                 label = stringResource(Res.string.reader_reading_settings),

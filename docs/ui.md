@@ -45,8 +45,9 @@ Phones and windows show settings differently (`SettingsDestinations`):
   per group with its glyph on an accent-tinted tile, its current value and a
   chevron. Each row pushes the group as its own page (`SettingsAreaScreen`,
   route `settings/{area}`), named in the `BackBar`.
-- Window: `SettingsBody`, one page that switches groups with a segmented
-  control, with Account beside the title.
+- Window: `SettingsBody`, a sheet of one fixed height (`SettingsOverlay`)
+  with the groups down a sidebar, each with its glyph (`SettingsArea.Glyph`),
+  Account at the sidebar's foot, and the chosen group beside it.
 
 Both build the groups from the same `SettingsAreaContent`, so a setting reads
 the same either way. On a phone each group page provides `LocalPhoneSettingsPage`,
@@ -59,6 +60,22 @@ and the groups adapt to it rather than forking:
 - Reading leads with a sample set by the reader's own `readerTextStyle`, shows
   theme and typeface as tiles, and puts the rest behind disclosure rows.
   Appearance shows palettes as a grid of previews (`PaletteGrid`).
+
+## Desktop window
+
+`DesktopShell` puts Home and Library side by side as two pages, switched by
+their names at the start of the bar (`DesktopSectionTabs`), and shares one
+`LibraryViewModel` between them as the phone does. Home is held to the
+library's measure (`maxGridWidth`).
+
+- Settings open over whichever page is showing; the shell hosts the overlay.
+- A book's details dock at the trailing edge (`BookDetailSidePanel`) and the
+  page narrows beside them, so another book can be picked with them open.
+- Menus are focusable popups on desktop (`menusTakeFocus`): arrows, Home, End
+  and Escape work inside them. A right click opens one at the pointer
+  (`MenuPointer`).
+- A control's `ShortcutTooltip` is `suppressed` while the panel it opened is
+  open.
 
 ## Home screen
 

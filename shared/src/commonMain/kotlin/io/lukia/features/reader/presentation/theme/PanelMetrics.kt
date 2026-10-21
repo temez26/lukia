@@ -15,4 +15,4 @@ import androidx.compose.ui.unit.dp
  * line and a label sitting beside its control, neither of which gets easier on a
  * wider monitor.
  */
-internal val ReaderPanelWidth: Dp = 380.dp
+internal val ReaderPanelWidth: Dp = 420.dp

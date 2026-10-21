@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.presentation.UiState
-import io.lukia.core.presentation.dataOrNull
 import io.lukia.features.library.presentation.components.toolbar.LibraryNavBar
 import io.lukia.features.library.presentation.components.toolbar.libraryNavBarHeight
 import io.lukia.features.library.presentation.model.LibraryBook

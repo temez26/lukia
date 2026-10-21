@@ -65,11 +65,11 @@ internal fun HomeScreen(
     onOpenShelf: (HomeShelf) -> Unit,
     onOpenLibrary: () -> Unit,
     onSettings: () -> Unit,
+    modifier: Modifier = Modifier,
     /** A glance at the week's reading that opens the reader's own page, supplied by the shell - see `MobileShell`. */
     stats: @Composable () -> Unit = {},
     /** Syncs with the server and opens where that is reported - see `LibraryShelfUi`. */
     onSyncWithServer: () -> Unit = {},
-    modifier: Modifier = Modifier,
     viewModel: LibraryViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()

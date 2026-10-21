@@ -5,6 +5,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.focus.FocusRequester
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.infrastructure.AppCommand
@@ -13,6 +15,8 @@ import io.lukia.features.library.presentation.pickers.rememberPlatformFilePicker
 import io.lukia.features.library.presentation.pickers.rememberPlatformFolderPicker
 import io.lukia.features.library.presentation.sessions.openBook
 import io.lukia.features.library.presentation.sessions.rememberImportUi
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -118,6 +122,7 @@ private class LibraryRequests(
     val syncWithServer: () -> Unit,
     /** The search field, which Find puts the keyboard in. */
     val searchFocus: FocusRequester,
+    private val scope: CoroutineScope,
 ) {
 
     fun carryOut(command: AppCommand) = when (command) {
@@ -127,10 +132,23 @@ private class LibraryRequests(
         AppCommand.FindInLibrary -> findInLibrary()
     }
 
+    /**
+     * Tried for a few frames rather than once: Find from a book brings the
+     * library back first, and its field is laid out a frame or two after the
+     * command arrives. It is not on screen at all while books are being picked,
+     * and a shortcut pressed then has nothing to land on.
+     */
     private fun findInLibrary() {
-        // The field is not on screen while books are being picked, and a
-        // shortcut pressed then has nothing to land on.
-        runCatching { searchFocus.requestFocus() }
+        scope.launch {
+            repeat(FindAttempts) {
+                if (runCatching { searchFocus.requestFocus() }.isSuccess) return@launch
+                withFrameNanos { }
+            }
+        }
+    }
+
+    private companion object {
+        const val FindAttempts = 10
     }
 }
 
@@ -153,5 +171,6 @@ private fun rememberLibraryRequests(
             onAccountSettings()
         },
         searchFocus = remember { FocusRequester() },
+        scope = rememberCoroutineScope(),
     )
 }

@@ -13,6 +13,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -62,18 +63,7 @@ internal fun DesktopShell(library: LibraryViewModel = koinViewModel()) {
     var requested by rememberRequestedCommand(commands, navController)
     val settings = rememberSettingsOverlayState()
 
-    // Settings open over whichever page is showing, so the shell carries that
-    // one out itself; Find is for the shelf behind the settings, so it closes them.
-    LaunchedEffect(requested) {
-        when (requested) {
-            AppCommand.OpenSettings -> {
-                settings.show(SettingsArea.Default)
-                requested = null
-            }
-            AppCommand.FindInLibrary -> settings.open = false
-            else -> Unit
-        }
-    }
+    SettingsCommands(requested, settings, onTake = { requested = null })
 
     // The book whose details are docked beside the page, by location - see
     // [BookDetailSide], which looks it up again on every pass.
@@ -82,7 +72,6 @@ internal fun DesktopShell(library: LibraryViewModel = koinViewModel()) {
 
     val pages = DesktopPages(
         navController = navController,
-        library = library,
         openSettings = { area -> settings.show(area) },
         showDetails = { location -> detailLocation = location },
         startSync = startSync,
@@ -102,8 +91,8 @@ internal fun DesktopShell(library: LibraryViewModel = koinViewModel()) {
                 popEnterTransition = { if (changesInPlace(motion)) tabEnter(motion) else popEnter(motion) },
                 popExitTransition = { if (changesInPlace(motion)) tabExit(motion) else popExit(motion) },
             ) {
-                homePage(pages)
-                libraryPage(pages, command = requested, onClearCommand = { requested = null })
+                homePage(pages, library)
+                libraryPage(pages, library, command = requested, onClearCommand = { requested = null })
                 homeShelfDestination(navController, library, pages.openBook, pages.openDetails)
                 bookDestinations(navController)
                 windowSettingsDestinations(navController)
@@ -111,8 +100,9 @@ internal fun DesktopShell(library: LibraryViewModel = koinViewModel()) {
 
             // Beside the pages and the shelf screens only: a book being read or
             // the statistics take the window to themselves.
+            // The same LibraryViewModel the pages share: resolved from the same
+            // owner, outside the host.
             BookDetailSide(
-                viewModel = library,
                 location = detailLocation.takeIf { route in PagesWithDetails },
                 onDismiss = { detailLocation = null },
                 onRead = { document ->
@@ -137,7 +127,6 @@ private val PagesWithDetails = setOf(Routes.Home.route, Routes.Library.route, Ro
 /** What both pages open, written once so a book opens the same way from either. */
 private class DesktopPages(
     val navController: NavController,
-    val library: LibraryViewModel,
     val openSettings: (SettingsArea) -> Unit,
     showDetails: (String) -> Unit,
     val startSync: () -> Unit,
@@ -161,7 +150,7 @@ private class DesktopPages(
     }
 }
 
-private fun NavGraphBuilder.homePage(pages: DesktopPages) {
+private fun NavGraphBuilder.homePage(pages: DesktopPages, library: LibraryViewModel) {
     composable(Routes.Home.route) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -185,7 +174,7 @@ private fun NavGraphBuilder.homePage(pages: DesktopPages) {
                     pages.startSync()
                     pages.openSettings(SettingsArea.Account)
                 },
-                viewModel = pages.library,
+                viewModel = library,
             )
         }
     }
@@ -193,12 +182,13 @@ private fun NavGraphBuilder.homePage(pages: DesktopPages) {
 
 private fun NavGraphBuilder.libraryPage(
     pages: DesktopPages,
+    library: LibraryViewModel,
     command: AppCommand?,
     onClearCommand: () -> Unit,
 ) {
     composable(Routes.Library.route) {
         LibraryScreen(
-            viewModel = pages.library,
+            viewModel = library,
             onDocumentClick = pages.openBook,
             onDocumentDetails = pages.openDetails,
             onSettings = { pages.openSettings(SettingsArea.Default) },
@@ -211,6 +201,27 @@ private fun NavGraphBuilder.libraryPage(
             onAccountSettings = { pages.openSettings(SettingsArea.Account) },
             sections = { pages.tabs(MobileTab.Library) },
         )
+    }
+}
+
+/**
+ * The commands that are about the settings. They open over whichever page is
+ * showing, so the shell carries that one out itself; Find is for the shelf
+ * behind the settings, so it closes them.
+ */
+@Composable
+private fun SettingsCommands(requested: AppCommand?, settings: SettingsOverlayState, onTake: () -> Unit) {
+    val take by rememberUpdatedState(onTake)
+
+    LaunchedEffect(requested) {
+        when (requested) {
+            AppCommand.OpenSettings -> {
+                settings.show(SettingsArea.Default)
+                take()
+            }
+            AppCommand.FindInLibrary -> settings.open = false
+            else -> Unit
+        }
     }
 }
 
@@ -262,7 +273,10 @@ internal fun rememberRequestedCommand(
         commands.commands.collect { command ->
             pending.value = command
 
+            val showing = navController.currentDestination?.route == Routes.Library.route
+
             if (command != AppCommand.OpenSettings &&
+                !showing &&
                 !navController.popBackStack(Routes.Library.route, inclusive = false)
             ) {
                 navController.switchTo(MobileTab.Library)
