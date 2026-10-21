@@ -367,6 +367,7 @@
     <string name="shortcut_close_book_keys">Esc</string>
     <string name="shortcut_word_details">Mere om et ord</string>
     <string name="shortcut_word_details_keys">Højreklik</string>
+    <string name="menu_find">Søg…</string>
     <string name="shortcut_tooltip">%1$s  %2$s</string>
     <string name="word_looked_up_under">Slået op under \u201D%1$s\u201D</string>
     <string name="word_looking_it_up">Slår det op…</string>

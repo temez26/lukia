@@ -484,6 +484,7 @@
     <string name="shortcut_close_book_keys">Esc</string>
     <string name="shortcut_word_details">More about a word</string>
     <string name="shortcut_word_details_keys">Right-click</string>
+    <string name="menu_find">Find…</string>
     <!-- A tooltip: what the control does, then the key that does it. -->
     <string name="shortcut_tooltip">%1$s  %2$s</string>
 

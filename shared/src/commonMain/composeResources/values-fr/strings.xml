@@ -374,6 +374,7 @@
     <string name="shortcut_close_book_keys">Échap</string>
     <string name="shortcut_word_details">En savoir plus sur un mot</string>
     <string name="shortcut_word_details_keys">Clic droit</string>
+    <string name="menu_find">Rechercher…</string>
     <string name="shortcut_tooltip">%1$s  %2$s</string>
     <string name="word_looked_up_under">Cherché sous \u00AB\u00A0%1$s\u00A0\u00BB</string>
     <string name="word_looking_it_up">Recherche en cours…</string>

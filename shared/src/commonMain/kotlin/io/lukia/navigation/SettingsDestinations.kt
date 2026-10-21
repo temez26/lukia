@@ -16,7 +16,6 @@ import io.lukia.features.settings.presentation.screens.AccountSummary
 import io.lukia.features.settings.presentation.screens.SettingsArea
 import io.lukia.features.settings.presentation.screens.SettingsAreaScreen
 import io.lukia.features.settings.presentation.screens.SettingsHubScreen
-import io.lukia.features.settings.presentation.screens.SettingsScreen
 import io.lukia.features.settings.presentation.screens.TargetLanguageScreen
 import io.lukia.resources.Res
 import io.lukia.resources.account_area
@@ -24,21 +23,6 @@ import io.lukia.resources.settings_account_sign_in_again
 import io.lukia.resources.settings_account_signed_out_summary
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
-
-/** Settings in a window: one page that switches between its groups in place. */
-internal fun NavGraphBuilder.windowSettingsDestinations(navController: NavController) {
-    composable(Routes.Settings.route) {
-        SettingsScreen(onBack = { navController.popBackStack() }, account = AppAccountPage)
-    }
-
-    composable(Routes.AccountSettings.route) {
-        SettingsScreen(
-            onBack = { navController.popBackStack() },
-            account = AppAccountPage,
-            initialArea = SettingsArea.Account,
-        )
-    }
-}
 
 /**
  * Settings on a phone: a list of the groups, each pushed as a page of its own -

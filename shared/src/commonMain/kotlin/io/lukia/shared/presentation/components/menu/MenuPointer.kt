@@ -14,8 +14,10 @@ import kotlin.time.TimeSource
  * taken by the [AnchoredMenu] that the press opens, so neither has to be told
  * about the other through every card that uses both.
  *
- * Taken once and only while fresh, so a right click that opened something other
- * than an [AnchoredMenu] does not place the next menu opened from a button.
+ * Read only while fresh, so a right click that opened something other than an
+ * [AnchoredMenu] does not place the next menu opened from a button. Read during
+ * composition and cleared once that composition has been applied - see
+ * [AnchoredMenu] - so a composition that is thrown away does not lose it.
  */
 internal object MenuPointer {
 
@@ -29,11 +31,13 @@ internal object MenuPointer {
         pressedAt = TimeSource.Monotonic.markNow()
     }
 
-    fun take(): Offset? {
+    fun peek(): Offset? {
         val fresh = pressedAt?.let { it.elapsedNow() < Fresh } == true
-        val taken = position.takeIf { fresh }
+        return position.takeIf { fresh }
+    }
+
+    fun clear() {
         position = null
         pressedAt = null
-        return taken
     }
 }

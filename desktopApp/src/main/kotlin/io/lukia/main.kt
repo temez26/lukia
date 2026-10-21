@@ -32,6 +32,7 @@ import io.lukia.core.infrastructure.MinWidth
 import io.lukia.core.infrastructure.SavedWindow
 import io.lukia.core.infrastructure.deliverIncomingDocuments
 import io.lukia.core.infrastructure.isMacOs
+import io.lukia.core.presentation.findMenuLabel
 import io.lukia.di.commonModule
 import io.lukia.di.platformModule
 import kotlinx.coroutines.flow.debounce
@@ -258,7 +259,7 @@ private fun FrameWindowScope.LukiaMenuBar(commands: AppCommands) {
                 onClick = { commands.request(AppCommand.AddFolder) },
             )
             Item(
-                "Find…",
+                findMenuLabel(),
                 shortcut = shortcut(Key.F),
                 onClick = { commands.request(AppCommand.FindInLibrary) },
             )

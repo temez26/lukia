@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.infrastructure.AppCommand
@@ -138,10 +139,17 @@ private class LibraryRequests(
     private fun findInLibrary() {
         scope.launch {
             repeat(FindAttempts) {
-                if (runCatching { searchFocus.requestFocus() }.isSuccess) return@launch
+                if (requestSearchFocus()) return@launch
                 withFrameNanos { }
             }
         }
+    }
+
+    /** Whether focus landed, which a requester not yet attached to its field cannot say yes to. */
+    private fun requestSearchFocus(): Boolean = try {
+        searchFocus.requestFocus(FocusDirection.Enter)
+    } catch (_: IllegalStateException) {
+        false
     }
 
     private companion object {

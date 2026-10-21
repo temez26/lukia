@@ -367,6 +367,7 @@
     <string name="shortcut_close_book_keys">Esc</string>
     <string name="shortcut_word_details">Más sobre una palabra</string>
     <string name="shortcut_word_details_keys">Clic derecho</string>
+    <string name="menu_find">Buscar…</string>
     <string name="shortcut_tooltip">%1$s  %2$s</string>
     <string name="word_looked_up_under">Buscado como \u00AB%1$s\u00BB</string>
     <string name="word_looking_it_up">Buscando…</string>

@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -31,6 +30,7 @@ import io.lukia.features.library.presentation.model.LibrarySelection
 import io.lukia.features.library.presentation.model.LibrarySort
 import io.lukia.features.library.presentation.model.ReadingStatus
 import io.lukia.features.library.presentation.model.sortedFor
+import io.lukia.getPlatform
 import io.lukia.resources.Res
 import io.lukia.resources.book_progress_page_of
 import io.lukia.resources.book_read_continue
@@ -39,8 +39,8 @@ import io.lukia.shared.presentation.components.controls.ReadingProgressBar
 import io.lukia.shared.presentation.components.controls.pressable
 import io.lukia.shared.presentation.components.cover.BookCover
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
+import io.lukia.shared.presentation.theme.LukiaAlpha
 import io.lukia.shared.presentation.theme.Space
-import io.lukia.shared.presentation.theme.isWideWindow
 import org.jetbrains.compose.resources.stringResource
 
 /** How many books the band carries: the last few in progress, one row on any window wide enough to show it. */
@@ -48,8 +48,6 @@ private const val BandLength = 3
 
 /** Small enough that the band stays one slim row, large enough to know the book by its cover. */
 private val BandCoverWidth: Dp = 36.dp
-
-private const val CoverAspect = 2f / 3f
 
 /** The books the band offers: the last few being read, most recently opened first. */
 internal fun List<LibraryBook>.continueReading(): List<LibraryBook> =
@@ -59,8 +57,9 @@ internal fun List<LibraryBook>.continueReading(): List<LibraryBook> =
 
 /**
  * What the band shows above [books], or nothing where it does not belong: on a
- * window only, where the phone's Home has no place, and not while the shelf is
- * narrowed or being picked from - the reader is then after something else.
+ * desktop only, which has no Home - phones and tablets lead with it on Home, see
+ * `MobileShell` - and not while the shelf is narrowed or being picked from, when
+ * the reader is after something else.
  */
 @Composable
 internal fun rememberContinueReading(
@@ -69,7 +68,7 @@ internal fun rememberContinueReading(
     selection: LibrarySelection,
 ): List<LibraryBook> {
     val reading = remember(books) { books.continueReading() }
-    val shown = isWideWindow && !query.isNarrowed && !selection.active
+    val shown = !getPlatform().isMobile && !query.isNarrowed && !selection.active
     return if (shown) reading else emptyList()
 }
 
@@ -136,9 +135,7 @@ private fun ContinueEntry(book: LibraryBook, onOpen: () -> Unit, modifier: Modif
             title = title,
             shape = MaterialTheme.shapes.small,
             monogramFontSize = 14.sp,
-            modifier = Modifier
-                .width(BandCoverWidth)
-                .aspectRatio(CoverAspect),
+            modifier = Modifier.width(BandCoverWidth),
         )
 
         Column(modifier = Modifier.padding(start = Space.md).weight(1f)) {
@@ -158,10 +155,14 @@ private fun ContinueEntry(book: LibraryBook, onOpen: () -> Unit, modifier: Modif
                     maxLines = 1,
                 )
 
+                // On a track of its own: the bar's is drawn to sit over a cover,
+                // and on this card it would vanish into the card itself.
                 progress.fraction?.let { fraction ->
                     ReadingProgressBar(
                         fraction = fraction,
-                        modifier = Modifier.padding(top = Space.xs),
+                        modifier = Modifier
+                            .padding(top = Space.xs)
+                            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = LukiaAlpha.Tonal)),
                     )
                 }
             }

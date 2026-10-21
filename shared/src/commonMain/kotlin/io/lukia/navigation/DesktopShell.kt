@@ -62,6 +62,12 @@ internal fun DesktopShell(library: LibraryViewModel = koinViewModel()) {
     var detailLocation by rememberSaveable { mutableStateOf<String?>(null) }
     val route = navController.currentBackStackEntryAsState().value?.destination?.route
 
+    // Closed by leaving the shelf: coming back from a book should find the shelf
+    // as it was before the panel, not a panel about a book that was not reopened.
+    LaunchedEffect(route) {
+        if (route != null && route != Routes.Library.route) detailLocation = null
+    }
+
     val pages = DesktopPages(
         navController = navController,
         openSettings = { area -> settings.show(area) },
@@ -85,7 +91,6 @@ internal fun DesktopShell(library: LibraryViewModel = koinViewModel()) {
             ) {
                 libraryPage(pages, library, command = requested, onClearCommand = { requested = null })
                 bookDestinations(navController)
-                windowSettingsDestinations(navController)
             }
 
             // Beside the shelf only: a book being read or the statistics take
@@ -177,7 +182,7 @@ private fun SettingsCommands(requested: AppCommand?, settings: SettingsOverlaySt
 }
 
 /** Whether the settings are open over the window, and on which page. */
-private class SettingsOverlayState(
+internal class SettingsOverlayState(
     private val visible: MutableState<Boolean>,
     private val page: MutableState<SettingsArea>,
 ) {
@@ -191,7 +196,7 @@ private class SettingsOverlayState(
 }
 
 @Composable
-private fun rememberSettingsOverlayState(): SettingsOverlayState {
+internal fun rememberSettingsOverlayState(): SettingsOverlayState {
     val visible = rememberSaveable { mutableStateOf(false) }
     val page = rememberSaveable { mutableStateOf(SettingsArea.Default) }
     return remember(visible, page) { SettingsOverlayState(visible, page) }

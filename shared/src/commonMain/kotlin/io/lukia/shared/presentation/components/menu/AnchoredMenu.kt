@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -111,6 +112,7 @@ fun AnchoredMenu(
     // where it was rather than jumping back to its anchor.
     val opening = remember { OpeningPoint() }
     opening.update(expanded)
+    SideEffect { if (expanded) MenuPointer.clear() }
 
     val gapPx = with(LocalDensity.current) { AnchorGap.roundToPx() }
     val positionProvider = remember(gapPx, opening.pointer) { AnchoredMenuPositionProvider(gapPx, opening.pointer) }
@@ -316,7 +318,7 @@ private class OpeningPoint {
     private var open = false
 
     fun update(expanded: Boolean) {
-        if (expanded && !open) pointer = MenuPointer.take()
+        if (expanded && !open) pointer = MenuPointer.peek()
         open = expanded
     }
 }
