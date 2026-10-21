@@ -25,12 +25,12 @@ class WeekGlanceTest {
     private val today = LocalDate(2026, 8, 25)
 
     private fun habits(minutes: Int): ReadingHabits = readingHabits(
-        sessions = listOf(
+        sessions = listOfNotNull(
             ReadingSession(
                 location = "/library/book.pdf",
                 startedAt = LocalDateTime(today, LocalTime(12, 0)).toInstant(zone).toEpochMilliseconds(),
                 durationMs = minutes * 60_000L,
-            ),
+            ).takeIf { minutes > 0 },
         ),
         today = today,
         zone = zone,
@@ -42,7 +42,7 @@ class WeekGlanceTest {
 
         setContent {
             LukiaTheme(darkTheme = false) {
-                WeekGlanceCard(habits = habits(minutes = 200), onClick = { opened = true })
+                WeekGlanceContent(habits = habits(minutes = 200), onClick = { opened = true })
             }
         }
 
@@ -54,7 +54,7 @@ class WeekGlanceTest {
     fun aWeekWithNoReadingSaysSo() = runComposeUiTest {
         setContent {
             LukiaTheme(darkTheme = false) {
-                WeekGlanceCard(habits = ReadingHabits.Empty, onClick = {})
+                WeekGlanceContent(habits = habits(minutes = 0), onClick = {})
             }
         }
 

@@ -584,6 +584,7 @@
     <string name="home_resume">Fortsätt</string>
     <string name="book_title_by_author">%1$s av %2$s</string>
     <string name="home_page_position">%1$d/%2$d</string>
+    <string name="home_add_books">Lägg till böcker</string>
     <string name="book_fact_spoken">%1$s: %2$s</string>
     <plurals name="home_pages_left">
         <item quantity="one">1 sida kvar</item>

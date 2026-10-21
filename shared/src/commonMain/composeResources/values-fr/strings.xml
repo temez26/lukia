@@ -537,6 +537,7 @@
     <string name="home_resume">Reprendre</string>
     <string name="book_title_by_author">%1$s, de %2$s</string>
     <string name="home_page_position">%1$d/%2$d</string>
+    <string name="home_add_books">Ajouter des livres</string>
     <string name="book_fact_spoken">%1$s\u00A0: %2$s</string>
     <plurals name="home_pages_left">
         <item quantity="one">1 page restante</item>

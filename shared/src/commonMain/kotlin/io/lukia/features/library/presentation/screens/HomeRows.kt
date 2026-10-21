@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -25,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.style.TextOverflow
@@ -33,15 +31,11 @@ import io.lukia.features.library.presentation.components.home.ContinueFacts
 import io.lukia.features.library.presentation.components.home.ContinueHero
 import io.lukia.features.library.presentation.components.home.HomeContinueCard
 import io.lukia.features.library.presentation.components.home.HomeShelfRow
-import io.lukia.features.library.presentation.components.toolbar.LibraryMenu
-import io.lukia.features.library.presentation.components.toolbar.MenuButton
-import io.lukia.features.library.presentation.components.toolbar.TonalPlate
 import io.lukia.features.library.presentation.model.HomeLayout
 import io.lukia.features.library.presentation.model.HomeMenu
 import io.lukia.features.library.presentation.model.HomeShelf
 import io.lukia.features.library.presentation.model.LibraryBook
 import io.lukia.features.library.presentation.sessions.HomeBookActions
-import io.lukia.features.library.presentation.sessions.LibraryShelfUi
 import io.lukia.resources.Res
 import io.lukia.resources.home_book_count
 import io.lukia.resources.home_reading_count
@@ -50,7 +44,6 @@ import io.lukia.shared.presentation.components.launch.LaunchReveal
 import io.lukia.shared.presentation.components.launch.launchReveal
 import io.lukia.shared.presentation.theme.Clearance
 import io.lukia.shared.presentation.theme.LocalLukiaDimens
-import io.lukia.shared.presentation.theme.OnPageColors
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.SystemBarIcons
 import org.jetbrains.compose.resources.pluralStringResource
@@ -84,8 +77,8 @@ internal fun HomeRows(
     reveal: LaunchReveal = LaunchReveal.Finished,
     /** Downloads under way, by book location - see `BookTransfers`. */
     transfers: Map<String, BookTransfer> = emptyMap(),
-    /** A glance at the week's reading, under the book being read - supplied by the shell. */
-    stats: @Composable (Modifier) -> Unit = {},
+    /** The card under the book being read: the week's reading and Home's own actions - see `HomeGlance`. */
+    glance: @Composable (Modifier) -> Unit = {},
     header: @Composable () -> Unit,
 ) {
     val dimens = LocalLukiaDimens.current
@@ -122,8 +115,8 @@ internal fun HomeRows(
                 item(key = "header", contentType = "header") { PageHeader(reveal = reveal, header = header) }
             }
 
-            item(key = "stats", contentType = "stats") {
-                stats(
+            item(key = "glance", contentType = "glance") {
+                glance(
                     Modifier
                         .padding(horizontal = dimens.screenPadding)
                         .launchReveal(reveal, index = RowRevealOffset + 1),
@@ -236,98 +229,32 @@ private fun ContinueTop(
 }
 
 /**
- * The screen's name, and the library's own actions menu.
+ * The screen's name, and what the library holds under it.
  *
- * The same menu the library tab carries rather than a shorter one: importing,
- * tidying and the settings are done to a library rather than to a screen, and
- * three here against five there would make the reader learn which corner holds
- * which.
- *
- * That the rows underneath cannot show a selection is the menu's problem rather
- * than this screen's - see [LibraryShelfUi.selectingOn].
- *
- * The way to the reading statistics is not here but on a card of its own under
- * the book being read - see `WeekGlance`.
- *
- * The menu sits on a tonal plate: this header is on the screen's background
- * rather than in a bar, and a bare glyph at its edge reads as decoration. On
- * the book being read it goes bare and white instead, which the deepened colour
- * there reads better than a faint plate - see `ContinueHero`.
+ * No controls: adding books and the settings are on the card under the book
+ * being read - see `HomeGlance` - and selecting and syncing have their own
+ * places on the library tab and in the settings.
  */
 @Composable
 internal fun HomeHeader(
-    menuExpanded: Boolean,
-    onMenuExpandedChange: (Boolean) -> Unit,
-    onImport: () -> Unit,
-    onImportFolder: () -> Unit,
-    shelf: LibraryShelfUi,
-    onSettings: () -> Unit,
     modifier: Modifier = Modifier,
     /** What the library holds, under the title - see [homeSummary]. Null for none. */
     summary: String? = null,
-    /** Whether it is drawn on the book being read rather than on the page. */
-    onHero: Boolean = false,
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = stringResource(Res.string.home_title),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-
-            if (summary != null) {
-                Text(
-                    text = summary,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
-
-        val menu: @Composable () -> Unit = {
-            HeaderMenu(
-                menuExpanded = menuExpanded,
-                onMenuExpandedChange = onMenuExpandedChange,
-                onImport = onImport,
-                onImportFolder = onImportFolder,
-                shelf = shelf,
-                onSettings = onSettings,
-            )
-        }
-
-        if (onHero) menu() else TonalPlate { menu() }
-    }
-}
-
-@Composable
-private fun HeaderMenu(
-    menuExpanded: Boolean,
-    onMenuExpandedChange: (Boolean) -> Unit,
-    onImport: () -> Unit,
-    onImportFolder: () -> Unit,
-    shelf: LibraryShelfUi,
-    onSettings: () -> Unit,
-) {
-    Box {
-        MenuButton(
-            expanded = menuExpanded,
-            onClick = { onMenuExpandedChange(!menuExpanded) },
+    Column(modifier = modifier.fillMaxWidth()) {
+        Text(
+            text = stringResource(Res.string.home_title),
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.onBackground,
         )
 
-        OnPageColors {
-            LibraryMenu(
-                expanded = menuExpanded,
-                onDismissRequest = { onMenuExpandedChange(false) },
-                onImport = onImport,
-                onImportFolder = onImportFolder,
-                shelf = shelf,
-                onSettings = onSettings,
+        if (summary != null) {
+            Text(
+                text = summary,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }

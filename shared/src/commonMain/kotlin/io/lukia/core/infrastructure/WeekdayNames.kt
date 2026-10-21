@@ -14,4 +14,16 @@ import kotlinx.datetime.DayOfWeek
  * Every platform already holds these names for every language it ships, so there
  * is nothing here for a translator to keep in step.
  */
-internal expect fun weekdayName(dayOfWeek: DayOfWeek, abbreviated: Boolean): String
+internal expect fun weekdayName(dayOfWeek: DayOfWeek, form: WeekdayForm): String
+
+/** How much of a day's name is wanted. */
+internal enum class WeekdayForm {
+    /** "Monday", for a sentence. */
+    Full,
+
+    /** "Mon", under a bar with room for it. */
+    Short,
+
+    /** "M", under a bar with room for one letter - not always the first of the name. */
+    Narrow,
+}

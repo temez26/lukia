@@ -52,6 +52,15 @@ class ReadingHabitsTest {
         assertEquals(0, habits.currentStreak)
     }
 
+    /** Home's glance draws the week's days whether or not any of them were read. */
+    @Test
+    fun nothingReadStillHasItsWeek() {
+        val habits = habitsOf()
+
+        assertEquals(7, habits.days.size)
+        assertTrue(habits.days.none { it.hasReading })
+    }
+
     @Test
     fun everySittingAddsToTheTotal() {
         val habits = habitsOf(sitting(daysAgo = 0, minutes = 20), sitting(daysAgo = 40, minutes = 10))

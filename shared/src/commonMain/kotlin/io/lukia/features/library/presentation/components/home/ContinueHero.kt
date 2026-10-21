@@ -62,12 +62,9 @@ private const val OnToneLine = 0.25f
  * Its own top inset, since it is drawn under the status bar rather than below
  * it; what is laid on it is in light colours whatever the theme, because the
  * colour is always deepened for white text - see `rememberCoverTone`. Behind
- * the header it is deeper still, so the title and the buttons there read on any
+ * the header it is deeper still, so the title there reads on any
  * cover. The fade is drawn past the hero's own bottom edge, under the items that
- * follow it.
- *
- * Its accent is white, with the book's colour on it: the ring and the button to
- * carry on are drawn in it.
+ * follow it. The ring and the button to carry on keep the app's accent.
  */
 @Composable
 internal fun ContinueHero(
@@ -83,8 +80,6 @@ internal fun ContinueHero(
     val easeEnd = deepEnd + with(density) { HeaderEaseLength.toPx() }
     val deep = lerp(tone, Color.Black, HeaderDepth)
     val onTone = MaterialTheme.colorScheme.copy(
-        primary = Color.White,
-        onPrimary = tone,
         onBackground = Color.White,
         onSurface = Color.White,
         onSurfaceVariant = Color.White.copy(alpha = OnToneMuted),

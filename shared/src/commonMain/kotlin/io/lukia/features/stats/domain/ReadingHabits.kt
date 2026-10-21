@@ -96,8 +96,6 @@ internal fun readingHabits(
     today: LocalDate,
     zone: TimeZone,
 ): ReadingHabits {
-    if (sessions.isEmpty()) return ReadingHabits.Empty
-
     val byDay = sessions
         .groupBy { Instant.fromEpochMilliseconds(it.startedAt).toLocalDateTime(zone).date }
         .mapValues { (_, sittings) -> sittings.sumOf { it.durationMs } }

@@ -164,7 +164,7 @@ private fun NavGraphBuilder.tabDestinations(
             onOpenShelf = { shelf -> navController.navigate(Routes.HomeShelf.createRoute(shelf.name)) },
             onOpenLibrary = { navController.switchTo(MobileTab.Library) },
             onSettings = openSettings,
-            stats = { modifier -> WeekGlance(onClick = openStats, modifier = modifier) },
+            stats = { WeekGlance(onClick = openStats) },
             onSyncWithServer = {
                 startSync()
                 openAccountSettings()

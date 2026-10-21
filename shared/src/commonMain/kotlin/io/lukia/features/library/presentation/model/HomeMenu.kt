@@ -4,7 +4,7 @@ package io.lukia.features.library.presentation.model
  * Which of the home screen's menus is open, if any.
  *
  * A closed set rather than a flag each, for the reason [OpenMenu] is one on the
- * shelf: the header, the empty state and every cover on every row each carry
+ * shelf: the way to add books and every cover on every row each carry
  * one, at most one may be open, and a single slot makes that structural rather
  * than something every opener must remember.
  *
@@ -12,10 +12,7 @@ package io.lukia.features.library.presentation.model
  */
 internal sealed interface HomeMenu {
 
-    /** The library's actions menu, in the header. */
-    data object Bar : HomeMenu
-
-    /** The empty screen's "where from" menu. */
+    /** Where books are added from: the sheet behind "Add books", or the empty screen's menu. */
     data object Import : HomeMenu
 
     /**
