@@ -23,7 +23,9 @@ import androidx.compose.ui.unit.dp
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.displayMessage
 import io.lukia.core.presentation.displayTitle
+import io.lukia.features.stats.domain.PeriodKind
 import io.lukia.features.stats.domain.ReadingSummary
+import io.lukia.features.stats.presentation.PeriodSelection
 import io.lukia.resources.Res
 import io.lukia.resources.action_try_again
 import io.lukia.resources.stats_footnote
@@ -57,6 +59,7 @@ internal fun StatsBody(
     summary: UiState<ReadingSummary>,
     actions: StatsActions,
     modifier: Modifier = Modifier,
+    selection: PeriodSelection = PeriodSelection(),
     /**
      * What a group sits in, for the same reason `SettingsBody` takes one: this
      * has to contrast with whatever is behind it, and a screen's background and
@@ -85,6 +88,7 @@ internal fun StatsBody(
 
             CountedContent(
                 summary = summary,
+                selection = selection,
                 actions = actions,
                 groupColor = groupColor,
                 modifier = Modifier.padding(top = dimens.sectionSpacing),
@@ -112,6 +116,7 @@ internal fun StatsBody(
 @Composable
 private fun CountedContent(
     summary: UiState<ReadingSummary>,
+    selection: PeriodSelection,
     actions: StatsActions,
     groupColor: Color,
     modifier: Modifier = Modifier,
@@ -146,7 +151,8 @@ private fun CountedContent(
 
             is UiState.Success -> StatsSections(
                 summary = state.data,
-                onOpenBook = actions.onOpenBook,
+                selection = selection,
+                actions = actions,
                 groupColor = groupColor,
             )
         }
@@ -156,11 +162,10 @@ private fun CountedContent(
 /**
  * The counted figures, in the order they are worth reading.
  *
- * From the smallest span of time to the largest and then out to what is on the
- * shelf: today and this week, then everything ever counted, then the library,
- * then the books last open. Somebody opening this has just put a book down, so
- * what they did today is the first thing on the page and the size of their
- * collection is the last.
+ * Time first and the shelf after it: today and the period around it, then
+ * everything ever counted, then the library, then this year's books. Somebody
+ * opening this has just put a book down, so what they did today is the first
+ * thing on the page and the size of their collection comes later.
  *
  * One column on a phone. A window has the width for two, and sets them two by
  * two in the same reading order - time on top, the shelf below - rather than
@@ -169,18 +174,36 @@ private fun CountedContent(
 @Composable
 private fun StatsSections(
     summary: ReadingSummary,
-    onOpenBook: (String) -> Unit,
+    selection: PeriodSelection,
+    actions: StatsActions,
     groupColor: Color,
     modifier: Modifier = Modifier,
 ) {
     val dimens = LocalLukiaDimens.current
     val time: List<@Composable (Modifier) -> Unit> = listOf(
-        { ThisWeekSection(habits = summary.habits, groupColor = groupColor, modifier = it) },
+        {
+            ReadingTimeSection(
+                habits = summary.habits,
+                history = summary.history,
+                selection = selection,
+                actions = actions,
+                groupColor = groupColor,
+                modifier = it,
+            )
+        },
         { AllTimeSection(habits = summary.habits, groupColor = groupColor, modifier = it) },
     )
     val shelf: List<@Composable (Modifier) -> Unit> = listOf(
         { LibrarySection(stats = summary.stats, groupColor = groupColor, modifier = it) },
-        { ActivitySection(activity = summary.recent, onOpenBook = onOpenBook, groupColor = groupColor, modifier = it) },
+        {
+            BooksSection(
+                books = summary.books,
+                hasReading = !summary.habits.isEmpty,
+                onOpenBook = actions.onOpenBook,
+                groupColor = groupColor,
+                modifier = it,
+            )
+        },
     )
 
     Column(
@@ -189,7 +212,11 @@ private fun StatsSections(
     ) {
         if (isWideWindow) {
             listOf(time, shelf).forEach { pair ->
-                Row(horizontalArrangement = Arrangement.spacedBy(dimens.sectionSpacing)) {
+                // Top-aligned, so a short card beside a tall one does not float.
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(dimens.sectionSpacing),
+                    verticalAlignment = Alignment.Top,
+                ) {
                     pair.forEach { section -> section(Modifier.weight(1f)) }
                 }
             }
@@ -240,4 +267,6 @@ private fun StatsTitle(syncedWithAccount: Boolean, modifier: Modifier = Modifier
 internal data class StatsActions(
     val onOpenBook: (String) -> Unit = {},
     val onRetry: () -> Unit = {},
+    val onSelectPeriod: (PeriodKind) -> Unit = {},
+    val onStepPeriod: (Int) -> Unit = {},
 )

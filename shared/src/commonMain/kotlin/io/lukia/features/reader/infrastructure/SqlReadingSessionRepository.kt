@@ -42,6 +42,7 @@ class SqlReadingSessionRepository(
                 location = row.location,
                 startedAt = row.startedAt,
                 durationMs = row.durationMs,
+                title = row.title,
             )
         }
     }

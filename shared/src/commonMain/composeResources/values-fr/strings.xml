@@ -536,16 +536,38 @@
     <string name="stats_day_spoken">%1$s : %2$s</string>
     <string name="stats_week_run_spoken">%1$s : %2$s. %3$s</string>
     <string name="stats_still_to_come">encore à venir</string>
+    <string name="stats_reading_time">Temps de lecture</string>
+    <string name="stats_period_week">Semaine</string>
+    <string name="stats_period_month">Mois</string>
+    <string name="stats_period_year">Année</string>
+    <string name="stats_last_week">La semaine dernière</string>
+    <plurals name="stats_weeks_ago">
+        <item quantity="one">Il y a %1$d semaine</item>
+        <item quantity="other">Il y a %1$d semaines</item>
+    </plurals>
+    <string name="stats_month_year">%1$s %2$d</string>
+    <string name="stats_previous_period">Afficher plus tôt</string>
+    <string name="stats_next_period">Afficher plus tard</string>
+    <string name="stats_days_read">Jours de lecture</string>
+    <string name="stats_days_of">%1$d sur %2$d</string>
+    <string name="stats_best_month">Meilleur mois</string>
+    <string name="stats_change_up">Par rapport à %2$s : +%1$d %</string>
+    <string name="stats_change_down">Par rapport à %2$s : −%1$d %</string>
+    <string name="stats_change_up_so_far">Par rapport aux mêmes jours de %2$s : +%1$d %</string>
+    <string name="stats_change_down_so_far">Par rapport aux mêmes jours de %2$s : −%1$d %</string>
+    <string name="stats_calendar_day_spoken">%1$s %2$d : %3$s</string>
+    <plurals name="stats_year_days_spoken">
+        <item quantity="one">Lu %1$d jour en %2$d</item>
+        <item quantity="other">Lu %1$d jours en %2$d</item>
+    </plurals>
+    <string name="stats_books_in_year">Livres en %1$d</string>
+    <string name="stats_most_read">Les plus lus</string>
+    <string name="stats_finished_on">Terminé le %1$d %2$s</string>
+    <string name="stats_nothing_read_this_year">Rien lu pour l\u2019instant cette année.</string>
+    <string name="stats_nothing_finished_this_year">Aucun livre terminé pour l\u2019instant cette année.</string>
     <string name="stats_your_library">Votre bibliothèque</string>
     <string name="stats_nothing_to_count">Rien à compter encore. Importez un livre, et ceci se remplira à mesure que vous lisez.</string>
     <string name="stats_share_read">%1$d\u00A0% de votre bibliothèque lus</string>
-    <string name="stats_recently_read">Lus récemment</string>
-    <string name="stats_opened">Ouvert</string>
-    <plurals name="stats_finished_pages">
-        <item quantity="one">Lu · %1$d page</item>
-        <item quantity="other">Lu · %1$d pages</item>
-    </plurals>
-    <string name="stats_page_of_percent">Page %1$d sur %2$d · %3$d\u00A0%</string>
     <string name="size_bytes">%1$s\u00A0o</string>
     <string name="size_kilobytes">%1$s\u00A0ko</string>
     <string name="size_megabytes">%1$s\u00A0Mo</string>

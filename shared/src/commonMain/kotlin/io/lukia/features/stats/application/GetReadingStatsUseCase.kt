@@ -1,11 +1,14 @@
 package io.lukia.features.stats.application
 
 import io.lukia.core.domain.document.DocumentCatalogue
+import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.reading.ReadingProgressRepository
 import io.lukia.core.domain.reading.ReadingSessionRepository
 import io.lukia.features.stats.domain.ReadingSummary
 import io.lukia.features.stats.domain.readingHabits
-import io.lukia.features.stats.domain.readingSummary
+import io.lukia.features.stats.domain.readingHistory
+import io.lukia.features.stats.domain.readingStats
+import io.lukia.features.stats.domain.yearBooks
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
@@ -34,31 +37,38 @@ class GetReadingStatsUseCase(
 ) {
     suspend operator fun invoke(): ReadingSummary {
         val here = zone()
+        val today = now().toLocalDateTime(here).date
+        val documents = library.getDocuments()
+        val positions = progress.allProgress()
+        val sittings = sessions.all()
 
-        return readingSummary(
-            documents = library.getDocuments(),
-            progress = progress.allProgress(),
-            habits = readingHabits(
-                sessions = sessions.all(),
-                today = now().toLocalDateTime(here).date,
-                zone = here,
-            ),
-        ).withRecentCovers()
+        return ReadingSummary(
+            stats = readingStats(documents, positions),
+            habits = readingHabits(sittings, today, here),
+            history = readingHistory(sittings, today, here),
+            books = yearBooks(sittings, documents, positions, today, here),
+        ).withCovers()
     }
 
     /**
      * The handful of books the screen actually shows, with their artwork.
      *
      * The library above is read without any - see [DocumentCatalogue.getDocuments]
-     * - so the few that are drawn here are asked for one at a time. There are
-     * five of them: reading five covers is nothing beside reading every cover in
-     * the library to draw five.
+     * - so the few that are drawn here are asked for one at a time. Reading a
+     * year's books' covers is nothing beside reading every cover in the library
+     * to draw them.
      */
-    private suspend fun ReadingSummary.withRecentCovers(): ReadingSummary = copy(
-        recent = recent.map { activity ->
-            activity.copy(
-                document = activity.document.copy(coverImage = library.coverFor(activity.location)),
-            )
-        },
+    private suspend fun ReadingSummary.withCovers(): ReadingSummary = copy(
+        books = books.copy(
+            mostRead = books.mostRead.map { book ->
+                book.copy(document = book.document?.withCover())
+            },
+            finished = books.finished.map { book ->
+                book.copy(document = book.document.withCover())
+            },
+        ),
     )
+
+    private suspend fun DocumentInfo.withCover(): DocumentInfo =
+        copy(coverImage = library.coverFor(document.location))
 }

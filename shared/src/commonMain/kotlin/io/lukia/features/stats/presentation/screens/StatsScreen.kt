@@ -17,13 +17,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import io.lukia.core.presentation.UiState
 import io.lukia.features.stats.domain.ReadingSummary
+import io.lukia.features.stats.presentation.PeriodSelection
 import io.lukia.features.stats.presentation.StatsViewModel
 import io.lukia.shared.presentation.components.controls.BackBar
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
- * What the reading adds up to: the week so far, everything ever counted, what is
- * on the shelf, and what has been open lately.
+ * What the reading adds up to: today and any week, month or year, everything
+ * ever counted, what is on the shelf, and this year's books.
  *
  * [onOpenBook] takes a location rather than a document, because that is all this
  * screen holds - it lists reading positions with the library's entry beside
@@ -38,6 +39,7 @@ fun StatsScreen(
     viewModel: StatsViewModel = koinViewModel(),
 ) {
     val summary by viewModel.summary.collectAsState()
+    val selection by viewModel.selection.collectAsState()
 
     // Counted again each time the page is returned to, which is what a reader
     // coming back from a book expects: the pages and the minutes they have just
@@ -50,8 +52,14 @@ fun StatsScreen(
         summary = summary,
         onBack = onBack,
         syncedWithAccount = syncedWithAccount,
+        selection = selection,
         actions = remember(viewModel, onOpenBook) {
-            StatsActions(onOpenBook = onOpenBook, onRetry = viewModel::refresh)
+            StatsActions(
+                onOpenBook = onOpenBook,
+                onRetry = viewModel::refresh,
+                onSelectPeriod = viewModel::selectPeriod,
+                onStepPeriod = viewModel::stepPeriod,
+            )
         },
     )
 }
@@ -64,6 +72,7 @@ internal fun StatsContent(
     modifier: Modifier = Modifier,
     actions: StatsActions = StatsActions(),
     syncedWithAccount: Boolean = false,
+    selection: PeriodSelection = PeriodSelection(),
 ) {
     Box(
         modifier = modifier
@@ -83,6 +92,7 @@ internal fun StatsContent(
             StatsBody(
                 summary = summary,
                 actions = actions,
+                selection = selection,
                 syncedWithAccount = syncedWithAccount,
                 modifier = Modifier
                     .fillMaxWidth()
