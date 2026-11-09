@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,8 +29,13 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import io.lukia.core.infrastructure.MonthForm
+import io.lukia.core.infrastructure.monthName
 import io.lukia.features.stats.domain.DayReading
+import io.lukia.features.stats.domain.MonthReading
 import io.lukia.features.stats.presentation.dayLabel
 import io.lukia.features.stats.presentation.dayName
 import io.lukia.features.stats.presentation.readingTime
@@ -48,6 +54,9 @@ private val ChartHeight: Dp = 104.dp
 /** How wide one day's bar is drawn. */
 private val BarWidth: Dp = 10.dp
 
+/** The smallest a bar's label shrinks to before it is ellipsised instead. */
+private val MinLabelSize: TextUnit = 8.sp
+
 /** The capsule every bar and every track is cut to, at both ends. */
 private val BarShape: Shape = RoundedCornerShape(percent = 50)
 
@@ -65,43 +74,87 @@ private const val MinimumBar = 0.07f
 private const val FutureTrackShare = 0.45f
 
 /**
- * The week, Monday to Sunday, as seven bars.
+ * One column of [ReadingChart]: a day of a week, or a month of a year.
  *
- * A chart rather than seven numbers because the question is a shape: every day
- * or all at the weekend, this week against the last. Numbers in a row are
+ * [spoken] is the whole column as one sentence, so running along the chart with
+ * a screen reader gives one readable fact per bar instead of two fragments.
+ */
+internal data class ChartBar(
+    val label: String,
+    val spoken: String,
+    val durationMs: Long,
+    /** Today, or the month today is in: marked on the label. */
+    val isMarked: Boolean = false,
+    val isFuture: Boolean = false,
+) {
+    val hasReading: Boolean get() = durationMs > 0
+}
+
+/**
+ * Reading as bars: a week's seven days, or a year's twelve months.
+ *
+ * A chart rather than a row of numbers because the question is a shape: every
+ * day or all at the weekend, this month against the last. Numbers in a row are
  * compared by hand; bars are compared by looking.
  *
- * Scaled to the reader's own busiest day rather than a fixed number of hours:
- * there is no normal amount of reading, and a chart scaled to somebody else's
- * hour would show most people a row of stubs.
+ * Scaled to the busiest bar shown rather than a fixed number of hours: there is
+ * no normal amount of reading, and a chart scaled to somebody else's hour would
+ * show most people a row of stubs.
  *
- * Each day takes an equal share of the width rather than only the room its own
- * label needs, so the columns stay on a grid whatever the labels say and the
- * bars line up with the days under them.
+ * Each bar takes an equal share of the width rather than only the room its own
+ * label needs, so the columns stay on a grid whatever the labels say.
  */
 @Composable
 internal fun ReadingChart(
-    days: List<DayReading>,
-    busiestMs: Long,
+    bars: List<ChartBar>,
     modifier: Modifier = Modifier,
 ) {
-    if (days.isEmpty()) return
+    if (bars.isEmpty()) return
 
     val growth = chartGrowth()
+    val busiest = bars.maxOf { it.durationMs }
 
     Row(
         verticalAlignment = Alignment.Bottom,
         modifier = modifier.fillMaxWidth(),
     ) {
-        days.forEach { day ->
-            DayColumn(
-                day = day,
-                share = if (busiestMs > 0) day.durationMs.toFloat() / busiestMs else 0f,
+        bars.forEach { bar ->
+            BarColumn(
+                bar = bar,
+                share = if (busiest > 0) bar.durationMs.toFloat() / busiest else 0f,
                 growth = growth,
                 modifier = Modifier.weight(1f),
             )
         }
     }
+}
+
+/** A week's days as bars, today marked. */
+@Composable
+internal fun dayBars(days: List<DayReading>): List<ChartBar> = days.map { day ->
+    ChartBar(
+        label = dayLabel(day.date),
+        spoken = stringResource(Res.string.stats_day_spoken, dayName(day.date), day.spoken()),
+        durationMs = day.durationMs,
+        isMarked = day.isToday,
+        isFuture = day.isFuture,
+    )
+}
+
+/** A year's months as bars, the current month marked. */
+@Composable
+internal fun monthBars(months: List<MonthReading>): List<ChartBar> = months.map { month ->
+    ChartBar(
+        label = monthName(month.month, MonthForm.Short).take(1),
+        spoken = stringResource(
+            Res.string.stats_day_spoken,
+            monthName(month.month, MonthForm.Full),
+            if (month.isFuture) stringResource(Res.string.stats_still_to_come) else readingTime(month.durationMs),
+        ),
+        durationMs = month.durationMs,
+        isMarked = month.isCurrent,
+        isFuture = month.isFuture,
+    )
 }
 
 /**
@@ -133,43 +186,33 @@ private fun chartGrowth(): Float {
     return growth
 }
 
-/**
- * One day: its bar, and the name it is known by.
- *
- * Announced as a sentence rather than as a bar and a label, so that running down
- * the week with a screen reader gives seven readable facts instead of fourteen
- * fragments.
- */
+/** One bar and the name it is known by, announced as one sentence. */
 @Composable
-private fun DayColumn(
-    day: DayReading,
+private fun BarColumn(
+    bar: ChartBar,
     share: Float,
     growth: Float,
     modifier: Modifier = Modifier,
 ) {
-    // Read before the modifier chain: `clearAndSetSemantics` is not a
-    // composable scope.
-    val spoken = stringResource(Res.string.stats_day_spoken, dayName(day.date), day.spoken())
-
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.clearAndSetSemantics { contentDescription = spoken },
+        modifier = modifier.clearAndSetSemantics { contentDescription = bar.spoken },
     ) {
-        DayBar(day = day, share = share, growth = growth)
+        Bar(bar = bar, share = share, growth = growth)
 
-        DayLabel(day = day, modifier = Modifier.padding(top = Space.lg))
+        BarLabel(bar = bar, modifier = Modifier.padding(top = Space.lg))
     }
 }
 
 /** The bar itself, growing out of the track it is drawn in. */
 @Composable
-private fun DayBar(
-    day: DayReading,
+private fun Bar(
+    bar: ChartBar,
     share: Float,
     growth: Float,
     modifier: Modifier = Modifier,
 ) {
-    val height = if (day.hasReading) share.coerceIn(MinimumBar, 1f) * growth else 0f
+    val height = if (bar.hasReading) share.coerceIn(MinimumBar, 1f) * growth else 0f
 
     Box(
         contentAlignment = Alignment.BottomCenter,
@@ -186,7 +229,7 @@ private fun DayBar(
                 .clip(BarShape)
                 .background(
                     MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                        alpha = LukiaAlpha.Hover * if (day.isFuture) FutureTrackShare else 1f,
+                        alpha = LukiaAlpha.Hover * if (bar.isFuture) FutureTrackShare else 1f,
                     ),
                 ),
         )
@@ -202,7 +245,7 @@ private fun DayBar(
 }
 
 /**
- * The three letters under a bar, and the pill around today's.
+ * The name under a bar, and the pill around today's, or this month's.
  *
  * Today is marked on the label rather than by colouring its bar, so the bars
  * stay comparable with each other - a bar in a second colour is read as a second
@@ -210,26 +253,27 @@ private fun DayBar(
  * glance.
  */
 @Composable
-private fun DayLabel(
-    day: DayReading,
+private fun BarLabel(
+    bar: ChartBar,
     modifier: Modifier = Modifier,
 ) {
-    val marked = day.isToday
+    val marked = bar.isMarked
+    val style = MaterialTheme.typography.labelSmall
 
     Text(
-        text = dayLabel(day.date),
-        style = MaterialTheme.typography.labelSmall,
-        // A guard rather than an expectation. Most languages abbreviate a
-        // weekday to two or three characters, but the label is whatever the
-        // platform's calendar says, and a column a seventh of a phone wide has
-        // no room to be surprised in.
+        text = bar.label,
+        style = style,
+        // Shrunk to fit before it is cut. A month's column is a twelfth of a
+        // phone wide, and at the largest type even one letter and the pill's
+        // padding outgrow it; a label cut to "…" names nothing.
+        autoSize = TextAutoSize.StepBased(minFontSize = MinLabelSize, maxFontSize = style.fontSize),
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
-        fontWeight = if (marked || day.hasReading) FontWeight.SemiBold else FontWeight.Normal,
+        fontWeight = if (marked || bar.hasReading) FontWeight.SemiBold else FontWeight.Normal,
         color = when {
             marked -> MaterialTheme.colorScheme.onPrimary
-            day.isFuture -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = LukiaAlpha.Disabled)
-            day.hasReading -> MaterialTheme.colorScheme.onSurface
+            bar.isFuture -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = LukiaAlpha.Disabled)
+            bar.hasReading -> MaterialTheme.colorScheme.onSurface
             else -> MaterialTheme.colorScheme.onSurfaceVariant
         },
         modifier = modifier

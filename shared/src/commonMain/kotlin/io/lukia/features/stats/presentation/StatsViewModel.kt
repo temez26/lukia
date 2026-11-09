@@ -6,10 +6,12 @@ import io.lukia.core.domain.runCatchingApp
 import io.lukia.core.domain.toAppError
 import io.lukia.core.presentation.UiState
 import io.lukia.features.stats.application.GetReadingStatsUseCase
+import io.lukia.features.stats.domain.PeriodKind
 import io.lukia.features.stats.domain.ReadingSummary
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
@@ -38,6 +40,26 @@ class StatsViewModel(
      * only put a second read of the whole library in flight beside the first, at
      * the moment the screen was still sliding in over the shelf.
      */
+    private val _selection = MutableStateFlow(PeriodSelection())
+
+    /**
+     * Which week, month or year the reading time card shows.
+     *
+     * Held here rather than in the screen, so it survives a trip into a book and
+     * back - this ViewModel outlives one - without being stored anywhere.
+     */
+    val selection: StateFlow<PeriodSelection> = _selection.asStateFlow()
+
+    /** Shows the current period of [kind]. */
+    fun selectPeriod(kind: PeriodKind) {
+        _selection.value = PeriodSelection(kind = kind)
+    }
+
+    /** Steps [by] periods later, or earlier when negative, never past the current one. */
+    fun stepPeriod(by: Int) {
+        _selection.update { it.copy(offset = (it.offset + by).coerceAtMost(0)) }
+    }
+
     fun refresh() {
         viewModelScope.launch {
             _summary.value = runCatchingApp { getReadingStats() }.fold(
@@ -47,3 +69,9 @@ class StatsViewModel(
         }
     }
 }
+
+/** A week, month or year, [offset] periods back from the current one. */
+data class PeriodSelection(
+    val kind: PeriodKind = PeriodKind.Week,
+    val offset: Int = 0,
+)

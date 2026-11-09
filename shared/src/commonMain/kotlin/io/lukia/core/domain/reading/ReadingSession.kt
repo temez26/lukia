@@ -14,6 +14,8 @@ data class ReadingSession(
     val location: String,
     val startedAt: Long,
     val durationMs: Long,
+    /** The book's title when the sitting began, so it can still be named once the book is gone. */
+    val title: String? = null,
 )
 
 /**

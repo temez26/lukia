@@ -11,6 +11,7 @@ import io.lukia.features.stats.application.GetReadingStatsUseCase
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 /** That the statistics come from both stores, joined on location. */
 class GetReadingStatsUseCaseTest {
@@ -49,7 +50,8 @@ class GetReadingStatsUseCaseTest {
         )()
 
         assertEquals(0, summary.stats.booksInLibrary)
-        assertEquals(emptyList(), summary.recent)
+        assertTrue(summary.books.mostRead.isEmpty())
+        assertTrue(summary.history.isEmpty)
         assertEquals(0L, summary.habits.totalMs)
     }
 

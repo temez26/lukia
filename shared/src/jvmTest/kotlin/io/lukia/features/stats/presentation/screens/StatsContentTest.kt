@@ -6,6 +6,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.runComposeUiTest
 import io.lukia.core.domain.AppError
 import io.lukia.core.presentation.UiState
@@ -13,11 +14,22 @@ import io.lukia.features.library.TestBook
 import io.lukia.features.library.book
 import io.lukia.features.library.finished
 import io.lukia.features.library.partRead
+import io.lukia.features.stats.domain.BookTime
+import io.lukia.features.stats.domain.FinishedBook
+import io.lukia.features.stats.domain.ReadingHabits
+import io.lukia.features.stats.domain.ReadingStats
 import io.lukia.features.stats.domain.ReadingSummary
-import io.lukia.features.stats.domain.readingSummary
+import io.lukia.features.stats.domain.YearBooks
+import io.lukia.features.stats.domain.readingStats
 import io.lukia.shared.presentation.theme.LukiaTheme
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.Month
+import java.util.Locale
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 /** The reading statistics, as the reader meets them. */
 @OptIn(ExperimentalTestApi::class)
@@ -25,13 +37,31 @@ class StatsContentTest {
 
     private var opened: String? = null
     private var retried = 0
+    private val wasDefault = Locale.getDefault()
+
+    @BeforeTest
+    fun useEnglish() = Locale.setDefault(Locale.ENGLISH)
+
+    @AfterTest
+    fun restoreLocale() = Locale.setDefault(wasDefault)
 
     private fun summaryOf(vararg books: TestBook): UiState<ReadingSummary> = UiState.Success(
-        readingSummary(
-            documents = books.map(TestBook::document),
-            progress = books.mapNotNull { entry ->
-                entry.progress?.let { entry.document.document.location to it }
-            }.toMap(),
+        ReadingSummary(
+            stats = readingStats(
+                documents = books.map(TestBook::document),
+                progress = books.mapNotNull { entry ->
+                    entry.progress?.let { entry.document.document.location to it }
+                }.toMap(),
+            ),
+        ),
+    )
+
+    /** A reader with some time counted, and [books] as this year's books. */
+    private fun withBooks(books: YearBooks): UiState<ReadingSummary> = UiState.Success(
+        ReadingSummary(
+            stats = ReadingStats.Empty,
+            habits = ReadingHabits.Empty.copy(totalMs = 60_000L),
+            books = books,
         ),
     )
 
@@ -91,27 +121,73 @@ class StatsContentTest {
     }
 
     @Test
-    fun recentlyReadBooksSayWhereTheReaderGotTo() = runComposeUiTest {
-        setStats(summaryOf(book("Halfway", progress = partRead())))
+    fun thisYearsMostReadBooksSayHowLongWentOnEach() = runComposeUiTest {
+        val halfway = book("Halfway", progress = partRead()).document
+        setStats(
+            withBooks(
+                YearBooks(
+                    2026,
+                    listOf(BookTime(halfway.document.location, "Halfway", 95 * 60_000L, halfway)),
+                    emptyList(),
+                ),
+            ),
+        )
 
-        onNodeWithText("Halfway").assertIsDisplayed()
-        onNodeWithText("Page 21 of 100 · 21%").assertIsDisplayed()
+        onNodeWithText("Books in 2026").performScrollTo().assertIsDisplayed()
+        onNodeWithText("Halfway").performScrollTo().assertIsDisplayed()
+        onNodeWithText("1h 35m").performScrollTo().assertIsDisplayed()
     }
 
     @Test
-    fun aBookNeverOpenedIsNotListedAsActivity() = runComposeUiTest {
-        setStats(summaryOf(book("Waiting")))
+    fun aMostReadBookOpensFromTheList() = runComposeUiTest {
+        val halfway = book("Halfway", progress = partRead()).document
+        setStats(
+            withBooks(
+                YearBooks(2026, listOf(BookTime(halfway.document.location, "Halfway", 60_000L, halfway)), emptyList()),
+            ),
+        )
 
-        onNodeWithText("Recently read").assertDoesNotExist()
-    }
-
-    @Test
-    fun aRecentBookOpensWhereItWasLeft() = runComposeUiTest {
-        setStats(summaryOf(book("Halfway", progress = partRead())))
-
-        onNodeWithText("Halfway").performClick()
+        onNodeWithText("Halfway").performScrollTo().performClick()
 
         assertEquals("/library/Halfway.pdf", opened)
+    }
+
+    @Test
+    fun aBookNoLongerOnTheShelfIsNamedButDoesNotOpen() = runComposeUiTest {
+        setStats(withBooks(YearBooks(2026, listOf(BookTime("/library/Gone.pdf", "Gone", 60_000L)), emptyList())))
+
+        onNodeWithText("Gone").performScrollTo().performClick()
+
+        assertNull(opened)
+    }
+
+    @Test
+    fun finishedBooksAreDatedByTheirLastSitting() = runComposeUiTest {
+        val done = book("Done", progress = finished()).document
+        setStats(
+            withBooks(YearBooks(2026, emptyList(), listOf(FinishedBook(done, LocalDate(2026, Month.FEBRUARY, 9))))),
+        )
+
+        onNodeWithText("Finished").performScrollTo().performClick()
+
+        onNodeWithText("Done").performScrollTo().assertIsDisplayed()
+        onNodeWithText("Finished 9 Feb").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun anEmptyYearSaysSoInEachList() = runComposeUiTest {
+        setStats(withBooks(YearBooks(2026, emptyList(), emptyList())))
+
+        onNodeWithText("Nothing read yet this year.").performScrollTo().assertIsDisplayed()
+        onNodeWithText("Finished").performScrollTo().performClick()
+        onNodeWithText("No books finished yet this year.").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun aReaderWithNoTimeCountedHasNoBooksCard() = runComposeUiTest {
+        setStats(summaryOf(book("Halfway", progress = partRead())))
+
+        onNodeWithText("Books in 2026").assertDoesNotExist()
     }
 
     /**

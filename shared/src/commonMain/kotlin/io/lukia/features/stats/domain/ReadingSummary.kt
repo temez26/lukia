@@ -4,26 +4,29 @@ import io.lukia.core.domain.document.DocumentInfo
 import io.lukia.core.domain.reading.ReadingProgress
 
 /**
- * How many books there are to read, how far the reading has got, and what is
- * being read at the moment.
+ * How many books there are to read, how far the reading has got, and where the
+ * time went.
  *
  * One value rather than a screenful of separate lookups, because every number on
- * this screen is a reading of the same two things - the library and the stored
- * positions in it - taken at the same moment. Read separately, the tiles could
- * disagree with the list underneath them about a book imported between the two.
+ * this screen is a reading of the same things - the library, the stored
+ * positions in it and the sittings spent in it - taken at the same moment. Read
+ * separately, the tiles could disagree with the books listed under them about a
+ * book imported between the two.
  */
 data class ReadingSummary(
     val stats: ReadingStats,
-    /** Newest first. Empty for a reader who has not opened anything yet. */
-    val recent: List<ReadingActivity>,
     /** What the reading has cost in hours, and when it happened. */
     val habits: ReadingHabits = ReadingHabits.Empty,
+    /** Every day read on, for paging through weeks, months and years. */
+    val history: ReadingHistory = ReadingHistory.Empty,
+    /** This year's most-read and finished books. */
+    val books: YearBooks = YearBooks.Empty,
 ) {
 
     companion object {
 
         /** What the screen shows before its first read of the library lands. */
-        val Empty = ReadingSummary(stats = ReadingStats.Empty, recent = emptyList())
+        val Empty = ReadingSummary(stats = ReadingStats.Empty)
     }
 }
 
@@ -77,65 +80,19 @@ data class ReadingStats(
 }
 
 /**
- * One book the reader has been in, as the screen lists it: the library's entry
- * for it and how far into it they got.
+ * The library's counts, worked out in one pass over the library and the
+ * positions stored against it.
  *
- * The position is beside the book rather than looked up from it, because that
- * pairing is the whole of what this list is - the books that have a position at
- * all, in the order they were last written.
+ * Positions are joined onto the library rather than counted alone, so a book
+ * removed from the library stops being credited. The schema now says the same -
+ * a position is deleted with its book - but this stays a join, because a pure
+ * function of two lists should not depend on who wrote them.
  */
-data class ReadingActivity(
-    val document: DocumentInfo,
-    val progress: ReadingProgress,
-) {
-    val location: String get() = document.document.location
-}
-
-/**
- * How many books are listed as recent activity.
- *
- * Short on purpose. This is a reminder of what is on the go, not a history: the
- * library tab already orders the whole shelf by what was read last, and a
- * screen that reprinted it would be a second, worse library screen.
- */
-private const val RecentLimit = 5
-
-/**
- * Everything the statistics screen shows about reading, worked out in one pass over
- * the library and the positions stored against it.
- *
- * A pure function of the two, testable without a database. Positions are joined
- * onto the library rather than counted alone, so a book removed from the library
- * stops being credited. The schema now says the same - a position is deleted
- * with its book - but this stays a join, because a pure function of two lists
- * should not depend on who wrote them.
- */
-internal fun readingSummary(
+internal fun readingStats(
     documents: List<DocumentInfo>,
     progress: Map<String, ReadingProgress>,
-    habits: ReadingHabits = ReadingHabits.Empty,
-    recentLimit: Int = RecentLimit,
-): ReadingSummary {
-    val read = documents.mapNotNull { document ->
-        progress[document.document.location]?.let { document to it }
-    }
-
-    return ReadingSummary(
-        stats = statsFor(documents, read.map { (_, progress) -> progress }),
-        recent = read
-            // By the store's own counter rather than by a clock, which is what
-            // makes "last read" mean the same here as it does on the shelf.
-            .sortedByDescending { (_, progress) -> progress.readAt }
-            .take(recentLimit)
-            .map { (document, progress) -> ReadingActivity(document, progress) },
-        habits = habits,
-    )
-}
-
-private fun statsFor(
-    documents: List<DocumentInfo>,
-    positions: List<ReadingProgress>,
 ): ReadingStats {
+    val positions = documents.mapNotNull { document -> progress[document.document.location] }
     val finished = positions.count { it.isFinished }
 
     return ReadingStats(

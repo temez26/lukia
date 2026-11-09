@@ -595,17 +595,39 @@
     <string name="stats_day_spoken">%1$s: %2$s</string>
     <string name="stats_week_run_spoken">%1$s: %2$s. %3$s</string>
     <string name="stats_still_to_come">vielä tulossa</string>
+    <string name="stats_reading_time">Lukuaika</string>
+    <string name="stats_period_week">Viikko</string>
+    <string name="stats_period_month">Kuukausi</string>
+    <string name="stats_period_year">Vuosi</string>
+    <string name="stats_last_week">Viime viikko</string>
+    <plurals name="stats_weeks_ago">
+        <item quantity="one">%1$d viikko sitten</item>
+        <item quantity="other">%1$d viikkoa sitten</item>
+    </plurals>
+    <string name="stats_month_year">%1$s %2$d</string>
+    <string name="stats_previous_period">Näytä aiemmat</string>
+    <string name="stats_next_period">Näytä myöhemmät</string>
+    <string name="stats_days_read">Lukupäivät</string>
+    <string name="stats_days_of">%1$d/%2$d</string>
+    <string name="stats_best_month">Paras kuukausi</string>
+    <string name="stats_change_up">Ero edelliseen (%2$s): +%1$d %</string>
+    <string name="stats_change_down">Ero edelliseen (%2$s): −%1$d %</string>
+    <string name="stats_change_up_so_far">Ero samoihin päiviin (%2$s): +%1$d %</string>
+    <string name="stats_change_down_so_far">Ero samoihin päiviin (%2$s): −%1$d %</string>
+    <string name="stats_calendar_day_spoken">%1$s %2$d.: %3$s</string>
+    <plurals name="stats_year_days_spoken">
+        <item quantity="one">Luettu %1$d päivänä vuonna %2$d</item>
+        <item quantity="other">Luettu %1$d päivänä vuonna %2$d</item>
+    </plurals>
+    <string name="stats_books_in_year">Kirjat %1$d</string>
+    <string name="stats_most_read">Luetuimmat</string>
+    <string name="stats_finished_on">Luettu loppuun %1$d. %2$s</string>
+    <string name="stats_nothing_read_this_year">Tänä vuonna ei vielä lukemista.</string>
+    <string name="stats_nothing_finished_this_year">Tänä vuonna ei vielä loppuun luettuja kirjoja.</string>
 
     <string name="stats_your_library">Kirjastosi</string>
     <string name="stats_nothing_to_count">Ei vielä laskettavaa. Tuo kirja, niin tämä täyttyy lukiessasi.</string>
     <string name="stats_share_read">%1$d\u00A0% kirjastostasi luettu</string>
-    <string name="stats_recently_read">Viimeksi luettu</string>
-    <string name="stats_opened">Avattu</string>
-    <plurals name="stats_finished_pages">
-        <item quantity="one">Luettu · 1 sivu</item>
-        <item quantity="other">Luettu · %1$d sivua</item>
-    </plurals>
-    <string name="stats_page_of_percent">Sivu %1$d / %2$d · %3$d\u00A0%</string>
 
     <!-- Tavu on suomeksi t, joten kt, Mt ja Gt. -->
     <string name="size_bytes">%1$s\u00A0t</string>

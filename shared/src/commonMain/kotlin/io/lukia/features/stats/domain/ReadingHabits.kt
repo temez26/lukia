@@ -96,9 +96,7 @@ internal fun readingHabits(
     today: LocalDate,
     zone: TimeZone,
 ): ReadingHabits {
-    val byDay = sessions
-        .groupBy { Instant.fromEpochMilliseconds(it.startedAt).toLocalDateTime(zone).date }
-        .mapValues { (_, sittings) -> sittings.sumOf { it.durationMs } }
+    val byDay = dailyTotals(sessions, zone)
 
     // A sitting of no length is a book opened and closed again, which is not a
     // day's reading and must not hold a run together.
@@ -124,6 +122,15 @@ internal fun readingHabits(
         longestDayMs = byDay.values.maxOrNull() ?: 0L,
     )
 }
+
+/** How long was read on each day that has any sittings, by the reader's own calendar. */
+internal fun dailyTotals(sessions: List<ReadingSession>, zone: TimeZone): Map<LocalDate, Long> =
+    sessions
+        .groupBy { it.localDate(zone) }
+        .mapValues { (_, sittings) -> sittings.sumOf { it.durationMs } }
+
+internal fun ReadingSession.localDate(zone: TimeZone): LocalDate =
+    Instant.fromEpochMilliseconds(startedAt).toLocalDateTime(zone).date
 
 /**
  * The calendar week [day] falls in, Monday first.
@@ -162,7 +169,7 @@ private fun currentStreak(days: Set<LocalDate>, today: LocalDate): Int {
 }
 
 /** The longest run of consecutive days there has ever been. */
-private fun longestStreak(days: Set<LocalDate>): Int {
+internal fun longestStreak(days: Set<LocalDate>): Int {
     if (days.isEmpty()) return 0
 
     var longest = 0
@@ -178,6 +185,6 @@ private fun longestStreak(days: Set<LocalDate>): Int {
     return longest
 }
 
-private fun LocalDate.minusDays(days: Int): LocalDate = minus(days, DateTimeUnit.DAY)
+internal fun LocalDate.minusDays(days: Int): LocalDate = minus(days, DateTimeUnit.DAY)
 
-private fun LocalDate.plusDays(days: Int): LocalDate = plus(days, DateTimeUnit.DAY)
+internal fun LocalDate.plusDays(days: Int): LocalDate = plus(days, DateTimeUnit.DAY)

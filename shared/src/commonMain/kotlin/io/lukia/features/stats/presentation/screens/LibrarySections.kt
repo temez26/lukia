@@ -8,21 +8,31 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.lukia.features.stats.domain.ReadingActivity
 import io.lukia.features.stats.domain.ReadingStats
-import io.lukia.features.stats.presentation.components.RecentReadingList
+import io.lukia.features.stats.domain.YearBooks
+import io.lukia.features.stats.presentation.components.FinishedList
+import io.lukia.features.stats.presentation.components.MostReadList
 import io.lukia.features.stats.presentation.components.StatTileGrid
 import io.lukia.features.stats.presentation.components.tiles
 import io.lukia.resources.Res
+import io.lukia.resources.stats_books_in_year
+import io.lukia.resources.stats_most_read
+import io.lukia.resources.stats_nothing_finished_this_year
+import io.lukia.resources.stats_nothing_read_this_year
 import io.lukia.resources.stats_nothing_to_count
-import io.lukia.resources.stats_recently_read
 import io.lukia.resources.stats_share_read
+import io.lukia.resources.stats_tile_finished
 import io.lukia.resources.stats_your_library
 import io.lukia.shared.presentation.components.controls.ReadingProgressBar
+import io.lukia.shared.presentation.components.controls.SegmentedControl
 import io.lukia.shared.presentation.components.surface.GroupSection
 import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.isWideWindow
@@ -101,28 +111,69 @@ private fun LibraryProgress(
 }
 
 /**
- * What the reader has had open lately.
+ * This year's books: where the time went, and what was finished.
  *
- * Left out for a reader with nothing read yet, for the same reason the home
- * screen drops an empty row: a card headed "Recently read" with nothing under it
- * says less than no card at all.
+ * Two lists under one heading rather than two cards, because both answer the
+ * same question about the same year. Each says so when it has nothing in it,
+ * rather than the card disappearing: an empty Finished in March is a fact.
  */
 @Composable
-internal fun ActivitySection(
-    activity: List<ReadingActivity>,
+internal fun BooksSection(
+    books: YearBooks,
+    hasReading: Boolean,
     onOpenBook: (String) -> Unit,
     groupColor: Color,
     modifier: Modifier = Modifier,
 ) {
-    if (activity.isEmpty()) return
+    if (!hasReading) return
+
+    var showing by rememberSaveable { mutableStateOf(BookListKind.MostRead) }
 
     GroupSection(
-        title = stringResource(Res.string.stats_recently_read),
+        title = stringResource(Res.string.stats_books_in_year, books.year),
         color = groupColor,
-        // The rows carry their own vertical padding, so the card asks for none.
-        padding = 0.dp,
         modifier = modifier,
     ) {
-        RecentReadingList(activity = activity, onOpenBook = onOpenBook)
+        Column(verticalArrangement = Arrangement.spacedBy(Space.md)) {
+            SegmentedControl(
+                options = BookListKind.entries,
+                selected = showing,
+                label = { kind ->
+                    stringResource(
+                        when (kind) {
+                            BookListKind.MostRead -> Res.string.stats_most_read
+                            BookListKind.Finished -> Res.string.stats_tile_finished
+                        },
+                    )
+                },
+                onSelect = { showing = it },
+            )
+
+            when (showing) {
+                BookListKind.MostRead -> if (books.mostRead.isEmpty()) {
+                    EmptyLine(stringResource(Res.string.stats_nothing_read_this_year))
+                } else {
+                    MostReadList(books = books.mostRead, onOpenBook = onOpenBook)
+                }
+
+                BookListKind.Finished -> if (books.finished.isEmpty()) {
+                    EmptyLine(stringResource(Res.string.stats_nothing_finished_this_year))
+                } else {
+                    FinishedList(books = books.finished, onOpenBook = onOpenBook)
+                }
+            }
+        }
     }
+}
+
+private enum class BookListKind { MostRead, Finished }
+
+@Composable
+private fun EmptyLine(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(vertical = Space.md),
+    )
 }

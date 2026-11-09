@@ -529,16 +529,38 @@
     <string name="stats_day_spoken">%1$s: %2$s</string>
     <string name="stats_week_run_spoken">%1$s: %2$s. %3$s</string>
     <string name="stats_still_to_come">mangler endnu</string>
+    <string name="stats_reading_time">Læsetid</string>
+    <string name="stats_period_week">Uge</string>
+    <string name="stats_period_month">Måned</string>
+    <string name="stats_period_year">År</string>
+    <string name="stats_last_week">Sidste uge</string>
+    <plurals name="stats_weeks_ago">
+        <item quantity="one">For %1$d uge siden</item>
+        <item quantity="other">For %1$d uger siden</item>
+    </plurals>
+    <string name="stats_month_year">%1$s %2$d</string>
+    <string name="stats_previous_period">Vis tidligere</string>
+    <string name="stats_next_period">Vis senere</string>
+    <string name="stats_days_read">Læsedage</string>
+    <string name="stats_days_of">%1$d af %2$d</string>
+    <string name="stats_best_month">Bedste måned</string>
+    <string name="stats_change_up">Sammenlignet med %2$s: +%1$d %</string>
+    <string name="stats_change_down">Sammenlignet med %2$s: −%1$d %</string>
+    <string name="stats_change_up_so_far">Sammenlignet med de samme dage i %2$s: +%1$d %</string>
+    <string name="stats_change_down_so_far">Sammenlignet med de samme dage i %2$s: −%1$d %</string>
+    <string name="stats_calendar_day_spoken">%1$s den %2$d.: %3$s</string>
+    <plurals name="stats_year_days_spoken">
+        <item quantity="one">Læst på %1$d dag i %2$d</item>
+        <item quantity="other">Læst på %1$d dage i %2$d</item>
+    </plurals>
+    <string name="stats_books_in_year">Bøger i %1$d</string>
+    <string name="stats_most_read">Mest læst</string>
+    <string name="stats_finished_on">Læst færdig %1$d. %2$s</string>
+    <string name="stats_nothing_read_this_year">Intet læst endnu i år.</string>
+    <string name="stats_nothing_finished_this_year">Ingen bøger læst færdig endnu i år.</string>
     <string name="stats_your_library">Dit bibliotek</string>
     <string name="stats_nothing_to_count">Intet at tælle endnu. Importer en bog, så udfyldes dette, mens du læser.</string>
     <string name="stats_share_read">%1$d\u00A0% af dit bibliotek læst</string>
-    <string name="stats_recently_read">Senest læst</string>
-    <string name="stats_opened">Åbnet</string>
-    <plurals name="stats_finished_pages">
-        <item quantity="one">Læst · 1 side</item>
-        <item quantity="other">Læst · %1$d sider</item>
-    </plurals>
-    <string name="stats_page_of_percent">Side %1$d af %2$d · %3$d\u00A0%</string>
     <string name="size_bytes">%1$s\u00A0B</string>
     <string name="size_kilobytes">%1$s\u00A0kB</string>
     <string name="size_megabytes">%1$s\u00A0MB</string>
