@@ -23,9 +23,8 @@ import androidx.compose.ui.unit.dp
 import io.lukia.core.presentation.UiState
 import io.lukia.core.presentation.displayMessage
 import io.lukia.core.presentation.displayTitle
-import io.lukia.features.stats.domain.PeriodKind
 import io.lukia.features.stats.domain.ReadingSummary
-import io.lukia.features.stats.presentation.PeriodSelection
+import io.lukia.features.stats.presentation.CalendarSelection
 import io.lukia.resources.Res
 import io.lukia.resources.action_try_again
 import io.lukia.resources.stats_footnote
@@ -39,6 +38,7 @@ import io.lukia.shared.presentation.theme.Space
 import io.lukia.shared.presentation.theme.isWideWindow
 import io.lukia.shared.presentation.theme.softFadeOut
 import io.lukia.shared.presentation.theme.stateSwapIn
+import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -59,7 +59,7 @@ internal fun StatsBody(
     summary: UiState<ReadingSummary>,
     actions: StatsActions,
     modifier: Modifier = Modifier,
-    selection: PeriodSelection = PeriodSelection(),
+    selection: CalendarSelection = CalendarSelection(),
     /**
      * What a group sits in, for the same reason `SettingsBody` takes one: this
      * has to contrast with whatever is behind it, and a screen's background and
@@ -116,7 +116,7 @@ internal fun StatsBody(
 @Composable
 private fun CountedContent(
     summary: UiState<ReadingSummary>,
-    selection: PeriodSelection,
+    selection: CalendarSelection,
     actions: StatsActions,
     groupColor: Color,
     modifier: Modifier = Modifier,
@@ -162,66 +162,66 @@ private fun CountedContent(
 /**
  * The counted figures, in the order they are worth reading.
  *
- * Time first and the shelf after it: today and the period around it, then
- * everything ever counted, then the library, then this year's books. Somebody
+ * Time first and the shelf after it: today and the period around it, then the
+ * library, then this year's books. Somebody
  * opening this has just put a book down, so what they did today is the first
  * thing on the page and the size of their collection comes later.
  *
- * One column on a phone. A window has the width for two, and sets them two by
- * two in the same reading order - time on top, the shelf below - rather than
- * one narrow column down the middle of a monitor.
+ * One column on a phone. A window gives the reading time card the full width,
+ * where its calendar sits beside its figures, and sets the library and the
+ * books side by side under it, rather than one narrow column down the middle of
+ * a monitor.
  */
 @Composable
 private fun StatsSections(
     summary: ReadingSummary,
-    selection: PeriodSelection,
+    selection: CalendarSelection,
     actions: StatsActions,
     groupColor: Color,
     modifier: Modifier = Modifier,
 ) {
     val dimens = LocalLukiaDimens.current
-    val time: List<@Composable (Modifier) -> Unit> = listOf(
-        {
-            ReadingTimeSection(
-                habits = summary.habits,
-                history = summary.history,
-                selection = selection,
-                actions = actions,
-                groupColor = groupColor,
-                modifier = it,
-            )
-        },
-        { AllTimeSection(habits = summary.habits, groupColor = groupColor, modifier = it) },
-    )
-    val shelf: List<@Composable (Modifier) -> Unit> = listOf(
-        { LibrarySection(stats = summary.stats, groupColor = groupColor, modifier = it) },
-        {
-            BooksSection(
-                books = summary.books,
-                hasReading = !summary.habits.isEmpty,
-                onOpenBook = actions.onOpenBook,
-                groupColor = groupColor,
-                modifier = it,
-            )
-        },
-    )
+    val readingTime: @Composable (Modifier) -> Unit = {
+        ReadingTimeSection(
+            habits = summary.habits,
+            history = summary.history,
+            selection = selection,
+            actions = actions,
+            groupColor = groupColor,
+            modifier = it,
+        )
+    }
+    val library: @Composable (Modifier) -> Unit = {
+        LibrarySection(stats = summary.stats, groupColor = groupColor, modifier = it)
+    }
+    val books: @Composable (Modifier) -> Unit = {
+        BooksSection(
+            books = summary.books,
+            hasReading = !summary.habits.isEmpty,
+            onOpenBook = actions.onOpenBook,
+            groupColor = groupColor,
+            modifier = it,
+        )
+    }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(dimens.sectionSpacing),
         modifier = modifier.fillMaxWidth(),
     ) {
+        readingTime(Modifier)
+
         if (isWideWindow) {
-            listOf(time, shelf).forEach { pair ->
-                // Top-aligned, so a short card beside a tall one does not float.
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(dimens.sectionSpacing),
-                    verticalAlignment = Alignment.Top,
-                ) {
-                    pair.forEach { section -> section(Modifier.weight(1f)) }
-                }
+            // Top-aligned, so a short card beside a tall one does not float.
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(dimens.sectionSpacing),
+                verticalAlignment = Alignment.Top,
+            ) {
+                library(Modifier.weight(1f))
+                books(Modifier.weight(1f))
             }
         } else {
-            (time + shelf).forEach { section -> section(Modifier) }
+            library(Modifier)
+            books(Modifier)
         }
     }
 }
@@ -267,6 +267,13 @@ private fun StatsTitle(syncedWithAccount: Boolean, modifier: Modifier = Modifier
 internal data class StatsActions(
     val onOpenBook: (String) -> Unit = {},
     val onRetry: () -> Unit = {},
-    val onSelectPeriod: (PeriodKind) -> Unit = {},
-    val onStepPeriod: (Int) -> Unit = {},
+    /** Shows the month starting on the date, at whichever level is shown. */
+    val onShowMonth: (LocalDate) -> Unit = {},
+    val onSelectDay: (LocalDate) -> Unit = {},
+    /** Opens the month starting on the date out of its year. */
+    val onZoomInto: (LocalDate) -> Unit = {},
+    /** Shows the whole year, with the date still selected. */
+    val onZoomOut: (LocalDate) -> Unit = {},
+    /** Goes back into the month the year was opened from. */
+    val onZoomIn: () -> Unit = {},
 )

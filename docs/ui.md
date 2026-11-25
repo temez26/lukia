@@ -198,22 +198,41 @@ The mobile home screen leads with the book being read
 
 ## Statistics
 
-The statistics page (`StatsBody`) runs from time to shelf: Reading time, All
-time, Your library, then this year's books. A wide window pairs them two by two.
+The statistics page (`StatsBody`) runs from time to shelf: Reading time, Your
+library, then this year's books. A wide window gives Reading time the full
+width, then sets Your library beside the books.
 
-- **Reading time** (`ReadingTimeSection`): today and the current run on top, then
-  Week, Month and Year in a `SegmentedControl`, and ‹ › to page back as far as
-  the first recorded sitting. A week is bars (`ReadingChart`), a month a calendar
-  (`MonthCalendar`), a year month bars over a grid of every day (`YearGrid`).
+- **Reading time** (`ReadingTimeSection`) is one calendar at two levels: a month
+  (`MonthCalendar`) or, zoomed out, its year as twelve mini months
+  (`YearMonths`). It opens on this month with today selected. Tapping a mini
+  month zooms into it. The period's name over the calendar, in the accent
+  colour, toggles the level: "November 2026" opens the year, "2026" goes back
+  into the month. ‹ › and a swipe (`CalendarPages`,
+  `HorizontalPager`) page months or years, as far back as the first sitting.
   Days are shaded relative to the period's busiest day, not fixed minutes.
-- The card keeps one height whatever it shows, so the cards below never move:
-  all three spans are laid out in a `SteadyStack` with only the chosen one
-  visible, a month is always six weeks tall, and a missing comparison line
-  leaves its line empty.
-- The selected period lives in `StatsViewModel`, so it survives a trip into a
-  book; it is not saved across launches.
+- A day is always selected: today in the current month, otherwise the last day
+  with reading. `DayCard` sets it on an accent tint: its date, exact time,
+  streak chip, a bar against the period's busiest day, and how it compares with
+  the average day (an empty line on a day with nothing read, so the card keeps
+  one height). On a card 560dp or wider the calendar sits beside the day and
+  the figures.
+- The figures follow the level, as icon tiles (`PeriodFigures`). A month has
+  four: time read, daily average, days read and longest run. A year has six:
+  the same four, with its sittings under the time, plus best month and best
+  day. Over them sits the comparison with the period before as a pill, which
+  holds its space when there is nothing to compare. There is no separate
+  all-time card; a year is the widest span shown. Icons beside
+  text grow with the text size (`textSized`).
+- Motion (`ChartMotion.kt`): the month grows out of its mini month and shrinks
+  back, the selection ring slides, other days dim, the readout's digits roll and
+  the card springs to its new height. Each uses `settle()`, which falls back to
+  the standard tween when `MotionStyle.flourishes` is off. Selecting a new day
+  gives a haptic tick.
+- The month shown, the selected day and the zoom live in `StatsViewModel`
+  (`CalendarSelection`), so they survive a trip into a book; they are not saved
+  across launches.
 - Month and year names come from the platform (`monthName`), as weekday names
-  do. A week is named by distance ("Last week", "3 weeks ago"), never by dates.
+  do.
 - **Books in <year>** (`BooksSection`): Most read and Finished. A finished book
   is dated by its last sitting; the app stores no finish date.
 

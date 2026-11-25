@@ -509,35 +509,19 @@
     <string name="stats_figure_and_label">%1$s %2$s</string>
     <string name="stats_this_week">Denne uken</string>
     <string name="stats_this_week_footnote">Telles mens en bok er åpen og blas i, og bare fra den dagen appen begynte å holde regnskap.</string>
-    <string name="stats_today">I dag</string>
     <string name="stats_daily_average">Daglig snitt</string>
-    <string name="stats_all_time">Totalt</string>
     <string name="stats_time_read">Lesetid</string>
     <string name="stats_best_day">Beste dag</string>
     <string name="stats_longest_run">Lengste rekke</string>
-    <plurals name="stats_sittings">
-        <item quantity="one">Leseøkt</item>
-        <item quantity="other">Leseøkter</item>
-    </plurals>
     <string name="stats_no_run">Ingen rekke på gang</string>
     <plurals name="stats_days_in_a_row">
         <item quantity="one">1 dag på rad</item>
         <item quantity="other">%1$d dager på rad</item>
     </plurals>
-    <string name="stats_today_spoken">I dag: %1$s</string>
-    <string name="stats_longest_run_spoken">Lengste rekke: %1$s</string>
     <string name="stats_day_spoken">%1$s: %2$s</string>
     <string name="stats_week_run_spoken">%1$s: %2$s. %3$s</string>
     <string name="stats_still_to_come">gjenstår</string>
     <string name="stats_reading_time">Lesetid</string>
-    <string name="stats_period_week">Uke</string>
-    <string name="stats_period_month">Måned</string>
-    <string name="stats_period_year">År</string>
-    <string name="stats_last_week">Forrige uke</string>
-    <plurals name="stats_weeks_ago">
-        <item quantity="one">For %1$d uke siden</item>
-        <item quantity="other">For %1$d uker siden</item>
-    </plurals>
     <string name="stats_month_year">%1$s %2$d</string>
     <string name="stats_previous_period">Vis tidligere</string>
     <string name="stats_next_period">Vis senere</string>
@@ -549,6 +533,16 @@
     <string name="stats_change_up_so_far">Sammenlignet med de samme dagene i %2$s: +%1$d %</string>
     <string name="stats_change_down_so_far">Sammenlignet med de samme dagene i %2$s: −%1$d %</string>
     <string name="stats_calendar_day_spoken">%1$s %2$d.: %3$s</string>
+    <string name="stats_selected_day">%1$s %2$d. %3$s</string>
+    <string name="stats_show_month">Vis %1$s</string>
+    <string name="stats_back_to_year">Tilbake til %1$d</string>
+    <string name="stats_more_than_average">%1$s mer enn en gjennomsnittlig dag</string>
+    <string name="stats_less_than_average">%1$s mindre enn en gjennomsnittlig dag</string>
+    <string name="stats_about_average">Omtrent en gjennomsnittlig dag</string>
+    <plurals name="stats_in_sittings">
+        <item quantity="one">på %1$d leseøkt</item>
+        <item quantity="other">på %1$d leseøkter</item>
+    </plurals>
     <plurals name="stats_year_days_spoken">
         <item quantity="one">Lest %1$d dag i %2$d</item>
         <item quantity="other">Lest %1$d dager i %2$d</item>

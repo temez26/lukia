@@ -1,11 +1,17 @@
 package io.lukia.features.stats
 
+import io.lukia.core.domain.reading.ReadingSession
 import io.lukia.features.stats.domain.PeriodKind
 import io.lukia.features.stats.domain.ReadingHistory
 import io.lukia.features.stats.domain.ReadingPeriod
 import io.lukia.features.stats.domain.periodReading
+import io.lukia.features.stats.domain.readingHistory
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 import kotlinx.datetime.Month
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -13,7 +19,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * Weeks, months and years paged back from a fixed day.
+ * Months and years paged back from a fixed day.
  *
  * Wednesday 11 March 2026: mid-week, mid-month, early in a year, and in a month
  * after a February of 28 days, so a month held against the one before is cut to
@@ -27,14 +33,6 @@ class ReadingHistoryTest {
         ReadingHistory(today = today, byDay = days.associate { (day, minutes) -> day to minutes * 60_000L })
 
     private fun day(month: Month, day: Int, year: Int = 2026) = LocalDate(year, month, day)
-
-    @Test
-    fun aWeekRunsMondayToSunday() {
-        val week = ReadingPeriod.containing(PeriodKind.Week, today)
-
-        assertEquals(day(Month.MARCH, 9), week.start)
-        assertEquals(day(Month.MARCH, 15), week.end)
-    }
 
     @Test
     fun aMonthEndsOnItsLastDay() {
@@ -135,10 +133,48 @@ class ReadingHistoryTest {
 
     @Test
     fun aHistoryWithNoReadingHasNowhereToPageBackTo() {
-        val week = historyOf().periodReading(PeriodKind.Week, 0)
+        val month = historyOf().periodReading(PeriodKind.Month, 0)
 
-        assertFalse(week.hasEarlier)
-        assertFalse(week.hasLater)
-        assertEquals(7, week.days.size)
+        assertFalse(month.hasEarlier)
+        assertFalse(month.hasLater)
+        assertEquals(31, month.days.size)
+    }
+
+    @Test
+    fun pagingReachesEveryMonthFromTheFirstReadToThisOne() {
+        val history = historyOf(day(Month.NOVEMBER, 20, year = 2025) to 15)
+
+        assertEquals(day(Month.NOVEMBER, 1, year = 2025), history.months.first().start)
+        assertEquals(day(Month.MARCH, 1), history.months.last().start)
+        assertEquals(5, history.months.size)
+        assertEquals(listOf(2025, 2026), history.years)
+    }
+
+    @Test
+    fun aPeriodCountsTheSittingsInTheDaysReached() {
+        val history = readingHistory(
+            listOf(
+                sittingOn(day(Month.MARCH, 2), minutes = 10),
+                sittingOn(day(Month.MARCH, 2), minutes = 20),
+                sittingOn(day(Month.MARCH, 9), minutes = 5),
+                sittingOn(day(Month.FEBRUARY, 9), minutes = 5),
+            ),
+            today,
+            TimeZone.UTC,
+        )
+
+        assertEquals(3, history.periodReading(PeriodKind.Month, 0).sittings)
+        assertEquals(4, history.periodReading(PeriodKind.Year, 0).sittings)
+    }
+
+    private fun sittingOn(date: LocalDate, minutes: Int) = ReadingSession(
+        location = "/library/book.pdf",
+        startedAt = LocalDateTime(date, LocalTime(12, 0)).toInstant(TimeZone.UTC).toEpochMilliseconds(),
+        durationMs = minutes * 60_000L,
+    )
+
+    @Test
+    fun withNothingReadOnlyThisMonthCanBeShown() {
+        assertEquals(listOf(ReadingPeriod.containing(PeriodKind.Month, today)), historyOf().months)
     }
 }

@@ -509,35 +509,19 @@
     <string name="stats_figure_and_label">%1$s %2$s</string>
     <string name="stats_this_week">Questa settimana</string>
     <string name="stats_this_week_footnote">Contato mentre un libro è aperto e se ne girano le pagine, e solo dal giorno in cui questa applicazione ha iniziato a contare.</string>
-    <string name="stats_today">Oggi</string>
     <string name="stats_daily_average">Media giornaliera</string>
-    <string name="stats_all_time">In tutto</string>
     <string name="stats_time_read">Tempo letto</string>
     <string name="stats_best_day">Giorno migliore</string>
     <string name="stats_longest_run">Serie più lunga</string>
-    <plurals name="stats_sittings">
-        <item quantity="one">Sessione</item>
-        <item quantity="other">Sessioni</item>
-    </plurals>
     <string name="stats_no_run">Nessuna serie in corso</string>
     <plurals name="stats_days_in_a_row">
         <item quantity="one">1 giorno di fila</item>
         <item quantity="other">%1$d giorni di fila</item>
     </plurals>
-    <string name="stats_today_spoken">Oggi: %1$s</string>
-    <string name="stats_longest_run_spoken">Serie più lunga: %1$s</string>
     <string name="stats_day_spoken">%1$s: %2$s</string>
     <string name="stats_week_run_spoken">%1$s: %2$s. %3$s</string>
     <string name="stats_still_to_come">ancora da venire</string>
     <string name="stats_reading_time">Tempo di lettura</string>
-    <string name="stats_period_week">Settimana</string>
-    <string name="stats_period_month">Mese</string>
-    <string name="stats_period_year">Anno</string>
-    <string name="stats_last_week">La settimana scorsa</string>
-    <plurals name="stats_weeks_ago">
-        <item quantity="one">%1$d settimana fa</item>
-        <item quantity="other">%1$d settimane fa</item>
-    </plurals>
     <string name="stats_month_year">%1$s %2$d</string>
     <string name="stats_previous_period">Mostra prima</string>
     <string name="stats_next_period">Mostra dopo</string>
@@ -549,6 +533,16 @@
     <string name="stats_change_up_so_far">Rispetto agli stessi giorni di %2$s: +%1$d%</string>
     <string name="stats_change_down_so_far">Rispetto agli stessi giorni di %2$s: −%1$d%</string>
     <string name="stats_calendar_day_spoken">%1$s %2$d: %3$s</string>
+    <string name="stats_selected_day">%1$s %2$d %3$s</string>
+    <string name="stats_show_month">Mostra %1$s</string>
+    <string name="stats_back_to_year">Torna al %1$d</string>
+    <string name="stats_more_than_average">%1$s in più di un giorno medio</string>
+    <string name="stats_less_than_average">%1$s in meno di un giorno medio</string>
+    <string name="stats_about_average">Più o meno un giorno medio</string>
+    <plurals name="stats_in_sittings">
+        <item quantity="one">in %1$d sessione</item>
+        <item quantity="other">in %1$d sessioni</item>
+    </plurals>
     <plurals name="stats_year_days_spoken">
         <item quantity="one">Letto in %1$d giorno nel %2$d</item>
         <item quantity="other">Letto in %1$d giorni nel %2$d</item>

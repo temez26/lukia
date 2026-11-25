@@ -509,35 +509,19 @@
     <string name="stats_figure_and_label">%1$s %2$s</string>
     <string name="stats_this_week">Deze week</string>
     <string name="stats_this_week_footnote">Wordt geteld terwijl een boek open is en er wordt gebladerd, en pas vanaf de dag dat deze app begon te tellen.</string>
-    <string name="stats_today">Vandaag</string>
     <string name="stats_daily_average">Daggemiddelde</string>
-    <string name="stats_all_time">Totaal</string>
     <string name="stats_time_read">Leestijd</string>
     <string name="stats_best_day">Beste dag</string>
     <string name="stats_longest_run">Langste reeks</string>
-    <plurals name="stats_sittings">
-        <item quantity="one">Leesbeurt</item>
-        <item quantity="other">Leesbeurten</item>
-    </plurals>
     <string name="stats_no_run">Geen reeks bezig</string>
     <plurals name="stats_days_in_a_row">
         <item quantity="one">1 dag op rij</item>
         <item quantity="other">%1$d dagen op rij</item>
     </plurals>
-    <string name="stats_today_spoken">Vandaag: %1$s</string>
-    <string name="stats_longest_run_spoken">Langste reeks: %1$s</string>
     <string name="stats_day_spoken">%1$s: %2$s</string>
     <string name="stats_week_run_spoken">%1$s: %2$s. %3$s</string>
     <string name="stats_still_to_come">moet nog komen</string>
     <string name="stats_reading_time">Leestijd</string>
-    <string name="stats_period_week">Week</string>
-    <string name="stats_period_month">Maand</string>
-    <string name="stats_period_year">Jaar</string>
-    <string name="stats_last_week">Vorige week</string>
-    <plurals name="stats_weeks_ago">
-        <item quantity="one">%1$d week geleden</item>
-        <item quantity="other">%1$d weken geleden</item>
-    </plurals>
     <string name="stats_month_year">%1$s %2$d</string>
     <string name="stats_previous_period">Eerder tonen</string>
     <string name="stats_next_period">Later tonen</string>
@@ -549,6 +533,16 @@
     <string name="stats_change_up_so_far">Vergeleken met dezelfde dagen van %2$s: +%1$d%</string>
     <string name="stats_change_down_so_far">Vergeleken met dezelfde dagen van %2$s: −%1$d%</string>
     <string name="stats_calendar_day_spoken">%1$s %2$d: %3$s</string>
+    <string name="stats_selected_day">%1$s %2$d %3$s</string>
+    <string name="stats_show_month">%1$s tonen</string>
+    <string name="stats_back_to_year">Terug naar %1$d</string>
+    <string name="stats_more_than_average">%1$s meer dan een gemiddelde dag</string>
+    <string name="stats_less_than_average">%1$s minder dan een gemiddelde dag</string>
+    <string name="stats_about_average">Ongeveer een gemiddelde dag</string>
+    <plurals name="stats_in_sittings">
+        <item quantity="one">in %1$d leesbeurt</item>
+        <item quantity="other">in %1$d leesbeurten</item>
+    </plurals>
     <plurals name="stats_year_days_spoken">
         <item quantity="one">Op %1$d dag gelezen in %2$d</item>
         <item quantity="other">Op %1$d dagen gelezen in %2$d</item>
