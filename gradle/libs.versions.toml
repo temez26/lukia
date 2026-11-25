@@ -28,14 +28,14 @@ composeRules = "0.4.28"
 detekt = "1.23.8"
 ktlint = "14.2.0"
 kover = "0.9.11"
-kotlin = "2.4.20"
+kotlin = "2.4.21"
 kotlinx-coroutines = "1.11.0"
 kotlinx-datetime = "0.8.0"
 koin = "4.2.2"
 # 3.2.0 is held back deliberately: it ships a field whose name contains
 # spaces, which Android's dexer rejects for any minimum below API 30.
 ktor = "3.1.3"
-kotlinx-serialization = "1.11.0"
+kotlinx-serialization = "1.12.0"
 # The server's log output. Only `:server` ships it; the app logs through
 # `Diagnostics` and nothing else.
 logback = "1.5.18"
