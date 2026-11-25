@@ -6,14 +6,13 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.daysUntil
-import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 
 /** How much of the calendar the statistics page looks at at once. */
-enum class PeriodKind { Week, Month, Year }
+enum class PeriodKind { Month, Year }
 
-/** A calendar week (Monday first), month or year, both ends included. */
+/** A calendar month or year, both ends included. */
 data class ReadingPeriod(
     val kind: PeriodKind,
     val start: LocalDate,
@@ -25,18 +24,12 @@ data class ReadingPeriod(
 
     /** The period [steps] whole periods later, or earlier when negative. */
     fun shiftedBy(steps: Int): ReadingPeriod = when (kind) {
-        PeriodKind.Week -> containing(kind, start.plus(steps * DaysInWeek, DateTimeUnit.DAY))
         PeriodKind.Month -> containing(kind, start.plus(steps, DateTimeUnit.MONTH))
         PeriodKind.Year -> containing(kind, start.plus(steps, DateTimeUnit.YEAR))
     }
 
     companion object {
         fun containing(kind: PeriodKind, day: LocalDate): ReadingPeriod = when (kind) {
-            PeriodKind.Week -> {
-                val monday = day.minusDays(day.dayOfWeek.isoDayNumber - 1)
-                ReadingPeriod(kind, monday, monday.plusDays(DaysInWeek - 1))
-            }
-
             PeriodKind.Month -> {
                 val first = LocalDate(day.year, day.month, 1)
                 ReadingPeriod(kind, first, first.plus(1, DateTimeUnit.MONTH).minusDays(1))
@@ -51,11 +44,9 @@ data class ReadingPeriod(
     }
 }
 
-private const val DaysInWeek = 7
-
 /**
- * Every day there is reading on, and the day it is now: what any week, month or
- * year on the page is worked out from.
+ * Every day there is reading on, and the day it is now: what any month or year
+ * on the page is worked out from.
  *
  * Grouped by day once per count rather than once per period, because the reader
  * pages back and forth through periods far more often than the count is redone.
@@ -63,7 +54,26 @@ private const val DaysInWeek = 7
 data class ReadingHistory(
     val today: LocalDate,
     val byDay: Map<LocalDate, Long>,
+    /** How many sittings each day was read in. */
+    val sittingsByDay: Map<LocalDate, Int> = emptyMap(),
 ) {
+    /** The months paging can reach: from the first one read in to today's. */
+    val months: List<ReadingPeriod>
+        get() {
+            val current = ReadingPeriod.containing(PeriodKind.Month, today)
+            var month = ReadingPeriod.containing(PeriodKind.Month, firstDay ?: today)
+
+            return buildList {
+                while (month.start <= current.start) {
+                    add(month)
+                    month = month.shiftedBy(1)
+                }
+            }
+        }
+
+    /** The years paging can reach, first to this one. */
+    val years: List<Int> get() = ((firstDay ?: today).year..today.year).toList()
+
     /** The first day anything was read on, which is as far back as paging goes. */
     val firstDay: LocalDate? = byDay.filterValues { it > 0 }.keys.minOrNull()
 
@@ -78,7 +88,11 @@ internal fun readingHistory(
     sessions: List<ReadingSession>,
     today: LocalDate,
     zone: TimeZone,
-): ReadingHistory = ReadingHistory(today = today, byDay = dailyTotals(sessions, zone))
+): ReadingHistory = ReadingHistory(
+    today = today,
+    byDay = dailyTotals(sessions, zone),
+    sittingsByDay = sessions.groupingBy { it.localDate(zone) }.eachCount(),
+)
 
 /** One month of a year, for the year's chart. */
 data class MonthReading(
@@ -103,6 +117,8 @@ data class PeriodReading(
     val totalMs: Long,
     val daysReached: Int,
     val daysRead: Int,
+    /** Times a book was opened and read in the days reached. */
+    val sittings: Int,
     val longestRun: Int,
     /**
      * What the period before held over the same number of days, or null when
@@ -131,9 +147,13 @@ private const val PercentScale = 100L
  * The period of [kind] that lies [offset] periods from the one today is in -
  * zero for the current one, negative for those before it.
  */
-fun ReadingHistory.periodReading(kind: PeriodKind, offset: Int): PeriodReading {
+fun ReadingHistory.periodReading(kind: PeriodKind, offset: Int): PeriodReading =
+    periodReading(ReadingPeriod.containing(kind, today).shiftedBy(offset))
+
+/** What [period] holds - any week, month or year, not only one paged to. */
+fun ReadingHistory.periodReading(period: ReadingPeriod): PeriodReading {
+    val kind = period.kind
     val current = ReadingPeriod.containing(kind, today)
-    val period = current.shiftedBy(offset)
     val reached = period.daysUpTo(today)
     val total = reached.sumOf { byDay[it] ?: 0L }
 
@@ -151,12 +171,22 @@ fun ReadingHistory.periodReading(kind: PeriodKind, offset: Int): PeriodReading {
         totalMs = total,
         daysReached = reached.size,
         daysRead = reached.count { (byDay[it] ?: 0L) > 0 },
+        sittings = reached.sumOf { sittingsByDay[it] ?: 0 },
         longestRun = longestStreak(reached.filter { (byDay[it] ?: 0L) > 0 }.toSet()),
         previousMs = previousSpan(period, reached.size).sumOf { byDay[it] ?: 0L }.takeIf { it > 0 },
         isCurrent = today in period,
         hasEarlier = firstDay?.let { period.start > ReadingPeriod.containing(kind, it).start } ?: false,
         hasLater = period.start < current.start,
     )
+}
+
+/**
+ * The day selected when a period opens: today when it holds today, otherwise
+ * its last day with reading, otherwise its last day.
+ */
+fun ReadingHistory.defaultDay(period: ReadingPeriod): LocalDate = when {
+    today in period -> today
+    else -> period.allDays().lastOrNull { (byDay[it] ?: 0L) > 0 } ?: period.end
 }
 
 /**

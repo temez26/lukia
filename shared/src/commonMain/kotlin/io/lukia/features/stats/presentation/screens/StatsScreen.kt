@@ -17,7 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import io.lukia.core.presentation.UiState
 import io.lukia.features.stats.domain.ReadingSummary
-import io.lukia.features.stats.presentation.PeriodSelection
+import io.lukia.features.stats.presentation.CalendarSelection
 import io.lukia.features.stats.presentation.StatsViewModel
 import io.lukia.shared.presentation.components.controls.BackBar
 import org.koin.compose.viewmodel.koinViewModel
@@ -57,8 +57,11 @@ fun StatsScreen(
             StatsActions(
                 onOpenBook = onOpenBook,
                 onRetry = viewModel::refresh,
-                onSelectPeriod = viewModel::selectPeriod,
-                onStepPeriod = viewModel::stepPeriod,
+                onShowMonth = viewModel::showMonth,
+                onSelectDay = viewModel::selectDay,
+                onZoomInto = viewModel::zoomInto,
+                onZoomOut = viewModel::zoomOut,
+                onZoomIn = viewModel::zoomIn,
             )
         },
     )
@@ -72,7 +75,7 @@ internal fun StatsContent(
     modifier: Modifier = Modifier,
     actions: StatsActions = StatsActions(),
     syncedWithAccount: Boolean = false,
-    selection: PeriodSelection = PeriodSelection(),
+    selection: CalendarSelection = CalendarSelection(),
 ) {
     Box(
         modifier = modifier

@@ -136,7 +136,6 @@ class ReadingHabitsTest {
         )
 
         assertEquals(35 * 60_000L, habits.days.first { it.date == monday }.durationMs)
-        assertEquals(2, habits.sittings)
     }
 
     @Test
@@ -170,7 +169,7 @@ class ReadingHabitsTest {
     }
 
     @Test
-    fun theLongestRunIsRememberedEvenAfterItIsBroken() {
+    fun aBrokenRunIsNotTheCurrentOne() {
         val habits = habitsOf(
             sitting(daysAgo = 0, minutes = 5),
             sitting(daysAgo = 10, minutes = 5),
@@ -180,7 +179,6 @@ class ReadingHabitsTest {
         )
 
         assertEquals(1, habits.currentStreak)
-        assertEquals(4, habits.longestStreak)
     }
 
     /** A book opened and closed again is not a day's reading. */
@@ -193,17 +191,5 @@ class ReadingHabitsTest {
         )
 
         assertEquals(1, habits.currentStreak)
-    }
-
-    /**
-     * The chart scales to the busiest day of the week it draws; the best day
-     * ever is counted over every day there has been.
-     */
-    @Test
-    fun theBusiestDayOfTheWeekIsNotTheBestDayEver() {
-        val habits = habitsOf(sitting(daysAgo = 0, minutes = 10), sitting(daysAgo = 30, minutes = 90))
-
-        assertEquals(10 * 60_000L, habits.busiestDayMs)
-        assertEquals(90 * 60_000L, habits.longestDayMs)
     }
 }

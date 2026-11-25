@@ -7,12 +7,16 @@ import io.lukia.core.domain.toAppError
 import io.lukia.core.presentation.UiState
 import io.lukia.features.stats.application.GetReadingStatsUseCase
 import io.lukia.features.stats.domain.PeriodKind
+import io.lukia.features.stats.domain.ReadingHistory
+import io.lukia.features.stats.domain.ReadingPeriod
 import io.lukia.features.stats.domain.ReadingSummary
+import io.lukia.features.stats.domain.defaultDay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
 
 /**
  * What the reading adds up to, and nothing else.
@@ -40,24 +44,38 @@ class StatsViewModel(
      * only put a second read of the whole library in flight beside the first, at
      * the moment the screen was still sliding in over the shelf.
      */
-    private val _selection = MutableStateFlow(PeriodSelection())
+    private val _selection = MutableStateFlow(CalendarSelection())
 
     /**
-     * Which week, month or year the reading time card shows.
+     * Which month or year the reading time card shows, and which day in it.
      *
      * Held here rather than in the screen, so it survives a trip into a book and
      * back - this ViewModel outlives one - without being stored anywhere.
      */
-    val selection: StateFlow<PeriodSelection> = _selection.asStateFlow()
+    val selection: StateFlow<CalendarSelection> = _selection.asStateFlow()
 
-    /** Shows the current period of [kind]. */
-    fun selectPeriod(kind: PeriodKind) {
-        _selection.value = PeriodSelection(kind = kind)
+    /** Shows the month starting [month], at whichever level is shown. */
+    fun showMonth(month: LocalDate) {
+        _selection.update { it.copy(month = month, day = null) }
     }
 
-    /** Steps [by] periods later, or earlier when negative, never past the current one. */
-    fun stepPeriod(by: Int) {
-        _selection.update { it.copy(offset = (it.offset + by).coerceAtMost(0)) }
+    fun selectDay(day: LocalDate) {
+        _selection.update { it.copy(day = day) }
+    }
+
+    /** Opens the month starting [month] out of its year. */
+    fun zoomInto(month: LocalDate) {
+        _selection.update { CalendarSelection(month = month, zoomed = true) }
+    }
+
+    /** Back into the month the year was opened from, its day still selected if it lies there. */
+    fun zoomIn() {
+        _selection.update { it.copy(zoomed = true) }
+    }
+
+    /** Shows the whole year of the month shown, with [day] still selected. */
+    fun zoomOut(day: LocalDate) {
+        _selection.update { it.copy(day = day, zoomed = false) }
     }
 
     fun refresh() {
@@ -70,8 +88,33 @@ class StatsViewModel(
     }
 }
 
-/** A week, month or year, [offset] periods back from the current one. */
-data class PeriodSelection(
-    val kind: PeriodKind = PeriodKind.Week,
-    val offset: Int = 0,
-)
+/**
+ * The reading time card's place in the calendar: a month, and whether it is
+ * shown on its own or as part of its year.
+ */
+data class CalendarSelection(
+    /** The first of the month shown, or null for the current month. */
+    val month: LocalDate? = null,
+    /** The day tapped, or null for the period's default - see [defaultDay]. */
+    val day: LocalDate? = null,
+    val zoomed: Boolean = true,
+) {
+    /** The month shown, held to the months [history] can reach. */
+    fun shownMonth(history: ReadingHistory): ReadingPeriod {
+        val months = history.months
+        val wanted = month ?: return months.last()
+
+        return months.lastOrNull { it.start <= wanted } ?: months.first()
+    }
+
+    /** The month shown, or its year when zoomed out. */
+    fun shownPeriod(history: ReadingHistory): ReadingPeriod {
+        val month = shownMonth(history)
+
+        return if (zoomed) month else ReadingPeriod.containing(PeriodKind.Year, month.start)
+    }
+
+    /** The day shown as selected in [period]: the one tapped, if it lies in it. */
+    fun selectedDay(history: ReadingHistory, period: ReadingPeriod): LocalDate =
+        day?.takeIf { it in period } ?: history.defaultDay(period)
+}

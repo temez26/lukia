@@ -1,80 +1,75 @@
 package io.lukia.features.stats.presentation.screens
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import io.lukia.core.infrastructure.MonthForm
-import io.lukia.core.infrastructure.formatCount
 import io.lukia.core.infrastructure.monthName
 import io.lukia.features.stats.domain.PeriodKind
 import io.lukia.features.stats.domain.PeriodReading
 import io.lukia.features.stats.domain.ReadingHabits
 import io.lukia.features.stats.domain.ReadingHistory
+import io.lukia.features.stats.domain.ReadingPeriod
 import io.lukia.features.stats.domain.periodReading
-import io.lukia.features.stats.presentation.PeriodSelection
-import io.lukia.features.stats.presentation.changeLine
-import io.lukia.features.stats.presentation.components.MonthCalendar
-import io.lukia.features.stats.presentation.components.ReadingChart
-import io.lukia.features.stats.presentation.components.StatFigure
-import io.lukia.features.stats.presentation.components.SteadyStack
-import io.lukia.features.stats.presentation.components.YearGrid
-import io.lukia.features.stats.presentation.components.dayBars
-import io.lukia.features.stats.presentation.components.monthBars
-import io.lukia.features.stats.presentation.periodKindLabel
+import io.lukia.features.stats.presentation.CalendarSelection
+import io.lukia.features.stats.presentation.components.DayCard
 import io.lukia.features.stats.presentation.periodName
-import io.lukia.features.stats.presentation.readingTime
-import io.lukia.features.stats.presentation.readingTimeOrDash
-import io.lukia.features.stats.presentation.streakLine
 import io.lukia.resources.Res
-import io.lukia.resources.stats_best_month
-import io.lukia.resources.stats_daily_average
-import io.lukia.resources.stats_days_of
-import io.lukia.resources.stats_days_read
+import io.lukia.resources.stats_back_to_year
 import io.lukia.resources.stats_next_period
 import io.lukia.resources.stats_previous_period
 import io.lukia.resources.stats_reading_time
+import io.lukia.resources.stats_show_month
 import io.lukia.resources.stats_this_week_footnote
-import io.lukia.resources.stats_time_dash
-import io.lukia.resources.stats_time_read
-import io.lukia.resources.stats_today
-import io.lukia.resources.stats_today_spoken
 import io.lukia.shared.presentation.components.controls.LukiaIconButton
-import io.lukia.shared.presentation.components.controls.SegmentedControl
+import io.lukia.shared.presentation.components.controls.pressable
 import io.lukia.shared.presentation.components.icons.BackChevron
 import io.lukia.shared.presentation.components.icons.ForwardChevron
-import io.lukia.shared.presentation.components.surface.BadgeTone
 import io.lukia.shared.presentation.components.surface.GroupSection
-import io.lukia.shared.presentation.components.surface.LukiaDivider
-import io.lukia.shared.presentation.components.surface.StatusBadge
 import io.lukia.shared.presentation.theme.Space
+import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
 
+/** From this width the card sets its calendar beside the day and the figures. */
+private val SplitWidth: Dp = 560.dp
+
+/** How much of a wide card the calendar takes; the day and figures have the rest. */
+private const val CalendarShare = 0.6f
+
+/** Mini months across, on a phone and on a card wide enough to split. */
+private const val NarrowYearColumns = 3
+private const val WideYearColumns = 4
+
 /**
- * Where the time went: today first, then any week, month or year since the app
- * began counting.
+ * Where the time went, as one calendar: a month, or zoomed out the year around
+ * it, with one day of it selected and exactly how long was read on it.
  *
- * One card that changes what it shows rather than a card per span, so the page
- * stays as short as it was when it showed only the week. A week is bars, because
- * its question is the shape of seven days; a month is a calendar, because its
- * question is which days; a year is both, months as bars over a grid of days.
+ * One view rather than a tab per span: the year, a month and a day are the same
+ * calendar at three distances, and zooming keeps the reader's place where tabs
+ * dropped it. Opens on this month with today selected, since somebody looking has
+ * usually just put a book down.
  *
  * Left out entirely until there is something to show, for the reason it always
  * was: a card of zeroes is a reproach rather than a statistic.
@@ -83,21 +78,17 @@ import org.jetbrains.compose.resources.stringResource
 internal fun ReadingTimeSection(
     habits: ReadingHabits,
     history: ReadingHistory,
-    selection: PeriodSelection,
+    selection: CalendarSelection,
     actions: StatsActions,
     groupColor: Color,
     modifier: Modifier = Modifier,
 ) {
     if (habits.isEmpty) return
 
-    // The spans not chosen are worked out too, at their current period, only to
-    // be measured: see the stack below.
-    val readings = remember(history, selection) {
-        PeriodKind.entries.associateWith { kind ->
-            history.periodReading(kind, if (kind == selection.kind) selection.offset else 0)
-        }
-    }
-    val reading = readings.getValue(selection.kind)
+    val period = selection.shownPeriod(history)
+    val reading = remember(history, period) { history.periodReading(period) }
+    val selected = selection.selectedDay(history, period)
+    val day = reading.days.first { it.date == selected }
 
     GroupSection(
         title = stringResource(Res.string.stats_reading_time),
@@ -105,145 +96,121 @@ internal fun ReadingTimeSection(
         footnote = stringResource(Res.string.stats_this_week_footnote),
         modifier = modifier,
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(Space.xl)) {
-            TodayHeadline(habits = habits)
+        BoxWithConstraints {
+            val split = maxWidth >= SplitWidth
+            val dayCard: @Composable () -> Unit = {
+                DayCard(
+                    day = day,
+                    busiestMs = reading.busiestDayMs,
+                    averageMs = reading.dailyAverageMs,
+                    streak = habits.currentStreak,
+                )
+            }
+            val calendar: @Composable () -> Unit = {
+                Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+                    PeriodPager(
+                        reading = reading,
+                        onStep = { by -> actions.onShowMonth(stepped(selection.shownMonth(history), period, by)) },
+                        zoomLabel = zoomLabel(selection.zoomed, selection.shownMonth(history)),
+                        onZoom = { if (selection.zoomed) actions.onZoomOut(selected) else actions.onZoomIn() },
+                    )
 
-            SegmentedControl(
-                options = PeriodKind.entries,
-                selected = selection.kind,
-                label = { periodKindLabel(it) },
-                onSelect = actions.onSelectPeriod,
-            )
-
-            PeriodPager(reading = reading, offset = selection.offset, onStep = actions.onStepPeriod)
-
-            // Every span is laid out and only the chosen one is seen, so the card
-            // is as tall as the tallest of them and switching never moves the
-            // cards below it.
-            SteadyStack {
-                readings.forEach { (kind, shown) ->
-                    PeriodBody(
-                        reading = shown,
-                        modifier = if (kind == selection.kind) {
-                            Modifier
-                        } else {
-                            Modifier
-                                .alpha(0f)
-                                .clearAndSetSemantics { }
-                        },
+                    CalendarPages(
+                        history = history,
+                        selection = selection,
+                        selected = selected,
+                        columns = if (split) WideYearColumns else NarrowYearColumns,
+                        actions = actions,
                     )
                 }
             }
-        }
-    }
-}
 
-/** What a span holds, under its name: the chart or calendar, then its figures. */
-@Composable
-private fun PeriodBody(
-    reading: PeriodReading,
-    modifier: Modifier = Modifier,
-) {
-    val kind = reading.period.kind
-
-    Column(
-        verticalArrangement = Arrangement.spacedBy(Space.xl),
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        when (kind) {
-            PeriodKind.Week -> ReadingChart(bars = dayBars(reading.days))
-            PeriodKind.Month -> MonthCalendar(month = reading)
-            PeriodKind.Year -> {
-                ReadingChart(bars = monthBars(reading.months))
-                YearGrid(year = reading)
-            }
-        }
-
-        if (kind != PeriodKind.Week) {
-            val line = changeLine(reading)
-
-            // Kept as an empty line when there is nothing to compare with, so
-            // paging onto such a period doesn't shorten the card.
-            Text(
-                text = line.orEmpty(),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = if (line == null) Modifier.clearAndSetSemantics { } else Modifier,
+            CardLayout(
+                split = split,
+                day = dayCard,
+                calendar = calendar,
+                details = { PeriodFigures(reading = reading) },
             )
-        }
-
-        LukiaDivider()
-
-        PeriodTotals(reading = reading)
-
-        if (kind == PeriodKind.Month) {
-            BestRunRow(days = reading.longestRun)
         }
     }
 }
 
 /**
- * Today's reading, set as the one figure on the page worth reading first, with
- * the run of days it belongs to beside it.
- *
- * Above the period control rather than inside the week, because it is the only
- * number here that can still be changed this evening, whichever span is shown.
+ * The card's parts in reading order: on a phone the day, the calendar, then the
+ * figures; on a wide card the calendar on the start side and the rest beside it.
  */
 @Composable
-private fun TodayHeadline(
-    habits: ReadingHabits,
-    modifier: Modifier = Modifier,
+private fun CardLayout(
+    split: Boolean,
+    day: @Composable () -> Unit,
+    calendar: @Composable () -> Unit,
+    details: @Composable () -> Unit,
 ) {
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        // Read before the modifier chain: `clearAndSetSemantics` is not a
-        // composable scope.
-        val spoken = stringResource(Res.string.stats_today_spoken, readingTime(habits.todayMs))
+    // Movable, so resizing a window across the split keeps each part's state -
+    // the zoom, the page, the rolling figures - rather than starting it again.
+    // Each reads its slot as it is now, while staying the same content to move.
+    val currentDay by rememberUpdatedState(day)
+    val currentCalendar by rememberUpdatedState(calendar)
+    val currentDetails by rememberUpdatedState(details)
+    val dayPart = remember { movableContentOf { currentDay() } }
+    val calendarPart = remember { movableContentOf { currentCalendar() } }
+    val detailsPart = remember { movableContentOf { currentDetails() } }
 
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .clearAndSetSemantics { contentDescription = spoken },
-        ) {
-            Text(
-                text = stringResource(Res.string.stats_today),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+    if (split) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Space.xxl)) {
+            Box(modifier = Modifier.weight(CalendarShare)) { calendarPart() }
 
-            Text(
-                text = readingTimeOrDash(habits.todayMs),
-                style = MaterialTheme.typography.displaySmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(top = Space.xxs),
-            )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(Space.xl),
+                modifier = Modifier.weight(1f - CalendarShare),
+            ) {
+                dayPart()
+                detailsPart()
+            }
         }
-
-        // Only a run is worth a badge; the absence of one needs no announcing.
-        if (habits.currentStreak > 0) {
-            StatusBadge(
-                text = streakLine(habits.currentStreak),
-                tone = BadgeTone.Accent,
-                modifier = Modifier.padding(start = Space.lg),
-            )
+    } else {
+        Column(verticalArrangement = Arrangement.spacedBy(Space.xl)) {
+            dayPart()
+            calendarPart()
+            detailsPart()
         }
     }
 }
 
-/** The period's name between the way back and the way forward. */
+/** What tapping the period's name does: back to the year, or into [month]. */
+@Composable
+private fun zoomLabel(zoomed: Boolean, month: ReadingPeriod): String = if (zoomed) {
+    stringResource(Res.string.stats_back_to_year, month.start.year)
+} else {
+    stringResource(Res.string.stats_show_month, monthName(month.start.month, MonthForm.Full))
+}
+
+/**
+ * The first of the month [by] steps from [month]: a month at a time when one is
+ * shown, a year at a time when the year is.
+ */
+private fun stepped(month: ReadingPeriod, shown: ReadingPeriod, by: Int): LocalDate = when (shown.kind) {
+    PeriodKind.Month -> month.shiftedBy(by).start
+    PeriodKind.Year -> LocalDate(month.start.year + by, month.start.month, 1)
+}
+
+/**
+ * The period's name between the way back and the way forward.
+ *
+ * The name is also the way between levels: a month's name opens its year, and
+ * the year's name goes back into the month it came from. Set in the accent
+ * colour, as the app sets what can be tapped in running text.
+ */
 @Composable
 private fun PeriodPager(
     reading: PeriodReading,
-    offset: Int,
     onStep: (Int) -> Unit,
+    zoomLabel: String,
+    onZoom: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val shape = MaterialTheme.shapes.small
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier.fillMaxWidth(),
@@ -256,16 +223,25 @@ private fun PeriodPager(
             BackChevron(tint = tint, modifier = glyph)
         }
 
-        Text(
-            text = periodName(reading.period, offset),
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .weight(1f)
-                .semantics { heading() },
-        )
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.weight(1f)) {
+            Text(
+                text = periodName(reading.period),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .clip(shape)
+                    .pressable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        shape = shape,
+                        onClickLabel = zoomLabel,
+                        onClick = onZoom,
+                    )
+                    .semantics { heading() }
+                    .padding(horizontal = Space.md, vertical = Space.sm),
+            )
+        }
 
         LukiaIconButton(
             label = stringResource(Res.string.stats_next_period),
@@ -275,52 +251,4 @@ private fun PeriodPager(
             ForwardChevron(tint = tint, modifier = glyph)
         }
     }
-}
-
-/**
- * What the period comes to.
- *
- * A week and a month say how a day of them usually went; a year has too many
- * days for that to mean much, and says which month carried it instead - by its
- * short name, which fits a third of a phone at the largest type where
- * "September" does not.
- */
-@Composable
-private fun PeriodTotals(
-    reading: PeriodReading,
-    modifier: Modifier = Modifier,
-) {
-    val daysRead = stringResource(Res.string.stats_days_of, reading.daysRead, reading.daysReached)
-
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(Space.lg),
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Figure(value = readingTimeOrDash(reading.totalMs), label = stringResource(Res.string.stats_time_read))
-
-        if (reading.period.kind == PeriodKind.Year) {
-            Figure(value = formatCount(reading.daysRead), label = stringResource(Res.string.stats_days_read))
-            Figure(
-                value = reading.busiestMonth?.let { monthName(it.month, MonthForm.Short) }
-                    ?: stringResource(Res.string.stats_time_dash),
-                label = stringResource(Res.string.stats_best_month),
-            )
-        } else {
-            Figure(
-                value = readingTimeOrDash(reading.dailyAverageMs),
-                label = stringResource(Res.string.stats_daily_average),
-            )
-            Figure(value = daysRead, label = stringResource(Res.string.stats_days_read))
-        }
-    }
-}
-
-@Composable
-private fun RowScope.Figure(value: String, label: String) {
-    StatFigure(
-        value = value,
-        label = label,
-        modifier = Modifier.weight(1f),
-        style = MaterialTheme.typography.titleMedium,
-    )
 }

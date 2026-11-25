@@ -561,35 +561,19 @@
 
     <string name="stats_this_week">Den här veckan</string>
     <string name="stats_this_week_footnote">Räknas medan en bok är öppen och bläddras i, och bara från den dag appen började hålla räkningen.</string>
-    <string name="stats_today">I dag</string>
     <string name="stats_daily_average">Dagligt snitt</string>
-    <string name="stats_all_time">Totalt</string>
     <string name="stats_time_read">Lästid</string>
     <string name="stats_best_day">Bästa dagen</string>
     <string name="stats_longest_run">Längsta svit</string>
-    <plurals name="stats_sittings">
-        <item quantity="one">Lässtund</item>
-        <item quantity="other">Lässtunder</item>
-    </plurals>
     <string name="stats_no_run">Ingen svit på gång</string>
     <plurals name="stats_days_in_a_row">
         <item quantity="one">1 dag i rad</item>
         <item quantity="other">%1$d dagar i rad</item>
     </plurals>
-    <string name="stats_today_spoken">I dag: %1$s</string>
-    <string name="stats_longest_run_spoken">Längsta svit: %1$s</string>
     <string name="stats_day_spoken">%1$s: %2$s</string>
     <string name="stats_week_run_spoken">%1$s: %2$s. %3$s</string>
     <string name="stats_still_to_come">återstår</string>
     <string name="stats_reading_time">Lästid</string>
-    <string name="stats_period_week">Vecka</string>
-    <string name="stats_period_month">Månad</string>
-    <string name="stats_period_year">År</string>
-    <string name="stats_last_week">Förra veckan</string>
-    <plurals name="stats_weeks_ago">
-        <item quantity="one">För %1$d vecka sedan</item>
-        <item quantity="other">För %1$d veckor sedan</item>
-    </plurals>
     <string name="stats_month_year">%1$s %2$d</string>
     <string name="stats_previous_period">Visa tidigare</string>
     <string name="stats_next_period">Visa senare</string>
@@ -601,6 +585,16 @@
     <string name="stats_change_up_so_far">Jämfört med samma dagar i %2$s: +%1$d %</string>
     <string name="stats_change_down_so_far">Jämfört med samma dagar i %2$s: −%1$d %</string>
     <string name="stats_calendar_day_spoken">%1$s %2$d: %3$s</string>
+    <string name="stats_selected_day">%1$s %2$d %3$s</string>
+    <string name="stats_show_month">Visa %1$s</string>
+    <string name="stats_back_to_year">Tillbaka till %1$d</string>
+    <string name="stats_more_than_average">%1$s mer än en genomsnittlig dag</string>
+    <string name="stats_less_than_average">%1$s mindre än en genomsnittlig dag</string>
+    <string name="stats_about_average">Ungefär en genomsnittlig dag</string>
+    <plurals name="stats_in_sittings">
+        <item quantity="one">på %1$d lässtund</item>
+        <item quantity="other">på %1$d lässtunder</item>
+    </plurals>
     <plurals name="stats_year_days_spoken">
         <item quantity="one">Läst %1$d dag under %2$d</item>
         <item quantity="other">Läst %1$d dagar under %2$d</item>

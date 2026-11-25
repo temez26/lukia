@@ -575,35 +575,19 @@
 
     <string name="stats_this_week">Tällä viikolla</string>
     <string name="stats_this_week_footnote">Lasketaan kun kirja on auki ja sivuja käännetään, ja vain siitä päivästä alkaen jona tämä sovellus alkoi pitää kirjaa.</string>
-    <string name="stats_today">Tänään</string>
     <string name="stats_daily_average">Päiväkeskiarvo</string>
-    <string name="stats_all_time">Kaikkiaan</string>
     <string name="stats_time_read">Luettu aika</string>
     <string name="stats_best_day">Paras päivä</string>
     <string name="stats_longest_run">Pisin putki</string>
-    <plurals name="stats_sittings">
-        <item quantity="one">Lukuhetki</item>
-        <item quantity="other">Lukuhetkeä</item>
-    </plurals>
     <string name="stats_no_run">Ei putkea menossa</string>
     <plurals name="stats_days_in_a_row">
         <item quantity="one">1 päivä putkeen</item>
         <item quantity="other">%1$d päivää putkeen</item>
     </plurals>
-    <string name="stats_today_spoken">Tänään: %1$s</string>
-    <string name="stats_longest_run_spoken">Pisin putki: %1$s</string>
     <string name="stats_day_spoken">%1$s: %2$s</string>
     <string name="stats_week_run_spoken">%1$s: %2$s. %3$s</string>
     <string name="stats_still_to_come">vielä tulossa</string>
     <string name="stats_reading_time">Lukuaika</string>
-    <string name="stats_period_week">Viikko</string>
-    <string name="stats_period_month">Kuukausi</string>
-    <string name="stats_period_year">Vuosi</string>
-    <string name="stats_last_week">Viime viikko</string>
-    <plurals name="stats_weeks_ago">
-        <item quantity="one">%1$d viikko sitten</item>
-        <item quantity="other">%1$d viikkoa sitten</item>
-    </plurals>
     <string name="stats_month_year">%1$s %2$d</string>
     <string name="stats_previous_period">Näytä aiemmat</string>
     <string name="stats_next_period">Näytä myöhemmät</string>
@@ -615,6 +599,16 @@
     <string name="stats_change_up_so_far">Ero samoihin päiviin (%2$s): +%1$d %</string>
     <string name="stats_change_down_so_far">Ero samoihin päiviin (%2$s): −%1$d %</string>
     <string name="stats_calendar_day_spoken">%1$s %2$d.: %3$s</string>
+    <string name="stats_selected_day">%1$s %2$d. %3$s</string>
+    <string name="stats_show_month">Näytä %1$s</string>
+    <string name="stats_back_to_year">Takaisin vuoteen %1$d</string>
+    <string name="stats_more_than_average">%1$s enemmän kuin keskimääräisenä päivänä</string>
+    <string name="stats_less_than_average">%1$s vähemmän kuin keskimääräisenä päivänä</string>
+    <string name="stats_about_average">Suunnilleen keskimääräinen päivä</string>
+    <plurals name="stats_in_sittings">
+        <item quantity="one">%1$d lukuhetkessä</item>
+        <item quantity="other">%1$d lukuhetkessä</item>
+    </plurals>
     <plurals name="stats_year_days_spoken">
         <item quantity="one">Luettu %1$d päivänä vuonna %2$d</item>
         <item quantity="other">Luettu %1$d päivänä vuonna %2$d</item>

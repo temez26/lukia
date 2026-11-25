@@ -47,9 +47,6 @@ data class ReadingHabits(
     val days: List<DayReading>,
     /** Days read in a row, counting back from today - or from yesterday, see below. */
     val currentStreak: Int,
-    val longestStreak: Int,
-    val sittings: Int,
-    val longestDayMs: Long,
 ) {
 
     /** True until the app has recorded any reading at all. */
@@ -75,9 +72,6 @@ data class ReadingHabits(
             weekMs = 0,
             days = emptyList(),
             currentStreak = 0,
-            longestStreak = 0,
-            sittings = 0,
-            longestDayMs = 0,
         )
     }
 }
@@ -117,9 +111,6 @@ internal fun readingHabits(
         weekMs = week.filterNot { it.isFuture }.sumOf { it.durationMs },
         days = week,
         currentStreak = currentStreak(readDays, today),
-        longestStreak = longestStreak(readDays),
-        sittings = sessions.size,
-        longestDayMs = byDay.values.maxOrNull() ?: 0L,
     )
 }
 

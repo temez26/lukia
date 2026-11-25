@@ -665,16 +665,10 @@
 
     <string name="stats_this_week">This week</string>
     <string name="stats_this_week_footnote">Counted while a book is open and being turned, and only from the day this app started keeping track.</string>
-    <string name="stats_today">Today</string>
     <string name="stats_daily_average">Daily average</string>
-    <string name="stats_all_time">All time</string>
     <string name="stats_time_read">Time read</string>
     <string name="stats_best_day">Best day</string>
     <string name="stats_longest_run">Longest run</string>
-    <plurals name="stats_sittings">
-        <item quantity="one">Sitting</item>
-        <item quantity="other">Sittings</item>
-    </plurals>
     <!--
         A run of days, said as a sentence. Nought is its own string rather than a
         plural form: "No run going" is a different thing to say, not a different
@@ -686,21 +680,11 @@
         <item quantity="one">1 day in a row</item>
         <item quantity="other">%1$d days in a row</item>
     </plurals>
-    <string name="stats_today_spoken">Today: %1$s</string>
-    <string name="stats_longest_run_spoken">Longest run: %1$s</string>
-    <!-- One bar of the week chart, for a screen reader. -->
+    <!-- A day and what was read on it, for a screen reader. -->
     <string name="stats_day_spoken">%1$s: %2$s</string>
     <string name="stats_week_run_spoken">%1$s: %2$s. %3$s</string>
     <string name="stats_still_to_come">still to come</string>
     <string name="stats_reading_time">Reading time</string>
-    <string name="stats_period_week">Week</string>
-    <string name="stats_period_month">Month</string>
-    <string name="stats_period_year">Year</string>
-    <string name="stats_last_week">Last week</string>
-    <plurals name="stats_weeks_ago">
-        <item quantity="one">%1$d week ago</item>
-        <item quantity="other">%1$d weeks ago</item>
-    </plurals>
     <string name="stats_month_year">%1$s %2$d</string>
     <string name="stats_previous_period">Show earlier</string>
     <string name="stats_next_period">Show later</string>
@@ -712,6 +696,20 @@
     <string name="stats_change_up_so_far">Compared with the same days of %2$s: +%1$d%</string>
     <string name="stats_change_down_so_far">Compared with the same days of %2$s: −%1$d%</string>
     <string name="stats_calendar_day_spoken">%1$s %2$d: %3$s</string>
+    <!-- The selected day over the calendar: weekday, day of the month, short month name. -->
+    <string name="stats_selected_day">%1$s %2$d %3$s</string>
+    <!-- A month of the year view, for a screen reader: opens that month. -->
+    <string name="stats_show_month">Show %1$s</string>
+    <string name="stats_back_to_year">Back to %1$d</string>
+    <!-- The selected day against the daily average of the month or year shown. -->
+    <string name="stats_more_than_average">%1$s more than your average day</string>
+    <string name="stats_less_than_average">%1$s less than your average day</string>
+    <string name="stats_about_average">About your average day</string>
+    <!-- Under a year's time read: how many sittings it was read in. -->
+    <plurals name="stats_in_sittings">
+        <item quantity="one">in %1$d sitting</item>
+        <item quantity="other">in %1$d sittings</item>
+    </plurals>
     <plurals name="stats_year_days_spoken">
         <item quantity="one">Read on %1$d day in %2$d</item>
         <item quantity="other">Read on %1$d days in %2$d</item>
